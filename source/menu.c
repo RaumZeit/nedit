@@ -2744,7 +2744,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
     WindowInfo *tmpWindow;
     int windowIndex;
 
-    if (nArgs > 0) {
+    if (*nArgs > 0) {
         if (strcmp(args[0], "last") == 0) {
             window = WindowList;
         }
