@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.50 2002/08/21 07:19:25 n8gray Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.51 2002/08/27 05:39:27 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -795,6 +795,8 @@ static int doSave(WindowInfo *window)
     if (stat(fullname, &statbuf) == 0)
 	window->lastModTime = statbuf.st_mtime;
     else
+        /* This needs to produce an error message -- the file can't be 
+            accessed! */
 	window->lastModTime = 0;
 
     return TRUE;
@@ -1328,39 +1330,72 @@ void CheckForChangesToFile(WindowInfo *window)
     /* If last check was very recent, don't impact performance */
     timestamp = XtLastTimestampProcessed(XtDisplay(window->shell));
     if (window == lastCheckWindow &&
-	    timestamp - lastCheckTime < MOD_CHECK_INTERVAL)
-    	return;
+            timestamp - lastCheckTime < MOD_CHECK_INTERVAL)
+        return;
     lastCheckWindow = window;
     lastCheckTime = timestamp;
 
     /* Get the file mode and modification time */
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
-    if (stat(fullname, &statbuf) != 0)
+    if (stat(fullname, &statbuf) != 0) {
+        /* Can't stat the file -- maybe it's been deleted.
+           The filename is now invalid */
+        window->filenameSet = FALSE;
+        /* The buffer's "modified" since there's no longer a backup on disk */
+        SetWindowModified(window, TRUE);
+        /* Undo should not restore the "Unmodified" property of the window */
+        DisableUnmodified(window);
+        /* Warn the user, if they like to be warned (Maybe this should be its
+            own preference setting: GetPrefWarnFileDeleted() ) */
+        if (window->lastModTime != 0 && GetPrefWarnFileMods()) {
+            window->lastModTime = 0;
+            /* See note below about pop-up timing and XUngrabPointer */
+            XUngrabPointer(XtDisplay(window->shell), timestamp);
+            if( errno == EACCES ) 
+                resp = DialogF( DF_ERR, window->shell, 2, 
+                    "You no longer have access to file \"%s\".\n"
+                    "Another program may have changed the permissions one of\n"
+                    "its parent directories.\n"
+                    "Save as a new file?", 
+                    "Save As...", "Dismiss", 
+                    window->filename );
+            else
+                resp = DialogF( DF_ERR, window->shell, 2, 
+                    "Error while checking the status of file \"%s\":\n"
+                    "    \"%s\"\n"
+                    "Another program may have deleted or moved it.\n"
+                    "Save as a new file?", 
+                    "Save As...", "Dismiss", 
+                    window->filename, errorString() );
+            if (resp == 1)
+                SaveWindowAs(window, NULL, 0);
+        }
         return;
+    }
     
     /* Check that the file's read-only status is still correct (but
        only if the file can still be opened successfully in read mode) */
     if (window->fileMode != statbuf.st_mode) {
-	window->fileMode = statbuf.st_mode;
-	if ((fp = fopen(fullname, "r")) != NULL) {
-	    int readOnly;
-	    fclose(fp);
+        window->fileMode = statbuf.st_mode;
+        if ((fp = fopen(fullname, "r")) != NULL) {
+            int readOnly;
+            fclose(fp);
 #ifdef USE_ACCESS
-    	    readOnly = access(fullname, W_OK) != 0;
+            readOnly = access(fullname, W_OK) != 0;
 #else
-	    if (((fp = fopen(fullname, "r+")) != NULL)) {
-		readOnly = FALSE;
-		fclose(fp);
-	    } else
-		readOnly = TRUE;
+            if (((fp = fopen(fullname, "r+")) != NULL)) {
+                readOnly = FALSE;
+                fclose(fp);
+            } else
+                readOnly = TRUE;
 #endif
             if (IS_PERM_LOCKED(window->lockReasons) != readOnly) {
                 SET_PERM_LOCKED(window->lockReasons, readOnly);
-		UpdateWindowTitle(window);
-		UpdateWindowReadOnly(window);
-	    }
-	}
+                UpdateWindowTitle(window);
+                UpdateWindowReadOnly(window);
+            }
+        }
     }
 
     /* Update the status, but don't pop up a dialog if we're called
@@ -1385,26 +1420,28 @@ void CheckForChangesToFile(WindowInfo *window)
        which is still in the process of popping down.  The workaround, below,
        of calling XUngrabPointer is inelegant but seems to fix the problem. */
     if (window->lastModTime != 0 && window->lastModTime != statbuf.st_mtime &&
-	    GetPrefWarnFileMods()) {
-    	window->lastModTime = 0;	/* Inhibit further warnings */
-	XUngrabPointer(XtDisplay(window->shell), timestamp);
-	if (window->fileChanged)
-	    resp = DialogF(DF_WARN, window->shell, 2,
-		    "%s has been modified by another program.  Reload\n"
-		    "and discard changes made in this edit session?",
-		    "Reload", "Dismiss", window->filename);
-	else
-	    resp = DialogF(DF_WARN, window->shell, 2,
-		    "%s has been modified by another\nprogram.  Reload?",
-		    "Reload", "Dismiss", window->filename);
-	if (resp == 1)
-	    RevertToSaved(window);
+            GetPrefWarnFileMods()) {
+        window->lastModTime = 0;        /* Inhibit further warnings */
+        XUngrabPointer(XtDisplay(window->shell), timestamp);
+        if (window->fileChanged)
+            resp = DialogF(DF_WARN, window->shell, 2,
+                    "%s has been modified by another program.  Reload?\n\n"
+                    "WARNING: Reloading will discard changes made in this\n"
+                    "editing session!",
+                    "Reload", "Dismiss", window->filename);
+        else
+            resp = DialogF(DF_WARN, window->shell, 2,
+                    "%s has been modified by another\nprogram.  Reload?",
+                    "Reload", "Dismiss", window->filename);
+        if (resp == 1)
+            RevertToSaved(window);
     }
 }
 
 /*
 ** Return true if the file displayed in window has been modified externally
-** to nedit
+** to nedit.  This should return FALSE if the file has been deleted or is
+** unavailable.
 */
 static int fileWasModifiedExternally(WindowInfo *window)
 {    

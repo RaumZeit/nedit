@@ -1,4 +1,4 @@
-/* $Id: undo.h,v 1.5 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: undo.h,v 1.6 2002/08/27 05:39:27 n8gray Exp $ */
 
 #ifndef NEDIT_UNDO_H_INCLUDED
 #define NEDIT_UNDO_H_INCLUDED
@@ -14,5 +14,6 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 	int nDeleted, const char *deletedText);
 void ClearUndoList(WindowInfo *window);
 void ClearRedoList(WindowInfo *window);
+void DisableUnmodified(WindowInfo *window);
 
 #endif /* NEDIT_UNDO_H_INCLUDED */

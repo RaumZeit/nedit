@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.13 2002/08/22 08:40:08 n8gray Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.14 2002/08/27 05:39:27 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -289,6 +289,23 @@ void ClearRedoList(WindowInfo *window)
 {
     while (window->redo != NULL)
     	removeRedoItem(window);
+}
+
+/* 
+** DisableUnmodified
+** 
+** Remove the ability of a window to become "Unmodified" through a sequence
+** of undos.  This can happen if the file the window is editing gets deleted,
+** for example.
+*/
+void DisableUnmodified(WindowInfo *window)
+{
+    UndoInfo *undo = window->undo;
+    
+    while (undo != NULL){
+        undo->restoresToSaved = False;
+        undo = undo->next;
+    }
 }
 
 /*
