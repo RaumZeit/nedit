@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.15 2004/07/21 11:32:07 yooden Exp $ */
+/* $Id: system.h,v 1.16 2004/07/26 22:52:52 n8gray Exp $ */
 /*******************************************************************************
 *                                                                              *
 * system.h -- Compile Time Configuration Header File                           *
@@ -58,7 +58,11 @@
 #   define COMPILE_MACHINE "Sparc"
 #elif defined(__hppa)
 #   define COMPILE_MACHINE "PA-RISC"
-#elif defined(__PPC__) || defined(_POWER)
+#elif defined(_POWER)
+#   define COMPILE_MACHINE "POWER"
+#elif defined(__ALTIVEC__)
+#   define COMPILE_MACHINE "PowerPC Altivec"
+#elif defined(__POWERPC__) || defined(__ppc__) || defined(__powerpc__)
 #   define COMPILE_MACHINE "PowerPC"
 #elif defined(__x86_64) || defined(_x86_64)
 #   define COMPILE_MACHINE "x86-64"
