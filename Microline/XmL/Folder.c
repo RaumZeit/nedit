@@ -241,6 +241,12 @@ static XtResource resources[] =
 		XmRImmediate, (XtPointer)0,
 		},
 		{
+		XmNminTabWidth, XmCminTabWidth,
+		XmRDimension, sizeof(Dimension),
+		XtOffset(XmLFolderWidget, folder.minTabWidth),
+		XmRImmediate, (XtPointer)0,
+		},
+		{
 		XmNmaxTabWidth, XmCmaxTabWidth,
 		XmRDimension, sizeof(Dimension),
 		XtOffset(XmLFolderWidget, folder.maxTabWidth),
@@ -494,6 +500,14 @@ Initialize(Widget req,
     }
   f->folder.serverDrawsArcsLarge = ServerDrawsArcsLarge(dpy,
 							f->folder.debugLevel);
+  if (f->folder.minTabWidth <= 0)
+    {
+      /* a quick hack to determine the minimum tab width - enough
+	 to show at least one character of the tab string */
+      XmString st = XmStringCreateSimple("W");
+      f->folder.minTabWidth = XmStringWidth(f->folder.fontList, st);
+      XmStringFree(st);
+    }
 }
 
 static void 
@@ -905,6 +919,12 @@ LayoutTopBottom(XmLFolderWidget f,
       	  tgtTabWidth = f->core.width/tabEffCount - tabPaddingWidth;
 	  tailSpace = f->core.width % tabEffCount;
 	  tabFit = 1;
+	  
+	  /* if tabs get too small */
+	  if (tgtTabWidth < f->folder.minTabWidth) {
+	    tgtTabWidth = f->folder.minTabWidth;
+	    tabFit = 0;
+	  }
 	}
       else
         {

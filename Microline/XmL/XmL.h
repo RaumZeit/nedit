@@ -102,6 +102,8 @@ extern "C" {
 #define XmCRotateWhenLeftRight "RotateWhenLeftRight"
 #define XmNtabBarHeight "tabBarHeight"
 #define XmCTabBarHeight "TabBarHeight"
+#define XmNminTabWidth "minTabWidth"
+#define XmCminTabWidth "MinTabWidth"
 #define XmNmaxTabWidth "maxTabWidth"
 #define XmCmaxTabWidth "MaxTabWidth"
 #define XmNtabCount "tabCount"

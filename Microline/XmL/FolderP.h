@@ -74,7 +74,7 @@ typedef struct _XmLFolderPart
 	Dimension cornerDimension, highlightThickness;
 	Dimension pixmapMargin;
 	Dimension tabHeight, tabWidth, tabBarHeight;
-	Dimension maxTabWidth;
+	Dimension minTabWidth, maxTabWidth;
 	int tabsPerRow, activeRow;
 	XtTranslations primTrans;
 	Widget focusW, activeW;
