@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.80 2003/03/07 19:46:49 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.81 2003/03/07 19:52:29 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5487,7 +5487,7 @@ static void colorDismissCB(Widget w, XtPointer clientData, XtPointer callData)
 
 /* Add a label, error label, and text entry label with a validation
     callback */
-Widget addColorGroup( Widget parent, const char *name, char mnemonic, 
+static Widget addColorGroup( Widget parent, const char *name, char mnemonic, 
         char *label, Widget *fieldW, Widget *errW, Widget topWidget, 
         int leftPos, int rightPos, XtCallbackProc modCallback, 
         colorDialog *cd )
