@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.37 2001/10/31 16:36:40 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.38 2001/11/07 22:54:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -868,6 +868,7 @@ static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
+static void updatePatternsPast5dot2(void);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
@@ -923,7 +924,15 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
                 "    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot2();
     }
- 
+    
+    if (PrefData.prefFileRead && fileVer == 5002) {
+        /* For now, update preferences silently.
+           When the next version is about to be released, make it more
+           verbose and rename this function properly (depending on whether
+           it will be 5.3 or 6.0). */
+        updatePatternsPast5dot2();
+    }
+       
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
        in which nedit stores and uses.  If the preferences file was
@@ -4476,6 +4485,27 @@ static void updatePatternsTo5dot2(void)
 	spliceString(&TempStringPrefs.styles, ptrStyle, "^[ \t]*Regex:");
 }
 
+/*
+** Temporary function, to be extended gradually when preferences are 
+** altered and to be renamed when next version is about to be released
+** (5.3 or 6.0).
+*/
+static void updatePatternsPast5dot2(void)
+{
+#ifdef VMS
+    const char *psLm5dot2 =
+        "^[ \t]*PostScript:\\.ps \\.PS \\.eps \\.EPS \\.epsf \\.epsi:\"\\^%!\":::::\"/%\\(\\)\\{\\}\\[\\]\\<\\>\"";
+
+    const char *psLmPost5dot2 = 
+        "PostScript:.ps .PS .eps .EPS .epsf .EPSF .epsi .EPSI:\"^%!\":::::\"/%(){}[]<>\"";
+    
+    /* Upgrade modified language modes, only if the user hasn't
+       altered the default 5.2 definitions. */
+    if (regexFind(TempStringPrefs.language, psLm5dot2))
+	regexReplace(&TempStringPrefs.language, psLm5dot2, psLmPost5dot2);
+#endif 
+}
+ 
 /*
 ** Inserts a string into intoString, reallocating it with XtMalloc.  If
 ** regular expression atExpr is found, inserts the string before atExpr
