@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.170 2004/08/20 19:33:21 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.171 2004/08/31 21:37:57 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4279,11 +4279,8 @@ WindowInfo *DetachDocument(WindowInfo *window)
     win = getNextTabWindow(window, 1, 0, 0);
     RaiseDocument(win);
     
-    /* create new window in roughly the size of original window,
-       to reduce flicker when the window is resized later */
-    getTextPaneDimension(window, &rows, &cols);
-    sprintf(geometry, "%dx%d", cols, rows);
-    cloneWin = CreateWindow(window->filename, geometry, False);
+    /* Create a new window */
+    cloneWin = CreateWindow(window->filename, NULL, False);
     
     /* CreateWindow() simply adds the new window's pointer to the
        head of WindowList. We need to adjust the detached window's 
