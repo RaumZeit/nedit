@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.13 2001/09/17 14:06:24 amai Exp $ */
+/* $Id: search.h,v 1.14 2001/11/13 11:10:24 amai Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -13,13 +13,13 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap);
 int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);
 int SearchAndSelectIncremental(WindowInfo *window, int direction,
-	char *searchString, int searchType, int searchWrap, int continued);
+	const char *searchString, int searchType, int searchWrap, int continued);
 void SearchForSelected(WindowInfo *window, int direction, int searchWrap,
     int searchType, Time time);
-int SearchAndReplace(WindowInfo *window, int direction, char *searchString,
-	char *replaceString, int searchType, int searchWrap);
-int ReplaceAndSearch(WindowInfo *window, int direction, char *searchString,
-	char *replaceString, int searchType, int searchWrap);
+int SearchAndReplace(WindowInfo *window, int direction, const char *searchString,
+	const char *replaceString, int searchType, int searchWrap);
+int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString,
+	const char *replaceString, int searchType, int searchWrap);
 int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap);
 int ReplaceSame(WindowInfo *window, int direction, int searchWrap);
 int ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString,

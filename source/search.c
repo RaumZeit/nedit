@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.37 2001/11/08 12:55:55 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.38 2001/11/13 11:10:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2774,7 +2774,7 @@ static void iSearchRecordLastBeginPos(WindowInfo *window, int direction,
 ** current cursor position.
 */
 int SearchAndSelectIncremental(WindowInfo *window, int direction,
-	char *searchString, int searchType, int searchWrap, int continued)
+	const char *searchString, int searchType, int searchWrap, int continued)
 {
     int beginPos, startPos, endPos;
 
@@ -3301,8 +3301,8 @@ int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap)
 ** Replace selection with "replaceString" and search for string "searchString" in window "window", 
 ** using algorithm "searchType" and direction "direction"
 */
-int ReplaceAndSearch(WindowInfo *window, int direction, char *searchString,
-                     char *replaceString, int searchType, int searchWrap)
+int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString,
+                     const char *replaceString, int searchType, int searchWrap)
 {
     int startPos = 0, endPos = 0, replaceLen = 0;
     int searchExtent;
@@ -3350,8 +3350,8 @@ int ReplaceAndSearch(WindowInfo *window, int direction, char *searchString,
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-int SearchAndReplace(WindowInfo *window, int direction, char *searchString,
-	char *replaceString, int searchType, int searchWrap)
+int SearchAndReplace(WindowInfo *window, int direction, const char *searchString,
+	const char *replaceString, int searchType, int searchWrap)
 {
     int startPos, endPos, replaceLen, searchExtent;
     int found;
