@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.79 2004/03/04 00:49:45 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.80 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -157,10 +157,15 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 **
 ** If languageMode is passed as NULL, it will be determined automatically
 ** from the file extension or file contents.
+**
+** If bgOpen is True, then the file will be open in background. This
+** works in association with the SetLanguageMode() function that has
+** the syntax highlighting deferred, in order to speed up the file-
+** opening operation when multiple files are being opened in succession. 
 */
 WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
         const char *path, int flags, char *geometry, int iconic,
-	const char *languageMode, int tabbed)
+	const char *languageMode, int tabbed, int bgOpen)
 {
     WindowInfo *window;
     char fullname[MAXPATHLEN];
@@ -168,7 +173,12 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     /* first look to see if file is already displayed in a window */
     window = FindWindowWithFile(name, path);
     if (window != NULL) {
-    	RaiseDocumentWindow(window);
+    	if (!bgOpen) {
+	    if (iconic)
+		RaiseDocument(window);
+	    else
+		RaiseDocumentWindow(window);
+    	}	    
 	return window;
     }
     
@@ -192,7 +202,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     	window = inWindow;
     	strcpy(window->path, path);
     	strcpy(window->filename, name);
-        if (!iconic) {
+        if (!iconic && !bgOpen) {
             RaiseDocumentWindow(window);
         }
     }
@@ -213,23 +223,25 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
 
     /* update tab label and tooltip */
-    ShowTabBar(window, GetShowTabBar(window));
     RefreshTabState(window);
-    RaiseDocument(window);
+    SortTabBar(window);
+    ShowTabBar(window, GetShowTabBar(window));
+    
+    if (!bgOpen)
+        RaiseDocument(window);
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
     UpdateStatsLine(window);
-
+    
     /* Add the name to the convenience menu of previously opened files */
     strcpy(fullname, path);
     strcat(fullname, name);
     if(GetPrefAlwaysCheckRelTagsSpecs())
       	AddRelTagsFile(GetPrefTagFile(), path, TAG);
     AddToPrevOpenMenu(fullname);
-    SortTabBar(window);
 
     return window;
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.131 2004/03/21 14:25:56 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.132 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3953,6 +3953,9 @@ int IsValidWindow(WindowInfo *window)
 */
 void RaiseDocumentWindow(WindowInfo *window)
 {
+    if (!window)
+    	return;
+	
     RaiseDocument(window);
     RaiseShellWindow(window->shell);
 }
@@ -4024,6 +4027,10 @@ void RaiseDocument(WindowInfo *window)
     lastwin = MarkActiveDocument(window);
     if (lastwin != window && IsValidWindow(lastwin))
     	MarkLastDocument(lastwin);
+
+    /* turn on syntax highlight that might have been deferred */
+    if (window->highlightSyntax && window->highlightData==NULL)
+    	StartHighlighting(window, False);
 
     /* buffer already active? */
     XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
@@ -4616,3 +4623,36 @@ void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive)
     	XtSetSensitive(w, sensitive);
     }
 }
+
+/*
+** Remove redundant expose events on tab bar.
+*/
+void CleanUpTabBarExposeQueue(WindowInfo *window)
+{
+    XEvent event;
+    XExposeEvent ev;
+    int count;
+    
+    if (window == NULL)
+    	return;
+    
+    /* remove redundant expose events on tab bar */
+    count=0;
+    while (XCheckTypedWindowEvent(TheDisplay, XtWindow(window->tabBar), 
+	   Expose, &event))
+	count++;
+
+    /* now we can update tabbar */
+    if (count) {
+	ev.type = Expose;
+	ev.display = TheDisplay;
+	ev.window = XtWindow(window->tabBar);
+	ev.x = 0;
+	ev.y = 0;
+	ev.width = XtWidth(window->tabBar);
+	ev.height = XtHeight(window->tabBar);
+	ev.count = 0;
+	XSendEvent(TheDisplay, XtWindow(window->tabBar), False,
+		ExposureMask, (XEvent *)&ev);
+    }
+}    

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.25 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.26 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -42,6 +42,7 @@ static const char CVSID[] = "$Id: server.c,v 1.25 2004/02/16 01:02:38 tksoh Exp 
 #include "server_common.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
+#include "../util/misc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +65,7 @@ static const char CVSID[] = "$Id: server.c,v 1.25 2004/02/16 01:02:38 tksoh Exp 
 #endif
 
 #include <Xm/Xm.h>
+#include <Xm/XmP.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -287,9 +289,9 @@ static void processServerCommandString(char *string)
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, iconicFlag, tabbed;
+    int lineNum, createFlag, readFlag, iconicFlag, tabbed, isTabbed;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
-    WindowInfo *window;
+    WindowInfo *window, *lastFile = NULL;
 
     /* If the command string is empty, put up an empty, Untitled window
        (or just pop one up if it already exists) */
@@ -400,12 +402,32 @@ static void processServerCommandString(char *string)
            deleteFileClosedProperty2(filename, pathname);
 	   return;
 	}
+
     	window = FindWindowWithFile(filename, pathname);
-    	if (window == NULL)
-	    window = EditExistingFile(WindowList,
+    	isTabbed = tabbed == -1? GetPrefOpenInTab() : tabbed;
+	if ((!isTabbed && lastFile) || (window && lastFile && 
+	        window->shell != lastFile->shell)) {
+	    CleanUpTabBarExposeQueue(lastFile);
+	    if (iconicFlag)
+		RaiseDocument(lastFile);
+	    else
+		RaiseDocumentWindow(lastFile);
+    	    EndWait(lastFile->shell);
+	}
+	
+    	if (window == NULL) {
+	    /* Files are opened in background to improve opening speed
+	       by defering certain time  consuiming task such as syntax
+	       highlighting. At the end of the file-opening loop, the 
+	       last file opened will be raised to restore those deferred
+	       items. The current file may also be raised if there're
+	       macros to execute on. */
+	    lastFile = window = EditExistingFile(WindowList,
 		    filename, pathname, editFlags, geometry, iconicFlag, 
-		    lmLen == 0 ? NULL : langMode, 
-		    tabbed == -1? GetPrefOpenInTab() : tabbed);
+		    lmLen == 0 ? NULL : langMode, isTabbed, True);
+	    CleanUpTabBarExposeQueue(window);
+    	    BeginWait(window->shell);
+	}
 	
 	/* Do the actions requested (note DoMacro is last, since the do
 	   command can do anything, including closing the window!) */
@@ -413,14 +435,15 @@ static void processServerCommandString(char *string)
             deleteFileOpenProperty(window);
             getFileClosedProperty(window);
 
-	    if (!iconicFlag) {
-		RaiseDocument(window);
-		XMapRaised(TheDisplay, XtWindow(window->shell));
-	    }
-	   
 	    if (lineNum > 0)
 		SelectNumberedLine(window, lineNum);
+
 	    if (*doCommand != '\0') {
+		RaiseDocument(window);
+
+		if (!iconicFlag)
+		    XMapRaised(TheDisplay, XtWindow(window->shell));
+
 		/* Starting a new command while another one is still running
 		   in the same window is not possible (crashes). */
 		if (window->macroCmdData != NULL) {
@@ -435,7 +458,15 @@ static void processServerCommandString(char *string)
         }
             
     }
+    
+    /* Raise the last file opened */
+    CleanUpTabBarExposeQueue(window);
+    if (iconicFlag)
+	RaiseDocument(window);
+    else
+	RaiseDocumentWindow(window);
     CheckCloseDim();
+    EndWait(window->shell);
     return;
 
 readError:

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.97 2004/03/06 22:44:09 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.98 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2743,7 +2743,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     } 
     EditExistingFile(window, filename, pathname, 0, NULL, False, 
-            NULL, GetPrefOpenInTab());
+            NULL, GetPrefOpenInTab(), False);
     CheckCloseDim();
 }
 

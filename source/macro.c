@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.83 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.84 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1844,6 +1844,10 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
 	
     /* Change the focused window to the requested one */
     SetMacroFocusWindow(w);
+
+    /* turn on syntax highlight that might have been deferred */
+    if (w->highlightSyntax && w->highlightData==NULL)
+    	StartHighlighting(w, False);
 
     /* Return the name of the window */
     result->tag = STRING_TAG;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.116 2004/03/06 22:44:09 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.117 2004/03/25 04:27:01 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -4262,7 +4262,9 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     window->highlightSyntax = highlight;
     SetToggleButtonState(window, window->highlightItem, highlight, False);
     StopHighlighting(window);
-    if (highlight)
+
+    /* we defer highlighting to RaiseDocument() if doc is hidden */
+    if (IsTopDocument(window) && highlight)
     	StartHighlighting(window, False);
 
     /* Force a change of smart indent macros (SetAutoIndent will re-start) */
