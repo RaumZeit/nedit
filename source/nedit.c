@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.13 2001/06/22 18:27:53 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.14 2001/08/04 20:49:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "NEdit: Locale not supported by C library.\n");
 	if(setlocale(LC_CTYPE, NULL)==NULL) {
             fprintf(stderr,"NEdit: cannot continue.\n");
-            exit(0);
+            exit(EXIT_FAILURE);
 	} else
             fprintf(stderr,"NEdit: Using %s locale instead.\n",
             	    setlocale(LC_CTYPE, NULL));
@@ -296,7 +296,7 @@ int main(int argc, char **argv)
     if (!XSupportsLocale()) {
     	fprintf(stderr, "NEdit: Xlib: locale %s not supported\n.",
     	    	setlocale(LC_CTYPE, NULL));
-    	exit(0);
+    	exit(EXIT_FAILURE);
     }
     if (XSetLocaleModifiers("") == NULL)
         fprintf(stderr,"NEdit: cannot set locale modifiers.\n");
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
     unmaskArgvKeywords(argc, argv, protectedKeywords);
     if (!TheDisplay) {
 	XtWarning ("NEdit: Can't open display\n");
-	exit(0);
+	exit(EXIT_FAILURE);
     }
     
     /* Initialize global symbols and subroutines used in the macro language */
@@ -437,7 +437,7 @@ int main(int argc, char **argv)
 #endif /*VMS*/
     	    fprintf(stderr, "NEdit: Unrecognized option %s\n%s", argv[i],
     	    	    cmdLineHelp);
-    	    exit(0);
+    	    exit(EXIT_FAILURE);
     	} else {
 #ifdef VMS
 	    int numFiles, j;
@@ -506,7 +506,7 @@ int main(int argc, char **argv)
     	XtAppMainLoop(context);
 
     /* Not reached but this keeps some picky compilers happy */
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 static void nextArg(int argc, char **argv, int *argIndex)
@@ -517,7 +517,7 @@ static void nextArg(int argc, char **argv, int *argIndex)
 #endif /*VMS*/
     	fprintf(stderr, "NEdit: %s requires an argument\n%s", argv[*argIndex],
     	        cmdLineHelp);
-    	exit(0);
+    	exit(EXIT_FAILURE);
     }
     (*argIndex)++;
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.8 2001/08/04 20:49:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -198,7 +198,7 @@ static const char *getUserName(void)
     passwdEntry = getpwuid(getuid());
     if (!passwdEntry) {
        perror("NEdit: getpwuid() failed ");
-       exit(1);
+       exit(EXIT_FAILURE);
     }
     return passwdEntry->pw_name;
 #endif
@@ -239,7 +239,7 @@ static const char *getHostName(void)
     rc=uname(&nameStruct);
     if (rc<0) {
        perror("NEdit: uname() failed ");
-       exit(1);
+       exit(EXIT_FAILURE);
     }   
     strcpy(hostname, nameStruct.nodename);
     return hostname;

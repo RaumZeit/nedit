@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.8 2001/03/16 20:28:48 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.9 2001/08/04 20:49:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id)
 {    
     startServer("No servers responding, start one (yes)? ", (char *)clientData);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 /*
@@ -396,7 +396,7 @@ static char *parseCommandLine(int argc, char **argv)
 #endif /*VMS*/
     	    fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i],
     	    	    cmdLineHelp);
-    	    exit(0);
+    	    exit(EXIT_FAILURE);
     	} else {
 #ifdef VMS
 	    int numFiles, j, oldLength;
@@ -496,7 +496,7 @@ static const char *getUserName(void)
     passwdEntry = getpwuid(getuid());
     if (!passwdEntry) {
        perror("nc: getpwuid() failed ");
-       exit(1);
+       exit(EXIT_FAILURE);
     }
     return passwdEntry->pw_name;
 #endif
@@ -537,7 +537,7 @@ static const char *getHostName(void)
     rc=uname(&nameStruct);
     if (rc<0) {
        perror("nc: uname() failed ");
-       exit(1);
+       exit(EXIT_FAILURE);
     }
     strcpy(hostname, nameStruct.nodename);
     return hostname;
@@ -552,7 +552,7 @@ static void nextArg(int argc, char **argv, int *argIndex)
 #endif /*VMS*/
     	fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex],
     	        cmdLineHelp);
-    	exit(1);
+    	exit(EXIT_FAILURE);
     }
     (*argIndex)++;
 }

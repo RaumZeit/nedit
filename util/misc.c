@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.24 2001/07/25 18:05:44 slobasso Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.25 2001/08/04 20:49:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -536,7 +536,7 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
     	    break;
     	if (parentShell == NULL) {
 	    fprintf(stderr, "failed to find shell\n");
-	    exit(1);
+	    exit(EXIT_FAILURE);
 	}
     	parentShell = XtParent(parentShell);
     }

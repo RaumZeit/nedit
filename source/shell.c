@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.10 2001/06/21 14:54:55 edel Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.11 2001/08/04 20:49:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -896,7 +896,7 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
 
 	/* if we reach here, execl failed */
 	fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
-	exit(1);
+	exit(EXIT_FAILURE);
     }
     
     /* Parent process context, check if fork succeeded */

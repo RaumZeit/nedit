@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.33 2001/05/29 18:21:45 arnef Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.34 2001/08/04 20:49:20 tringali Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2605,7 +2605,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
     /* Close all files and exit when the last one is closed */
     if (CloseAllFilesAndWindows())
-        exit(0);
+        exit(EXIT_SUCCESS);
 }
 
 static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 

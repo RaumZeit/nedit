@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.21 2001/08/02 22:54:29 slobasso Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.22 2001/08/04 20:49:20 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -296,7 +296,7 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 		if (resp == 2)
 	    	    return FALSE;
 		else if (resp == 3)
-	    	    exit(0);
+	    	    exit(EXIT_SUCCESS);
 	    }
 	    /* Test if new file can be created */
 	    if ((fd = creat(fullname, 0666)) == -1) {
