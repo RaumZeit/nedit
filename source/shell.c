@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.34 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.35 2004/09/02 08:49:56 edg Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -42,6 +42,7 @@ static const char CVSID[] = "$Id: shell.c,v 1.34 2004/08/01 10:06:11 yooden Exp 
 #include "interpret.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "menu.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -386,10 +387,11 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
 	flags |= OUTPUT_TO_DIALOG;
     	left = right = 0;
     } else if (output == TO_NEW_WINDOW) {
-    	EditNewFile(inWindow, NULL, False, NULL, window->path);
+    	EditNewFile(GetPrefOpenInTab()?inWindow:NULL, NULL, False, NULL, window->path);
     	outWidget = WindowList->textArea;
 	inWindow = WindowList;
     	left = right = 0;
+	CheckCloseDim();
     } else { /* TO_SAME_WINDOW */
     	outWidget = window->lastFocus;
     	if (outputReplacesInput && input != FROM_NONE) {

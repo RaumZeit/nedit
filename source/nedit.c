@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.82 2004/08/20 19:33:20 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.83 2004/09/02 08:49:56 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -741,6 +741,7 @@ int main(int argc, char **argv)
     if (!fileSpecified) {
     	EditNewFile(NULL, geometry, iconic, langMode, NULL);
 	ReadMacroInitFile(WindowList);
+	CheckCloseDim();
 	if (toDoCommand != NULL)
 	    DoMacro(WindowList, toDoCommand, "-do macro");
     }
