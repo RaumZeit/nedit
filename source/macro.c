@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.46 2002/07/29 03:51:47 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.47 2002/08/01 00:53:46 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2293,11 +2293,13 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Built-in macro subroutine for replacing all occurences of a search string in
 ** a string with a replacement string.  Arguments are $1: string to search in,
-** $2: string to search for, $3: replacement string. Argument $4 is an optional
-** search type: one of "literal", "case" or "regex" (default is "literal").
+** $2: string to search for, $3: replacement string. Also takes an optional
+** search type: one of "literal", "case" or "regex" (default is "literal"), and
+** an optional "copy" argument.
 **
-** Returns a new string with all of the replacements done, or an empty string
-** ("") if no occurences were found.
+** Returns a new string with all of the replacements done.  If no replacements
+** were performed and "copy" was specified, returns a copy of the original
+** string.  Otherwise returns an empty string ("").
 */
 static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
@@ -2305,7 +2307,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     char stringStorage[3][25], *string, *searchStr, *replaceStr;
     char *argStr, *replacedStr;
     int searchType = SEARCH_LITERAL, copyStart, copyEnd;
-    int replacedLen, replaceEnd;
+    int replacedLen, replaceEnd, force=False, i;
     
     /* Validate arguments and convert to proper types */
     if (nArgs < 3 || nArgs > 5)
@@ -2316,12 +2318,18 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     if (!readStringArg(argList[2], &replaceStr, stringStorage[2], errMsg))
     	return False;
-    if (nArgs == 4) {
-	if (!readStringArg(argList[3], &argStr, stringStorage[2], errMsg))
+    for (i = 3; i < nArgs; i++) {
+        /* Read the optional search type and force arguments */
+	if (!readStringArg(argList[i], &argStr, stringStorage[2], errMsg))
     	    return False;
 	if (!StringToSearchType(argStr, &searchType)) {
-    	    *errMsg = "unrecognized argument to %s";
-    	    return False;
+            /* It's not a search type.  is it "copy"? */
+            if (!strcmp(argStr, "copy")) {
+                force = True;
+            } else {
+    	        *errMsg = "unrecognized argument to %s";
+    	        return False;
+            }
     	}
     }
     
@@ -2332,8 +2340,13 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Return the results */
     result->tag = STRING_TAG;
     if (replacedStr == NULL) {
-    	result->val.str = AllocString(1);
-	result->val.str[0] = '\0';
+        if (force) {
+            /* Just copy the original DataValue */
+            result->val.str = argList[0].val.str;
+        } else {
+    	    result->val.str = AllocString(1);
+	    result->val.str[0] = '\0';
+        }
     } else {
 	replaceEnd = copyStart + replacedLen;
 	result->val.str = AllocString(replaceEnd + strlen(&string[copyEnd])+1);

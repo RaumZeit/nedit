@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 28, 2002 (Do NOT edit!)
+                 Generated on Jul 31, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -2321,13 +2321,15 @@ static char * htxt_macro_subrs [] = {
 "$read_status, and the contents of the file as a string in the subroutine ",
 "return value. On failure, returns the empty string \"\" and an 0 $read_status. ",
 "\n\n",
-"\01A\01Breplace_in_string( string, search_for, replace_with [, type] )\01A  \n",
+"\01A\01Breplace_in_string( string, search_for, replace_with [, type, \"copy\"] )\01A  \n",
 "\01IReplaces all occurrences of a search string in a string with a replacement ",
 "string. Arguments are 1: string to search in, 2: string to search for, 3: ",
-"replacement string. Argument 4 is an optional search type, one of \"literal\", ",
-"\"case\", \"word\", \"caseWord\", \"regex\", or \"regexNoCase\".  The default search ",
-"type is \"literal\".  Returns a new string with all of the replacements done, ",
-"or an empty string (\"\") if no occurrences were found. ",
+"replacement string.  There are two optional arguments.  One is a search type, ",
+"either \"literal\", \"case\", \"word\", \"caseWord\", \"regex\", or \"regexNoCase\".  ",
+"The default search type is \"literal\".  If the optional \"copy\" argument is ",
+"specified, a copy of the input string is returned when no replacements were ",
+"performed.  By default an empty string (\"\") will be returned in this case. ",
+"Returns a new string with all of the replacements done. ",
 "\n\n",
 "\01A\01Breplace_range( start, end, string )\01A  \n",
 "\01IReplaces all of the text in the current window between two positions. ",
@@ -4963,4 +4965,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jul 28, 2002\n";
+static const char * NEditVersion = "NEdit release of Jul 31, 2002\n";
