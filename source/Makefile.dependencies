@@ -1,33 +1,40 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.15 2002/01/05 16:45:25 amai Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.16 2002/03/15 14:38:54 amai Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h ../util/utils.h textBuf.h \
  text.h nedit.h window.h preferences.h undo.h menu.h file.h tags.h
 help.o: help.c ../util/misc.h ../util/DialogF.h ../util/system.h \
- textBuf.h text.h textSel.h nedit.h search.h window.h preferences.h \
- help.h file.h help_data.h help_topic.h
+ textBuf.h text.h textDisp.h textP.h textSel.h nedit.h search.h \
+ window.h preferences.h help.h help_topic.h help_data.h file.h \
+ highlight.h
 highlight.o: highlight.c ../util/misc.h ../util/DialogF.h textBuf.h \
  textDisp.h text.h textP.h nedit.h regularExp.h highlight.h \
  highlightData.h preferences.h window.h
 highlightData.o: highlightData.c ../util/misc.h ../util/DialogF.h \
  ../util/managedList.h textBuf.h nedit.h highlight.h regularExp.h \
- preferences.h help.h help_topic.h window.h regexConvert.h highlightData.h
+ preferences.h help.h help_topic.h window.h regexConvert.h \
+ highlightData.h
 interpret.o: interpret.c textBuf.h nedit.h menu.h text.h rbTree.h \
  interpret.h
-macro.o: macro.c ../util/DialogF.h ../util/misc.h textBuf.h text.h \
- nedit.h window.h macro.h preferences.h rbTree.h interpret.h parse.h \
- search.h shell.h smartIndent.h userCmds.h selection.h ../util/utils.h
+linkdate.o: linkdate.c
+macro.o: macro.c ../util/DialogF.h ../util/misc.h ../util/utils.h \
+ textBuf.h text.h nedit.h window.h macro.h preferences.h rbTree.h \
+ interpret.h parse.h search.h shell.h smartIndent.h userCmds.h \
+ selection.h
 menu.o: menu.c ../util/getfiles.h ../util/DialogF.h ../util/misc.h \
- ../util/fileUtils.h textBuf.h text.h nedit.h file.h menu.h window.h \
- search.h selection.h undo.h shift.h help.h help_topic.h preferences.h tags.h \
- userCmds.h shell.h macro.h highlight.h highlightData.h rbTree.h \
- interpret.h smartIndent.h ../util/utils.h windowTitle.h
+ ../util/fileUtils.h ../util/utils.h textBuf.h text.h nedit.h file.h \
+ menu.h window.h search.h selection.h undo.h shift.h help.h \
+ help_topic.h preferences.h tags.h userCmds.h shell.h macro.h \
+ highlight.h highlightData.h rbTree.h interpret.h smartIndent.h \
+ windowTitle.h
 nc.o: nc.c ../util/fileUtils.h ../util/utils.h ../util/prefFile.h \
- ../util/clearcase.h
-nedit.o: nedit.c textBuf.h nedit.h file.h preferences.h regularExp.h \
- selection.h tags.h menu.h macro.h server.h rbTree.h interpret.h \
- parse.h help.h help_topic.h ../util/misc.h ../util/printUtils.h \
- ../util/fileUtils.h ../util/getfiles.h
+ ../util/clearcase.h ../util/system.h
+nedit.o: nedit.c ../util/misc.h ../util/printUtils.h \
+ ../util/fileUtils.h ../util/getfiles.h textBuf.h nedit.h file.h \
+ preferences.h regularExp.h selection.h tags.h menu.h macro.h server.h \
+ rbTree.h interpret.h parse.h help.h help_topic.h
 parse.o: parse.c textBuf.h nedit.h rbTree.h interpret.h parse.h
+parse_noyacc.o: parse_noyacc.c textBuf.h nedit.h rbTree.h interpret.h \
+ parse.h
 preferences.o: preferences.c ../util/prefFile.h ../util/misc.h \
  ../util/DialogF.h ../util/managedList.h ../util/fontsel.h \
  ../util/clearcase.h textBuf.h nedit.h text.h search.h preferences.h \
@@ -37,7 +44,8 @@ rbTree.o: rbTree.c rbTree.h
 regexConvert.o: regexConvert.c regexConvert.h
 regularExp.o: regularExp.c regularExp.h
 search.o: search.c ../util/DialogF.h ../util/misc.h regularExp.h \
- textBuf.h text.h nedit.h search.h window.h preferences.h
+ textBuf.h text.h nedit.h search.h window.h preferences.h file.h \
+ highlight.h
 selection.o: selection.c ../util/DialogF.h ../util/fileUtils.h \
  textBuf.h text.h nedit.h selection.h file.h window.h menu.h
 server.o: server.c ../util/fileUtils.h ../util/utils.h textBuf.h \
@@ -52,8 +60,8 @@ smartIndent.o: smartIndent.c ../util/DialogF.h ../util/misc.h \
  textBuf.h nedit.h text.h preferences.h rbTree.h interpret.h macro.h \
  window.h parse.h shift.h help.h help_topic.h smartIndent.h
 tags.o: tags.c ../util/DialogF.h ../util/fileUtils.h ../util/misc.h \
- textBuf.h text.h nedit.h window.h file.h preferences.h search.h \
- selection.h tags.h ../util/utils.h
+ ../util/utils.h textBuf.h text.h nedit.h window.h file.h \
+ preferences.h search.h selection.h tags.h
 text.o: text.c textBuf.h textDisp.h textP.h text.h textSel.h \
  textDrag.h
 textBuf.o: textBuf.c textBuf.h
@@ -65,11 +73,11 @@ undo.o: undo.c textBuf.h text.h nedit.h undo.h search.h window.h \
 userCmds.o: userCmds.c ../util/DialogF.h ../util/misc.h \
  ../util/managedList.h textBuf.h text.h nedit.h preferences.h window.h \
  menu.h shell.h macro.h file.h rbTree.h interpret.h parse.h userCmds.h
-window.o: window.c ../util/DialogF.h ../util/misc.h textBuf.h \
- textSel.h text.h textDisp.h textP.h nedit.h window.h menu.h file.h \
- search.h undo.h preferences.h selection.h shell.h macro.h highlight.h \
- smartIndent.h userCmds.h nedit.bm n.bm ../util/utils.h \
- ../util/clearcase.h windowTitle.h tags.h
+window.o: window.c ../util/clearcase.h ../util/DialogF.h \
+ ../util/misc.h ../util/utils.h textBuf.h textSel.h text.h textDisp.h \
+ textP.h nedit.h window.h menu.h file.h search.h undo.h preferences.h \
+ selection.h shell.h macro.h highlight.h smartIndent.h userCmds.h \
+ nedit.bm n.bm windowTitle.h
 windowTitle.o: windowTitle.c ../util/prefFile.h ../util/misc.h \
  ../util/DialogF.h ../util/utils.h ../util/fileUtils.h \
  ../util/clearcase.h textBuf.h nedit.h windowTitle.h preferences.h \
