@@ -2,30 +2,29 @@
  *
  * ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- * 
+ *
  * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
  * License.
- * 
- * The Original Code is the Microline Widget Library, originally made available
- * under the NPL by Neuron Data <http://www.neurondata.com>.
- * 
+ *
+ * The Original Code is the Microline Widget Library, originally made available under the NPL by Neuron Data <http://www.neurondata.com>.
+ *
  * The Initial Developer of the Original Code is
  * Netscape Communications Corporation.
  * Portions created by the Initial Developer are Copyright (C) 1998
  * the Initial Developer. All Rights Reserved.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
- * either of the GNU General Public License Version 2 or later (the "GPL"),
- * or the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
  * in which case the provisions of the GPL or the LGPL are applicable instead
  * of those above. If you wish to allow use of your version of this file only
  * under the terms of either the GPL or the LGPL, and not to allow others to
@@ -34,7 +33,17 @@
  * and other provisions required by the GPL or the LGPL. If you do not delete
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
- * 
+ *
+ * In addition, as a special exception to the GNU GPL, the copyright holders
+ * give permission to link the code of this program with the Motif and Open
+ * Motif libraries (or with modified versions of these that use the same
+ * license), and distribute linked combinations including the two. You
+ * must obey the GNU General Public License in all respects for all of
+ * the code used other than linking with Motif/Open Motif. If you modify
+ * this file, you may extend this exception to your version of the file,
+ * but you are not obligated to do so. If you do not wish to do so,
+ * delete this exception statement from your version.
+ *
  * ***** END LICENSE BLOCK ***** */
 
 #include "FolderP.h"
@@ -230,12 +239,6 @@ static XtResource resources[] =
 		XmRDimension, sizeof(Dimension),
 		XtOffset(XmLFolderWidget, folder.marginWidth),
 		XmRImmediate, (XtPointer)0,
-		},
-		{
-		XmNmaxTabWidth, XmCmaxTabWidth,
-		XmRDimension, sizeof(Dimension),
-		XtOffset(XmLFolderWidget, folder.maxTabWidth),
-		XmRImmediate, (XtPointer)100,
 		},
 		{
 		XmNpixmapMargin, XmCPixmapMargin,
@@ -846,8 +849,6 @@ LayoutTopBottom(XmLFolderWidget f,
   Dimension width, minWidth, borderWidth;
   Dimension co;
   int st, ht;
-  int tabFit = 0, tgtTabWidth = 0;
-  int tabPaddingWidth, tailSpace = 0;
   Boolean map, isManaged;
   struct
   {
@@ -875,58 +876,13 @@ LayoutTopBottom(XmLFolderWidget f,
   rowNum = 0;
   tabNum = 0;
   minWidth = 0;
-
-  if (f->folder.tabCount && f->folder.resizePolicy == XmRESIZE_PACK)
-    {
-      int maxTabWidth = f->folder.maxTabWidth;
-      int tabEffCount = 0;
-
-      for (i = 0; i < f->folder.tabCount; i++)
-	{
-	  tab = f->folder.tabs[i];
-	  if (!XtIsManaged(tab))
-            continue;
-	  tabEffCount++;
-	}
-	
-      tabPaddingWidth = (st + co + f->folder.marginWidth + ht +
-	      f->folder.tabs[0]->core.border_width) * 2;
-      if (maxTabWidth * tabEffCount > f->core.width)
-        {
-      	  tgtTabWidth = f->core.width/tabEffCount - tabPaddingWidth;
-	  tailSpace = f->core.width % tabEffCount;
-	  tabFit = 1;
-	}
-      else
-        {
-      	  tgtTabWidth = maxTabWidth - tabPaddingWidth;
-	  tabFit = 0;
-	}
-    }
-  
   for (i = 0; i < f->folder.tabCount; i++)
     {
       tab = f->folder.tabs[i];
       if (!XtIsManaged(tab))
 	continue;
-
-      if (f->folder.resizePolicy == XmRESIZE_PACK)
-        {
-	  if (tabFit)
-            {
-	      XtVaSetValues(tab, XmNwidth,
-      		      tailSpace? tgtTabWidth+1: tgtTabWidth, NULL);
-	      if (tailSpace)
-	      	 tailSpace--;
-            }
-	  else 
-	    {
-	       XtVaSetValues(tab, XmNwidth, tgtTabWidth, NULL);
-	    }
-	}
-
       fc = (XmLFolderConstraintRec *)(tab->core.constraints);
-      
+
       /* check for start of a new row */
       fc->folder.firstInRow = False;
       if (!tabNum)
@@ -1756,7 +1712,7 @@ DrawManagerShadowTopBottom(XmLFolderWidget f,
   Window win;
   XmLFolderConstraintRec *fc;
   XSegment *topSeg, *botSeg;
-  int i, bCount, tCount, st, botOff, isManaged;
+  int i, bCount, tCount, st, botOff;
 
   dpy = XtDisplay(f);
   win = XtWindow(f);
@@ -1815,28 +1771,6 @@ DrawManagerShadowTopBottom(XmLFolderWidget f,
       SetGC(f, GC_UNSET);
     }
 
-  /* see if there's any composite widgets in the folder */
-  isManaged = 0;
-  for (i = 0; i < f->composite.num_children; i++) 
-    {
-      Widget child = f->composite.children[i];
-      if (!XtIsSubclass(child, xmPrimitiveWidgetClass) && XtIsManaged(child))
-        {
-	  isManaged = 1;
-	  break;
-	}
-      	
-    }
-
-  /* no need to draw shadow for the manager area if
-     there isn't any composite widgets in the folder */
-  if (!isManaged)
-    {
-      free((char *)topSeg);
-      free((char *)botSeg);
-      return;
-    }
-    
   /* left shadow */
   tCount = 0;
   for (i = 0; i < st; i++)
@@ -3489,7 +3423,6 @@ CvtStringToFolderResizePolicy(Display *dpy,
     { "RESIZE_NONE", XmRESIZE_NONE },
     { "RESIZE_STATIC", XmRESIZE_STATIC },
     { "RESIZE_DYNAMIC", XmRESIZE_DYNAMIC },
-    { "RESIZE_PACK", XmRESIZE_PACK },
     { 0, 0 },
   };
 
@@ -3650,7 +3583,7 @@ XmLFolderAddBitmapTab(Widget w,
 					 f->folder.inactiveBg, depth);
   sprintf(name, "tab%d", f->folder.tabCount);
   tab = XtVaCreateManagedWidget(name,
-				f->folder.tabWidgetClass, w,
+				xmDrawnButtonWidgetClass, w,
 				XmNfontList, f->folder.fontList,
 				XmNmarginWidth, 0,
 				XmNmarginHeight, 0,
@@ -3706,7 +3639,7 @@ XmLFolderAddTab(Widget w,
   f = (XmLFolderWidget)w;
   sprintf(name, "tab%d", f->folder.tabCount);
   tab = XtVaCreateManagedWidget(name,
-				f->folder.tabWidgetClass, w,
+				xmDrawnButtonWidgetClass, w,
 				XmNfontList, f->folder.fontList,
 				XmNmarginWidth, 0,
 				XmNmarginHeight, 0,
