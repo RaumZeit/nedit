@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.27 2002/07/27 08:55:06 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.28 2002/08/22 18:43:46 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1935,9 +1935,9 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems,
     for (i=0; i<nItems; i++) {
     	f = menuItems[i];
     	generateAcceleratorString(accStr, f->modifiers, f->keysym);
-    	length += strlen(f->name);
+    	length += strlen(f->name) * 2; /* allow for \n & \\ expansions */
     	length += strlen(accStr);
-    	length += strlen(f->cmd) * 4;	/* allow for \n & \\ expansions */
+    	length += strlen(f->cmd) * 6;	/* allow for \n & \\ expansions */
     	length += 21;			/* number of characters added below */
     }
     length++;				/* terminating null */
@@ -1951,8 +1951,17 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems,
     	f = menuItems[i];
     	generateAcceleratorString(accStr, f->modifiers, f->keysym);
     	*outPtr++ = '\t';
-    	strcpy(outPtr, f->name);
-    	outPtr += strlen(f->name);
+    	for (c=f->name; *c!='\0'; ++c) { /* Copy the command name */
+    	    if (*c == '\\') {            /* changing backslashes to \\ */
+    	    	*outPtr++ = '\\';
+ 	    	*outPtr++ = '\\';
+ 	    } else if (*c == '\n') { /* changing newlines to \n */
+ 	    	*outPtr++ = '\\';
+ 	    	*outPtr++ = 'n';
+ 	    } else {
+ 	    	*outPtr++ = *c;
+            }
+    	}
     	*outPtr++ = ':';
     	strcpy(outPtr, accStr);
     	outPtr += strlen(accStr);
