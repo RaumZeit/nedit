@@ -304,7 +304,21 @@ void SelectNumberedLine(WindowInfo *window, int lineNum)
     }
     
     /* highlight the line */
-    BufSelect(window->buffer, lineStart, lineEnd+1);
+    if (i>lineNum) {
+	/* Line was found */
+	if (lineEnd < window->buffer->length) {
+	    BufSelect(window->buffer, lineStart, lineEnd+1);
+	} else { 
+	    /* Don't select past the end of the buffer ! */
+	    BufSelect(window->buffer, lineStart, window->buffer->length);
+	}
+    } else {
+	/* Line was not found -> position the selection & cursor at the end 
+	   without making a real selection and beep */
+	lineStart = window->buffer->length;
+	BufSelect(window->buffer, lineStart, lineStart);
+	XBell(TheDisplay, 0);
+    }     
     MakeSelectionVisible(window, window->lastFocus);
     TextSetCursorPos(window->lastFocus, lineStart);
 }
