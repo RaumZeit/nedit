@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.9 2001/03/05 19:26:31 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.10 2001/03/06 01:00:01 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -860,9 +860,6 @@ static void freeSymbolTable(Symbol *symTab)
     *StackP++ = dataVal;
 
 #define PEEK(dataVal, peekIndex) \
-    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
-        return(execError(StackUnderflowMsg, NULL)); \
-    } \
     dataVal = *(StackP - peekIndex - 1);
 
 #define POP_INT(number) \
@@ -890,9 +887,6 @@ static void freeSymbolTable(Symbol *symTab)
         return(execError("can't convert array to string", NULL));
    
 #define PEEK_STRING(string, peekIndex) \
-    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
-        return(execError(StackUnderflowMsg, NULL)); \
-    } \
     if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
         string = AllocString(21); \
         sprintf(string, "%d", (StackP - peekIndex - 1)->val.n); \
@@ -905,9 +899,6 @@ static void freeSymbolTable(Symbol *symTab)
     }
 
 #define PEEK_INT(number, peekIndex) \
-    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
-        return(execError(StackUnderflowMsg, NULL)); \
-    } \
     if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
         if (!stringToNum((StackP - peekIndex - 1)->val.str, &number)) { \
     	    return execError(StringToNumberMsg, ""); \

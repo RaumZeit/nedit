@@ -21,12 +21,12 @@
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) *((int *)(from)) = (to) - (Inst *)(from)
+#define SET_BR_OFF(from, to) *((int *)(from)) = ((Inst *)(to)) - ((Inst *)(from))
 
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.11 2001/03/05 19:26:31 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.12 2001/03/06 01:00:01 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
