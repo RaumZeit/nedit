@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.13 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.14 2001/07/29 17:51:49 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -908,13 +908,13 @@ static void freePatterns(highlightDataRec *patterns)
     
     for (i=0; patterns[i].style!=0; i++) {
     	if (patterns[i].startRE != NULL)
-    	    XtFree((char *)patterns[i].startRE);
+    	    free((char *)patterns[i].startRE);
     	if (patterns[i].endRE != NULL)
-    	    XtFree((char *)patterns[i].endRE);
+    	    free((char *)patterns[i].endRE);
     	if (patterns[i].errorRE != NULL)
     	    XtFree((char *)patterns[i].errorRE);
     	if (patterns[i].subPatternRE != NULL)
-    	    XtFree((char *)patterns[i].subPatternRE);
+    	    free((char *)patterns[i].subPatternRE);
     }
     for (i=0; patterns[i].style!=0; i++)
     	if (patterns[i].subPatterns != NULL)
