@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.98 2004/01/13 14:46:26 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.99 2004/01/13 15:49:30 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -205,7 +205,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 #endif
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
-    int x, y, bitmask;
+    int x = 0, y = 0, bitmask;
     static Atom wmpAtom, syAtom = 0;
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
