@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.90 2003/12/26 10:14:25 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.91 2003/12/28 17:25:32 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -525,11 +525,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     window->bufferTabBar = XtVaCreateManagedWidget("tabBar", 
        	    xmlFolderWidgetClass, tabForm,
-    	    XmNinactiveBackground, AllocateColor(tabForm, "#909090"),
 	    XmNresizePolicy, XmRESIZE_PACK,
-	    XmNmaxTabWidth, 150,
-	    XmNhighlightThickness, 0,
-	    XmNshadowThickness, 1,
 	    XmNleftAttachment, XmATTACH_FORM,
             XmNleftOffset, 1,
 	    XmNrightAttachment, XmATTACH_WIDGET,
@@ -538,7 +534,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, 0,
             XmNtopAttachment, XmATTACH_FORM,
-	    XmNtraversalOn, False,
 	    NULL);
 
     /* create an unmanaged composite widget to get the folder
