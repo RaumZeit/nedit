@@ -1,4 +1,4 @@
-/* $Id: help.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: help.h,v 1.4 2001/08/18 12:24:59 amai Exp $ */
 enum HelpTopic {HELP_VERSION, HELP_START, HELP_SEARCH, HELP_SELECT,
 	HELP_CLIPBOARD, HELP_INDENT, HELP_TABS, HELP_PROGRAMMER, HELP_TAGS,
 	HELP_MOUSE, HELP_KEYBOARD, HELP_FILL, HELP_FORMAT, HELP_SYNTAX,
@@ -11,3 +11,4 @@ enum HelpTopic {HELP_VERSION, HELP_START, HELP_SEARCH, HELP_SELECT,
 #define NUM_TOPICS 37
 
 void Help(Widget parent, enum HelpTopic topic);
+void PrintVersion(void);

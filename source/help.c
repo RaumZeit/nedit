@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.49 2001/08/18 11:48:37 jlous Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.50 2001/08/18 12:24:59 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -25,6 +25,8 @@ static const char CVSID[] = "$Id: help.c,v 1.49 2001/08/18 11:48:37 jlous Exp $"
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#include <stdlib.h>
 #include <stdio.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -4619,6 +4621,7 @@ void Help(Widget parent, enum HelpTopic topic)
     	HelpWindows[topic] = createHelpPanel(parent, topic);
 }
 
+
 static Widget createHelpPanel(Widget parent, int topic)
 {
     Arg al[50];
@@ -4751,6 +4754,7 @@ static Widget createHelpPanel(Widget parent, int topic)
     return appShell;
 }
 
+
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int topic;
@@ -4763,6 +4767,7 @@ static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
     XtDestroyWidget(HelpWindows[topic]);
     HelpWindows[topic] = NULL;
 }
+
 
 static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -4783,6 +4788,7 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
     searchHelpText(HelpWindows[topic], topic, promptText, response == 2, 0, 0);
 }
 
+
 static void searchHelpAgainCB(Widget w, XtPointer clientData,
 	XtPointer callData)
 {
@@ -4793,6 +4799,7 @@ static void searchHelpAgainCB(Widget w, XtPointer clientData,
     searchHelpText(HelpWindows[topic], topic, LastSearchString,
 	    LastSearchWasAllTopics, LastSearchPos, LastSearchTopic);
 }
+
 
 static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -4806,6 +4813,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData)
     PrintString(helpString, helpStringLen, HelpWindows[topic],
 	    HelpTitles[topic]);
 }
+
 
 static void searchHelpText(Widget parent, int parentTopic, const char *searchFor,
 	int allSections, int startPos, int startTopic)
@@ -4854,6 +4862,7 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
     LastSearchWasAllTopics = allSections;
 }
 
+
 static int findTopicFromShellWidget(Widget shellWidget)
 {
     int i;
@@ -4862,4 +4871,30 @@ static int findTopicFromShellWidget(Widget shellWidget)
 	if (shellWidget == HelpWindows[i])
 	    return i;
     return -1;
+}
+
+
+/* Print version info to stdout */
+void PrintVersion(void) {
+
+    int topic=HELP_VERSION;
+    char *text;
+  
+    /* amai: This function may be called before the Motif part
+             is being initialized. The following, public interface
+             is known to initialize at least xmUseVersion ! */
+    XmRegisterConverters();
+
+    text = (char *)malloc(strlen(HelpText[topic]) + 1024);
+    if (text==NULL) {
+       fputs("nedit: memory corrupted!\n", stderr);
+       exit(EXIT_FAILURE);
+    }
+    sprintf(text, HelpText[topic], 
+                  COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+                  __DATE__, __TIME__,
+                XmVersion, XmVERSION_STRING,
+                xmUseVersion);
+    puts(text);
+    free(text);
 }

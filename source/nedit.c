@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.18 2001/08/18 12:24:59 amai Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -50,10 +50,6 @@ static const char CVSID[] = "$Id: nedit.c,v 1.17 2001/08/14 08:37:16 jlous Exp $
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include "../util/misc.h"
-#include "../util/printUtils.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "file.h"
@@ -67,15 +63,21 @@ static const char CVSID[] = "$Id: nedit.c,v 1.17 2001/08/14 08:37:16 jlous Exp $
 #include "rbTree.h"
 #include "interpret.h"
 #include "parse.h"
+#include "help.h"
+#include "../util/misc.h"
+#include "../util/printUtils.h"
+#include "../util/fileUtils.h"
+#include "../util/getfiles.h"
+
 
 static void nextArg(int argc, char **argv, int *argIndex);
-static int checkDoMacroArg(char *macro);
-void maskArgvKeywords(int argc, char **argv, char **maskArgs);
-void unmaskArgvKeywords(int argc, char **argv, char **maskArgs);
+static int checkDoMacroArg(const char *macro);
+static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
+static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 
 WindowInfo *WindowList = NULL;
-Display *TheDisplay;
-char *ArgV0;
+Display *TheDisplay = NULL;
+char *ArgV0 = NULL;
 Boolean IsServer = False;
 
 #define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-12-*-*-*-*-iso8859-*"
@@ -254,7 +256,7 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     0
 };
 
-static char cmdLineHelp[] =
+static const char cmdLineHelp[] =
 #ifndef VMS
 "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
 	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
@@ -277,9 +279,9 @@ int main(int argc, char **argv)
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
     XrmDatabase prefDB;
-    static char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g",
-	    "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw",
-	    "-title", NULL};
+    static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry",
+            "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth",
+	    "-bw", "-title", NULL};
     
     /* Save the command which was used to invoke nedit for restart command */
     ArgV0 = argv[0];
@@ -414,7 +416,10 @@ int main(int argc, char **argv)
     	    langMode = argv[i];
 	} else if (!strcmp(argv[i], "-import")) {
 	    nextArg(argc, argv, &i); /* already processed, skip */
-    	} else if (*argv[i] == '-') {
+	} else if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version")) {
+	    PrintVersion();
+	    exit(EXIT_SUCCESS);
+	} else if (*argv[i] == '-') {
 #ifdef VMS
 	    *argv[i] = '/';
 #endif /*VMS*/
@@ -508,7 +513,7 @@ static void nextArg(int argc, char **argv, int *argIndex)
 /*
 ** Return True if -do macro is valid, otherwise write an error on stderr
 */
-static int checkDoMacroArg(char *macro)
+static int checkDoMacroArg(const char *macro)
 {
     Program *prog;
     char *errMsg, *stoppedAt, *tMacro;
@@ -541,17 +546,21 @@ static int checkDoMacroArg(char *macro)
 ** it from consuming arguments which are meant to apply per-window, like
 ** -geometry and -iconic.
 */
-void maskArgvKeywords(int argc, char **argv, char **maskArgs)
+static void maskArgvKeywords(int argc, char **argv, const char **maskArgs)
 {
     int i, k;
+
     for (i=1; i<argc; i++)
 	for (k=0; maskArgs[k]!=NULL; k++)
 	    if (!strcmp(argv[i], maskArgs[k]))
     		argv[i][0] = ' ';
 }
-void unmaskArgvKeywords(int argc, char **argv, char **maskArgs)
+
+
+static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
 {
     int i, k;
+
     for (i=1; i<argc; i++)
 	for (k=0; maskArgs[k]!=NULL; k++)
 	    if (argv[i][0]==' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
