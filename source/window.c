@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.65 2002/08/22 08:05:26 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.66 2002/08/22 08:10:37 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1467,14 +1467,14 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
     int lastChar = TextLastVisiblePos(textPane);
     int targetLineNum;
     Dimension width;
-    
+
     /* find out where the selection is */
     if (!BufGetSelectionPos(window->buffer, &left, &right, &isRect,
             &rectStart, &rectEnd)) {
         left = right = TextGetCursorPos(textPane);
         isRect = False;
     }
-        
+
     /* Check vertical positioning unless the selection is already shown or
        already covers the display.  If the end of the selection is below
        bottom, scroll it in to view until the end selection is scrollOffset
@@ -1487,9 +1487,9 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
         XtVaGetValues(textPane, textNrows, &rows, NULL);
         scrollOffset = rows/3;
         TextGetScroll(textPane, &topLineNum, &horizOffset);
-        if (right > lastChar) { 
+        if (right > lastChar) {
             /* End of sel. is below bottom of screen */
-            leftLineNum = topLineNum + 
+            leftLineNum = topLineNum +
                     TextDCountLines(textD, topChar, left, False);
             targetLineNum = topLineNum + scrollOffset;
             if (leftLineNum >= targetLineNum) {
@@ -1501,24 +1501,24 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
                 /* Scroll start of selection to the target line */
                 TextSetScroll(textPane, topLineNum+linesToScroll, horizOffset);
             }
-        } else if (left < topChar) { 
+        } else if (left < topChar) {
             /* Start of sel. is above top of screen */
             lastLineNum = topLineNum + rows;
-            rightLineNum = lastLineNum - 
+            rightLineNum = lastLineNum -
                     TextDCountLines(textD, right, lastChar, False);
             targetLineNum = lastLineNum - scrollOffset;
             if (rightLineNum <= targetLineNum) {
                 /* End of sel. is not between bottom & target */
-                linesToScroll = TextDCountLines(textD, left, topChar, False) + 
+                linesToScroll = TextDCountLines(textD, left, topChar, False) +
                         scrollOffset;
                 if (rightLineNum + linesToScroll > targetLineNum)
                     linesToScroll = targetLineNum - rightLineNum;
                 /* Scroll end of selection to the target line */
                 TextSetScroll(textPane, topLineNum-linesToScroll, horizOffset);
-            }            
+            }
         }
     }
-    
+
     /* If either end of the selection off screen horizontally, try to bring it
        in view, by making sure both end-points are visible.  Using only end
        points of a multi-line selection is not a great idea, and disaster for
@@ -1533,13 +1533,13 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
         XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin,
                 NULL);
         if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
-            horizOffset -= 
+            horizOffset -=
                     margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
         else if (rightX > width - margin)
             horizOffset += rightX - (width - margin);
         TextSetScroll(textPane, topLineNum, horizOffset);
     }
-    
+
     /* make sure that the statistics line is up to date */
     UpdateStatsLine(window);
 }
