@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.18 2002/02/13 14:14:27 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.19 2002/02/25 10:32:34 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1531,7 +1531,7 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     		}
     		return ++(*lineNum) <= textD->nVisibleLines-1;
             } else {
-            	posToVisibleLineNum(textD, textD->lastChar-1, lineNum);
+            	posToVisibleLineNum(textD, max(textD->lastChar-1, 0), lineNum);
             	return True;
             }
 	}
