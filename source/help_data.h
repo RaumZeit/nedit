@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Dec 11, 2002 (Do NOT edit!)
+                 Generated on Jan 2, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2002 Mark Edel                                            *
+* Copyright (c) 1999-2003 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -1596,10 +1596,10 @@ static char * htxt_advancedTopics [] = {
 "\n\n",
 "An excellent book on the care and feeding of regular expressions is ",
 "\n\n",
-"\01A          \"Mastering Regular Expressions\"\n",
+"\01A          Mastering Regular Expressions, 2nd Edition\n",
 "          Jeffrey E. F. Friedl\n",
-"          (c) 1997, O'Reilly & Associates\n",
-"          ISBN 1-56592-257-3\n",
+"          2002, O'Reilly & Associates\n",
+"          ISBN 0-596-00289-0\n",
 NULL
 };
 
@@ -5284,4 +5284,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Apr 19, 2002\n";
+static const char * NEditVersion = "NEdit release of Jan  2, 2003\n";

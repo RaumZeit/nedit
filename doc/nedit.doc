@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Apr 19, 2002                                               December 11, 2002
+NEdit release of Jan  2, 2003                                               January 2, 2003
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -1640,10 +1640,10 @@ ADVANCED TOPICS
 
   An excellent book on the care and feeding of regular expressions is 
 
-          "Mastering Regular Expressions"
+          Mastering Regular Expressions, 2nd Edition
           Jeffrey E. F. Friedl
-          (c) 1997, O'Reilly & Associates
-          ISBN 1-56592-257-3
+          2002, O'Reilly & Associates
+          ISBN 0-596-00289-0
 
 ---------------------------
 EXAMPLE REGULAR EXPRESSIONS
@@ -4604,8 +4604,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Apr 19, 2002
-Dec 11, 2002
+NEdit release of Jan  2, 2003
+Jan 2, 2003
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
