@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.72 2003/07/18 15:14:16 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.73 2003/07/27 10:03:22 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -242,6 +242,10 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
 static void listDialogCloseCB(Widget w, XtPointer clientData,
 	XtPointer callData);
 /* T Balinski End */
+#ifdef LESSTIF_VERSION
+static void listDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont);
+#endif /* LESSTIF_VERSION */
 static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -3367,6 +3371,15 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       XmStringFree(s1);
     }
     
+#ifdef LESSTIF_VERSION
+    /* Workaround for Lesstif (e.g. v2.1 r0.93.18) that doesn't handle
+       the escape key for closing the dialog. */
+    XtAddEventHandler(dialog, KeyPressMask, False, listDialogEscCB, 
+            (XtPointer)window);
+    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog), XK_Escape), 0,
+	    True, GrabModeAsync, GrabModeAsync);
+#endif /* LESSTIF_VERSION */
+    
     /* Put up the dialog */
     ManageDialogCenteredOnPointer(dialog);
     
@@ -3483,6 +3496,20 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
     ResumeMacroExecution(window);
 }
 /* T Balinski End */
+
+#ifdef LESSTIF_VERSION
+static void listDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont)
+{
+    if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
+    	return;
+    if (clientData != NULL) {
+        listDialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    }
+    *cont = False;
+}
+#endif /* LESSTIF_VERSION */
+
 
 static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
