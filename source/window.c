@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.20 2001/04/16 23:20:12 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.21 2001/04/17 20:13:38 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -828,8 +828,23 @@ void ShowLineNumbers(WindowInfo *window, int state)
 void SetTabDist(WindowInfo *window, int tabDist)
 {
     if (window->buffer->tabDist != tabDist) {
+        int saveCursorPositions[MAX_PANES + 1];
+        int paneIndex;
+        
         window->ignoreModify = True;
+        
+        for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
+            saveCursorPositions[paneIndex] = 
+                TextGetCursorPos(GetPaneByIndex(window, paneIndex));
+        }
+        
         BufSetTabDistance(window->buffer, tabDist);
+
+        for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
+            TextSetCursorPos(GetPaneByIndex(window, paneIndex),
+                saveCursorPositions[paneIndex]);
+        }
+        
         window->ignoreModify = False;
     }
 }
