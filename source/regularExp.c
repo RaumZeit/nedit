@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.11 2001/09/17 14:06:24 amai Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.12 2002/02/05 20:55:12 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2581,7 +2581,7 @@ int ExecRE (
              *str != '\0' && str != (unsigned char *) end;
               str++) {
 
-            if (*str == prog->match_start) {
+            if (*str == (unsigned char)prog->match_start) {
                if (attempt (prog, str)) {
                   ret_val = 1;
                   break;
@@ -2635,7 +2635,7 @@ int ExecRE (
               str >= (unsigned char *) string;
               str--) {
 
-            if (*str == prog->match_start) {
+            if (*str == (unsigned char)prog->match_start) {
                if (attempt (prog, str)) {
                   ret_val = 1;
                   break;
