@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 18, 2004 (Do NOT edit!)
+                 Generated on Jul 21, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -66,7 +66,7 @@ char *HelpTitles[] = {
     "Client/Server Mode",
     "Crash Recovery",
     "Version",
-    "Distribution Policy",
+    "GNU General Public License",
     "Mailing Lists",
     "Problems/Defects",
     "Tabs Dialog",
@@ -4828,14 +4828,24 @@ static char * htxt_version [] = {
 "software are available from the NEdit web site at http://www.nedit.org. ",
 "\n\n",
 "This program is free software; you can redistribute it and/or ",
-"modify it under the terms of the GNU General Public License ",
+"modify it under the terms of the \01QGNU General Public License\01I ",
 "as published by the Free Software Foundation; either version 2 ",
 "of the License, or (at your option) any later version. ",
+"\n\n",
+"In addition, as a special exception to the GNU GPL, the copyright holders ",
+"give permission to link the code of this program with the Motif and Open ",
+"Motif libraries (or with modified versions of these that use the same ",
+"license), and distribute linked combinations including the two. You must ",
+"obey the GNU General Public License in all respects for all of the code ",
+"used other than linking with Motif/Open Motif. If you modify this file, ",
+"you may extend this exception to your version of the file, but you are ",
+"not obligated to do so. If you do not wish to do so, delete this ",
+"exception statement from your version. ",
 "\n\n",
 "This program is distributed in the hope that it will be useful, ",
 "but WITHOUT ANY WARRANTY; without even the implied warranty of ",
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the ",
-"GNU General Public License in the Help section \"\01QDistribution Policy\01I\" ",
+"GNU General Public License in the Help section \"Distribution Policy\" ",
 "for more details. ",
 NULL
 };
@@ -5465,7 +5475,7 @@ HelpMenu H_M [] =
     { &H_M[41], 1, HELP_RECOVERY,            "recovery",            0, 'a', NULL },
     { &H_M[42], 1, HELP_none,                "separator1",          0, '-', NULL },
     { &H_M[43], 1, HELP_VERSION,             "version",             0, 'V', NULL },
-    { &H_M[44], 1, HELP_DISTRIBUTION,        "distribution",        0, 'D', NULL },
+    { &H_M[44], 1, HELP_DISTRIBUTION,        "distribution",        0, 'G', NULL },
     { &H_M[45], 1, HELP_MAILING_LIST,        "mailing_list",        0, 'L', NULL },
     { &H_M[46], 1, HELP_DEFECTS,             "defects",             0, 'P', NULL },
     { &H_M[47], 1, HELP_TABS_DIALOG,         "tabs_dialog",         9, 'T', NULL },
@@ -5478,4 +5488,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.5DEV\nJul 18, 2004\n";
+static const char * NEditVersion = "NEdit 5.5DEV\nJul 21, 2004\n";

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.66 2004/07/18 22:31:01 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.67 2004/07/21 11:32:07 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -8,8 +8,9 @@ static const char CVSID[] = "$Id: misc.c,v 1.66 2004/07/18 22:31:01 yooden Exp $
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version. In addition, you may distribute version of this program linked to   *
+* Motif or Open Motif. See README for details.                                 *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *

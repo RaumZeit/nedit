@@ -1,7 +1,7 @@
                     NEdit Version 5.5RC1, July 2004
 
-$Id: README,v 1.37 2004/07/08 06:29:42 n8gray Exp $
-	     
+$Id: README,v 1.38 2004/07/21 11:32:04 yooden Exp $
+
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -10,12 +10,32 @@ intensive support for development in a wide variety of languages, text
 processors, and other tools, but at the same time can be used productively by
 just about anyone who needs to edit text.
 
+
+As of version 5.1, NEdit may be freely distributed under the terms of the GNU
+General Public License:
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+In addition, as a special exception to the GNU GPL, the copyright holders give
+permission to link the code of this program with the Motif and Open Motif
+libraries (or with modified versions of these that use the same license), and
+distribute linked combinations including the two. You must obey the GNU General
+Public License in all respects for all of the code used other than linking with
+Motif/Open Motif. If you modify this file, you may extend this exception to your
+version of the file, but you are not obligated to do so. If you do not wish to
+do so, delete this exception statement from your version.
+
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.
-As of version 5.1, NEdit may be freely distributed under the terms of the GNU
-General Public License (see the file COPYRIGHT which is also part of this
-distribution).
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License in the file
+COPYRIGHT as part of this distribution; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
 
 NEdit sources, executables, additional documentation, and contributed software
 are available from the NEdit web site at http://nedit.org.

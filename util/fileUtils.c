@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.31 2003/11/18 12:16:12 edg Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.32 2004/07/21 11:32:07 yooden Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -8,8 +8,9 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.31 2003/11/18 12:16:12 edg Exp
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version. In addition, you may distribute version of this program linked to   *
+* Motif or Open Motif. See README for details.                                 *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *

@@ -1,19 +1,15 @@
-/* $Id: help.h,v 1.11 2003/05/09 17:43:45 edg Exp $ */
-
-#ifndef NEDIT_HELP_H_INCLUDED
-#define NEDIT_HELP_H_INCLUDED
-
+/* $Id: help.h,v 1.12 2004/07/21 11:32:05 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
-* help.h --  Nirvana Editor help display                                       *
-*                                                                              *
+* help.h --  Nirvana Editor Help Display                                       *
 *                                                                              *
 * Copyright (c) 1999-2001 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.                                                                     *
+* version. In addition, you may distribute version of this program linked to   *
+* Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
@@ -30,6 +26,9 @@
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
+
+#ifndef NEDIT_HELP_H_INCLUDED
+#define NEDIT_HELP_H_INCLUDED
 
 #include "help_topic.h"
 

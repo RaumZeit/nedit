@@ -1,12 +1,4 @@
-/* $Id: windowTitle.h,v 1.3 2003/05/09 17:43:48 edg Exp $ */
-
-#ifndef NEDIT_WINDOWTITLE_H_INCLUDED
-#define NEDIT_WINDOWTITLE_H_INCLUDED
-
-#include "nedit.h"
-
-#include <X11/Intrinsic.h>
-
+/* $Id: windowTitle.h,v 1.4 2004/07/21 11:32:07 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * windowTitle.h -- Nirvana Editor window title customization                   *
@@ -16,7 +8,8 @@
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.                                                                     *
+* version. In addition, you may distribute version of this program linked to   *
+* Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
@@ -33,6 +26,14 @@
 * Written by Arne Forlie, http://arne.forlie.com                               *
 *                                                                              *
 *******************************************************************************/
+
+#ifndef NEDIT_WINDOWTITLE_H_INCLUDED
+#define NEDIT_WINDOWTITLE_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+
 char *FormatWindowTitle(const char* filename,
                         const char* path,
                         const char* clearCaseViewTag,

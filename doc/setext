@@ -5,7 +5,7 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #
 # setext.pl -- Structure Enhanced Text Converter (to HTML or simple text)
 # 
-# $Id: setext,v 1.11 2003/11/22 13:03:38 edg Exp $
+# $Id: setext,v 1.12 2004/07/21 11:32:04 yooden Exp $
 # 
 # Copyright (c) 2000 Steven Haehn
 # 
@@ -13,6 +13,16 @@ eval 'exec perl -S $0 ${1+"$@"}'
 # terms of the GNU General Public License as published by the Free Software   
 # Foundation; either version 2 of the License, or (at your option) any later  
 # version.                                                                    
+#
+# In addition, as a special exception to the GNU GPL, the copyright holders
+# give permission to link the code of this program with the Motif and Open
+# Motif libraries (or with modified versions of these that use the same
+# license), and distribute linked combinations including the two. You must
+# obey the GNU General Public License in all respects for all of the code used
+# other than linking with Motif/Open Motif. If you modify this file, you may
+# extend this exception to your version of the file, but you are not obligated
+# to do so. If you do not wish to do so, delete this exception statement from
+# your version.
 #                                                                             
 # This software is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       
@@ -3009,6 +3019,16 @@ sub emit_copyright
     print $stream "* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *\n";
     print $stream "* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *\n";
     print $stream "* for more details.                                                            *\n";
+    print $stream "*                                                                              *\n";
+    print $stream "* In addition, as a special exception to the GNU GPL, the copyright holders    *\n";
+    print $stream "* give permission to link the code of this program with the Motif and Open     *\n";
+    print $stream "* Motif libraries (or with modified versions of these that use the same        *\n";
+    print $stream "* license), and distribute linked combinations including the two. You must     *\n";
+    print $stream "* obey the GNU General Public License in all respects for all of the code used *\n";
+    print $stream "* other than linking with Motif/Open Motif. If you modify this file, you may   *\n";
+    print $stream "* extend this exception to your version of the file, but you are not obligated *\n";
+    print $stream "* to do so. If you do not wish to do so, delete this exception statement from  *\n";
+    print $stream "* your version.                                                                *\n";
     print $stream "*                                                                              *\n";
     print $stream "* You should have received a copy of the GNU General Public License along with *\n";
     print $stream "* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *\n";

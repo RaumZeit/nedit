@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.42 2004/07/08 06:29:43 n8gray Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.43 2004/07/21 11:32:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -8,7 +8,8 @@ static const char CVSID[] = "$Id: nc.c,v 1.42 2004/07/08 06:29:43 n8gray Exp $";
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
+* version. In addition, you may distribute version of this program linked to   *
+* Motif or Open Motif. See README for details.                                 *
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
