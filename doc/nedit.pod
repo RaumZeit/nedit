@@ -1,4 +1,4 @@
-# $Id: nedit.pod,v 1.2 2003/11/22 13:03:38 edg Exp $
+# $Id: nedit.pod,v 1.3 2003/12/09 17:55:58 slobasso Exp $
 =pod
 
 =head1 NAME
@@ -144,9 +144,10 @@ Set the value of an X resource to override a default value.
 =item  B<-svrname> I<name> 
 
 When starting nedit in server mode, name the server, such that it responds to
-requests only when L<nc(1)> is given a corresponding B<-svrname> argument.  By
+requests only when L<nc(1)> is given a corresponding B<-svrname> argument. By
 naming servers, you can run several simultaneously, and direct files and
-commands specifically to any one.
+commands specifically to any one. Specifying a non-empty name automatically
+designates this session as an NEdit server, as though B<-server> were specified.
 
 =item  B<-import> I<file> 
 

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.53 2003/11/26 21:58:28 yooden Exp $
+.. $Id: help.etx,v 1.54 2003/12/09 17:55:58 slobasso Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4604,7 +4604,8 @@ NEdit Command Line
   When starting NEdit in server mode, name the server, such that it responds to
   requests only when nc is given a corresponding -svrname argument.  By naming
   servers, you can run several simultaneously, and direct files and commands
-  specifically to any one.
+  specifically to any one. Specifying a non-empty name automatically designates
+  this session as an NEdit server, as though -server were specified.
 
 **-import file**
   Loads an additional preferences file on top of the existing defaults saved in
