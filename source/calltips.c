@@ -30,6 +30,7 @@
 #endif
 
 #include "text.h"
+#include "textP.h"
 #include "calltips.h"
 
 #include <stdio.h>

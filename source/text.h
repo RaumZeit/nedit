@@ -1,10 +1,7 @@
-/* $Id: text.h,v 1.11 2002/11/08 20:22:45 edg Exp $ */
+/* $Id: text.h,v 1.12 2002/11/13 21:58:44 tringali Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
-
-#include "textP.h"
-#include "textBuf.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
@@ -86,6 +83,9 @@
 
 extern WidgetClass textWidgetClass;
 
+struct _TextClassRec;
+struct _TextRec;
+
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec *TextWidget;
 
@@ -104,9 +104,11 @@ typedef struct {
     char *charsTyped;
 } smartIndentCBStruct;
 
+struct _textBuffer;
+
 /* User callable routines */
-void TextSetBuffer(Widget w, textBuffer *buffer);
-textBuffer *TextGetBuffer(Widget w);
+void TextSetBuffer(Widget w, struct _textBuffer *buffer);
+struct _textBuffer *TextGetBuffer(Widget w);
 int TextLineAndColToPos(Widget w, int lineNum, int column);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
