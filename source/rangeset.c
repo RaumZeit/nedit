@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.6 2003/05/09 17:43:47 edg Exp $ */
+/* $Id: rangeset.c,v 1.7 2003/06/06 18:04:17 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -750,6 +750,7 @@ RangesetTable *RangesetTableAlloc(textBuffer *buffer)
     }
 
     table->n_set = 0;
+    BufAddModifyCB(buffer, RangesetBufModifiedCB, table);
     return table;
 }
 
@@ -757,10 +758,12 @@ RangesetTable *RangesetTableFree(RangesetTable *table)
 {
     int i;
 
-    for (i = 0; i < N_RANGESETS; i++)
-	RangesetEmpty(&table->set[i]);
-    if (table)
+    if (table) {
+	BufRemoveModifyCB(table->buf, RangesetBufModifiedCB, table);
+	for (i = 0; i < N_RANGESETS; i++)
+	    RangesetEmpty(&table->set[i]);
 	XtFree((char *)table);
+    }
     return (RangesetTable *)0;
 }
 
@@ -980,10 +983,9 @@ void RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del)
 void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 	char *deletedText, void *cbArg)
 {
-    textBuffer *buf = (textBuffer *)cbArg;
+    RangesetTable *table = (RangesetTable *)cbArg;
 
-    RangesetTableUpdatePos(buf->rangesetTable, pos,
-			   nInserted, nDeleted);
+    RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
 }
 
 /* -------------------------------------------------------------------------- */

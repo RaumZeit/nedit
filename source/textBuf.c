@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.27 2003/05/02 18:18:45 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.28 2003/06/06 18:04:17 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -132,7 +132,6 @@ static const char *ControlCodeTable[32] = {
 textBuffer *BufCreate(void)
 {
     textBuffer *buf = BufCreatePreallocated(0);
-    BufAddModifyCB(buf, RangesetBufModifiedCB, buf);
     return buf;
 }
 
