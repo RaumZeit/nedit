@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.17 2001/12/05 10:16:42 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.18 2001/12/31 14:34:13 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -79,7 +79,7 @@ static const char cmdLineHelp[] =
 /* Structure to hold X Resource values */
 static struct {
     int autoStart;
-    char serverCmd[MAXPATHLEN];
+    char serverCmd[2*MAXPATHLEN]; /* holds executable name + flags */
     char serverName[MAXPATHLEN];
 } Preferences;
 
@@ -146,9 +146,9 @@ int main(int argc, char **argv)
     }
     commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
     outPtr = commandLine;
-#if defined(VMS)
+#if defined(VMS) || defined(__EMX__)
+    /* Non-Unix shells don't want/need esc */
     for (i=1; i<argc; i++) {
-   /* Non-Unix shells don't want/need esc */
     	for (c=argv[i]; *c!='\0'; c++) {
             *outPtr++ = *c;
     	}
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     *outPtr = '\0';
 #else
     for (i=1; i<argc; i++) {
-        *outPtr++ = '\'';
+    	*outPtr++ = '\'';
     	for (c=argv[i]; *c!='\0'; c++) {
             if (*c == '\'') {
                 *outPtr++ = '\'';
