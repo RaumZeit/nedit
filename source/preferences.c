@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.133 2004/12/23 22:25:45 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.134 2005/01/31 14:34:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3153,6 +3153,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
 static int updateLMList(void)
 {
     WindowInfo *window;
+    int oldLanguageMode;
     char *oldModeName, *newDelimiters;
     int i, j;
     
@@ -3165,6 +3166,7 @@ static int updateLMList(void)
        and update word delimiters */
     for (window=WindowList; window!=NULL; window=window->next) {
 	if (window->languageMode != PLAIN_LANGUAGE_MODE) {
+            oldLanguageMode = window->languageMode;
     	    oldModeName = LanguageModes[window->languageMode]->name;
     	    window->languageMode = PLAIN_LANGUAGE_MODE;
     	    for (i=0; i<LMDialog.nLanguageModes; i++) {
@@ -3177,6 +3179,12 @@ static int updateLMList(void)
     	    	    for (j=0; j<window->nPanes; j++)
     	    	    	XtVaSetValues(window->textPanes[j],
     	    	    	    	textNwordDelimiters, newDelimiters, NULL);
+                    /* don't forget to adapt the LM stored within the user menu cache */
+                    if (window->userMenuCache->umcLanguageMode == oldLanguageMode)
+                        window->userMenuCache->umcLanguageMode = i;
+                    if (window->userBGMenuCache.ubmcLanguageMode == oldLanguageMode)
+                        window->userBGMenuCache.ubmcLanguageMode = i;
+                    /* update the language mode of this window (document) */
     	    	    window->languageMode = i;
     	    	    break;
     		}
@@ -3220,6 +3228,10 @@ static int updateLMList(void)
     	LanguageModes[i] = copyLanguageModeRec(LMDialog.languageModeList[i]);
     NLanguageModes = LMDialog.nLanguageModes;
     
+    /* Update user menu info to update language mode dependencies of
+       user menu items */
+    UpdateUserMenuInfo();
+
     /* Update the menus in the window menu bars and load any needed
         calltips files */
     for (window=WindowList; window!=NULL; window=window->next) {

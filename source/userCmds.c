@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.52 2004/12/23 22:25:46 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.53 2005/01/31 14:34:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1208,6 +1208,26 @@ void SetupUserMenuInfo(void)
     parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
     parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
     parseMenuItemList(BGMenuItems   , NBGMenuItems   , BGMenuInfo   , &BGSubMenus);
+}
+
+/*
+** Cache user menus:
+** Update user menu info to take into account e.g. change of language modes
+** (i.e. add / move / delete of language modes etc).
+*/
+void UpdateUserMenuInfo(void)
+{
+    freeUserMenuInfoList(ShellMenuInfo, NShellMenuItems);
+    freeSubMenuCache(&ShellSubMenus);
+    parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
+
+    freeUserMenuInfoList(MacroMenuInfo, NMacroMenuItems);
+    freeSubMenuCache(&MacroSubMenus);
+    parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
+
+    freeUserMenuInfoList(BGMenuInfo, NBGMenuItems);
+    freeSubMenuCache(&BGSubMenus);
+    parseMenuItemList(BGMenuItems, NBGMenuItems, BGMenuInfo, &BGSubMenus);
 }
 
 /*

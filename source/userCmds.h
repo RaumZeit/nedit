@@ -1,4 +1,4 @@
-/* $Id: userCmds.h,v 1.10 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: userCmds.h,v 1.11 2005/01/31 14:34:24 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * userCmds.h -- Nirvana Editor user commands header file                       *
@@ -53,5 +53,6 @@ void FreeUserMenuCache(UserMenuCache *cache);
 void InitUserBGMenuCache(UserBGMenuCache *cache);
 void FreeUserBGMenuCache(UserBGMenuCache *cache);
 void SetupUserMenuInfo(void);
+void UpdateUserMenuInfo(void);
 
 #endif /* NEDIT_USERCMDS_H_INCLUDED */
