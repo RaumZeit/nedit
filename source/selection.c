@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.23 2002/12/12 17:26:05 slobasso Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.24 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -126,9 +126,8 @@ void GotoLineNumber(WindowInfo *window)
     char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
     int lineNum, column, response;
     
-    response = DialogF(DF_PROMPT, window->shell, 2,
-    		       "Goto Line (and/or Column)  Number:",
-    		       lineNumText, "OK", "Cancel");
+    response = DialogF(DF_PROMPT, window->shell, 2, "Goto Line Number",
+            "Goto Line (and/or Column)  Number:", lineNumText, "OK", "Cancel");
     if (response == 2)
     	return;
 
@@ -423,13 +422,12 @@ void MarkDialog(WindowInfo *window)
     char letterText[DF_MAX_PROMPT_LENGTH], *params[1];
     int response;
     
-    response = DialogF(DF_PROMPT, window->shell, 2,
-"Enter a single letter label to use for recalling\n\
-the current selection and cursor position.\n\
-\n\
-(To skip this dialog, use the accelerator key,\n\
-followed immediately by a letter key (a-z))",
-    		       letterText, "OK", "Cancel");
+    response = DialogF(DF_PROMPT, window->shell, 2, "Mark",
+            "Enter a single letter label to use for recalling\n"
+            "the current selection and cursor position.\n\n"
+            "(To skip this dialog, use the accelerator key,\n"
+            "followed immediately by a letter key (a-z))", letterText, "OK",
+            "Cancel");
     if (response == 2)
     	return;
     if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
@@ -445,13 +443,12 @@ void GotoMarkDialog(WindowInfo *window, int extend)
     char letterText[DF_MAX_PROMPT_LENGTH], *params[2];
     int response;
     
-    response = DialogF(DF_PROMPT, window->shell, 2,
-"Enter the single letter label used to mark\n\
-the selection and/or cursor position.\n\
-\n\
-(To skip this dialog, use the accelerator\n\
-key, followed immediately by the letter)",
-    		       letterText, "OK", "Cancel");
+    response = DialogF(DF_PROMPT, window->shell, 2, "Goto Mark",
+            "Enter the single letter label used to mark\n"
+            "the selection and/or cursor position.\n\n"
+            "(To skip this dialog, use the accelerator\n"
+            "key, followed immediately by the letter)", letterText, "OK",
+            "Cancel");
     if (response == 2)
     	return;
     if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.85 2003/04/06 00:46:06 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.86 2003/04/07 22:51:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1244,16 +1244,15 @@ void SaveNEditPrefs(Widget parent, int quietly)
     {
         /*  GetRCFileName() might return NULL if an error occurs during
             creation of the preference file directory. */
-        DialogF(DF_WARN,
-                parent,
-                1,
+        DialogF(DF_WARN, parent, 1, "Error saving Preferences",
                 "Unable to save preferences: Cannot determine filename.",
                 "Dismiss");
         return;
     }
 
     if (!quietly) {
-        if (DialogF(DF_INF, parent, 2, ImportedFile == NULL ?
+        if (DialogF(DF_INF, parent, 2, "Save imported Settings",
+                ImportedFile == NULL ?
                 "Default preferences will be saved in the file:\n"
                 "%s\n"
                 "NEdit automatically loads this file\n"
@@ -1279,12 +1278,8 @@ void SaveNEditPrefs(Widget parent, int quietly)
     if (!SavePreferences(XtDisplay(parent), prefFileName, HeaderText,
             PrefDescrip, XtNumber(PrefDescrip)))
     {
-        DialogF(DF_WARN,
-                parent,
-                1,
-                "Unable to save preferences in %s",
-                "Dismiss",
-                prefFileName);
+        DialogF(DF_WARN, parent, 1, "Save Preferences",
+                "Unable to save preferences in %s", "Dismiss", prefFileName);
     }
 
 #ifndef VMS
@@ -1677,11 +1672,14 @@ char *GetPrefBacklightCharTypes(void)
 
 void BacklightUseCurrCharTypesAsPref(WindowInfo *window, int quietly)
 {
-    if (!quietly) {
-      if (DialogF(DF_INF, window->shell, 2,
-"The default backlighting specifications will be\n\
-changed to those of the current window.", "OK", "Cancel") == 2)
-          return;
+    if (!quietly)
+    {
+        if (DialogF(DF_INF, window->shell, 2, "Backlighting",
+                "The default backlighting specifications will be\n"
+                "changed to those of the current window.", "OK", "Cancel") == 2)
+        {
+            return;
+        }
     }
     SetPrefBacklightCharTypes(window->backlightCharTypes);
 }
@@ -1942,7 +1940,8 @@ int CheckPrefsChangesSaved(Widget dialogParent)
     if (!PrefsHaveChanged)
         return True;
     
-    resp = DialogF(DF_WARN, dialogParent, 3, ImportedFile == NULL ?
+    resp = DialogF(DF_WARN, dialogParent, 3, "Default Preferences",
+            ImportedFile == NULL ?
             "Default Preferences have changed.\n"
             "Save changes to NEdit preference file?" :
             "Default Preferences have changed.  SAVING \n"
@@ -2319,19 +2318,25 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     stat = GetIntTextWarn(TabDistText, &tabDist, "tab spacing", True);
     if (stat != TEXT_READ_OK)
     	return;
-    if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN) {
-    	DialogF(DF_WARN, TabDistText, 1, "Tab spacing out of range", "Dismiss");
-    	return;
+
+    if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN)
+    {
+        DialogF(DF_WARN, TabDistText, 1, "Tab Spacing",
+                "Tab spacing out of range", "Dismiss");
+        return;
     }
+
     if (emulate) {
 	stat = GetIntTextWarn(EmTabText, &emTabDist, "emulated tab spacing",True);
 	if (stat != TEXT_READ_OK)
 	    return;
-	if (emTabDist <= 0 || tabDist >= 1000) {
-	    DialogF(DF_WARN, EmTabText, 1, "Emulated tab spacing out of range",
-	    	    "Dismiss");
-	    return;
-	}
+
+        if (emTabDist <= 0 || tabDist >= 1000)
+        {
+            DialogF(DF_WARN, EmTabText, 1, "Tab Spacing",
+                    "Emulated tab spacing out of range", "Dismiss");
+            return;
+        }
     } else
     	emTabDist = 0;
     
@@ -2489,10 +2494,14 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 	stat = GetIntTextWarn(WrapText, &margin, "wrap Margin", True);
 	if (stat != TEXT_READ_OK)
     	    return;
-	if (margin <= 0 || margin >= 1000) {
-    	    DialogF(DF_WARN, WrapText, 1, "Wrap margin out of range", "Dismiss");
-    	    return;
-	}
+
+    if (margin <= 0 || margin >= 1000)
+    {
+        DialogF(DF_WARN, WrapText, 1, "Wrap Margin", "Wrap margin out of range",
+                "Dismiss");
+        return;
+    }
+
     }
 
 #ifdef SGI_CUSTOM
@@ -2963,24 +2972,28 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
 	    return True;
     
     /* don't allow deletion if data will be lost */
-    if (LMHasHighlightPatterns(LMDialog.languageModeList[itemIndex]->name)) {
-    	DialogF(DF_WARN, LMDialog.shell, 1,
-"This language mode has syntax highlighting\n\
-patterns defined.  Please delete the patterns\n\
-first, in Preferences -> Default Settings ->\n\
-Syntax Highlighting, before proceeding here.", "Dismiss");
-	return False;
+    if (LMHasHighlightPatterns(LMDialog.languageModeList[itemIndex]->name))
+    {
+        DialogF(DF_WARN, LMDialog.shell, 1, "Patterns exist",
+                "This language mode has syntax highlighting\n"
+                "patterns defined.  Please delete the patterns\n"
+                "first, in Preferences -> Default Settings ->\n"
+                "Syntax Highlighting, before proceeding here.", "Dismiss");
+        return False;
     }
+
     /* don't allow deletion if data will be lost */
-    if (LMHasSmartIndentMacros(LMDialog.languageModeList[itemIndex]->name)) {
-    	DialogF(DF_WARN, LMDialog.shell, 1,
-"This language mode has smart indent macros\n\
-defined.  Please delete the macros first,\n\
-in Preferences -> Default Settings ->\n\
-Auto Indent -> Program Smart Indent,\n\
-before proceeding here.", "Dismiss");
-	return False;
+    if (LMHasSmartIndentMacros(LMDialog.languageModeList[itemIndex]->name))
+    {
+        DialogF(DF_WARN, LMDialog.shell, 1, "Smart Indent Macros exist",
+                "This language mode has smart indent macros\n"
+                "defined.  Please delete the macros first,\n"
+                "in Preferences -> Default Settings ->\n"
+                "Auto Indent -> Program Smart Indent,\n"
+                "before proceeding here.", "Dismiss");
+        return False;
     }
+
     return True;
 }
 
@@ -3120,13 +3133,16 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     
     /* If there are problems, and the user didn't ask for the fields to be
        read, give more warning */
-    if (!explicitRequest) {
-	if (DialogF(DF_WARN, LMDialog.shell, 2,
-    		"Discard incomplete entry\nfor current language mode?", "Keep",
-    		"Discard") == 2) {
-     	    return oldItem == NULL ? NULL :
-     	    	    (void *)copyLanguageModeRec((languageModeRec *)oldItem);
-	}
+    if (!explicitRequest)
+    {
+        if (DialogF(DF_WARN, LMDialog.shell, 2, "Discard Language Mode",
+                "Discard incomplete entry\nfor current language mode?", "Keep",
+                "Discard") == 2)
+        {
+            return oldItem == NULL
+                    ? NULL
+                    : (void *)copyLanguageModeRec((languageModeRec *)oldItem);
+        }
     }
 
     /* Do readLMDialogFields again without "silent" mode to display warning */
@@ -3278,14 +3294,17 @@ static languageModeRec *readLMDialogFields(int silent)
     	XtFree((char *)lm);
     	return NULL;
     }
-    if (*lm->name == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, LMDialog.shell, 1,
-    		    "Please specify a name\nfor the language mode", "Dismiss");
-    	    XmProcessTraversal(LMDialog.nameW, XmTRAVERSE_CURRENT);
-    	}
-    	freeLanguageModeRec(lm);
-   	return NULL;
+
+    if (*lm->name == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, LMDialog.shell, 1, "Language Mode Name",
+                    "Please specify a name\nfor the language mode", "Dismiss");
+            XmProcessTraversal(LMDialog.nameW, XmTRAVERSE_CURRENT);
+        }
+        freeLanguageModeRec(lm);
+        return NULL;
     }
     
     /* read the extension list field */
@@ -3298,19 +3317,24 @@ static languageModeRec *readLMDialogFields(int silent)
     if (*lm->recognitionExpr == '\0') {
     	XtFree(lm->recognitionExpr);
     	lm->recognitionExpr = NULL;
-    } else {
-	compiledRE = CompileRE(lm->recognitionExpr, &compileMsg, REDFLT_STANDARD);
-	if (compiledRE == NULL) {
-   	    if (!silent) {
-   		DialogF(DF_WARN, LMDialog.shell, 1, "Recognition expression:\n%s",
-   	    		"Dismiss", compileMsg);
-     		XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
-	    }
- 	    XtFree((char *)compiledRE);
- 	    freeLanguageModeRec(lm);
- 	    return NULL;    
-	}
-	XtFree((char *)compiledRE);
+    } else
+    {
+        compiledRE = CompileRE(lm->recognitionExpr, &compileMsg, REDFLT_STANDARD);
+
+        if (compiledRE == NULL)
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, LMDialog.shell, 1, "Regex",
+                        "Recognition expression:\n%s", "Dismiss", compileMsg);
+                XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
+            }
+            XtFree((char *)compiledRE);
+            freeLanguageModeRec(lm);
+            return NULL;    
+        }
+
+        XtFree((char *)compiledRE);
     }
     
     /* Read the default calltips file for the language mode */
@@ -3322,11 +3346,12 @@ static languageModeRec *readLMDialogFields(int silent)
     } else {
         /* Ensure that AddTagsFile will work */
         if (AddTagsFile(lm->defTipsFile, TIP) == FALSE) {
-            if (!silent) {
-                DialogF(DF_WARN, LMDialog.shell, 1, "Can't read default "
-                        "calltips file(s):\n  \"%s\"\n", "Dismiss",
-                        lm->defTipsFile);
-     		XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
+            if (!silent)
+            {
+                DialogF(DF_WARN, LMDialog.shell, 1, "Error reading Calltips",
+                        "Can't read default calltips file(s):\n  \"%s\"\n",
+                        "Dismiss", lm->defTipsFile);
+                XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
             freeLanguageModeRec(lm);
             return NULL;
@@ -3345,36 +3370,45 @@ static languageModeRec *readLMDialogFields(int silent)
    	    freeLanguageModeRec(lm);
     	    return NULL;
 	}
-	if (lm->tabDist <= 0 || lm->tabDist > 100) {
-   	    if (!silent) {
-		DialogF(DF_WARN, LMDialog.shell, 1, "Invalid tab spacing: %d",
-	    		"Dismiss", lm->tabDist);
-		XmProcessTraversal(LMDialog.tabW, XmTRAVERSE_CURRENT);
-	    }
-	    freeLanguageModeRec(lm);
-    	    return NULL;
-	}
+
+        if (lm->tabDist <= 0 || lm->tabDist > 100)
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
+                        "Invalid tab spacing: %d", "Dismiss", lm->tabDist);
+                XmProcessTraversal(LMDialog.tabW, XmTRAVERSE_CURRENT);
+            }
+            freeLanguageModeRec(lm);
+            return NULL;
+        }
     }
     
     /* read emulated tab field */
     if (TextWidgetIsBlank(LMDialog.emTabW))
-    	lm->emTabDist = DEFAULT_EM_TAB_DIST;
-    else {
-    	if (GetIntTextWarn(LMDialog.emTabW, &lm->emTabDist,
-    	    	"emulated tab spacing", False) != TEXT_READ_OK) {
-    	    freeLanguageModeRec(lm);
-    	    return NULL;
-	}
-	if (lm->emTabDist < 0 || lm->emTabDist > 100) {
-   	    if (!silent) {
-		DialogF(DF_WARN, LMDialog.shell, 1,
-	    		"Invalid emulated tab spacing: %d", "Dismiss",
-			lm->emTabDist);
-		XmProcessTraversal(LMDialog.emTabW, XmTRAVERSE_CURRENT);
-	    }
-	    freeLanguageModeRec(lm);
-    	    return NULL;
-	}
+    {
+        lm->emTabDist = DEFAULT_EM_TAB_DIST;
+    } else
+    {
+        if (GetIntTextWarn(LMDialog.emTabW, &lm->emTabDist,
+                "emulated tab spacing", False) != TEXT_READ_OK)
+        {
+            freeLanguageModeRec(lm);
+            return NULL;
+        }
+
+        if (lm->emTabDist < 0 || lm->emTabDist > 100)
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
+                        "Invalid emulated tab spacing: %d", "Dismiss",
+                        lm->emTabDist);
+                XmProcessTraversal(LMDialog.emTabW, XmTRAVERSE_CURRENT);
+            }
+            freeLanguageModeRec(lm);
+            return NULL;
+        }
     }
     
     /* read delimiters string */
@@ -4658,17 +4692,20 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
        files.  If the string is not read entirely, there are invalid
        characters, so warn the user if not in silent mode. */
     parsedString = ReadSymbolicField(&stringPtr);
-    if (*stringPtr != '\0') {
-    	if (!silent) {
-    	    *(stringPtr+1) = '\0';
-    	    DialogF(DF_WARN, textW, 1,"Invalid character \"%s\" in %s",
-    	    	    "Dismiss", stringPtr, fieldName);
-    	    XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(string);
-    	if (parsedString != NULL)
-    	    XtFree(parsedString);
-    	return NULL;
+    if (*stringPtr != '\0')
+    {
+        if (!silent)
+        {
+            *(stringPtr + 1) = '\0';
+            DialogF(DF_WARN, textW, 1, "Invalid Character",
+                    "Invalid character \"%s\" in %s", "Dismiss", stringPtr,
+                    fieldName);
+            XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(string);
+        if (parsedString != NULL)
+        XtFree(parsedString);
+        return NULL;
     }
     XtFree(string);
     if (parsedString == NULL) {
@@ -4879,10 +4916,13 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
     errorLine[len++] = '=';
     errorLine[len] = '\0';
     if (toDialog == NULL)
-    	fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
-    else
-    	DialogF(DF_WARN, toDialog, 1, "%s in %s:\n%s", "Dismiss", message,
-    	    	errorIn, errorLine);
+    {
+        fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
+    } else
+    {
+        DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "Dismiss",
+                message, errorIn, errorLine);
+    }
     XtFree(errorLine);
     return False;
 }
@@ -5244,7 +5284,9 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
     }
     
     sprintf(msg, "%s\nSave as default for future windows as well?", settingName);
-    switch(DialogF (DF_QUES, parent, 3, msg, "Yes", "No", "Cancel")) {
+    switch (DialogF (DF_QUES, parent, 3, "Save Default", msg, "Yes", "No",
+            "Cancel"))
+    {
         case 1: /* yes */
             *setDefault = True;
             return True;
@@ -5453,9 +5495,10 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     colorDialog *cd = (colorDialog *)clientData;
     
-    if(!verifyAllColors(cd)) {
-        DialogF(DF_ERR, w, 1, "All colors must be valid to proceed.", 
-                "Dismiss");
+    if(!verifyAllColors(cd))
+    {
+        DialogF(DF_ERR, w, 1, "Invalid Colors",
+                "All colors must be valid to proceed.", "Dismiss");
         return;
     }
     updateColors(cd);
@@ -5483,9 +5526,10 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     colorDialog *cd = (colorDialog *)clientData;
     
-    if(!verifyAllColors(cd)) {
-        DialogF(DF_ERR, w, 1, "All colors must be valid to be applied.", 
-                "Dismiss");
+    if(!verifyAllColors(cd))
+    {
+        DialogF(DF_ERR, w, 1, "Invalid Colors",
+                "All colors must be valid to be applied.", "Dismiss");
         return;
     }
     updateColors(cd);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.41 2003/04/06 00:46:05 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.42 2003/04/07 22:51:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1964,14 +1964,16 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     
     /* If there are problems, and the user didn't ask for the fields to be
        read, give more warning */
-    if (!explicitRequest) {
-	if (DialogF(DF_WARN, HSDialog.shell, 2,
-    		"Discard incomplete entry\nfor current highlight style?",
-    		"Keep",
-    		"Discard") == 2) {
-     	    return oldItem == NULL ? NULL :
-     	    	    (void *)copyHighlightStyleRec((highlightStyleRec *)oldItem);
-	}
+    if (!explicitRequest)
+    {
+        if (DialogF(DF_WARN, HSDialog.shell, 2, "Incomplete Style",
+                "Discard incomplete entry\nfor current highlight style?",
+                "Keep", "Discard") == 2)
+        {
+            return oldItem == NULL
+                    ? NULL
+                    : (void *)copyHighlightStyleRec((highlightStyleRec *)oldItem);
+        }
     }
 
     /* Do readHSDialogFields again without "silent" mode to display warning */
@@ -2026,15 +2028,18 @@ static highlightStyleRec *readHSDialogFields(int silent)
     	XtFree((char *)hs);
     	return NULL;
     }
-    if (*hs->name == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, HSDialog.shell, 1,
-    		   "Please specify a name\nfor the highlight style", "Dismiss");
-    	    XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(hs->name);
-    	XtFree((char *)hs);
-   	return NULL;
+
+    if (*hs->name == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style",
+                    "Please specify a name\nfor the highlight style", "Dismiss");
+            XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(hs->name);
+        XtFree((char *)hs);
+        return NULL;
     }
 
     /* read the color field */
@@ -2044,31 +2049,37 @@ static highlightStyleRec *readHSDialogFields(int silent)
     	XtFree((char *)hs);
     	return NULL;
     }
-    if (*hs->color == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, HSDialog.shell, 1,
-    		   "Please specify a color\nfor the highlight style",
-    		   "Dismiss");
-    	    XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(hs->name);
-    	XtFree(hs->color);
-    	XtFree((char *)hs);
-   	return NULL;
+
+    if (*hs->color == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HSDialog.shell, 1, "Style Color",
+                    "Please specify a color\nfor the highlight style",
+                    "Dismiss");
+            XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(hs->name);
+        XtFree(hs->color);
+        XtFree((char *)hs);
+        return NULL;
     }
 
     /* Verify that the color is a valid X color spec */
-    if (!XParseColor(display, DefaultColormap(display, screenNum), 
-	    hs->color, &rgb)) {
-	if (!silent) {
-	    DialogF(DF_WARN, HSDialog.shell, 1,
-		  "Invalid X color specification: %s\n",  "Dismiss", hs->color);
-    	    XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(hs->name);
-    	XtFree(hs->color);
-    	XtFree((char *)hs);
-	return NULL;;
+    if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color,
+            &rgb))
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
+                    "Invalid X color specification: %s\n",  "Dismiss",
+                    hs->color);
+            XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(hs->name);
+        XtFree(hs->color);
+        XtFree((char *)hs);
+        return NULL;;
     }
     
     /* read the background color field - this may be empty */
@@ -2080,20 +2091,21 @@ static highlightStyleRec *readHSDialogFields(int silent)
     }
 
     /* Verify that the background color (if present) is a valid X color spec */
-    if (hs->bgColor &&
-        !XParseColor(display, DefaultColormap(display, screenNum), 
-	    hs->bgColor, &rgb)) {
-	if (!silent) {
-	    DialogF(DF_WARN, HSDialog.shell, 1,
-		  "Invalid X background color specification: %s\n",
-                  "Dismiss", hs->bgColor);
-    	    XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(hs->name);
-    	XtFree(hs->color);
-    	XtFree(hs->bgColor);
-    	XtFree((char *)hs);
-	return NULL;;
+    if (hs->bgColor && !XParseColor(display, DefaultColormap(display, screenNum),
+            hs->bgColor, &rgb))
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
+                    "Invalid X background color specification: %s\n", "Dismiss",
+                    hs->bgColor);
+            XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(hs->name);
+        XtFree(hs->color);
+        XtFree(hs->bgColor);
+        XtFree((char *)hs);
+        return NULL;;
     }
     
     /* read the font buttons */
@@ -2230,11 +2242,13 @@ void EditHighlightPatterns(WindowInfo *window)
     	return;
     }
     
-    if (LanguageModeName(0) == NULL) {
-    	DialogF(DF_WARN, window->shell, 1, "No Language Modes available \
-for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
-		"Dismiss");
-    	return;
+    if (LanguageModeName(0) == NULL)
+    {
+        DialogF(DF_WARN, window->shell, 1, "No Language Modes",
+                "No Language Modes available for syntax highlighting\n"
+                "Add language modes under Preferenses->Language Modes",
+                "Dismiss");
+        return;
     }
     
     /* Decide on an initial language mode */
@@ -2850,26 +2864,34 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
        give the user the chance to throw it out or go back and fix it.  If
        it has changed, give the user the chance to apply discard or cancel. */
     newPatSet = getDialogPatternSet();
-    if (newPatSet == NULL) {
-	if (DialogF(DF_WARN, HighlightDialog.shell, 2,
-    		"Discard incomplete entry\nfor current language mode?",
-    		"Keep", "Discard") == 1) {
-    	    SetLangModeMenu(HighlightDialog.lmOptMenu,
-	    	    HighlightDialog.langModeName);
-     	    return;
-     	}
-    } else if (patternSetsDiffer(oldPatSet, newPatSet)) {
-    	resp = DialogF(DF_WARN, HighlightDialog.shell, 3,
-    		"Apply changes for language mode %s?", "Apply Changes",
-    		"Discard Changes", "Cancel", HighlightDialog.langModeName);
-    	if (resp == 3) {
-    	    SetLangModeMenu(HighlightDialog.lmOptMenu,
-	    	    HighlightDialog.langModeName);
-     	    return;
-     	}
-     	if (resp == 1)
-     	    updatePatternSet();
+
+    if (newPatSet == NULL)
+    {
+        if (DialogF(DF_WARN, HighlightDialog.shell, 2,
+                "Incomplete Language Mode", "Discard incomplete entry\n"
+                "for current language mode?", "Keep", "Discard") == 1)
+        {
+            SetLangModeMenu(HighlightDialog.lmOptMenu,
+                    HighlightDialog.langModeName);
+            return;
+        }
+    } else if (patternSetsDiffer(oldPatSet, newPatSet))
+    {
+        resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode",
+                "Apply changes for language mode %s?", "Apply Changes",
+                "Discard Changes", "Cancel", HighlightDialog.langModeName);
+        if (resp == 3)
+        {
+            SetLangModeMenu(HighlightDialog.lmOptMenu,
+                    HighlightDialog.langModeName);
+            return;
+        }
+        if (resp == 1)
+        {
+            updatePatternSet();
+        }
     }
+
     if (newPatSet != NULL)
     	freePatternSet(newPatSet);
 
@@ -2926,33 +2948,38 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
     /* change the patterns */
     updatePatternSet();
 }
-	
+
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkHighlightDialogData())
-	DialogF(DF_INF, HighlightDialog.shell, 1,
-    		"Patterns compiled without error", "Dismiss");
+    {
+        DialogF(DF_INF, HighlightDialog.shell, 1, "Pattern compiled",
+                "Patterns compiled without error", "Dismiss");
+    }
 }
-	
+
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     patternSet *defaultPatSet;
     int i, psn;
     
     defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName);
-    if (defaultPatSet == NULL) {
-    	DialogF(DF_WARN, HighlightDialog.shell, 1,
- 		"There is no default pattern set\nfor language mode %s",
- 		"Dismiss", HighlightDialog.langModeName);
-    	return;
+    if (defaultPatSet == NULL)
+    {
+        DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern",
+                "There is no default pattern set\nfor language mode %s",
+                "Dismiss", HighlightDialog.langModeName);
+        return;
     }
     
-    if (DialogF(DF_WARN, HighlightDialog.shell, 2,
-"Are you sure you want to discard\n\
-all changes to syntax highlighting\n\
-patterns for language mode %s?", "Discard", "Cancel",
-	    HighlightDialog.langModeName) == 2)
-    	return;
+    if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Changes",
+            "Are you sure you want to discard\n"
+            "all changes to syntax highlighting\n"
+            "patterns for language mode %s?", "Discard", "Cancel",
+            HighlightDialog.langModeName) == 2)
+    {
+        return;
+    }
     
     /* if a stored version of the pattern set exists, replace it, if it
        doesn't, add a new one */
@@ -2984,11 +3011,14 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int i, psn;
     
-    if (DialogF(DF_WARN, HighlightDialog.shell, 2,
-"Are you sure you want to delete\n\
-syntax highlighting patterns for\n\
-language mode %s?", "Yes, Delete", "Cancel", HighlightDialog.langModeName) == 2)
-    	return;
+    if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern",
+            "Are you sure you want to delete\n"
+            "syntax highlighting patterns for\n"
+            "language mode %s?", "Yes, Delete", "Cancel",
+            HighlightDialog.langModeName) == 2)
+    {
+        return;
+    }
     
     /* if a stored version of the pattern set exists, delete it from the list */
     for (psn=0; psn<NPatternSets; psn++)
@@ -3051,13 +3081,16 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     
     /* If there are problems, and the user didn't ask for the fields to be
        read, give more warning */
-    if (!explicitRequest) {
-	if (DialogF(DF_WARN, HighlightDialog.shell, 2,
-    		"Discard incomplete entry\nfor current pattern?",
-    		"Keep", "Discard") == 2) {
-     	    return oldItem == NULL ? NULL : (void *)copyPatternSrc(
-     	    	    (highlightPattern *)oldItem, NULL);
-	}
+    if (!explicitRequest)
+    {
+        if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Entry",
+                "Discard incomplete entry\nfor current pattern?", "Keep",
+                "Discard") == 2)
+        {
+            return oldItem == NULL
+                    ? NULL
+                    : (void *)copyPatternSrc((highlightPattern *)oldItem, NULL);
+        }
     }
 
     /* Do readDialogFields again without "silent" mode to display warning */
@@ -3250,64 +3283,82 @@ static highlightPattern *readDialogFields(int silent)
     	XtFree((char *)pat);
     	return NULL;
     }
-    if (*pat->name == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, HighlightDialog.shell, 1,
-    		   "Please specify a name\nfor the pattern", "Dismiss");
-    	    XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(pat->name);
-    	XtFree((char *)pat);
-   	return NULL;
+
+    if (*pat->name == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name",
+                    "Please specify a name\nfor the pattern", "Dismiss");
+            XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(pat->name);
+        XtFree((char *)pat);
+        return NULL;
     }
     
     /* read the startRE field */
     pat->startRE = XmTextGetString(HighlightDialog.startW);
-    if (*pat->startRE == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, HighlightDialog.shell, 1,
-    		   "Please specify a regular\nexpression to match", "Dismiss");
-    	    XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
-    	}
-    	freePatternSrc(pat, True);
-    	return NULL;
+    if (*pat->startRE == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex",
+                    "Please specify a regular\nexpression to match", "Dismiss");
+            XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
+        }
+        freePatternSrc(pat, True);
+        return NULL;
     }
     
     /* Make sure coloring patterns contain only sub-expression references
        and put it in replacement regular-expression form */
-    if (colorOnly) {
-	for (inPtr=pat->startRE, outPtr=pat->startRE; *inPtr!='\0'; inPtr++)
-    	    if (*inPtr!=' ' && *inPtr!='\t')
-    		*outPtr++ = *inPtr;
-	*outPtr = '\0';
-    	if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE) ||
-    	    	(*pat->startRE != '\\' && *pat->startRE != '&') ||
-		strstr(pat->startRE, "\\\\") != NULL) {
-    	    if (!silent) {
-    		DialogF(DF_WARN, HighlightDialog.shell, 1,
-"The expression field in patterns which specify highlighting for\n\
-a parent, must contain only sub-expression references in regular\n\
-expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n\
-Expressions and Help -> Syntax Highlighting for more information", "Dismiss");
-    		XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
-    	    }
-    	    freePatternSrc(pat, True);
-    	    return NULL;
-    	}
+    if (colorOnly)
+    {
+        for (inPtr=pat->startRE, outPtr=pat->startRE; *inPtr!='\0'; inPtr++)
+        {
+            if (*inPtr!=' ' && *inPtr!='\t')
+            {
+                *outPtr++ = *inPtr;
+            }
+        }
+
+        *outPtr = '\0';
+        if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE)
+                || (*pat->startRE != '\\' && *pat->startRE != '&')
+                || strstr(pat->startRE, "\\\\") != NULL)
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Error",
+                        "The expression field in patterns which specify highlighting for\n"
+                        "a parent, must contain only sub-expression references in regular\n"
+                        "expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n"
+                        "Expressions and Help -> Syntax Highlighting for more information",
+                        "Dismiss");
+                XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
+            }
+            freePatternSrc(pat, True);
+            return NULL;
+        }
     }
-    	
+
     /* read the parent field */
-    if (XmToggleButtonGetState(HighlightDialog.subPatW) || colorOnly) {
-	if (TextWidgetIsBlank(HighlightDialog.parentW)) {
-    	    if (!silent) {
-    		DialogF(DF_WARN, HighlightDialog.shell, 1,
-    		       "Please specify a parent pattern", "Dismiss");
-    		XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
-    	    }
-    	    freePatternSrc(pat, True);
-    	    return NULL;
-	}
-	pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
+    if (XmToggleButtonGetState(HighlightDialog.subPatW) || colorOnly)
+    {
+        if (TextWidgetIsBlank(HighlightDialog.parentW))
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, HighlightDialog.shell, 1,
+                        "Specify Parent Pattern",
+                        "Please specify a parent pattern", "Dismiss");
+                XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
+            }
+            freePatternSrc(pat, True);
+            return NULL;
+        }
+        pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
     }
     
     /* read the styles option menu */
@@ -3316,19 +3367,23 @@ Expressions and Help -> Syntax Highlighting for more information", "Dismiss");
     pat->style = XtMalloc(strlen(style) + 1);
     strcpy(pat->style, style);
     
-    	
+
     /* read the endRE field */
-    if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
-	pat->endRE = XmTextGetString(HighlightDialog.endW);
-	if (!colorOnly && *pat->endRE == '\0') {
-            if (!silent) {
-    		DialogF(DF_WARN, HighlightDialog.shell, 1,
-    		       "Please specify an ending\nregular expression", "Dismiss");
-    		XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
-    	    }
-    	    freePatternSrc(pat, True);
-    	    return NULL;
-	}
+    if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW))
+    {
+        pat->endRE = XmTextGetString(HighlightDialog.endW);
+        if (!colorOnly && *pat->endRE == '\0')
+        {
+            if (!silent)
+            {
+                DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex",
+                        "Please specify an ending\nregular expression",
+                        "Dismiss");
+                XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
+            }
+            freePatternSrc(pat, True);
+            return NULL;
+        }
     }
     
     /* read the errorRE field */

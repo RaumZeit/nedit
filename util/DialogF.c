@@ -1,29 +1,29 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.24 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.25 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
-*									       *
-* DialogF -- modal dialog printf routine				       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* DialogF -- modal dialog printf routine                                       *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version.                                                                       *
+*                                                                                *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                               *
+*                                                                                *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* April 26, 1991							       *
-*									       *
-* Written by Joy Kyriakopulos						       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                       *
+*                                                                               *
+* Nirvana Text Editor                                                                   *
+* April 26, 1991                                                               *
+*                                                                               *
+* Written by Joy Kyriakopulos                                                       *
+*                                                                               *
 *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -88,60 +88,62 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
     	Boolean *cont);
 static void createMnemonics(Widget w);
 
-/******************************************************************************
- * DialogF ()								      *
- *									      *
- *	function to put up modal versions of the XmCreate<type>Dialog	      *
- *	functions (where <type> is Error, Information, Prompt, Question,      *
- *	Message, or Warning).  The purpose of this routine is to allow a      *
- *	printf-style dialog box to be invoked in-line without giving control  *
- *	back to the main loop.  The message string can contain vsprintf       *
- *	specifications.  DialogF displays the dialog in application-modal     *
- *	style, blocking the application and keeping the modal dialog as the   *
- *	top window until the user responds.  DialogF accepts a variable       *
- *	number of arguments, so the calling routine needs to #include         *
- *	<stdarg.h>.  The first button is automatically marked as the default  *
- *  	button (activated when the user types Return, surrounded by a special *
- *  	outline), and any button named either Cancel, or Dismiss is marked as *
- *  	the cancel button (activated by the ESC key).  Buttons marked Dismiss *
- *      or Cancel are also triggered by close of dialog via the window close  *
- *  	box.  If there's no Cancel or Dismiss button, button 1 is invoked     *
- *      when the close box is pressed.                                        *
- *									      *
- *    Arguments:							      *
- *									      *
- *	unsigned   dialog_type	- dialog type (e.g. DF_ERR for error dialog)  *
- *				  (refer to DialogF.h for dialog type values) *
- *	Widget	   parent	- parent widget ID			      *
- *	unsigned   n		- # of buttons to display		      *
- *				  if = 0 use defaults in XmCreate<type>Dialog *
- *				  value in range 0 to NUM_BUTTONS_SUPPORTED   *
- *				  (for prompt dialogs: NUM_BUTTONS_MAXPROMPT) *
- *	char *     msgstr	- message string (may contain conversion      *
- *				  specifications for vsprintf)		      *
- *	char *	   input_string - if dialog type = DF_PROMPT, then:	      *
- *				  a character string array in which to put    *
- *				  the string input by the user.  Do NOT       *
- *				  include an input_string argument for other  *
- *				  dialog types.				      *
- *	char *	   but_lbl	- button label(s) for buttons requested       *
- *				  (if n > 0, one but_lbl argument per button) *
- *	<anytype>  <args>	- arguments for vsprintf (if any)	      *
- *									      *
- *    Returns:    - button selected by user (i.e. 1, 2, or 3. or 4 for prompt)*
- *									      *
- *    Examples:								      *
- *									      *
- *	but_pressed = DialogF (DF_QUES, toplevel, 3, "Direction?", "up",      *
- *				 "down", "other");			      *
- *	but_pressed = DialogF (DF_ERR, toplevel, 1, "You can't do that!",     *
- *				 "Acknowledged");			      *
- *	but_pressed = DialogF (DF_PROMPT, toplevel, 0, "New %s", 	      *
- *				new_sub_category, categories[i]);  	      *
+/*******************************************************************************
+* DialogF()                                                                    *
+*                                                                              *
+* function to put up modal versions of the XmCreate<type>Dialog functions      *
+* (where <type> is Error, Information, Prompt, Question, Message, or Warning). *
+* The purpose of this routine is to allow a printf-style dialog box to be      *
+* invoked in-line without giving control back to the main loop. The message    *
+* string can contain vsprintf specifications.                                  *
+* DialogF displays the dialog in application-modal style, blocking the         *
+* application and keeping the modal dialog as the top window until the user    *
+* responds. DialogF accepts a variable number of arguments, so the calling     *
+* routine needs to #include <stdarg.h>. The first button is automatically      *
+* marked as the default button (activated when the user types Return,          *
+* surrounded by a special outline), and any button named either Cancel, or     *
+* Dismiss is marked as the cancel button (activated by the ESC key). Buttons   *
+* marked Dismiss or Cancel are also triggered by close of dialog via the       *
+* window close box. If there's no Cancel or Dismiss button, button 1 is        *
+* invoked when the close box is pressed.                                       *
+*                                                                              *
+* Arguments:                                                                   *
+*                                                                              *
+* unsigned dialog_type  dialog type (e.g. DF_ERR for error dialog, refer to    *
+*                       DialogF.h for dialog type values)                      *
+* Widget parent         parent widget ID                                       *
+* unsigned n            # of buttons to display; if set to 0, use defaults in  *
+*                       XmCreate<type>Dialog; value in range 0 to              *
+*                       NUM_BUTTONS_SUPPORTED (for prompt dialogs:             *
+*                       NUM_BUTTONS_MAXPROMPT)                                 *
+* char* title           dialog title                                           *
+* char* msgstr          message string (may contain conversion specifications  *
+*                       for vsprintf)                                          *
+* char* input_string    if dialog type = DF_PROMPT, then: a character string   *
+*                       array in which to put the string input by the user. Do *
+*                       NOT include an input_string argument for other dialog  *
+*                       types.                                                 *
+* char* but_lbl         button label(s) for buttons requested (if n > 0, one   *
+*                       but_lbl argument per button)                           *
+* <anytype> <args>      arguments for vsprintf (if any)                        *
+*                                                                              *
+*                                                                              *
+* Returns:                                                                     *
+*                                                                              *
+* button selected by user (i.e. 1, 2, or 3. or 4 for prompt)                   *
+*                                                                              *
+*                                                                              *
+* Examples:                                                                    *
+*                                                                              *
+* but_pressed = DialogF (DF_QUES, toplevel, 3, "Direction?", "up",             *
+*              "down", "other");                                               *
+* but_pressed = DialogF (DF_ERR, toplevel, 1, "You can't do that!",            *
+*              "Acknowledged");                                                *
+* but_pressed = DialogF (DF_PROMPT, toplevel, 0, "New %s",                     *
+*             new_sub_category, categories[i]);                                *
 */
-
-unsigned DialogF (int dialog_type, Widget parent, unsigned n,
-		  const char *msgstr, ...)		/* variable # arguments */
+unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
+        const char* msgstr, ...)                    /* variable # arguments */
 {
     va_list var;
 
@@ -219,8 +221,8 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     vsprintf (msgstr_vsp, msgstr, var);
     va_end(var);
 
-    msgstr_xms = XmStringCreateLtoR (msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
-    titstr_xms = XmStringCreateLtoR (" ", XmSTRING_DEFAULT_CHARSET);
+    msgstr_xms = XmStringCreateLtoR(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
+    titstr_xms = XmStringCreateLtoR(title, XmSTRING_DEFAULT_CHARSET);
 
     if (prompt) {				/* Prompt dialog */
 	XtSetArg (args[argcount], XmNselectionLabelString, msgstr_xms);
@@ -583,7 +585,6 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
 ** and make that the mnemonic.  This is useful for DialogF dialogs which
 ** can have arbitrary text in the buttons.
 */
-
 static void createMnemonics(Widget w)
 {
     Boolean mnemonicUsed[UCHAR_MAX + 1];

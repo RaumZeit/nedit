@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.48 2003/01/14 22:36:57 n8gray Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.49 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -878,9 +878,11 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
                             tagName);
                     tagsShowCalltip( window, message );
                 } else
-                    DialogF(DF_WARN, window->textArea, 1,
+                {
+                    DialogF(DF_WARN, window->textArea, 1, "Tags",
                             "\"%s\" not found in tags file%s", "OK", tagName,
                             (TagsFileList && TagsFileList->next) ? "s" : "");
+                }
             }
         }
         else {
@@ -1165,8 +1167,8 @@ static int findAllMatches(WindowInfo *window, const char *string)
             pathMatch=nMatches;
         }
         if (++nMatches >= MAXDUPTAGS) {
-            DialogF(DF_WARN, dialogParent,1,
-                    "Too many duplicate tags, first %d shown","OK",MAXDUPTAGS);
+            DialogF(DF_WARN, dialogParent, 1, "Tags",
+                    "Too many duplicate tags, first %d shown", "OK", MAXDUPTAGS);
             break;
         }
         /* Tell LookupTag to look for more definitions of the same tag: */
@@ -1317,14 +1319,14 @@ static void showMatchingCalltip( Widget parent, int i )
     NormalizePathname(tagFiles[i]);
     fp = fopen(tagFiles[i], "r");
     if (fp == NULL) {
-        DialogF(DF_ERR, parent, 1, "Error opening %s", 
-            "Dismiss", tagFiles[i]);
+        DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s",
+                "Dismiss", tagFiles[i]);
         return;
     }
     if (fstat(fileno(fp), &statbuf) != 0) {
         fclose(fp);
-        DialogF(DF_ERR, parent, 1, "Error opening %s", "Dismiss", 
-                tagFiles[i]);
+        DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s",
+                "Dismiss", tagFiles[i]);
         return;
     }
 
@@ -1334,8 +1336,8 @@ static void showMatchingCalltip( Widget parent, int i )
     fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL) {
         fclose(fp);
-        DialogF(DF_ERR, parent, 1, "File is too large to load",
-                "Dismiss");
+        DialogF(DF_ERR, parent, 1, "File too large",
+                "File is too large to load", "Dismiss");
         return;
     }
 
@@ -1343,8 +1345,8 @@ static void showMatchingCalltip( Widget parent, int i )
     readLen = fread(fileString, sizeof(char), fileLen, fp);
     if (ferror(fp)) {
         fclose(fp);
-        DialogF(DF_ERR, parent, 1, "Error reading %s", "Dismiss",
-                tagFiles[i]);
+        DialogF(DF_ERR, parent, 1, "Error reading File", "Error reading %s",
+                "Dismiss", tagFiles[i]);
         XtFree(fileString);
         return;
     }
@@ -1353,7 +1355,8 @@ static void showMatchingCalltip( Widget parent, int i )
     /* Close the file */
     if (fclose(fp) != 0) {
         /* unlikely error */
-        DialogF(DF_WARN, parent, 1, "Unable to close file", "Dismiss");
+        DialogF(DF_WARN, parent, 1, "Error closing File",
+                "Unable to close file", "Dismiss");
         /* we read it successfully, so continue */
     }
     
@@ -1361,7 +1364,7 @@ static void showMatchingCalltip( Widget parent, int i )
     if (!*(tagSearch[i])) {
         /* It's a line number, just go for it */
         if ((moveAheadNLines( fileString, &startPos, tagPosInf[i]-1 )) >= 0) {
-            DialogF(DF_ERR, parent, 1, 
+            DialogF(DF_ERR, parent, 1, "Tags Error",
                     "%s\n not long enough for definition to be on line %d",
                     "Dismiss", tagFiles[i], tagPosInf[i]);
             XtFree(fileString);
@@ -1371,8 +1374,8 @@ static void showMatchingCalltip( Widget parent, int i )
         startPos = tagPosInf[i];
         if(!fakeRegExSearch(WidgetToWindow(parent), fileString, tagSearch[i],
                 &startPos, &endPos)){
-            DialogF(DF_WARN, parent, 1,
-                    "Definition for %s\nnot found in %s", "OK", tagName, 
+            DialogF(DF_WARN, parent, 1, "Tag not found",
+                    "Definition for %s\nnot found in %s", "OK", tagName,
                     tagFiles[i]);
             XtFree(fileString);
             return;
@@ -1405,9 +1408,10 @@ static void showMatchingCalltip( Widget parent, int i )
     /* 5. Copy the calltip to a string */
     tipLen = endPos - startPos;
     message = XtMalloc(tipLen+1);  /* +1 = space for null */
-    if (message == NULL) {
-        DialogF(DF_ERR, parent, 1, "Can't allocate memory for calltip message",
-                "Dismiss");
+    if (message == NULL)
+    {
+        DialogF(DF_ERR, parent, 1, "Out of Memory",
+                "Can't allocate memory for calltip message", "Dismiss");
         XtFree(fileString);
         return;
     }
@@ -1435,8 +1439,8 @@ static void editTaggedLocation( Widget parent, int i )
     EditExistingFile(WindowList, filename, pathname, 0, NULL, False, NULL);
     windowToSearch = FindWindowWithFile(filename, pathname);
     if (windowToSearch == NULL) {
-        DialogF(DF_WARN, parent, 1, "File %s not found", 
-            "OK", tagFiles[i]);
+        DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK",
+                tagFiles[i]);
         return;
     }
 
@@ -1451,8 +1455,8 @@ static void editTaggedLocation( Widget parent, int i )
     /* search for the tags file search string in the newly opened file */
     if(!fakeRegExSearch(windowToSearch, NULL, tagSearch[i], &startPos,
             &endPos)){
-        DialogF(DF_WARN, windowToSearch->shell, 1,
-                "Definition for %s\nnot found in %s", "OK", tagName, 
+        DialogF(DF_WARN, windowToSearch->shell, 1, "Tag Error",
+                "Definition for %s\nnot found in %s", "OK", tagName,
                 tagFiles[i]);
         return;
     }

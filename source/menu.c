@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.70 2003/04/06 00:46:05 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.71 2003/04/07 22:51:40 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2482,20 +2482,28 @@ static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 }
 
 static void revertDialogAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs) 
+        Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
     int b;
     
     /* re-reading file is irreversible, prompt the user first */
     if (window->fileChanged)
-	b = DialogF(DF_QUES, window->shell, 2, "Discard changes to\n%s%s?",
-    		"OK", "Cancel", window->path, window->filename);
-    else
-	b = DialogF(DF_QUES, window->shell, 2, "Re-load file\n%s%s?",
-    		"Re-read", "Cancel", window->path, window->filename);
+    {
+        b = DialogF(DF_QUES, window->shell, 2, "Discard Changes",
+                "Discard changes to\n%s%s?", "OK", "Cancel", window->path,
+                window->filename);
+    } else
+    {
+        b = DialogF(DF_QUES, window->shell, 2, "Reload File",
+                "Re-load file\n%s%s?", "Re-read", "Cancel", window->path,
+                window->filename);
+    }
+
     if (b != 1)
-	return;
+    {
+        return;
+    }
     XtCallActionProc(window->lastFocus, "revert_to_saved", event, NULL, 0);
 }
 
@@ -2577,10 +2585,12 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr,"nedit: load_tags_file action requires file argument\n");
     	return;
     }
-    if (!AddTagsFile(args[0], TAG)) {
-    	DialogF(DF_WARN, WidgetToWindow(w)->shell, 1,
-    		"Error reading ctags file:\n'%s'\ntags not loaded", "Dismiss",
-		args[0]);
+
+    if (!AddTagsFile(args[0], TAG))
+    {
+        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reding File",
+                "Error reading ctags file:\n'%s'\ntags not loaded", "Dismiss",
+                args[0]);
     }
 }
 
@@ -2614,11 +2624,13 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr,"nedit: load_tips_file action requires file argument\n");
     	return;
     }
-    if (!AddTagsFile(args[0], TIP)) {
-    	DialogF(DF_WARN, WidgetToWindow(w)->shell, 1,
-    		"Error reading tips file:\n'%s'\ntips not loaded", "Dismiss",
-		args[0]);
-	}
+
+    if (!AddTagsFile(args[0], TIP))
+    {
+        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reding File",
+                "Error reading tips file:\n'%s'\ntips not loaded", "Dismiss",
+                args[0]);
+    }
 }
 
 static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
@@ -2682,7 +2694,8 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	    }
         }
         sprintf(ptr, "\n\nExit NEdit?");
-        resp = DialogF(DF_QUES, window->shell, 2, "%s", "Exit", "Cancel", exitMsg);
+        resp = DialogF(DF_QUES, window->shell, 2, "Error", "%s", "Exit",
+                "Cancel", exitMsg);
         if (resp == 2)
                 return;
     }
@@ -2888,14 +2901,20 @@ static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
     WindowInfo *window = WidgetToWindow(w);
     
     if (CheckReadOnly(window))
-       return;
-    if (*nArgs < 2) {
-       DialogF(DF_WARN, window->shell, 1, "replace_find action requires search and replace string arguments", "OK");
-       return;
+    {
+        return;
     }
-    ReplaceAndSearch(window, searchDirection(2, args, nArgs),
-                     args[0], args[1], searchType(2, args, nArgs),
-                     searchWrap(0, args, nArgs));
+
+    if (*nArgs < 2)
+    {
+        DialogF(DF_WARN, window->shell, 1, "Error in replace_find",
+                "replace_find action requires search and replace string arguments",
+                "OK");
+        return;
+    }
+
+    ReplaceAndSearch(window, searchDirection(2, args, nArgs), args[0], args[1],
+            searchType(2, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void replaceFindSameAP(Widget w, XEvent *event, String *args,
@@ -3091,8 +3110,10 @@ static void controlDialogAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    response = DialogF(DF_PROMPT, window->shell, 2,
-    	    "ASCII Character Code:", charCodeText, "OK", "Cancel");
+
+    response = DialogF(DF_PROMPT, window->shell, 2, "Insert Ctrl Code",
+            "ASCII Character Code:", charCodeText, "OK", "Cancel");
+
     if (response == 2)
     	return;
     /* If we don't scan for a trailing string invalid input
@@ -3105,10 +3126,14 @@ static void controlDialogAP(Widget w, XEvent *event, String *args,
     charCodeString[0] = (unsigned char)charCode;
     charCodeString[1] = '\0';
     params[0] = (char *)charCodeString;
-    if (!BufSubstituteNullChars((char *)charCodeString, 1, window->buffer)) {
-	DialogF(DF_ERR, window->shell, 1, "Too much binary data","Dismiss");
-	return;
+
+    if (!BufSubstituteNullChars((char *)charCodeString, 1, window->buffer))
+    {
+        DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data",
+                "Dismiss");
+        return;
     }
+
     XtCallActionProc(w, "insert_string", event, params, 1);
 }
 
@@ -3130,9 +3155,11 @@ static void filterDialogAP(Widget w, XEvent *event, String *args,
     }
     
     SetDialogFPromptHistory(cmdHistory, nHistoryCmds);
-    resp = DialogF(DF_PROMPT, window->shell, 2,
-    	    "Shell command:   (use up arrow key to recall previous)",
-    	    cmdText, "OK", "Cancel");
+
+    resp = DialogF(DF_PROMPT, window->shell, 2, "Filter Selection",
+            "Shell command:   (use up arrow key to recall previous)",
+            cmdText, "OK", "Cancel");
+
     if (resp == 2)
     	return;
     AddToHistoryList(cmdText, &cmdHistory, &nHistoryCmds);
@@ -3167,10 +3194,12 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (CheckReadOnly(window))
     	return;
     SetDialogFPromptHistory(cmdHistory, nHistoryCmds);
-    resp = DialogF(DF_PROMPT, window->shell, 2,
-    	    "Shell command:   (use up arrow key to recall previous;\n" \
-	    "%% expands to current filename, # to line number)",
-    	    cmdText, "OK", "Cancel");
+
+    resp = DialogF(DF_PROMPT, window->shell, 2, "Execute Command",
+            "Shell command:   (use up arrow key to recall previous;\n"
+            "%% expands to current filename, # to line number)", cmdText, "OK",
+            "Cancel");
+
     if (resp == 2)
     	return;
     AddToHistoryList(cmdText, &cmdHistory, &nHistoryCmds);
@@ -4707,7 +4736,9 @@ static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName)
     
     sprintf(msg, "%s: %s\nSave as default for future windows as well?",
     	    settingName, XmToggleButtonGetState(w) ? "On" : "Off");
-    switch(DialogF (DF_QUES, parent, 3, msg, "Yes", "No", "Cancel")) {
+    switch (DialogF (DF_QUES, parent, 3, "Save Default", msg, "Yes", "No",
+            "Cancel"))
+    {
         case 1: /* yes */
             return True;
         case 2: /* no */

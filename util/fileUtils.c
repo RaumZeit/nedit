@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.28 2003/04/03 19:05:36 jlous Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.29 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -638,7 +638,7 @@ char *ReadAnyTextFile(const char *fileName)
 {
     struct stat statbuf;
     FILE *fp;
-    int fileLen, readLen, result;
+    int fileLen, readLen;
     char *fileString;
     int format;
             

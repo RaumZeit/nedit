@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.62 2003/04/06 00:46:05 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.63 2003/04/07 22:51:40 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -782,13 +782,14 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 
     fileString = ReadAnyTextFile(fileName);
     if (fileString == NULL){
-        if (errno != ENOENT || warnNotExist){
-    	    DialogF(DF_ERR, window->shell, 1, "Error reading macro file %s: %s",
-                "dismiss", fileName,
+        if (errno != ENOENT || warnNotExist)
+        {
+            DialogF(DF_ERR, window->shell, 1, "Read Macro",
+                    "Error reading macro file %s: %s", "dismiss", fileName,
 #ifdef VMS
-                strerror(errno, vaxc$errno));
+                    strerror(errno, vaxc$errno));
 #else
-                strerror(errno));
+                    strerror(errno));
 #endif
         }
         return False;                    
@@ -966,12 +967,15 @@ static void runMacro(WindowInfo *window, Program *prog)
     /* Begin macro execution */
     stat = ExecuteMacro(window, prog, 0, NULL, &result, &cmdData->context,
     	    &errMsg);
-    if (stat == MACRO_ERROR) {
-    	finishMacroCmdExecution(window);
-    	DialogF(DF_ERR, window->shell, 1, "Error executing macro: %s",
-    	    	"Dismiss", errMsg);
-    	return;
+
+    if (stat == MACRO_ERROR)
+    {
+        finishMacroCmdExecution(window);
+        DialogF(DF_ERR, window->shell, 1, "Macro Error",
+                "Error executing macro: %s", "Dismiss", errMsg);
+        return;
     }
+
     if (stat == MACRO_DONE) {
     	finishMacroCmdExecution(window);
     	return;
@@ -1203,11 +1207,12 @@ void RepeatDialog(WindowInfo *window)
     XmString s1;
     int cmdNameLen;
 
-    if (LastCommand == NULL) {
-    	DialogF(DF_WARN, window->shell, 1,
-	    	"No previous commands or learn/\nreplay sequences to repeat",
-		"Dismiss");
-	return;
+    if (LastCommand == NULL)
+    {
+        DialogF(DF_WARN, window->shell, 1, "Repeat Macro",
+                "No previous commands or learn/\nreplay sequences to repeat",
+                "Dismiss");
+        return;
     }
     
     /* Remeber the last command, since the user is allowed to work in the
@@ -1339,24 +1344,29 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
     char *params[2];
     
     /* Find out from the dialog how to repeat the command */
-    if (XmToggleButtonGetState(rd->inSelToggle)) {
-	if (!rd->forWindow->buffer->primary.selected) {
-	    DialogF(DF_WARN, rd->shell, 1,
-	    	    "No selection in window to repeat within", "Dismiss");
-	    XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
-	    return False;
-	}
-	params[0] = "in_selection";
-    } else if (XmToggleButtonGetState(rd->toEndToggle)) {
-	params[0] = "to_end";
-    } else {
-	if (GetIntTextWarn(rd->repeatText, &nTimes, "number of times", True) != 
-		TEXT_READ_OK) {
-   	    XmProcessTraversal(rd->repeatText, XmTRAVERSE_CURRENT);
-	    return False;
-	}
-	sprintf(nTimesStr, "%d", nTimes);
-	params[0] = nTimesStr;
+    if (XmToggleButtonGetState(rd->inSelToggle))
+    {
+        if (!rd->forWindow->buffer->primary.selected)
+        {
+            DialogF(DF_WARN, rd->shell, 1, "Repeat Macro",
+                    "No selection in window to repeat within", "Dismiss");
+            XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
+            return False;
+        }
+        params[0] = "in_selection";
+    } else if (XmToggleButtonGetState(rd->toEndToggle))
+    {
+        params[0] = "to_end";
+    } else
+    {
+        if (GetIntTextWarn(rd->repeatText, &nTimes, "number of times", True)
+                != TEXT_READ_OK)
+        {
+            XmProcessTraversal(rd->repeatText, XmTRAVERSE_CURRENT);
+            return False;
+        }
+        sprintf(nTimesStr, "%d", nTimes);
+        params[0] = nTimesStr;
     }
     
     /* Figure out which command user wants to repeat */
@@ -1670,17 +1680,20 @@ static Boolean continueWorkProc(XtPointer clientData)
     DataValue result;
     
     stat = ContinueMacro(cmdData->context, &result, &errMsg);
-    if (stat == MACRO_ERROR) {
-    	finishMacroCmdExecution(window);
-    	DialogF(DF_ERR, window->shell, 1, "Error executing macro: %s",
-    	    	"Dismiss", errMsg);
-    	return True;
-    } else if (stat == MACRO_DONE) {
-    	finishMacroCmdExecution(window);
-    	return True;
-    } else if (stat == MACRO_PREEMPT) {
-	cmdData->continueWorkProcID = 0;
-    	return True;
+    if (stat == MACRO_ERROR)
+    {
+        finishMacroCmdExecution(window);
+        DialogF(DF_ERR, window->shell, 1, "Macro Error",
+                "Error executing macro: %s", "Dismiss", errMsg);
+        return True;
+    } else if (stat == MACRO_DONE)
+    {
+        finishMacroCmdExecution(window);
+        return True;
+    } else if (stat == MACRO_PREEMPT)
+    {
+        cmdData->continueWorkProcID = 0;
+        return True;
     }
     
     /* Macro exceeded time slice, re-schedule it */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.22 2003/04/06 00:46:06 yooden Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.23 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -691,29 +691,33 @@ void BeginSmartIndent(WindowInfo *window, int warn)
 
     /* Find the window's language mode.  If none is set, warn the user */
     modeName = LanguageModeName(window->languageMode);
-    if (modeName == NULL) {
-    	if (warn)
-	    DialogF(DF_WARN, window->shell, 1,
-"No language-specific mode has been set for this file.\n\
-\n\
-To use smart indent in this window, please select a\n\
-language from the Preferences -> Language Modes menu.", "Dismiss");
-    	return;
+    if (modeName == NULL)
+    {
+        if (warn)
+        {
+            DialogF(DF_WARN, window->shell, 1, "Smart Indent",
+                    "No language-specific mode has been set for this file.\n\n"
+                    "To use smart indent in this window, please select a\n"
+                    "language from the Preferences -> Language Modes menu.",
+                    "Dismiss");
+        }
+        return;
     }
     
     /* Look up the appropriate smart-indent macros for the language */
     indentMacros = findIndentSpec(modeName);
-    if (indentMacros == NULL) {
-    	if (warn)
-	    DialogF(DF_WARN, window->shell, 1,
-"Smart indent is not available in languagemode\n\
-%s.\n\
-\n\
-You can create new smart indent macros in the\n\
-Preferences -> Default Settings -> Smart Indent\n\
-dialog, or choose a different language mode from:\n\
-Preferences -> Language Mode.", "Dismiss", modeName);
-    	return;
+    if (indentMacros == NULL)
+    {
+        if (warn)
+        {
+            DialogF(DF_WARN, window->shell, 1, "Smart Indent",
+                    "Smart indent is not available in languagemode\n%s.\n\n"
+                    "You can create new smart indent macros in the\n"
+                    "Preferences -> Default Settings -> Smart Indent\n"
+                    "dialog, or choose a different language mode from:\n"
+                    "Preferences -> Language Mode.", "Dismiss", modeName);
+        }
+        return;
     }
     
     /* Compile and run the common and language-specific initialization macros
@@ -838,22 +842,27 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     SafeGC();
     
     /* Process errors in macro execution */
-    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-    	DialogF(DF_ERR, window->shell, 1, "Error in smart indent macro:\n%s",
-    	    	"Dismiss", stat == MACRO_ERROR ? errMsg :
-    	    	"dialogs and shell commands not permitted");
-    	EndSmartIndent(window);
-    	return;
+    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Smart Indent",
+                "Error in smart indent macro:\n%s", "Dismiss",
+                stat == MACRO_ERROR
+                        ? errMsg
+                        : "dialogs and shell commands not permitted");
+        EndSmartIndent(window);
+        return;
     }
-    	
+
     /* Validate and return the result */
-    if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
-    	DialogF(DF_ERR, window->shell, 1,
-    	    	"Smart indent macros must return\ninteger indent distance",
-    	    	"Dismiss");
-    	EndSmartIndent(window);
-    	return;
+    if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Smart Indent",
+                "Smart indent macros must return\ninteger indent distance",
+                "Dismiss");
+        EndSmartIndent(window);
+        return;
     }
+
     cbInfo->indentRequest = result.val.n;
 }
 
@@ -906,13 +915,15 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
     inModCB = False;
     
     /* Process errors in macro execution */
-    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-    	DialogF(DF_ERR, window->shell, 1,
-    	    	"Error in smart indent modification macro:\n%s", "Dismiss",
-    	    	stat == MACRO_ERROR ? errMsg :
-    	    	"dialogs and shell commands not permitted");
-    	EndSmartIndent(window);
-    	return;
+    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Smart Indent",
+                "Error in smart indent modification macro:\n%s", "Dismiss",
+                stat == MACRO_ERROR
+                        ? errMsg
+                        : "dialogs and shell commands not permitted");
+        EndSmartIndent(window);
+        return;
     }
 }
 
@@ -935,10 +946,11 @@ void EditSmartIndentMacros(WindowInfo *window)
     	return;
     }
     
-    if (LanguageModeName(0) == NULL) {
-    	DialogF(DF_WARN, window->shell, 1, "No Language Modes defined",
-		"Dismiss");
-    	return;
+    if (LanguageModeName(0) == NULL)
+    {
+        DialogF(DF_WARN, window->shell, 1, "Language Mode",
+                "No Language Modes defined", "Dismiss");
+        return;
     }
     
     /* Decide on an initial language mode */
@@ -1226,29 +1238,38 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Check if the macros have changed, if so allow user to apply, discard,
        or cancel */
     newMacros = getSmartIndentDialogData();
-    if (indentSpecsDiffer(oldMacros, newMacros)) {
-	resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3,
-      "Smart indent macros for language mode\n%s were changed.  Apply changes?",
-		"Apply", "Discard", "Cancel", SmartIndentDialog.langModeName);
-	if (resp == 3) {
-	    SetLangModeMenu(SmartIndentDialog.lmOptMenu,
-		    SmartIndentDialog.langModeName);
-	    return;
-    	} else if (resp == 1) {
-	    if (checkSmartIndentDialogData()) {
-		if (oldMacros == &emptyIndentSpec) {
-		    SmartIndentSpecs[NSmartIndentSpecs++] =
-		    	    copyIndentSpec(newMacros);
-	    	} else {
-		    freeIndentSpec(oldMacros);
-		    SmartIndentSpecs[i] = copyIndentSpec(newMacros);
-		}
-	    } else {
-     	    	SetLangModeMenu(SmartIndentDialog.lmOptMenu,
-		    	SmartIndentDialog.langModeName);
-		return;
-	    }
-     	}
+    if (indentSpecsDiffer(oldMacros, newMacros))
+    {
+        resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3, "Smart Indent",
+                "Smart indent macros for language mode\n"
+                "%s were changed.  Apply changes?", "Apply", "Discard",
+                "Cancel", SmartIndentDialog.langModeName);
+
+        if (resp == 3)
+        {
+            SetLangModeMenu(SmartIndentDialog.lmOptMenu,
+            SmartIndentDialog.langModeName);
+            return;
+        } else if (resp == 1)
+        {
+            if (checkSmartIndentDialogData())
+            {
+                if (oldMacros == &emptyIndentSpec)
+                {
+                    SmartIndentSpecs[NSmartIndentSpecs++]
+                            = copyIndentSpec(newMacros);
+                } else
+                {
+                    freeIndentSpec(oldMacros);
+                    SmartIndentSpecs[i] = copyIndentSpec(newMacros);
+                }
+            } else
+            {
+                SetLangModeMenu(SmartIndentDialog.lmOptMenu,
+                SmartIndentDialog.langModeName);
+                return;
+            }
+        }
     }
     freeIndentSpec(newMacros);
     
@@ -1286,8 +1307,8 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkSmartIndentDialogData())
-	DialogF(DF_INF, SmartIndentDialog.shell, 1,
-    		"Macros compiled without error", "Dismiss");
+    DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
+                "Macros compiled without error", "Dismiss");
 }
 	
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1297,23 +1318,31 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     
     /* Find the default indent spec */
     for (i=0; i<N_DEFAULT_INDENT_SPECS; i++)
-    	if (!strcmp(SmartIndentDialog.langModeName,
-		DefaultIndentSpecs[i].lmName))
-	    break;
-    if (i == N_DEFAULT_INDENT_SPECS) {
-    	DialogF(DF_WARN, SmartIndentDialog.shell, 1,
- 		"There are no default indent macros\nfor language mode %s",
- 		"Dismiss", SmartIndentDialog.langModeName);
-    	return;
+    {
+        if (!strcmp(SmartIndentDialog.langModeName,
+                DefaultIndentSpecs[i].lmName))
+        {
+            break;
+        }
+    }
+
+    if (i == N_DEFAULT_INDENT_SPECS)
+    {
+        DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
+                "There are no default indent macros\nfor language mode %s",
+                "Dismiss", SmartIndentDialog.langModeName);
+        return;
     }
     defaultIS = &DefaultIndentSpecs[i];
     
-    if (DialogF(DF_WARN, SmartIndentDialog.shell, 2,
-"Are you sure you want to discard\n\
-all changes to smart indent macros\n\
-for language mode %s?", "Discard", "Cancel",
-	    SmartIndentDialog.langModeName) == 2)
-    	return;
+    if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Discard Changes",
+            "Are you sure you want to discard\n"
+            "all changes to smart indent macros\n"
+            "for language mode %s?", "Discard", "Cancel",
+            SmartIndentDialog.langModeName) == 2)
+    {
+        return;
+    }
     
     /* if a stored version of the indent macros exist, replace them, if not,
        add a new one */
@@ -1334,11 +1363,14 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int i;
     
-    if (DialogF(DF_WARN, SmartIndentDialog.shell, 2,
-"Are you sure you want to delete smart indent\n\
-macros for language mode %s?", "Yes, Delete", "Cancel",
-    	    SmartIndentDialog.langModeName) == 2)
-    	return;
+    if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Delete Macros",
+            "Are you sure you want to delete smart indent\n"
+            "macros for language mode %s?", "Yes, Delete", "Cancel",
+            SmartIndentDialog.langModeName) == 2)
+    {
+        return;
+    }
+
     /* if a stored version of the pattern set exists, delete it from the list */
     for (i=0; i<NSmartIndentSpecs; i++)
     	if (!strcmp(SmartIndentDialog.langModeName,SmartIndentSpecs[i]->lmName))
@@ -1385,11 +1417,13 @@ static int checkSmartIndentDialogData(void)
     }
     
     /* Test compile the newline macro */
-    if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro)) {
-    	DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Newline macro required",
-    	    	"Dismiss");
-    	return False;
+    if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro))
+    {
+        DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
+                "Newline macro required", "Dismiss");
+        return False;
     }
+
     widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
     prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
     if (prog == NULL) {
@@ -1606,20 +1640,24 @@ static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     /* change the macro */
     updateSmartIndentCommonData();
 }
-	
+
 static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkSmartIndentCommonDialogData())
-	DialogF(DF_INF, CommonDialog.shell, 1,
-    		"Macros compiled without error", "Dismiss");
+    {
+        DialogF(DF_INF, CommonDialog.shell, 1, "Macro compiled",
+                "Macros compiled without error", "Dismiss");
+    }
 }
-	
+
 static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    if (DialogF(DF_WARN, CommonDialog.shell, 2,
-"Are you sure you want to discard all\n\
-changes to common smart indent macros", "Discard", "Cancel") == 2)
-    	return;
+    if (DialogF(DF_WARN, CommonDialog.shell, 2, "Discard Changes",
+            "Are you sure you want to discard all\n"
+            "changes to common smart indent macros", "Discard", "Cancel") == 2)
+    {
+        return;
+    }
     
     /* replace common macros with default */
     if (CommonMacros != NULL)

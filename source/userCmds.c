@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.30 2003/04/06 00:46:06 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.31 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1421,8 +1421,10 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
     if (checkMacro(ucd))
-	DialogF(DF_INF, ucd->dlogShell, 1, "Macro compiled without error",
-	    "Dismiss");
+    {
+        DialogF(DF_INF, ucd->dlogShell, 1, "Macro",
+                "Macro compiled without error", "Dismiss");
+    }
 }
 
 static int checkMacro(userCmdDialog *ucd)
@@ -1728,38 +1730,52 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
     menuItemRec *f;
 
     nameText = XmTextGetString(ucd->nameTextW);
-    if (*nameText == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, ucd->dlogShell, 1,
-    		    "Please specify a name\nfor the menu item", "Dismiss");
-    	    XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(nameText);
-    	return NULL;
+    if (*nameText == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
+                    "Please specify a name\nfor the menu item", "Dismiss");
+            XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(nameText);
+        return NULL;
     }
-    if (strchr(nameText, ':')) {
-    	if (!silent) {
-    	    DialogF(DF_WARN, ucd->dlogShell, 1,
-    		    "Menu item names may not\ncontain colon (:) characters",
-    		    "Dismiss");
-    	    XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(nameText);
-    	return NULL;
+
+    if (strchr(nameText, ':'))
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
+                    "Menu item names may not\ncontain colon (:) characters",
+                    "Dismiss");
+            XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(nameText);
+        return NULL;
     }
+
     cmdText = XmTextGetString(ucd->cmdTextW);
-    if (cmdText == NULL || *cmdText == '\0') {
-    	if (!silent) {
-    	    DialogF(DF_WARN, ucd->dlogShell, 1, "Please specify %s to execute",
-    	    	    "Dismiss", ucd->dialogType == SHELL_CMDS ? "shell command" :
-    	    	    "macro command(s)");
-    	    XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
-    	}
-    	XtFree(nameText);
-    	if (cmdText!=NULL)
-    	    XtFree(cmdText);
-    	return NULL;
+    if (cmdText == NULL || *cmdText == '\0')
+    {
+        if (!silent)
+        {
+            DialogF(DF_WARN, ucd->dlogShell, 1, "Command to Execute",
+                    "Please specify %s to execute", "Dismiss",
+                    ucd->dialogType == SHELL_CMDS
+                            ? "shell command"
+                            : "macro command(s)");
+            XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
+        }
+        XtFree(nameText);
+
+        if (cmdText!=NULL)
+        {
+            XtFree(cmdText);
+        }
+        return NULL;
     }
+
     if (ucd->dialogType == MACRO_CMDS || ucd->dialogType == BG_MENU_CMDS) {
     	addTerminatingNewline(&cmdText);
 	if (!checkMacroText(cmdText, silent ? NULL : ucd->dlogShell,
@@ -1857,13 +1873,16 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort,
     	return (void *)currentFields;
 
     /* If user might not be expecting fields to be read, give more warning */
-    if (!explicitRequest) {
-	if (DialogF(DF_WARN, ucd->dlogShell, 2,
-    		"Discard incomplete entry\nfor current menu item?", "Keep",
-    		"Discard") == 2) {
-     	    return oldItem == NULL ? NULL :
-     	    	    (void *)copyMenuItemRec((menuItemRec *)oldItem);
-	}
+    if (!explicitRequest)
+    {
+        if (DialogF(DF_WARN, ucd->dlogShell, 2, "Discard Entry",
+                "Discard incomplete entry\nfor current menu item?", "Keep",
+                "Discard") == 2)
+        {
+            return oldItem == NULL
+                    ? NULL
+                    : (void *)copyMenuItemRec((menuItemRec *)oldItem);
+        }
     }
     
     /* Do readDialogFields again without "silent" mode to display warning(s) */

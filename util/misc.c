@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.50 2003/02/18 20:17:05 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.51 2003/04/07 22:51:42 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1169,13 +1169,17 @@ int GetFloatTextWarn(Widget text, double *value, const char *fieldName,
     if (result == TEXT_READ_OK || (result == TEXT_IS_BLANK && !warnBlank))
     	return result;
     valueStr = XmTextGetString(text);
+
     if (result == TEXT_IS_BLANK)
-    	DialogF (DF_ERR, text, 1, "Please supply %s value",
-    		 "Dismiss", fieldName);
-    else /* TEXT_NOT_NUMBER */
-    	DialogF (DF_ERR, text, 1,
-    		 "Can't read %s value: \"%s\"",
-    		 "Dismiss", fieldName, valueStr);
+    {
+        DialogF(DF_ERR, text, 1, "Warning", "Please supply %s value", "Dismiss",
+                fieldName);
+    } else /* TEXT_NOT_NUMBER */
+    {
+        DialogF (DF_ERR, text, 1, "Warning", "Can't read %s value: \"%s\"",
+                "Dismiss", fieldName, valueStr);
+    }
+
     XtFree(valueStr);
     return result;
 }
@@ -1189,13 +1193,18 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
     if (result == TEXT_READ_OK || (result == TEXT_IS_BLANK && !warnBlank))
     	return result;
     valueStr = XmTextGetString(text);
+
     if (result == TEXT_IS_BLANK)
-    	DialogF (DF_ERR, text, 1, "Please supply a value for %s",
-    		 "Dismiss", fieldName);
-    else /* TEXT_NOT_NUMBER */
-    	DialogF (DF_ERR, text, 1,
-    		 "Can't read integer value \"%s\" in %s",
-    		 "Dismiss", valueStr, fieldName);
+    {
+        DialogF (DF_ERR, text, 1, "Warning", "Please supply a value for %s",
+                "Dismiss", fieldName);
+    } else /* TEXT_NOT_NUMBER */
+    {
+        DialogF (DF_ERR, text, 1, "Warning",
+                "Can't read integer value \"%s\" in %s", "Dismiss", valueStr,
+                fieldName);
+    }
+
     XtFree(valueStr);
     return result;
 }

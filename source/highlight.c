@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.39 2003/03/20 13:02:36 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.40 2003/04/07 22:51:39 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -545,31 +545,32 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
     modeName = LanguageModeName(window->languageMode);
     if (modeName == NULL) {
     	if (warn)
-    	    DialogF(DF_WARN, window->shell, 1,
-"No language-specific mode has been set for this file.\n\
-\n\
-To use syntax highlighting in this window, please select a\n\
-language from the Preferences -> Language Modes menu.\n\
-\n\
-New language modes and syntax highlighting patterns can be\n\
-added via Preferences -> Default Settings -> Language Modes,\n\
-and Preferences -> Default Settings -> Syntax Highlighting.", "Dismiss");
+    	    DialogF(DF_WARN, window->shell, 1, "Language Mode",
+                    "No language-specific mode has been set for this file.\n\n"
+                    "To use syntax highlighting in this window, please select a\n"
+                    "language from the Preferences -> Language Modes menu.\n\n"
+                    "New language modes and syntax highlighting patterns can be\n"
+                    "added via Preferences -> Default Settings -> Language Modes,\n"
+                    "and Preferences -> Default Settings -> Syntax Highlighting.",
+                    "Dismiss");
     	return NULL;
     }
     
     /* Look up the appropriate pattern for the language */
     patterns = FindPatternSet(modeName);
-    if (patterns == NULL) {
-    	if (warn)
-    	    DialogF(DF_WARN, window->shell, 1,
-"Syntax highlighting is not available in language\n\
-mode %s.\n\
-\n\
-You can create new syntax highlight patterns in the\n\
-Preferences -> Default Settings -> Syntax Highlighting\n\
-dialog, or choose a different language mode from:\n\
-Preferences -> Language Mode.", "Dismiss", modeName);
-    	return NULL;
+    if (patterns == NULL)
+    {
+        if (warn)
+        {
+            DialogF(DF_WARN, window->shell, 1, "Language Mode",
+                    "Syntax highlighting is not available in language\n"
+                    "mode %s.\n\n"
+                    "You can create new syntax highlight patterns in the\n"
+                    "Preferences -> Default Settings -> Syntax Highlighting\n"
+                    "dialog, or choose a different language mode from:\n"
+                    "Preferences -> Language Mode.", "Dismiss", modeName);
+            return NULL;
+        }
     }
     
     return patterns;
@@ -599,52 +600,70 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     
     /* The highlighting code can't handle empty pattern sets, quietly say no */
     if (nPatterns == 0)
-    	return NULL;
-    
+    {
+        return NULL;
+    }
+
     /* Check that the styles and parent pattern names actually exist */
-    if (!NamedStyleExists("Plain")) {
-    	DialogF(DF_WARN, window->shell, 1, 
-   		   "Highlight style \"plain\" is missing", "Dismiss");
-   	return NULL;
+    if (!NamedStyleExists("Plain"))
+    {
+        DialogF(DF_WARN, window->shell, 1, "Highlight Style",
+                "Highlight style \"plain\" is missing", "Dismiss");
+        return NULL;
     }
-    for (i=0; i<nPatterns; i++) {
-    	if (patternSrc[i].subPatternOf != NULL && indexOfNamedPattern(
-    	    	patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-   	    DialogF(DF_WARN, window->shell, 1,
-   		   "Parent field \"%s\" in pattern \"%s\"\n\
-does not match any highlight patterns in this set", "Dismiss",
-    	    	    patternSrc[i].subPatternOf, patternSrc[i].name);
- 	    return NULL;
-    	}
+
+    for (i=0; i<nPatterns; i++)
+    {
+        if (patternSrc[i].subPatternOf != NULL
+                && indexOfNamedPattern(patternSrc, nPatterns,
+                        patternSrc[i].subPatternOf) == -1)
+        {
+            DialogF(DF_WARN, window->shell, 1, "Parent Pattern",
+                    "Parent field \"%s\" in pattern \"%s\"\n"
+                    "does not match any highlight patterns in this set",
+                    "Dismiss", patternSrc[i].subPatternOf, patternSrc[i].name);
+            return NULL;
+        }
     }
-    for (i=0; i<nPatterns; i++) {
-    	if (!NamedStyleExists(patternSrc[i].style)) {
-   	    DialogF(DF_WARN, window->shell, 1,
-   		   "Style \"%s\" named in pattern \"%s\"\ndoes not match \
-any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
- 	    return NULL;
-    	}
+
+    for (i=0; i<nPatterns; i++)
+    {
+        if (!NamedStyleExists(patternSrc[i].style))
+        {
+            DialogF(DF_WARN, window->shell, 1, "Highlight Style",
+                    "Style \"%s\" named in pattern \"%s\"\n"
+                    "does not match any existing style", "Dismiss",
+                    patternSrc[i].style, patternSrc[i].name);
+            return NULL;
+        }
     }
     
     /* Make DEFER_PARSING flags agree with top level patterns (originally,
        individual flags had to be correct and were checked here, but dialog now
        shows this setting only on top patterns which is much less confusing) */
-    for (i=0; i<nPatterns; i++) {
-    	if (patternSrc[i].subPatternOf != NULL) {
-	    int parentindex;
-	    
-	    parentindex=findTopLevelParentIndex(patternSrc, nPatterns, i);
-	    if (parentindex==-1) {
-	       DialogF(DF_WARN, window->shell, 1,
-   		   "Pattern \"%s\" does not have valid parent",
-		   "Dismiss", patternSrc[i].name);
-	       return NULL;
-	    }
-    	    if (patternSrc[parentindex].flags & DEFER_PARSING)
-    	    	patternSrc[i].flags |= DEFER_PARSING;
-    	    else
-    	    	patternSrc[i].flags &= ~DEFER_PARSING;
-    	}
+    for (i = 0; i < nPatterns; i++)
+    {
+        if (patternSrc[i].subPatternOf != NULL)
+        {
+            int parentindex;
+
+            parentindex=findTopLevelParentIndex(patternSrc, nPatterns, i);
+            if (parentindex==-1)
+            {
+                DialogF(DF_WARN, window->shell, 1, "Parent Pattern",
+                        "Pattern \"%s\" does not have valid parent", "Dismiss",
+                        patternSrc[i].name);
+                return NULL;
+            }
+
+            if (patternSrc[parentindex].flags & DEFER_PARSING)
+            {
+                patternSrc[i].flags |= DEFER_PARSING;
+            } else
+            {
+                patternSrc[i].flags &= ~DEFER_PARSING;
+            }
+        }
     }
 
     /* Sort patterns into those to be used in pass 1 parsing, and those to
@@ -865,12 +884,13 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     for (i=0; i<nPatterns; i++) {
         compiledPats[i].colorOnly = patternSrc[i].flags & COLOR_ONLY;
         compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
-	if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
-	    DialogF(DF_WARN, dialogParent, 1,
-   		   "Color-only pattern \"%s\" may not have subpatterns",
-   		   "Dismiss", patternSrc[i].name);
- 	    return NULL;
-	}
+    if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0)
+    {
+        DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern",
+                "Color-only pattern \"%s\" may not have subpatterns", "Dismiss",
+                patternSrc[i].name);
+        return NULL;
+    }
         nSubExprs = 0;
         if (patternSrc[i].startRE != NULL) {
             ptr = patternSrc[i].startRE;
@@ -2002,19 +2022,23 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
     char *compileMsg;
     
     compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
-    if (compiledRE == NULL) {
+    if (compiledRE == NULL)
+    {
         char *boundedRe = XtNewString(re);
         size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
+
         /* Prevent buffer overflow in DialogF. If the re is too long, 
-           truncate it and append ... */
-        if (strlen(boundedRe) > maxLength) {
-           strcpy(&boundedRe[maxLength-3], "...");
+        truncate it and append ... */
+        if (strlen(boundedRe) > maxLength)
+        {
+            strcpy(&boundedRe[maxLength-3], "...");
         }
-   	DialogF(DF_WARN, parent, 1,
-   	       "Error in syntax highlighting regular expression:\n%s\n%s",
-   	       "Dismiss", boundedRe, compileMsg);
+
+        DialogF(DF_WARN, parent, 1, "Error in Regex",
+                "Error in syntax highlighting regular expression:\n%s\n%s",
+                "Dismiss", boundedRe, compileMsg);
         XtFree(boundedRe);
- 	return NULL;
+        return NULL;
     }
     return compiledRE;
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.21 2003/04/06 00:46:06 yooden Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.22 2003/04/07 22:51:42 yooden Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -712,11 +712,12 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     cmdDesc.dsc$b_class   = DSC$K_CLASS_S;
     cmdDesc.dsc$a_pointer = command;
     spawn_sts = lib$spawn(&cmdDesc,0,0,&spawnFlags,0,0,0,0,0,0,0,0);
-    if (spawn_sts != SS$_NORMAL) {
-       	DialogF(DF_WARN, widget, 1,
-       		"Unable to Print:\n%d - %s\n  spawnFlags = %d\n",
-       		"Dismiss", spawn_sts, strerror(EVMSERR, spawn_sts),
-       		spawnFlags);
+
+    if (spawn_sts != SS$_NORMAL)
+    {
+        DialogF(DF_WARN, widget, 1, "Print Error",
+                "Unable to Print:\n%d - %s\n  spawnFlags = %d\n", "Dismiss",
+                spawn_sts, strerror(EVMSERR, spawn_sts), spawnFlags);
         return;
     }
 #else
@@ -734,11 +735,13 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     /* Issue the print command using a popen call and recover error messages
        from the output stream of the command. */
     pipe = popen(command,"r");
-    if (pipe == NULL) {
-	DialogF(DF_WARN, widget, 1, "Unable to Print:\n%s",
-       		"Dismiss", strerror(errno));
-	return;
+    if (pipe == NULL)
+    {
+        DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
+                "Dismiss", strerror(errno));
+        return;
     }
+
     errorString[0] = 0;
     nRead = fread(errorString, sizeof(char), MAX_PRINT_ERROR_LENGTH-1, pipe);
     /* Make sure that the print command doesn't get stuck when trying to 
@@ -747,11 +750,15 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     while (fread(discarded, sizeof(char), 1024, pipe) > 0);
 
     if (!ferror(pipe))
-	errorString[nRead] = '\0';
-    if (pclose(pipe)) {
-	DialogF(DF_WARN, widget, 1, "Unable to Print:\n%s",
-       		"Dismiss", errorString);
-	return;
+    {
+        errorString[nRead] = '\0';
+    }
+
+    if (pclose(pipe))
+    {
+        DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
+                "Dismiss", errorString);
+        return;
     }
 #endif /*(VMS)*/
     
@@ -967,19 +974,24 @@ static void getVmsQueueDefault(char *defqueue)
     translStruct.end_entry = 0;
     translStruct.queName = defqueue;
     translate_sts = sys$trnlnm(0,&tabName,&logName,0,&translStruct);
+
     if (translate_sts != SS$_NORMAL && translate_sts != SS$_NOLOGNAM){
-       fprintf(stderr,"Error return from sys$trnlnm: %d\n", translate_sts);
-       DialogF(DF_WARN, Label2, 1, "Error translating SYS$PRINT", "Dismiss");
+       fprintf(stderr, "Error return from sys$trnlnm: %d\n", translate_sts);
+       DialogF(DF_WARN, Label2, 1, "Error", "Error translating SYS$PRINT",
+               "Dismiss");
        defqueue[0] = '\0';
-    }
-    else
+    } else
+    {
 /*    printf("return status from sys$trnlnm = %d\n", translate_sts); */
-    if (translate_sts == SS$_NOLOGNAM)
-	defqueue[0] = '\0';
-    else {
-	strncpy(defqueue, translStruct.queName, ret_len);
-	defqueue[ret_len] = '\0';
-/*	printf("defqueue = %s, length = %d\n", defqueue, ret_len); */
+        if (translate_sts == SS$_NOLOGNAM)
+        {
+            defqueue[0] = '\0';
+        } else
+        {
+            strncpy(defqueue, translStruct.queName, ret_len);
+            defqueue[ret_len] = '\0';
+/*  printf("defqueue = %s, length = %d\n", defqueue, ret_len); */
+        }
     }   
 }
 #endif /*(VMS)*/

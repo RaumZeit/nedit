@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.54 2002/12/12 17:26:04 slobasso Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.55 2003/04/07 22:51:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -545,7 +545,8 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
     }
     /* return an empty string if the data is not of the correct format. */
     if (*format != 8) {
-        DialogF(DF_WARN, window->shell, 1, "NEdit can't handle non 8-bit text", "OK");
+        DialogF(DF_WARN, window->shell, 1, "Invalid Format",
+                "NEdit can't handle non 8-bit text", "OK");
         XtFree(value);
         selectionInfo->selection = 0;
         selectionInfo->done = 1;
@@ -1836,9 +1837,10 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
        if (XmListPosSelected(window->replaceMultiFileList, i+1))
           ++nSelected;
 
-    if (!nSelected) {
-       DialogF(DF_INF, XtParent(window->replaceMultiFileDlog), 1,
-  	   	  "No files selected!", "OK");
+    if (!nSelected)
+    {
+        DialogF(DF_INF, XtParent(window->replaceMultiFileDlog), 1, "No Files",
+                "No files selected!", "OK");
        return; /* Give the user another chance */
     }
 
@@ -1848,14 +1850,14 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     /*
      * Protect the user against him/herself; Maybe this is a bit too much?
      */
-    if (DialogF(DF_QUES, window->shell, 2,
-	        "Multi-file replacements are difficult to undo.\n"
-                "Proceed with the replacement ?", "Yes", "Cancel") != 1) {
+    if (DialogF(DF_QUES, window->shell, 2, "Multi-File Replacement",
+            "Multi-file replacements are difficult to undo.\n"
+            "Proceed with the replacement ?", "Yes", "Cancel") != 1)
+    {
+        /* pop down the multi-file dialog only */
+        XtUnmanageChild(window->replaceMultiFileDlog);
 
-       /* pop down the multi-file dialog only */
-       XtUnmanageChild(window->replaceMultiFileDlog);
-
-       return;
+        return;
     }
 
     /* Fetch the find and replace strings from the dialog; 
@@ -1911,10 +1913,10 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     if (replaceFailed) {
 	if (GetPrefSearchDlogs()) {
 	    if (noWritableLeft) {
-		DialogF(DF_INF, window->shell, 1, 
+		DialogF(DF_INF, window->shell, 1, "Read-only Files",
 			"All selected files have become read-only.", "OK");
 	    } else {
-		DialogF(DF_INF, window->shell, 1, 
+		DialogF(DF_INF, window->shell, 1, "String not found",
 			"String was not found", "OK");
             }
 	} else {
@@ -2517,7 +2519,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
          immediately and present error messages */
       compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
       if (compiledRE == NULL) {
-   	  DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+   	  DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String",
    	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
 	  XtFree(replaceText);
 	  XtFree(replaceWithText);
@@ -2543,14 +2545,14 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     
     /* Return strings */
     if (strlen(replaceText) >= SEARCHMAX) {
-	DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
    	    	 "Search string too long.", "OK");
 	XtFree(replaceText);
 	XtFree(replaceWithText);
 	return FALSE;
     }
     if (strlen(replaceWithText) >= SEARCHMAX) {
-	DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
    	    	 "Replace string too long.", "OK");
 	XtFree(replaceText);
 	XtFree(replaceWithText);
@@ -2594,7 +2596,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
          immediately and present error messages */
       compiledRE = CompileRE(findText, &compileMsg, regexDefault);
       if (compiledRE == NULL) {
-   	  DialogF(DF_WARN, XtParent(window->findDlog), 1,
+   	  DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error",
    	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
  	  return FALSE;
       }
@@ -2621,7 +2623,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
 
     /* Return the search string */
     if (strlen(findText) >= SEARCHMAX) {
-	DialogF(DF_WARN, XtParent(window->findDlog), 1,
+	DialogF(DF_WARN, XtParent(window->findDlog), 1, "String too long",
    	    	 "Search string too long.", "OK");
 	XtFree(findText);
 	return FALSE;
@@ -2737,7 +2739,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     /* skip if we can't get the selection data or it's too long */
     if (*type == XT_CONVERT_FAIL || value == NULL) {
     	if (GetPrefSearchDlogs())
-   	    DialogF(DF_WARN, window->shell, 1,
+   	    DialogF(DF_WARN, window->shell, 1, "Wrong Selection",
    	    	    "Selection not appropriate for searching", "OK");
     	else
     	    XBell(TheDisplay, 0);
@@ -2746,7 +2748,8 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     }
     if (*length > SEARCHMAX) {
     	if (GetPrefSearchDlogs())
-   	    DialogF(DF_WARN, window->shell, 1, "Selection too long", "OK");
+   	    DialogF(DF_WARN, window->shell, 1, "Selection too long",
+                    "Selection too long", "OK");
     	else
     	    XBell(TheDisplay, 0);
 	XtFree(value);
@@ -3634,7 +3637,8 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
     	    if (window->replaceDlog && XtIsManaged(window->replaceDlog) &&
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
     		unmanageReplaceDialogs(window);
-   	    DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
+   	    DialogF(DF_INF, window->shell, 1, "String not found",
+                "String was not found", "OK");
     	} else
     	    XBell(TheDisplay, 0);
  	BufFree(tempBuf);
@@ -3694,7 +3698,8 @@ int ReplaceAll(WindowInfo *window, const char *searchString,
     	    if (window->replaceDlog && XtIsManaged(window->replaceDlog) &&
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
     		unmanageReplaceDialogs(window);
-   	    DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
+   	    DialogF(DF_INF, window->shell, 1, "String not found",
+                "String was not found", "OK");
     	} else
     	    XBell(TheDisplay, 0);
 	return FALSE;
@@ -3883,7 +3888,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 		    if(GetPrefBeepOnSearchWrap()) {
 			XBell(TheDisplay, 0);
 		    } else if (GetPrefSearchDlogs()) {
-			resp = DialogF(DF_QUES, window->shell, 2,
+			resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search",
 				"Continue search from\nbeginning of file?", 
                                 "Continue", "Cancel");
 			if (resp == 2) {
@@ -3898,7 +3903,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 		    if(GetPrefBeepOnSearchWrap()) {
 			XBell(TheDisplay, 0);
 		    } else if (GetPrefSearchDlogs()) {
-			resp = DialogF(DF_QUES, window->shell, 2,
+			resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search",
 				"Continue search\nfrom end of file?", "Continue",
 				"Cancel");
 			if (resp == 2) {
@@ -3913,7 +3918,8 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 	    }
             if (!found) {
 		if (GetPrefSearchDlogs()) {
-		    DialogF(DF_INF, window->shell,1,"String was not found","OK");
+		    DialogF(DF_INF, window->shell, 1, "String not found",
+                    "String was not found","OK");
 		} else {
 		    XBell(TheDisplay, 0);
 		}

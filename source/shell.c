@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.23 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.24 2003/04/07 22:51:41 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -213,12 +213,13 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-    if (subsCommand == NULL) {
-    	DialogF(DF_ERR, window->shell, 1,
-	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
-	   "line number substitutions with '#'",
-	    "OK");
-	return;
+    if (subsCommand == NULL)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Shell Command",
+                "Shell command is too long due to\n"
+                "filename substitutions with '%%' or\n"
+                "line number substitutions with '#'", "OK");
+        return;
     }
 
     /* issue the command */
@@ -286,12 +287,13 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(cmdText, fullName, lineNumber);
-    if (subsCommand == NULL) {
-    	DialogF(DF_ERR, window->shell, 1,
-	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
-	   "line number substitutions with '#'",
-	    "OK");
-	return;
+    if (subsCommand == NULL)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Shell Command",
+                "Shell command is too long due to\n"
+                "filename substitutions with '%%' or\n"
+                "line number substitutions with '#'", "OK");
+        return;
     }
 
     /* issue the command */
@@ -334,14 +336,15 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-    if (subsCommand == NULL) {
-    	DialogF(DF_ERR, window->shell, 1,
-	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
-	   "line number substitutions with '#'",
-	    "OK");
-	return;
+    if (subsCommand == NULL)
+    {
+        DialogF(DF_ERR, window->shell, 1, "Shell Command",
+                "Shell command is too long due to\n"
+                "filename substitutions with '%%' or\n"
+                "line number substitutions with '#'", "OK");
+        return;
     }
-    	
+
     /* Get the command input as a text string.  If there is input, errors
       shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
     if (input == FROM_SELECTION) {
@@ -818,33 +821,40 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     /* Present error and stderr-information dialogs.  If a command returned
        error output, or if the process' exit status indicated failure,
        present the information to the user. */
-    if (cmdData->flags & ERROR_DIALOGS) {
-	failure = WIFEXITED(status) && WEXITSTATUS(status) != 0;
-	errorReport = *errText != '\0';
-	if (failure && errorReport) {
-    	    removeTrailingNewlines(errText);
-    	    truncateString(errText, DF_MAX_MSG_LENGTH);
-    	    resp = DialogF(DF_WARN, window->shell, 2, "%s",
-    	    	    "Cancel", "Proceed", errText);
-    	    cancel = resp == 1;
-	} else if (failure) {
-    	    truncateString(outText, DF_MAX_MSG_LENGTH-70);
-    	    resp = DialogF(DF_WARN, window->shell, 2,
-    	       "Command reported failed exit status.\nOutput from command:\n%s",
-    		    "Cancel", "Proceed", outText);
-    	    cancel = resp == 1;
-	} else if (errorReport) {
-    	    removeTrailingNewlines(errText);
-    	    truncateString(errText, DF_MAX_MSG_LENGTH);
-    	    resp = DialogF(DF_INF, window->shell, 2, "%s",
-    	    	    "Proceed", "Cancel", errText);
-    	    cancel = resp == 2;
-	}
-	XtFree(errText);
-	if (cancel) {
-	    XtFree(outText);
-    	    goto cmdDone;
-	}
+    if (cmdData->flags & ERROR_DIALOGS)
+    {
+        failure = WIFEXITED(status) && WEXITSTATUS(status) != 0;
+        errorReport = *errText != '\0';
+
+        if (failure && errorReport)
+        {
+            removeTrailingNewlines(errText);
+            truncateString(errText, DF_MAX_MSG_LENGTH);
+            resp = DialogF(DF_WARN, window->shell, 2, "Warning", "%s", "Cancel",
+                    "Proceed", errText);
+            cancel = resp == 1;
+        } else if (failure)
+        {
+            truncateString(outText, DF_MAX_MSG_LENGTH-70);
+            resp = DialogF(DF_WARN, window->shell, 2, "Command Failure",
+                    "Command reported failed exit status.\n"
+                    "Output from command:\n%s", "Cancel", "Proceed", outText);
+            cancel = resp == 1;
+        } else if (errorReport)
+        {
+            removeTrailingNewlines(errText);
+            truncateString(errText, DF_MAX_MSG_LENGTH);
+            resp = DialogF(DF_INF, window->shell, 2, "Information", "%s",
+                    "Proceed", "Cancel", errText);
+            cancel = resp == 2;
+        }
+
+        XtFree(errText);
+        if (cancel)
+        {
+            XtFree(outText);
+            goto cmdDone;
+        }
     }
     
     /* If output is to a dialog, present the dialog.  Otherwise insert the
@@ -987,9 +997,11 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     
     /* Parent process context, check if fork succeeded */
     if (childPid == -1)
-    	DialogF(DF_ERR, parent, 1,
-		"Error starting shell command process\n(fork failed)",
-		"Dismiss");
+    {
+        DialogF(DF_ERR, parent, 1, "Shell Command",
+                "Error starting shell command process\n(fork failed)",
+                "Dismiss");
+    }
 
     /* close the child ends of the pipes */
     close(childStdinFD);
