@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.10 2001/08/09 13:34:27 amai Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.11 2001/08/09 18:03:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -72,7 +72,9 @@ typedef struct {
 
 typedef struct {
     Program *newlineMacro;
+    int inNewLineMacro;
     Program *modMacro;
+    int inModMacro;
 } windowSmartIndentData;
 
 /* Smart indent macros dialog information */
@@ -722,6 +724,8 @@ Preferences -> Language Mode.", "Dismiss", modeName);
     
     /* Compile the newline and modify macros and attach them to the window */
     winData = (windowSmartIndentData *)XtMalloc(sizeof(windowSmartIndentData));
+    winData->inNewLineMacro = 0;
+    winData->inModMacro = 0;
     winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg,
     	    &stoppedAt);
     if (winData->newlineMacro == NULL) {
@@ -794,6 +798,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
 {
     windowSmartIndentData *winData =
     	    (windowSmartIndentData *)window->smartIndentData;
+    /* posValue probably shouldn't be static due to re-entrance issues <slobasso> */
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;
     RestartData *continuation;
@@ -802,6 +807,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
    
     /* Call newline macro with the position at which to add newline/indent */
     posValue.val.n = cbInfo->pos;
+    ++(winData->inNewLineMacro);
     stat = ExecuteMacro(window, winData->newlineMacro, 1, &posValue, &result,
     	    &continuation, &errMsg);
     
@@ -809,6 +815,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     while (stat == MACRO_TIME_LIMIT)
     	stat = ContinueMacro(continuation, &result, &errMsg);
     
+    --(winData->inNewLineMacro);
     /* Collect Garbage.  Note that the mod macro does not collect garbage,
        (because collecting per-line is more efficient than per-character)
        but GC now depends on the newline macro being mandatory */
@@ -834,6 +841,14 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     cbInfo->indentRequest = result.val.n;
 }
 
+
+Boolean InSmartIndentMacros(WindowInfo *window) {
+    windowSmartIndentData *winData =
+    	    (windowSmartIndentData *)window->smartIndentData;
+
+	return((winData && (winData->inModMacro || winData->inModMacro)));
+}
+
 /*
 ** Run the modification macro with information from the smart-indent callback
 ** structure passed by the widget
@@ -842,7 +857,9 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
 {
     windowSmartIndentData *winData =
     	    (windowSmartIndentData *)window->smartIndentData;
+    /* args probably shouldn't be static due to future re-entrance issues <slobasso> */
     static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
+    /* after 5.2 release remove inModCB and use new winData->inModMacro value */
     static int inModCB = False;
     DataValue result;
     RestartData *continuation;
@@ -860,11 +877,16 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
     args[0].val.n = cbInfo->pos;
     args[1].val.str = AllocString(strlen(cbInfo->charsTyped) + 1);
     strcpy(args[1].val.str, cbInfo->charsTyped);
+
     inModCB = True;
-	stat = ExecuteMacro(window, winData->modMacro, 3, args, &result,
-    		&continuation, &errMsg);
-	while (stat == MACRO_TIME_LIMIT)
-    	    stat = ContinueMacro(continuation, &result, &errMsg);
+    ++(winData->inModMacro);
+
+    stat = ExecuteMacro(window, winData->modMacro, 3, args, &result,
+        &continuation, &errMsg);
+    while (stat == MACRO_TIME_LIMIT)
+        stat = ContinueMacro(continuation, &result, &errMsg);
+
+    --(winData->inModMacro);
     inModCB = False;
     
     /* Process errors in macro execution */

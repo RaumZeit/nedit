@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.29 2001/08/02 22:59:58 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.30 2001/08/09 18:03:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -71,6 +71,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.29 2001/08/02 22:59:58 slobasso Ex
 #include "parse.h"
 #include "search.h"
 #include "shell.h"
+#include "smartIndent.h"
 #include "userCmds.h"
 #include "selection.h"
 #include "../util/utils.h"
@@ -1023,7 +1024,7 @@ void SafeGC(void)
     WindowInfo *win;
     
     for (win=WindowList; win!=NULL; win=win->next)
-	if (win->macroCmdData != NULL)
+	if (win->macroCmdData != NULL || InSmartIndentMacros(win))
 	    return;
     GarbageCollectStrings();
 }

@@ -1,4 +1,4 @@
-/* $Id: smartIndent.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: smartIndent.h,v 1.4 2001/08/09 18:03:10 slobasso Exp $ */
 void BeginSmartIndent(WindowInfo *window, int warn);
 void EndSmartIndent(WindowInfo *window);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -9,3 +9,4 @@ char *WriteSmartIndentCommonString(void);
 int SmartIndentMacrosAvailable(char *languageMode);
 void EditSmartIndentMacros(WindowInfo *window);
 void EditCommonSmartIndentMacro(void);
+Boolean InSmartIndentMacros(WindowInfo *window);
