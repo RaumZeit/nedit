@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.155 2004/04/30 11:53:10 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.156 2004/05/03 11:59:04 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1034,6 +1034,7 @@ void CloseWindow(WindowInfo *window)
     /* remove the window from the global window list, update window menus */
     removeFromWindowList(window);
     InvalidateWindowMenus();
+    CheckCloseDim(); /* Close of window running a macro may have been disabled. */
 
     /* remove the tab of the closing document from tab bar */
     XtDestroyWidget(window->tab);
