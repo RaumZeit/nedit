@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.74 2005/01/06 06:09:40 ajbj Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.75 2005/02/12 12:04:30 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -475,6 +475,15 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
     bestClass = 0;
     bestVisual = 0;
     for (i=0; i < nVis; i++) {
+        if (visList[i].depth >= 32 && 
+            strstr(ServerVendor(display), "X.Org") != 0) {
+             /* Xorg 6.8.* 32-bit visuals (with alpha-channel) cause a lot
+                of problems, so we have to skip them.
+                Users can achieve the same effect with older versions of
+                NEdit by setting the environment variable 
+                XLIB_SKIP_ARGB_VISUALS. */
+            continue;
+        }
 	if (visList[i].depth > maxDepth) {
 	    maxDepth = visList[i].depth;
 	    bestClass = 0;
