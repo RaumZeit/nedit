@@ -1,4 +1,4 @@
-# $Id: Makefile.common,v 1.6 2001/03/05 15:00:13 slobasso Exp $
+# $Id: Makefile.common,v 1.7 2001/08/07 23:46:52 slobasso Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #
@@ -23,6 +23,9 @@ help.o: help.c
 
 smartIndent.o: smartIndent.c
 	$(CC) $(CFLAGS) $(BIGGER_STRINGS) -c smartIndent.c -o $@
+
+highlightData.o: highlightData.c
+	$(CC) $(CFLAGS) $(BIGGER_STRINGS) -c highlightData.c -o $@
 
 clean:
 	rm -f $(OBJS) nedit nc nc.o
