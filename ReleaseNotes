@@ -32,7 +32,13 @@ Bug Fixes in 5.2
  - Fix a crash when entering an invalid line number in "Goto Line".
  
  - Ignore the Caps-Lock key when invoking accelerators.
+ 
+ - Fix problems when running NEdit on 64bit platforms like alpha
+ 
+ - NEdit failed to open files if some directories above were not "readable"
 
+ - Fix potential crashes if some system calls fail
+ 
   
 New Features in 5.1
 

@@ -223,7 +223,7 @@ int AddTagsFile(char *tagSpec)
 	if (*filename != '/') {
 	    if (!getcwd(pathName,MAXPATHLEN)) {
 		fprintf(stderr, "NEdit: failed to get working directory\n");
-		return FALSE;
+		strcpy(pathName, ".");
 	    }
 	    strcat(pathName,"/");
 	    strcat(pathName,filename);

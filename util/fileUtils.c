@@ -137,13 +137,17 @@ static int normalizePathname(char *pathname)
     if (pathname[0] != '/') {
         /* make a copy of pathname to work from */
 	strcpy(oldPathname, pathname);
-	/* get the working directory */
-	getcwd(wd, MAXPATHLEN);
-	/* prepend it to the path */
-	strcpy(pathname, wd);
+	/* get the working directory and prepend to the path */
+	if (!getcwd(wd, MAXPATHLEN)) {
+  	   fprintf(stderr, "NEdit: failed to get working directory\n");
+	   strcpy(pathname, ".");
+	}
+	else
+	   strcpy(pathname, wd);
 	strcat(pathname, "/");
 	strcat(pathname, oldPathname);
     }
+
     /* compress out .. and . */
     return compressPathname(pathname);
 }
