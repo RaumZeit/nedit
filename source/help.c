@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.43 2001/08/06 20:38:51 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.44 2001/08/09 08:37:50 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -25,6 +25,7 @@ static const char CVSID[] = "$Id: help.c,v 1.43 2001/08/06 20:38:51 tringali Exp
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+#include <stdio.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -37,6 +38,7 @@ static const char CVSID[] = "$Id: help.c,v 1.43 2001/08/06 20:38:51 tringali Exp
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
 #include <Xm/PushB.h>
+
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
@@ -49,7 +51,6 @@ static const char CVSID[] = "$Id: help.c,v 1.43 2001/08/06 20:38:51 tringali Exp
 #include "preferences.h"
 #include "help.h"
 #include "file.h"
-#include <stdio.h>
 
 static const char *const HelpTitles[NUM_TOPICS] = {
 "Version",
@@ -101,6 +102,7 @@ static const char *const HelpTitles[NUM_TOPICS] = {
 
 static const char *const HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n"
+"(August 2001)\n"
 "\n"
 "     Built on: %s, %s, %s\n"
 "     Built at: %s, %s\n"
