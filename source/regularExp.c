@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.10 2001/08/29 13:56:06 amai Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.11 2001/09/17 14:06:24 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2438,7 +2438,7 @@ static unsigned char *Current_Delimiters;  /* Current delimiter table */
 
 static int             attempt            (regexp *, unsigned char *);
 static int             match              (unsigned char *);
-static unsigned long   greedy             (unsigned char *, int);
+static unsigned long   greedy             (unsigned char *, long);
 static void            adjustcase         (unsigned char *, int, unsigned char);
 static unsigned char * makeDelimiterTable (unsigned char *, unsigned char *);
 
@@ -3287,7 +3287,7 @@ static int match (unsigned char *prog) {
  * Returns the actual number of matches.
  *----------------------------------------------------------------------*/
 
-static unsigned long greedy (unsigned char *p, int max) {
+static unsigned long greedy (unsigned char *p, long max) {
 
    register unsigned char *input_str;
    register unsigned char *operand;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.30 2001/09/06 09:37:54 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.31 2001/09/17 14:06:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -896,16 +896,18 @@ static int writeBckVersion(WindowInfo *window)
     char *fileString;
 
     /* Do only if version backups are turned on */
-    if (!window->saveOldVersion)
+    if (!window->saveOldVersion) {
     	return False;
+    }
     
     /* Get the full name of the file */
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
     
-    /* Generate name for old version */
-    if ((int)(strlen(fullname) + 5) > MAXPATHLEN)
+    /* Generate name for old version */ {
+    if ((int)(strlen(fullname) + 5) > (int)MAXPATHLEN)
     	return bckError(window, "file name too long", window->filename);
+    }
     sprintf(bckname, "%s.bck", fullname);
 
     /* Delete the old backup file */
@@ -919,12 +921,14 @@ static int writeBckVersion(WindowInfo *window)
 #else
     inFP = fopen(fullname, "r");
 #endif
-    if (inFP == NULL)
+    if (inFP == NULL) {
     	return FALSE;
-    
+    }
+
     /* find the length of the file */
-    if (fstat(fileno(inFP), &statbuf) != 0)
+    if (fstat(fileno(inFP), &statbuf) != 0) {
 	return FALSE;
+    }
     fileLen = statbuf.st_size;
 
     /* open the file exclusive and with restrictive permissions. */

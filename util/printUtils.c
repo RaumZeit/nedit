@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.12 2001/08/25 12:16:38 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.13 2001/09/17 14:06:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -720,7 +720,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     
     /* Issue the print command using a popen call and recover error messages
        from the output stream of the command. */
-    pipe = (FILE *)popen(command,"r");
+    pipe = popen(command,"r");
     if (pipe == NULL) {
 	DialogF(DF_WARN, widget, 1, "Unable to Print:\n%s",
        		"Dismiss", strerror(errno));
