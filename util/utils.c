@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.6 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.7 2001/11/26 14:17:33 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -31,15 +31,16 @@ static const char CVSID[] = "$Id: utils.c,v 1.6 2001/11/18 19:02:58 arnef Exp $"
 #include "../util/VMSparam.h"
 #include "../util/VMSutils.h"
 #endif
-#include <X11/Xlib.h>
-#include <sys/utsname.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #ifdef VMS
 #include "vmsparam.h"
 #else
 #include <sys/param.h>
 #endif /*VMS*/
 #include <pwd.h>
+/* just to get 'Boolean' types defined: */
+#include <X11/Xlib.h>
 
 #include "utils.h"
 
@@ -63,28 +64,38 @@ extern const char
 *GetHomeDir(void)
 /* return a non-NULL value for the user's home directory.
    We try really hard:
-   environment var, system user database and finally some fallback */
+   environment var, system user database and finally some fallback.
+   The order is correct and allows the user to re-set his HOME
+   directory if necessary. */
 {
     const char *ptr;
+    static char homedir[MAXPATHLEN]="";
     struct passwd *passwdEntry;
 
+    if (*homedir) {
+       return homedir;
+    }
     ptr=getenv("HOME");
-    if (ptr) {
-       return ptr;
+    if (!ptr) {
+       passwdEntry = getpwuid(getuid());
+       if (passwdEntry && *(passwdEntry->pw_dir)) {
+           ptr= passwdEntry->pw_dir;
+       }
     }
-    passwdEntry = getpwuid(getuid());
-    if (passwdEntry) {
-       return (passwdEntry->pw_dir);
+    if (!ptr) {
+       ptr=GetCurrentDir();
     }
-    ptr=GetCurrentDir();
-    return (ptr);
+    strncpy(homedir, ptr, sizeof(homedir)-1);
+    homedir[sizeof(homedir)-1]='\0';
+    return homedir;
 }
 
 /*
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
 */
-const char *GetUserName(void)
+const char
+*GetUserName(void)
 {
 #ifdef VMS
     return cuserid(NULL);
@@ -96,18 +107,22 @@ const char *GetUserName(void)
        results in the user-name of the original terminal being used, which is
        not correct when the user uses the su command.  Now, getpwuid only: */
     const struct passwd *passwdEntry = getpwuid(getuid());
+
     if (!passwdEntry) {
+       /* This is really serious, so just exit. */
        perror("NEdit/nc: getpwuid() failed ");
        exit(EXIT_FAILURE);
     }
     return passwdEntry->pw_name;
-#endif
+#endif /* VMS */
 }
+
 
 /*
 ** Writes the hostname of the current system in string "hostname".
 */
-const char *GetHostName(void)
+const char
+*GetHostName(void)
 {
     static char hostname[MAXNODENAMELEN+1];
     static int  hostnameFound = False;
@@ -142,7 +157,7 @@ const char *GetHostName(void)
            exit(EXIT_FAILURE);
         }
         strcpy(hostname, nameStruct.nodename);
-#endif
+#endif /* VMS */
         hostnameFound = True;
     }
     return hostname;
