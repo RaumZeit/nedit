@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.173 2004/09/01 18:19:55 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.174 2004/09/15 22:50:58 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1688,11 +1688,11 @@ void UpdateNewOppositeMenu(WindowInfo *window, int openInTab)
     XmString lbl;
     if ( openInTab )
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimple("New (in Window)"), 
+                XmNlabelString, lbl=XmStringCreateSimple("New Window"), 
                 XmNmnemonic, 'W', NULL);
     else
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimple("New (in Tab)"), 
+                XmNlabelString, lbl=XmStringCreateSimple("New Tab"), 
                 XmNmnemonic, 'T', NULL);
     XmStringFree(lbl);
 }

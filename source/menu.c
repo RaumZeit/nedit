@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.114 2004/09/07 04:19:18 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.115 2004/09/15 22:50:57 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -653,10 +653,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "new", "New", 'N', doActionCB, "new", SHORT);
     if ( GetPrefOpenInTab() )
         window->newOppositeItem = createMenuItem(menuPane, "newOpposite", 
-                "New (in Window)", 'W', doActionCB, "new_opposite", SHORT);
+                "New Window", 'W', doActionCB, "new_opposite", SHORT);
     else
         window->newOppositeItem = createMenuItem(menuPane, "newOpposite", 
-                "New (in Tab)", 'T', doActionCB, "new_opposite", SHORT);
+                "New Tab", 'T', doActionCB, "new_opposite", SHORT);
     createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog",
     	    SHORT);
     window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
