@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.40 2002/12/12 17:25:46 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.41 2003/04/06 00:46:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1711,8 +1711,8 @@ void EditHighlightStyles(Widget parent, const char *initialStyle)
     /* Create a form widget in an application shell */
     ac = 0;
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-    XtSetArg(args[ac], XmNiconName, "Highlight Styles"); ac++;
-    XtSetArg(args[ac], XmNtitle, "Highlight Styles"); ac++;
+    XtSetArg(args[ac], XmNiconName, "NEdit Text Drawing Styles"); ac++;
+    XtSetArg(args[ac], XmNtitle, "Text Drawing Styles"); ac++;
     HSDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(HSDialog.shell);
@@ -2257,7 +2257,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     /* Create a form widget in an application shell */
     n = 0;
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
-    XtSetArg(args[n], XmNiconName, "Highlight Patterns"); n++;
+    XtSetArg(args[n], XmNiconName, "NEdit Highlight Patterns"); n++;
     XtSetArg(args[n], XmNtitle, "Syntax Highlighting Patterns"); n++;
     HighlightDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);

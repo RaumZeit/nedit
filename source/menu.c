@@ -1,29 +1,29 @@
-static const char CVSID[] = "$Id: menu.c,v 1.69 2003/03/24 17:05:24 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.70 2003/04/06 00:46:05 yooden Exp $";
 /*******************************************************************************
-*									       *
-* menu.c -- Nirvana Editor menus					       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* menu.c -- Nirvana Editor menus                                               *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version.                                                                     *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* May 10, 1991								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* May 10, 1991                                                                 *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -811,7 +811,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     createMenuItem(subPane, "tabDistance", "Tabs...", 'T', tabsDefCB, window,
     	    SHORT);
-    createMenuItem(subPane, "textFont", "Text Font...", 'F', fontDefCB, window,
+    createMenuItem(subPane, "textFont", "Text Fonts...", 'F', fontDefCB, window,
     	    FULL);
     createMenuItem(subPane, "colors", "Colors...", 'C', colorDefCB, window,
     	    FULL);
@@ -1025,7 +1025,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(subPane, "wrapMargin", "Wrap Margin...", 'W',
     	    wrapMarginCB, window, SHORT);
     createMenuItem(menuPane, "tabs", "Tabs...", 'T', tabsCB, window, SHORT);
-    createMenuItem(menuPane, "textFont", "Text Font...", 'F', fontCB, window,
+    createMenuItem(menuPane, "textFont", "Text Fonts...", 'F', fontCB, window,
     	    FULL);
     createMenuItem(menuPane, "colors", "Colors...", 'C', colorCB, window,
     	    FULL);
@@ -2393,7 +2393,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     char fullname[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "File to Edit", fullname);
+    response = PromptForExistingFile(window, "Open File", fullname);
     if (response != GFN_OK)
     	return;
     params[0] = fullname;
@@ -2407,11 +2407,11 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     
     if (*nArgs == 0) {
-    	fprintf(stderr, "NEdit: open action requires file argument\n");
+    	fprintf(stderr, "nedit: open action requires file argument\n");
     	return;
     }
     if (ParseFilename(args[0], filename, pathname) != 0) {
-        fprintf(stderr, "NEdit: invalid file name for open action: %s\n",
+        fprintf(stderr, "nedit: invalid file name for open action: %s\n",
 	        args[0]);
     	return;
     } 
@@ -2474,7 +2474,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     if (*nArgs == 0) {
-    	fprintf(stderr, "NEdit: save_as action requires file argument\n");
+    	fprintf(stderr, "nedit: save_as action requires file argument\n");
     	return;
     }
     SaveWindowAs(WidgetToWindow(w), args[0],
@@ -2514,7 +2514,7 @@ static void includeDialogAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    response = PromptForExistingFile(window, "File to Include", filename);
+    response = PromptForExistingFile(window, "Include File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2528,7 +2528,7 @@ static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (CheckReadOnly(window))
     	return;
     if (*nArgs == 0) {
-    	fprintf(stderr, "NEdit: include action requires file argument\n");
+    	fprintf(stderr, "nedit: include action requires file argument\n");
     	return;
     }
     IncludeFile(WidgetToWindow(w), args[0]);
@@ -2541,7 +2541,7 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args,
     char filename[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "NEdit Macro File", filename);
+    response = PromptForExistingFile(window, "Load Macro File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2551,7 +2551,7 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args,
 static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     if (*nArgs == 0) {
-    	fprintf(stderr,"NEdit: load_macro_file action requires file argument\n");
+    	fprintf(stderr,"nedit: load_macro_file action requires file argument\n");
     	return;
     }
     ReadMacroFile(WidgetToWindow(w), args[0], True);
@@ -2564,7 +2564,7 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args,
     char filename[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "ctags File", filename);
+    response = PromptForExistingFile(window, "Load Tags File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2574,7 +2574,7 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args,
 static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     if (*nArgs == 0) {
-    	fprintf(stderr,"NEdit: load_tags_file action requires file argument\n");
+    	fprintf(stderr,"nedit: load_tags_file action requires file argument\n");
     	return;
     }
     if (!AddTagsFile(args[0], TAG)) {
@@ -2588,7 +2588,7 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
 	fprintf(stderr,
-		"NEdit: unload_tags_file action requires file argument\n");
+		"nedit: unload_tags_file action requires file argument\n");
 	return;
     }
     DeleteTagsFile(args[0], TAG);
@@ -2601,7 +2601,7 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args,
     char filename[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "Calltips File", filename);
+    response = PromptForExistingFile(window, "Load Calltips File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2611,7 +2611,7 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args,
 static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     if (*nArgs == 0) {
-    	fprintf(stderr,"NEdit: load_tips_file action requires file argument\n");
+    	fprintf(stderr,"nedit: load_tips_file action requires file argument\n");
     	return;
     }
     if (!AddTagsFile(args[0], TIP)) {
@@ -2625,7 +2625,7 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
 	fprintf(stderr,
-		"NEdit: unload_tips_file action requires file argument\n");
+		"nedit: unload_tips_file action requires file argument\n");
 	return;
     }
     DeleteTagsFile(args[0], TIP);
@@ -2774,7 +2774,7 @@ static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
-    	fprintf(stderr, "NEdit: find action requires search string argument\n");
+    	fprintf(stderr, "nedit: find action requires search string argument\n");
     	return;
     }
     SearchAndSelect(WidgetToWindow(w), searchDirection(1, args, nArgs), args[0],
@@ -2804,7 +2804,7 @@ static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int i, continued = FALSE;
     if (*nArgs == 0) {
-    	fprintf(stderr, "NEdit: find action requires search string argument\n");
+    	fprintf(stderr, "nedit: find action requires search string argument\n");
     	return;
     }
     for (i=1; i<(int)*nArgs; i++)
@@ -2835,7 +2835,7 @@ static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     if (*nArgs < 2) {
     	fprintf(stderr,
-    	"NEdit: replace action requires search and replace string arguments\n");
+    	"nedit: replace action requires search and replace string arguments\n");
     	return;
     }
     SearchAndReplace(window, searchDirection(2, args, nArgs),
@@ -2851,7 +2851,7 @@ static void replaceAllAP(Widget w, XEvent *event, String *args,
     	return;
     if (*nArgs < 2) {
     	fprintf(stderr,
-    "NEdit: replace_all action requires search and replace string arguments\n");
+    "nedit: replace_all action requires search and replace string arguments\n");
     	return;
     }
     ReplaceAll(window, args[0], args[1], searchType(2, args, nArgs));
@@ -2866,7 +2866,7 @@ static void replaceInSelAP(Widget w, XEvent *event, String *args,
     	return;
     if (*nArgs < 2) {
     	fprintf(stderr,
-  "NEdit: replace_in_selection requires search and replace string arguments\n");
+  "nedit: replace_in_selection requires search and replace string arguments\n");
     	return;
     }
     ReplaceInSelection(window, args[0], args[1],
@@ -2913,7 +2913,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     int lineNum, column, position, curCol;
     
     if (*nArgs == 0 || StringToLineAndCol( args[0], &lineNum, &column ) == -1) {
-    	fprintf(stderr,"NEdit: goto_line_number action requires line and/or column number\n");
+    	fprintf(stderr,"nedit: goto_line_number action requires line and/or column number\n");
     	return;
     }
     /* User specified column, but not line number */
@@ -2962,7 +2962,7 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args,
     int how;
     
     if (*nArgs != 2) {
-    	fprintf(stderr, "NEdit: repeat_macro requires two arguments\n");
+    	fprintf(stderr, "nedit: repeat_macro requires two arguments\n");
     	return;
     }
     if (!strcmp(args[0], "in_selection"))
@@ -2970,7 +2970,7 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args,
     else if (!strcmp(args[0], "to_end"))
 	how = REPEAT_TO_END;
     else if (sscanf(args[0], "%d", &how) != 1) {
-    	fprintf(stderr, "NEdit: repeat_macro requires method/count\n");
+    	fprintf(stderr, "nedit: repeat_macro requires method/count\n");
     	return;
     }
     RepeatMacro(WidgetToWindow(w), args[1], how);
@@ -2980,7 +2980,7 @@ static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0 || strlen(args[0]) != 1 || 
       	    !isalnum((unsigned char)args[0][0])) {
-    	fprintf(stderr,"NEdit: mark action requires a single-letter label\n");
+    	fprintf(stderr,"nedit: mark action requires a single-letter label\n");
     	return;
     }
     AddMark(WidgetToWindow(w), w, args[0][0]);
@@ -2997,7 +2997,7 @@ static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (*nArgs == 0 || strlen(args[0]) != 1 || 
       	    !isalnum((unsigned char)args[0][0])) {
      	fprintf(stderr,
-     	    	"NEdit: goto_mark action requires a single-letter label\n");
+     	    	"nedit: goto_mark action requires a single-letter label\n");
      	return;
     }
     GotoMark(WidgetToWindow(w), w, args[0][0], *nArgs > 1 &&
@@ -3149,7 +3149,7 @@ static void shellFilterAP(Widget w, XEvent *event, String *args,
     	return;
     if (*nArgs == 0) {
     	fprintf(stderr,
-    		"NEdit: filter_selection requires shell command argument\n");
+    		"nedit: filter_selection requires shell command argument\n");
     	return;
     }
     FilterSelection(window, args[0],
@@ -3186,7 +3186,7 @@ static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     if (*nArgs == 0) {
     	fprintf(stderr,
-    		"NEdit: execute_command requires shell command argument\n");
+    		"nedit: execute_command requires shell command argument\n");
     	return;
     }
     ExecShellCommand(window, args[0],
@@ -3206,7 +3206,7 @@ static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
     	fprintf(stderr,
-    		"NEdit: shell_menu_command requires item-name argument\n");
+    		"nedit: shell_menu_command requires item-name argument\n");
     	return;
     }
     HidePointerOnKeyedEvent(w, event);
@@ -3219,7 +3219,7 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
     	fprintf(stderr,
-    		"NEdit: macro_menu_command requires item-name argument\n");
+    		"nedit: macro_menu_command requires item-name argument\n");
     	return;
     }
     /* Don't allow users to execute a macro command from the menu (or accel)
@@ -3246,7 +3246,7 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
     	fprintf(stderr,
-    		"NEdit: bg_menu_command requires item-name argument\n");
+    		"nedit: bg_menu_command requires item-name argument\n");
     	return;
     }
     /* Same remark as for macro menu commands (see above). */
@@ -3425,7 +3425,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
         }
     }
     else {
-        fprintf(stderr, "NEdit: focus_pane requires argument\n");
+        fprintf(stderr, "nedit: focus_pane requires argument\n");
     }
 }
 
@@ -3437,7 +3437,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
             (newState) = (intState != 0); \
         } \
         else { \
-            fprintf(stderr, "NEdit: %s requires 0 or 1 argument\n", actionName); \
+            fprintf(stderr, "nedit: %s requires 0 or 1 argument\n", actionName); \
             return; \
         } \
     } \
@@ -3496,11 +3496,11 @@ static void setAutoIndentAP(Widget w, XEvent *event, String *args,
             SetAutoIndent(window, SMART_INDENT);
         }
         else {
-            fprintf(stderr, "NEdit: set_auto_indent invalid argument\n");
+            fprintf(stderr, "nedit: set_auto_indent invalid argument\n");
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_auto_indent requires argument\n");
+        fprintf(stderr, "nedit: set_auto_indent requires argument\n");
     }
 }
 
@@ -3519,11 +3519,11 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args,
             SetAutoWrap(window, CONTINUOUS_WRAP);
         }
         else {
-            fprintf(stderr, "NEdit: set_wrap_text invalid argument\n");
+            fprintf(stderr, "nedit: set_wrap_text invalid argument\n");
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_wrap_text requires argument\n");
+        fprintf(stderr, "nedit: set_wrap_text requires argument\n");
     }
 }
 
@@ -3546,11 +3546,11 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args,
         }
         else {
             fprintf(stderr,
-                "NEdit: set_wrap_margin requires integer argument >= 0 and < 1000\n");
+                "nedit: set_wrap_margin requires integer argument >= 0 and < 1000\n");
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_wrap_margin requires argument\n");
+        fprintf(stderr, "nedit: set_wrap_margin requires argument\n");
     }
 }
 
@@ -3621,11 +3621,11 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args,
            SetShowMatching(window, FLASH_DELIMIT);
         }
         else {
-            fprintf(stderr, "NEdit: Invalid argument for set_show_matching\n");
+            fprintf(stderr, "nedit: Invalid argument for set_show_matching\n");
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_show_matching requires argument\n");
+        fprintf(stderr, "nedit: set_show_matching requires argument\n");
     }
 }
 
@@ -3681,12 +3681,12 @@ static void setTabDistAP(Widget w, XEvent *event, String *args,
         }
         else {
             fprintf(stderr,
-                "NEdit: set_tab_dist requires integer argument > 0 and <= %d\n",
+                "nedit: set_tab_dist requires integer argument > 0 and <= %d\n",
                 MAX_EXP_CHAR_LEN);
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_tab_dist requires argument\n");
+        fprintf(stderr, "nedit: set_tab_dist requires argument\n");
     }
 }
 
@@ -3707,11 +3707,11 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args,
         }
         else {
             fprintf(stderr,
-                "NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000\n");
+                "nedit: set_em_tab_dist requires integer argument >= -1 and < 1000\n");
         }
     }
     else {
-        fprintf(stderr, "NEdit: set_em_tab_dist requires argument\n");
+        fprintf(stderr, "nedit: set_em_tab_dist requires argument\n");
     }
 }
 
@@ -3734,7 +3734,7 @@ static void setFontsAP(Widget w, XEvent *event, String *args,
         SetFonts(window, args[0], args[1], args[2], args[3]);
     }
     else {
-        fprintf(stderr, "NEdit: set_fonts requires 4 arguments\n");
+        fprintf(stderr, "nedit: set_fonts requires 4 arguments\n");
     }
 }
 
@@ -3747,7 +3747,7 @@ static void setLanguageModeAP(Widget w, XEvent *event, String *args,
         SetLanguageMode(window, FindLanguageMode(args[0]), FALSE);
     }
     else {
-        fprintf(stderr, "NEdit: set_language_mode requires argument\n");
+        fprintf(stderr, "nedit: set_language_mode requires argument\n");
     }
 }
 
@@ -4684,7 +4684,7 @@ static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData)
 static void addToToggleShortList(Widget w)
 {
     if (ShortMenuWindow->nToggleShortItems >= MAX_SHORTENED_ITEMS) {
-    	fprintf(stderr,"NEdit, internal error: increase MAX_SHORTENED_ITEMS\n");
+    	fprintf(stderr,"nedit, internal error: increase MAX_SHORTENED_ITEMS\n");
     	return;
     }
     ShortMenuWindow->toggleShortItems[ShortMenuWindow->nToggleShortItems++] = w;

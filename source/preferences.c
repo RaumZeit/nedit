@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.84 2003/04/03 19:05:32 jlous Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.85 2003/04/06 00:46:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2569,7 +2569,7 @@ void EditLanguageModes(Widget parent)
     /* Create a form widget in an application shell */
     ac = 0;
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-    XtSetArg(args[ac], XmNiconName, "Language Modes"); ac++;
+    XtSetArg(args[ac], XmNiconName, "NEdit Language Modes"); ac++;
     XtSetArg(args[ac], XmNtitle, "Language Modes"); ac++;
     LMDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
@@ -3458,7 +3458,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     form = CreateFormDialog(window->shell, "choose Fonts", args, ac);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     fd->shell = XtParent(form);
-    XtVaSetValues(fd->shell, XmNtitle, "Fonts", NULL);
+    XtVaSetValues(fd->shell, XmNtitle, "Text Fonts", NULL);
     AddMotifCloseCallback(XtParent(form), fontDismissCB, fd);
     XtAddCallback(form, XmNdestroyCallback, fontDestroyCB, fd);
 

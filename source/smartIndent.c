@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.21 2003/03/21 18:22:14 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.22 2003/04/06 00:46:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -949,8 +949,8 @@ void EditSmartIndentMacros(WindowInfo *window)
     /* Create a form widget in an application shell */
     n = 0;
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
-    XtSetArg(args[n], XmNiconName, "Smart Indent Macros"); n++;
-    XtSetArg(args[n], XmNtitle, "Smart Indent Macros"); n++;
+    XtSetArg(args[n], XmNiconName, "NEdit Smart Indent Macros"); n++;
+    XtSetArg(args[n], XmNtitle, "Program Smart Indent Macros"); n++;
     SmartIndentDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);
     AddSmallIcon(SmartIndentDialog.shell);
@@ -1476,7 +1476,7 @@ void EditCommonSmartIndentMacro(void)
     /* Create a form widget in an application shell */
     n = 0;
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
-    XtSetArg(args[n], XmNiconName, "Common Smart Indent Macros"); n++;
+    XtSetArg(args[n], XmNiconName, "NEdit Common Smart Indent Macros"); n++;
     XtSetArg(args[n], XmNtitle, "Common Smart Indent Macros"); n++;
     CommonDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);

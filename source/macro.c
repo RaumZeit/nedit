@@ -1,30 +1,30 @@
-static const char CVSID[] = "$Id: macro.c,v 1.61 2003/04/03 19:05:29 jlous Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.62 2003/04/06 00:46:05 yooden Exp $";
 /*******************************************************************************
-*									       *
-* macro.c -- Macro file processing, learn/replay, and built-in macro	       *
-*            subroutines			    	    	    	       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* macro.c -- Macro file processing, learn/replay, and built-in macro           *
+*            subroutines                                                       *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version.                                                                     *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* April, 1997								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* April, 1997                                                                  *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -777,9 +777,7 @@ void ReadMacroInitFile(WindowInfo *window)
 */
 int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 {
-    struct stat statbuf;
-    FILE *fp;
-    int fileLen, readLen, result;
+    int result;
     char *fileString;
 
     fileString = ReadAnyTextFile(fileName);
@@ -1239,7 +1237,7 @@ void RepeatDialog(WindowInfo *window)
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_APPLY_BUTTON));
-    XtVaSetValues(XtParent(selBox), XmNtitle, "Repeat", NULL);
+    XtVaSetValues(XtParent(selBox), XmNtitle, "Repeat Macro", NULL);
     AddMotifCloseCallback(XtParent(selBox), repeatCancelCB, rd);
     
     form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, NULL);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.20 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.21 2003/04/06 00:46:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -322,7 +322,7 @@ static Widget createForm(Widget parent)
     XtSetArg(args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     argcnt++;
     XtSetArg(args[argcnt], XmNdialogTitle, (st0=XmStringCreateLtoR(
-		"Printer Options", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+		"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
     form = CreateFormDialog(parent, "printForm", args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.29 2002/09/23 12:06:05 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.30 2003/04/06 00:46:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -229,8 +229,8 @@ void EditShellMenu(WindowInfo *window)
     
     ac = 0;
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-    XtSetArg(args[ac], XmNiconName, "Shell Commands"); ac++;
-    XtSetArg(args[ac], XmNtitle, "Shell Commands"); ac++;
+    XtSetArg(args[ac], XmNiconName, "NEdit Shell Menu"); ac++;
+    XtSetArg(args[ac], XmNtitle, "Shell Menu"); ac++;
     ucd->dlogShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(ucd->dlogShell);
