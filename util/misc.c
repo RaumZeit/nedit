@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.56 2003/06/06 17:06:10 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.57 2003/06/06 17:13:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -255,6 +255,7 @@ void SetWindowGroup(Widget shell) {
 	classHint->res_name = name;
 	classHint->res_class = class;
 	XSetClassHint(display, groupLeader, classHint);
+	XFree(classHint);
 	
     	firstTime = False;
     }
@@ -264,6 +265,7 @@ void SetWindowGroup(Widget shell) {
     wmHints->window_group = groupLeader;
     wmHints->flags |= WindowGroupHint;
     XSetWMHints(display, XtWindow(shell), wmHints);
+    XFree(wmHints);
 }
 
 /*
