@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.82 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.83 2003/12/04 19:07:43 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4283,6 +4283,12 @@ static int cmpStrPtr(const void *strA, const void *strB)
     return strcmp(*((char**)strA), *((char**)strB));
 }
 
+#ifdef VMS
+    static char neditDBBadFilenameChars[] = "\n\t*?()[]{}!@#%^&:;' ";
+#else
+    static char neditDBBadFilenameChars[] = "\n";
+#endif
+
 /*
 ** Write dynamic database of file names for "Open Previous".  Eventually,
 ** this may hold window positions, and possibly file marks, in which case,
@@ -4295,31 +4301,37 @@ void WriteNEditDB(void)
     FILE *fp;
     int i;
     static char fileHeader[] =
-    	    "# File name database for NEdit Open Previous command\n";
-    
-    if (fullName == NULL)
-    {
+            "# File name database for NEdit Open Previous command\n";
+
+    if (fullName == NULL) {
         /*  GetRCFileName() might return NULL if an error occurs during
             creation of the preference file directory. */
         return;
     }
 
     /* If the Open Previous command is disabled, just return */
-    if (GetPrefMaxPrevOpenFiles() == 0)
-    	return;
+    if (GetPrefMaxPrevOpenFiles() == 0) {
+        return;
+    }
 
     /* open the file */
-    if ((fp = fopen(fullName, "w")) == NULL)
-    	return;
-    
+    if ((fp = fopen(fullName, "w")) == NULL) {
+        return;
+    }
+
     /* write the file header text to the file */
     fprintf(fp, "%s", fileHeader);
-    
-    /* Write the list of file names */
-    for (i=0; i<NPrevOpen; i++)
-    	fprintf(fp, "%s\n", PrevOpen[i]);
 
-    /* Close the file */
+    /* Write the list of file names */
+    for (i = 0; i < NPrevOpen; ++i) {
+        size_t lineLen = strlen(PrevOpen[i]);
+
+        if (lineLen > 0 && PrevOpen[i][0] != '#' &&
+            strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
+            fprintf(fp, "%s\n", PrevOpen[i]);
+        }
+    }
+
     fclose(fp);
 }
 
@@ -4332,26 +4344,22 @@ void WriteNEditDB(void)
 */
 void ReadNEditDB(void)
 {
-    const char* fullName = GetRCFileName(NEDIT_HISTORY);
-    char line[MAXPATHLEN];
+    const char *fullName = GetRCFileName(NEDIT_HISTORY);
+    char line[MAXPATHLEN + 2];
     char *nameCopy;
     FILE *fp;
-    int lineLen;
-#ifdef VMS
-    static char badFilenameChars[] = "\n\t*?()[]{}!@#%^&:;' ";
-#else
-    static char badFilenameChars[] = "\n\t*?()[]{}";
-#endif
-    
+    size_t lineLen;
+
     /* If the Open Previous command is disabled, just return */
-    if (GetPrefMaxPrevOpenFiles() == 0)
-    	return;
-    
+    if (GetPrefMaxPrevOpenFiles() == 0) {
+        return;
+    }
+
     /* Initialize the files list and allocate a (permanent) block memory
        of the size prescribed by the maxPrevOpenFiles resource */
     PrevOpen = (char **)XtMalloc(sizeof(char *) * GetPrefMaxPrevOpenFiles());
     NPrevOpen = 0;
-    
+
     /* Don't move this check ahead of the previous statements. PrevOpen
        must be initialized at all times. */
     if (fullName == NULL)
@@ -4362,40 +4370,53 @@ void ReadNEditDB(void)
     }
 
     /* open the file */
-    if ((fp = fopen(fullName, "r")) == NULL)
-    	return;
+    if ((fp = fopen(fullName, "r")) == NULL) {
+        return;
+    }
 
     /* read lines of the file, lines beginning with # are considered to be
        comments and are thrown away.  Lines are subject to cursory checking,
        then just copied to the Open Previous file menu list */
     while (True) {
-    	if (fgets(line, (int)MAXPATHLEN, fp) == NULL) {
-    	    fclose(fp);
-    	    return;					 /* end of file */
-    	}
-    	if (line[0] == '#')
-    	    continue;
-    	lineLen = strlen(line); 			     /* comment */
-    	if (line[lineLen-1] != '\n') {
+        if (fgets(line, sizeof(line), fp) == NULL) {
+            /* end of file */
+            fclose(fp);
+            return;
+        }
+        if (line[0] == '#') {
+            /* comment */
+            continue;
+        }
+        lineLen = strlen(line);
+        if (lineLen == 0) {
+            /* blank line */
+            continue;
+        }
+        if (line[lineLen - 1] != '\n') {
+            /* no newline, probably truncated */
             fprintf(stderr, "nedit: Line too long in history file\n");
-    	    fclose(fp);
-	    return;		      /* no newline, probably truncated */
-	}
-    	line[--lineLen] = '\0';
-    	if (lineLen == 0)
-    	    continue;		/* blank line */
-	if ((int)strcspn(line, badFilenameChars) != lineLen) {
-            fprintf(stderr, "nedit: History file is corrupted\n");
-    	    fclose(fp);
-	    return;			     /* non-filename characters */
-	}
-	nameCopy = XtMalloc(lineLen+1);
-	strcpy(nameCopy, line);
-	PrevOpen[NPrevOpen++] = nameCopy;
-    	if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
-    	    fclose(fp);
-    	    return;				    /* too many entries */
-    	}
+            while (fgets(line, sizeof(line), fp) != NULL) {
+                lineLen = strlen(line);
+                if (lineLen > 0 && line[lineLen - 1] == '\n') {
+                    break;
+                }
+            }
+            continue;
+        }
+        line[--lineLen] = '\0';
+        if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
+            /* non-filename characters */
+            fprintf(stderr, "nedit: History file may be corrupted\n");
+            continue;
+        }
+        nameCopy = XtMalloc(lineLen + 1);
+        strcpy(nameCopy, line);
+        PrevOpen[NPrevOpen++] = nameCopy;
+        if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
+            /* too many entries */
+            fclose(fp);
+            return;
+        }
     }
 }
 
