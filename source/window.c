@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.148 2004/04/24 03:12:58 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.149 2004/04/24 03:48:25 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -547,7 +547,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     SetISearchTextCallbacks(window);
 
     /* create the buffer tab bar */
-    tabForm = XtVaCreateManagedWidget("tabForm", 
+    tabForm = XtVaCreateWidget("tabForm", 
        	    xmFormWidgetClass, statsAreaForm,
 	    XmNmarginHeight, 0,
 	    XmNmarginWidth, 0,
@@ -1048,19 +1048,10 @@ void CloseWindow(WindowInfo *window)
 	    /* if this is the active buffer, then we need
 	       to find its successor */
     	    nextBuf = getNextTabWindow(window, 1, 0, 0);
+    	    RaiseDocument(nextBuf);
 	}
 	else
 	    topBuf = GetTopDocument(window->shell);	    
-    }
-    
-    if (nextBuf) {
-        /* show the replacement buffer */
-    	RaiseDocument(nextBuf);
-	ShowWindowTabBar(nextBuf);
-    }
-    else if (topBuf) {
-    	/* refresh tabbar after deleting a non-top buffer */
-	ShowWindowTabBar(topBuf);
     }
     
     /* remove the window from the global window list, update window menus */
@@ -1070,6 +1061,15 @@ void CloseWindow(WindowInfo *window)
     /* remove tab from tab bar */
     XtDestroyWidget(window->tab);
 
+    if (nextBuf) {
+        /* show the replacement buffer */
+	ShowWindowTabBar(nextBuf);
+    }
+    else if (topBuf) {
+    	/* refresh tabbar after deleting a non-top buffer */
+	ShowWindowTabBar(topBuf);
+    }
+    
     /* dim/undim Detach_Tab menu items */
     win = nextBuf? nextBuf : topBuf;
     if (win) {
