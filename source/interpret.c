@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.19 2001/11/22 21:01:05 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.20 2001/12/13 13:14:30 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2274,7 +2274,7 @@ static int stringToNum(const char *string, int *number)
     
     /*... this is still not finished */
     for (c=string, i=0; *c != '\0'; i++, c++)
-    	if (!(isdigit(*c) || *c != ' ' || *c != '\t'))
+    	if (!(isdigit((unsigned char)*c) || *c != ' ' || *c != '\t'))
     	    return False;
     if (sscanf(string, "%d", number) != 1) {
     	*number = 0;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.36 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.37 2001/12/13 13:14:31 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -738,7 +738,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 	    inPtr += 6;
 	    inPtr += strspn(inPtr, " \t\n");
 	    namePtr = subrName;
-	    while (isalnum(*inPtr) || *inPtr == '_')
+	    while (isalnum((unsigned char)*inPtr) || *inPtr == '_')
 	    	*namePtr++ = *inPtr++;
 	    *namePtr = '\0';
 	    inPtr += strspn(inPtr, " \t\n");
@@ -3774,7 +3774,7 @@ static int readIntArg(DataValue dv, int *result, char **errMsg)
     	return True;
     } else if (dv.tag == STRING_TAG) {
 	for (c=dv.val.str; *c != '\0'; c++) {
-    	    if (!(isdigit(*c) || *c == ' ' || *c == '\t')) {
+    	    if (!(isdigit((unsigned char)*c) || *c == ' ' || *c == '\t')) {
     		goto typeError;
     	    }
     	}

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.14 2001/11/22 21:01:05 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.15 2001/12/13 13:14:33 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -554,7 +554,7 @@ static void allowOnlyNumInput(Widget widget, caddr_t client_data,
     textInserted = (nInserted > 0);
     if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
 	for (i=0; i<nInserted; i++) {
-            if (!isdigit(call_data->text->ptr[i])) {
+            if (!isdigit((unsigned char)call_data->text->ptr[i])) {
             	call_data->doit = False;
             	return;
             }

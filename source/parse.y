@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.16 2001/08/08 08:34:06 amai Exp $ */
+/* $Id: parse.y,v 1.17 2001/12/13 13:14:32 amai Exp $ */
 %{
 #include <string.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.16 2001/08/08 08:34:06 amai Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.17 2001/12/13 13:14:32 amai Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -319,7 +319,7 @@ static int yylex(void)
     }
     
     /* process number tokens */
-    if (isdigit(*InPtr))  { /* number */
+    if (isdigit((unsigned char)*InPtr))  { /* number */
         char name[28];
         sscanf(InPtr, "%d%n", &value.val.n, &len);
         sprintf(name, "const %d", value.val.n);
@@ -334,11 +334,11 @@ static int yylex(void)
        by this parser, considered end of input.  Another special case
        is action routine names which are allowed to contain '-' despite
        the ambiguity, handled in matchesActionRoutine. */
-    if (isalpha(*InPtr) || *InPtr == '$') {
+    if (isalpha((unsigned char)*InPtr) || *InPtr == '$') {
         if ((s=matchesActionRoutine(&InPtr)) == NULL) {
             char symName[MAX_SYM_LEN+1], *p = symName;
             *p++ = *InPtr++;
-            while (isalnum(*InPtr) || *InPtr=='_') {
+            while (isalnum((unsigned char)*InPtr) || *InPtr=='_') {
 		if (p >= symName + MAX_SYM_LEN)
 		    InPtr++;
 		else
@@ -359,7 +359,8 @@ static int yylex(void)
 	    	return 0;
 	    }
 	    if ((s=LookupSymbol(symName)) == NULL) {
-        	s = InstallSymbol(symName, symName[0]=='$' ? (isdigit(symName[1]) ?
+        	s = InstallSymbol(symName, symName[0]=='$' ? 
+		      	(isdigit((unsigned char)symName[1]) ?
             		ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
             	s->value.tag = NO_TAG;
             }
@@ -485,7 +486,8 @@ static Symbol *matchesActionRoutine(char **inPtr)
     Symbol *s;
     
     symPtr = symbolName;
-    for (c = *inPtr; isalnum(*c) || *c=='_' || (*c=='-'&&isalnum(*(c+1))); c++){
+    for (c = *inPtr; isalnum((unsigned char)*c) || *c=='_' || 
+      	    ( *c=='-' && isalnum((unsigned char)(*(c+1)))); c++) {
     	if (*c == '-')
     	    hasDash = True;
     	*symPtr++ = *c;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.41 2001/12/10 04:58:00 edel Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.42 2001/12/13 13:14:32 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -4013,8 +4013,9 @@ char *ReadSymbolicField(char **inPtr)
     /* Find the first invalid character or end of string to know how
        much memory to allocate for the returned string */
     strStart = *inPtr;
-    while (isalnum(**inPtr) || **inPtr=='_' || **inPtr=='-' ||  **inPtr=='+' ||
-    	    **inPtr=='$' || **inPtr=='#' || **inPtr==' ' || **inPtr=='\t')
+    while (isalnum((unsigned char)**inPtr) || **inPtr=='_' || **inPtr=='-' ||  
+      	    **inPtr=='+' || **inPtr=='$' || **inPtr=='#' || **inPtr==' ' || 
+      	    **inPtr=='\t')
     	(*inPtr)++;
     len = *inPtr - strStart;
     if (len == 0)

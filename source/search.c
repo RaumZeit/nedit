@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.39 2001/11/27 22:53:42 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.40 2001/12/13 13:14:32 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3952,12 +3952,12 @@ static int searchLiteralWord(const char *string, const char *searchString, int c
 	    tempPtr++; ucPtr++; lcPtr++; \
 	    if (   *ucPtr == 0 /* matched whole string */ \
 		&& (cignore_R ||\
-		    isspace(*tempPtr) ||\
+		    isspace((unsigned char)*tempPtr) ||\
 		    strchr(delimiters, *tempPtr) ) \
 		    /* next char right delimits word ? */ \
 		&& (cignore_L ||\
                     filePtr==string || /* border case */ \
-                    isspace(filePtr[-1]) ||\
+                    isspace((unsigned char)filePtr[-1]) ||\
                     strchr(delimiters,filePtr[-1]) ))\
                     /* next char left delimits word ? */ { \
 		*startPos = filePtr - string; \
@@ -3982,11 +3982,11 @@ static int searchLiteralWord(const char *string, const char *searchString, int c
     /* If there is no language mode, we use the default list of delimiters */
     if (delimiters==NULL) delimiters = GetPrefDelimiters();
 		
-    if (   isspace(*searchString) 
+    if (   isspace((unsigned char)*searchString) 
 	|| strchr(delimiters, *searchString))
 	cignore_L=1;
 
-    if (   isspace(searchString[strlen(searchString)-1])
+    if (   isspace((unsigned char)searchString[strlen(searchString)-1])
 	|| strchr(delimiters, searchString[strlen(searchString)-1]) )
 	cignore_R=1;
    

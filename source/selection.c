@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.15 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.16 2001/12/13 13:14:32 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -93,7 +93,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column ) {
 
     /* Find the next digit */
     for ( textLen = strlen( endptr ); textLen > 0; endptr++, textLen-- ) {
-        if ( isdigit( *endptr ) || *endptr == '-' ) {
+        if ( isdigit((unsigned char) *endptr ) || *endptr == '-' ) {
             break;
         }
     }
@@ -418,7 +418,7 @@ followed immediately by a letter key (a-z))",
     		       letterText, "OK", "Cancel");
     if (response == 2)
     	return;
-    if (strlen(letterText) != 1 || !isalpha(letterText[0])) {
+    if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -440,7 +440,7 @@ key, followed immediately by the letter)",
     		       letterText, "OK", "Cancel");
     if (response == 2)
     	return;
-    if (strlen(letterText) != 1 || !isalpha(letterText[0])) {
+    if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
     	XBell(TheDisplay, 0);
 	return;
     }

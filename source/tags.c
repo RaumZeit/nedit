@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.25 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.26 2001/12/13 13:14:33 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -646,11 +646,11 @@ static int fakeRegExSearch(WindowInfo *window, const char *searchString,
 	     */
 	    *outPtr++ = '\\';
 	    *outPtr++ = *inPtr++;
-      	} else if (isspace(*inPtr)) { /* collect multiple spaces  */
+      	} else if (isspace((unsigned char)*inPtr)) { /* col. multiple spaces */
 	    *outPtr++ = '\\';
 	    *outPtr++ = 's';
 	    *outPtr++ = '+';
-	    do { inPtr++ ; } while(isspace(*inPtr));
+	    do { inPtr++ ; } while(isspace((unsigned char)*inPtr));
 	} else {              /* simply copy all other characters */
 	    *outPtr++ = *inPtr++;
 	}

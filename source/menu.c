@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.44 2001/12/10 04:58:00 edel Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.45 2001/12/13 13:14:31 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2724,7 +2724,8 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args,
 
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
-    if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum(args[0][0])) {
+    if (*nArgs == 0 || strlen(args[0]) != 1 || 
+      	    !isalnum((unsigned char)args[0][0])) {
     	fprintf(stderr,"NEdit: mark action requires a single-letter label\n");
     	return;
     }
@@ -2739,7 +2740,8 @@ static void markDialogAP(Widget w, XEvent *event, String *args,
 
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
-    if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum(args[0][0])) {
+    if (*nArgs == 0 || strlen(args[0]) != 1 || 
+      	    !isalnum((unsigned char)args[0][0])) {
      	fprintf(stderr,
      	    	"NEdit: goto_mark action requires a single-letter label\n");
      	return;
