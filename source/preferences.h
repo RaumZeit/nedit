@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.16 2001/12/10 04:58:00 edel Exp $ */
+/* $Id: preferences.h,v 1.17 2002/01/05 01:48:21 edel Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -10,8 +10,7 @@
 enum helpFonts {HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT,
     BOLD_ITALIC_HELP_FONT, FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
     ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT, HELP_LINK_FONT,
-    H1_HELP_FONT, H2_HELP_FONT, H3_HELP_FONT, H4_HELP_FONT, H5_HELP_FONT,
-    H6_HELP_FONT, NUM_HELP_FONTS
+    H1_HELP_FONT, H2_HELP_FONT, H3_HELP_FONT, NUM_HELP_FONTS
 };
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);

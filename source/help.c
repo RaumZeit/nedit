@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.71 2001/12/19 17:08:45 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.72 2002/01/05 01:48:21 edel Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -112,9 +112,8 @@ enum helpFonts StyleFonts[] =
     /* Link font, style: 'Q' */
     HELP_FONT,
 
-    /* Heading fonts, styles: 'R', 'S', 'T', 'U', 'V', 'W' */
-    H1_HELP_FONT, H2_HELP_FONT,  H3_HELP_FONT, H4_HELP_FONT, H5_HELP_FONT,
-    H6_HELP_FONT,
+    /* Heading fonts, styles: 'R', 'S', 'T' */
+    H1_HELP_FONT, H2_HELP_FONT,  H3_HELP_FONT
 };
 
 int StyleUnderlines[] =
@@ -134,8 +133,8 @@ int StyleUnderlines[] =
     /* Link font, style: 'Q' */
     True,
 
-    /* Heading fonts, styles: 'R', 'S', 'T', 'U', 'V', 'W' */
-    False, False, False, False, False, False
+    /* Heading fonts, styles: 'R', 'S', 'T' */
+    False, False, False
 };
 
 #define N_STYLES (XtNumber(StyleFonts))

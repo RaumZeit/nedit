@@ -660,7 +660,6 @@ Keyboard Shortcuts
 
     Ctrl+PageUp   Scroll and move the cursor left by one
                   page.
-		  
     PageDown      Scroll and move the cursor down by one
                   page.
 
@@ -1151,14 +1150,18 @@ Finding Declarations (ctags)
 
   NEdit can also be set to load a tags file automatically when it starts up. 
   Setting the X resource nedit.tagFile to the name of a tag file tells NEdit to
-  look for that file at startup time (see "Customizing_NEdit_").  The file name can
-  be either a complete path name, in which case NEdit will always load the same
-  tags file, or a file name without a path or with a relative path, in which case
-  NEdit will load it starting from the current directory.  The second option
-  allows you to have different tags files for different projects, each
-  automatically loaded depending on the directory you're in when you start
-  NEdit.  Setting the name to "tags" is an obvious choice since this is the name
-  that ctags uses.
+  look for that file at startup time (see "Customizing_NEdit_").  The file name
+  can be either a complete path name, in which case NEdit will always load the
+  same tags file, or a file name without a path or with a relative path, in
+  which case NEdit will load it starting from the current directory.  The
+  second option allows you to have different tags files for different projects,
+  each automatically loaded depending on the directory you're in when you start
+  NEdit.  Setting the name to "tags" is an obvious choice since this is the
+  name that ctags uses. NEdit normally evaluates relative path tag file
+  specifications every time a file is opened. All accessible tag files are
+  loaded at this time. To disable the automatic loading of tag files specified
+  as relative paths, set the X resource nedit.alwaysCheckRelativeTagsSpecs to
+  False.
 
   To unload a tags file, select "Un-load Tags File" from the File menu and
   choose from the list of tags files.  NEdit will keep track of tags file updates
@@ -3375,10 +3378,19 @@ X Resources
 
 **nedit.tagFile**: (not defined) 
 
-  The name of a file of the type produced by Exuberant Ctags or the Unix ctags
+  This can be the name of a file, or multiple files separated by a colon (:)
+  character, of the type produced by Exuberant Ctags or the Unix ctags
   command, which NEdit will load at startup time (see ctag_support_ ). The tag
   file provides a database from which NEdit can automatically open files
   containing the definition of a particular subroutine or data type.
+
+**nedit.alwaysCheckRelativeTagsSpecs: True**
+
+  When this resource is set to True, and there are tag files specified (with
+  the nedit.tagFile resource, see above) as relative paths, NEdit will evaluate
+  these tag value paths whenever a file is opened. All accessible tag files
+  will be loaded at this time. When this resource value is False, relative path
+  tag specifications will only be evaluated at NEdit startup time.
 
 **nedit.shell**: /bin/csh 
   
@@ -3603,17 +3615,15 @@ X Resources
 
   Fixed italic font for online help.
   
-**nedit.h3HelpFont**: adobe times 14 bold
+**nedit.h1HelpFont**: adobe times 14 bold
 
-  Font for level-1 titles in help text (the name h3 comes from how the
-  help system maps titles between the html, text, and online help versions of
-  the help text, level one and level two headings map to menu titles).
+  Font for level-1 titles in help text.
   
-**nedit.h4HelpFont**: adobe times 14 italic
+**nedit.h2HelpFont**: adobe times 14 italic
 
   Font for level-2 titles in help text.
   
-**nedit.h5HelpFont**: adobe courier 12 bold
+**nedit.h3HelpFont**: adobe courier 12 bold
 
   Font for level-3 titles in help text.
 
