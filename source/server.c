@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.17 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.18 2002/08/10 23:51:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -143,12 +143,12 @@ static void cleanUpServerCommunication(void)
 void ServerMainLoop(XtAppContext context)
 {
     XEvent event;
-    XPropertyEvent *e = (XPropertyEvent *)&event;
     Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
     while (TRUE) {
         XtAppNextEvent(context, &event);
-        if (e->window == rootWindow) {
+        if (event.xany.window == rootWindow && event.xany.type == PropertyNotify) {
+            XPropertyEvent* e = &event.xproperty;
             if (e->atom == ServerRequestAtom && e->state == PropertyNewValue)
             	processServerCommand();
             else if (e->atom == ServerExistsAtom && e->state == PropertyDelete)
