@@ -29,6 +29,8 @@
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
+#include <Xm/PushB.h>
+#include <Xm/PushBG.h>
 #include <Xm/SelectioB.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
@@ -66,6 +68,7 @@ static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event,
     	Boolean *cont);
 static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
     	Boolean *cont);
+static void createMnemonics(Widget w);
 
 /******************************************************************************
  * DialogF ()								      *
@@ -119,7 +122,7 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
  *				new_sub_category, categories[i]);  	      *
 */
 
-unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
+unsigned DialogF (int dialog_type, Widget parent, unsigned n,
 		char *msgstr, ...)		/* variable # arguments */
 {
     va_list var;
@@ -312,6 +315,7 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 	dialog_shell = CreateDialogShell (parent, dialog_name[dialog_num],
 			0, 0);
 	dialog = XmCreateMessageBox (dialog_shell, "msg box", args, argcount);
+        
 	XtAddCallback (dialog, XmNokCallback, (XtCallbackProc)ok_callback,
 		(char *)&df);
 	XtAddCallback (dialog, XmNcancelCallback,
@@ -333,6 +337,10 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 	default:
 	    break;
 	}
+
+        /* Try to create some sensible default mnemonics */
+        createMnemonics(dialog_shell);
+        AddDialogMnemonicHandler(dialog_shell);
 
     	/* If the button labeled cancel or dismiss is not the cancel button, or
     	   if there is no button labeled cancel or dismiss, redirect escape key
@@ -462,4 +470,43 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
     if (callData != NULL)
     	apply_callback(w, (struct dfcallbackstruct *)callData, NULL);
     *cont = False;
+}
+
+/*
+** Automatically create mnemonics for a widget.  Traversse all it's
+** children.  If the child is a push button, snag the first letter
+** and make that the mnemonic.  This is useful for DialogF dialogs which
+** can have any text in the buttons.
+*/
+static void createMnemonics(Widget w)
+{
+    WidgetList children;
+    int        numChildren, i;
+    
+    XtVaGetValues(w,
+                  XmNchildren,    &children,
+                  XmNnumChildren, &numChildren,
+                  NULL);
+
+    for (i=0; i<numChildren; i++)
+    {
+        Widget child = children[i];
+        
+        if (XtIsComposite(child))
+        {
+            createMnemonics(child);
+        }
+        else if (XtIsSubclass(child, xmPushButtonWidgetClass) ||
+                 XtIsSubclass(child, xmPushButtonGadgetClass))
+        {
+            XmString xmslabel;
+            char *label;
+
+            XtVaGetValues(child, XmNlabelString, &xmslabel, NULL);
+            XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label);
+            /* Should check if label[0] is already used here... */
+            XtVaSetValues(child, XmNmnemonic, label[0], NULL);
+            XtFree(label);
+        }
+    }
 }
