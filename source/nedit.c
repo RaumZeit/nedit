@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.87 2005/01/18 20:58:51 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.88 2005/02/02 09:08:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -797,6 +797,7 @@ static int checkDoMacroArg(const char *macro)
     
     /* Do a test parse */
     prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
+    XtFree(tMacro);
     if (prog == NULL) {
     	ParseError(NULL, tMacro, stoppedAt, "argument to -do", errMsg);
 	return False;
