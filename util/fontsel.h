@@ -1,4 +1,4 @@
-/* $Id: fontsel.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: fontsel.h,v 1.4 2001/08/23 14:11:22 amai Exp $ */
 /*******************************************************************************
 *                                                                              *
 *     FontSel ()                                                               *
@@ -49,4 +49,4 @@
 
 /* function prototype */
 
-char    *FontSel(Widget parent, int showPropFont, char *currFont);
+char    *FontSel(Widget parent, int showPropFont, const char *currFont);
