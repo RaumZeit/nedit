@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.44 2003/05/02 18:18:39 edg Exp $
+.. $Id: help.etx,v 1.45 2003/05/03 22:45:36 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2641,6 +2641,18 @@ Macro Subroutines
 **write_file( string, filename )**  
   Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on
   successful write, or 0 if unsuccessful.
+
+
+3>Deprecated Functions
+
+  Some functions are included only for supporting legacy macros. You should not
+  use any of these functions in any new macro you write. Among these are all
+  action routines with hyphens in their names; use underscores instead
+  ('find-dialog' -> 'find_dialog').
+
+**match()**
+  **DEPRECATED** Use select_to_matching() instead.
+
    ----------------------------------------------------------------------
 
 Range Sets
@@ -2757,7 +2769,7 @@ Range Sets
   Changes the behaviour of the range set r when modifications to the text
   buffer occur.  type can be one of the following: "maintain" (the default),
   "break", "include", "exclude", "ins_del" or "del_ins". (The differences are
-  fairly subtle.)"
+  fairly subtle.)
 
 
 Highlighting Information
@@ -2769,33 +2781,34 @@ Highlighting Information
   particular position has been matched, its style, color and font attributes
   (whether the font is supposed to be bold and/or italic).
 
-  Some other functions allow macros to access style information given the name
-  of a highlighting pattern, or a highlighting style name.
-
   These macro functions permit macro writers to generate formatted output which
   allows NEdit highlighting to be reproduced. This is suitable for the
   generation of HTML or Postscript output, for example.
-
-3>Highlighting Information Functions
+  
+  Note that if any of the functions is used while in Plain mode or while syntax
+  highlighting is off, the behaviour is undefined.
 
 **get_pattern( pos )**
-  returns an array containing the pattern attributes of the character at
-  position 'pos'. The elements in this array are:
+**get_pattern( pattern_name )**
+  Returns an array containing the pattern attributes of the character at
+  position 'pos' or for pattern 'pattern_name'. The elements in this array are:
 
 * **pattern** -- Highlight pattern name
 * **style** -- Highlight style name
-* **extension** -- The length in the text which uses the same highlighting pattern
+* **extension** -- The length in the text which uses the same highlighting pattern. NOTE: This element is not set if the function's parameter is a pattern name.
+
+  If 'position' or 'pattern_name' is invalid, an empty array is returned.
 
 **get_style( pos )**
 **get_style( style_name )**
-  returns an array containing the style attributes of the character at
+  Returns an array containing the style attributes of the character at
   position 'pos' or for style 'style_name'. The elements in this array are:
 
 * **style** -- Name of the highlight style
-* **color** -- Name of the style's color
-* **rgb** -- Color's RGB values ('#rrggbb')
 * **bold** -- '1' if style is bold, '0' otherwise
 * **italic** -- '1' if style is italic, '0' otherwise
+* **color** -- Name of the style's color
+* **rgb** -- Color's RGB values ('#rrggbb')
 * **background** -- Name of the background color, if any
 * **back_rgb** -- Background color's RGB values ('#rrggbb')
 
@@ -2805,10 +2818,7 @@ Highlighting Information
   actual color values as allocated by the X server. This may not be the value
   listed for your color in rgb.txt.
 
-**highlight_pattern_style( pat_name )**
-  ~Deprecated: Will be removed from the API in the future~
-  returns the name of the style used by a particular named highlighting
-  pattern.
+  If 'position' or 'style_name' is invalid, an empty array is returned.
 
    ----------------------------------------------------------------------
 

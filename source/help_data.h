@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 2, 2003 (Do NOT edit!)
+                 Generated on May 3, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -2470,6 +2470,17 @@ static char * htxt_macro_subrs [] = {
 "\01A\01Bwrite_file( string, filename )\01A  \n",
 "\01IWrites a string (parameter 1) to a file named in parameter 2. Returns 1 on ",
 "successful write, or 0 if unsuccessful. ",
+"\n\n",
+"\01RDeprecated Functions\01I",
+"\n\n",
+"Some functions are included only for supporting legacy macros. You should not ",
+"use any of these functions in any new macro you write. Among these are all ",
+"action routines with hyphens in their names; use underscores instead ",
+"('find-dialog' -> 'find_dialog'). ",
+"\n\n",
+"\01A\01Bmatch()\01A\n",
+"\01I\01JDEPRECATED\01I Use select_to_matching() instead. ",
+"\n\n",
 NULL
 };
 
@@ -2582,7 +2593,7 @@ static char * htxt_rangeset [] = {
 "\01IChanges the behaviour of the range set r when modifications to the text ",
 "buffer occur.  type can be one of the following: \"maintain\" (the default), ",
 "\"break\", \"include\", \"exclude\", \"ins_del\" or \"del_ins\". (The differences are ",
-"fairly subtle.)\" ",
+"fairly subtle.) ",
 "\n\n",
 NULL
 };
@@ -2594,33 +2605,34 @@ static char * htxt_hiliteInfo [] = {
 "particular position has been matched, its style, color and font attributes ",
 "(whether the font is supposed to be bold and/or italic). ",
 "\n\n",
-"Some other functions allow macros to access style information given the name ",
-"of a highlighting pattern, or a highlighting style name. ",
-"\n\n",
 "These macro functions permit macro writers to generate formatted output which ",
 "allows NEdit highlighting to be reproduced. This is suitable for the ",
 "generation of HTML or Postscript output, for example. ",
 "\n\n",
-"\01RHighlighting Information Functions\01I",
+"Note that if any of the functions is used while in Plain mode or while syntax ",
+"highlighting is off, the behaviour is undefined. ",
 "\n\n",
 "\01A\01Bget_pattern( pos )\01A\n",
-"\01Ireturns an array containing the pattern attributes of the character at ",
-"position 'pos'. The elements in this array are: ",
+"\01Bget_pattern( pattern_name )\01A\n",
+"\01IReturns an array containing the pattern attributes of the character at ",
+"position 'pos' or for pattern 'pattern_name'. The elements in this array are: ",
 "\n\n",
 "    * \01Jpattern\01I -- Highlight pattern name\n",
 "    * \01Jstyle\01I -- Highlight style name\n",
-"    * \01Jextension\01I -- The length in the text which uses the same highlighting pattern\n",
+"    * \01Jextension\01I -- The length in the text which uses the same highlighting pattern. NOTE: This element is not set if the function's parameter is a pattern name.\n",
 "\n",
+"If 'position' or 'pattern_name' is invalid, an empty array is returned. ",
+"\n\n",
 "\01A\01Bget_style( pos )\01A\n",
 "\01Bget_style( style_name )\01A\n",
-"\01Ireturns an array containing the style attributes of the character at ",
+"\01IReturns an array containing the style attributes of the character at ",
 "position 'pos' or for style 'style_name'. The elements in this array are: ",
 "\n\n",
 "    * \01Jstyle\01I -- Name of the highlight style\n",
-"    * \01Jcolor\01I -- Name of the style's color\n",
-"    * \01Jrgb\01I -- Color's RGB values ('#rrggbb')\n",
 "    * \01Jbold\01I -- '1' if style is bold, '0' otherwise\n",
 "    * \01Jitalic\01I -- '1' if style is italic, '0' otherwise\n",
+"    * \01Jcolor\01I -- Name of the style's color\n",
+"    * \01Jrgb\01I -- Color's RGB values ('#rrggbb')\n",
 "    * \01Jbackground\01I -- Name of the background color, if any\n",
 "    * \01Jback_rgb\01I -- Background color's RGB values ('#rrggbb')\n",
 "\n",
@@ -2630,10 +2642,7 @@ static char * htxt_hiliteInfo [] = {
 "actual color values as allocated by the X server. This may not be the value ",
 "listed for your color in rgb.txt. ",
 "\n\n",
-"\01A\01Bhighlight_pattern_style( pat_name )\01A\n",
-"\01I\01KDeprecated: Will be removed from the API in the future\01I ",
-"returns the name of the style used by a particular named highlighting ",
-"pattern. ",
+"If 'position' or 'style_name' is invalid, an empty array is returned. ",
 "\n\n",
 NULL
 };
@@ -5232,4 +5241,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of May  2, 2003\n";
+static const char * NEditVersion = "NEdit 5.4DEV\nMay 3, 2003\n";

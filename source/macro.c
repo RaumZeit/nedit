@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.65 2003/05/02 18:18:44 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.66 2003/05/03 22:45:36 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -359,30 +359,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
-static int highlightPatternOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightColorOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightColorValueOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleOfPosIsBoldMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleOfPosIsItalicMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightPatternExtendsFromMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightPatternStyleMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleColorMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleColorValueMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleIsBoldMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int highlightStyleIsItalicMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
+
 static int getPatternMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int getStyleMS(WindowInfo *window, DataValue *argList,
@@ -403,13 +380,6 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         rangesetAddMS, rangesetSubtractMS, rangesetInvertMS, 
         rangesetInfoMS, rangesetRangeMS, rangesetIncludesPosMS, 
         rangesetSetColorMS, rangesetSetModeMS,
-        highlightPatternOfPosMS, highlightStyleOfPosMS, highlightColorOfPosMS,
-        highlightColorValueOfPosMS, highlightStyleOfPosIsBoldMS,
-        highlightStyleOfPosIsItalicMS,
-        highlightPatternExtendsFromMS,
-        highlightPatternStyleMS,
-        highlightStyleColorMS, highlightStyleColorValueMS,
-        highlightStyleIsBoldMS, highlightStyleIsItalicMS,
         getPatternMS, getStyleMS
     };
 #define N_MACRO_SUBRS (sizeof MacroSubrs/sizeof *MacroSubrs)
@@ -427,13 +397,6 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "rangeset_add", "rangeset_subtract", "rangeset_invert", 
         "rangeset_info", "rangeset_range", "rangeset_includes",
         "rangeset_set_color", "rangeset_set_mode",
-        "highlight_pattern_of_pos", "highlight_style_of_pos",
-        "highlight_color_of_pos", "highlight_color_value_of_pos",
-        "highlight_style_of_pos_is_bold", "highlight_style_of_pos_is_italic",
-        "highlight_pattern_extends_from",
-        "highlight_pattern_style",
-        "highlight_style_color", "highlight_style_color_value",
-        "highlight_style_is_bold", "highlight_style_is_italic",
         "get_pattern", "get_style"
     };
 static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
@@ -4835,14 +4798,15 @@ static int getColorNameValues(WindowInfo *window, char *colorName,
 */
 
 /*
-**  Returns an array containing information about the style of position $1.
+**  Returns an array containing information about the style of position $1
+**  or name $1.
 **      ["style"]       Name of style
 **      ["color"]       Color of style
 **      ["rgb"]         RGB representation of color of style
 **      ["bold"]        '1' if style is bold, '0' otherwise
 **      ["italic"]      '1' if style is italic, '0' otherwise 
-**      ["background"]   Background color of style if specified
-**      ["back_rgb"]     RGB representation of background color of style
+**      ["background"]  Background color of style if specified
+**      ["back_rgb"]    RGB representation of background color of style
 **
 */
 static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -4883,8 +4847,11 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
 
         /*  Verify sane cursor position */
-        if ((cursorPos < 0) || (cursorPos >= buf->length)) {
-            M_FAILURE("Cursor position not in buffer in call to %s");
+        if ((cursorPos < 0) || (cursorPos >= buf->length))
+        {
+            /*  If the position is not legal, we cannot guess anything about
+                the style, so we return an empty array. */
+            return True;
         }
 
         /* Determine style name */
@@ -4893,7 +4860,7 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
             /* if there is no style we just return an empty array. */
             return True;
         }
-        styleName = HighlightStyleOfCode(window, styleCode);
+        styleName = AllocStringCpy(HighlightStyleOfCode(window, styleCode));
     }
 
     /* initialize array */
@@ -4903,7 +4870,7 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
     DV.tag = STRING_TAG;
 
     /* insert style name */
-    DV.val.str = AllocStringCpy(styleName);
+    DV.val.str = styleName;
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -4960,68 +4927,109 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
 }
 
 /*
-**  Returns an array containing information about the pattern of position $1.
+**  Returns an array containing information about a highligting pattern. The
+**  single parameter contains the position this information is requested for.
+**  The returned array looks like this:
 **      ["pattern"]     Name of pattern
 **      ["style"]       Name of style
 **      ["extension"]   Distance this style continues
 **
+**  A second option is to call get_pattern() with a pattern name, to learn
+**  about a patterns style. In this case, the 'extension' element is not set.
 */
 static int getPatternMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg)
 {
-    int styleCode = 0;
-    int cursorPos;
+    int cursorPos = -1;
     textBuffer *buffer = window->buffer;
-
+    
+    int styleCode = 0;
+    char* styleName = NULL;
+    char* patternName = NULL;
+    highlightPattern* pattern = NULL;
+    
+    Boolean extensionRequired = True;
     DataValue DV;
-
     int checkCode;
     
+    /* Begin of building the result. */
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = NULL;
+
     /* Validate number of arguments */
-    if (nArgs != 1) {
+    if (nArgs != 1)
+    {
         return wrongNArgsErr(errMsg);
     }
     
-    /* Convert argument to int */
-    if (!readIntArg(argList[0], &cursorPos, errMsg)) {
+    /*  Convert argument to whatever its type is and set styleName and
+        patternName accordingly. */
+    if (argList[0].tag == INT_TAG)
+    {
+        /* The most straightforward case: Get a pattern, style and extension
+           for a cursor position. */
+        if (!readIntArg(argList[0], &cursorPos, errMsg))
+        {
+            return False;
+        }
+
+        /*  Verify sane cursor position
+         *  You would expect that buffer->length would be among the sane
+         *  positions, but we have n characters and n+1 cursor positions. */
+        if ((cursorPos < 0) || (cursorPos >= buffer->length))
+        {
+            /*  If the position is not legal, we cannot guess anything about
+                the style, so we return an empty array. */
+            return True;
+        }
+
+        /* Determine style name */
+        styleCode = HighlightCodeOfPos(window, cursorPos);
+        if (styleCode == 0)
+        {
+            /* if there is no style we just return an empty array. */
+            return True;
+        }
+
+        styleName = AllocStringCpy(HighlightStyleOfCode(window, styleCode));
+        patternName = AllocStringCpy(HighlightNameOfCode(window, styleCode));
+    } else if (argList[0].tag == STRING_TAG)
+    {
+        /*  This is used to learn about a pattern's style. */
+        patternName = argList[0].val.str;
+        pattern = FindPatternOfWindow(window, patternName);
+        if (pattern == NULL)
+        {
+            /* The pattern's name is unknown. */
+            return True;
+        }
+        styleName = AllocStringCpy(pattern->style);
+        extensionRequired = False;  /* no position -> no extension */
+    } else
+    {
+        *errMsg = "Position or pattern name string expected as parameter to %s";
         return False;
-    }
-
-    /*  Verify sane cursor position */
-    /* You would expect that buffer->length would be among the sane
-     * positions, but we have n characters and n+1 cursor positions. */
-    if ((cursorPos < 0) || (cursorPos >= buffer->length)) {
-        M_FAILURE("Cursor position not in buffer in call to %s");
-    }
-
-    /* begin of building the result */
-    result->tag = ARRAY_TAG;
-
-    /* Determine pattern name */
-    styleCode = HighlightCodeOfPos(window, cursorPos);
-    if (styleCode == 0) {
-        /* if there is no style we just return an empty array. */
-        result->val.arrayPtr = NULL;
-        return True;
     }
 
     /* initialize array */
     result->val.arrayPtr = ArrayNew();
-    
+
     /* the following array entries will be strings */
     DV.tag = STRING_TAG;
 
     /* insert pattern name */
-    DV.val.str = AllocStringCpy(HighlightNameOfCode(window, styleCode));
+    DV.val.str = patternName;
     M_STR_ALLOC_ASSERT(DV);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
+    if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV))
+    {
         M_ARRAY_INSERT_FAILURE();
     }
 
     /* insert style name */
-    DV.val.str = AllocStringCpy(HighlightStyleOfCode(window, styleCode));
+    DV.val.str = styleName;
     M_STR_ALLOC_ASSERT(DV);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
+    if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV))
+    {
         M_ARRAY_INSERT_FAILURE();
     }
 
@@ -5029,252 +5037,16 @@ static int getPatternMS(WindowInfo *window, DataValue *argList, int nArgs,
     DV.tag = INT_TAG;
 
     /* insert extent */
-    checkCode = 0;
-    DV.val.n = HighlightLengthOfCodeFromPos(window, cursorPos, &checkCode);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("extension"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+    if (extensionRequired)
+    {
+        checkCode = 0;
+        DV.val.n = HighlightLengthOfCodeFromPos(window, cursorPos, &checkCode);
+        if (!ArrayInsert(result, PERM_ALLOC_STR("extension"), &DV))
+        {
+            M_ARRAY_INSERT_FAILURE();
+        }
     }
 
-    return True;
-}
-
-/* pat_name = highlight_pattern_of_pos([pos]) */
-/* YOO obsolete: pat_name = get_pattern(pos)["pattern"] */
-static int highlightPatternOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-    char *name;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-    code = HighlightCodeOfPos(window, pos);
-    name = HighlightNameOfCode(window, code);
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(name) + 1);
-    strcpy(result->val.str, name);
-    return True;
-}
-/* style_name = highlight_style_of_pos([pos]) */
-/* YOO obsolete: style_name = get_style(pos)["style"] */
-static int highlightStyleOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-    char *name;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-    code = HighlightCodeOfPos(window, pos);
-    name = HighlightStyleOfCode(window, code);
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(name) + 1);
-    strcpy(result->val.str, name);
-    return True;
-}
-/* color_name = highlight_color_of_pos([pos]) */
-/* YOO obsolete: color_name = get_style(pos)["color"] */
-static int highlightColorOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-    char *name;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-    code = HighlightCodeOfPos(window, pos);
-    name = HighlightColorOfCode(window, code);
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(name) + 1);
-    strcpy(result->val.str, name);
-    return True;
-}
-/* color_value = highlight_color_value_of_pos([pos]) */
-/* AJH obsolete: color_value = get_style(pos)["rgb"] */
-static int highlightColorValueOfPosMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-    Pixel pixel;
-    int r, g, b;
-    char value[20];
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-
-    code = HighlightCodeOfPos(window, pos);
-    pixel = HighlightColorValueOfCode(window, code, &r, &g, &b);
-
-    sprintf(value, "#%02x%02x%02x", r/256, g/256, b/256);
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(value) + 1);
-    strcpy(result->val.str, value);
-    return True;
-}
-/* is_bold = highlight_style_of_pos_is_bold([pos]) */
-/* YOO obsolete: is_bold = get_style(pos)["bold"] */
-static int highlightStyleOfPosIsBoldMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-    code = HighlightCodeOfPos(window, pos);
-
-    result->tag = INT_TAG;
-    result->val.n = HighlightCodeIsBold(window, code);
-    return True;
-}
-/* is_italic = highlight_style_of_pos_is_italic([pos]) */
-/* YOO obsolete: is_italic = get_style(pos)["italic"] */
-static int highlightStyleOfPosIsItalicMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code, pos;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-    code = HighlightCodeOfPos(window, pos);
-
-    result->tag = INT_TAG;
-    result->val.n = HighlightCodeIsItalic(window, code);
-    return True;
-}
-
-/*
-** Routine to determine how far the current style extends forwards.
-*/
-
-/* length = highlight_pattern_extends_from([pos]) */
-/* YOO obsolete: length = get_pattern(pos)["extension"] */
-static int highlightPatternExtendsFromMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    int code = 0, pos;
-
-    if (!checkPosParaOrCursor(window, argList, nArgs, &pos, errMsg))
-      return False;
-
-    result->tag = INT_TAG;
-    result->val.n = HighlightLengthOfCodeFromPos(window, pos, &code);
-    return True;
-}
-
-/*
-** Routine to find a style name given the pattern name.
-*/
-
-/* style_name = highlight_pattern_style([pat_name]) */
-static int highlightPatternStyleMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    char *name = "";
-    highlightPattern *pattern;
-
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-    if (argList[0].tag != STRING_TAG) {
-      *errMsg = "Pattern name string expected as parameter to %s";
-      return False;
-    }
-
-    pattern = FindPatternOfWindow(window, argList[0].val.str);
-    if (pattern)
-      name = pattern->style;
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(name) + 1);
-    strcpy(result->val.str, name);
-    return True;
-}
-
-/*
-** Routines to find style attributes.
-*/
-
-/* color_name = highlight_style_color(style_name) */
-static int highlightStyleColorMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    char *name=NULL;
-
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-    if (argList[0].tag != STRING_TAG) {
-      *errMsg = "Style name string expected as parameter to %s";
-      return False;
-    }
-
-    if (NamedStyleExists(argList[0].val.str))
-      name = ColorOfNamedStyle(argList[0].val.str);
-    if (!name)
-      name = "";
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(name) + 1);
-    strcpy(result->val.str, name);
-    return True;
-}
-/* color_value = highlight_style_color_value(style_name) */
-static int highlightStyleColorValueMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    char value[20];
-    int r, g, b;
-
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-    if (argList[0].tag != STRING_TAG) {
-      *errMsg = "Style name string expected as parameter to %s";
-      return False;
-    }
-
-    if (NamedStyleExists(argList[0].val.str) &&
-      getColorNameValues(window, ColorOfNamedStyle(argList[0].val.str),
-                         &r, &g, &b))
-      sprintf(value, "#%02x%02x%02x", r/256, g/256, b/256);
-    else
-      value[0] = '\0';
-
-    result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(value) + 1);
-    strcpy(result->val.str, value);
-    return True;
-}
-/* is_bold = highlight_style_is_bold(style_name) */
-static int highlightStyleIsBoldMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-    if (argList[0].tag != STRING_TAG) {
-      *errMsg = "Style name string expected as parameter to %s";
-      return False;
-    }
-
-    result->tag = INT_TAG;
-    result->val.n = NamedStyleExists(argList[0].val.str) &&
-                  FontOfNamedStyleIsBold(argList[0].val.str);
-    return True;
-}
-/* is_italic = highlight_style_is_italic(style_name) */
-static int highlightStyleIsItalicMS(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-    if (argList[0].tag != STRING_TAG) {
-      *errMsg = "Style name string expected as parameter to %s";
-      return False;
-    }
-
-    result->tag = INT_TAG;
-    result->val.n = NamedStyleExists(argList[0].val.str) &&
-                  FontOfNamedStyleIsItalic(argList[0].val.str);
     return True;
 }
 
