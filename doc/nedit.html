@@ -889,11 +889,12 @@ style called Continuous.  Wrapping modes are discussed in the sections:
 Customizing -&#62; Preferences, and Basic Operation -&#62; Shifting and Filling.
 <P>
 The last and most minute of format differences is the terminating newline. 
-NEdit, like vi and approximately half of Unix editors, enforces a final
-terminating newline on all of the files that it writes.  NEdit does this
-because some Unix compilers and utilities require it, and fail in various
-ways on files which do not have it.  Emacs does not enforce this rule.  Users
-are divided on which is best.
+Some Unix compilers and utilities require a final terminating newline on all
+files they read and fail in various ways on files which do not have it.  Vi
+and approximately half of Unix editors enforce the terminating newline on all
+files that they write; Emacs does not enforce this rule.  Users are divided
+on which is best.  NEdit makes the final terminating newline optional
+(Preferences -&#62; Default Settings -&#62; Append Line Feed on Save).
 <P><HR>
 <P>
 <A NAME="Features_for_Programming"</A>
@@ -3719,7 +3720,13 @@ and to "In Selection" otherwise.
 <B>Syntax Highlighting</B>
 </PRE>
 Program and configure enhanced text display for new or supported languages
-(See Features for Programming -&#62; Syntax Highlighting).
+(See Features for Programming -&#62; <A HREF="#Syntax_Highlighting">Syntax Highlighting</A>).
+<P>
+<PRE>
+<B>Append Line Feed on Save</B>
+</PRE>
+Some UNIX tools expect that files end with a line feed. If this option is
+activated, NEdit will append one if required.
 <P>
 <PRE>
 <B>Sort Open Prev. Menu</B>
@@ -4007,6 +4014,25 @@ environments where users access several different systems remotely, can be
 very hard to configure. If you've given up and are using a backspace key
 halfway off the keyboard because you can't figure out the bindings, set this
 to True.
+<P>
+<PRE>
+<B>nedit.overrideDefaultVirtualKeyBindings</B>: Auto
+</PRE>
+<P>
+Motif uses a virtual key binding mechanism that shares the bindings between
+different Motif applications. When a first Motif application is started, it
+installs some default virtual key bindings and any other Motif application 
+that runs afterwards, simply reuses them. Obviously, if the first
+application installs an invalid set, all others applications may have 
+problems.
+<P>
+In the past, NEdit has been the victim of invalid bindings installed by other 
+applications several times. Through this resource, NEdit can be instructed
+to ignore the bindings installed by other applications, and use its own
+private bindings. By default, NEdit tries to detect invalid bindings
+and ignore them automatically (Auto). Optionally, NEdit can be told to
+always keep the installed bindings (Never), or to always override them
+(Always).
 <P>
 <PRE>
 <B>nedit.stdOpenDialog</B>: False
@@ -4938,8 +4964,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Feb 15, 2002
-Feb 15, 2002
+NEdit release of Mar  7, 2002
+Mar 7, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
