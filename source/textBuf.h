@@ -1,13 +1,13 @@
-/* $Id: textBuf.h,v 1.13 2002/11/19 18:05:51 edg Exp $ */
+/* $Id: textBuf.h,v 1.14 2003/05/02 18:18:47 edg Exp $ */
 
 #ifndef NEDIT_TEXTBUF_H_INCLUDED
 #define NEDIT_TEXTBUF_H_INCLUDED
 
-#include "rangeset.h"
-
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
+
+typedef struct _RangesetTable RangesetTable;
 
 typedef struct {
     char selected;          /* True if the selection is active */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.64 2003/04/17 09:03:37 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.65 2003/05/02 18:18:44 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -54,7 +54,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.64 2003/04/17 09:03:37 edg Exp $";
 #include "../util/utils.h"
 #include "highlight.h"
 #include "highlightData.h"
-#include "rangeset_fn.h"
+#include "rangeset.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -337,42 +337,27 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 static int backlightStringMV(WindowInfo *window, DataValue *argList,
 	int nArgs, DataValue *result, char **errMsg);
-static int rangesetLabelMV(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetListMV(WindowInfo *window, DataValue *argList,
+	int nArgs, DataValue *result, char **errMsg);
+static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
-static int rangesetRangesMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg);
-static int rangesetRangeIndexMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int rangesetRangeStartMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int rangesetRangeEndMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg);
-static int rangesetColorMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg);
-static int rangesetModifyResponseMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg);
-
-static int rangesetDefinedMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg);
-static int rangesetInverseMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
 static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
-static int rangesetRemoveMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
-static int rangesetForgetMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
-static int rangesetGetCountMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
-static int rangesetSelectMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
 static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
-static int rangesetSetModifyResponseMS(WindowInfo *window, DataValue *argList,
+static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int highlightPatternOfPosMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
@@ -386,13 +371,10 @@ static int highlightStyleOfPosIsBoldMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int highlightStyleOfPosIsItalicMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
-
 static int highlightPatternExtendsFromMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
-
 static int highlightPatternStyleMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
-
 static int highlightStyleColorMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg);
 static int highlightStyleColorValueMS(WindowInfo *window, DataValue *argList,
@@ -417,9 +399,10 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         tolowerMS, listDialogMS, getenvMS,
         stringCompareMS, splitMS, calltipMS, killCalltipMS,
         setBacklightStringMS,
-        rangesetDefinedMS, rangesetInverseMS, rangesetAddMS, rangesetRemoveMS,
-        rangesetForgetMS, rangesetGetCountMS, rangesetSelectMS,
-        rangesetIncludesPosMS, rangesetSetColorMS, rangesetSetModifyResponseMS,
+        rangesetCreateMS, rangesetDestroyMS,
+        rangesetAddMS, rangesetSubtractMS, rangesetInvertMS, 
+        rangesetInfoMS, rangesetRangeMS, rangesetIncludesPosMS, 
+        rangesetSetColorMS, rangesetSetModeMS,
         highlightPatternOfPosMS, highlightStyleOfPosMS, highlightColorOfPosMS,
         highlightColorValueOfPosMS, highlightStyleOfPosIsBoldMS,
         highlightStyleOfPosIsItalicMS,
@@ -440,10 +423,10 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "toupper", "tolower", "list_dialog", "getenv",
         "string_compare", "split", "calltip", "kill_calltip",
         "set_backlight_string",
-        "rangeset_defined", "rangeset_inverse", "rangeset_add",
-        "rangeset_remove", "rangeset_forget", "rangeset_get_count",
-        "rangeset_select", "rangeset_includes_pos", "rangeset_set_color",
-        "rangeset_set_modify_response",
+        "rangeset_create", "rangeset_destroy",
+        "rangeset_add", "rangeset_subtract", "rangeset_invert", 
+        "rangeset_info", "rangeset_range", "rangeset_includes",
+        "rangeset_set_color", "rangeset_set_mode",
         "highlight_pattern_of_pos", "highlight_style_of_pos",
         "highlight_color_of_pos", "highlight_color_value_of_pos",
         "highlight_style_of_pos_is_bold", "highlight_style_of_pos_is_italic",
@@ -466,11 +449,8 @@ static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
         displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
         serverNameMV, calltipIDMV,
-        backlightStringMV,
-        rangesetLabelMV, rangesetRangesMV, rangesetRangeIndexMV,
-        rangesetRangeStartMV, rangesetRangeEndMV, rangesetListMV,
-        rangesetColorMV, rangesetModifyResponseMV,
-        };
+        backlightStringMV, rangesetListMV
+    };
 #define N_SPECIAL_VARS (sizeof SpecialVars/sizeof *SpecialVars)
 static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
         "$file_name", "$file_path", "$text_length", "$selection_start",
@@ -486,10 +466,7 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$colu
         "$min_font_width", "$max_font_width", "$top_line", "$n_display_lines",
         "$display_width", "$active_pane", "$n_panes", "$empty_array",
         "$server_name", "$calltip_ID",
-        "$backlight_string",
-        "$rangeset_label", "$rangeset_ranges", "$rangeset_range_index",
-        "$rangeset_range_start", "$rangeset_range_end", "$rangeset_list",
-        "$rangeset_color", "$rangeset_modify_response",
+        "$backlight_string", "$rangeset_list"
     };
 
 /* Global symbols for returning values from built-in functions */
@@ -3501,7 +3478,7 @@ static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     int compareResult;
     
     if (nArgs < 2) {
-        return(wrongNArgsErr(errMsg));
+	return(wrongNArgsErr(errMsg));
     }
     if (!readStringArg(argList[0], &leftStr, stringStorage[0], errMsg))
         return False;
@@ -4136,523 +4113,580 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
 ** Range set macro variables and functions
 */
 
-static int rangesetLabelMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    char *str;
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = STRING_TAG;
-    str = RangesetTableGetMacroSetLabel(rangesetTable);
-    result->val.str = AllocString(strlen(str) + 1);
-    strcpy(result->val.str, str);
-    return True;
-}
-
-static int rangesetRangesMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetTableGetMacroRangeN(rangesetTable);
-    return True;
-}
-
-static int rangesetRangeIndexMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetTableGetMacroRangeIndex(rangesetTable);
-    return True;
-}
-
-static int rangesetRangeStartMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetTableGetMacroRangeStart(rangesetTable);
-    return True;
-}
-
-static int rangesetRangeEndMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetTableGetMacroRangeEnd(rangesetTable);
-    return True;
-}
-
 static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
-    char *str;
     RangesetTable *rangesetTable = window->buffer->rangesetTable;
+    unsigned char *rangesetList;
+    char *allocIndexStr;
+    char indexStr[4] ;
+    int nRangesets, i;
+    DataValue element;
 
-    result->tag = STRING_TAG;
-    str = RangesetTableGetMacroRangeList(rangesetTable);
-    result->val.str = AllocString(strlen(str) + 1);
-    strcpy(result->val.str, str);
-    return True;
-}
-
-static int rangesetColorMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    char *str;
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = STRING_TAG;
-    str = RangesetTableGetMacroRangeColor(rangesetTable);
-    result->val.str = AllocString(strlen(str) + 1);
-    strcpy(result->val.str, str);
-    return True;
-}
-
-static int rangesetModifyResponseMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, char **errMsg)
-{
-    char *str;
-    RangesetTable *rangesetTable = window->buffer->rangesetTable;
-
-    result->tag = STRING_TAG;
-    str = RangesetTableGetMacroRangeMod(rangesetTable);
-    result->val.str = AllocString(strlen(str) + 1);
-    strcpy(result->val.str, str);
-    return True;
-}
-
-/*
-** Built-in macro subroutine to check the availability of a range set (ie has a
-** range set with this label been defined?). Argument is $1: range set label
-** (one alphabetic character). Returns true if defined, false if undefined,
-** fails if invalid label. If $2 exists, this is interpreted as a range number
-** within the range set - rangeset built-in macro variables will be set for
-** this particular range, if defined. If not defined, the function returns
-** false.
-*/
-
-static int rangesetDefinedMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-    int index = -1;
-
-    if (!tab) {
-        result->tag = INT_TAG;
-        result->val.n = 0;
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
+    
+    if (rangesetTable == NULL) {
         return True;
     }
+    
+    rangesetList = RangesetGetList(rangesetTable);
+    nRangesets = strlen((char*)rangesetList);
+    for(i = 0; i < nRangesets; i++) {
+        element.tag = INT_TAG;
+        element.val.n = rangesetList[i];
 
-    if (nArgs < 1 || nArgs > 2) {
+        sprintf(indexStr, "%d", nRangesets - i - 1);
+        allocIndexStr = AllocString(strlen(indexStr) + 1);
+        if (allocIndexStr == NULL)
+            M_FAILURE("Failed to allocate array key in %s");
+        strcpy(allocIndexStr, indexStr);
+        
+        if (!ArrayInsert(result, allocIndexStr, &element))
+        M_FAILURE("Failed to insert array element in %s");
+    }
+
+    return True;
+}
+
+
+/*
+** Built-in macro subroutine to create a new rangeset or rangesets.  
+** If called with one argument: $1 is the number of rangesets required and 
+** return value is an array indexed 0 to n, with the rangeset labels as values;
+** (or an empty array if the requested number of rangesets are not available).
+** If called with no arguments, returns a single rangeset label (not an array),
+** or an empty string if there are no rangesets available. 
+*/
+static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    char label;
+    int i, nRangesetsRequired;
+    DataValue element;
+    char indexStr[3], *allocIndexStr;
+    
+    RangesetTable *rangesetTable = window->buffer->rangesetTable;
+       
+    if (nArgs > 1)
         return wrongNArgsErr(errMsg);
+
+    if (rangesetTable == NULL) {
+        window->buffer->rangesetTable = rangesetTable = 
+                RangesetTableAlloc(window->buffer);
     }
+    
+    if (nArgs == 0) {
+        label = RangesetCreate(rangesetTable);
 
-    if (argList[0].tag != STRING_TAG || strlen(argList[0].val.str) != 1 ||
-            !RangesetLabelOK(argList[0].val.str[0])) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
-    }
-
-    if (nArgs == 2) {
-        if (!readIntArg(argList[1], &index, errMsg)) {
-            return False;
-        }
-    if (index < 0) {
-            M_FAILURE("Second parameter is an invalid rangeset index in %s");
-        }
-    }
-
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-
-    /* set up result */
-    if (p) {
-        RangesetTableAssignMacroVars(tab, p, index);
+        result->tag = INT_TAG;
+        result->val.n = label;
+        return True;
     }
     else {
-        RangesetTableClearMacroVars(tab);
+        if (!readIntArg(argList[0], &nRangesetsRequired, errMsg))
+            return False;
+        
+        result->tag = ARRAY_TAG;
+        result->val.arrayPtr = ArrayNew();
+        
+        if (nRangesetsRequired > nRangesetsAvailable(rangesetTable))
+            return True;
+        
+        for (i = 0; i < nRangesetsRequired; i++) {
+            element.tag = INT_TAG;
+            element.val.n = RangesetCreate(rangesetTable);
+            
+            sprintf(indexStr, "%d", i);
+            allocIndexStr = AllocString(strlen(indexStr) + 1);
+            if (!allocIndexStr) {
+                *errMsg = "Array element failed to allocate key: %s";
+                return(False);
+            }
+            strcpy(allocIndexStr, indexStr);
+            ArrayInsert(result, allocIndexStr, &element);
+        }
+        
+        return True;
     }
-
-    result->tag = INT_TAG;
-    result->val.n = (p && index < RangesetGetNRanges(p)) ? 1 : 0;
-    return True;
 }
-
-/*
-** Built-in macro subroutine to invert a range set. Argument is $1: range set
-** label (one alphabetic character). Returns the number of ranges in the
-** result. Fails if range set undefined.
-*/
-
-static int rangesetInverseMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-
-    if (!tab ||
-      argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0]))
-      M_FAILURE("First parameter is an invalid Rangeset label in %s");
-
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    if (!p)
-      M_FAILURE("Rangeset not available in %s");
-    else if (RangesetInverse(p) < 0)
-      M_FAILURE("Problem inverting rangeset in %s");
-
-    /* set up result */
-    RangesetTableAssignMacroVars(tab, p, -1);
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetGetNRanges(p);
-    return True;
-}
-
-/*
-** Built-in macro subroutine for adding to a range set. Arguments are $1: range
-** set label (one alphabetic character), then either (a) $2: source range set
-** label, (b) $2: int start-range, $3: int end-range, (c) nothing (use selection
-** if any to specify range to add - must not be rectangular). Returns the number
-** of ranges in the result.
-** If the destination ($1) rangeset is undefined, this function defines it, and
-** makes it the most recent.
-*/
-
-static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p, *q;
-    int isNew, start, end, isRect, rectStart, rectEnd, maxpos;
-
-    if (nArgs < 1 || nArgs > 3)
-      return wrongNArgsErr(errMsg);
-
-    if (argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0]))
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
-
-    if (!tab) {
-      buf->rangesetTable = tab = RangesetTableAlloc(buf);
-    }
-
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    isNew = !p;
-    if (isNew) {
-      p = RangesetFetch(tab, argList[0].val.str[0], True);
-      RangesetSetMaxpos(p, buf->gapEnd - buf->gapStart + buf->length);
-    }
-
-    start = end = -1;
-
-    if (nArgs == 1) {
-      /* pick up current selection in this window */
-      if (!BufGetSelectionPos(buf, &start, &end,
-                              &isRect, &rectStart, &rectEnd) || isRect) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          M_FAILURE("Selection missing or rectangular in call to %s");
-      }
-      if (!RangesetAddBetween(p, start, end)) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          M_FAILURE("Failure to add selection in %s");
-      }
-    }
-    if (nArgs == 2) {
-      /* add ranges taken from a second set */
-      if (argList[1].tag != STRING_TAG ||
-          strlen(argList[1].val.str) != 1 ||
-          !(q = RangesetFetch(tab, argList[1].val.str[0], False))) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          M_FAILURE("Second rangeset is invalid in %s");
-      }
-      if (!RangesetAdd(p, q)) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          M_FAILURE("Failure to merge one rangeset into another in %s");
-      }
-    }
-    if (nArgs == 3) {
-      /* add a range bounded by the start and end positions in $2, $3 */
-      if (!readIntArg(argList[1], &start, errMsg)) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          return False;
-      }
-      if (!readIntArg(argList[2], &end, errMsg)) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          return False;
-      }
-
-      /* make sure range is in order and fits buffer size */
-      maxpos = buf->gapEnd - buf->gapStart + buf->length;
-      if (start < 0) start = 0;
-      if (start > maxpos) start = maxpos;
-      if (end < 0) end = 0;
-      if (end > maxpos) end = maxpos;
-      if (start > end) {int temp = start; start = end; end = temp;}
-
-      if (!RangesetAddBetween(p, start, end)) {
-          if (isNew)
-              RangesetForget(tab, argList[0].val.str[0]);
-          M_FAILURE("Failure to add range in %s");
-      }
-    }
-
-    /* (to) which range did we just add? */
-    if (start >= 0) {
-      start = (start + end) / 2;      /* "middle" of added range */
-      start = RangesetFindRangeOfPos(p, start, False);
-    }
-    else
-      start = -1;
-
-    /* set up result */
-    RangesetTableAssignMacroVars(tab, p, start);
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetGetNRanges(p);
-    return True;
-}
-
-/*
-** Built-in macro subroutine for removing from a range set. Almost identical to
-** rangesetAddMS() - only changes are from RangesetAdd()/RangesetAddBetween()
-** to RangesetRemove()/RangesetRemoveBetween() and the handling on an undefined
-** destination range.
-*/
-
-static int rangesetRemoveMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p, *q;
-    int start, end, isRect, rectStart, rectEnd, maxpos;
-
-    if (nArgs < 1 || nArgs > 3)
-      return wrongNArgsErr(errMsg);
-
-    if (!tab ||
-      argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0]))
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
-
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    if (!p)
-      M_FAILURE("The specified rangeset is undefined in %s");;
-
-    if (nArgs == 1) {
-      /* remove current selection in this window */
-      if (!BufGetSelectionPos(buf, &start, &end,
-                              &isRect, &rectStart, &rectEnd) || isRect)
-          M_FAILURE("Selection missing or rectangular in call to %s");
-      RangesetRemoveBetween(p, start, end);
-    }
-    if (nArgs == 2) {
-      /* remove ranges taken from a second set */
-      if (argList[1].tag != STRING_TAG ||
-          strlen(argList[1].val.str) != 1 ||
-          !(q = RangesetFetch(tab, argList[1].val.str[0], False)))
-          M_FAILURE("Second rangeset is invalid in %s");
-      RangesetRemove(p, q);
-    }
-    if (nArgs == 3) {
-      /* remove a range bounded by the start and end positions in $2, $3 */
-      if (!readIntArg(argList[1], &start, errMsg))
-          return False;
-      if (!readIntArg(argList[2], &end, errMsg))
-          return False;
-
-      /* make sure range is in order and fits buffer size */
-      maxpos = buf->gapEnd - buf->gapStart + buf->length;
-      if (start < 0) start = 0;
-      if (start > maxpos) start = maxpos;
-      if (end < 0) end = 0;
-      if (end > maxpos) end = maxpos;
-      if (start > end) {int temp = start; start = end; end = temp;}
-
-      RangesetRemoveBetween(p, start, end);
-    }
-
-    /* set up result */
-    RangesetTableAssignMacroVars(tab, p, -1);
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetGetNRanges(p);
-    return True;
-}
+    
 
 /*
 ** Built-in macro subroutine for forgetting a range set.
 */
 
-static int rangesetForgetMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
-
-    if (argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0])) {
-      M_FAILURE("Invalid rangeset label in %s");
+    RangesetTable *rangesetTable = window->buffer->rangesetTable;
+    DataValue *array;
+    DataValue element;
+    char keyString[3];
+    char deleteLabels[N_RANGESETS];
+    int i, arraySize;
+    
+    if (nArgs != 1) {
+        return wrongNArgsErr(errMsg);
+    }
+    
+    if (argList[0].tag == ARRAY_TAG) {
+        array = &argList[0];
+        arraySize = ArraySize(array);
+        
+        if (arraySize > N_RANGESETS) {
+            M_FAILURE("Too many elements in array in %s");
+        }
+        
+        for (i = 0; i < arraySize; i++) {
+            sprintf(keyString, "%d", i);
+            
+            if (!ArrayGet(array, keyString, &element)) {
+                M_FAILURE("Invalid key in array in %s");
+            }
+            
+            if (element.tag != INT_TAG
+                    || !RangesetLabelOK(element.val.n)) {
+                M_FAILURE("Invalid rangeset label in array in %s");
+            }
+            
+            deleteLabels[i] = element.val.n;
+        }
+        
+        for (i = 0; i < arraySize; i++) {
+            RangesetForget(rangesetTable, deleteLabels[i]);
+        }
+    }    
+            
+    else {        
+        if (argList[0].tag != INT_TAG 
+                || !RangesetLabelOK(argList[0].val.n)) {
+            M_FAILURE("Invalid rangeset label in %s");
+        }
+        
+        if(rangesetTable != NULL) {
+            RangesetForget(rangesetTable, argList[0].val.n);
+        }
     }
 
     /* set up result */
-    if (tab)
-      RangesetTableClearMacroVars(tab);
+    result->tag = NO_TAG;
+    return True;}
 
+
+/*
+** Built-in macro subroutine for adding to a range set. Arguments are $1: range
+** set label (one integer), then either (a) $2: source range set label, 
+** (b) $2: int start-range, $3: int end-range, (c) nothing (use selection
+** if any to specify range to add - must not be rectangular). Returns the 
+** index of the newly added range (cases b and c), or 0 (case a).
+*/
+
+static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *targetRangeset, *sourceRangeset;
+    int start, end, isRect, rectStart, rectEnd, maxpos, index;
+
+    if (nArgs < 1 || nArgs > 3)
+        return wrongNArgsErr(errMsg);
+
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+
+    targetRangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+
+    if (targetRangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+    
+    start = end = -1;
+
+    if (nArgs == 1) {
+        /* pick up current selection in this window */
+        if (!BufGetSelectionPos(buffer, &start, &end,
+              &isRect, &rectStart, &rectEnd) || isRect) {
+            M_FAILURE("Selection missing or rectangular in call to %s");
+        }
+        if (!RangesetAddBetween(targetRangeset, start, end)) {
+            M_FAILURE("Failure to add selection in %s");
+        }
+    }
+    
+    if (nArgs == 2) {
+        /* add ranges taken from a second set */
+        if (argList[1].tag != INT_TAG
+                || !RangesetLabelOK(argList[1].val.n)) {
+            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+        }
+      
+        sourceRangeset = RangesetFetch(rangesetTable, argList[1].val.n);
+        if (sourceRangeset == NULL) {
+            M_FAILURE("Second rangeset does not exist in %s");
+        }
+      
+        if (!RangesetAdd(targetRangeset, sourceRangeset)) {
+            M_FAILURE("Failed to merge rangesets in %s");
+        }
+    }
+    
+    if (nArgs == 3) {
+        /* add a range bounded by the start and end positions in $2, $3 */
+        if (!readIntArg(argList[1], &start, errMsg)) {
+            return False;
+        }
+        if (!readIntArg(argList[2], &end, errMsg)) {
+            return False;
+        }
+
+        /* make sure range is in order and fits buffer size */
+        maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+        if (start < 0) start = 0;
+        if (start > maxpos) start = maxpos;
+        if (end < 0) end = 0;
+        if (end > maxpos) end = maxpos;
+        if (start > end) {int temp = start; start = end; end = temp;}
+
+        if (!RangesetAddBetween(targetRangeset, start, end)) {
+            M_FAILURE("Failed to add range in %s");
+        }
+    }
+
+    /* (to) which range did we just add? */
+    if (nArgs != 2 && start >= 0) {
+        start = (start + end) / 2;      /* "middle" of added range */
+        index = 1 + RangesetFindRangeOfPos(targetRangeset, start, False);
+    }
+    else {
+        index = 0;
+    }
+
+    /* set up result */
     result->tag = INT_TAG;
-    result->val.n = tab && RangesetForget(tab, argList[0].val.str[0]) ? 1 : 0;
+    result->val.n = index;
+    return True;
+}
+
+
+/*
+** Built-in macro subroutine for removing from a range set. Almost identical to
+** rangesetAddMS() - only changes are from RangesetAdd()/RangesetAddBetween()
+** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an 
+** undefined destination range, and that it returns no value.
+*/
+
+static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *targetRangeset, *sourceRangeset;
+    int start, end, isRect, rectStart, rectEnd, maxpos;
+
+    if (nArgs < 1 || nArgs > 3) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+    
+    targetRangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (targetRangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+
+    if (nArgs == 1) {
+      /* remove current selection in this window */
+        if (!BufGetSelectionPos(buffer, &start, &end, &isRect, &rectStart, &rectEnd) 
+                || isRect) {
+            M_FAILURE("Selection missing or rectangular in call to %s");
+        }
+        RangesetRemoveBetween(targetRangeset, start, end);
+    }
+    
+    if (nArgs == 2) {
+        /* remove ranges taken from a second set */
+        if (argList[1].tag != INT_TAG 
+                || !RangesetLabelOK(argList[1].val.n)) {
+            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+        }
+        
+        sourceRangeset = RangesetFetch(rangesetTable, argList[1].val.n);
+        if (sourceRangeset == NULL) {
+            M_FAILURE("Second rangeset does not exist in %s");
+        }
+        RangesetRemove(targetRangeset, sourceRangeset);
+    }
+    
+    if (nArgs == 3) {
+        /* remove a range bounded by the start and end positions in $2, $3 */
+        if (!readIntArg(argList[1], &start, errMsg))
+            return False;
+        if (!readIntArg(argList[2], &end, errMsg))
+            return False;
+
+        /* make sure range is in order and fits buffer size */
+        maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+        if (start < 0) start = 0;
+        if (start > maxpos) start = maxpos;
+        if (end < 0) end = 0;
+        if (end > maxpos) end = maxpos;
+        if (start > end) {int temp = start; start = end; end = temp;}
+
+        RangesetRemoveBetween(targetRangeset, start, end);
+    }
+
+    /* set up result */
+    result->tag = NO_TAG;
+    return True;
+}
+
+
+/*
+** Built-in macro subroutine to invert a range set. Argument is $1: range set
+** label (one alphabetic character). Returns nothing. Fails if range set 
+** undefined.
+*/
+
+static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    
+    RangesetTable *rangesetTable = window->buffer->rangesetTable;
+    Rangeset *rangeset;
+
+    if (nArgs != 1)
+        return wrongNArgsErr(errMsg);
+
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+    
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+
+    rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (rangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+    
+    if (RangesetInverse(rangeset) < 0) {
+        M_FAILURE("Problem inverting rangeset in %s");
+    }  
+
+    /* set up result */
+    result->tag = NO_TAG;
+    return True;
+}
+
+
+/*
+** Built-in macro subroutine for finding out info about a rangeset.  Takes one
+** argument of a rangeset label.  Returns an array with the following keys:
+**    defined, count, color, mode.
+*/
+
+static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    RangesetTable *rangesetTable = window->buffer->rangesetTable;
+    Rangeset *rangeset = NULL;
+    unsigned char label;
+    int count, defined;
+    char *color, *mode;
+    DataValue element;
+    
+    static char *definedIndex = "\001defined";
+    static char *countIndex = "\001count";
+    static char *colorIndex = "\001color";
+    static char *modeIndex = "\001mode";
+ 
+    if (nArgs != 1)
+      return wrongNArgsErr(errMsg);
+        
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+
+    label = argList[0].val.n;
+    
+    if (rangesetTable != NULL) {
+        rangeset = RangesetFetch(rangesetTable, label);
+    }
+
+    RangesetGetInfo(rangeset, &defined, &label, &count, &color, &mode);
+    
+    /* set up result */    
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
+    
+    element.tag = INT_TAG;
+    element.val.n = defined;
+    if (!ArrayInsert(result, definedIndex+1, &element))
+        M_FAILURE("Failed to insert array element \"defined\" in %s");
+        
+    element.tag = INT_TAG;
+    element.val.n = count;
+    if (!ArrayInsert(result, countIndex+1, &element))
+        M_FAILURE("Failed to insert array element \"count\" in %s");
+        
+    element.tag = STRING_TAG;
+    element.val.str = AllocString(strlen(color) + 1);
+    if (element.val.str == NULL)
+        M_FAILURE("Failed to allocate array value \"color\" in %s");
+    strcpy(element.val.str, color);
+    if (!ArrayInsert(result, colorIndex+1, &element))
+        M_FAILURE("Failed to insert array element \"color\" in %s");
+  
+    element.tag = STRING_TAG;
+    element.val.str = AllocString(strlen(mode) + 1);
+    if (element.val.str == NULL)
+        M_FAILURE("Failed to allocate array value \"mode\" in %s");
+    strcpy(element.val.str, mode);
+    if (!ArrayInsert(result, modeIndex+1, &element))
+        M_FAILURE("Failed to insert array element \"mode\" in %s");
+  
     return True;
 }
 
 /*
-** Built-in macro subroutine for finding out how many ranges exist.
+** Built-in macro subroutine for finding the extent of a range in a set. 
+** If only one parameter is supplied, use the spanning range of all 
+** ranges, otherwise select the individual range specified.  Returns 
+** an array with the keys "start" and "end" and values  
 */
 
-static int rangesetGetCountMS(WindowInfo *window, DataValue *argList, int nArgs,
+static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *rangeset;
+    int start, end, dummy, rangeIndex, ok;
+    DataValue element;
 
-    if (nArgs != 1)
-      return wrongNArgsErr(errMsg);
+    static char *startIndex = "\001start";
+    static char *endIndex = "\001end";
 
-    if (!tab ||
-      argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !(p = RangesetFetch(tab, argList[0].val.str[0], False))) {
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
+    if (nArgs < 1 || nArgs > 2) {
+        return wrongNArgsErr(errMsg);
     }
 
-    /* set up result */
-    RangesetTableAssignMacroVars(tab, p, -1);
-
-    result->tag = INT_TAG;
-    result->val.n = RangesetGetNRanges(p);
-    return True;
-}
-
-/*
-** Built-in macro subroutine for selecting a range in a set. If only one
-** parameter is supplied, select the spanning range of all ranges, otherwise
-** select the range. Returns true if successful, else false.
-*/
-
-static int rangesetSelectMS(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, char **errMsg)
-{
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-    int start, end, dummy, ind, ok;
-
-    if (nArgs < 1 || nArgs > 2)
-      return wrongNArgsErr(errMsg);
-
-    if (!tab ||
-      argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0])) {
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+    
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
     }
 
     ok = False;
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    if (p) {
-      if (nArgs == 1) {
-          ind = RangesetGetNRanges(p) - 1;
-          ok = RangesetFindRangeNo(p, 0, &start, &dummy);
-          ok &= RangesetFindRangeNo(p, ind, &dummy, &end);
-          ind = -1;
-      }
-      else if (nArgs == 2) {
-          if (!readIntArg(argList[1], &ind, errMsg))
-              return False;
-          ok = RangesetFindRangeNo(p, ind, &start, &end);
-      }
-      if (ok) {
-          BufSelect(buf, start, end);
-      }
+    rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (rangeset != NULL) {
+        if (nArgs == 1) {
+            rangeIndex = RangesetGetNRanges(rangeset);
+            ok = RangesetFindRangeNo(rangeset, 0, &start, &dummy);
+            ok &= RangesetFindRangeNo(rangeset, rangeIndex, &dummy, &end);
+            rangeIndex = -1;
+        }
+        else if (nArgs == 2) {
+            if (!readIntArg(argList[1], &rangeIndex, errMsg)) {
+                return False;
+            }
+            ok = RangesetFindRangeNo(rangeset, rangeIndex-1, &start, &end);
+        }
     }
 
-    /* set up result */
-    RangesetTableAssignMacroVars(tab, p, ind);
+    /* set up result */    
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
+    
+    if (!ok)
+        return True;
+    
+    element.tag = INT_TAG;
+    element.val.n = start;
+    if (!ArrayInsert(result, startIndex+1, &element))
+    M_FAILURE("Failed to insert array element \"start\" in %s");
 
-    result->tag = INT_TAG;
-    result->val.n = ok;
+    element.tag = INT_TAG;
+    element.val.n = end;
+    if (!ArrayInsert(result, endIndex+1, &element))
+    M_FAILURE("Failed to insert array element \"end\" in %s");
+
     return True;
 }
 
 /*
 ** Built-in macro subroutine for checking a position against a range. If only
-** one parameter is supplied, the current cursor position is used. Returns true
-** if successful, false if not in a range, fails if parameters were bad.
+** one parameter is supplied, the current cursor position is used. Returns 
+** false (zero) if not in a range, range index (1-based) if in a range; 
+** fails if parameters were bad.
 */
 
 static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-    int pos, ind, maxpos;
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *rangeset;
+    int pos, rangeIndex, maxpos;
 
-    if (nArgs < 1 || nArgs > 2)
-      return wrongNArgsErr(errMsg);
+    if (nArgs < 1 || nArgs > 2) {
+        return wrongNArgsErr(errMsg);
+    }
 
-    if (!tab ||
-      argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !(p = RangesetFetch(tab, argList[0].val.str[0], False))) {
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) { 
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
+    
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+    
+    rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (rangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
     }
 
     if (nArgs == 1) {
-      pos = TextGetCursorPos(window->lastFocus);
+        pos = TextGetCursorPos(window->lastFocus);
     }
     else if (nArgs == 2) {
-      if (!readIntArg(argList[1], &pos, errMsg))
-          return False;
+        if (!readIntArg(argList[1], &pos, errMsg))
+            return False;
     }
 
-    maxpos = buf->gapEnd - buf->gapStart + buf->length;
-    if (pos < 0 || pos > maxpos)
-      ind = -1;
-    else
-      ind = RangesetFindRangeOfPos(p, pos, True);
+    maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+    if (pos < 0 || pos > maxpos) {
+        rangeIndex = 0;
+    }
+    else {
+        rangeIndex = RangesetFindRangeOfPos(rangeset, pos, False) + 1;
+    }
 
     /* set up result */
-    RangesetTableAssignMacroVars(tab, p, ind);
-
     result->tag = INT_TAG;
-    result->val.n = (ind >= 0);
+    result->val.n = rangeIndex;
     return True;
 }
 
@@ -4665,49 +4699,41 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
 static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-    int isNew;
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *rangeset;
     char *color_name;
 
-    if (nArgs < 1 || nArgs > 2)
-      return wrongNArgsErr(errMsg);
-
-    if (argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0])) {
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
+    if (nArgs != 2) {
+        return wrongNArgsErr(errMsg);
     }
 
-    if (!tab) {
-      buf->rangesetTable = tab = RangesetTableAlloc(buf);
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    isNew = !p;
-    if (isNew) {
-      p = RangesetFetch(tab, argList[0].val.str[0], True);
-      RangesetSetMaxpos(p, buf->gapEnd - buf->gapStart + buf->length);
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
     }
 
-    color_name = (char *)0;
-    if (p) {
-      if (nArgs == 2) {
-          if (argList[1].tag != STRING_TAG) {
-              if (isNew)
-                  RangesetForget(tab, argList[0].val.str[0]);
-              M_FAILURE("Second parameter is not a color name string in %s");
-          }
-          color_name = argList[1].val.str;
-      }
+    rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (rangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
     }
 
+    color_name = "";
+    if (rangeset != NULL) {
+        if (argList[1].tag != STRING_TAG) {
+            M_FAILURE("Second parameter is not a color name string in %s");
+        }
+        color_name = argList[1].val.str;
+    }
+    
+    RangesetAssignColorName(rangeset, color_name);
+            
     /* set up result */
-    RangesetTableAssignMacroVars(tab, p, -1);
-
-    result->tag = INT_TAG;
-    result->val.n = (p && RangesetAssignColorName(p, color_name));
+    result->tag = NO_TAG;
     return True;
 }
 
@@ -4716,52 +4742,51 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
 ** valid and the response type name is valid.
 */
 
-static int rangesetSetModifyResponseMS(WindowInfo *window, DataValue *argList,
+static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
-    RangesetTable *tab = buf->rangesetTable;
-    Rangeset *p;
-    int isNew;
+    textBuffer *buffer = window->buffer;
+    RangesetTable *rangesetTable = buffer->rangesetTable;
+    Rangeset *rangeset;
     char *update_fn_name;
+    int ok;
 
-    if (nArgs < 1 || nArgs > 2)
-      return wrongNArgsErr(errMsg);
-
-    if (argList[0].tag != STRING_TAG ||
-      strlen(argList[0].val.str) != 1 ||
-      !RangesetLabelOK(argList[0].val.str[0])) {
-      M_FAILURE("First parameter is an invalid rangeset label in %s");
+    if (nArgs < 1 || nArgs > 2) {
+        return wrongNArgsErr(errMsg);
     }
 
-    if (!tab) {
-      buf->rangesetTable = tab = RangesetTableAlloc(buf);
+    if (argList[0].tag != INT_TAG 
+            || !RangesetLabelOK(argList[0].val.n)) {
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    p = RangesetFetch(tab, argList[0].val.str[0], False);
-    isNew = !p;
-    if (isNew) {
-      p = RangesetFetch(tab, argList[0].val.str[0], True);
-      RangesetSetMaxpos(p, buf->gapEnd - buf->gapStart + buf->length);
+    if (rangesetTable == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
     }
 
-    update_fn_name = (char *)0;
-    if (p) {
-      if (nArgs == 2) {
-          if (argList[1].tag != STRING_TAG) {
-              if (isNew)
-                  RangesetForget(tab, argList[0].val.str[0]);
-              M_FAILURE("Second parameter is not a string in %s");
-          }
-          update_fn_name = argList[1].val.str;
-      }
+    rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
+    if (rangeset == NULL) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
+
+    update_fn_name = "";
+    if (rangeset != NULL) {
+        if (nArgs == 2) {
+            if (argList[1].tag != STRING_TAG) {
+                M_FAILURE("Second parameter is not a string in %s");
+            }
+            update_fn_name = argList[1].val.str;
+        }
+    }
+    
+    ok = RangesetChangeModifyResponse(rangeset, update_fn_name);
+    
+    if (!ok) {
+        M_FAILURE("Second parameter is not a valid mode in %s");
     }
 
     /* set up result */
-    RangesetTableAssignMacroVars(tab, p, -1);
-
-    result->tag = INT_TAG;
-    result->val.n = (p && RangesetChangeModifyResponse(p, update_fn_name));
+    result->tag = NO_TAG;
     return True;
 }
 

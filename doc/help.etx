@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.43 2003/04/18 01:08:04 n8gray Exp $
+.. $Id: help.etx,v 1.44 2003/05/02 18:18:39 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2646,13 +2646,13 @@ Macro Subroutines
 Range Sets
 ----------
 
-  The user can define range sets, identified by an alphabetic character.  A
-  range set contains ranges, defined by start and end positions in the text
-  buffer.  These ranges are adjusted when modifications are made to the text
-  buffer: they shuffle around when characters are added or deleted.  However,
-  ranges within a set will coalesce if the characters between them are removed,
-  or a new range is added to the set which bridges or overlaps others.
-
+  The user can create range sets, identified by opaque integers.  A range set
+  contains ranges, defined by start and end positions in the text buffer.
+  These ranges are adjusted when modifications are made to the text buffer:
+  they shuffle around when characters are added or deleted.  However, ranges
+  within a set will coalesce if the characters between them are removed, or
+  a new range is added to the set which bridges or overlaps others.
+  
   Using range sets allows non-contiguous bits of the text to be identified as a
   group.
 
@@ -2660,97 +2660,100 @@ Range Sets
   range set will have the background color of the range set. If more than one
   rangeset includes a given character, its background color will be that of the
   most recently created range set which has a color defined.
+  
+  Range sets must be created using the rangeset_create() function, which 
+  will return an identifier for the newly-created rangeset.  This identifier
+  is then passed to the other rangeset functions to manipulate the range set.
+    
+  There is a limit to the number of range sets which can exist at any time -
+  up to 63 in each text buffer.  Care should be taken to destroy any rangesets
+  which are no longer needed, by using the rangeset_destroy() function.
 
   Warnings: A range set is manipulated ONLY through macro routines. Range sets
   can easily become very large, and may exceed the capacity of the running
   process.  Coloring relies on proper color names or specifications (such as
   the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. 
-  Behaviours set using rangeset_set_modify_response() are still experimental.
+  Behaviours set using rangeset_set_mode() are still experimental.
+
 
 
 3>Range set read-only variables
 
-  These are set by calls to the range set functions.
-
 **$rangeset_list**
-  string of active rangeset letters in reverse order of definition.
+  array of active rangeset identifiers, with integer keys starting at 0,
+  in the order the rangesets were defined.
 
-**$rangeset_label**
-  label of most recently accessed rangeset.
-
-**$rangeset_color**
-  color (if any) of most recently accessed rangeset.
-
-**$rangeset_modify_response**
-  modify response name of most recently accessed rangeset.
-
-**$rangeset_ranges**
-  number of ranges in most recently accessed rangeset.
-
-**$rangeset_range_index**
-  most recently accessed range in rangeset (or -1).
-
-**$rangeset_range_start**
-  start position of most recently accessed range (or -1).
-
-**$rangeset_range_end**
-  end position of most recently accessed range (or -1).
 
 3>Range set functions
 
-**rangeset_defined( r, [index] )**
-  Returns true if the range identified by the letter r is defined, false if
-  not. If a non-negative index is supplied, this is used to set up the range
-  set macro variables for the range specified in the set; if index is greater
-  than the value of rangeset_get_count(r), the return value is false.
-
-**rangeset_inverse( r )**
-  Changes the range set r so that it contains all ranges not in r. Returns the
-  number of entries if successful.
-
+**rangeset_create()**
+**rangeset_create( n )**
+  Creates one or more new range sets. The first form creates a single range
+  set and returns its identifier; if there are no range sets available it 
+  returns 0. The second form creates n new range sets, and returns an array 
+  of the range set identifiers with keys beginning at 0. If the requested 
+  number of range sets is not available it returns an empty array.
+  
+**rangeset_destroy( r )**
+**rangeset_destroy( array )**
+  Deletes all information about a range set or a number of range sets. The
+  first form destroys the range set identified by r. The second form should 
+  be passed an array of rangeset identifiers with keys beginning at 0 (i.e.
+  the same form of array returned by rangeset_create(n); it destroys all the
+  range sets appearing in the array. If any of the range sets do not exist,
+  the function continues without errors. Does not return a value.
+  
 **rangeset_add( r, [start, end] )**
 **rangeset_add( r, r0 )**
   Adds to the range set r. The first form adds the range identified by the
   current primary selection to the range set, unless start and end are defined,
-  in which case the range they define is added. The second form allows all
-  ranges in the range set identified by r0 to be added to the range set r. If r
-  has not yet been defined, it will be at this point. Returns the number of
-  non-contiguous ranges in r after the addition.
-
-**rangeset_remove( r, [start, end] )**
-**rangeset_remove( r, r0 )**
+  in which case the range they define is added. The second form adds all
+  ranges in the range set r0 to the range set r. Returns the index of the 
+  newly-added range within the rangeset.
+  
+**rangeset_subtract( r, [start, end] )**
+**rangeset_subtract( r, r0 )**
   Removes from the range set r. The first form removes the range identified by
   the current primary selection from the range set, unless start and end are
   defined, in which case the range they define is removed. The second form
-  allows all ranges in the range set identified by r0 to be removed from the
-  range set r. Returns the number of non-contiguous ranges in r after the
-  addition.
+  removes all ranges in the range set r0 from the range set r. Does not return
+  a value.
 
-**rangeset_forget( r )**
-  Deletes all information about the range set identified by r. A subsequent
-  call to rangeset_defined(r) will return false.
+**rangeset_invert( r )**
+  Changes the range set r so that it contains all ranges not in r. Does not
+  return a value.
 
-**rangeset_get_count( r )**
-  Returns the number of non-contiguous ranges in the range set r.
+**rangeset_info( r )**
+  Returns an array containing information about the range set r. The array
+  has the following keys: **defined** (whether a range set with identifier
+  r is defined), **count** (the number of ranges in the range set), **color**
+  (the current background color of the range set, an empty string if the
+  range set has no color), and **mode** (the name of the modify-response
+  mode of the range set).
 
-**rangeset_select( r, [index] )**
-  Selects the region starting at the start of the first range in the range set
-  r and ending at the end of the last, unless index is supplied, in which case
-  the range in the range set identified by the index will be selected. index
-  should satisfy the conditions 0 <= index and index < rangeset_get_count(r).
-  Returns true if successful.
+**rangeset_range( r, [index] )**
+  Returns details of a specific range in the range set r.  The range is 
+  specified by index, which should be between 1 and n (inclusive), where
+  n is the number of ranges in the range set.  The return value is an array
+  containing the keys **start** (the start position of the range) and **end**
+  (the end position of the range).  If index is not supplied, the region
+  returned is the span of the entire range set (the region starting at the 
+  start of the first range and ending at the end of the last).  If index
+  is outside the correct range of values, the function returns an empty array.
 
-**rangeset_includes_pos( r, pos )**
-  Returns true if there is a range in the range set r which contains pos.
+**rangeset_includes( r, pos )**
+  Returns the index of the range in range set r which includes pos; returns
+  0 if pos is not contained in any of the ranges of r.  This can also be used
+  as a simple true/false function which returns true if pos is contained in
+  the range set.
+  
+**rangeset_set_color( r, color )**
+  Attempts to apply the color as a background color to the ranges of r. If
+  color is at empty string, removes the coloring of r.  No check is made 
+  regarding the validity of color: if the color is invalid (a bad name,
+  or not supported by the hardware) this has unpredictable effects.
 
-**rangeset_set_color( r, [color] )**
-  Removes the coloring of range set r if no color name is supplied, otherwise
-  attempts to apply the color as a background color to the ranges of r. No
-  check is made regarding the validity of color: if the color is invalid (a bad
-  name, or not supported by the hardware) this has no effect. If r is
-  undefined, this function will define it with no ranges.
-
-**rangeset_set_modify_response( r, type )**
+**rangeset_set_mode( r, type )**
   Changes the behaviour of the range set r when modifications to the text
   buffer occur.  type can be one of the following: "maintain" (the default),
   "break", "include", "exclude", "ins_del" or "del_ins". (The differences are

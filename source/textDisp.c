@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.49 2003/04/18 01:07:38 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.50 2003/05/02 18:18:47 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -37,7 +37,7 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.49 2003/04/18 01:07:38 n8gray E
 #include "nedit.h"
 #include "calltips.h"
 #include "highlight.h"
-#include "rangeset_fn.h"
+#include "rangeset.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,14 +83,14 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.49 2003/04/18 01:07:38 n8gray E
 #define BACKLIGHT_MASK  (0xff << BACKLIGHT_SHIFT)
 
 #define RANGESET_SHIFT (20)
-#define RANGESET_MASK (0x1F << RANGESET_SHIFT)
+#define RANGESET_MASK (0x3F << RANGESET_SHIFT)
 
 /* If you use both 32-Bit Style mask layout:
    Bits +----------------+----------------+----------------+----------------+
     hex |1F1E1D1C1B1A1918|1716151413121110| F E D C B A 9 8| 7 6 5 4 3 2 1 0|
     dec |3130292827262524|2322212019181716|151413121110 9 8| 7 6 5 4 3 2 1 0|
         +----------------+----------------+----------------+----------------+
-   Type |               r| r r r r b b b b| b b b b H 1 2 F| s s s s s s s s|
+   Type |             r r| r r r r b b b b| b b b b H 1 2 F| s s s s s s s s|
         +----------------+----------------+----------------+----------------+
    where: s - style lookup value (8 bits)
         F - fill (1 bit)
@@ -98,8 +98,8 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.49 2003/04/18 01:07:38 n8gray E
         1 - primary selection (1 bit)
         H - highlight (1 bit)
         b - backlighting index (8 bits)
-        r - rangeset index (5 bits - actual range is limited to 0-26)
-   This leaves 7 "unused" bits */
+        r - rangeset index (6 bits)
+   This leaves 6 "unused" bits */
 
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the

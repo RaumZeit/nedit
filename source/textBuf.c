@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.26 2002/11/19 18:05:51 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.27 2003/05/02 18:18:45 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -31,7 +31,7 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.26 2002/11/19 18:05:51 edg Exp $
 #endif
 
 #include "textBuf.h"
-#include "rangeset_fn.h"
+#include "rangeset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

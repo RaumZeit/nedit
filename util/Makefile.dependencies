@@ -1,4 +1,4 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/util/Makefile.dependencies,v 1.6 2002/09/11 18:59:49 arnef Exp $
+# $Id: Makefile.dependencies,v 1.7 2003/05/02 18:18:49 edg Exp $
 DialogF.o: DialogF.c DialogF.h misc.h
 clearcase.o: clearcase.c clearcase.h
 fileUtils.o: fileUtils.c fileUtils.h utils.h
@@ -6,7 +6,7 @@ fontsel.o: fontsel.c fontsel.h misc.h DialogF.h
 getfiles.o: getfiles.c getfiles.h fileUtils.h misc.h
 managedList.o: managedList.c managedList.h misc.h
 misc.o: misc.c misc.h DialogF.h
-prefFile.o: prefFile.c prefFile.h utils.h
+prefFile.o: prefFile.c prefFile.h fileUtils.h utils.h
 printUtils.o: printUtils.c printUtils.h DialogF.h misc.h prefFile.h
 utils.o: utils.c utils.h
 vmsUtils.o: vmsUtils.c

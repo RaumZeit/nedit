@@ -1,4 +1,4 @@
-/* $Id: rangeset.h,v 1.1 2002/09/26 11:45:32 ajhood Exp $ */
+/* $Id: rangeset.h,v 1.2 2003/05/02 18:18:45 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.h	 -- Nirvana Editor rangest header			       *
@@ -31,10 +31,49 @@
 #ifndef rangeset_h_DEFINED
 #define rangeset_h_DEFINED
 
-typedef struct _Range Range;
+#include <Xm/Xm.h>
 
+#define N_RANGESETS 63
+
+typedef struct _Range Range;
 typedef struct _Rangeset Rangeset;
 
-typedef struct _RangesetTable RangesetTable;
+void RangesetRefreshRange(Rangeset *rangeset, int start, int end);
+void RangesetEmpty(Rangeset *rangeset);
+void RangesetInit(Rangeset *rangeset, unsigned char label, textBuffer *buf);
+int RangesetChangeModifyResponse(Rangeset *rangeset, char *name);
+int RangesetFindRangeNo(Rangeset *rangeset, int index, int *start, int *end);
+int RangesetFindRangeOfPos(Rangeset *rangeset, int pos, int incl_end);
+int RangesetCheckRangeOfPos(Rangeset *rangeset, int pos);
+int RangesetInverse(Rangeset *p);
+int RangesetAdd(Rangeset *origSet, Rangeset *plusSet);
+int RangesetAddBetween(Rangeset *rangeset, int start, int end);
+int RangesetRemove(Rangeset *origSet, Rangeset *minusSet);
+int RangesetRemoveBetween(Rangeset *rangeset, int start, int end);
+int RangesetGetNRanges(Rangeset *rangeset);
+void RangesetGetInfo(Rangeset *rangeset, int *defined, unsigned char *label, 
+        int *count, char **color, char **mode);
+void RangesetSetMaxpos(Rangeset *rangeset, int maxpos);
+RangesetTable *RangesetTableAlloc(textBuffer *buf);
+RangesetTable *RangesetTableFree(RangesetTable *table);
+int RangesetFindIndex(RangesetTable *table, unsigned char label, int must_be_active);
+int RangesetLabelOK(int label);
+int RangesetCreate(RangesetTable *table);
+int nRangesetsAvailable(RangesetTable *table);
+Rangeset *RangesetForget(RangesetTable *table, int label);
+Rangeset *RangesetFetch(RangesetTable *table, int label);
+unsigned char * RangesetGetList(RangesetTable *table);
+void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
+void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
+	char *deletedText, void *cbArg);
+int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
+int RangesetAssignColorName(Rangeset *rangeset, char *color_name);
+int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok);
+char *RangesetGetColorName(Rangeset *rangeset);
+int RangesetGetColorValid(Rangeset *rangeset, Pixel *color);
+char *RangesetTableGetColorName(RangesetTable *table, int index);
+int RangesetTableGetColorValid(RangesetTable *table, int index, Pixel *color);
+int RangesetTableAssignColorPixel(RangesetTable *table, int index, Pixel color,
+	int ok);
 
 #endif /* rangeset_h_DEFINED */
