@@ -1,2 +1,3 @@
 *.o
 libNUtil.a
+check_lin_tif
