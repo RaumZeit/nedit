@@ -1,4 +1,4 @@
-# $Id: Makefile.sco,v 1.5 2003/03/20 13:23:22 edg Exp $
+# $Id: Makefile.sco,v 1.6 2003/05/20 00:27:56 n8gray Exp $
 # Makefile for SCO Unix
 #
 # Thanks to Koen D'Hondt and patrick@wombat.logica.co.uk, and Andras Porjesz
@@ -19,3 +19,5 @@ CFLAGS=-O -I/usr/X11R6/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DMAXPATHLEN=256
 LIBS=-L/usr/X11R6/lib -L/usr/lib -lm -lXm -lXext -lXt -lX11 -lsocket
 
 include Makefile.common
+
+verify_config:

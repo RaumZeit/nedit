@@ -1,4 +1,4 @@
-# $Id: Makefile.unicos,v 1.6 2002/09/26 10:01:34 ajhood Exp $
+# $Id: Makefile.unicos,v 1.7 2003/05/20 00:27:56 n8gray Exp $
 # Makefile for Cray Unicos
 #
 # Thanks to Osman Buyukisik
@@ -16,3 +16,5 @@ BIGGER_STRINGS=
 LIBS=  -lXm -lXt -lX11 -lSM -lICE -lm
 
 include Makefile.common
+
+verify_config:

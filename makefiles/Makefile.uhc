@@ -1,4 +1,4 @@
-# $Id: Makefile.uhc,v 1.4 2002/09/26 10:01:34 ajhood Exp $
+# $Id: Makefile.uhc,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 # Makefile for UHC Unix
 #
 # Thanks to peter@stella.nmti.co
@@ -15,3 +15,5 @@ CFLAGS=-O
 LIBS=-lm -lXm -lXt -lX11 -lgen
 
 include Makefile.common
+
+verify_config:

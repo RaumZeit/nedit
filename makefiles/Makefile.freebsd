@@ -1,4 +1,4 @@
-# $Id: Makefile.freebsd,v 1.4 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.freebsd,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 CC=cc
 AR=ar
 
@@ -14,3 +14,5 @@ CFLAGS=-O -I${PREFIX}/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DUSE_XMIM
 LIBS= ${MOTIFLIB} -L${PREFIX}/lib -lm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
+
+verify_config:

@@ -1,7 +1,7 @@
 /*******************************************************************************
 *                                                                              *
 * check_lin_tif.c:  A small test program to detect bad versions of LessTif and *
-* Open Motif on Linux.                                                         *
+* Open Motif.  Written on linux but should be portable.                        *
 *                                                                              *
 * Copyright (C) 2003 Nathaniel Gray                                            *
 *                                                                              *

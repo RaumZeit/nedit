@@ -1,4 +1,4 @@
-# $Id: Makefile.hpux,v 1.4 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.hpux,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 CC=cc
 AR=ar
 #
@@ -16,3 +16,5 @@ LIBS=-L /usr/lib/X11R5 -L /usr/lib/Motif1.2 -lm -lXm -lXt -lX11
 BIGGER_STRINGS = -Wp,-H20000
 
 include Makefile.common
+
+verify_config:

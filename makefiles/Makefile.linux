@@ -1,4 +1,4 @@
-# $Id: Makefile.linux,v 1.10 2003/05/15 19:42:30 n8gray Exp $
+# $Id: Makefile.linux,v 1.11 2003/05/20 00:27:56 n8gray Exp $
 CC=cc
 AR=ar
 
@@ -24,3 +24,5 @@ ARFLAGS=-urs
 LIBS= -L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXp -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
 
 include Makefile.common
+
+verify_config: check_tif_rule

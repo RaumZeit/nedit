@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.9 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.generic,v 1.10 2003/05/20 00:27:56 n8gray Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -134,3 +134,5 @@ LIBS= -lXm -lXt -lX11 -lm
 
 # System independent part
 include Makefile.common
+
+verify_config:

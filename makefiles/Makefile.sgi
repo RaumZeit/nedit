@@ -1,4 +1,4 @@
-# $Id: Makefile.sgi,v 1.4 2002/09/26 10:01:34 ajhood Exp $
+# $Id: Makefile.sgi,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 CC=cc
 AR=ar
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
@@ -23,3 +23,5 @@ ARFLAGS=-urs
 LIBS= -lm -lXm -lXt -lX11 -lPW
 
 include Makefile.common
+
+verify_config:

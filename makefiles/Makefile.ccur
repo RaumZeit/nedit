@@ -1,4 +1,4 @@
-# $Id: Makefile.ccur,v 1.4 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.ccur,v 1.5 2003/05/20 00:27:55 n8gray Exp $
 # Makefile for Concurrent SVR4 using PowerMax OS 4.2 or later
 #  
 # Provided by Robert Yunk of the Boeing Company
@@ -22,3 +22,5 @@ include Makefile.common
 #   Remember to delete or update the old version of the app-defaults
 #   file(s) or you will have accelerator keys missing and File Open
 #   and File Save As errors.
+
+verify_config:

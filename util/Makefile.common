@@ -1,4 +1,4 @@
-# $Id: Makefile.common,v 1.7 2003/05/15 19:42:31 n8gray Exp $
+# $Id: Makefile.common,v 1.8 2003/05/20 00:27:56 n8gray Exp $
 #
 # Platform independent part of make procedure for Nirvana utilities directory, 
 # included by machine specific makefiles.
@@ -15,10 +15,10 @@ libNUtil.a: $(OBJS)
 printUtils.o: printUtils.c
 	$(CC) -c $(CFLAGS) $(PRINTFLAGS) printUtils.c
 
-# This is actually for Linux only, but it needs to come after the "all" rule.
-# No, that's not a typo.  The rule needs a different name from the executable
+# This is for any platform where bogus OpenMotif or LessTif versions might
+# be found in the wild.  The rule needs a different name from the executable
 # so that the rule continues to fire if the executable exists.
-check_linux_tif:
+check_tif_rule:
 	$(CC) $(CFLAGS) -o check_lin_tif check_lin_tif.c
 	./check_lin_tif
 

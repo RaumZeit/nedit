@@ -1,4 +1,4 @@
-# $Id: Makefile.m88k.svr4,v 1.4 2002/09/26 10:01:34 ajhood Exp $
+# $Id: Makefile.m88k.svr4,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 # Makefile for Motorola SVR4 m88k
 #
 # Thanks to Mark Scott, Motorola Computer Group
@@ -15,3 +15,5 @@ CFLAGS=-O -s -DUSE_DIRENT -DSVR4 -DMOTOROLA
 LIBS= -lm -lXm -lXt -lX11 -lgen 
 
 include Makefile.common
+
+verify_config:

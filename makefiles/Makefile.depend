@@ -1,4 +1,4 @@
-# $Id: Makefile.depend,v 1.4 2003/05/02 18:18:40 edg Exp $
+# $Id: Makefile.depend,v 1.5 2003/05/20 00:27:55 n8gray Exp $
 #
 # This is a _generic_ Makefile to generate a dependency file
 # using GNUmake and gcc.
@@ -61,3 +61,5 @@ deps: $(DEPS)
 
 %.deps: %.c
 	$(GCC) $(CPPFLAGS) $(DEFINES) -MM $< >>$(DEPENDFILE)
+
+verify_config:

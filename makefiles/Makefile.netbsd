@@ -1,4 +1,4 @@
-# $Id: Makefile.netbsd,v 1.4 2002/09/26 10:01:34 ajhood Exp $
+# $Id: Makefile.netbsd,v 1.5 2003/05/20 00:27:56 n8gray Exp $
 CC=cc
 AR=ar
 
@@ -15,3 +15,5 @@ ARFLAGS=-ur
 LIBS= -L/usr/X11R6/lib -lm -lXm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
+
+verify_config:
