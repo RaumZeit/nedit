@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.32 2002/11/08 20:22:45 edg Exp $ */
+/* $Id: nedit.h,v 1.33 2002/12/12 17:25:56 slobasso Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -118,6 +118,9 @@ enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
 #define IS_ANY_LOCKED_IGNORING_PERM(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
 #define IS_ANY_LOCKED(reasons) ((reasons) != 0)
 #define CLEAR_ALL_LOCKS(reasons) ((reasons) = 0)
+
+/* determine a safe size for a string to hold an integer-like number contained in xType */
+#define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
 /* Record on undo list */
 typedef struct _UndoInfo {
