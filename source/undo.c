@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.6 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.7 2001/08/25 15:58:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -50,7 +50,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo);
 static void addRedoItem(WindowInfo *window, UndoInfo *redo);
 static void removeUndoItem(WindowInfo *window);
 static void removeRedoItem(WindowInfo *window);
-static void appendDeletedText(WindowInfo *window, char *deletedText,
+static void appendDeletedText(WindowInfo *window, const char *deletedText,
 	int deletedLen, int direction);
 static void trimUndoList(WindowInfo *window, int maxLength);
 static int determineUndoType(int nInserted, int nDeleted);
@@ -149,7 +149,7 @@ void Redo(WindowInfo *window)
 /* Note: This routine must be kept efficient.  It is called for every character
    typed. */
 void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
-	int nDeleted, char *deletedText)
+	int nDeleted, const char *deletedText)
 {
     int newType, oldType;
     UndoInfo *u, *undo = window->undo;
@@ -367,7 +367,7 @@ static void removeRedoItem(WindowInfo *window)
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-static void appendDeletedText(WindowInfo *window, char *deletedText,
+static void appendDeletedText(WindowInfo *window, const char *deletedText,
 	int deletedLen, int direction)
 {
     UndoInfo *undo = window->undo;

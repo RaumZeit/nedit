@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.31 2001/08/25 12:09:17 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.32 2001/08/25 15:58:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -846,7 +846,7 @@ static char **readExtensionList(char **inPtr, int *nExtensions);
 static void updateLanguageModeSubmenu(WindowInfo *window);
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
 static int modeError(languageModeRec *lm, const char *stringStart,
-	const char *stoppedAt, char *message);
+	const char *stoppedAt, const char *message);
 static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -4030,7 +4030,7 @@ char *MakeQuotedString(const char *string)
 ** Returns NULL on error, and puts up a dialog if silent is False.  Returns
 ** an empty string if the text field is blank.
 */
-char *ReadSymbolicFieldTextWidget(Widget textW, char *fieldName, int silent)
+char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent)
 {
     char *string, *stringPtr, *parsedString;
     
@@ -4117,11 +4117,11 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
 Widget CreateLanguageModeSubMenu(WindowInfo *window, Widget parent, char *name,
     	char *label, char mnemonic)
 {
-    XmString s1;
+    XmString s1=XmStringCreateSimple(label);
 
     window->langModeCascade = XtVaCreateManagedWidget(name,
     	    xmCascadeButtonGadgetClass, parent, XmNlabelString,
-    	    s1=XmStringCreateSimple(label), XmNmnemonic, mnemonic,
+    	    s1, XmNmnemonic, mnemonic,
     	    XmNsubMenuId, NULL, NULL);
     XmStringFree(s1);
     updateLanguageModeSubmenu(window);
@@ -4209,8 +4209,8 @@ int SkipDelimiter(char **inPtr, char **errMsg)
 ** lm (if non-null), prints a formatted message explaining where the
 ** error is, and returns False;
 */
-static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt,
-	char *message)
+static int modeError(languageModeRec *lm, const char *stringStart,
+        const char *stoppedAt, const char *message)
 {
     if (lm != NULL)
     	freeLanguageModeRec(lm);

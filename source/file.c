@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.25 2001/08/25 15:24:52 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.26 2001/08/25 15:58:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -90,7 +90,7 @@ static char *errorString(void);
 static void addWrapNewlines(WindowInfo *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static int formatOfFile(char *fileString);
+static int formatOfFile(const char *fileString);
 static void convertFromDosFileString(char *inString, int *length);
 static void convertFromMacFileString(char *fileString, int length);
 static int convertToDosFileString(char **fileString, int *length);
@@ -1485,9 +1485,9 @@ static void addWrapNewlines(WindowInfo *window)
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-static int formatOfFile(char *fileString)
+static int formatOfFile(const char *fileString)
 {
-    char *p;
+    const char *p;
     int nNewlines = 0, nReturns = 0;
     
     for (p=fileString; *p!='\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {

@@ -1,3 +1,3 @@
-/* $Id: regexConvert.h,v 1.2 2001/02/26 23:38:03 edg Exp $ */
-char * ConvertRE (char *exp, char **errorText, char *cap_parens);
-void ConvertSubstituteRE (char *source, char *dest, int max);
+/* $Id: regexConvert.h,v 1.3 2001/08/25 15:58:54 amai Exp $ */
+char * ConvertRE (const char *exp, char **errorText, char *cap_parens);
+void ConvertSubstituteRE (const char *source, char *dest, int max);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.22 2001/08/25 15:24:52 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.23 2001/08/25 15:58:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -80,17 +80,18 @@ typedef struct {
     int font;
 } highlightStyleRec;
 
-static int styleError(const char *stringStart, const char *stoppedAt, char *message);
+static int styleError(const char *stringStart, const char *stoppedAt,
+       const char *message);
 static int lookupNamedStyle(const char *styleName);
 static highlightPattern *readHighlightPatterns(char **inPtr, int withBraces,
-    	char **errMsg, int *nPatterns);
+       char **errMsg, int *nPatterns);
 static int readHighlightPattern(char **inPtr, char **errMsg,
     	highlightPattern *pattern);
-static patternSet *readDefaultPatternSet(char *langModeName);
+static patternSet *readDefaultPatternSet(const char *langModeName);
 static int isDefaultPatternSet(patternSet *patSet);
 static patternSet *readPatternSet(char **inPtr, int convertOld);
 static patternSet *highlightError(char *stringStart, char *stoppedAt,
-    	char *message);
+    	const char *message);
 static char *intToStr(int i);
 static char *createPatternsString(patternSet *patSet, char *indentStr);
 static void setStyleByName(const char *style);
@@ -1267,7 +1268,7 @@ patternSet *FindPatternSet(const char *langModeName)
 ** Returns True if there are highlight patterns, or potential patterns
 ** not yet committed in the syntax highlighting dialog for a language mode,
 */
-int LMHasHighlightPatterns(char *languageMode)
+int LMHasHighlightPatterns(const char *languageMode)
 {
     if (FindPatternSet(languageMode) != NULL)
     	return True;
@@ -1553,7 +1554,7 @@ static int readHighlightPattern(char **inPtr, char **errMsg,
 ** return a new allocated copy of it.  The returned pattern set should be
 ** freed by the caller with freePatternSet()
 */
-static patternSet *readDefaultPatternSet(char *langModeName)
+static patternSet *readDefaultPatternSet(const char *langModeName)
 {
     int i, modeNameLen;
     char *strPtr;
@@ -1589,12 +1590,15 @@ static int isDefaultPatternSet(patternSet *patSet)
 ** Short-hand functions for formating and outputing errors for
 */
 static patternSet *highlightError(char *stringStart, char *stoppedAt,
-    	char *message)
+    	const char *message)
 {
     ParseError(NULL, stringStart, stoppedAt, "highlight pattern", message);
     return NULL;
 }
-static int styleError(const char *stringStart, const char *stoppedAt, char *message)
+
+
+static int styleError(const char *stringStart, const char *stoppedAt,
+        const  char *message)
 {
     ParseError(NULL, stringStart, stoppedAt, "style specification", message);
     return False;

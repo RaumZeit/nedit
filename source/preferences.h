@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.11 2001/08/15 09:00:21 amai Exp $ */
+/* $Id: preferences.h,v 1.12 2001/08/25 15:58:54 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -99,7 +99,7 @@ char *LanguageModeName(int mode);
 char *GetWindowDelimiters(WindowInfo *window);
 int ReadNumericField(char **inPtr, int *value);
 char *ReadSymbolicField(char **inPtr);
-char *ReadSymbolicFieldTextWidget(Widget textW, char *fieldName, int silent);
+char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
 int ReadQuotedString(char **inPtr, char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);

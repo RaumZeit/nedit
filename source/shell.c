@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.14 2001/08/25 12:09:17 amai Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.15 2001/08/25 15:58:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -110,14 +110,14 @@ typedef struct {
     char fromMacro;
 } shellCmdInfo;
 
-static void issueCommand(WindowInfo *window, char *command, char *input,
+static void issueCommand(WindowInfo *window, const char *command, char *input,
 	int inputLen, int flags, Widget textW, int replaceLeft,
 	int replaceRight, int fromMacro);
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError);
-static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
+static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	int *stdinFD, int *stdoutFD, int *stderrFD);
 static void addOutput(buffer **bufList, buffer *buf);
 static char *coalesceOutput(buffer **bufList, int *length);
@@ -127,7 +127,7 @@ static void createOutputDialog(Widget parent, char *text);
 static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure);
 static void measureText(char *text, int wrapWidth, int *rows, int *cols);
 static void truncateString(char *string, int length);
-static int substitutePercent(char *outStr, char *inStr, char *subsStr,
+static int substitutePercent(char *outStr, const char *inStr, const char *subsStr,
 	int outLen);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -137,7 +137,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
 ** is removed, and replaced by the output from the command execution.  Failed
 ** command status and output to stderr are presented in dialog form.
 */
-void FilterSelection(WindowInfo *window, char *command, int fromMacro)
+void FilterSelection(WindowInfo *window, const char *command, int fromMacro)
 {
     int left, right, textLen;
     char *text;
@@ -171,7 +171,7 @@ void FilterSelection(WindowInfo *window, char *command, int fromMacro)
 ** insert position or in the current selection if if the window has a
 ** selection.
 */
-void ExecShellCommand(WindowInfo *window, char *command, int fromMacro)
+void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
 {
     int left, right, flags = 0;
 
@@ -196,7 +196,8 @@ void ExecShellCommand(WindowInfo *window, char *command, int fromMacro)
 ** Execute shell command "command", on input string "input", depositing the
 ** in a macro string (via a call back to ReturnShellCommandOutput).
 */
-void ShellCmdToMacroString(WindowInfo *window, char *command, char *input)
+void ShellCmdToMacroString(WindowInfo *window, const char *command,
+   const char *input)
 {
     char *inputCopy;
     
@@ -249,7 +250,8 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DoShellMenuCmd(WindowInfo *window, char *command, int input, int output,
+void DoShellMenuCmd(WindowInfo *window, const char *command,
+        int input, int output,
 	int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) 
 {
     int flags = 0;
@@ -399,7 +401,7 @@ void AbortShellCommand(WindowInfo *window)
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-static void issueCommand(WindowInfo *window, char *command, char *input,
+static void issueCommand(WindowInfo *window, const char *command, char *input,
 	int inputLen, int flags, Widget textW, int replaceLeft,
 	int replaceRight, int fromMacro)
 {
@@ -810,7 +812,7 @@ cmdDone:
 ** stderr.  The function value returns the pid of the new subprocess, or -1
 ** if an error occured.
 */
-static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
+static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	int *stdinFD, int *stdoutFD, int *stderrFD)
 {
     int childStdoutFD, childStdinFD, childStderrFD, pipeFDs[2];
@@ -1103,10 +1105,11 @@ static void truncateString(char *string, int length)
 ** result in outStr.  Returns False if the resulting string would be
 ** longer than outLen
 */
-static int substitutePercent(char *outStr, char *inStr, char *subsStr,
-	int outLen)
+static int substitutePercent(char *outStr, const char *inStr,
+        const char *subsStr, int outLen)
 {
-    char *inChar, *outChar, *c;
+    const char *inChar, *c;
+    char *outChar;
     
     inChar = inStr;
     outChar = outStr;
