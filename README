@@ -1,6 +1,6 @@
-                    NEdit Version 5.2.0beta,  February 2001
+                    NEdit Version 5.2.0beta,  July 2001
 
-$Id: README,v 1.6 2001/02/26 23:38:02 edg Exp $
+$Id: README,v 1.7 2001/07/04 09:42:52 uid30962 Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -88,9 +88,9 @@ the Motif GUI library, e.g. libXm.a or libXm.so, which is a standard part
 of commercial Unix systems, but which requires separate installation on Linux
 and other free Unix variants.  A free version of Motif, called LessTif,
 is now available and stable enough to run NEdit reasonably well on these systems.
-If you are using LessTif, you must have LessTif 0.92.0 or greater.  Older versions
-may not work very well.  See the LessTif section under PLATFORM SPECIFIC ISSUES
-for details.
+If you are using LessTif, you should have LessTif 0.92.26 or greater.
+Older versions may not work very well.  See the LessTif section under
+PLATFORM SPECIFIC ISSUES for details.
 
 The two directories called source and util contain the sources for NEdit.
 Util should be built first, followed by source.  The makefile in this directory
@@ -192,11 +192,11 @@ PLATFORM SPECIFIC ISSUES
 
 Systems with LessTif, rather than Motif libraries
 
-As of Lesstif 0.91.4, NEdit is very stable with Lesstif. 
+As of Lesstif 0.92.26, NEdit is very stable with Lesstif. 
 You can get the latest LessTif version from http://www.lesstif.org.
 If you are having trouble building with LessTif, remember there are
 pre-compiled statically linked executables available from http://nedit.org.
-Known bugs in NEdit linked with LessTif are:
+Known bugs which might show off in NEdit linked with LessTif include:
 
   1) Some dialogs which are intended to be modal (prevent other activity
      while up) are not, and doing other actions while these dialogs are
