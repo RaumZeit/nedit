@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.71 2004/04/28 01:54:19 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.72 2004/04/29 02:34:01 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -321,19 +321,6 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitPane.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
-    "*windowsMenu.nextDocument.acceleratorText: Ctrl+Page Down",
-    "*windowsMenu.prevDocument.acceleratorText: Ctrl+Page Up",
-    "*windowsMenu.lastDocument.acceleratorText: Alt+Home",
-#ifdef LESSTIF_VERSION
-    /* LessTif doesn't like accelerators on virtual keysyms */
-    "*windowsMenu.nextDocument.accelerator: ~Shift Ctrl ~Alt<Key>Next",
-    "*windowsMenu.prevDocument.accelerator: ~Shift Ctrl ~Alt<Key>Prior",
-    "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>Home",
-#else
-    "*windowsMenu.nextDocument.accelerator: ~Shift Ctrl ~Alt<Key>osfPageDown",
-    "*windowsMenu.prevDocument.accelerator: ~Shift Ctrl ~Alt<Key>osfPageUp",
-    "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfBeginLine",
-#endif
     "*helpMenu.mnemonic: H",
     "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\

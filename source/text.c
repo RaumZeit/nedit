@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.45 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.46 2004/04/29 02:34:01 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -250,6 +250,9 @@ static int strCaseCmp(const char *str1, const char *str2);
 static void ringIfNecessary(Boolean silent, Widget w);
 
 static char defaultTranslations[] = 
+    /* Home */
+    "~Shift ~Ctrl Alt<Key>osfBeginLine: last_document()\n"
+
     /* Backspace */
     "Ctrl<KeyPress>osfBackSpace: delete_previous_word()\n"
     "<KeyPress>osfBackSpace: delete_previous_character()\n"
@@ -343,7 +346,7 @@ static char defaultTranslations[] =
     "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
     "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
-    "Ctrl<KeyPress>osfPageUp: page_left()\n"
+    "Ctrl<KeyPress>osfPageUp: previous_document()\n"
     "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
     "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
 
@@ -353,7 +356,7 @@ static char defaultTranslations[] =
     "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
     "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
-    "Ctrl<KeyPress>osfPageDown: page_right()\n"
+    "Ctrl<KeyPress>osfPageDown: next_document()\n"
     "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
     "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
 

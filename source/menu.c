@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.102 2004/04/28 01:54:19 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.103 2004/04/29 02:34:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1203,15 +1203,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->moveDocumentItem = createMenuItem(menuPane, "moveDocument",
     	    "Move Tab To...", 'M', doActionCB, "move_document_dialog", SHORT);
     XtSetSensitive(window->moveDocumentItem, False);
-    btn = createMenuSeparator(menuPane, "sep0", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-    createMenuItem(menuPane, "nextDocument",
-    	    "Next Tab", 'N', doActionCB, "next_document", SHORT);
-    createMenuItem(menuPane, "prevDocument",
-    	    "Previous Tab", 'P', doActionCB, "previous_document", SHORT);
-    createMenuItem(menuPane, "lastDocument",
-    	    "Last Viewed Tab", 'L', doActionCB, "last_document", SHORT);
-
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     
