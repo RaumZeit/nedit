@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.5DEV, November 2003
+          Release Notes for NEdit Version 5.5RC1, July 2004
 
 
-$Id: ReleaseNotes,v 1.23 2003/11/22 13:03:38 edg Exp $
+$Id: ReleaseNotes,v 1.24 2004/07/09 12:20:54 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -12,6 +12,54 @@ version.
 If you are upgrading NEdit from a version prior to 5.0, please see the notes in
 the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
+
+New features in 5.5 
+
+  - The most important new feature is the introduction of window tabs
+    (SF patches #569287 and #893177).
+    
+  - More efficient string search operations for the macro language.
+  
+  - Auto-scrolling is now (partly) configurable through the preference menu.
+        
+  - Find and Clear buttons for i-search bar (SF patch #891884).
+  
+  - Faster user-defined menu creation (SF patch #891126).
+  
+  - Open documents on current desktop (SF patch #963120)
+  
+  - Superuser receives a warning when trying to overwrite a read-only file.
+  
+  - Simplified global font resources.
+  
+  - Macro language: added new $args[] array and removed 9 arguments limit 
+    for macros
+    
+  - Improved Latex & Python syntax highlighting patterns
+  
+Bugs fixed in 5.5
+
+  - Problem with writing history file on VMS (SF bug #933146).
+  
+  - Race condition fix for running NEdit in -sync mode (SF bug #978104).
+  
+  - Removed obsolete special window title treatment on SGI (SF bug #779454).
+  
+  - Forbid the deletion of the "Plain" Text Drawing Style (SF patch #970491).
+  
+  - File descriptor handling fix that allows shell commands to be invoked 
+    asynchronously. 
+    
+  - Crash on Solaris when dragging a calltip (SF bug #925951).
+  
+  - Preference resource name mistakes (SF bug #884862).
+  
+  - Don't delete incremental backup files when incremental backups are off 
+    (SF bug #878183).
+
+  - Allow zero-length ranges to be added to range sets (SF bug #871209).
+
+  - Improved shell syntax highlighting patterns (SF bug #770855).
 
 New Features in 5.4
 
