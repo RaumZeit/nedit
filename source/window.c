@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.30 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.31 2001/08/17 11:01:59 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -123,7 +123,7 @@ static void patchedRemoveChild(Widget child);
 /*
 ** Create a new editor window
 */
-WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
+WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
     Widget appShell, mainWin, menuBar, pane, text, stats, statsForm;
     Widget iSearchLabel;
@@ -600,7 +600,7 @@ void CloseWindow(WindowInfo *window)
 /*
 ** Check if there is already a window open for a given file
 */
-WindowInfo *FindWindowWithFile(char *name, char *path)
+WindowInfo *FindWindowWithFile(const char *name, const char *path)
 {
     WindowInfo *w;
 
@@ -1079,8 +1079,8 @@ void SetShowMatching(WindowInfo *window, int state)
 ** (which shouldn't happen much in normal NEdit operation), and skip the
 ** futile effort of freeing them.
 */
-void SetFonts(WindowInfo *window, char *fontName, char *italicName,
-	char *boldName, char *boldItalicName)
+void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
+	const char *boldName, const char *boldItalicName)
 {
     XFontStruct *font, *oldFont;
     int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;

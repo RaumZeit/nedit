@@ -1,5 +1,5 @@
-/* $Id: window.h,v 1.6 2001/04/12 22:02:16 edg Exp $ */
-WindowInfo *CreateWindow(char *title, char *geometry, int iconic);
+/* $Id: window.h,v 1.7 2001/08/17 11:01:59 amai Exp $ */
+WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
 void UpdateWindowTitle(WindowInfo *window);
@@ -13,11 +13,11 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane);
 int GetSelection(Widget widget, int *left, int *right);
 int GetSimpleSelection(textBuffer *buf, int *left, int *right);
 char *GetTextRange(Widget widget, int left, int right);
-WindowInfo *FindWindowWithFile(char *name, char *path);
+WindowInfo *FindWindowWithFile(const char *name, const char *path);
 void SetAutoIndent(WindowInfo *window, int state);
 void SetShowMatching(WindowInfo *window, int state);
-void SetFonts(WindowInfo *window, char *fontName, char *italicName,
-	char *boldName, char *boldItalicName);
+void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
+	const char *boldName, const char *boldItalicName);
 void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);
