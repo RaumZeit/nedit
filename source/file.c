@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.59 2003/04/07 22:51:39 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.60 2003/04/09 13:52:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -363,7 +363,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         } else
         {
             /* A true error */
-            DialogF(DF_ERR, window->shell, 1, "Error opening File"
+            DialogF(DF_ERR, window->shell, 1, "Error opening File",
                     "Could not open %s%s:\n%s", "Dismiss", path, name,
                     errorString());
             return FALSE;
