@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.38 2002/12/08 09:29:40 yooden Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.39 2003/03/20 13:02:36 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -75,9 +75,11 @@ static const char CVSID[] = "$Id: highlight.c,v 1.38 2002/12/08 09:29:40 yooden 
    This distance is increased by a factor of two for each subsequent step. */
 #define REPARSE_CHUNK_SIZE 80
 
-/* Meanings of style buffer characters (styles) */
-#define UNFINISHED_STYLE 'A'
-#define PLAIN_STYLE 'B'
+/* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
+   it causes problems with EBCDIC coding (possibly negative offsets when 
+   subtracting 'A'). */
+#define UNFINISHED_STYLE ASCII_A
+#define PLAIN_STYLE     (ASCII_A+1)
 #define IS_PLAIN(style) (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
 #define IS_STYLED(style) (style != PLAIN_STYLE && style != UNFINISHED_STYLE)
 
@@ -713,9 +715,9 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
 	pass2Pats[0].style = PLAIN_STYLE;
     }
     for (i=1; i<nPass1Patterns; i++)
-       	pass1Pats[i].style = 'B' + i;
+       	pass1Pats[i].style = PLAIN_STYLE + i;
     for (i=1; i<nPass2Patterns; i++)
-       	pass2Pats[i].style = 'B' + (noPass1 ? 0 : nPass1Patterns-1) + i;
+       	pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns-1) + i;
     
     /* Create table for finding parent styles */
     parentStylesPtr = parentStyles = XtMalloc(nPass1Patterns+nPass2Patterns+2);
@@ -1106,7 +1108,7 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode)
     windowHighlightData *highlightData =
           (windowHighlightData *)window->highlightData;
 
-    hCode -= 'A';                     /* get the correct index value */
+    hCode -= UNFINISHED_STYLE;       /* get the correct index value */
     if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
       return NULL;
     return &highlightData->styleTable[hCode];
@@ -1266,9 +1268,9 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
     	    endParse = min(endParse, p);
     	    endSafety = p;
     	    break;
-    	} else if ((unsigned char)c != UNFINISHED_STYLE && p < endParse) {
+    	} else if (c != UNFINISHED_STYLE && p < endParse) {
     	    endParse = p;
-    	    if (c < firstPass2Style)
+    	    if ((unsigned char)c < firstPass2Style)
     	    	endSafety = p;
     	    else
     	    	endSafety = forwardOneContext(buf, context, endParse);
@@ -2019,7 +2021,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
 
 static int parentStyleOf(const char *parentStyles, int style)
 {
-    return parentStyles[(unsigned char)style-'A'];
+    return parentStyles[(unsigned char)style-UNFINISHED_STYLE];
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2)

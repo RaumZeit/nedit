@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.87 2002/11/13 21:58:24 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.88 2003/03/20 13:02:34 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -154,6 +154,20 @@ static int StyleUnderlines[] =
 
 static styleTableEntry HelpStyleInfo[ N_STYLES ];
 
+/* Translation table for style codes (A, B, C, ...) to their ASCII codes.
+   For systems using ASCII, this is just a one-to-one mapping, but the
+   table makes it possible to use the style codes also on an EBCDIC system.
+   */
+static unsigned char AlphabetToAsciiTable[256];
+
+/* Macro that calculates the zero-based index for a given style, taking 
+   into account that the character set may not use ASCII coding, but EBCDIC. 
+   The "style" argument must be one of the characters A - Z.
+   In ASCII, this comes down to "style - STYLE_PLAIN". */
+#define STYLE_INDEX(style)                              \
+    (AlphabetToAsciiTable[(unsigned char)style] -       \
+     AlphabetToAsciiTable[(unsigned char)STYLE_PLAIN])
+
 /*============================================================================*/
 /*                             PROGRAM PROTOTYPES                             */
 /*============================================================================*/
@@ -292,6 +306,38 @@ static void initHelpStyles (Widget parent)
                 break;
             }
         }
+	
+	/*---------------------------------------------------------
+	 * Also initialize the alphabet-to-ASCII-code table (to 
+	 * make the style mapping also work on EBCDIC). 
+	 * DON'T use 'A' to initialize the table! 'A' != 65 in EBCDIC.
+	 *--------------------------------------------------------*/
+        AlphabetToAsciiTable[(unsigned char)'A'] = ASCII_A +  0;
+        AlphabetToAsciiTable[(unsigned char)'B'] = ASCII_A +  1;
+        AlphabetToAsciiTable[(unsigned char)'C'] = ASCII_A +  2;
+        AlphabetToAsciiTable[(unsigned char)'D'] = ASCII_A +  3;
+        AlphabetToAsciiTable[(unsigned char)'E'] = ASCII_A +  4;
+        AlphabetToAsciiTable[(unsigned char)'F'] = ASCII_A +  5;
+        AlphabetToAsciiTable[(unsigned char)'G'] = ASCII_A +  6;
+        AlphabetToAsciiTable[(unsigned char)'H'] = ASCII_A +  7;
+        AlphabetToAsciiTable[(unsigned char)'I'] = ASCII_A +  8;
+        AlphabetToAsciiTable[(unsigned char)'J'] = ASCII_A +  9;
+        AlphabetToAsciiTable[(unsigned char)'K'] = ASCII_A + 10;
+        AlphabetToAsciiTable[(unsigned char)'L'] = ASCII_A + 11;
+        AlphabetToAsciiTable[(unsigned char)'M'] = ASCII_A + 12;
+        AlphabetToAsciiTable[(unsigned char)'N'] = ASCII_A + 13;
+        AlphabetToAsciiTable[(unsigned char)'O'] = ASCII_A + 14;
+        AlphabetToAsciiTable[(unsigned char)'P'] = ASCII_A + 15;
+        AlphabetToAsciiTable[(unsigned char)'Q'] = ASCII_A + 16;
+        AlphabetToAsciiTable[(unsigned char)'R'] = ASCII_A + 17;
+        AlphabetToAsciiTable[(unsigned char)'S'] = ASCII_A + 18;
+        AlphabetToAsciiTable[(unsigned char)'T'] = ASCII_A + 19;
+        AlphabetToAsciiTable[(unsigned char)'U'] = ASCII_A + 20;
+        AlphabetToAsciiTable[(unsigned char)'V'] = ASCII_A + 21;
+        AlphabetToAsciiTable[(unsigned char)'W'] = ASCII_A + 22;
+        AlphabetToAsciiTable[(unsigned char)'X'] = ASCII_A + 23;
+        AlphabetToAsciiTable[(unsigned char)'Y'] = ASCII_A + 24;
+        AlphabetToAsciiTable[(unsigned char)'Z'] = ASCII_A + 25;
     }
 }
 
@@ -303,12 +349,12 @@ static void loadFontsAndColors(Widget parent, int style)
 {
     XFontStruct *font;
     int r,g,b;
-    if (HelpStyleInfo[style - STYLE_PLAIN].font == NULL) {
+    if (HelpStyleInfo[STYLE_INDEX(style)].font == NULL) {
 	font = XLoadQueryFont(XtDisplay(parent),
-		GetPrefHelpFontName(StyleFonts[style - STYLE_PLAIN]));
+		GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
 	if (font == NULL) {
 	    fprintf(stderr, "NEdit: help font, %s, not available\n",
-		    GetPrefHelpFontName(StyleFonts[style - STYLE_PLAIN]));
+		    GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
 	    font = XLoadQueryFont(XtDisplay(parent), "fixed");
 	    if (font == NULL) {
 		fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
@@ -316,9 +362,9 @@ static void loadFontsAndColors(Widget parent, int style)
 		exit(EXIT_FAILURE);
 	    }
 	}
-	HelpStyleInfo[style - STYLE_PLAIN].font = font;
+	HelpStyleInfo[STYLE_INDEX(style)].font = font;
 	if (style == STL_NM_LINK)
-	    HelpStyleInfo[style - STYLE_PLAIN].color =
+	    HelpStyleInfo[STYLE_INDEX(style)].color =
 		    AllocColor(parent, GetPrefHelpLinkColor(), &r, &g, &b);
     }
 }
@@ -427,8 +473,9 @@ static char * stitch (
             else {
                 *(sp++)  = *cp;
                 
+		/* Beware of possible EBCDIC coding! Use the mapping table. */
                 if (styleMap) 
-                    *(sdp++) = style;
+                    *(sdp++) = AlphabetToAsciiTable[(unsigned char)style];
             }
         }
     }
@@ -984,7 +1031,9 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
     }
     
     clickedPos = TextDXYToCharPos(textD, e->x, e->y);
-    if (BufGetCharacter(textD->styleBuffer, clickedPos) != STL_NM_LINK){
+    /* Beware of possible EBCDIC coding! Use the mapping table. */
+    if (BufGetCharacter(textD->styleBuffer, clickedPos) != 
+           (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
 	if(*nArgs == 3)
       	    XtCallActionProc(w, args[2], event, NULL, 0);
 	return;

@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.9 2002/11/08 20:22:45 edg Exp $ */
+/* $Id: highlight.h,v 1.10 2003/03/20 13:02:38 edg Exp $ */
 
 #ifndef NEDIT_HIGHLIGHT_H_INCLUDED
 #define NEDIT_HIGHLIGHT_H_INCLUDED
@@ -11,6 +11,10 @@
 #define PARSE_SUBPATS_FROM_START 1
 #define DEFER_PARSING 2
 #define COLOR_ONLY 4
+
+/* Don't use plain 'A' or 'B' for style indices, it causes problems 
+   with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
+#define ASCII_A ((char)65)
 
 /* Pattern specification structure */
 typedef struct {

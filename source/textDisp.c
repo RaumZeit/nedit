@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.42 2003/03/05 23:51:00 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.43 2003/03/20 13:02:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -352,8 +352,8 @@ textBuffer *TextDGetBuffer(textDisp *textD)
 ** Highlighting information consists of a style buffer which parallels the
 ** normal text buffer, but codes font and color information for the display;
 ** a style table which translates style buffer codes (indexed by buffer
-** character - 'A') into fonts and colors; and a callback mechanism for
-** as-needed highlighting, triggered by a style buffer entry of
+** character - 65 (ASCII code for 'A')) into fonts and colors; and a callback 
+** mechanism for as-needed highlighting, triggered by a style buffer entry of
 ** "unfinishedStyle".  Style buffer can trigger additional redisplay during
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
@@ -1940,7 +1940,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
            pre-allocated and pre-configured.  For syntax highlighting, GCs are
            configured here, on the fly. */
         if (style & STYLE_LOOKUP_MASK) {
-            styleRec = &textD->styleTable[(style & STYLE_LOOKUP_MASK) - 'A'];
+            styleRec = &textD->styleTable[(style & STYLE_LOOKUP_MASK) - ASCII_A];
             underlineStyle = styleRec->underline;
             fs = styleRec->font;
             gcValues.font = fs->fid;
@@ -2166,7 +2166,7 @@ static int stringWidth(textDisp *textD, char *string, int length, int style)
     XFontStruct *fs;
     
     if (style & STYLE_LOOKUP_MASK)
-    	fs = textD->styleTable[(style & STYLE_LOOKUP_MASK) - 'A'].font;
+    	fs = textD->styleTable[(style & STYLE_LOOKUP_MASK) - ASCII_A].font;
     else 
     	fs = textD->fontStruct;
     return XTextWidth(fs, string, length);
@@ -2899,7 +2899,7 @@ static int measureVisLine(textDisp *textD, int visLineNum)
     	    len = BufGetExpandedChar(textD->buffer, lineStartPos+i,
     		    charCount, expandedChar);
     	    style = (unsigned char)BufGetCharacter(textD->styleBuffer,
-		    lineStartPos+i) - 'A';
+		    lineStartPos+i) - ASCII_A;
     	    width += XTextWidth(textD->styleTable[style].font, expandedChar,
     	    	    len);
     	    charCount += len;
