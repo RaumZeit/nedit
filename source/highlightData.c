@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.18 2001/08/16 09:49:33 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -800,11 +800,11 @@ static char *DefaultPatternSets[] = {
 	variables2:\"\\$\\{\":\"}\"::Identifier1::\n\
 	internal var:\"\\$\\{\":\"}\"::Identifier1:variables2:\n\
 	comments in line:\"#\":\"$\"::Comment::\n\
-	numbers:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
-	keywords:\"<(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function)>[\\s\\n]\":::Keyword::D\n\
+	numbers:\"<(?i0x[\\da-f]+)|((\\d*\\.)?\\d+([eE][-+]?\\d+)?(?iul?|l|f)?)>\":::Numeric Const::D\n\
+	keywords:\"<(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\\[\\[|]])>[\\s\\n]\":::Keyword::D\n\
 	command options:\"[ \\t]-[^ \\t{}[\\],()'\"\"~!@#$%^&*|\\\\<>?]+\":::Identifier::\n\
-	delimiters:\"<[.]>|[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
-	built ins:\"<(:|\\\\.|\\\\[\\\\[|]]|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)>[\\s\\n;]\":::Subroutine1::D}",
+	delimiters:\"[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
+	built ins:\"<(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)>[\\s\\n;]\":::Subroutine1::D}",
     "Tcl:1:0{\n\
 	Double Quote String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
 	Single Quote String:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
