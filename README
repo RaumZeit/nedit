@@ -1,6 +1,6 @@
-                    NEdit Version 5.3RC1,  March 2002
+                    NEdit Version 5.3,  March 2002
 
-$Id: README,v 1.29 2002/06/08 13:56:49 tringali Exp $
+$Id: README,v 1.30 2002/09/26 10:22:38 ajhood Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -26,7 +26,8 @@ AUTHORS
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn.
+LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
+and Andrew Hood.
 
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the University of
@@ -153,6 +154,11 @@ probably disappear, but up to now, the NEdit developers have not been able
 to decide which one to drop. Please give them both a try and let us know 
 which one you prefer (via the discuss mailing list, for instance).
 
+Another compilation flag, HAVE__XMVERSIONSTRING, adds additional
+information about the Motif version in the menu item "Help->Version" or
+the command line option "-version". Whether this is available on your
+system depends on the Motif implementation. It is known to work with
+OpenMotif 2.1.30, and Motif on Solaris 2.6 and AIX 4.3.3.
 
 INSTALLATION
 
