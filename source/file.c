@@ -160,8 +160,10 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, char *name, char *path,
     if (inWindow == NULL || inWindow->filenameSet || inWindow->fileChanged ||
 	    inWindow->macroCmdData != NULL)
 	window = CreateWindow(name, geometry, iconic);
-    else
+    else {
     	window = inWindow;
+        RaiseShellWindow(window->shell);
+    }
     	
     /* Open the file */
     if (!doOpen(window, name, path, flags)) {
