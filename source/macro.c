@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.12 2001/03/05 19:26:31 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.13 2001/03/06 15:02:01 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -3066,6 +3066,17 @@ static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     result->val.n = compareResult;
     return True;
 }
+
+/*
+** This function is intended to split strings into an array of substrings
+** Importatnt note: It should always return at least one entry with key 0
+** split("", ",") result[0] = ""
+** split("1,2", ",") result[0] = "1" result[1] = "2"
+** split("1,2,", ",") result[0] = "1" result[1] = "2" result[2] = ""
+** 
+** This behavior is specifically important when used to break up
+** array sub-scripts
+*/
 
 static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
