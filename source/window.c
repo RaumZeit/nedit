@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.146 2004/04/23 00:43:18 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.147 2004/04/23 16:35:44 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -421,7 +421,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        the i-search bar, while keeping the the top offset of the text widget 
        to 0 seems to avoid avoid the crash. */
        
-    window->iSearchForm = XtVaCreateManagedWidget("iSearchForm", 
+    window->iSearchForm = XtVaCreateWidget("iSearchForm", 
        	    xmFormWidgetClass, statsAreaForm,
 	    XmNshadowThickness, 0,
 	    XmNleftAttachment, XmATTACH_FORM,
