@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.86 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.87 2004/02/04 08:44:48 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3768,7 +3768,8 @@ static void showTabBarAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showTabBar, "show_tabs");
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, 
+            GetShowTabBar(window), "show_tabs");
 
     XmToggleButtonSetState(window->showTabBarItem, newState, False);
     ShowTabBar(window, newState);

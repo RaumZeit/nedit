@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.74 2004/01/16 11:49:54 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.75 2004/02/04 08:44:48 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -133,6 +133,8 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     else
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
 	
+    ShowTabBar(window, GetShowTabBar(window));
+
     if (iconic && IsIconic(window))
         RaiseDocument(window);
     else
@@ -179,7 +181,6 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	    inWindow->macroCmdData != NULL) {
 	if (GetPrefTabbedMode()) {
 	    window = CreateDocument(inWindow, name, geometry, iconic);
-    	    RaiseDocument(window);
     	}
 	else {
 	    window = CreateWindow(name, geometry, iconic);
@@ -197,10 +198,6 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     
     /* Open the file */
     if (!doOpen(window, name, path, flags)) {
-	/* bring back the previous top buffer */
-    	if (NDocuments(window) > 1)
-	    RaiseDocument(inWindow);
-	    
 	/* The user may have destroyed the window instead of closing the 
 	   warning dialog; don't close it twice */
 	safeClose(window);
@@ -208,14 +205,16 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     	return NULL;
     }
     
-    /* update tab label and tooltip */
-    RefreshTabState(window);
-
     /* Decide what language mode to use, trigger language specific actions */
     if (languageMode == NULL) 
     	DetermineLanguageMode(window, True);
     else
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
+
+    /* update tab label and tooltip */
+    ShowTabBar(window, GetShowTabBar(window));
+    RefreshTabState(window);
+    RaiseDocument(window);
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */

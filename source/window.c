@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.106 2004/01/29 10:53:36 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.107 2004/02/04 08:45:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -182,7 +182,6 @@ static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
 static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
 static int DoneWithAttachDocumentDialog;
 
-
 /*
 ** Create a new editor window
 */
@@ -201,7 +200,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 #endif
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
-    int x = 0, y = 0, bitmask;
+    int x = 0, y = 0, bitmask, showTabBar;
     static Atom wmpAtom, syAtom = 0;
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
@@ -263,7 +262,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->overstrike = False;
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
-    window->showTabBar = GetPrefTabBar() ? (GetPrefTabBarHideOne()? 0:1) : 0;
     window->showStats = GetPrefStatsLine();
     window->showISearchLine = GetPrefISearchLine();
     window->showLineNumbers = GetPrefLineNums();
@@ -389,9 +387,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNmarginHeight, STAT_SHADOW_THICKNESS,
             /* XmNautoUnmanage, False, */
             NULL);
-    if (window->showTabBar || window->showISearchLine || 
-    	    window->showStats)
-        XtManageChild(statsAreaForm);
     
     /* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
        the i-search bar was active, and the i-search text widget was focussed,
@@ -561,9 +556,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     	tabWidth = 150;
     XtVaSetValues(window->tabBar, XmNmaxTabWidth, tabWidth, NULL);
 
-    if (window->showTabBar)
-    	XtManageChild(tabForm);
-
     /* put a separating line below the tab bar */
     XtVaCreateManagedWidget("TOOLBAR_SEP", xmSeparatorWidgetClass,
     	    statsAreaForm,
@@ -713,6 +705,14 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* add the window to the global window list, update the Windows menus */
     addToWindowList(window);
     InvalidateWindowMenus();
+
+    showTabBar = GetShowTabBar(window);
+    if (showTabBar)
+    	XtManageChild(tabForm);
+
+    if (showTabBar || window->showISearchLine || 
+    	    window->showStats)
+        XtManageChild(statsAreaForm);
     
     /* realize all of the widgets in the new window */
     RealizeWithoutForcingPosition(winShell);
@@ -992,6 +992,19 @@ void CloseWindow(WindowInfo *window)
 
     /* deallocate the window data structure */
     XtFree((char*)window);
+}
+
+/*
+** check if tab bar is to be shown on this window
+*/
+int GetShowTabBar(WindowInfo *window)
+{
+    if (!GetPrefTabBar())
+     	return False;
+    else if (NDocuments(window) == 1)
+    	return !GetPrefTabBarHideOne();
+    else
+    	return True;
 }
 
 void ShowWindowTabBar(WindowInfo *window)
@@ -1365,7 +1378,6 @@ void ShowTabBar(WindowInfo *window, int state)
 {
     if (XtIsManaged(XtParent(window->tabBar)) == state)
         return;
-    window->showTabBar = state;
     showTabBar(window, state);
 }
 
@@ -3078,7 +3090,11 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols)
 }
 
 /*
-** Create a new buffer in the shell window
+** Create a new document in the shell window.
+** Document are created in 'background' so that the user 
+** menus, ie. the Macro/Shell/BG menus, will not be updated 
+** unnecessarily; hence speeding up the process of opening 
+** multiple files.
 */
 WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 	char *geometry, int iconic)
@@ -3195,17 +3211,14 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 
     getTextPaneDimension(shellWindow, &nRows, &nCols);
     
-    /* Create pane for new buffer. We defer mapping the pane widget
-       to reduce flickers caused by its resizing when the text area
-       is added to it */
+    /* Create pane that actaully holds the new document. As 
+       document is created in 'background', so we'll let
+       RaiseDocument() to the job to manage it. */
     pane = XtVaCreateWidget("pane",
     	    xmPanedWindowWidgetClass, window->mainWin,
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2,
-	    XmNmappedWhenManaged, False,
 	    NULL);
-    XtVaSetValues(window->mainWin, XmNworkWindow, pane, NULL);
-    XtManageChild(pane);
     window->splitPane = pane;
     
     /* buffer/window info should associate with text pane */
@@ -3235,10 +3248,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
               GetPrefColorName(HILITE_BG_COLOR),
               GetPrefColorName(LINENO_FG_COLOR),
               GetPrefColorName(CURSOR_FG_COLOR));
-
-    /* map the new buffer pane but keep it hidden */
-    XLowerWindow(TheDisplay, XtWindow(pane));
-    XtMapWidget(pane);
     
     /* Create the right button popup menu (note: order is important here,
        since the translation for popping up this menu was probably already
@@ -3264,31 +3273,11 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     /* Set the requested hardware tab distance and useTabs in the text buffer */
     BufSetTabDistance(window->buffer, GetPrefTabDist(PLAIN_LANGUAGE_MODE));
     window->buffer->useTabs = GetPrefInsertTabs();
+    window->tab = addTab(window->tabBar, window, name);
 
     /* add the window to the global window list, update the Windows menus */
     InvalidateWindowMenus();
     addToWindowList(window);
-
-    window->tab = addTab(window->tabBar, window, name);
-    ShowTabBar(window, GetPrefTabBar());
-
-#ifdef LESSTIF_VERSION
-    /* FIXME: Temporary workaround for disappearing-text-window bug
-              when linking to Lesstif.
-       
-       After changes is made to statsAreaForm (parent of statsline,
-       i-search line and tab bar) widget such as enabling/disabling
-       the statsline, the XmForm widget enclosing the text widget 
-       somehow refused to resize to fit the text widget. Resizing
-       the shell window or making changes [again] to the statsAreaForm 
-       appeared to bring out the text widget, though doesn't fix it for
-       the subsequently added buffers. Here we try to do the latter 
-       for all new buffer created. */
-    if (XtIsManaged(XtParent(window->statsLineForm))) {
-    	XtUnmanageChild(XtParent(window->statsLineForm));
-    	XtManageChild(XtParent(window->statsLineForm));    
-    }
-#endif /* LESSTIF_VERSION */
 
     return window;
 }
@@ -3643,7 +3632,6 @@ static void refreshMenuBar(WindowInfo *window)
 
 static void setDocumentSharedPref(WindowInfo *window, WindowInfo *lastwin)
 {
-    window->showTabBar = lastwin->showTabBar;
     window->showStats = lastwin->showStats;
     window->showISearchLine = lastwin->showISearchLine;
 }
@@ -4108,6 +4096,7 @@ WindowInfo *AttachDocument(WindowInfo *toWindow, WindowInfo *window)
     
     /* relocate the buffer to target window */
     cloneWin = CreateDocument(toWindow, window->filename, NULL, False);
+    ShowTabBar(cloneWin, GetShowTabBar(cloneWin));
     cloneDocument(cloneWin, window);
     
     /* remove the buffer from the old window */

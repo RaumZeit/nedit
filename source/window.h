@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.14 2004/01/16 02:59:15 tksoh Exp $ */
+/* $Id: window.h,v 1.15 2004/02/04 08:45:01 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -37,6 +37,7 @@ void SplitWindow(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void ClosePane(WindowInfo *window);
+int GetShowTabBar(WindowInfo *window);
 void ShowTabBar(WindowInfo *window, int state);
 void ShowStatsLine(WindowInfo *window, int state);
 void ShowISearchLine(WindowInfo *window, int state);

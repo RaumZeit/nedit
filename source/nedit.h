@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.44 2004/01/26 09:23:21 tksoh Exp $ */
+/* $Id: nedit.h,v 1.45 2004/02/04 08:45:01 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -392,7 +392,6 @@ typedef struct _WindowInfo {
 					   FLASH_RANGE */
     char	matchSyntaxBased;	/* Use syntax info to show matching */
     Boolean	showStats;		/* is stats line supposed to be shown */
-    Boolean	showTabBar;		/* is tabbar supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
