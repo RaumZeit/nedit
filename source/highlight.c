@@ -1664,7 +1664,7 @@ static int isParentStyle(char *parentStyles, int style1, int style2)
 */
 static int patternIsParsable(highlightDataRec *pattern)
 {
-    return pattern->subPatternRE != NULL;
+    return pattern != NULL && pattern->subPatternRE != NULL;
 }
 
 /*
