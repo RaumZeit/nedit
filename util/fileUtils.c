@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.30 2003/04/24 11:47:24 edg Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.31 2003/11/18 12:16:12 edg Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -527,7 +527,7 @@ int FormatOfFile(const char *fileString)
     }
     if (nNewlines > 0)
 	return DOS_FILE_FORMAT;
-    if (nReturns > 1)
+    if (nReturns > 0)
 	return MAC_FILE_FORMAT;
     return UNIX_FILE_FORMAT;
 }
