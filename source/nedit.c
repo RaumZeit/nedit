@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.10 2001/03/10 15:37:08 arnef Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.11 2001/03/16 20:28:48 amai Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -324,6 +324,10 @@ int main(int argc, char **argv)
     /* Convert the command line to Unix style (This is not an ideal solution) */
     ConvertVMSCommandLine(&argc, &argv);
 #endif /*VMS*/
+#ifdef __EMX__
+    /* expand wildcards if necessary */
+    _wildcard(&argc, &argv);
+#endif
     
     /* Read the preferences file and command line into a database */
     prefDB = CreateNEditPrefDB(&argc, argv);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.8 2001/03/16 20:28:48 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -136,6 +136,10 @@ int main(int argc, char **argv)
     /* Convert the command line to Unix style */
     ConvertVMSCommandLine(&argc, &argv);
 #endif /*VMS*/
+#ifdef __EMX__
+    /* expand wildcards if necessary */
+    _wildcard(&argc, &argv);
+#endif
     
     /* Read the preferences command line and (very) optional .nc file
        into a database */
