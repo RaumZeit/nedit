@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.27 2001/12/13 13:27:00 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.28 2001/12/13 15:44:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -814,7 +814,6 @@ static int fakeRegExSearch(WindowInfo *window, const char *searchString,
 	   startPos, if nothing has been found by now try searching backward
       	   again from startPos.
         */
-      	//fprintf(stderr, "trying backward\n");
 	found = SearchString(fileString, searchSubs, SEARCH_BACKWARD, 
 	      	SEARCH_REGEX, False, searchStartPos, startPos, endPos, NULL, 
 	      	NULL);
@@ -957,8 +956,6 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
     }
 
     startPos=tagPosInf[0];
-    //fprintf(stderr, "(%i)\t?%s\tFile:%s%s, #%6i, %s\n",
-    //  	  0, tagName, pathname, filename, startPos, tagSearch[0]);
     
     /* if the search string is a number, select the numbered line */
     if(!tagSearch[0]) {
@@ -1020,9 +1017,6 @@ static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data)
 
     startPos=tagPosInf[i];
     
-    //fprintf(stderr, "(%i)\t?%s\tFile:%s%s, #%6i, %s",
-    //  	  i, tagName, pathname, filename, startPos, tagSearch[i]);
-
     if(!tagSearch[i]) {
       	/* if the search string is empty, select the numbered line */
       	SelectNumberedLine(windowToSearch, startPos);
