@@ -1208,7 +1208,7 @@ for character-based editors like vi, to invoke nc, but programatic interfaces
 can also be derived using the source code for nc.
 
 There are also some simple compile/review, grep, ctree, and ctags browsers
-available in the NEdit contrib directory on ftp.fnal.gov.
+available at ftp://ftp.nedit.org/pub/v5_0_2/contrib.
 
 
 TABS AND TAB EMULATION
@@ -3282,11 +3282,11 @@ P: NEdit crashes when I try to paste text in to a text field in a dialog (like
    Find or Replace) on my SunOS system.
 S: On many SunOS systems, you have to set up an nls directory before various
    inter-client communication features of Motif will function properly.  There
-   are instructions in README.sun in /pub/nedit/v4_0_1 on ftp.fnal.gov, as well
-   as a tar file containg a complete nls directory: ftp://ftp.fnal.gov/pub/
-   nedit/v4_0_2/individual/README.sun.  This contains directions for setting up
-   an nls directory, which is required by Motif for handling copy and paste to
-   Motif text fields. 
+   are instructions in ftp://ftp.nedit.org/pub/v5_0_2/individual/README.sun, as
+   well as a tar file containg a complete nls directory in
+   ftp://ftp.nedit.org/pub/v5_0_2/nls.tar.  This contains directions for
+   setting up an nls directory, which is required by Motif for handling copy
+   and paste to Motif text fields. 
 
 
 KNOWN BUGS
