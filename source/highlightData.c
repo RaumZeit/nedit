@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.64 2004/07/02 22:16:11 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.65 2004/07/15 01:47:57 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -254,7 +254,7 @@ static char *DefaultPatternSets[] = {
 	Function:\"function\":::Preprocessor1::D}",
     "C++:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
-	cplus comment:\"//\":\"$\"::Comment::\n\
+	cplus comment:\"//\":\"(?<!\\\\)$\"::Comment::\n\
 	string:\"L?\"\"\":\"\"\"\":\"\\n\":String::\n\
 	preprocessor line:\"^\\s*#\\s*(?:include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
 	string escape chars:\"\\\\(?:.|\\n)\":::String1:string:\n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.119 2004/04/27 01:35:28 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.120 2004/07/15 01:47:57 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -676,7 +676,7 @@ static PrefDescripRec PrefDescrip[] = {
 #else
        "Ada:.ada .ad .ads .adb .a:::::::\n\
         Awk:.awk:::::::\n\
-        C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
+        C++:.cc .hh .C .H .i .cxx .hxx .cpp .c++::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
         Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
