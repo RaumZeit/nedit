@@ -398,11 +398,11 @@ $quote_tt      = '^> ';
 $section_tt    = '^([1-6])>';
 $subtitle_tt   = '^---';
 $suppress_tt   = '^\.\.';
-$target_tt     = '(?!(^|\s)_[\S]+_(\s|$))(^|\s)_([\S]+)'; # not underline, then target
+$target_tt     = '(?!(^|\s)_[\S]+_(\s|\W|$))(^|\s)_([\S]+)'; # not underline, then target
 $title_tt      = '^===';
 $twobuck_tt    = '^\s*\$\$\s*$';
 $underline_tt  = '\b_([\S]*)_\b';
-$untouch_tt    = "(`[^`']+[`'])";
+$untouch_tt    = "\\s*(`[^`]+[`'])(?=\\s|\\W|\$)";
 $variable_def  = '\s*(\w+)\s*([^=]*(=(.+)))?'; # $1 = name, $4 = value
 
 $escape_tt     = "@"; # the character escape symbol (need @@ to escape @)
@@ -1843,9 +1843,8 @@ sub help_finishing
     $_ .= get_newline( 1 ) if $crnt_state ne $FMT;
     
     #----------------------------------------------------------------------
-    # Since 2 characters (\ and n) are occupying the space of one (newline)
-    # we need to subract out the number of new lines from the total offset.ne
-    # emit_help_menu_text). Style information has to be removed completely.
+    # Since 2 characters (\ and n) are occupying the space of one newline,
+    # we need to subract out the number of new lines from the total offset.
     #----------------------------------------------------------------------
     my $styleCount     = count( $styleToken, $_ );
     my $newLineCount   = count( "\\\\n", $_ );
@@ -1871,17 +1870,15 @@ sub help_finishing
 
 sub help_fixed_styles
 {
-    #---------------------------------------------------------
-    # All fixed styles in the style state transition table
+    #----------------------------------------------------------------
+    # All proportional styles in the style state transition table
     # begin with the "_" character. If we are already in the
-    # fixed styles arena, a link, or header, no change occurs.
-    #---------------------------------------------------------
-    unless( $crntStyle =~ /^_/   or 
-            $crntStyle eq "link" or 
-            $crntStyle eq "header" ) {
-
-        $crntStyle = "_$crntStyle";
-        $_ = $styleMark . get_style_name( $crntStyle ) . $_;
+    # proportional styles arena, a link, or header, no change occurs.
+    #----------------------------------------------------------------
+    if( $crntStyle =~ /^_/ )
+    {
+        $crntStyle =~ s/^_//o;
+        $styleChanged = $crntStyle unless $styleChanged;
     }
 }
 
@@ -1938,7 +1935,7 @@ sub help_init
 
     $copy_right_holder = "Mark Edel";
     $hlptxt            = "help_data$helpSuffix.h";  # name of file holding help data structures
-    $hlphdr            = "help$helpSuffix.h";       # name of file holding help definitions
+    $hlphdr            = "help_topic$helpSuffix.h"; # name of file holding help definitions
     $stlMrk            = "\01";          # this is the character code
     $styleMark         = '\01';          # this is the text string
     $styleToken        = "\\$styleMark"; # this for splitting strings on styleMark
@@ -1955,7 +1952,7 @@ sub help_init
     #                         TOKENS =>        text        bold        italic      underline
     %styles_stt = (
 
-    # proportional font styles
+    # fixed font styles
     
       plain     => { style => "A", states => [ "plain",     "bold",      "italic",    "u_plain"    ] },
       bold      => { style => "B", states => [ "bold",      "plain",     "b_ital",    "u_bold"     ] },
@@ -1967,7 +1964,7 @@ sub help_init
       u_italic  => { style => "G", states => [ "u_italic",  "u_b_ital",  "u_plain",   "italic"     ] },
       u_b_ital  => { style => "H", states => [ "u_b_ital",  "u_italic",  "u_bold",    "bold_ital"  ] },
 
-    #  fixed font styles
+    #  proportional font styles
     
       _plain    => { style => "I", states => [ "_plain",    "_bold",     "_italic",   "_u_plain"   ] },
       _bold     => { style => "J", states => [ "_bold",     "_plain",    "_b_ital",   "_u_bold"    ] },
@@ -2010,15 +2007,15 @@ sub help_init
     
     $aStyleToken = "[$TKN_TEXT$TKN_BOLD$TKN_ITALIC$TKN_ULINE$TKN_LINK]";
 
-    $initialStyle = "plain";  # the initial style for help text.
+    $initialStyle = "_plain";  # the initial style for help text.
     $crntStyle    = $initialStyle;
     $headingLevel = 0;
     
     print_menu( $crntMenu, "" ) if $print_menu;  # sort of debug info
 
-    #----------------------------
-    # Create help header (help.h)
-    #----------------------------
+    #----------------------------------
+    # Create help header (help_topic.h)
+    #----------------------------------
     open HLPHDR, ">$hlphdr"  or die "Can't create $hlphdr,  $OS_ERROR";
     emit_help_header( HLPHDR, $crntMenu );
     close HLPHDR;
@@ -2060,15 +2057,17 @@ sub help_quote_tt      {}
 
 sub help_proportional_styles
 {
-    #---------------------------------------------------------
-    # All fixed styles in the style state transition table
+    #----------------------------------------------------------------
+    # All proportional styles in the style state transition table
     # begin with the "_" character. If we are already in the
-    # fixed styles arena, a link, or header, no change occurs.
-    #---------------------------------------------------------
-    if( $crntStyle =~ /^_/ )
-    {
-        $crntStyle =~ s/^_//o;
-        $styleChanged = $crntStyle unless $styleChanged;
+    # proportional styles arena, a link, or header, no change occurs.
+    #----------------------------------------------------------------
+    unless( $crntStyle =~ /^_/   or 
+            $crntStyle eq "link" or 
+            $crntStyle eq "header" ) {
+
+        $crntStyle = "_$crntStyle";
+        $_ = $styleMark . get_style_name( $crntStyle ) . $_;
     }
 }
 
@@ -2424,6 +2423,7 @@ sub emit_help_menu_text
                 push @section, $_ ;
             }
             print $stream "char * htxt_$helpName [] = {\n";
+            $styleChanged = $initialStyle; # This forces initial style out
             parse_setext( \@section );
             print $stream "NULL\n};\n\n";
         }
@@ -2638,7 +2638,7 @@ sub emit_help_label
 
 #-------------------------------------------------------------------------------
 
-sub emit_help_header          # populates NEdit's help.h
+sub emit_help_header          # populates NEdit's help_topic.h
 {
     my $stream    = shift;
     my $crnt_menu = shift;
@@ -2661,34 +2661,6 @@ sub emit_help_header          # populates NEdit's help.h
     print $stream "\n";
     print $stream "#define NUM_TOPICS HELP_LAST_ENTRY\n";
     print $stream "\n";
-    print $stream "typedef struct HelpMenu         /* Maintains help menu structure */\n";
-    print $stream "{\n";
-    print $stream "    struct HelpMenu * next;\n";
-    print $stream "    int               level;    /* menu level, submenu > 1               */\n";
-    print $stream "    enum HelpTopic    topic;    /* $illegal_help for submenu & separator     */\n";
-    print $stream "    char            * wgtName;\n";
-    print $stream "    int               hideIt;   /* value which determines displayability */\n";
-    print $stream "    char              mnemonic; /* '-' for separator                     */\n";
-    print $stream "    char            * subTitle; /* title for sub menu, or NULL           */\n";
-    print $stream "\n";
-    print $stream "} HelpMenu;\n";
-    print $stream "\n";
-    print $stream "typedef struct Href             /* Source to topic internal hyperlinks */\n";
-    print $stream "{\n";
-    print $stream "    struct Href *  next;\n";
-    print $stream "    int            location;    /* position to link in topic    */\n";
-    print $stream "    enum HelpTopic topic;       /* target of link in this topic */\n";
-    print $stream "    char *         source;      /* hypertext link characters    */\n";
-    print $stream "    char *         target;      /* hypertext target characters  */\n";
-    print $stream "\n";
-    print $stream "} Href;\n";
-    print $stream "\n";
-    print $stream "extern HelpMenu H_M[];\n";
-    print $stream "extern char *HelpTitles[];\n";
-    print $stream "extern const char linkdate[];\n";
-    print $stream "extern const char linktime[];\n";
-    print $stream "\n";
-    print $stream "void Help(Widget parent, enum HelpTopic topic);\n";
 }
 
 #-------------------------------------------------------------------------------
@@ -2837,7 +2809,7 @@ converter. Further explanations of typotags occurs there.
 =head2 NEdit Help Menu
 
 When generating the NEdit help menu code, two files will be produced,
-help_data.h and help.h (when the -M option is not used).
+help_data.h and help_topic.h (when the -M option is not used).
 These two files contain all the programmatic
 data needed to implement hypertext menus within the NEdit program.
 The following is an example of a setext invocation which assumes that
@@ -2850,9 +2822,9 @@ of the two generated files. For example,
 
         setext -m -c VMS -M _VMS help.etx
 
-will generate the files help_VMS.h and help_data_VMS.h.The conditional
-portion of the help menu specifically designated for VMS will be
-extracted from the help.etx source.
+will generate the files help_topic_VMS.h and help_data_VMS.h. The 
+conditional portion of the help menu specifically designated for VMS 
+will be extracted from the help.etx source.
 
 Below is what is used to guide the generation of 'C'-Motif menus.
 Indentation is SIGNIFICANT in the "Menu" directive lines below. It

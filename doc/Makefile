@@ -16,7 +16,7 @@ instructions:
 	@ echo "The following are the main targets which generate files for"
 	@ echo "NEdit development. They are:"
 	@ echo ""
-	@ echo "  help - generates NEdit help code (help.h, help_data.h)"
+	@ echo "  help - generates NEdit help code (help_topic.h, help_data.h)"
 	@ echo "  doc  - generates various forms of NEdit documentation"
 	@ echo "  all  - generates all the files"
 	@ echo ""
@@ -40,7 +40,7 @@ version:
 help: version help.etx
 	@ echo "Creating NEdit help code..."
 	@ setext -m -v version="`cat .version`" help.etx
-	@ mv help.h ../source
+	@ mv help_topic.h ../source
 	@ mv help_data.h ../source
 
 nedit.html: help.etx

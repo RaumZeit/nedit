@@ -742,6 +742,9 @@ titled "<A HREF="#Using_the_Mouse">Using the Mouse</A>")
 <PRE>
     Ctrl+PageUp   Scroll and move the cursor left by one
                   page.
+</PRE>
+<P>
+<PRE>
     PageDown      Scroll and move the cursor down by one
                   page.
 </PRE>
@@ -1400,7 +1403,7 @@ resulting character class is negated.  For example, \d is equivalent to
 `[0-9]', while \D is equivalent to `[^0-9]'.
 <P>
 These escape sequences can also be used within a character class.  For
-example, `[\l_]' is the same as `[a-zA-Z_]'.  The escape sequences for
+example, `[\l_]' is the same as `[<B><font color=red>--&#62; a-zA-Z &#60;-- NO HREF!!</font></B>]'.  The escape sequences for
 special characters, and octal and hexadecimal escapes are also valid within a
 class.
 <P>
@@ -4231,6 +4234,74 @@ Default background color for menus, dialogs, scroll bars, etc..
 Default font for menus, dialogs, scroll bars, etc..
 <P>
 <PRE>
+<B>nedit.helpFont</B>: adobe times 14
+</PRE>
+<P>
+Font used for displaying online help.
+<P>
+<PRE>
+<B>nedit.boldHelpFont</B>: adobe times 14 bold
+</PRE>
+<P>
+Bold font for online help.
+<P>
+<PRE>
+<B>nedit.italicHelpFont</B>: adobe times 14 italic
+</PRE>
+<P>
+Italic font for online help.
+<P>
+<PRE>
+<B>nedit.fixedHelpFont</B>: adobe courier 12
+</PRE>
+<P>
+Fixed font for online help.
+<P>
+<PRE>
+<B>nedit.boldFixedHelpFont</B>: adobe courier 12 bold
+</PRE>
+<P>
+Fixed bold for online help.
+<P>
+<PRE>
+<B>nedit.italicFixedHelpFont</B>: adobe courier 12 italic
+</PRE>
+<P>
+Fixed italic font for online help.
+<P>
+<PRE>
+<B>nedit.h3HelpFont</B>: adobe times 14 bold
+</PRE>
+<P>
+Font for level-1 titles in help text (the name h3 comes from how the
+help system maps titles between the html, text, and online help versions of
+the help text, level one and level two headings map to menu titles).
+<P>
+<PRE>
+<B>nedit.h4HelpFont</B>: adobe times 14 italic
+</PRE>
+<P>
+Font for level-2 titles in help text.
+<P>
+<PRE>
+<B>nedit.h5HelpFont</B>: adobe courier 12 bold
+</PRE>
+<P>
+Font for level-3 titles in help text.
+<P>
+<PRE>
+<B>nedit.helpLinkFont</B>: adobe adobe times 14
+</PRE>
+<P>
+Font for hyperlinks in the help text
+<P>
+<PRE>
+<B>nedit.helpLinkColor</B>: blue2
+</PRE>
+<P>
+Color for hyperlinks in the help text
+<P>
+<PRE>
 <B>nc.autoStart</B>: False 
 </PRE>
 <P>
@@ -4274,12 +4345,6 @@ Horizontal scroll bar.
 </PRE>
 <P>
 Vertical scroll bar.
-<P>
-<PRE>
-<B>nedit.helpText</B>
-</PRE>
-<P>
-Help window text.
 <P><HR>
 <P>
 <A NAME="Key_Binding"</A>
@@ -4863,14 +4928,14 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Dec  9, 2001
-Dec 9, 2001
+NEdit release of Dec 13, 2001
+Dec 13, 2001
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-LoBasso, Alexander Mai, Scott Tringali, and Thorsten Haude.
+LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn.
 <P>
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the

@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Dec  9, 2001                                               December 9, 2001
+NEdit release of Dec 13, 2001                                               December 13, 2001
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -618,6 +618,7 @@ KEYBOARD SHORTCUTS
 
     Ctrl+PageUp   Scroll and move the cursor left by one
                   page.
+
     PageDown      Scroll and move the cursor down by one
                   page.
 
@@ -1277,9 +1278,8 @@ METACHARACTERS
   `[0-9]', while \D is equivalent to `[^0-9]'. 
 
   These escape sequences can also be used within a character class. For 
-  example, `[\l_]' is the same as `[a-zA-Z_]'. The escape sequences for 
-  special characters, and octal and hexadecimal escapes are also valid within 
-  a class. 
+  example, `[\l_]' is the same as `[a-zA-Z]'. The escape sequences for special 
+  characters, and octal and hexadecimal escapes are also valid within a class. 
 
 
   WORD DELIMITER TOKENS
@@ -3483,6 +3483,52 @@ nedit.fontList: helvetica-bold-14
 
   Default font for menus, dialogs, scroll bars, etc.. 
 
+nedit.helpFont: adobe times 14
+
+  Font used for displaying online help. 
+
+nedit.boldHelpFont: adobe times 14 bold
+
+  Bold font for online help. 
+
+nedit.italicHelpFont: adobe times 14 italic
+
+  Italic font for online help. 
+
+nedit.fixedHelpFont: adobe courier 12
+
+  Fixed font for online help. 
+
+nedit.boldFixedHelpFont: adobe courier 12 bold
+
+  Fixed bold for online help. 
+
+nedit.italicFixedHelpFont: adobe courier 12 italic
+
+  Fixed italic font for online help. 
+
+nedit.h3HelpFont: adobe times 14 bold
+
+  Font for level-1 titles in help text (the name h3 comes from how the help 
+  system maps titles between the html, text, and online help versions of the 
+  help text, level one and level two headings map to menu titles). 
+
+nedit.h4HelpFont: adobe times 14 italic
+
+  Font for level-2 titles in help text. 
+
+nedit.h5HelpFont: adobe courier 12 bold
+
+  Font for level-3 titles in help text. 
+
+nedit.helpLinkFont: adobe adobe times 14
+
+  Font for hyperlinks in the help text 
+
+nedit.helpLinkColor: blue2
+
+  Color for hyperlinks in the help text 
+
 nc.autoStart: False 
 
   Whether the nc program should automatically start an NEdit server (without 
@@ -3514,10 +3560,6 @@ nedit.textHorScrollBar
 nedit.textVertScrollBar
 
   Vertical scroll bar. 
-
-nedit.helpText
-
-  Help window text. 
 
 -----------
 KEY BINDING
@@ -4044,13 +4086,13 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Dec  9, 2001
-Dec 9, 2001
+NEdit release of Dec 13, 2001
+Dec 13, 2001
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
   Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve LoBasso, 
-  Alexander Mai, Scott Tringali, and Thorsten Haude. 
+  Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn. 
 
   The regular expression matching routines used in NEdit are adapted (with 
   permission) from original code written by Henry Spencer at the University of 
