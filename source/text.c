@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.47 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.48 2004/07/28 18:02:03 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -272,7 +272,7 @@ static char defaultTranslations[] =
     "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
     "Shift<KeyPress>osfInsert: paste_clipboard()\n"
     "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
-    "~Shift ~Ctrl<KeyPress>osfInsert: toggle_overstrike()\n"
+    "~Shift ~Ctrl<KeyPress>osfInsert: set_overtype_mode()\n"
 
     /* Cut/Copy/Paste */
     "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"

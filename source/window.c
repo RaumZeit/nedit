@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.165 2004/07/23 18:52:18 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.166 2004/07/28 18:02:04 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4320,7 +4320,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->fileChanged = orgWin->fileChanged;
     window->fileMissing = orgWin->fileMissing;
     window->lockReasons = orgWin->lockReasons;
-    window->nPanes = orgWin->nPanes;
     window->autoSaveCharCount = orgWin->autoSaveCharCount;
     window->autoSaveOpCount = orgWin->autoSaveOpCount;
     window->undoOpCount = orgWin->undoOpCount;
@@ -4329,7 +4328,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->autoSave = orgWin->autoSave;
     window->saveOldVersion = orgWin->saveOldVersion;
     window->wrapMode = orgWin->wrapMode;
-    window->overstrike = orgWin->overstrike;
+    SetOverstrike(window, orgWin->overstrike);
     window->showMatchingStyle = orgWin->showMatchingStyle;
     window->matchSyntaxBased = orgWin->matchSyntaxBased;
 #if 0    
