@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.66 2002/09/11 18:59:49 arnef Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.67 2002/09/13 08:28:05 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1462,11 +1462,20 @@ void SetPrefTabDist(int tabDist)
 
 int GetPrefTabDist(int langMode)
 {
+    int tabDist;
     if (langMode == PLAIN_LANGUAGE_MODE ||
-	    LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST)
-	return PrefData.tabDist;
-    return LanguageModes[langMode]->tabDist;
- }
+	    LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST) {
+	tabDist = PrefData.tabDist; 
+    } else {
+	tabDist = LanguageModes[langMode]->tabDist;
+    }
+    /* Make sure that the tab distance is in range (garbage may have 
+       been entered via the command line or the X resources, causing
+       errors later on, like division by zero). */
+    if (tabDist <= 0) return 1;
+    if (tabDist > MAX_EXP_CHAR_LEN) return MAX_EXP_CHAR_LEN;
+    return tabDist;
+}
 
 void SetPrefEmTabDist(int tabDist)
 {
