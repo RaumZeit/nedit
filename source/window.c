@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.113 2004/02/09 09:45:36 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.114 2004/02/09 11:02:27 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -278,6 +278,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->modeMessageDisplayed = FALSE;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
+    window->macroMenuValid = FALSE;
+    window->shellMenuValid = FALSE;
     window->prevOpenMenuValid = FALSE;
     window->flashTimeoutID = 0;
     window->fileClosedAtom = None;
