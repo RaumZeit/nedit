@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.4 2003/05/02 18:18:45 edg Exp $ */
+/* $Id: rangeset.c,v 1.5 2003/05/07 10:51:52 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -1022,16 +1022,9 @@ int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color)
 int RangesetAssignColorName(Rangeset *rangeset, char *color_name)
 {
     char *cp;
-    int refresh = 0;
 
     if (color_name && color_name[0] == '\0')
 	color_name = (char *)0;				/* "" invalid */
-
-    if (rangeset->color_name && color_name &&
-	strcmp(rangeset->color_name, color_name) != 0)
-	refresh = 1;					/* different */
-    else if (!rangeset->color_name ^ !color_name)
-	refresh = 1;					/* one is NULL */
 
     /* store new color name value */
     if (color_name) {

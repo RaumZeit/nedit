@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.24 2003/04/10 18:39:21 tringali Exp $ */
+/* $Id: parse.y,v 1.25 2003/05/07 10:51:52 edg Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -38,7 +38,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.24 2003/04/10 18:39:21 tringali Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.25 2003/05/07 10:51:52 edg Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -472,7 +472,7 @@ static int yylex(void)
 {
     int i, len;
     Symbol *s;
-    static DataValue value = {0, {0}};
+    static DataValue value = {NO_TAG, {0}};
     static char escape[] = "\\\"ntbrfav";
     static char replace[] = "\\\"\n\t\b\r\f\a\v";
 

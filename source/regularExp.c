@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.21 2003/01/14 09:50:11 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.22 2003/05/07 10:51:52 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2600,12 +2600,12 @@ static unsigned char  *Back_Ref_Start [10]; /* Back_Ref_Start [0] and        */
 static unsigned char  *Back_Ref_End   [10]; /* Back_Ref_End [0] are not      */
                                             /* used. This simplifies         */
                                             /* indexing.                     */
-static regexp *Cross_Regex_Backref;
+/* static regexp *Cross_Regex_Backref; */
 
 static int Prev_Is_BOL;
 static int Succ_Is_EOL;
-static int Prev_Is_Delim;
-static int Succ_Is_Delim;
+/* static int Prev_Is_Delim;
+static int Succ_Is_Delim; */
 static int Prev_Is_WordChar;
 static int Succ_Is_WordChar;
 
@@ -2713,15 +2713,15 @@ int ExecRE (
 
    Prev_Is_BOL        = ((prev_char == '\n') || (prev_char == '\0') ? 1 : 0);
    Succ_Is_EOL        = ((succ_char == '\n') || (succ_char == '\0') ? 1 : 0);
-   Prev_Is_Delim      = (Current_Delimiters [(unsigned char)prev_char] ? 1 : 0);
-   Succ_Is_Delim      = (Current_Delimiters [(unsigned char)succ_char] ? 1 : 0);
+/*   Prev_Is_Delim      = (Current_Delimiters [(unsigned char)prev_char] ? 1 : 0);
+   Succ_Is_Delim      = (Current_Delimiters [(unsigned char)succ_char] ? 1 : 0);*/
    Prev_Is_WordChar   = ((isalnum ((int)prev_char) || prev_char == '_') ? 1 : 0);
    Succ_Is_WordChar   = ((isalnum ((int)succ_char) || succ_char == '_') ? 1 : 0);
 
    Total_Paren        = (int) (prog->program [1]);
    Num_Braces         = (int) (prog->program [2]);
 
-   Cross_Regex_Backref = cross_regex_backref;
+/*   Cross_Regex_Backref = cross_regex_backref; */
 
    /* Allocate memory for {m,n} construct counting variables if need be. */
 

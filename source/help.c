@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.92 2003/04/15 23:03:40 yooden Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.93 2003/05/07 10:51:52 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -173,7 +173,7 @@ static unsigned char AlphabetToAsciiTable[256];
 /*                             PROGRAM PROTOTYPES                             */
 /*============================================================================*/
 
-static Widget createHelpPanel(Widget parent, int topic);
+static Widget createHelpPanel(Widget parent, enum HelpTopic topic);
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData);
 static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -186,7 +186,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData);
 static char *stitch(Widget  parent, char **string_list,char **styleMap);
 static void searchHelpText(Widget parent, int parentTopic,
         const char *searchFor, int allSections, int startPos, int startTopic);
-static void changeWindowTopic(int existingTopic, int newTopic);
+static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic);
 static int findTopicFromShellWidget(Widget shellWidget);
 static void loadFontsAndColors(Widget parent, int style);
 static void initNavigationHistory(void);
@@ -555,7 +555,7 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
 **   static char *fallbackResources 
 **   (currently:  nedit.helpForm.sw.helpText*translations...)
 */
-static Widget createHelpPanel(Widget parent, int topic)
+static Widget createHelpPanel(Widget parent, enum HelpTopic topic)
 {
     Arg al[50];
     int ac;
@@ -1201,7 +1201,7 @@ static void searchHelpText(Widget parent, int parentTopic,
 ** positioned by the user, it can be found and popped back up in the same
 ** place.)  To change the topic displayed, the stored data has to be relocated.
 */
-static void changeWindowTopic(int existingTopic, int newTopic)
+static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic)
 {
     char *helpText, *styleData;
     
