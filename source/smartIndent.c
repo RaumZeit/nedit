@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.16 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.17 2002/07/27 08:55:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -937,7 +937,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     /* Decide on an initial language mode */
     lmName = LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 :
     	    window->languageMode);
-    SmartIndentDialog.langModeName = CopyAllocatedString(lmName);
+    SmartIndentDialog.langModeName = XtNewString(lmName);
 
     /* Create a form widget in an application shell */
     n = 0;
@@ -1246,7 +1246,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     freeIndentSpec(newMacros);
     
     /* Fill the dialog with the new language mode information */
-    SmartIndentDialog.langModeName = CopyAllocatedString(modeName);
+    SmartIndentDialog.langModeName = XtNewString(modeName);
     setSmartIndentDialogData(findIndentSpec(modeName));
 }
 
@@ -1421,7 +1421,7 @@ static smartIndentRec *getSmartIndentDialogData(void)
     smartIndentRec *is;
     
     is = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-    is->lmName = CopyAllocatedString(SmartIndentDialog.langModeName);
+    is->lmName = XtNewString(SmartIndentDialog.langModeName);
     is->initMacro = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? NULL :
 	    ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
     is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? NULL:
@@ -1898,10 +1898,10 @@ static char *readSIMacro(char **inPtr)
 static smartIndentRec *copyIndentSpec(smartIndentRec *is)
 {
     smartIndentRec *ris = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-    ris->lmName = CopyAllocatedString(is->lmName);
-    ris->initMacro = CopyAllocatedString(is->initMacro);
-    ris->newlineMacro = CopyAllocatedString(is->newlineMacro);
-    ris->modMacro = CopyAllocatedString(is->modMacro);
+    ris->lmName = XtNewString(is->lmName);
+    ris->initMacro = XtNewString(is->initMacro);
+    ris->newlineMacro = XtNewString(is->newlineMacro);
+    ris->modMacro = XtNewString(is->modMacro);
     return ris;
 }
 

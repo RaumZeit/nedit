@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.32 2002/07/17 15:14:37 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.33 2002/07/27 08:55:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1305,13 +1305,13 @@ void RenameHighlightPattern(const char *oldName, const char *newName)
     for (i=0; i<NPatternSets; i++) {
     	if (!strcmp(oldName, PatternSets[i]->languageMode)) {
     	    XtFree(PatternSets[i]->languageMode);
-    	    PatternSets[i]->languageMode = CopyAllocatedString(newName);
+    	    PatternSets[i]->languageMode = XtNewString(newName);
     	}
     }
     if (HighlightDialog.shell != NULL) {
     	if (!strcmp(HighlightDialog.langModeName, oldName)) {
     	    XtFree(HighlightDialog.langModeName);
-    	    HighlightDialog.langModeName = CopyAllocatedString(newName);
+    	    HighlightDialog.langModeName = XtNewString(newName);
     	}
     }
 }
@@ -2127,7 +2127,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     }
     
     /* Decide on an initial language mode */
-    HighlightDialog.langModeName = CopyAllocatedString(
+    HighlightDialog.langModeName = XtNewString(
     	    LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 :
     	    window->languageMode));
 
@@ -2768,7 +2768,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
      	freePatternSrc(HighlightDialog.patterns[i], True);
     
     /* Fill the dialog with the new language mode information */
-    HighlightDialog.langModeName = CopyAllocatedString(modeName);
+    HighlightDialog.langModeName = XtNewString(modeName);
     newPatSet = FindPatternSet(modeName);
     if (newPatSet == NULL) {
     	HighlightDialog.nPatterns = 0;
@@ -3324,7 +3324,7 @@ static patternSet *getDialogPatternSet(void)
     /* Allocate a new pattern set structure and copy the fields read from the
        dialog, including the modified pattern list into it */
     patSet = (patternSet *)XtMalloc(sizeof(patternSet));
-    patSet->languageMode = CopyAllocatedString(HighlightDialog.langModeName);
+    patSet->languageMode = XtNewString(HighlightDialog.langModeName);
     patSet->lineContext = lineContext;
     patSet->charContext = charContext;
     patSet->nPatterns = HighlightDialog.nPatterns;
@@ -3385,12 +3385,12 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
     	newPat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
     else
     	newPat = copyTo;
-    newPat->name = CopyAllocatedString(pat->name);
-    newPat->startRE = CopyAllocatedString(pat->startRE);
-    newPat->endRE = CopyAllocatedString(pat->endRE);
-    newPat->errorRE = CopyAllocatedString(pat->errorRE);
-    newPat->style = CopyAllocatedString(pat->style);
-    newPat->subPatternOf = CopyAllocatedString(pat->subPatternOf);
+    newPat->name = XtNewString(pat->name);
+    newPat->startRE = XtNewString(pat->startRE);
+    newPat->endRE = XtNewString(pat->endRE);
+    newPat->errorRE = XtNewString(pat->errorRE);
+    newPat->style = XtNewString(pat->style);
+    newPat->subPatternOf = XtNewString(pat->subPatternOf);
     newPat->flags = pat->flags;    
     return newPat;
 }

@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.23 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: preferences.h,v 1.24 2002/07/27 08:55:06 yooden Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -134,7 +134,6 @@ char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(char **inPtr, char **errMsg);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);
-char *CopyAllocatedString(const char *string);
 int AllocatedStringsDiffer(const char *s1, const char *s2);
 void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults);
 int FindLanguageMode(const char *languageName);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.26 2002/07/11 21:18:12 slobasso Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.27 2002/07/27 08:55:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1266,7 +1266,9 @@ static char *findStripLanguageMode(const char *menuItemName, int languageMode,
     atPtr = firstAtPtr = strchr(menuItemName, '@');
     *isDefaultLM = False;
     if (atPtr == NULL)
-	return CopyAllocatedString(menuItemName);
+    {
+        return XtNewString(menuItemName);
+    }
     if (!strcmp(atPtr+1, "*")) {
 	/* only language is "*": this is for all but language specific macros */
 	*isDefaultLM = True;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.44 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.45 2002/07/27 08:55:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -1250,11 +1250,11 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
     
     /* Figure out which command user wants to repeat */
     if (XmToggleButtonGetState(rd->lastCmdToggle))
-	params[1] = CopyAllocatedString(rd->lastCommand);
+	params[1] = XtNewString(rd->lastCommand);
     else {
 	if (ReplayMacro == NULL)
 	    return False;
-	params[1] = CopyAllocatedString(ReplayMacro);
+	params[1] = XtNewString(ReplayMacro);
     }
 
     /* call the action routine repeat_macro to do the work */

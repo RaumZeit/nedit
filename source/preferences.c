@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.60 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.61 2002/07/27 08:55:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -4608,20 +4608,6 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
     	    	errorIn, errorLine);
     XtFree(errorLine);
     return False;
-}
-
-/*
-** Make a new copy of a string, if NULL, return NULL
-*/
-char *CopyAllocatedString(const char *string)
-{
-    char *newString;
-    
-    if (string == NULL)
-    	return NULL;
-    newString = XtMalloc(strlen(string)+1);
-    strcpy(newString, string);
-    return newString;
 }
 
 /*
