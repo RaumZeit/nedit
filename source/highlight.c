@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.22 2001/12/24 09:46:57 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.23 2002/02/05 13:15:49 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1599,7 +1599,7 @@ Pixel AllocColor(Widget w, const char *colorName)
         return foreground;
 
     /* Get the entire colormap so we can find the closest one. */
-    ncolors = (int)pow(2., (double)depth);
+    ncolors = (1 << depth);
     allColorDefs = malloc(ncolors * sizeof(XColor));
     memset(allColorDefs, 0, ncolors * sizeof(XColor));
     
