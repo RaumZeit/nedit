@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.47 2003/05/18 20:05:43 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.48 2003/05/23 14:27:05 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -76,10 +76,10 @@ static const char CVSID[] = "$Id: nedit.c,v 1.47 2003/05/18 20:05:43 edg Exp $";
 #endif
 #endif /*VMS*/
 
+
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
@@ -127,6 +127,7 @@ static char *fallbackResources[] = {
     "*XmList.background: "      NEDIT_DEFAULT_TEXT_BG,
     "*XmTextField.foreground: " NEDIT_DEFAULT_FG,
     "*XmTextField.background: " NEDIT_DEFAULT_TEXT_BG,
+
     "*XmText.translations: #override\\n"
         "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
@@ -678,6 +679,17 @@ static void patchResourcesForVisual(void)
 
     if (!usingDefaultVisual)
     {
+#ifndef LESSTIF_VERSION
+        /* Drag-and-drop visuals do not work well when using a different
+           visual.  One some systems, you'll just get a funny-looking icon
+           (maybe all-black) but on other systems it crashes with a BadMatch
+           error.  This appears to be an OSF Motif bug.  It would be nicer 
+           to just disable the visual itself, instead of the entire drag
+           operation. */
+
+        XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
+#endif
+
         for (i = 1; i < XtNumber(fallbackResources); ++i)
         {
             Cardinal resIndex = i - 1;
