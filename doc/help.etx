@@ -3356,10 +3356,17 @@ Preferences
   essential for users who users who set their window managers so keyboard focus
   follows the mouse.
 
-**Modification Warnings**
+**Warnings**
+  Options for controlling the popping up of warning dialogs:
+  
+  ~File Modified Externally~ -
   Pop up a warning dialog when files get changed external to NEdit.
+  
+  ~Check Modified File Contents~ -
+  If external file modification warnings are requested, also check the file
+  contents iso. only the modification date.
 
-**Exit Warnings**
+  ~Exit Warnings~ -
   Ask before exiting when two or more files are open in an NEdit session.
 
 **Initial Window Size**

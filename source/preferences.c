@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.67 2002/09/13 08:28:05 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.68 2002/09/25 10:56:15 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -213,7 +213,8 @@ static struct prefData {
     int iSearchLine;	    	/* whether to show the incremental search line*/
     int lineNums;   	    	/* whether to show line numbers */
     int pathInWindowsMenu;   	/* whether to show path in windows menu */
-    int warnFileMods;	    	/* " warn user if files externally modified */
+    int warnFileMods;	    	/* warn user if files externally modified */
+    int warnRealFileMods;	/* only warn if file contents modified */
     int warnExit;	    	/* whether to warn on exit */
     int searchMethod;		/* initial search method as a text string */
 #ifdef REPLACE_SCOPE
@@ -736,6 +737,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.pathInWindowsMenu, NULL, True},
     {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True",
     	&PrefData.warnFileMods, NULL, True},
+    {"warnRealFileMods", "WarnRealFileMods", PREF_BOOLEAN, "True",
+    	&PrefData.warnRealFileMods, NULL, True},
     {"warnExit", "WarnExit", PREF_BOOLEAN, "True",
     	&PrefData.warnExit, NULL, True},
     {"searchMethod", "SearchMethod", PREF_ENUM, "Literal",
@@ -1393,6 +1396,16 @@ void SetPrefWarnFileMods(int state)
 int GetPrefWarnFileMods(void)
 {
     return PrefData.warnFileMods;
+}
+
+void SetPrefWarnRealFileMods(int state)
+{
+    setIntPref(&PrefData.warnRealFileMods, state);
+}
+
+int GetPrefWarnRealFileMods(void)
+{
+    return PrefData.warnRealFileMods;
 }
 
 void SetPrefWarnExit(int state)

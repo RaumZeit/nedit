@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.22 2002/08/23 07:52:33 n8gray Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.23 2002/09/25 10:56:15 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -1298,6 +1298,42 @@ void BufUnsubstituteNullChars(char *string, textBuffer *buf)
     for (c=string; *c != '\0'; c++)
     	if (*c == subsChar)
 	    *c = '\0';
+}
+
+/* 
+** Compares len Bytes contained in buf starting at Position pos with
+** the contens of cmpText. Returns 0 if there are no differences, 
+** != 0 otherwise.
+**
+*/
+int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText)
+{
+    int     posEnd;
+    int     part1Length;
+    int     result;
+
+    posEnd = pos + len;
+    if (posEnd > buf->length) {
+        return (1);
+    }
+    if (pos < 0) {
+        return (-1);
+    }
+
+    if (posEnd <= buf->gapStart) {
+        return (strncmp(&(buf->buf[pos]), cmpText, len));
+    } else if (pos >= buf->gapStart) {
+        return (strncmp (&buf->buf[pos + (buf->gapEnd - buf->gapStart)], 
+	    	    	cmpText, len));
+    } else {
+        part1Length = buf->gapStart - pos;
+        result = strncmp(&buf->buf[pos], cmpText, part1Length);
+        if (result) {
+            return (result);
+	}
+        return (strncmp(&buf->buf[buf->gapEnd], &cmpText[part1Length], 
+	    	    	len - part1Length));
+    }
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.9 2002/07/11 21:18:11 slobasso Exp $ */
+/* $Id: textBuf.h,v 1.10 2002/09/25 10:56:15 edg Exp $ */
 
 #ifndef NEDIT_TEXTBUF_H_INCLUDED
 #define NEDIT_TEXTBUF_H_INCLUDED
@@ -127,5 +127,6 @@ int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
 int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
+int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText);
 
 #endif /* NEDIT_TEXTBUF_H_INCLUDED */

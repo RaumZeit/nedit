@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.53 2002/09/11 18:59:48 arnef Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.54 2002/09/25 10:56:14 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -104,10 +104,14 @@ static void addWrapNewlines(WindowInfo *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static int formatOfFile(const char *fileString);
-static void convertFromDosFileString(char *inString, int *length);
+static void convertFromDosFileString(char *inString, int *length, 
+     char* pendingCR);
 static void convertFromMacFileString(char *fileString, int length);
 static int convertToDosFileString(char **fileString, int *length);
 static void convertToMacFileString(char *fileString, int length);
+static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
+static int min(int i1, int i2);
+
 #ifdef VMS
 void removeVersionNumber(char *fileName);
 #endif /*VMS*/
@@ -420,7 +424,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     /* Detect and convert DOS and Macintosh format files */
     window->fileFormat = formatOfFile(fileString);
     if (window->fileFormat == DOS_FILE_FORMAT)
-	convertFromDosFileString(fileString, &readLen);
+	convertFromDosFileString(fileString, &readLen, NULL);
     else if (window->fileFormat == MAC_FILE_FORMAT)
 	convertFromMacFileString(fileString, readLen);
     
@@ -520,7 +524,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     /* Detect and convert DOS and Macintosh format files */
     switch (formatOfFile(fileString)) {
         case DOS_FILE_FORMAT:
-	    convertFromDosFileString(fileString, &readLen); break;
+	    convertFromDosFileString(fileString, &readLen, NULL); break;
         case MAC_FILE_FORMAT:
 	    convertFromMacFileString(fileString, readLen); break;
     }
@@ -1043,10 +1047,10 @@ static int writeBckVersion(WindowInfo *window)
     if (ferror(outFP)) {
 	fclose(outFP);
 	remove(bckname);
-        XtFree(fileString);
+        free(fileString);
 	return bckError(window, errorString(), bckname);
     }
-    XtFree(fileString);
+    free(fileString);
     
     /* close the file */
     if (fclose(outFP) != 0)
@@ -1466,6 +1470,12 @@ void CheckForChangesToFile(WindowInfo *window)
         window->fileMissing = FALSE;
         if (!GetPrefWarnFileMods())
             return;
+        if (GetPrefWarnRealFileMods() &&
+	    !cmpWinAgainstFile(window, fullname)) {
+	    /* Contents hasn't changed. Update the modification time. */
+	    window->lastModTime = statbuf.st_mtime;
+	    return;
+	}
         XUngrabPointer(XtDisplay(window->shell), timestamp);
         if (window->fileChanged)
             resp = DialogF(DF_WARN, window->shell, 2,
@@ -1500,7 +1510,13 @@ static int fileWasModifiedExternally(WindowInfo *window)
     strcat(fullname, window->filename);
     if (stat(fullname, &statbuf) != 0)
         return FALSE;
-    return window->lastModTime != statbuf.st_mtime;
+    if (window->lastModTime == statbuf.st_mtime)
+	return FALSE;
+    if (GetPrefWarnRealFileMods() &&
+	!cmpWinAgainstFile(window, fullname)) {
+	return FALSE;
+    }
+    return TRUE;
 }
 
 /*
@@ -1651,15 +1667,31 @@ static int formatOfFile(const char *fileString)
 ** Converts a string (which may represent the entire contents of the file)
 ** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
 ** In the DOS case, the length will be shorter, and passed length will be
-** modified to reflect the new length.
+** modified to reflect the new length. The routine has support for blockwise
+** file to string conversion: if the fileString has a trailing '\r' and 
+** 'pendingCR' is not zero, the '\r' is deposited in there and is not
+** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
+** It's the caller's responsability to make sure that the pending character, 
+** if present, is inserted at the beginning of the next block to convert.
 */
-static void convertFromDosFileString(char *fileString, int *length)
+static void convertFromDosFileString(char *fileString, int *length, 
+    char* pendingCR)
 {
     char *outPtr = fileString;
     char *inPtr = fileString;
+    if (pendingCR) *pendingCR = 0;
     while (inPtr < fileString + *length) {
-    	if (*inPtr == '\r' && *(inPtr + 1) == '\n')
-	    inPtr++;
+    	if (*inPtr == '\r') {
+	    if (inPtr < fileString + *length - 1) {
+		if (*(inPtr + 1) == '\n')
+		    inPtr++;
+	    } else {
+		if (pendingCR) {
+		    *pendingCR = *inPtr;
+		    break; /* Don't copy this trailing '\r' */
+		}
+	    }
+	}
 	*outPtr++ = *inPtr++;
     }
     *outPtr = '\0';
@@ -1702,7 +1734,7 @@ static int convertToDosFileString(char **fileString, int *length)
     }
     
     /* Allocate the new string */
-    outString = (char *)malloc(outLength + 1);
+    outString = (char *)XtMalloc(outLength + 1);
     if (outString == NULL)
 	return FALSE;
     
@@ -1715,7 +1747,7 @@ static int convertToDosFileString(char **fileString, int *length)
 	*outPtr++ = *inPtr++;
     }
     *outPtr = '\0';
-    free(*fileString);
+    XtFree(*fileString);
     *fileString = outString;
     *length = outLength;
     return TRUE;
@@ -1734,4 +1766,113 @@ static void convertToMacFileString(char *fileString, int length)
             *inPtr = '\r';
 	inPtr++;
     }
+}
+
+/* 
+ * Number of bytes read at once by cmpWinAgainstFile
+ */
+#define PREFERRED_CMPBUF_LEN 32768
+
+/* 
+ * Check if the contens of the textBuffer *buf is equal 
+ * the contens of the file named fileName. The format of
+ * the file (UNIX/DOS/MAC) is handled properly.
+ *
+ * Return values
+ *   0: no difference found
+ *  !0: difference found or could not compare contents.
+ */
+static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
+{
+    char    fileString[PREFERRED_CMPBUF_LEN + 2];
+    struct  stat statbuf;
+    int     fileLen, restLen, nRead, bufPos, rv, offset, filePos;
+    char    pendingCR = 0;
+    int	    fileFormat = window->fileFormat;
+    char    message[MAXPATHLEN+50];
+    textBuffer *buf = window->buffer;
+    FILE   *fp;
+
+    fp = fopen(fileName, "r");
+    if (!fp)
+        return (1);
+    if (fstat(fileno(fp), &statbuf) != 0) {
+        fclose(fp);
+        return (1);
+    }
+
+    fileLen = statbuf.st_size;
+    /* For DOS files, we can't simply check the length */
+    if (fileFormat != DOS_FILE_FORMAT) {
+	if (fileLen != buf->length) {
+	    fclose(fp);
+	    return (1);
+        }
+    } else {
+	/* If a DOS file is smaller on disk, it's certainly different */
+	if (fileLen < buf->length) {
+	    fclose(fp);
+	    return (1);
+	}
+    }
+    
+    /* For large files, the comparison can take a while. If it takes too long,
+       the user should be given a clue about what is happening. */
+    sprintf(message, "Comparing externally modified %s ...", window->filename);
+    restLen = min(PREFERRED_CMPBUF_LEN, fileLen);
+    bufPos = 0;
+    filePos = 0;
+    while (restLen > 0) {
+        AllWindowsBusy(message);
+        if (pendingCR) {
+           fileString[0] = pendingCR;
+           offset = 1;
+        } else {
+           offset = 0;
+        }
+
+        nRead = fread(fileString+offset, sizeof(char), restLen, fp);
+        if (nRead != restLen) {
+            fclose(fp);
+            AllWindowsUnbusy();
+            return (1);
+        }
+        filePos += nRead;
+        
+        nRead += offset;
+
+        if (fileFormat == MAC_FILE_FORMAT)
+            convertFromMacFileString(fileString, nRead);
+        else if (fileFormat == DOS_FILE_FORMAT)
+            convertFromDosFileString(fileString, &nRead, &pendingCR);
+
+        /* Beware of 0 chars ! */
+        BufSubstituteNullChars(fileString, nRead, buf);
+        rv = BufCmp(buf, bufPos, nRead, fileString);
+        if (rv) {
+            fclose(fp);
+            AllWindowsUnbusy();
+            return (rv);
+        }
+        bufPos += nRead;
+        restLen = min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
+    }
+    AllWindowsUnbusy();
+    fclose(fp);
+    if (pendingCR) {
+	rv = BufCmp(buf, bufPos, 1, &pendingCR);
+	if (rv) {
+	    return (rv);
+	}
+	bufPos += 1;
+    }
+    if (bufPos != buf->length) { 
+	return (1);
+    }
+    return (0);
+}
+
+static int min(int i1, int i2)
+{
+    return i1 <= i2 ? i1 : i2;
 }

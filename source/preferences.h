@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.25 2002/08/10 23:53:45 tringali Exp $ */
+/* $Id: preferences.h,v 1.26 2002/09/25 10:56:15 edg Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -50,6 +50,8 @@ void SetPrefShowPathInWindowsMenu(int state);
 int GetPrefShowPathInWindowsMenu(void);
 void SetPrefWarnFileMods(int state);
 int GetPrefWarnFileMods(void);
+void SetPrefWarnRealFileMods(int state);
+int GetPrefWarnRealFileMods(void);
 void SetPrefWarnExit(int state);
 int GetPrefWarnExit(void);
 void SetPrefSearch(int searchType);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.63 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.64 2002/09/25 10:56:15 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -162,6 +162,7 @@ static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void modWarnRealDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -937,6 +938,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->modWarnDefItem = createMenuToggle(subSubPane,
 	    "filesModifiedExternally", "Files Modified Externally", 'F',
 	    modWarnDefCB, window, GetPrefWarnFileMods(), FULL);
+    window->modWarnRealDefItem = createMenuToggle(subSubPane,
+	    "checkModifiedFileContents", "Check Modified File Contents", 'C',
+	    modWarnRealDefCB, window, GetPrefWarnRealFileMods(), FULL);
+    XtSetSensitive(window->modWarnRealDefItem, GetPrefWarnFileMods());
     window->exitWarnDefItem = createMenuToggle(subSubPane, "onExit", "On Exit", 'O',
 	    exitWarnDefCB, window, GetPrefWarnExit(), FULL);
     
@@ -1974,8 +1979,21 @@ static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnFileMods(state);
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=NULL; win=win->next) {
     	XmToggleButtonSetState(win->modWarnDefItem, state, False);
+	XtSetSensitive(win->modWarnRealDefItem, state);
+    }
+}
+
+static void modWarnRealDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefWarnRealFileMods(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->modWarnRealDefItem, state, False);
 }
 
 static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)

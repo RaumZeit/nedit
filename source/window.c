@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.69 2002/09/11 18:59:49 arnef Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.70 2002/09/25 10:56:15 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -70,6 +70,10 @@ static const char CVSID[] = "$Id: window.c,v 1.69 2002/09/11 18:59:49 arnef Exp 
 #include <limits.h>
 #include <math.h>
 #include <ctype.h>
+#include <time.h>
+#ifdef __unix__
+#include <sys/time.h>
+#endif
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -1982,6 +1986,24 @@ void UpdateStatsLine(WindowInfo *window)
 }
 
 static Boolean currentlyBusy = False;
+static long busyStartTime = 0;
+static Boolean modeMessageSet = False;
+
+/*
+ * Auxiliary function for measuring elapsed time during busy waits.
+ */
+static long getRelTimeInTenthsOfSeconds()
+{
+#ifdef __unix__
+    struct timeval current;
+    gettimeofday(&current, NULL);
+    return (current.tv_sec*10 + current.tv_usec/100000) & 0xFFFFFFFL;
+#else
+    time_t current;
+    time(&current);
+    return (current*10) & 0xFFFFFFFL;
+#endif
+}
 
 void AllWindowsBusy(const char *message)
 {
@@ -1989,21 +2011,29 @@ void AllWindowsBusy(const char *message)
 
     if (!currentlyBusy)
     {
+	busyStartTime = getRelTimeInTenthsOfSeconds();
+	modeMessageSet = False;
+        
         for (w=WindowList; w!=NULL; w=w->next)
         {
-            /* We want to display message here, but defer it by 
-               a few seconds.  If the wait is short, we don't want
+            /* We don't the display message here yet, but defer it for 
+               a while. If the wait is short, we don't want
                to have it flash on and off the screen.  However,
                we can't use a time since in generally we are in
-               a tight loop and only processing exposure events.
-
-            if (message)
-                SetModeMessage(w, message);
+               a tight loop and only processing exposure events, so it's
+               up to the caller to make sure that this routine is called 
+               at regular intervals.
             */
             BeginWait(w->shell);
         }
+    } else if (!modeMessageSet && message && 
+		getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
+	/* Show the mode message when we've been busy for more than a second */ 
+	for (w=WindowList; w!=NULL; w=w->next) {
+	    SetModeMessage(w, message);
+	}
+	modeMessageSet = True;
     }
-    
     BusyWait(WindowList->shell);
             
     currentlyBusy = True;        
@@ -2020,6 +2050,8 @@ void AllWindowsUnbusy(void)
     }
 
     currentlyBusy = False;
+    modeMessageSet = False;
+    busyStartTime = 0;
 }
 
 /*

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Sep 10, 2002 (Do NOT edit!)
+                 Generated on Sep 25, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -3177,11 +3177,18 @@ static char * htxt_preferences [] = {
 "essential for users who users who set their window managers so keyboard focus ",
 "follows the mouse. ",
 "\n\n",
-"\01A\01BModification Warnings\01A\n",
-"\01IPop up a warning dialog when files get changed external to NEdit. ",
+"\01A\01BWarnings\01A\n",
+"\01IOptions for controlling the popping up of warning dialogs: ",
 "\n\n",
-"\01A\01BExit Warnings\01A\n",
-"\01IAsk before exiting when two or more files are open in an NEdit session. ",
+"\01KFile Modified Externally\01I - ",
+"Pop up a warning dialog when files get changed external to NEdit. ",
+"\n\n",
+"\01KCheck Modified File Contents\01I - ",
+"If external file modification warnings are requested, also check the file ",
+"contents iso. only the modification date. ",
+"\n\n",
+"\01KExit Warnings\01I - ",
+"Ask before exiting when two or more files are open in an NEdit session. ",
 "\n\n",
 "\01A\01BInitial Window Size\01A\n",
 "\01IDefault size for new windows. ",
@@ -5007,4 +5014,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Sep 10, 2002\n";
+static const char * NEditVersion = "NEdit release of Sep 25, 2002\n";

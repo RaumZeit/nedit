@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.29 2002/09/11 18:59:48 arnef Exp $ */
+/* $Id: nedit.h,v 1.30 2002/09/25 10:56:15 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -261,6 +261,7 @@ typedef struct _WindowInfo {
     Widget	lineNumsDefItem;
     Widget	pathInWindowsMenuDefItem;
     Widget  	modWarnDefItem;
+    Widget  	modWarnRealDefItem;
     Widget  	exitWarnDefItem;
     Widget	searchLiteralDefItem;
     Widget	searchCaseSenseDefItem;
