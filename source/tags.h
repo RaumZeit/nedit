@@ -1,13 +1,4 @@
-/* $Id: tags.h,v 1.7 2001/09/21 09:58:20 amai Exp $ */
-typedef struct _tag {
-    struct _tag *next;
-    const char *path;
-    const char *name;
-    const char *file;
-    const char *searchString;
-    short index;
-} tag;
-
+/* $Id: tags.h,v 1.8 2001/10/22 08:50:19 amai Exp $ */
 typedef struct _tagFile {
     struct _tagFile *next;
     char *filename;

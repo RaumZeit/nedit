@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.21 2001/10/15 20:10:03 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.22 2001/10/22 08:50:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -63,7 +63,15 @@ static const char CVSID[] = "$Id: tags.c,v 1.21 2001/10/15 20:10:03 amai Exp $";
 
 #define STRSAVE(a)  ((a!=NULL)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
  
- 
+typedef struct _tag {
+    struct _tag *next;
+    const char *path;
+    const char *name;
+    const char *file;
+    const char *searchString;
+    short index;
+} tag;
+
 enum searchDirection {FORWARD, BACKWARD};
 
 static int loadTagsFile(const char *tagSpec, int index);
@@ -74,6 +82,7 @@ static void setTag(tag *t, const char *name, const char *file,
 static int fakeRegExSearch(WindowInfo *window, const char *searchString, 
     int *startPos, int *endPos);
 static unsigned hashAddr(const char *key);
+static void undimFindDefItem(void);
 static int addTag(const char *name, const char *file, const char *search,
                   const  char *path, int index);
 static int delTag(const char *name, const char *file, const char *search,
@@ -143,7 +152,12 @@ static tag *getTag(const char *name)
     return NULL;
 }
 
-/*	Add a tag specification to the hash table */
+/* Add a tag specification to the hash table 
+**   Return Value:  0 ... tag already existing, spec not added
+**                  1 ... tag spec is new, added.
+**   (We don't return boolean as the return value is used as counter increment!)
+**
+*/
 static int addTag(const char *name, const char *file, const char *search,
                   const char *path, int index)
 {
@@ -172,7 +186,7 @@ static int addTag(const char *name, const char *file, const char *search,
 	    CompressPathname(tmpfile);
 	    if (strcmp(newfile, tmpfile)) continue;
 	}
-	return FALSE;
+	return 0;
     }
 	
     t = (tag *) malloc(sizeof(tag));
@@ -180,7 +194,7 @@ static int addTag(const char *name, const char *file, const char *search,
     t->index = index;
     t->next = Tags[addr];
     Tags[addr] = t;
-    return TRUE;
+    return 1;
 }
 
 /*  Delete a tag from the cache.  
@@ -227,7 +241,7 @@ static int tagFileIndex = 0;
 
 /*  
 ** AddRelTagsFile():  Rescan tagSpec for relative tag file specs 
-** (not starting with [/~]) and extend tag files list if in
+** (not starting with [/~]) and extend the tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
 int AddRelTagsFile(const char *tagSpec, const char *windowPath) 
@@ -272,14 +286,21 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath)
 	added=1;
     }
     free(tmptagSpec);
-    if (added)
+    if (added) {
+      	undimFindDefItem();
 	return TRUE;
+    }
     else
         return FALSE;
 } 
 
-/*  AddTagsFile():  Add a file spec to the list of tag files to manage
- */
+/*  
+**  AddTagsFile():  Set up the the list of tag files to manage from a file spec.
+**  The file spec comes from the X-Resource Nedit.tags: It can list multiple 
+**  tags files, specified by separating them with colons. The .Xdefaults would 
+**  look like this:
+**    Nedit.tags: <tagfile1>:<tagfile2>
+*/
 int AddTagsFile(const char *tagSpec)
 {
     tagFile *t;
@@ -319,9 +340,10 @@ int AddTagsFile(const char *tagSpec)
 	added=1;
     }
     free(tmptagSpec);
-    if (added)
+    if (added) {
+      	undimFindDefItem();
 	return TRUE;
-    else
+    } else
        return FALSE;
 }
 
@@ -345,138 +367,168 @@ int DeleteTagsFile(const char *filename)
     return FALSE;
 }
 
-/*  
-** Load tags file(s) into the hash table. Multiple tags files can be loaded. 
-** They can be specified by separating them with colons.  
-** The .Xdefaults would look like this:
-**   Nedit.tags: <tagfile>:<tagfile>
+/* 
+** Undim the "Find Definition" and "Clear All Tags Data" menu item 
+** in the existing windows. 
 */
-static int loadTagsFile(const char *tagSpec, int index)
+static void undimFindDefItem(void) {
+    WindowInfo *w;
+    
+    for (w=WindowList; w!=NULL; w=w->next) {
+	XtSetSensitive(w->findDefItem, True);
+	XtSetSensitive(w->unloadTagsMenuItem, True);
+    }
+}
+
+/*  
+** Loads tagsFile into the hash table. 
+** Returns the number of added tag specifications.
+*/
+static int loadTagsFile(const char *tagsFile, int index)
 {
     FILE *fp = NULL;
     char line[MAXLINE], name[MAXLINE], searchString[MAXLINE];
-    char file[MAXPATHLEN], unused[MAXPATHLEN], tmpPath[MAXPATHLEN];
-    char *filename;
-    char *tagPath=tmpPath;
-    char *tmpTagSpec;
+    char file[MAXPATHLEN], unused[MAXPATHLEN], tagPath[MAXPATHLEN];
     char *posTagREEnd, *posTagRENull;
     int nRead;
-    WindowInfo *w;
+    int nTagsAdded=0;
     
-    
-    
-    
-    /*  tagSpec has to be copied, because otherwise strtok places 
-    **  NULL-characters in it!
-    */
-    tmpTagSpec=malloc(strlen(tagSpec)+1);
-    strcpy(tmpTagSpec, tagSpec);
-    for (filename = strtok(tmpTagSpec,":"); filename; filename = strtok(NULL,":")) {
 
-	/* Open the file */
-	if ((fp = fopen(filename, "r")) == NULL) {
-	   continue;
-	}
+    /* Open the file */
+    if ((fp = fopen(tagsFile, "r")) == NULL) {
+       return 0;
+    }
 
-	ParseFilename(filename, unused, tagPath);
-	
-	/* Read the file and store its contents */
-	while (fgets(line, MAXLINE, fp)) {
-	    nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
-	    if (nRead != 3) 
-		continue;
-	    if ( *name == '!' )
-		continue;
-	    
-	    /* 
-	    ** Guess the end of searchString:
-	    ** Try to handle original ctags and exuberant ctags format: 
+    ParseFilename(tagsFile, unused, tagPath);
+
+    /* Read the file and store its contents */
+    while (fgets(line, MAXLINE, fp)) {
+	nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
+	if (nRead != 3) 
+	    continue;
+	if ( *name == '!' )
+	    continue;
+
+	/* 
+	** Guess the end of searchString:
+	** Try to handle original ctags and exuberant ctags format: 
+	*/
+	if(searchString[0] == '/' || searchString[0] == '?') {
+
+	    /* Situations: /<ANY expr>/\0     
+	    **             ?<ANY expr>?\0          --> original ctags 
+	    **             /<ANY expr>/;"  <flags>
+	    **	       ?<ANY expr>?;"  <flags> --> exuberant ctags 
 	    */
-	    if(searchString[0] == '/' || searchString[0] == '?') {
-	      
-		/* Situations: /<ANY expr>/\0     
-		**             ?<ANY expr>?\0          --> original ctags 
-		**             /<ANY expr>/;"  <flags>
-		**	       ?<ANY expr>?;"  <flags> --> exuberant ctags 
-		*/
-		posTagREEnd = strrchr(searchString, ';');
-		posTagRENull = strchr(searchString, 0); 
-		if(!posTagREEnd || (posTagREEnd[1] != '"') || 
-	      	    (posTagRENull[-1] == searchString[0])) {
-		    /*	-> original ctags format = exuberant ctags format 1 */
-		    posTagREEnd = posTagRENull;
-                } else {
-		    /* looks like exuberant ctags format 2 */
-		    *posTagREEnd = 0;
-		}
-
-		/* 
-		** Hide the last delimiter:
-		**   /<expression>/    becomes   /<expression>
-		**   ?<expression>?    becomes   ?<expression>
-		** This will save a little work in fakeRegExSearch.
-		*/
-		if(posTagREEnd > (searchString+2)) {
-	      	    posTagREEnd--;
-		    if(searchString[0] == *posTagREEnd)
-			*posTagREEnd=0;
-		}
+	    posTagREEnd = strrchr(searchString, ';');
+	    posTagRENull = strchr(searchString, 0); 
+	    if(!posTagREEnd || (posTagREEnd[1] != '"') || 
+	      	(posTagRENull[-1] == searchString[0])) {
+		/*	-> original ctags format = exuberant ctags format 1 */
+		posTagREEnd = posTagRENull;
+            } else {
+		/* looks like exuberant ctags format 2 */
+		*posTagREEnd = 0;
 	    }
-	    addTag(name, file, searchString, tagPath, index);
+
+	    /* 
+	    ** Hide the last delimiter:
+	    **   /<expression>/    becomes   /<expression>
+	    **   ?<expression>?    becomes   ?<expression>
+	    ** This will save a little work in fakeRegExSearch.
+	    */
+	    if(posTagREEnd > (searchString+2)) {
+	      	posTagREEnd--;
+		if(searchString[0] == *posTagREEnd)
+		    *posTagREEnd=0;
+	    }
 	}
-	fclose(fp);
+	nTagsAdded += addTag(name, file, searchString, tagPath, index);
     }
-    free(tmpTagSpec);
-    if (tagPath == NULL) {
-       /* Nothing read in?! */
-       return FALSE;
+    fclose(fp);
+    
+    if(nTagsAdded) {
+	/* Remark: the w->findDefItem are set to unsensitive (dimmed)
+	** by menu.c/unloadTagsAP only and only if TagsFileList == NULL.
+	**
+	** Calling undimFindDefItem(); here is most probably obsolete,
+	** but doesn't hurt much.
+	*/
+      	undimFindDefItem();
     }
-    /* Undim the "Find Definition" and "Clear All Tags Data" menu item 
-    ** in the existing windows 
-    */
-    for (w=WindowList; w!=NULL; w=w->next) {
-	XtSetSensitive(w->findDefItem, TRUE);
-    }
-    return TRUE;
+    return nTagsAdded;
 }
 
 /*
-** Given a name, lookup a file, search string.  Returned strings are pointers
+** Given a tag name, lookup the file and path of the definition
+** and the proper search string. Returned strings are pointers
 ** to internal storage which are valid until the next loadTagsFile call.
+**
+** Invocation with name != NULL (containing the searched definition) 
+**    --> returns first definition of  name
+** Successive invocation with name == NULL
+**    --> returns further definitions (resulting from multiple tags files)
+**
+** Return Value: TRUE:  tag spec found
+**               FALSE: no (more) definitions found.
 */
+#define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
 int LookupTag(const char *name, const char **file, 
               const char **searchString, const char **path)
 {
     tag *t;
     tagFile *tf;
     struct stat statbuf;
-    for (tf = TagsFileList;tf; tf = tf->next) {
-	if (!tf->loaded)
-	    continue;
-	if (stat(tf->filename,&statbuf) != 0)
-	    fprintf(stderr, "NEdit: Error getting status for tag file %s\n",
-		    tf->filename);
-	if (tf->date == statbuf.st_mtime)
-	    continue;
-	delTag(NULL,NULL,NULL,tf->index);
-	tf->loaded = 0;
+    
+    /*
+    ** Go through the list of all tags Files:
+    **   - load them (if not already loaded)
+    **   - check for update of the tags file and reload it in that case
+    **   - save the modification date of the tags file
+    **
+    ** Do this only as long as name != NULL, not for sucessive calls 
+    ** to find multiple tags specs.
+    **
+    */    
+    for (tf = TagsFileList; tf && name; tf = tf->next) {
+      	if (tf->loaded) {
+	    if (stat(tf->filename,&statbuf) != 0) { /*  */
+	      	fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+      	    } else {	  
+      	      	if (tf->date == statbuf.st_mtime) {
+	      	    /* current tags file tf is already loaded and up to date */
+	      	    continue; 
+      	      	}
+	    }
+	    /* tags file has been modified, delete it's entries and reload it */
+	    delTag(NULL,NULL,NULL,tf->index);
+	}
+	/* If we get here we have to try to (re-) load the tags file */
+	if(loadTagsFile(tf->filename, tf->index)) {
+	    if (stat(tf->filename,&statbuf) != 0) {
+	      	if(!tf->loaded) {
+	      	    /* if tf->loaded == 1 we already have seen the error msg */
+	      	    fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+		}
+	    } else {
+	      	tf->date = statbuf.st_mtime;
+	    }
+	    tf->loaded = 1;
+	} else {
+	    tf->loaded = 0;
+	}
     }
-    for (tf = TagsFileList; (t = getTag(name))==NULL && tf; tf = tf->next) {
-	if (tf->loaded)
-	    continue;
-	loadTagsFile(tf->filename, tf->index);
-	tf->loaded = 1;
-	if (stat(tf->filename,&statbuf) != 0)
-	    fprintf(stderr, "NEdit: Error getting status for tag file %s\n",
-		    tf->filename);
-	tf->date = statbuf.st_mtime;
-    }
-    if (!t)     
+    
+    t = getTag(name);
+    
+    if (!t) {
 	return FALSE;
-    *file = t->file;
-    *searchString = t->searchString;
-    *path = t->path;
-    return TRUE;
+    }   else {
+	*file = t->file;
+	*searchString = t->searchString;
+	*path = t->path;
+	return TRUE;
+    }
 }
 
 /*
@@ -633,6 +685,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
     }
     nTags=0;
     tagName=string;
+
     while (LookupTag(string, &fileToSearch, &searchString,&tagPath)) {
 	if (*fileToSearch == '/') 
 	    strcpy(tagFiles[nTags], fileToSearch);
@@ -658,16 +711,18 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	      	    "Too many duplicate tags, first %d shown","OK",MAXDUPTAGS);
 	    break;
 	}
-	string = NULL;
+	/* Tell LookupTag to look for more definitions of the same tag: */
+	string = NULL; 
     }
+
     if (GetPrefSmartTags() && samePath == 1 && nTags > 1) {
 	strcpy(tagFiles[0],tagFiles[nTag]);
 	strcpy(tagSearch[0],tagSearch[nTag]);
 	nTags = 1;
     }
     if (!nTags) {
-	DialogF(DF_WARN, dialogParent, 1, "%s not found in tags file", "OK",
-	    tagName);
+	DialogF(DF_WARN, dialogParent, 1, "%s not found in tags file%s", "OK",
+	    tagName, (TagsFileList && TagsFileList->next) ? "s":"");
 	return;
     }
     /*  If all of the tag entries are the same file, just use the first.
