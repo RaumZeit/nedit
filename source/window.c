@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.46 2002/03/06 22:04:53 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.47 2002/03/08 10:40:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -2115,32 +2115,48 @@ static int sortAlphabetical(const void* k1, const void* k2)
  */
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
 {
-    int count = 1, i;
-    const char* pos = (const char*)bindings;
-    char* copy;
-    char* pos2;
-    char** keys;
+    int maxCount = 1, i, count;
+    const char  *pos = (const char*)bindings;
+    char *copy;
+    char *pos2, *pos3;
+    char **keys;
     /* First count the number of bindings; bindings are separated by \n
-       strings. The number of bindings equals the number of \n + 1 */
-    while ((pos = strstr(pos, "\n"))) { ++pos; ++count; }
+       strings. The number of bindings equals the number of \n + 1.
+       Beware of leading and trailing \n; the number is actually an
+       upper bound on the number of entries. */
+    while ((pos = strstr(pos, "\n"))) { ++pos; ++maxCount; }
     
-    if (count == 1) return False; /* One binding is always ok */
+    if (maxCount == 1) return False; /* One binding is always ok */
     
-    keys = (char**)malloc(count*sizeof(char*));
+    keys = (char**)malloc(maxCount*sizeof(char*));
     copy = strdup((const char*)bindings);
     i = 0;
     pos2 = copy;
-    while (i<count)
+    
+    count = 0;
+    while (i<maxCount && pos2 && *pos2)
     {
-	while (isspace(*pos2)) ++pos2;
-	keys[i++] = pos2;
-	pos2 = strstr(pos2, ":");
-	if (pos2) 
-	{
-            *pos2++ = 0; /* Cut the string */
+	while (isspace(*pos2) || *pos2 == '\n') ++pos2;
+        
+        if (*pos2)
+        {
+	    keys[i++] = pos2;
+            ++count;
+	    pos3 = strstr(pos2, ":");
+	    if (pos3) 
+	    {
+                *pos3++ = 0; /* Cut the string and jump to the next entry */
+                pos2 = pos3;
+	    }
     	    pos2 = strstr(pos2, "\n");
-	    if (pos2) ++pos2;
-	}
+        }
+    }
+    
+    if (count <= 1)
+    {
+       free(keys);
+       free(copy);
+       return False; /* No conflict */
     }
     
     /* Sort the keys and look for duplicates */
