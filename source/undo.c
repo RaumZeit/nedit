@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.12 2002/08/10 23:59:15 tringali Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.13 2002/08/22 08:40:08 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -103,6 +103,7 @@ void Undo(WindowInfo *window)
     	    BufUnselect(window->buffer);
         }
     }
+    MakeSelectionVisible(window, window->lastFocus);
 
     /* restore the file's unmodified status if the file was unmodified
        when the change being undone was originally made.  Also, remove
@@ -148,6 +149,7 @@ void Redo(WindowInfo *window)
     	    BufUnselect(window->buffer);
         }
     }
+    MakeSelectionVisible(window, window->lastFocus);
     
     /* restore the file's unmodified status if the file was unmodified
        when the change being redone was originally made */	    
