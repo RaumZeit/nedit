@@ -23,3 +23,6 @@ smartIndent.o: smartIndent.c
 
 clean:
 	rm -f $(OBJS) nedit nc nc.o
+
+# Get the dependencies for all objects
+include Makefile.dependencies

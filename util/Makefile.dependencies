@@ -1,0 +1,9 @@
+DialogF.o: DialogF.c misc.h DialogF.h
+fileUtils.o: fileUtils.c fileUtils.h
+fontsel.o: fontsel.c DialogF.h misc.h fontsel.h
+getfiles.o: getfiles.c fileUtils.h misc.h getfiles.h
+managedList.o: managedList.c misc.h managedList.h
+misc.o: misc.c DialogF.h misc.h
+prefFile.o: prefFile.c prefFile.h
+printUtils.o: printUtils.c DialogF.h misc.h prefFile.h printUtils.h
+vmsUtils.o: vmsUtils.c

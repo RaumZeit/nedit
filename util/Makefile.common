@@ -17,3 +17,6 @@ printUtils.o: printUtils.c
 
 clean:
 	rm -f $(OBJS) libNUtil.a
+
+# Get the dependencies for all objects
+include Makefile.dependencies
