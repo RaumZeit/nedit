@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.57 2003/06/06 17:13:16 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.58 2003/07/25 06:50:44 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -571,6 +571,17 @@ Widget CreateFileSelectionDialog(Widget parent, char *name,
 {
     Widget dialog = addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, 
             name, arglist, argcount);
+
+#ifdef LESSTIF_VERSION
+    /* workaround for Lesstif bug #566315:
+       with a few Lesstif versions (try 0.93.46), making the file-sel
+       dialog modal could cause new window opened with open-file
+       dialog to ignore all input. */
+    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_MODELESS, NULL);
+#else
+    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL, NULL);
+#endif
+
     AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_LIST));
     AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_DIR_LIST));
     return dialog;

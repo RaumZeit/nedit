@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.25 2003/05/02 19:19:03 edg Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.26 2003/07/25 06:50:44 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -277,7 +277,6 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
 
     n = 0;
     titleString = XmStringCreateSimple(promptString);
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
     XmStringFree(titleString);
