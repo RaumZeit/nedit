@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.10 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.11 2001/08/23 17:57:05 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -107,7 +107,7 @@ void OpenSelectedFile(WindowInfo *window, Time time)
 */
 char *GetAnySelection(WindowInfo *window)
 {
-    char waitingMarker[1] = "";
+    static char waitingMarker[1] = "";
     char *selText = waitingMarker;
     XEvent nextEvent;	 
     
@@ -262,9 +262,10 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
       XtFree((char *)nameList);
     }
 #else
-    { glob_t globbuf; int i;
+    { glob_t globbuf;
+      int i;
       glob(nameText, GLOB_NOCHECK, NULL, &globbuf);
-      for (i=0; i<globbuf.gl_pathc; i++) {
+      for (i=0; i<(int)globbuf.gl_pathc; i++) {
 	  ParseFilename(globbuf.gl_pathv[i], filename, pathname);
     	  EditExistingFile(WindowList, filename, pathname, 0, NULL, False,
 		  NULL);
