@@ -300,7 +300,8 @@ distribution kit.
 .IX Header "AUTHORS"
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim
 Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken,
-Yunliang Yu, and Donna Reid.
+Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve \
+LoBasso, Alexander Mai, and Scott Tringali.
 .PP
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the University of
@@ -311,7 +312,8 @@ T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk, Alain Fargues,
 Christopher Conrad, Scott Markinson, Konrad Bernloehr, Ivan Herman, Patrice
 Venant, Christian Denat, Philippe Couton, Max Vohlken, Markus Schwarzenberg,
 Himanshu Gohel, Steven C. Kapp, Michael Turomsha, John Fieber, Chris Ross,
-Nathaniel Gray, Joachim Lous, Mike Duigou, and Seak, Teng-Fong.
+Nathaniel Gray, Joachim Lous, Mike Duigou, Seak Teng-Fong, Joor Loohuis,
+Thorsten Haude, Mark Jones, and Niek van den Berg.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 This program is free software; you can redistribute it and/or modify it under

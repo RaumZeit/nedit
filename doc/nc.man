@@ -248,7 +248,8 @@ distribution kit.
 .IX Header "AUTHORS"
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim
 Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken,
-Yunliang Yu, and Donna Reid.
+Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve \
+LoBasso, Alexander Mai, and Scott Tringali.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 This program is free software; you can redistribute it and/or modify it under
