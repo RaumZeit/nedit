@@ -62,6 +62,7 @@
 #include "undo.h"
 #include "menu.h"
 #include "file.h"
+#include "../util/utils.h"
 
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
