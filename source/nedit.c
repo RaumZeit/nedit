@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.74 2004/05/25 19:31:45 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.75 2004/07/15 17:06:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -425,7 +425,11 @@ int main(int argc, char **argv)
 	XtWarning ("NEdit: Can't open display\n");
 	exit(EXIT_FAILURE);
     }
-
+    
+    /* Must be done before creating widgets */
+    patchResourcesForVisual();
+    patchResourcesForKDEbug();
+    
     /* Create a hidden application shell that is the parent of all the
        main editor windows.  Realize it so it the window can act as 
        group leader. */
@@ -442,9 +446,6 @@ int main(int argc, char **argv)
 #ifndef NO_SESSION_RESTART
     AttachSessionMgrHandler(TheAppShell);
 #endif
-    
-    patchResourcesForVisual();
-    patchResourcesForKDEbug();
     
     /* Initialize global symbols and subroutines used in the macro language */
     InitMacroGlobals();
