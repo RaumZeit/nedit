@@ -85,6 +85,7 @@ char *good_lesstif_2_1_versions[] = {
     "0.93.0",
     "0.93.12",
     "0.93.18",
+    "0.93.94",
     NULL
 };
 
@@ -127,10 +128,9 @@ void good_versions() {
         fprintf(stderr, "\t%s\n", good_lesstif_2_1_versions[i]);
     }
     fprintf(stderr, 
-        "and is known to be very stable with Open Motif version 2.1.30,\n"
-        "which is freely available from several sources, including:\n"
+        "and is known to be very stable with Open Motif versions 2.1.30 and\n"
+        "2.2.3, which are freely available from several sources, including:\n"
         "\thttp://www.opengroup.org/openmotif/\n"
-        "\thttp://www.metrolink.com/products/motif/open_motif2-1-30.html\n"
         "\thttp://www.ist.co.uk/DOWNLOADS/motif_download.html\n"
         "\nAlso, unless you need a customized NEdit you should STRONGLY\n"
         "consider downloading a pre-built binary from http://www.nedit.org,\n"
@@ -245,8 +245,12 @@ int main() {
         fprintf(stderr, "%s\n", vs);
         tif = "Open Motif";
 
-        /* Check for Open Motif 2.1 */
-        if (!force_bad && XmVERSION == 2 && XmREVISION == 1) {
+        /* Check for Open Motif 2.1 or 2.2.3. Note: for 2.2.3 we must 
+           check the version string too (see comment below). */
+        if (!force_bad && 
+            ((XmVERSION == 2 && XmREVISION == 1) ||
+             (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL == 3 &&
+                 strcmp("@(#)Motif Version 2.2.3", vs) == 0))) {
             exit(0);
         }
 
@@ -255,7 +259,7 @@ int main() {
         if (force_bad || 
                 (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 2)  ||
                 (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL == 3 &&
-                 strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0)) {
+                 strcmp("@(#)Motif Version 2.2.2", vs) == 0)) {
             fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
             fprintf(stderr, 
                 "\nThis version of Open Motif is known to be broken and is\n"
