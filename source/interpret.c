@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.42 2004/11/21 16:53:21 yooden Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.43 2004/11/23 14:37:37 tringali Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2792,8 +2792,7 @@ static int execError(const char *s1, const char *s2)
 {
     static char msg[MAX_ERR_MSG_LEN];
     
-    snprintf(msg, MAX_ERR_MSG_LEN, s1, s2);
-    msg[MAX_ERR_MSG_LEN - 1] = '\0';
+    sprintf(msg, s1, s2);
     ErrMsg = msg;
     return STAT_ERROR;
 }
