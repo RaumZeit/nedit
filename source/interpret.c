@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.21 2001/12/24 09:18:35 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.22 2002/03/01 22:44:54 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1399,10 +1399,37 @@ static int not(void)
 
 static int power(void)
 {
-    int n1, n2;
+    int n1, n2, n3;
     POP_INT(n2)
     POP_INT(n1)
-    PUSH_INT((int)pow((double)n1, (double)n2))
+    /*  We need to round to deal with pow() giving results slightly above
+        or below the real result since it deals with floating point numbers.
+        Note: We're not really wanting rounded results, we merely
+        want to deal with this simple issue. So, 2^-2 = .5, but we
+        don't want to round this to 1. This is mainly intended to deal with
+        4^2 = 15.999996 and 16.000001.
+    */
+    if (n2 < 0 && n1 != 1 && n1 != -1) {
+        if (n1 != 0) {
+            /* since we're integer only, nearly all negative exponents result in 0 */
+            n3 = 0;
+        }
+        else {
+            /* allow error to occur */
+            n3 = (int)pow((double)n1, (double)n2);
+        }
+    }
+    else {
+        if ((n1 < 0) && (n2 & 1)) {
+            /* round to nearest integer for negative values*/
+            n3 = (int)(pow((double)n1, (double)n2) - (double)0.5);
+        }
+        else {
+            /* round to nearest integer for positive values*/
+            n3 = (int)(pow((double)n1, (double)n2) + (double)0.5);
+        }
+    }
+    PUSH_INT(n3)
     return errCheck("exponentiation");
 }
 
