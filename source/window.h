@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.9 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: window.h,v 1.10 2002/08/12 21:21:36 tringali Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -38,11 +38,12 @@ void ShowStatsLine(WindowInfo *window, int state);
 void ShowISearchLine(WindowInfo *window, int state);
 void TempShowISearch(WindowInfo *window, int state);
 void ShowLineNumbers(WindowInfo *window, int state);
-void SetModeMessage(WindowInfo *window, char *message);
+void SetModeMessage(WindowInfo *window, const char *message);
 void ClearModeMessage(WindowInfo *window);
 WindowInfo *WidgetToWindow(Widget w);
 void AddSmallIcon(Widget shell);
 void SetTabDist(WindowInfo *window, int tabDist);
 void SetEmTabDist(WindowInfo *window, int emTabDist);
-
+void AllWindowsBusy(const char* message);
+void AllWindowsUnbusy(void);
 #endif /* NEDIT_WINDOW_H_INCLUDED */

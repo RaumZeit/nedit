@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.61 2002/08/12 15:37:28 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.62 2002/08/12 21:21:36 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1076,10 +1076,10 @@ static void showStatsForm(WindowInfo *window, int state)
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void SetModeMessage(WindowInfo *window, char *message)
+void SetModeMessage(WindowInfo *window, const char *message)
 {
     window->modeMessageDisplayed = True;
-    XmTextSetString(window->statsLine, message);
+    XmTextSetString(window->statsLine, (char*)message);
     showStats(window, True);
 }
 
@@ -1977,6 +1977,47 @@ void UpdateStatsLine(WindowInfo *window)
     XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
 
     XtFree(string);
+}
+
+static Boolean currentlyBusy = False;
+
+void AllWindowsBusy(const char *message)
+{
+    WindowInfo *w;
+
+    if (!currentlyBusy)
+    {
+        for (w=WindowList; w!=NULL; w=w->next)
+        {
+            /* We want to display message here, but defer it by 
+               a few seconds.  If the wait is short, we don't want
+               to have it flash on and off the screen.  However,
+               we can't use a time since in generally we are in
+               a tight loop and only processing exposure events.
+
+            if (message)
+                SetModeMessage(w, message);
+            */
+            BeginWait(w->shell);
+        }
+    }
+    
+    BusyWait(WindowList->shell);
+            
+    currentlyBusy = True;        
+}
+
+void AllWindowsUnbusy(void)
+{
+    WindowInfo *w;
+
+    for (w=WindowList; w!=NULL; w=w->next)
+    {
+        ClearModeMessage(w);
+        EndWait(w->shell);
+    }
+
+    currentlyBusy = False;
 }
 
 /*

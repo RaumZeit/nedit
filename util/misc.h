@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.13 2002/07/11 21:18:09 slobasso Exp $ */
+/* $Id: misc.h,v 1.14 2002/08/12 21:21:36 tringali Exp $ */
 
 #ifndef NEDIT_MISC_H_INCLUDED
 #define NEDIT_MISC_H_INCLUDED
@@ -55,6 +55,7 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
 int TextWidgetIsBlank(Widget textW);
 void MakeSingleLineTextW(Widget textW);
 void BeginWait(Widget topCursorWidget);
+void BusyWait(Widget anyWidget);
 void EndWait(Widget topCursorWidget);
 void PasswordText(Widget w, char *passTxt);
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.41 2002/07/12 11:44:01 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.42 2002/08/12 21:21:36 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -39,6 +39,11 @@ static const char CVSID[] = "$Id: misc.c,v 1.41 2002/07/12 11:44:01 edg Exp $";
 #include <ctype.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef __unix__
+#include <sys/time.h>
+#endif
+
 #ifdef VMS
 #include <types.h>
 #include <unixio.h>
@@ -1285,6 +1290,33 @@ void BeginWait(Widget topCursorWidget)
 
     /* display the cursor */
     XDefineCursor(display, XtWindow(topCursorWidget), waitCursor);
+}
+
+void BusyWait(Widget widget)
+{
+#ifdef __unix__
+    static const int timeout = 100000;  /* 1/10 sec = 100 ms = 100,000 us */
+    static struct timeval last = { 0 };
+    struct timeval current;
+    gettimeofday(&current, NULL);
+
+    if ((current.tv_sec != last.tv_sec) ||
+        (current.tv_usec - last.tv_usec > timeout))
+    {
+        XmUpdateDisplay(widget);
+        last = current;
+    }    
+#else
+    static time_t last = 0;
+    time_t current;
+    time(&current);
+    
+    if (difftime(current, last) > 0)
+    {
+        XmUpdateDisplay(widget);
+        last = current;
+    }
+#endif
 }
 
 void EndWait(Widget topCursorWidget)

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.42 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.43 2002/08/12 21:21:36 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -728,6 +728,13 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel)
 
     /* Read the file and store its contents */
     while (fgets(line, MAXLINE, fp)) {
+
+        /* This might take a while if you have a huge tags file (like I do)..
+           keep the windows up to date and post a busy cursor so the user
+           doesn't think we died. */
+
+        AllWindowsBusy("Loading tags file...");
+
         /* the first character in the file decides if the file is treat as
            etags or ctags file.
          */
@@ -745,6 +752,7 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel)
     }
     fclose(fp);
     
+    AllWindowsUnbusy();
     return nTagsAdded;
 }
 
