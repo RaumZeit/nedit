@@ -105,7 +105,11 @@ static void uploadFileListItems(WindowInfo* window, Bool replace);
 static void collectWritableWindows(WindowInfo* window);
 static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData);
+static checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+                                                WindowInfo* doomedWindow);
+static void removeDoomedWindowFromList(WindowInfo* window, int index);
 #endif
+static void unmanageReplaceDialogs(WindowInfo *window);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void eraseFlash(WindowInfo *window);
 static int getReplaceDlogInfo(WindowInfo *window, int *direction,
@@ -287,7 +291,7 @@ void DoReplaceMultiFileDlog(WindowInfo *window)
        resetReplaceTabGroup(window);
        /* pop down the replace dialog */
        if (!XmToggleButtonGetState(window->replaceKeepBtn))
-    	   XtUnmanageChild(window->replaceDlog);
+    	   unmanageReplaceDialogs(window);
        return;
     }
     
@@ -306,6 +310,25 @@ void DoReplaceMultiFileDlog(WindowInfo *window)
     /* Display the dialog */
     ManageDialogCenteredOnPointer(window->replaceMultiFileDlog);
 }
+
+/*
+** If a window is closed (possibly via the window manager) while it is on the
+** multi-file replace dialog list of any other window (or even the same one),
+** we must update those lists or we end up with dangling references.
+** Normally, there can be only one of those dialogs at the same time
+** (application modal), but Lesstif doesn't (always) honor application
+** modalness, so there can be more than one dialog. 
+*/
+void RemoveFromMultiFileReplaceDialogLists(WindowInfo *doomedWindow)
+{
+    WindowInfo *w;
+    
+    for (w=WindowList; w!=NULL; w=w->next) 
+       if (w->writableWindows) 
+          /* A multi-file replacement dialog is up for this window */
+          checkMultiFileReplaceListForDoomedWindow(w, doomedWindow);
+}
+
 #endif /* DISABLE_MULTI_FILE_REPLACE */
 
 static void createReplaceDlog(Widget parent, WindowInfo *window)
@@ -899,7 +922,14 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
     XtSetArg (args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	    argcnt ++;
 #endif
-    form = CreateFormDialog(window->replaceDlog, "replaceMultiFileDialog", 
+    /* Ideally, we should create the multi-file dialog as a child widget
+       of the replace dialog. However, if we do this, the main window
+       can hide the multi-file dialog when raised (I'm not sure why, but 
+       it's something that I observed with fvwm). By using the main window
+       as the parent, it is possible that the replace dialog _partially_
+       covers the multi-file dialog, but this much better than the multi-file
+       dialog being covered completely by the main window */
+    form = CreateFormDialog(window->shell, "replaceMultiFileDialog", 
            			     args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     XtVaSetValues(XtParent(form), XmNtitle, "Replace All in Multiple Files", 
@@ -1100,6 +1130,57 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
     XtAddCallback(form, XmNunmapCallback, 
 	    	    (XtCallbackProc)freeWritableWindowsCB, window); 
 } 
+
+/*
+** Iterates through the list of writable windows of a window, and removes
+** the doomed window if necessary.
+*/
+static checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+                                                WindowInfo* doomedWindow)
+{
+    WindowInfo        *w;
+    int               i;
+
+    /* If the window owning the list and the doomed window are one and the
+       same, we just close the multi-file replacement dialog. */
+    if (window == doomedWindow) {
+       XtUnmanageChild(window->replaceMultiFileDlog);
+       return;
+    }
+
+    /* Check whether the doomed window is currently listed */
+    for (i = 0; i < window->nWritableWindows; ++i) {
+      w = window->writableWindows[i];
+      if (w == doomedWindow) {
+          removeDoomedWindowFromList(window, i);
+          break;
+      } 
+    }   
+}
+
+/*
+** Removes a window that is about to be closed from the list of files in
+** which to replace. If the list becomes empty, the dialog is popped down.
+*/
+static void removeDoomedWindowFromList(WindowInfo* window, int index)
+{
+    int       entriesToMove;
+
+    /* If the list would become empty, we remove the dialog */
+    if (window->nWritableWindows <= 1) {
+      XtUnmanageChild(window->replaceMultiFileDlog);
+      return;
+    }
+
+    entriesToMove = window->nWritableWindows - index - 1;
+    memmove(&(window->writableWindows[index]),
+            &(window->writableWindows[index+1]),
+            (size_t)(entriesToMove*sizeof(WindowInfo*)));
+    window->nWritableWindows -= 1;
+    
+    XmListDeletePos(window->replaceMultiFileList, index + 1);
+}
+
 #endif /* DISABLE_MULTI_FILE_REPLACE */
 
 /*
@@ -1164,7 +1245,7 @@ static void replaceCB(Widget w, WindowInfo *window,
     
     /* Pop down the dialog */
     if (!XmToggleButtonGetState(window->replaceKeepBtn))
-    	XtUnmanageChild(window->replaceDlog);
+    	unmanageReplaceDialogs(window);
 }
 
 static void replaceAllCB(Widget w, WindowInfo *window,
@@ -1191,7 +1272,7 @@ static void replaceAllCB(Widget w, WindowInfo *window,
     
     /* pop down the dialog */
     if (!XmToggleButtonGetState(window->replaceKeepBtn))
-    	XtUnmanageChild(window->replaceDlog);
+    	unmanageReplaceDialogs(window);
 }
 
 #ifndef DISABLE_MULTI_FILE_REPLACE
@@ -1257,7 +1338,7 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     char 	*params[4];
     int 	nSelected, i;
     WindowInfo 	*writableWin;
-    Bool 	replaceFailed;
+    Bool 	replaceFailed, noWritableLeft;
 
     nSelected = 0;
     for (i=0; i<window->nWritableWindows; ++i)
@@ -1299,28 +1380,33 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     params[2] = searchTypeArg(searchType);
 
     replaceFailed = True;
+    noWritableLeft = True;
     /* Perform the replacements and mark the selected files (history) */
     for (i=0; i<window->nWritableWindows; ++i) {
-       writableWin = window->writableWindows[i];
-       if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
-          writableWin->multiFileReplSelected = True;
-          writableWin->multiFileBusy = True; /* Avoid annoying multi-beep */
-          writableWin->replaceFailed = False;
-          XtCallActionProc(writableWin->lastFocus, "replace_all",
-                           callData->event, params, 3);
-          writableWin->multiFileBusy = False;
-          if (!writableWin->replaceFailed) replaceFailed = False;
-       } else {
-          writableWin->multiFileReplSelected = False;
-       }
+	writableWin = window->writableWindows[i];
+	if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
+	/* First check again whether the file is still writable. If the
+	   file status has changed or the file was locked in the mean time
+	   (possible due to Lesstif modal dialog bug), we just skip the 
+	   window. */
+	    if (!writableWin->readOnly && !writableWin->lockWrite) {
+		noWritableLeft = False;
+		writableWin->multiFileReplSelected = True;
+		writableWin->multiFileBusy = True; /* Avoid multi-beep/dialog */
+		writableWin->replaceFailed = False;
+		XtCallActionProc(writableWin->lastFocus, "replace_all",
+		    callData->event, params, 3);
+		writableWin->multiFileBusy = False;
+		if (!writableWin->replaceFailed) replaceFailed = False;
+	    }
+	} else {
+	    writableWin->multiFileReplSelected = False;
+	}
     }                          
 
     if (!XmToggleButtonGetState(window->replaceKeepBtn)) {
-       /* Pop down both replace dialogs. It should be sufficient
-          to pop down only the replace dialog, but the lesstif
-          version that I'm currently using seems to be buggy.*/
-       XtUnmanageChild(window->replaceMultiFileDlog);
-       XtUnmanageChild(window->replaceDlog);
+       /* Pop down both replace dialogs. */
+       unmanageReplaceDialogs(window);
     } else {
        /* pow down only the file selection dialog */
        XtUnmanageChild(window->replaceMultiFileDlog);
@@ -1329,8 +1415,13 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     /* We suppressed multiple beeps/dialogs. If there wasn't any file in
        which the replacement succeeded, we should still warn the user */
     if (replaceFailed)
-       if (GetPrefSearchDlogs())
-    	   DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
+	if (GetPrefSearchDlogs())
+	    if (noWritableLeft)
+		DialogF(DF_INF, window->shell, 1, 
+			"All selected files have become read-only.", "OK");
+	    else
+		DialogF(DF_INF, window->shell, 1, 
+			"String was not found", "OK");
        else
            XBell(TheDisplay, 0);
 }
@@ -1471,6 +1562,28 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
 }
 #endif /* DISABLE_MULTI_FILE_REPLACE */
 
+/*
+** Unconditionally pops down the replace dialog and the
+** replace-in-multiple-files dialog, if it exists.
+*/
+static void unmanageReplaceDialogs(WindowInfo *window)
+{
+   
+#ifndef DISABLE_MULTI_FILE_REPLACE 
+    /* If the replace dialog goes down, the multi-file replace dialog must
+       go down too */
+    if (window->replaceMultiFileDlog &&
+      XtIsManaged(window->replaceMultiFileDlog)) {
+          XtUnmanageChild(window->replaceMultiFileDlog);
+    }
+#endif
+        
+    if (window->replaceDlog &&
+      XtIsManaged(window->replaceDlog)) {
+          XtUnmanageChild(window->replaceDlog);
+    }
+}
+
 static void rInSelCB(Widget w, WindowInfo *window,
 			 XmAnyCallbackStruct *callData) 
 {
@@ -1495,7 +1608,7 @@ static void rInSelCB(Widget w, WindowInfo *window,
     
     /* pop down the dialog */
     if (!XmToggleButtonGetState(window->replaceKeepBtn))
-    	XtUnmanageChild(window->replaceDlog);
+    	unmanageReplaceDialogs(window);
 }
 
 static void rCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
@@ -1504,7 +1617,7 @@ static void rCancelCB(Widget w, WindowInfo *window, caddr_t callData)
     resetReplaceTabGroup(window);
 
     /* pop down the dialog */
-    XtUnmanageChild(window->replaceDlog);
+    unmanageReplaceDialogs(window);
 }
 
 static void fCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
@@ -1547,7 +1660,7 @@ static void rFindCB(Widget w, WindowInfo *window,XmAnyCallbackStruct *callData)
 
     /* Pop down the dialog */
     if (!XmToggleButtonGetState(window->replaceKeepBtn))
-    	XtUnmanageChild(window->replaceDlog);
+    	unmanageReplaceDialogs(window);
 }
 
 static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
@@ -2611,7 +2724,7 @@ int ReplaceInSelection(WindowInfo *window, char *searchString,
     		XtUnmanageChild(window->findDlog);
     	    if (window->replaceDlog && XtIsManaged(window->replaceDlog) &&
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
-    		XtUnmanageChild(window->replaceDlog);
+    		unmanageReplaceDialogs(window);
    	    DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
     	} else
     	    XBell(TheDisplay, 0);
@@ -2671,7 +2784,7 @@ int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
     		XtUnmanageChild(window->findDlog);
     	    if (window->replaceDlog && XtIsManaged(window->replaceDlog) &&
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
-    		XtUnmanageChild(window->replaceDlog);
+    		unmanageReplaceDialogs(window);
    	    DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
     	} else
     	    XBell(TheDisplay, 0);
@@ -2813,7 +2926,7 @@ int SearchWindow(WindowInfo *window, int direction, char *searchString,
     	    XtUnmanageChild(window->findDlog);
     	if (window->replaceDlog && XtIsManaged(window->replaceDlog) &&
     	    	!XmToggleButtonGetState(window->replaceKeepBtn))
-    	    XtUnmanageChild(window->replaceDlog);
+    	    unmanageReplaceDialogs(window);
     	if (!found) {
     	    fileEnd = window->buffer->length - 1;
     	    if (direction == SEARCH_FORWARD && beginPos != 0) {

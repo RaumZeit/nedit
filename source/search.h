@@ -30,3 +30,4 @@ void SetISearchTextCallbacks(WindowInfo *window);
 void FlashMatching(WindowInfo *window, Widget textW);
 void SelectToMatchingCharacter(WindowInfo *window);
 void GotoMatchingCharacter(WindowInfo *window);
+void RemoveFromMultiFileReplaceDialogLists(WindowInfo *window);
