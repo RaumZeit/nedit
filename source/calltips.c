@@ -274,6 +274,8 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
                 XmNborderWidth, 1,              /* Thin borders */
                 XmNhighlightThickness, 0,
                 XmNalignment, XmALIGNMENT_BEGINNING,
+                XmNforeground, textD->calltipFGPixel,
+                XmNbackground, textD->calltipBGPixel,
                 NULL );
     }
     

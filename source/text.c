@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.39 2003/04/17 21:46:21 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.40 2003/04/18 01:07:38 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -627,6 +627,12 @@ static XtResource resources[] = {
     {textNcursorForeground, textCCursorForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.cursorFGPixel), XmRString, 
       NEDIT_DEFAULT_CURSOR_FG},
+    {textNcalltipForeground, textCcalltipForeground, XmRPixel,sizeof(Pixel),
+      XtOffset(TextWidget, text.calltipFGPixel), XmRString, 
+      NEDIT_DEFAULT_CALLTIP_FG},
+    {textNcalltipBackground, textCcalltipBackground, XmRPixel,sizeof(Pixel),
+      XtOffset(TextWidget, text.calltipBGPixel), XmRString, 
+      NEDIT_DEFAULT_CALLTIP_BG},
     {textNbacklightCharTypes,textCBacklightCharTypes,XmRString,sizeof(XmString),
       XtOffset(TextWidget, text.backlightCharTypes), XmRString, NULL},
     {textNrows, textCRows, XmRInt,sizeof(int),
@@ -691,7 +697,7 @@ static XtResource resources[] = {
       sizeof(caddr_t), XtOffset(TextWidget, text.smartIndentCB), XtRCallback,
       NULL},
     {textNcursorVPadding, textCCursorVPadding, XtRCardinal, sizeof(Cardinal),
-      XtOffset(TextWidget, text.cursorVPadding), XmRString, "0"},
+      XtOffset(TextWidget, text.cursorVPadding), XmRString, "0"}
 };
 
 static TextClassRec textClassRec = {
@@ -808,7 +814,8 @@ static void initialize(TextWidget request, TextWidget new)
 	    new->text.highlightBGPixel, new->text.cursorFGPixel,
 	    new->text.lineNumFGPixel,
           new->text.continuousWrap, new->text.wrapMargin,
-          new->text.backlightCharTypes);
+          new->text.backlightCharTypes, new->text.calltipFGPixel,
+          new->text.calltipBGPixel);
 
     /* Add mandatory delimiters blank, tab, and newline to the list of
        delimiters.  The memory use scheme here is that new values are

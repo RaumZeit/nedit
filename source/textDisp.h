@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.20 2003/03/25 18:31:36 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.21 2003/04/18 01:07:39 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -121,6 +121,8 @@ typedef struct _textDisp {
     Widget calltipW;                    /* The Label widget for the calltip */
     Widget calltipShell;                /* The Shell that holds the calltip */
     calltipStruct calltip;              /* The info for the calltip itself */
+    Pixel calltipFGPixel;
+    Pixel calltipBGPixel;
     int suppressResync;			/* Suppress resynchronization of line
                                            starts during buffer updates */
     int nLinesDeleted;			/* Number of lines deleted during
@@ -140,7 +142,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
 	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
 	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
-      int continuousWrap, int wrapMargin, XmString bgClassString);
+        int continuousWrap, int wrapMargin, XmString bgClassString, 
+        Pixel calltipFGPixel, Pixel calltipBGPixel);
 void TextDFree(textDisp *textD);
 void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
 textBuffer *TextDGetBuffer(textDisp *textD);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.48 2003/03/26 16:36:50 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.49 2003/04/18 01:07:38 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -184,7 +184,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
         XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
         Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
         Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
-        int continuousWrap, int wrapMargin, XmString bgClassString)
+        int continuousWrap, int wrapMargin, XmString bgClassString,
+        Pixel calltipFGPixel, Pixel calltipBGPixel)
 {
     textDisp *textD;
     XGCValues gcValues;
@@ -244,6 +245,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->calltipW = NULL;
     textD->calltipShell = NULL;
     textD->calltip.ID = 0;
+    textD->calltipFGPixel = calltipFGPixel;
+    textD->calltipBGPixel = calltipBGPixel;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
     textD->bgClassPixel = NULL;

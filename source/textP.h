@@ -1,4 +1,4 @@
-/* $Id: textP.h,v 1.7 2003/04/10 18:47:23 tringali Exp $ */
+/* $Id: textP.h,v 1.8 2003/04/18 01:07:39 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTP_H_INCLUDED
 #define NEDIT_TEXTP_H_INCLUDED
@@ -39,7 +39,7 @@ extern TextClassRec nTextClassRec;
 typedef struct _TextPart {
     /* resources */
     Pixel selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel;
-    Pixel cursorFGPixel, lineNumFGPixel;
+    Pixel cursorFGPixel, lineNumFGPixel, calltipFGPixel, calltipBGPixel;
     XFontStruct *fontStruct;
     Boolean pendingDelete;
     Boolean autoShowInsertPos;

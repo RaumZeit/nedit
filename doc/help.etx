@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.42 2003/04/15 20:00:17 yooden Exp $
+.. $Id: help.etx,v 1.43 2003/04/18 01:08:04 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4013,6 +4013,14 @@ X Resources
   
   Default background color for menus, dialogs, scroll bars, etc..
 
+**nedit@*calltipForeground**: black
+
+  Foreground color for calltips
+
+**nedit@*calltipBackground**: LemonChiffon1
+
+  Background color for calltips
+
 **nedit@*fontList**: helvetica medium 12 points
   
   Default font for menus, dialogs, scroll bars, etc..
@@ -4115,10 +4123,6 @@ X Resources
 **nedit@*textVertScrollBar**
 
   Vertical scroll bar.
-  
-**nedit@*calltip**
-
-  Calltip pop-ups.
    ----------------------------------------------------------------------
 
 Key Binding

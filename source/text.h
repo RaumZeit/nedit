@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.14 2003/04/10 18:47:23 tringali Exp $ */
+/* $Id: text.h,v 1.15 2003/04/18 01:07:38 n8gray Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
@@ -32,6 +32,10 @@
 #define textCCursorForeground "CursorForeground"
 #define textNlineNumForeground "lineNumForeground"
 #define textCLineNumForeground "LineNumForeground"
+#define textNcalltipForeground "calltipForeground"
+#define textCcalltipForeground "CalltipForeground"
+#define textNcalltipBackground "calltipBackground"
+#define textCcalltipBackground "CalltipBackground"
 #define textNpendingDelete "pendingDelete"
 #define textCPendingDelete "PendingDelete"
 #define textNhScrollBar "hScrollBar"
@@ -84,6 +88,7 @@
 #define textCCursorVPadding "CursorVPadding"
 #define textNbacklightCharTypes "backlightCharTypes"
 #define textCBacklightCharTypes "BacklightCharTypes"
+
 
 extern WidgetClass textWidgetClass;
 
