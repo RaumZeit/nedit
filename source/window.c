@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.94 2003/12/31 02:25:32 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.95 2004/01/02 10:32:31 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3814,6 +3814,8 @@ void RaiseBuffer(WindowInfo *window)
        the buffers appear to switch immediately */
     XmUpdateDisplay(window->splitPane);
     RefreshBufferWindowState(window);
+    
+    UpdateWMSizeHints(window);
 }
 
 WindowInfo* GetTopBuffer(Widget w)
