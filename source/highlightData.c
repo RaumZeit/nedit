@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.15 2001/08/09 13:34:26 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.16 2001/08/10 20:36:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -425,13 +425,9 @@ static char *DefaultPatternSets[] = {
 	Escape Chars:\"\\\\[$&%#_{}]\":::Text Escape::\n\
 	Super Sub 1 Char:\"(\\^|_)[^{]\":::Text Arg2::\n\
 	Verbatim Begin End:\"\\\\begin\\{verbatim\\*?}\":\"\\\\end\\{verbatim\\*?}\"::Plain::\n\
-	Verbatim Color:\"&\":\"&\"::Keyword:Verbatim Begin End:C\n\
-	Verbatim 1:\"\\\\verb\\*?`\":\"`\"::Plain::\n\
-	Verbatim 1 Color:\"&\":\"&\"::Keyword:Verbatim 1:C\n\
-	Verbatim 2:\"\\\\verb\\*?#\":\"#\"::Plain::\n\
-	Verbatim 2 Color:\"&\":\"&\"::Keyword:Verbatim 2:C\n\
-	Verbatim 3 Color:\"&\":\"&\"::Keyword:Verbatim 3:C\n\
-	Verbatim 3:\"\\\\verb\\*?/\":\"/\"::Plain::\n\
+	Verbatim BG Color:\"&\":\"&\"::Keyword:Verbatim Begin End:C\n\
+	Verbatim:\"(\\\\verb\\*?)([^\\l\\s\\*]).*?(\\2)\":::Plain::\n\
+	Verbatim Color:\"\\1\\2\\3\":\"\"::Keyword:Verbatim:C\n\
 	Inline Math:\"\\$|\\\\\\(\":\"\\$|\\\\\\)\":\"\\\\\\(\":LaTeX Math::\n\
 	Inline Math Comment:\"%\":\"$\"::Text Comment:Inline Math:\n\
 	Math Color:\"&\":\"&\"::Keyword:Inline Math:C\n\
