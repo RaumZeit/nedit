@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.5 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.6 2001/12/02 17:58:43 edg Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -294,7 +294,12 @@ void InsertClipboard(Widget w, Time time, int isColumnar)
     	cursorPos = TextDGetInsertPosition(textD);
     	cursorLineStart = BufStartOfLine(buf, cursorPos);
     	column = BufCountDispChars(buf, cursorLineStart, cursorPos);
-    	BufInsertCol(buf, column, cursorLineStart, string, NULL, NULL);
+        if (((TextWidget)w)->text.overstrike) {
+	    BufOverlayRect(buf, cursorLineStart, column, -1, string, NULL,
+			   NULL);
+	} else {
+	    BufInsertCol(buf, column, cursorLineStart, string, NULL, NULL);
+	}
     	TextDSetInsertPosition(textD,
     	    	BufCountForwardDispChars(buf, cursorLineStart, column));
 	if (((TextWidget)w)->text.autoShowInsertPos)

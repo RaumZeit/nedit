@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.14 2001/11/25 22:05:30 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.15 2001/12/02 17:58:43 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -401,6 +401,7 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
 ** "rectEnd" on the line beginning at "startPos".  If charsInserted and
 ** charsDeleted are not NULL, the number of characters inserted and deleted
 ** in the operation (beginning at startPos) are returned in these arguments.
+** If rectEnd equals -1, the width of the inserted text is measured first.
 */
 void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     	int rectEnd, const char *text, int *charsInserted, int *charsDeleted)
@@ -410,6 +411,8 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     
     nLines = countLines(text);
     lineStartPos = BufStartOfLine(buf, startPos);
+    if(rectEnd == -1)
+        rectEnd = rectStart + textWidth(text, buf->tabDist, buf->nullSubsChar);     lineStartPos = BufStartOfLine(buf, startPos);
     nDeleted = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) -
     	    lineStartPos;
     deletedText = BufGetRange(buf, lineStartPos, lineStartPos + nDeleted);
