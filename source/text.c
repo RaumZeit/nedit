@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.31 2002/08/10 23:58:25 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.32 2002/08/13 22:12:20 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -2468,20 +2468,25 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args,
 }
 
 static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+    Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
     int insertPos = TextDGetInsertPosition(textD);
-    int endOfLine = TextDEndOfLine(textD, insertPos, False);
-    int silent = hasKey("nobell", args, nArgs);
-    
+    int endOfLine;
+    int silent = 0;
+
+    silent = hasKey("nobell", args, nArgs);
+    if (hasKey("absolute", args, nArgs))
+        endOfLine = BufEndOfLine(textD->buffer, insertPos);
+    else
+        endOfLine = TextDEndOfLine(textD, insertPos, False);
     cancelDrag(w);
     if (checkReadOnly(w))
-	return;
+        return;
     TakeMotifDestination(w, e->time);
     if (deletePendingSelection(w, event))
-    	return;
+        return;
     if (insertPos == endOfLine) {
         ringIfNecessary(silent, w);
     	return;
@@ -2492,20 +2497,25 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args,
 }
 
 static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+    Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
     int insertPos = TextDGetInsertPosition(textD);
-    int startOfLine = BufStartOfLine(textD->buffer, insertPos);
-    int silent = hasKey("nobell", args, nArgs);
-    
+    int startOfLine;
+    int silent = 0;
+
+    silent = hasKey("nobell", args, nArgs);
+    if (hasKey("wrap", args, nArgs))
+        startOfLine = TextDStartOfLine(textD, insertPos);
+    else
+        startOfLine = BufStartOfLine(textD->buffer, insertPos);
     cancelDrag(w);
     if (checkReadOnly(w))
-	return;
+        return;
     TakeMotifDestination(w, e->time);
     if (deletePendingSelection(w, event))
-    	return;
+        return;
     if (insertPos == startOfLine) {
         ringIfNecessary(silent, w);
     	return;
@@ -2679,8 +2689,8 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     cancelDrag(w);
     if (hasKey("left", args, nArgs)) stat = TextDMoveLeft(textD);
     else if (hasKey("right", args, nArgs)) stat = TextDMoveRight(textD);
-    else if (hasKey("up", args, nArgs)) stat = TextDMoveUp(textD);
-    else if (hasKey("down", args, nArgs)) stat = TextDMoveDown(textD);
+    else if (hasKey("up", args, nArgs)) stat = TextDMoveUp(textD, 0);
+    else if (hasKey("down", args, nArgs)) stat = TextDMoveDown(textD, 0);
     else {
     	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args,nArgs));
     	return;
@@ -2699,52 +2709,56 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
-    
+    int abs = hasKey("absolute", args, nArgs);
+
     cancelDrag(w);
-    if (!TextDMoveUp(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveUp(((TextWidget)w)->text.textD, abs))
+        ringIfNecessary(silent, w);
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
 }
 
 static void processShiftUpAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+    Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
-    
+    int abs = hasKey("absolute", args, nArgs);
+
     cancelDrag(w);
-    if (!TextDMoveUp(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveUp(((TextWidget)w)->text.textD, abs))
+        ringIfNecessary(silent, w);
     keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
 }
 
 static void processDownAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+    Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
-    
+    int abs = hasKey("absolute", args, nArgs);
+
     cancelDrag(w);
-    if (!TextDMoveDown(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveDown(((TextWidget)w)->text.textD, abs))
+        ringIfNecessary(silent, w);
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
 }
 
 static void processShiftDownAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+    Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
-    
+    int abs = hasKey("absolute", args, nArgs);
+
     cancelDrag(w);
-    if (!TextDMoveDown(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveDown(((TextWidget)w)->text.textD, abs))
+        ringIfNecessary(silent, w);
     keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
@@ -2757,7 +2771,10 @@ static void beginningOfLineAP(Widget w, XEvent *event, String *args,
     int insertPos = TextDGetInsertPosition(textD);
 
     cancelDrag(w);
-    TextDSetInsertPosition(textD, TextDStartOfLine(textD, insertPos));
+    if (hasKey("absolute", args, nArgs))
+        TextDSetInsertPosition(textD, BufStartOfLine(textD->buffer, insertPos));
+    else
+        TextDSetInsertPosition(textD, TextDStartOfLine(textD, insertPos));
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
@@ -2770,7 +2787,10 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     int insertPos = TextDGetInsertPosition(textD);
 
     cancelDrag(w);
-    TextDSetInsertPosition(textD, TextDEndOfLine(textD, insertPos, False));
+    if (hasKey("absolute", args, nArgs))
+        TextDSetInsertPosition(textD, BufEndOfLine(textD->buffer, insertPos));
+    else
+        TextDSetInsertPosition(textD, TextDEndOfLine(textD, insertPos, False));
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);

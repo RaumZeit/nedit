@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.26 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.27 2002/08/13 22:12:20 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1140,13 +1140,16 @@ int TextDMoveLeft(textDisp *textD)
     return True;
 }
 
-int TextDMoveUp(textDisp *textD)
+int TextDMoveUp(textDisp *textD, int absolute)
 {
     int lineStartPos, column, prevLineStartPos, newPos, visLineNum;
     
     /* Find the position of the start of the line.  Use the line starts array
        if possible, to avoid unbounded line-counting in continuous wrap mode */
-    if (posToVisibleLineNum(textD, textD->cursorPos, &visLineNum))
+    if (absolute) {
+        lineStartPos = BufStartOfLine(textD->buffer, textD->cursorPos);
+        visLineNum = -1;
+    } else if (posToVisibleLineNum(textD, textD->cursorPos, &visLineNum))
     	lineStartPos = textD->lineStarts[visLineNum];
     else {
     	lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
@@ -1160,12 +1163,14 @@ int TextDMoveUp(textDisp *textD)
     	    BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
     
     /* count forward from the start of the previous line to reach the column */
-    if (visLineNum != -1 && visLineNum != 0)
+    if (absolute)
+        prevLineStartPos = BufCountBackwardNLines(textD->buffer, lineStartPos, 1);
+    else if (visLineNum != -1 && visLineNum != 0)
     	prevLineStartPos = textD->lineStarts[visLineNum-1];
     else
     	prevLineStartPos = TextDCountBackwardNLines(textD, lineStartPos, 1);
     newPos = BufCountForwardDispChars(textD->buffer, prevLineStartPos, column);
-    if (textD->continuousWrap)
+    if (textD->continuousWrap && !absolute)
     	newPos = min(newPos, TextDEndOfLine(textD, prevLineStartPos, True));
     
     /* move the cursor */
@@ -1175,13 +1180,16 @@ int TextDMoveUp(textDisp *textD)
     textD->cursorPreferredCol = column;
     return True;
 }
-int TextDMoveDown(textDisp *textD)
+int TextDMoveDown(textDisp *textD, int absolute)
 {
     int lineStartPos, column, nextLineStartPos, newPos, visLineNum;
     
     if (textD->cursorPos == textD->buffer->length)
     	return False;
-    if (posToVisibleLineNum(textD, textD->cursorPos, &visLineNum))
+    if (absolute) {
+        lineStartPos = BufStartOfLine(textD->buffer, textD->cursorPos);
+    	visLineNum = -1;
+    } else if (posToVisibleLineNum(textD, textD->cursorPos, &visLineNum))
     	lineStartPos = textD->lineStarts[visLineNum];
     else {
     	lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
@@ -1189,9 +1197,12 @@ int TextDMoveDown(textDisp *textD)
     }
     column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
     	    BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
-    nextLineStartPos = TextDCountForwardNLines(textD, lineStartPos, 1, True);
+    if (absolute)
+        nextLineStartPos = BufCountForwardNLines(textD->buffer, lineStartPos, 1);
+    else
+        nextLineStartPos = TextDCountForwardNLines(textD, lineStartPos, 1, True);
     newPos = BufCountForwardDispChars(textD->buffer, nextLineStartPos, column);
-    if (textD->continuousWrap)
+    if (textD->continuousWrap && !absolute)
     	newPos = min(newPos, TextDEndOfLine(textD, nextLineStartPos, True));
     TextDSetInsertPosition(textD, newPos);
     textD->cursorPreferredCol = column;

@@ -3239,9 +3239,11 @@ defined by the X resource wordDelimiters.
 Moves the cursor to the beginning of the file.
 <P>
 <PRE>
-<B>beginning_of_line()</B>
+<B>beginning_of_line( ["absolute"] )</B> 
 </PRE>
-Moves the cursor to the beginning of the line.
+Moves the cursor to the beginning of the line. If
+"absolute" is given, always moves to the absolute beginning of line,
+regardless of the text wrapping mode.
 <P>
 <PRE>
 <B>beginning_of_selection()</B>
@@ -3319,17 +3321,20 @@ If a primary selection exists, deletes its contents.
 Otherwise, deletes the word before the cursor.
 <P>
 <PRE>
-<B>delete_to_start_of_line( ["nobell"] )</B>
+<B>delete_to_start_of_line( ["nobell", "wrap"] )</B>
 </PRE>
-If a primary selection exists, deletes its
-contents.  Otherwise, deletes the characters between the cursor and the start
-of the line.
+If a primary selection exists, deletes its contents.  Otherwise, deletes the
+characters between the cursor and the start of the line. If "wrap" is
+given, deletes to the previous wrap point or beginning of line, whichever 
+is closest.
 <P>
 <PRE>
-<B>delete_to_end_of_line( ["nobell"] )</B>
+<B>delete_to_end_of_line( ["nobell", "absolute"] )</B>
 </PRE>
 If a primary selection exists, deletes its contents. 
 Otherwise, deletes the characters between the cursor and the end of the line.
+If "absolute" is given, always deletes to the absolute end of line, regardless
+of the text wrapping mode.
 <P>
 <PRE>
 <B>deselect_all()</B>
@@ -3342,9 +3347,11 @@ De-selects the primary selection.
 Moves the cursor to the end of the file.
 <P>
 <PRE>
-<B>end_of_line()</B>
+<B>end_of_line( ["absolute"] )</B> 
 </PRE>
-Moves the cursor to the end of the line.
+Moves the cursor to the end of the line.  If
+"absolute" is given, always moves to the absolute end of line, regardless
+of the text wrapping mode.
 <P>
 <PRE>
 <B>end_of_selection()</B>
@@ -3524,9 +3531,10 @@ Cancels the current extend_adjust, secondary_adjust, or
 secondary_or_drag_adjust in progress.
 <P>
 <PRE>
-<B>process_down( ["nobell"] )</B>
+<B>process_down( ["nobell", "absolute"] )</B>
 </PRE>
-Moves the cursor down one line.
+Moves the cursor down one line.  If "absolute" is given, always moves to the 
+next line in the text buffer, regardless of wrapping.
 <P>
 <PRE>
 <B>process_return()</B>
@@ -3534,12 +3542,12 @@ Moves the cursor down one line.
 Same as newline for compatibility with previous versions.
 <P>
 <PRE>
-<B>process_shift_down( ["nobell"] )</B>
+<B>process_shift_down( ["nobell", "absolute"] )</B>
 </PRE>
 Same as process_down("extend") for compatibility with previous versions.
 <P>
 <PRE>
-<B>process_shift_up( ["nobell"] )</B>
+<B>process_shift_up( ["nobell", "absolute"] )</B>
 </PRE>
 Same as process_up("extend") for compatibility with previous versions.
 <P>
@@ -3550,9 +3558,10 @@ If tab emulation is turned on, inserts an emulated tab,
 otherwise inserts a tab character.
 <P>
 <PRE>
-<B>process_up( ["nobell"] )</B>
+<B>process_up( ["nobell", "absolute"] )</B>
 </PRE>
-Moves the cursor up one line.
+Moves the cursor up one line.  If "absolute" is given, always moves to the 
+previous line in the text buffer, regardless of wrapping.
 <P>
 <PRE>
 <B>raise_window([relative-window] | [positive-index] | [negative-index])</B>
@@ -5166,8 +5175,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit 5.4DEV
-Aug 9, 2002
+NEdit release of Aug 13, 2002
+Aug 13, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

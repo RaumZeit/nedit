@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.12 2002/07/26 21:39:10 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.13 2002/08/13 22:12:20 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -143,8 +143,8 @@ int TextDInSelection(textDisp *textD, int x, int y);
 void TextDMakeInsertPosVisible(textDisp *textD);
 int TextDMoveRight(textDisp *textD);
 int TextDMoveLeft(textDisp *textD);
-int TextDMoveUp(textDisp *textD);
-int TextDMoveDown(textDisp *textD);
+int TextDMoveUp(textDisp *textD, int absolute);
+int TextDMoveDown(textDisp *textD, int absolute);
 void TextDBlankCursor(textDisp *textD);
 void TextDUnblankCursor(textDisp *textD);
 void TextDSetCursorStyle(textDisp *textD, int style);

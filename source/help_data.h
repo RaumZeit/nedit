@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 9, 2002 (Do NOT edit!)
+                 Generated on Aug 13, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -2675,8 +2675,10 @@ static char * htxt_actions [] = {
 "\01A\01Bbeginning_of_file( [\"scrollbar\"] )\01A\n",
 "\01IMoves the cursor to the beginning of the file. ",
 "\n\n",
-"\01A\01Bbeginning_of_line()\01A\n",
-"\01IMoves the cursor to the beginning of the line. ",
+"\01A\01Bbeginning_of_line( [\"absolute\"] )\01A \n",
+"\01IMoves the cursor to the beginning of the line. If ",
+"\"absolute\" is given, always moves to the absolute beginning of line, ",
+"regardless of the text wrapping mode. ",
 "\n\n",
 "\01A\01Bbeginning_of_selection()\01A\n",
 "\01IMoves the cursor to the beginning of the selection ",
@@ -2729,14 +2731,17 @@ static char * htxt_actions [] = {
 "\01IIf a primary selection exists, deletes its contents. ",
 "Otherwise, deletes the word before the cursor. ",
 "\n\n",
-"\01A\01Bdelete_to_start_of_line( [\"nobell\"] )\01A\n",
-"\01IIf a primary selection exists, deletes its ",
-"contents.  Otherwise, deletes the characters between the cursor and the start ",
-"of the line. ",
+"\01A\01Bdelete_to_start_of_line( [\"nobell\", \"wrap\"] )\01A\n",
+"\01IIf a primary selection exists, deletes its contents.  Otherwise, deletes the ",
+"characters between the cursor and the start of the line. If \"wrap\" is ",
+"given, deletes to the previous wrap point or beginning of line, whichever ",
+"is closest. ",
 "\n\n",
-"\01A\01Bdelete_to_end_of_line( [\"nobell\"] )\01A\n",
+"\01A\01Bdelete_to_end_of_line( [\"nobell\", \"absolute\"] )\01A\n",
 "\01IIf a primary selection exists, deletes its contents. ",
 "Otherwise, deletes the characters between the cursor and the end of the line. ",
+"If \"absolute\" is given, always deletes to the absolute end of line, regardless ",
+"of the text wrapping mode. ",
 "\n\n",
 "\01A\01Bdeselect_all()\01A\n",
 "\01IDe-selects the primary selection. ",
@@ -2744,8 +2749,10 @@ static char * htxt_actions [] = {
 "\01A\01Bend_of_file( [\"scrollbar\"] )\01A\n",
 "\01IMoves the cursor to the end of the file. ",
 "\n\n",
-"\01A\01Bend_of_line()\01A\n",
-"\01IMoves the cursor to the end of the line. ",
+"\01A\01Bend_of_line( [\"absolute\"] )\01A \n",
+"\01IMoves the cursor to the end of the line.  If ",
+"\"absolute\" is given, always moves to the absolute end of line, regardless ",
+"of the text wrapping mode. ",
 "\n\n",
 "\01A\01Bend_of_selection()\01A\n",
 "\01IMoves the cursor to the end of the selection without ",
@@ -2874,24 +2881,26 @@ static char * htxt_actions [] = {
 "\01ICancels the current extend_adjust, secondary_adjust, or ",
 "secondary_or_drag_adjust in progress. ",
 "\n\n",
-"\01A\01Bprocess_down( [\"nobell\"] )\01A\n",
-"\01IMoves the cursor down one line. ",
+"\01A\01Bprocess_down( [\"nobell\", \"absolute\"] )\01A\n",
+"\01IMoves the cursor down one line.  If \"absolute\" is given, always moves to the ",
+"next line in the text buffer, regardless of wrapping. ",
 "\n\n",
 "\01A\01Bprocess_return()\01A\n",
 "\01ISame as newline for compatibility with previous versions. ",
 "\n\n",
-"\01A\01Bprocess_shift_down( [\"nobell\"] )\01A\n",
+"\01A\01Bprocess_shift_down( [\"nobell\", \"absolute\"] )\01A\n",
 "\01ISame as process_down(\"extend\") for compatibility with previous versions. ",
 "\n\n",
-"\01A\01Bprocess_shift_up( [\"nobell\"] )\01A\n",
+"\01A\01Bprocess_shift_up( [\"nobell\", \"absolute\"] )\01A\n",
 "\01ISame as process_up(\"extend\") for compatibility with previous versions. ",
 "\n\n",
 "\01A\01Bprocess_tab()\01A\n",
 "\01IIf tab emulation is turned on, inserts an emulated tab, ",
 "otherwise inserts a tab character. ",
 "\n\n",
-"\01A\01Bprocess_up( [\"nobell\"] )\01A\n",
-"\01IMoves the cursor up one line. ",
+"\01A\01Bprocess_up( [\"nobell\", \"absolute\"] )\01A\n",
+"\01IMoves the cursor up one line.  If \"absolute\" is given, always moves to the ",
+"previous line in the text buffer, regardless of wrapping. ",
 "\n\n",
 "\01A\01Braise_window([relative-window] | [positive-index] | [negative-index])\01A\n",
 "\01IRaise the current focused window to the front if no argument is supplied. ",
@@ -4974,4 +4983,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.4DEV\nAug 9, 2002\n";
+static const char * NEditVersion = "NEdit release of Aug 13, 2002\n";
