@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.25 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.26 2002/08/02 08:36:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -96,7 +96,7 @@ static struct {
 
 /* Application resources */
 static PrefDescripRec PrefDescrip[] = {
-    {"autoStart", "AutoStart", PREF_BOOLEAN, "False",
+    {"autoStart", "AutoStart", PREF_BOOLEAN, "True",
       &Preferences.autoStart, NULL, True},
     {"serverCommand", "ServerCommand", PREF_STRING, "nedit -server",
       Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},

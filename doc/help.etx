@@ -3835,7 +3835,7 @@ X Resources
 
   Color for hyperlinks in the help text
   
-**nc.autoStart**: False 
+**nc.autoStart**: True 
 
   Whether the nc program should automatically start an NEdit server (without
   prompting the user) if an appropriate server is not found.

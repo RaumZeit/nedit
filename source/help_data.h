@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 31, 2002 (Do NOT edit!)
+                 Generated on Aug 2, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -3655,7 +3655,7 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Color for hyperlinks in the help text ",
 "\n\n",
-"\01A\01Bnc.autoStart\01A: False \n",
+"\01A\01Bnc.autoStart\01A: True \n",
 "\01I\n",
 "Whether the nc program should automatically start an NEdit server (without ",
 "prompting the user) if an appropriate server is not found. ",
@@ -4965,4 +4965,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jul 31, 2002\n";
+static const char * NEditVersion = "NEdit release of Aug  2, 2002\n";
