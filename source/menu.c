@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.29 2001/04/16 23:20:11 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.30 2001/04/18 17:02:25 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2349,7 +2349,20 @@ static void openSelectedAP(Widget w, XEvent *event, String *args,
 
 static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
-    CloseFileAndWindow(WidgetToWindow(w));
+    int preResponse = PROMPT_SBC_DIALOG_RESPONSE;
+    
+    if (*nArgs > 0) {
+        if (strcmp(args[0], "prompt") == 0) {
+            preResponse = PROMPT_SBC_DIALOG_RESPONSE;
+        }
+        else if (strcmp(args[0], "save") == 0) {
+            preResponse = YES_SBC_DIALOG_RESPONSE;
+        }
+        else if (strcmp(args[0], "nosave") == 0) {
+            preResponse = NO_SBC_DIALOG_RESPONSE;
+        }
+    }
+    CloseFileAndWindow(WidgetToWindow(w), preResponse);
     CheckCloseDim();
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.15 2001/04/16 23:49:15 slobasso Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.16 2001/04/18 17:02:25 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -507,13 +507,13 @@ int CloseAllFilesAndWindows(void)
 {
     while (WindowList->next != NULL || 
     		WindowList->filenameSet || WindowList->fileChanged) {
-    	if (!CloseFileAndWindow(WindowList))
+    	if (!CloseFileAndWindow(WindowList, PROMPT_SBC_DIALOG_RESPONSE))
     	    return FALSE;
     }
     return TRUE;
 }
 
-int CloseFileAndWindow(WindowInfo *window)
+int CloseFileAndWindow(WindowInfo *window, int preResponse)
 { 
     int response, stat;
     
@@ -525,15 +525,20 @@ int CloseFileAndWindow(WindowInfo *window)
        CloseWindow(window);
        /* up-to-date windows don't have outstanding backup files to close */
     } else {
-	response = DialogF(DF_WARN, window->shell, 3,
-		"Save %s before closing?", "Yes", "No", "Cancel",
-		window->filename);
-	if (response == 1) {
+        if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
+	    response = DialogF(DF_WARN, window->shell, 3,
+		    "Save %s before closing?", "Yes", "No", "Cancel",
+		    window->filename);
+        }
+        else {
+            response = preResponse;
+        }
+	if (response == YES_SBC_DIALOG_RESPONSE) {
 	    /* Save */
 	    stat = SaveWindow(window);
 	    if (stat)
 	    	CloseWindow(window);
-	} else if (response == 2) {
+	} else if (response == NO_SBC_DIALOG_RESPONSE) {
 	    /* Don't Save */
 	    RemoveBackupFile(window);
 	    CloseWindow(window);
@@ -621,7 +626,7 @@ int SaveWindowAs(WindowInfo *window, char *newName, int addWrap)
 	if (response == 1)
 	    return FALSE;
 	if (otherWindow == FindWindowWithFile(filename, pathname))
-	    if (!CloseFileAndWindow(otherWindow))
+	    if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE))
 	    	return FALSE;
     }
     

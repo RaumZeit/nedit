@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.21 2001/04/17 20:13:38 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.22 2001/04/18 17:02:25 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -1627,10 +1627,10 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData)
     	    return;
 	if (!WindowList->fileChanged)
      	    exit(0);
-     	if (CloseFileAndWindow(window))
+     	if (CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE))
      	    exit(0);
     } else
-    	CloseFileAndWindow(window);
+    	CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
 }
 
 static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData) 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.34 2001/04/17 23:40:46 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.35 2001/04/18 17:02:25 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3418,6 +3418,8 @@ Arguments are text strings enclosed in quotes.  Below are the menu action \
 routines which take arguments.  Optional arguments are enclosed in [].\n\
 \n\
   open(filename)\n\
+\n\
+  close([\"prompt\" | \"save\" | \"nosave\"])\n\
 \n\
   save_as(filename)\n\
 \n\
