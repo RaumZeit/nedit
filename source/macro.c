@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.14 2001/03/09 16:58:59 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.15 2001/03/12 15:15:14 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -203,8 +203,6 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
 static void listDialogCloseCB(Widget w, XtPointer clientData,
 	XtPointer callData);
 /* T Balinski End */
-static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, char **errMsg);
 static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -301,7 +299,7 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
-#define N_MACRO_SUBRS 34
+#define N_MACRO_SUBRS 33
 static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	dialogMS, stringDialogMS, replaceRangeMS, replaceSelectionMS,
     	setCursorPosMS, getCharacterMS, minMS, maxMS, searchMS,
@@ -309,7 +307,7 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	writeFileMS, appendFileMS, beepMS, getSelectionMS,
 	replaceInStringMS, selectMS, selectRectangleMS, focusWindowMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
-	tolowerMS, listDialogMS, getenvMS, setLanguageModeMS,
+	tolowerMS, listDialogMS, getenvMS,
     stringCompareMS, splitMS};
 static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
@@ -318,7 +316,7 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
         "write_file", "append_file", "beep", "get_selection",
 	"replace_in_string", "select", "select_rectangle", "focus_window",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
-	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode",
+	"toupper", "tolower", "list_dialog", "getenv",
     "string_compare", "split"};
 #define N_SPECIAL_VARS 41
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
@@ -3031,19 +3029,6 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
     ResumeMacroExecution(window);
 }
 /* T Balinski End */
-
-static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, char **errMsg)
-{
-    char stringStorage[25], *langString;
-
-    if (nArgs != 1)
-	return wrongNArgsErr(errMsg);
-    if (!readStringArg(argList[0], &langString, stringStorage, errMsg))
-	return False;
-    SetLanguageMode(window, FindLanguageMode(langString), FALSE);
-    return True;
-}
 
 static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)

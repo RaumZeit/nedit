@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.14 2001/03/09 16:58:59 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.15 2001/03/12 15:15:14 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -807,6 +807,25 @@ void ShowLineNumbers(WindowInfo *window, int state)
 	    
     /* Tell WM that the non-expandable part of the window has changed size */
     UpdateWMSizeHints(window);
+}
+
+void SetTabDist(WindowInfo *window, int tabDist)
+{
+    if (window->buffer->tabDist != tabDist) {
+        window->ignoreModify = True;
+        BufSetTabDistance(window->buffer, tabDist);
+        window->ignoreModify = False;
+    }
+}
+
+void SetEmTabDist(WindowInfo *window, int emTabDist)
+{
+    int i;
+
+    XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, NULL);
+    for (i = 0; i < window->nPanes; ++i) {
+        XtVaSetValues(window->textPanes[i], textNemulateTabs, emTabDist, NULL);
+    }
 }
 
 /*

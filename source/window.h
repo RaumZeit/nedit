@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.4 2001/03/09 16:58:59 slobasso Exp $ */
+/* $Id: window.h,v 1.5 2001/03/12 15:15:14 slobasso Exp $ */
 WindowInfo *CreateWindow(char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
@@ -32,3 +32,5 @@ void SetModeMessage(WindowInfo *window, char *message);
 void ClearModeMessage(WindowInfo *window);
 WindowInfo *WidgetToWindow(Widget w);
 void AddSmallIcon(Widget shell);
+void SetTabDist(WindowInfo *window, int tabDist);
+void SetEmTabDist(WindowInfo *window, int emTabDist);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.22 2001/03/11 02:31:18 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.23 2001/03/12 15:15:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3275,9 +3275,6 @@ horizontally to characters displayed between positions \"left\", and \
 \n\
 set_cursor_pos(pos) -- Set the cursor position for the current window.\n\
 \n\
-set_language_mode(mode) -- Change language mode for the current \
-window.\n\
-\n\
 shell_command(command, input_string) -- executes a shell command, feeding \
 it input from input_string.  On completion, output from the command \
 is returned as the function value, and the command's exit status is \
@@ -3465,6 +3462,14 @@ Window Preferneces Actions\n\
 set_auto_indent(\"off\" | \"on\" | \"smart\")\n\
 Set auto indent mode for the current window.\n\
 \n\
+set_em_tab_dist(em-tab-distance)\n\
+Set the emulated tab size. An em-tab-distance value of \
+0 means no emulated tabs. Em-tab-distance must be smaller \
+than 1000.\n\
+\n\
+set_fonts(font-name, italic-font-name, bold-font-name, bold-italic-font-name)\n\
+Set all the fonts used for the current window.\n\
+\n\
 set_highlight_syntax([0 | 1])\n\
 Set syntax highlighting mode for the current window. \
 A value of 0 turns it off and a value of 1 turns it on. \
@@ -3479,6 +3484,10 @@ set_incremental_search_line([0 | 1])\n\
 Show or hide the incremental search line for the current window. \
 A value of 0 turns it off and a value of 1 turns it on. \
 If no parameters are supplied the option is toggled.\n\
+\n\
+set_language_mode(language-mode)\n\
+Set the language mode for the current window. If the language mode is \
+\"\" or unrecognized, it will be set to Plain.\n\
 \n\
 set_locked([0 | 1])\n\
 This only affects the locked status of a file, not it's read-only \
@@ -3509,6 +3518,15 @@ If no parameters are supplied the option is toggled.\n\
 \n\
 set_statistics_line([0 | 1])\n\
 Show or hide the statistics line for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_tab_dist(tab-distance)\n\
+Set the size of hardware tab spacing. Tab-distance must \
+must be a value greater than 0 and no greater than 20.\n\
+\n\
+set_use_tabs([0 | 1])\n\
+Set whether tabs are used for the current window. \
 A value of 0 turns it off and a value of 1 turns it on. \
 If no parameters are supplied the option is toggled.\n\
 \n\

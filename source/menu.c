@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.22 2001/03/11 02:31:18 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.23 2001/03/12 15:15:14 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -364,6 +364,16 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setLockedAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
+static void setUseTabsAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setEmTabDistAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setTabDistAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setFontsAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setLanguageModeAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
 #ifdef SGI_CUSTOM
 static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
@@ -505,7 +515,12 @@ static XtActionsRec Actions[] = {
     {"set_incremental_backup", setIncrementalBackupAP},
     {"set_show_matching", setShowMatchingAP},
     {"set_overtype_mode", setOvertypeModeAP},
-    {"set_locked", setLockedAP}
+    {"set_locked", setLockedAP},
+    {"set_tab_dist", setTabDistAP},
+    {"set_em_tab_dist", setEmTabDistAP},
+    {"set_use_tabs", setUseTabsAP},
+    {"set_fonts", setFontsAP},
+    {"set_language_mode", setLanguageModeAP}
 };
 
 /* List of previously opened files for File menu */
@@ -3182,6 +3197,90 @@ static void setLockedAP(Widget w, XEvent *event, String *args,
     window->lockWrite = newState;
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
+}
+
+static void setTabDistAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    if (*nArgs > 0) {
+        int newTabDist = 0;
+        if (sscanf(args[0], "%d", &newTabDist) == 1 &&
+            newTabDist > 0 &&
+            newTabDist <= MAX_EXP_CHAR_LEN) {
+            SetTabDist(window, newTabDist);
+        }
+        else {
+            fprintf(stderr,
+                "NEdit: set_tab_dist requires integer argument > 0 and <= %d\n",
+                MAX_EXP_CHAR_LEN);
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_tab_dist requires argument\n");
+    }
+}
+
+static void setEmTabDistAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    if (*nArgs > 0) {
+        int newEmTabDist = 0;
+        if (sscanf(args[0], "%d", &newEmTabDist) == 1 &&
+            newEmTabDist >= -1 &&
+            newEmTabDist < 1000) {
+            if (newEmTabDist < 0) {
+                newEmTabDist = 0;
+            }
+            SetEmTabDist(window, newEmTabDist);
+        }
+        else {
+            fprintf(stderr,
+                "NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000\n");
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_em_tab_dist requires argument\n");
+    }
+}
+
+static void setUseTabsAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->buffer->useTabs, "set_use_tabs");
+
+    window->buffer->useTabs = newState;
+}
+
+static void setFontsAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    if (*nArgs >= 4) {
+        SetFonts(window, args[0], args[1], args[2], args[3]);
+    }
+    else {
+        fprintf(stderr, "NEdit: set_fonts requires 4 arguments\n");
+    }
+}
+
+static void setLanguageModeAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+
+    if (*nArgs > 0) {
+        SetLanguageMode(window, FindLanguageMode(args[0]), FALSE);
+    }
+    else {
+        fprintf(stderr, "NEdit: set_language_mode requires argument\n");
+    }
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.16 2001/03/10 15:37:08 arnef Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.17 2001/03/12 15:15:14 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -799,8 +799,6 @@ static languageModeRec *readLMDialogFields(int silent);
 static void lmFreeItemCB(void *item);
 static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
-static void setTabDist(WindowInfo *window, int tabDist);
-static void setEmTabDist(WindowInfo *window, int emTabDist);
 static void updatePatternsTo5dot1(void);
 static void spliceString(char **intoString, char *insertString, char *atExpr);
 static int regexFind(char *inString, char *expr);
@@ -1796,29 +1794,25 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     	SetPrefEmTabDist(emTabDist);
     	SetPrefInsertTabs(useTabs);
     } else {
+        char *params[1];
+        char numStr[25];
+
+        params[0] = numStr;
+        sprintf(numStr, "%d", tabDist);
+        XtCallActionProc(window->textArea, "set_tab_dist", NULL, params, 1);
+        params[0] = numStr;
+        sprintf(numStr, "%d", emTabDist);
+        XtCallActionProc(window->textArea, "set_em_tab_dist", NULL, params, 1);
+        params[0] = numStr;
+        sprintf(numStr, "%d", useTabs);
+        XtCallActionProc(window->textArea, "set_use_tabs", NULL, params, 1);
+/*
     	setTabDist(window, tabDist);
     	setEmTabDist(window, emTabDist);
        	window->buffer->useTabs = useTabs;
+*/
     }
     DoneWithTabsDialog = True;
-}
-
-static void setTabDist(WindowInfo *window, int tabDist)
-{
-    if (window->buffer->tabDist != tabDist) {
-    	window->ignoreModify = True;
-    	BufSetTabDistance(window->buffer, tabDist);
-    	window->ignoreModify = False;
-    }
-}
-
-static void setEmTabDist(WindowInfo *window, int emTabDist)
-{
-    int i;
-    
-    XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, NULL);
-    for (i=0; i<window->nPanes; i++)
-	XtVaSetValues(window->textPanes[i], textNemulateTabs, emTabDist, NULL);
 }
 
 static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1916,7 +1910,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
 
 static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    int i, wrapAtWindow, margin, stat;
+    int wrapAtWindow, margin, stat;
     WindowInfo *window = WrapDialogForWindow;
     
     /* get the values that the user entered and make sure they're ok */
@@ -1953,9 +1947,11 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
     if (WrapDialogForWindow == NULL)
     	SetPrefWrapMargin(margin);
     else {
-	XtVaSetValues(window->textArea, textNwrapMargin, margin, NULL);
-	for (i=0; i<window->nPanes; i++)
-	    XtVaSetValues(window->textPanes[i], textNwrapMargin, margin, NULL);
+        char *params[1];
+        char marginStr[25];
+        sprintf(marginStr, "%d", margin);
+        params[0] = marginStr;
+        XtCallActionProc(window->textArea, "set_wrap_margin", NULL, params, 1);
     }
     DoneWithWrapDialog = True;
 }
@@ -3333,8 +3329,17 @@ static void updateFonts(fontDialog *fd)
     boldName = XmTextGetString(fd->boldW);
     boldItalicName = XmTextGetString(fd->boldItalicW);
     
-    if (fd->forWindow)
+    if (fd->forWindow) {
+        char *params[4];
+        params[0] = fontName;
+        params[1] = italicName;
+        params[2] = boldName;
+        params[3] = boldItalicName;
+        XtCallActionProc(fd->window->textArea, "set_fonts", NULL, params, 4);
+/*
     	SetFonts(fd->window, fontName, italicName, boldName, boldItalicName);
+*/
+    }
     else {
     	SetPrefFont(fontName);
     	SetPrefItalicFont(italicName);
@@ -3429,8 +3434,8 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     /* set requested wrap, indent, and tabs */
     SetAutoWrap(window, wrapMode);
     SetAutoIndent(window, indentStyle);
-    setTabDist(window, tabDist);
-    setEmTabDist(window, emTabDist);
+    SetTabDist(window, tabDist);
+    SetEmTabDist(window, emTabDist);
     
     /* Add/remove language specific menu items */
 #ifndef VMS
@@ -4048,6 +4053,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
+    char *params[1];
     void *mode;
     
     if (!XmToggleButtonGetState(w))
@@ -4061,7 +4067,11 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
     
     /* redo syntax highlighting word delimiters, etc. */
+/*
     reapplyLanguageMode(window, (int)mode, False);
+*/
+    params[0] = (((int)mode) == PLAIN_LANGUAGE_MODE) ? "" : LanguageModes[(int)mode]->name;
+    XtCallActionProc(window->textArea, "set_language_mode", NULL, params, 1);
 }
 
 /*
