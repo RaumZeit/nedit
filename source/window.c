@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.80 2003/04/10 18:47:23 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.81 2003/05/16 05:23:50 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -870,8 +870,14 @@ void ClosePane(WindowInfo *window)
     /* Unmanage & remanage the panedWindow so it recalculates pane heights */
     XtUnmanageChild(window->splitPane);
     
-    /* Destroy last pane, and make sure lastFocus points to an existing pane */
-    XtDestroyWidget(containingPane(window->textPanes[--window->nPanes]));
+    /* Destroy last pane, and make sure lastFocus points to an existing pane.
+       Workaround for OM 2.1.30: text widget must be unmanaged for 
+       xmPanedWindowWidget to calculate the correct pane heights for
+       the remaining panes, simply detroying it didn't seem enough */
+    window->nPanes--;
+    XtUnmanageChild(containingPane(window->textPanes[window->nPanes]));
+    XtDestroyWidget(containingPane(window->textPanes[window->nPanes]));
+
     if (window->nPanes == 0)
         window->lastFocus = window->textArea;
     else if (focusPane > window->nPanes)
@@ -879,7 +885,7 @@ void ClosePane(WindowInfo *window)
     
     /* adjust the heights, scroll positions, etc., to make it look
        like the pane with the input focus was closed */
-    for (i=window->nPanes; i>=focusPane; i--) {
+    for (i=focusPane; i<=window->nPanes; i++) {
         insertPositions[i] = insertPositions[i+1];
         paneHeights[i] = paneHeights[i+1];
         topLines[i] = topLines[i+1];
@@ -899,8 +905,6 @@ void ClosePane(WindowInfo *window)
         text = i==0 ? window->textArea : window->textPanes[i-1];
         TextSetCursorPos(text, insertPositions[i]);
         TextSetScroll(text, topLines[i], horizOffsets[i]);
-        setPaneDesiredHeight(containingPane(text),
-                                totalHeight/(window->nPanes+1));
     }
     XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
 
