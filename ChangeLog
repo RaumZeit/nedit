@@ -1,4 +1,674 @@
-22002-10-30 11:11  edg
+2003-05-04 23:54  yooden
+
+	* source/macro.c (1.67): Removed some second level leftovers from
+	the old Highlighting API.
+
+2003-05-04 13:20  yooden
+
+	* doc/help.etx (1.46), source/file.c (1.64), source/help_data.h
+	(1.43), source/help_topic.h (1.36), source/menu.c (1.75): Fixes SF
+	#617840: Append Line Feed on Save The buffer now reflects that a
+	line is added on save.
+
+2003-05-03 22:45  yooden
+
+	* doc/help.etx (1.45), source/help_data.h (1.42),
+	source/help_topic.h (1.35), source/macro.c (1.66): Removes old
+	Highlighting Information API; fixes some inconsistencies in the
+	Highlighting Information API; adds deprecated section to macro
+	section in online help.
+
+2003-05-03 09:15  edg
+
+	* util/misc.c (1.54): Made translation table for mouse wheel
+	static, as suggested by Scott.
+
+2003-05-02 19:19  edg
+
+	* source/highlightData.c (1.45), source/nedit.c (1.45),
+	source/search.c (1.56), source/shell.c (1.25), source/smartIndent.c
+	(1.26), source/userCmds.c (1.32), util/fontsel.c (1.25),
+	util/getfiles.c (1.25), util/managedList.c (1.12), util/misc.c
+	(1.53), util/misc.h (1.18): Committed SF #715941: File dialog wheel
+	support (generalized to all scrolled widgets, except main text
+	area, which already had support).
+
+2003-05-02 18:25  edg
+
+	* source/rangeset_fn.h (1.4): Obsolete due to new rangeset API.
+
+2003-05-02 18:18  edg
+
+	* doc/help.etx (1.44), makefiles/Makefile.depend (1.4),
+	source/Makefile.dependencies (1.21), source/help_data.h (1.41),
+	source/help_topic.h (1.34), source/highlightData.c (1.44),
+	source/macro.c (1.65), source/rangeset.c (1.4), source/rangeset.h
+	(1.2), source/rangeset_fn.h (1.3), source/textBuf.c (1.27),
+	source/textBuf.h (1.14), source/textDisp.c (1.50),
+	util/Makefile.dependencies (1.7): Committed patch #628933: New
+	rangeset API. (Including the fix of SF #728988: rangeset_add of
+	empty range works - bad!) Users of range sets will have to update
+	their macros.
+
+2003-04-24 17:20  edg
+
+	* source/menu.c (1.74): Crash fix: setting NEDIT_HOME to /dev/null
+	caused a coredump because the PrevOpen array never got initialized
+	in that case.
+
+2003-04-24 11:47  edg
+
+	* source/nedit.c (1.44), util/DialogF.c (1.27), util/DialogF.h
+	(1.9), util/fileUtils.c (1.30): Various fixes related to SF
+	#488412: doOpen() flaws.
+
+2003-04-24 08:57  edg
+
+	* source/highlightData.c (1.43): Updated LaTeX highlight patterns
+	provided by Joerg (SF #607072: Syntax highlight failure in LaTeX).
+
+2003-04-24 08:26  edg
+
+	* source/menu.c (1.73): Fix for SF #726325: goto_line_number only
+	accepts 1 arg
+
+2003-04-18 01:07  n8gray
+
+	* source/calltips.c (1.5), source/calltips.h (1.2),
+	source/help_data.h (1.40), source/help_topic.h (1.33),
+	source/text.c (1.40), source/text.h (1.15), source/textDisp.c
+	(1.49), source/textDisp.h (1.21), source/textP.h (1.8),
+	doc/help.etx (1.43): Setting "nedit*background: blue" should not
+	change the background of calltips.  This change makes calltips get
+	their colors from nedit*calltipForeground and
+	nedit*calltipBackground.
+
+2003-04-17 21:46  n8gray
+
+	* source/: nedit.c (1.43), nedit.h (1.37), preferences.c (1.88),
+	text.c (1.39): Applied color migration patch.  IMPORTANT:  Remember
+	to move the call to migrateColorResources into the "convert to 5.4"
+	area before releasing 5.4!!!
+
+2003-04-17 09:03  edg
+
+	* source/: macro.c (1.64), smartIndent.c (1.25): Fix for SF
+	#602336: Wrong Initialization Order and SF #628552: Startup
+	sequence. Macro file is now loaded before smart indent macros are
+	processed.
+
+2003-04-15 23:03  yooden
+
+	* source/help.c (1.92): Whitespace only.
+
+2003-04-15 20:00  yooden
+
+	* doc/help.etx (1.42), source/help_data.h (1.39),
+	source/help_topic.h (1.32): Small documentation fixes.
+
+2003-04-10 20:28  edg
+
+	* source/calltips.c (1.4), util/misc.c (1.52), util/misc.h (1.17):
+	Fix for SF #602260: Calltips crashes. Calltip popup shells now
+	inherit the proper visual and color depth.
+
+2003-04-10 20:08  tringali
+
+	* source/help.c (1.91): Help text was allocating colors
+	incorrectly, making help text invisible when running with a
+	non-default Visual.  Don't assume "black" is help text color!
+
+2003-04-10 18:47  tringali
+
+	* source/: text.c (1.38), text.h (1.14), textP.h (1.7), window.c
+	(1.80): Fix upside-down GetPrefTypingHidesPointer dependency -- the
+	window code should be setting into the text widget, instead of the
+	text widget getting it directly from preferences.
+
+2003-04-10 18:39  tringali
+
+	* source/parse.y (1.24): #include <stdlib.h> to avoid warnings on
+	some systems about no malloc proto.
+
+2003-04-10 18:37  tringali
+
+	* util/utils.c (1.20): Don't quit if getpwuid() fails.	It can fail
+	if some nameservices are not responding through no fault of the
+	user.
+
+2003-04-10 17:58  edg
+
+	* source/Makefile.dependencies (1.20): Updated dependencies.
+
+2003-04-10 17:37  edg
+
+	* util/DialogF.c (1.26): Warning fix.
+
+2003-04-10 09:39  edg
+
+	* source/file.c (1.63): Added some missing fclose() calls in
+	IncludeFile().
+
+2003-04-09 14:56  edg
+
+	* source/file.c (1.62): Aaargh. Another few missing commas.
+
+2003-04-09 14:53  edg
+
+	* source/file.c (1.61): Added another few missing commas in DialogF
+	calls.
+
+2003-04-09 13:52  edg
+
+	* source/file.c (1.60): Added missing comma in DialogF call.
+
+2003-04-08 23:47  yooden
+
+	* source/help.c (1.90): Added one missing DialogF() title.
+
+2003-04-08 08:54  edg
+
+	* source/: highlight.c (1.41), menu.c (1.72), preferences.c (1.87),
+	smartIndent.c (1.24): Fixed indentation inconsistencies and dialog
+	title typos.
+
+2003-04-07 22:51  yooden
+
+	* source/file.c (1.59), source/highlight.c (1.40),
+	source/highlightData.c (1.42), source/macro.c (1.63), source/menu.c
+	(1.71), source/preferences.c (1.86), source/search.c (1.55),
+	source/selection.c (1.24), source/shell.c (1.24), source/shift.c
+	(1.14), source/smartIndent.c (1.23), source/tags.c (1.49),
+	source/userCmds.c (1.31), util/DialogF.c (1.25), util/DialogF.h
+	(1.8), util/fileUtils.c (1.29), util/fontsel.c (1.24), util/misc.c
+	(1.51), util/printUtils.c (1.22): The Sore Hands Patch: Added
+	dialog title to DialogF().
+
+2003-04-06 00:46  yooden
+
+	* source/highlightData.c (1.41), source/macro.c (1.62),
+	source/menu.c (1.70), source/preferences.c (1.85),
+	source/smartIndent.c (1.22), source/userCmds.c (1.30),
+	util/printUtils.c (1.21): Some changed dialog titles, error
+	messages and general code beautification.
+
+2003-04-03 19:05  jlous
+
+	* source/file.c (1.58), source/macro.c (1.61), source/nedit.h
+	(1.36), source/preferences.c (1.84), source/window.c (1.79),
+	util/fileUtils.c (1.28), util/fileUtils.h (1.10), util/prefFile.c
+	(1.19): Committing patch 621211, accepting foreign linebreaks in
+	prefs- and macro files.
+
+2003-04-03 15:45  edg
+
+	* source/window.c (1.78): Fix for SF #713780: flickers during macro
+	execution. (Uwe Lehnert)
+
+2003-03-26 16:36  edg
+
+	* source/textDisp.c (1.48): Reverted some of the unnecessary (and
+	seemingly invalid) changes related to the cursor GC introduced in
+	version 1.46. (SF #710124).
+
+2003-03-26 10:40  edg
+
+	* source/textDisp.c (1.47): Yesterday's clipping changes were not
+	ok: the gutter between the line numbers and the text area could be
+	filled with character fragments. Clipping ranges are now adjusted
+	when line numbers are drawn.
+
+2003-03-25 18:31  n8gray
+
+	* source/: textDisp.c (1.46), textDisp.h (1.20): Committing edg's
+	patch to fix usage of shared GCs.
+
+2003-03-25 01:33  n8gray
+
+	* source/textDisp.c (1.45): Fixed line number color problems. 
+	Stupid cut & paste error...
+
+2003-03-24 23:56  yooden
+
+	* source/nedit.c (1.42): Paranoid protection against pathological
+	language settings.
+
+2003-03-24 17:05  edg
+
+	* source/: menu.c (1.69), nedit.h (1.35), window.c (1.77): Fix for
+	SF bug #564782: Show Path in Windows Menu
+
+2003-03-24 16:20  tringali
+
+	* source/nedit.c (1.41): Account for LANG being unset.
+
+2003-03-21 18:51  n8gray
+
+	* source/: textDisp.c (1.44), window.c (1.76): Fixing 2 color
+	problems.  1: Changing line number GC properties affected *all*
+	buffers.  2: New panes used default text area colors instead of
+	their window's.
+
+2003-03-21 18:31  tringali
+
+	* source/: nedit.c (1.40), help.c (1.89): Avoid crash when running
+	under a UTF-8 locale, and display locale in help.
+
+2003-03-21 18:22  edg
+
+	* source/: preferences.c (1.83), smartIndent.c (1.21),
+	smartIndent.h (1.6): Fix for SF bug #439867: Language mode renaming
+	bug.
+
+2003-03-20 13:23  edg
+
+	* makefiles/Makefile.sco (1.5): Typo fix (SF #689808: SCO makefile
+	error).
+
+2003-03-20 13:05  edg
+
+	* util/fontsel.c (1.23): Removed some unused variables (gcc
+	warnings).
+
+2003-03-20 13:02  edg
+
+	* source/: help.c (1.88), highlight.c (1.39), highlight.h (1.10),
+	textDisp.c (1.43): Fix for SF #700823: Nedit crash after highlight
+	Perl-Syntax on OS/390.	Made the syntax highlighting style
+	information independent of the character coding (ASCII or EBCDIC).
+
+2003-03-18 10:58  edg
+
+	* util/managedList.c (1.11): Fix for SF #705495: Crash while
+	Copying Pattern.
+
+2003-03-14 22:27  n8gray
+
+	* doc/help.etx (1.41), source/help_data.h (1.38),
+	source/help_topic.h (1.31), source/preferences.c (1.82): Added a
+	warning label to the color dialog and changed help text to make it
+	more clear that foreground colors only apply when syntax
+	highlighting is disabled.
+
+2003-03-13 09:11  n8gray
+
+	* util/fontsel.c (1.22): Hide the sample when the "Show
+	Proportional Fonts" toggle is toggled and the font selection is
+	cleared.  Also added a prototype for enableSample().
+
+2003-03-12 18:33  n8gray
+
+	* util/fontsel.c (1.21): Tabs -> Spaces
+	
+	If you want a shock, turn on backlighting, set tabs to a slightly
+	off-background color, and edit just about any file in the NEdit
+	project.
+
+2003-03-12 18:03  n8gray
+
+	* util/fontsel.c (1.20): Fixed clearing of sample field when "show
+	proportional fonts" was toggled.  Hide sample text when font
+	selection is invalid.
+
+2003-03-07 19:52  n8gray
+
+	* source/preferences.c (1.81): Made helper function addColorGroup()
+	static.
+
+2003-03-07 19:46  n8gray
+
+	* source/preferences.c (1.80): Using XtSetMappedWhenManaged to
+	show/hide the error labels in the color dialog.  Thanks Scott!
+
+2003-03-07 01:50  n8gray
+
+	* doc/help.etx (1.40), source/help_data.h (1.37),
+	source/help_topic.h (1.30), source/preferences.c (1.79): Duh. 
+	Forgot to save before the last commit.	Also changed docs to
+	reflect new labels in color dialog.
+
+2003-03-07 01:34  n8gray
+
+	* source/preferences.c (1.78): Minor labelsmithing on color dialog.
+
+2003-03-07 01:07  n8gray
+
+	* source/preferences.c (1.77): Using a more reliable hack for
+	showing/hiding the (Invalid!) labels in the color dialog.  To hide
+	it I set its fg color to its bg color.	To unhide it I restore the
+	fg color from its parent.  This way the label's width doesn't
+	change, solving the potential visual bug mentioned in my previous
+	commit.
+	
+	I tried changing the label from a gadget to a widget but the
+	XtMap/UnmapWidget functions still failed.  Oh well, this works ok.
+
+2003-03-05 23:50  n8gray
+
+	* doc/help.etx (1.39), source/help_data.h (1.36),
+	source/help_topic.h (1.29), source/menu.c (1.68), source/nedit.h
+	(1.34), source/preferences.c (1.76), source/preferences.h (1.32),
+	source/textDisp.c (1.42), source/textDisp.h (1.19), source/window.c
+	(1.75), source/window.h (1.12), util/fontsel.c (1.19),
+	util/fontsel.h (1.8): Adding the color dialog and documentation. 
+	Also adds a colored, editable text field to the font browser
+	dialog.
+	
+	There's a potential minor visual bug depending on the user's fonts.
+	 I've tried to fix it but can't seem to figure it out.	Search for
+	XXX in preferences.c for details.
+
+2003-02-20 17:30  arnef
+
+	* source/: file.c (1.57), nc.c (1.33), server.c (1.21): Fixed
+	problem with processing of nc command line.
+
+2003-02-18 20:17  tringali
+
+	* util/misc.c (1.50): Set group hint so that recent versions of
+	Sawfish will group windows together.
+
+2003-02-17 01:51  n8gray
+
+	* source/Makefile.common (1.14): Added parse.c target so that build
+	falls back to parse_noyacc.c if neither bison nor yacc can be
+	found. See:
+	http://www.nedit.org/archives/develop/2002-Apr/0512.html for a
+	discussion of this issue.
+
+2003-02-15 02:33  yooden
+
+	* source/file.c (1.56), util/getfiles.c (1.24), util/misc.c (1.49),
+	util/getfiles.h (1.6): Removed GetNewFilename()
+
+2003-02-15 01:06  yooden
+
+	* source/preferences.h (1.31): Removed double function
+	declarations.
+
+2003-01-14 22:36  n8gray
+
+	* source/tags.c (1.48): Added a private lineEmpty function for use
+	when loading calltips files.  Also fixed bug where calltip position
+	modifiers weren't reset when tips were posted by means other than
+	the calltip macro subroutine.
+
+2003-01-14 09:50  edg
+
+	* source/regularExp.c (1.21): Fix for \S, \W, \L, and \D
+	erroneously matching on \0.
+
+2003-01-10 15:33  tringali
+
+	* source/: window.c (1.74), nedit.c (1.39), text.c (1.37): Apply
+	the "frame around text area" patch and associated geometry fixes. 
+	Looks right when the background is light-colored (default), less so
+	if you use a dark background.  Can be disabled with resources if
+	you don't like it.
+
+2003-01-10 15:32  tringali
+
+	* source/file.c (1.55): Fix to prevent file dialog from growing
+	wider than the screen.	This is needed for window managers that do
+	not respect XmNmaxWidth (sawfish, twm, fvwm).
+
+2003-01-10 15:29  tringali
+
+	* util/: getfiles.c (1.23), misc.c (1.48): Prevent the file dialog
+	from getting bigger than screen.  This fix is for window managers
+	that do not respect XmNmaxWidth (sawfish, twm, fvwm).
+
+2003-01-07 22:37  tringali
+
+	* doc/: nedit.doc (1.37), nedit.html (1.31): Remove autogenerated
+	files from CVS to reduce conflicts.  They are now automatically
+	generated by the cron script for the website snapshot.
+
+2003-01-06 15:36  edg
+
+	* source/smartIndent.c (1.20): Bug fix: garbage collection could be
+	triggered during smart indent newline macro (very old copy & paste
+	error).
+
+2003-01-02 02:02  yooden
+
+	* doc/nedit.doc (1.36), doc/nedit.html (1.30), source/help_data.h
+	(1.35), source/help_topic.h (1.28): Updated reference to regex book
+	part two.
+
+2003-01-02 01:48  yooden
+
+	* doc/help.etx (1.38): Updated Reference to Regex book.
+
+2003-01-01 15:57  edg
+
+	* source/smartIndent.c (1.19): Fix for crash bug reported @develop:
+	newline macro inserting a string caused a recursive loop when
+	triggered through smart indent.
+
+2002-12-13 17:23  edg
+
+	* doc/Makefile (1.4): Added targets to regenerate the FAQ and build
+	the FAQ distribution.
+
+2002-12-13 17:20  edg
+
+	* doc/: faq.txt (1.4), faq.xml (1.5): Added a Q&A about the changed
+	binding of KP Enter (execute command line).
+
+2002-12-12 17:26  slobasso
+
+	* source/text.h (1.13): Remove warnings on hpux 10.20 compiler.
+
+2002-12-12 17:26  slobasso
+
+	* source/selection.c (1.23): Cleanup string to int conversion.
+
+2002-12-12 17:26  slobasso
+
+	* source/: search.c (1.54), search.h (1.18): Centralize string to
+	enum conversions for search_type.
+
+2002-12-12 17:26  slobasso
+
+	* source/parse_noyacc.c (1.5): Match changes in parse.y
+
+2002-12-12 17:25  slobasso
+
+	* source/parse.y (1.23): Move string constant code into function
+	InstallStringConstSymbol.
+
+2002-12-12 17:25  slobasso
+
+	* source/nedit.h (1.33): New macro TYPE_INT_STR_SIZE to determine a
+	safe string size for integer-like types.
+
+2002-12-12 17:25  slobasso
+
+	* source/macro.c (1.60): More macro failure macros and new macro
+	call valid_number.  Use of new macro TYPE_INT_STR_SIZE and
+	PERM_ALLOC_STR.  Add optional index to rangeset_defined.
+
+2002-12-12 17:25  slobasso
+
+	* source/interpret.h (1.12): New macro PERM_ALLOC_STR for static
+	strings that look allocated and move StringToNum global for
+	verification code.  New call InstallStringConstSymbol and move
+	DataValue.tag to an enum.
+
+2002-12-12 17:25  slobasso
+
+	* source/interpret.c (1.32): Use of new macro PERM_ALLOC_STR for
+	static strings that look allocated and move StringToNum global for
+	verification code.  New call InstallStringConstSymbol cleanup of
+	macro debug code with new stack dump. Rewrite SwapCode without
+	allocations.  Use of TYPE_INT_STR_SIZE for int string size. Fixes
+	to grabage collection to allow for PERM_ALLOC_STR and catch mod by
+	0 errors.
+
+2002-12-12 17:25  slobasso
+
+	* source/highlightData.c (1.40): New nedit macro call valid_number.
+
+2002-12-12 17:25  slobasso
+
+	* doc/help.etx (1.37), doc/nedit.doc (1.35), doc/nedit.html (1.29),
+	source/help_data.h (1.34): Add optional index to rangeset_defined
+	and new function valid_number.
+
+2002-12-11 18:24  tringali
+
+	* util/misc.c (1.47): Avoid a 5-second hang when posting a dialog
+	with certain window managers (Sawfish)
+
+2002-12-10 13:16  edg
+
+	* source/nc.c (1.32): Dropped support for reading preferences from
+	a .nc file. It was entirely undocumented and probably never used by
+	anyone (and it didn't work anymore since the introduction of the
+	NEDIT_HOME patch).
+
+2002-12-10 12:29  edg
+
+	* source/nc.c (1.31): Fixed a bug in yesterday's bug fix: macro
+	commands could be executed twice when a new server was started.
+
+2002-12-09 17:55  edg
+
+	* source/nedit.c (1.38): Fix for SF #649442: Dangerous shell
+	command. Changed the shortcut for "Execute Command Line" from "KP
+	Enter" to "Ctrl+KP Enter" to avoid accidental execution of
+	arbitrary commands.
+
+2002-12-09 17:18  edg
+
+	* source/nc.c (1.30): Fixed various command line argument passing
+	bugs introduced by the nc -wait patch (-icon, -geometry, -lm, ...
+	were dropped when a new file was opened and/or a new server was
+	started).
+
+2002-12-08 09:29  yooden
+
+	* source/: highlight.c (1.38), highlightData.c (1.39), macro.c
+	(1.59), rangeset.c (1.3), search.c (1.53): Some code cleanup and
+	removal of development artefacts.
+
+2002-12-04 12:30  edg
+
+	* source/macro.c (1.58): Added boundary checks to searchStringMS()
+	to avoid illegal memory accesses when passing a too large or
+	negative starting position to the search_string() macro.
+
+2002-12-02 15:59  tringali
+
+	* Makefile (1.9): Removed "doc" from default target so users
+	without Perl can build.  (We need a "developer only" target or mode
+	to do this right.)
+
+2002-11-28 23:22  yooden
+
+	* source/macro.c (1.57), source/menu.c (1.67), source/preferences.c
+	(1.75), util/prefFile.c (1.18), util/utils.c (1.19), util/utils.h
+	(1.11): Fixes the bug in the preference file name algorithm
+	reported by Scott in develop@.
+
+2002-11-22 18:18  tringali
+
+	* util/misc.c (1.46): Constrain maximum size of dialogs so they
+	aren't bigger than the screen.	(Slightly modified from Eddy's
+	original version.)
+
+2002-11-22 17:51  edg
+
+	* source/window.c (1.73): Minor improvement in the virtual key
+	binding parsing: ignore comment lines.
+
+2002-11-19 18:05  edg
+
+	* source/: highlight.c (1.37), regularExp.c (1.20), search.c
+	(1.52), textBuf.c (1.26), textBuf.h (1.13): Fixes for SF bugs
+	#515120 (changed behaviour of search?) and #429110 (RegEx search
+	bugs at end of buffer) and a cleanup of the SearchWindow function.
+
+2002-11-15 12:21  edg
+
+	* doc/setext (1.10): Minor backward compatibility fix for older
+	Perl version (5.004).
+
+2002-11-13 21:59  tringali
+
+	* source/: help_data.h (1.33), help_topic.h (1.27): - Change help
+	version to 5.4DEV
+
+2002-11-13 21:58  tringali
+
+	* source/: calltips.c (1.3), text.h (1.12), textDisp.c (1.41):
+	Don't #include "textP.h" where we can get away with it.
+
+2002-11-13 21:58  tringali
+
+	* source/help.c (1.87): Clean up #ifdef of HAVE__XMVERSIONSTRING
+	and reorder visual info
+
+2002-11-13 21:58  tringali
+
+	* source/highlightData.c (1.38): - Fix indentation, labels, and
+	mnemonics in highlightData.c
+
+2002-11-13 21:57  tringali
+
+	* source/: nedit.c (1.37), preferences.c (1.74): - Fix defaults
+	fonts to specify iso8859-1, for RH7.3.
+
+2002-11-13 17:56  edg
+
+	* source/: highlightData.c (1.37), regularExp.c (1.19): Implemented
+	the more conventional word boundary semantics for regular
+	expressions and adapted the built-in highlight patterns to the
+	changed semantics (the latter is largely automated).
+
+2002-11-12 10:04  ajhood
+
+	* doc/help.etx (1.36), doc/nedit.doc (1.34), doc/nedit.html (1.28),
+	source/help.c (1.86), source/help_data.h (1.32),
+	source/help_topic.h (1.26): Document default value of
+	nedit.backlightCharTypes Stop *backlightCharTypes in .Xdefaults
+	etc. affecting Help
+
+2002-11-08 20:22  edg
+
+	* source/: comnedit.com (1.9), highlight.c (1.36), highlight.h
+	(1.9), lnknedit.com (1.7), macro.c (1.56), menu.c (1.66), nedit.h
+	(1.32), preferences.c (1.73), preferences.h (1.30), rangeset.c
+	(1.2), rangeset_fn.h (1.2), server_common.c (1.3), text.h (1.11),
+	textDisp.h (1.18): VMS compilation and linking fixes (Michael
+	Smith).
+
+2002-11-08 16:53  slobasso
+
+	* source/macro.c (1.55): Removed unused variables and fixed error
+	macro.
+
+2002-10-31 16:08  edg
+
+	* doc/help.etx (1.35), doc/nc.man (1.6), doc/nedit.doc (1.33),
+	doc/nedit.html (1.27), source/help_data.h (1.31),
+	source/help_topic.h (1.25), source/nc.c (1.29): Fix for invalid
+	atom usage after time-out.  Made the nc time-out configurable
+	(-timeout <seconds> command line option and nc.timeOut X resource)
+	+ documentation updates.
+
+2002-10-30 11:44  edg
+
+	* ChangeLog (1.29): Minor correction.
+
+2002-10-30 11:42  edg
+
+	* ChangeLog (1.28): Removed lots of duplicate entries and added
+	lots of missing entries.  (Apparently, a merge has gone wrong a few
+	months ago).
+
+2002-10-30 11:11  edg
 
 	* ChangeLog (1.27): Update.
 
