@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.86 2004/08/01 10:06:10 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.87 2004/08/12 09:06:47 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1558,14 +1558,22 @@ void CheckForChangesToFile(WindowInfo *window)
        replace dialog) or on another desktop.
        
        This works, but I bet it costs a round-trip to the server.
-       Might be better to capture MapNotify/Unmap events instead. */
+       Might be better to capture MapNotify/Unmap events instead. 
 
-    XGetWindowAttributes(XtDisplay(window->shell),
-                         XtWindow(window->shell),
-                         &winAttr);
-
-    if (winAttr.map_state != IsViewable)
+       For tabs that are not on top, we don't want the dialog either,
+       and we don't even need to contact the server to find out. By
+       performing this check first, we avoid a server round-trip for
+       most files in practice. */
+    if (!IsTopDocument(window))
         silent = 1;
+    else {
+        XGetWindowAttributes(XtDisplay(window->shell),
+                             XtWindow(window->shell),
+                             &winAttr);
+
+        if (winAttr.map_state != IsViewable)
+            silent = 1;
+    }
 
     /* Get the file mode and modification time */
     strcpy(fullname, window->path);
