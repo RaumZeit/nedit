@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.8 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.9 2001/03/05 19:26:31 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1888,7 +1888,6 @@ static int arrayRef(void)
             return(execError("operator [] on non-array", NULL));
         }
     }
-    return(execError("bad array reference", NULL)); /* never should get here */
 }
 
 static int arrayAssign(void)
@@ -2111,7 +2110,6 @@ static int deleteArrayElement(void)
         arrayDeleteAll(dstPtr);
         return(STAT_OK);
     }
-    return(STAT_OK);
 }
 
 /*

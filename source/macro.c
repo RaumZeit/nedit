@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.11 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.12 2001/03/05 19:26:31 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -3074,13 +3074,16 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     char *sourceStr, *splitStr, *typeSplitStr;
     int searchType, beginPos, foundStart, foundEnd, strLength;
     int found, elementEnd, indexNum;
+    char indexStr[28], *allocIndexStr;
+    DataValue element;
+    int elementLen;
     
-    if (nArgs < 1) {
+    if (nArgs < 2) {
         return(wrongNArgsErr(errMsg));
     }
     if (!readStringArg(argList[0], &sourceStr, stringStorage[0], errMsg)) {
         *errMsg = "first argument must be a string: %s";
-        return False;
+        return(False);
     }
     if (!readStringArg(argList[1], &splitStr, stringStorage[1], errMsg)) {
         splitStr = NULL;
@@ -3092,9 +3095,9 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
     if (splitStr == NULL) {
         *errMsg = "second argument must be a non-empty string: %s";
-        return False;
+        return(False);
     }
-    if (readStringArg(argList[2], &typeSplitStr, stringStorage[2], errMsg)) {
+    if (nArgs > 2 && readStringArg(argList[2], &typeSplitStr, stringStorage[2], errMsg)) {
     	if (!strcmp(typeSplitStr, "literal")) {
     	    searchType = SEARCH_LITERAL;
         }
@@ -3106,7 +3109,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
         else {
             *errMsg = "unrecognized argument to %s";
-            return False;
+            return(False);
         }
     }
     else {
@@ -3116,68 +3119,62 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = NULL;
 
+    beginPos = 0;
+    indexNum = 0;
     strLength = strlen(sourceStr);
-    if (strLength > 0) {
-        char indexStr[28], *allocIndexStr;
-        DataValue element;
-        int elementLen;
+    found = 1;
+    while (found && beginPos < strLength) {
+        sprintf(indexStr, "%d", indexNum);
+        allocIndexStr = AllocString(strlen(indexStr) + 1);
+        if (!allocIndexStr) {
+            *errMsg = "array element failed to allocate key: %s";
+            return(False);
+        }
+        strcpy(allocIndexStr, indexStr);
+        found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType,
+            False, beginPos, &foundStart, &foundEnd,
+	        NULL, GetWindowDelimiters(window));
+        elementEnd = found ? foundStart : strLength;
+        elementLen = elementEnd - beginPos;
+        element.tag = STRING_TAG;
+        element.val.str = AllocString(elementLen + 1);
+        if (!element.val.str) {
+            *errMsg = "failed to allocate element value: %s";
+            return(False);
+        }
+        strncpy(element.val.str, &sourceStr[beginPos], elementLen);
+        element.val.str[elementLen] = 0;
 
-        beginPos = 0;
-        indexNum = 0;
-        found = 0;
-        do {
-            sprintf(indexStr, "%d", indexNum);
-            allocIndexStr = AllocString(strlen(indexStr) + 1);
-            if (!allocIndexStr) {
-                *errMsg = "array element failed to allocate key: %s";
-                return False;
-            }
-            strcpy(allocIndexStr, indexStr);
-            found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType,
-                False, beginPos, &foundStart, &foundEnd,
-	            NULL, GetWindowDelimiters(window));
-            elementEnd = found ? foundStart : strLength;
-            elementLen = elementEnd - beginPos;
-            element.tag = STRING_TAG;
-            element.val.str = AllocString(elementLen + 1);
-            if (!element.val.str) {
-                *errMsg = "failed to allocate element value: %s";
-                return False;
-            }
-            strncpy(element.val.str, &sourceStr[beginPos], elementLen);
-            element.val.str[elementLen] = 0;
-            
-            if (!arrayInsert(result, allocIndexStr, &element)) {
-                *errMsg = "array element failed to insert: %s";
-                return False;
-            }
-            
-            beginPos = found ? foundEnd : strLength;
-            ++indexNum;
-        } while (found && beginPos < strLength);
-        if (found) {
-            sprintf(indexStr, "%d", indexNum);
-            allocIndexStr = AllocString(strlen(indexStr) + 1);
-            if (!allocIndexStr) {
-                *errMsg = "array element failed to allocate key: %s";
-                return False;
-            }
-            strcpy(allocIndexStr, indexStr);
-            element.tag = STRING_TAG;
-            element.val.str = AllocString(1);
-            if (!element.val.str) {
-                *errMsg = "failed to allocate element value: %s";
-                return False;
-            }
-            element.val.str[0] = 0;
+        if (!arrayInsert(result, allocIndexStr, &element)) {
+            *errMsg = "array element failed to insert: %s";
+            return(False);
+        }
 
-            if (!arrayInsert(result, allocIndexStr, &element)) {
-                *errMsg = "array element failed to insert: %s";
-                return False;
-            }
+        beginPos = found ? foundEnd : strLength;
+        ++indexNum;
+    }
+    if (found) {
+        sprintf(indexStr, "%d", indexNum);
+        allocIndexStr = AllocString(strlen(indexStr) + 1);
+        if (!allocIndexStr) {
+            *errMsg = "array element failed to allocate key: %s";
+            return(False);
+        }
+        strcpy(allocIndexStr, indexStr);
+        element.tag = STRING_TAG;
+        element.val.str = AllocString(1);
+        if (!element.val.str) {
+            *errMsg = "failed to allocate element value: %s";
+            return(False);
+        }
+        element.val.str[0] = 0;
+
+        if (!arrayInsert(result, allocIndexStr, &element)) {
+            *errMsg = "array element failed to insert: %s";
+            return(False);
         }
     }
-    return True;
+    return(True);
 }
 
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,

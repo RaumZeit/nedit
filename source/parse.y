@@ -26,10 +26,10 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.10 2001/03/05 16:20:42 amai Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.11 2001/03/05 19:26:31 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
-static int yyparse(void);
+int yyparse(void);
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static Symbol *matchesActionRoutine(char **inPtr);
@@ -479,7 +479,7 @@ static Symbol *matchesActionRoutine(char **inPtr)
 ** parsing, so this message is immediately reported to the caller
 ** of ParseExpr)
 */
-int yyerror(char *s)
+static int yyerror(char *s)
 {
     ErrMsg = s;
     return 0;
