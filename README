@@ -1,4 +1,4 @@
-                    NEdit Version 5.1.1, March 17, 2000
+                    NEdit Version 5.2.0beta,  February 2001
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -82,16 +82,17 @@ BUILDING NEDIT
 
 Pre-built executables will be available for most major Unix and VMS systems, so
 check the nedit web page (http://nedit.org), first.  Building NEdit requires
-the Motif GUI library, libXm.a, which is a standard part of commercial Unix
-systems, but which requires separate installation on Linux and other free Unix
-variants.  A free version of Motif, called LessTif, is now available and stable
-enough to run NEdit reasonably well on these systems.  If you are using
-LessTif, you must have LessTif 0.92.0 or greater.  Older versions may not work
-very well.  See the LessTif section under PLATFORM SPECIFIC ISSUES for details.
+the Motif GUI library, e.g. libXm.a or libXm.so, which is a standard part
+of commercial Unix systems, but which requires separate installation on Linux
+and other free Unix variants.  A free version of Motif, called LessTif,
+is now available and stable enough to run NEdit reasonably well on these systems.
+If you are using LessTif, you must have LessTif 0.92.0 or greater.  Older versions
+may not work very well.  See the LessTif section under PLATFORM SPECIFIC ISSUES
+for details.
 
-The two directories called source and util contain the sources for NEdit.  Util
-should be built first, followed by source.  The makefile in this directory can
-be used to build both in sequence if your system is one of the supported
+The two directories called source and util contain the sources for NEdit.
+Util should be built first, followed by source.  The makefile in this directory
+can be used to build both in sequence if your system is one of the supported
 machines and no modifications are necessary to the makefiles.  To build NEdit
 from this directory, issue the command: "make <machine-type>"; where
 <machine-type> is one of suffixes of a Makefile in the directory "makefiles". 
@@ -140,6 +141,15 @@ compiles and links the files in the source directory to produce the nedit.exe
 executable.
 
 
+Additional Settings
+
+Some C preprocessor macros may be used to en/disable certain
+parts of the code. Usually this correponds to some non-important
+features being selected or certain workarounds for platform-specifc
+problems. Those which might be useful on more than one platform
+are documented in makefiles/Makefile.generic.
+
+
 INSTALLATION
 
 NEdit consists of a single, stand-alone executable file which does not require
@@ -180,11 +190,11 @@ PLATFORM SPECIFIC ISSUES
 
 Systems with LessTif, rather than Motif libraries
 
-As of Lesstif .91.4, NEdit is very stable with Lesstif. 
+As of Lesstif 0.91.4, NEdit is very stable with Lesstif. 
 You can get the latest LessTif version from http://www.lesstif.org.
-If you are having trouble building with
-LessTif, remember there are pre-compiled statically linked executables
-available from http://nedit.org.  Known bugs in NEdit linked with LessTif are:
+If you are having trouble building with LessTif, remember there are
+pre-compiled statically linked executables available from http://nedit.org.
+Known bugs in NEdit linked with LessTif are:
 
   1) Some dialogs which are intended to be modal (prevent other activity
      while up) are not, and doing other actions while these dialogs are

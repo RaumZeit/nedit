@@ -12,7 +12,7 @@ SHELL=/bin/sh
 
 all:
 	@echo "Please specify target"
-	@ls -C makefiles | sed -e 's/Makefile.//g'
+	@(cd makefiles && ls -C Makefile* | sed -e 's/Makefile.//g')
 
 .DEFAULT:
 	@- (cd util;   if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
