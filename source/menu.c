@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.55 2002/03/14 17:17:13 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.56 2002/04/19 16:22:51 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -88,6 +88,12 @@ static const char CVSID[] = "$Id: menu.c,v 1.55 2002/03/14 17:17:13 amai Exp $";
 #else
 #define NEDIT_DB_FILE_NAME ".neditdb"
 #endif /*VMS*/
+
+#if XmVersion >= 1002
+#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
+#else
+#define MENU_WIDGET(w) (w)
+#endif
 
 /* Menu modes for SGI_CUSTOM short-menus feature */
 enum menuModes {FULL, SHORT};
@@ -531,6 +537,13 @@ static char **PrevOpen;
 /* Window to receive items to be toggled on and off in short menus mode */
 static WindowInfo *ShortMenuWindow;
 #endif
+
+void HidePointerOnKeyedEvent(Widget w, XEvent *event)
+{
+    if (event->type == KeyPress) {
+        ShowHidePointer((TextWidget)w, True);
+    }
+}
 
 /*
 ** Install actions for use in translation tables and macro recording, relating
@@ -1123,6 +1136,8 @@ static void helpCB( Widget menuItem, XtPointer clientData, XtPointer callData )
     WindowInfo *window = (WindowInfo*) clientData;
     enum HelpTopic topic;
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtVaGetValues( menuItem, XmNuserData, &topic, 0 );
     
     Help( window->shell, topic );
@@ -1213,12 +1228,10 @@ static HelpMenu * buildHelpMenu(
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, (char *)clientData,
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
@@ -1227,12 +1240,16 @@ static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     static char *params[1] = {"rect"};
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "paste_clipboard",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "shift_left_by_tab" : "shift_left",
@@ -1241,6 +1258,8 @@ static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "shift_right_by_tab" : "shift_right",
@@ -1249,6 +1268,8 @@ static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void findCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "find_dialog",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
@@ -1256,6 +1277,8 @@ static void findCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void findSameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
      XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "find_again",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
@@ -1263,6 +1286,8 @@ static void findSameCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void findSelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "find_selection",
     	    ((XmAnyCallbackStruct *)callData)->event, 
     	    shiftKeyToDir(callData), 1);
@@ -1270,6 +1295,8 @@ static void findSelCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
 	    "start_incremental_find", ((XmAnyCallbackStruct *)callData)->event, 
     	    shiftKeyToDir(callData), 1);
@@ -1277,6 +1304,8 @@ static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "replace_dialog",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
@@ -1284,6 +1313,8 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "replace_again",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
@@ -1291,6 +1322,8 @@ static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "replace_find_same",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
@@ -1301,6 +1334,8 @@ static void markCB(Widget w, XtPointer clientData, XtPointer callData)
     XEvent *event = ((XmAnyCallbackStruct *)callData)->event;
     WindowInfo *window = (WindowInfo *)clientData;
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     if (event->type == KeyPress)
     	BeginMarkCommand(window);
     else
@@ -1314,6 +1349,8 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
     int extend = event->xbutton.state & ShiftMask;
     static char *params[1] = {"extend"};
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     if (event->type == KeyPress)
     	BeginGotoMarkCommand(window, extend);
     else
@@ -1323,6 +1360,8 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "select_to_matching" : "goto_matching",
@@ -1332,17 +1371,15 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
 static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"off"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Indent Off")) {
 	autoIndentOffDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1350,17 +1387,15 @@ static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
 static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"on"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Indent")) {
 	autoIndentDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1368,52 +1403,45 @@ static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"smart"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Smart Indent")) {
 	smartIndentDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void autoSaveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Incremental Backup")) {
 	autoSaveDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_incremental_backup",
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
 static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Make Backup Copy")) {
         preserveDefCB(w, window, callData);
         SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_make_backup_copy",
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
@@ -1421,17 +1449,15 @@ static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {NO_FLASH_STRING};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Show Matching Off")) {
 	showMatchingOffDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1439,17 +1465,15 @@ static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
 static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {FLASH_DELIMIT_STRING};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Show Matching Delimiter")) {
 	showMatchingDelimitDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1457,34 +1481,30 @@ static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData
 static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {FLASH_RANGE_STRING};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Show Matching Range")) {
 	showMatchingRangeDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Match Syntax Based")) {
 	matchSyntaxBasedDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_match_syntax_based",
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
@@ -1497,17 +1517,15 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"none"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "No Wrap")) {
 	noWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1515,17 +1533,15 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"auto"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Newline Wrap")) {
 	newlineWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -1533,45 +1549,44 @@ static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"continuous"};
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Continuous Wrap")) {
     	contWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
+    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     WrapMarginDialog(window->shell, window);
 }
 
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     TabsPrefDialog(window->shell, window);
 }
 
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w));
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Statistics Line")) {
 	statsLineDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_statistics_line",
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
@@ -1580,6 +1595,8 @@ static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(NO_AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1593,6 +1610,8 @@ static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1606,6 +1625,8 @@ static void smartIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(SMART_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1620,6 +1641,8 @@ static void autoSaveDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoSave(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1631,6 +1654,8 @@ static void preserveDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSaveOldVersion(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1639,6 +1664,8 @@ static void preserveDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     ChooseFonts(window, False);
 }
 
@@ -1646,6 +1673,8 @@ static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NO_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1659,6 +1688,8 @@ static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NEWLINE_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1672,6 +1703,8 @@ static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(CONTINUOUS_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1683,13 +1716,17 @@ static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     WrapMarginDialog(window->shell, NULL);
 }
 
-static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data)
+static void smartTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
 {
     WindowInfo *win;
 	
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefSmartTags(True);
     for (win=WindowList; win!=NULL; win=win->next) {
 	XmToggleButtonSetState(win->smartTagsDefItem, True, False);
@@ -1697,10 +1734,12 @@ static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_
     }
 }
 
-static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data)
+static void showAllTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
 {
     WindowInfo *win;
 	
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefSmartTags(False);
     for (win=WindowList; win!=NULL; win=win->next) {
 	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
@@ -1710,6 +1749,8 @@ static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer cal
 
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     TabsPrefDialog(window->shell, NULL);
 }
 
@@ -1717,6 +1758,8 @@ static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(NO_FLASH);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1730,6 +1773,8 @@ static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callD
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_DELIMIT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1743,6 +1788,8 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1758,6 +1805,8 @@ static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData
 
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefMatchSyntaxBased(state);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1769,6 +1818,8 @@ static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(False);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1781,6 +1832,8 @@ static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(True);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1791,44 +1844,60 @@ static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void highlightingDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditHighlightPatterns(window);
 }
 
 static void smartMacrosDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditSmartIndentMacros(window);
 }
 
 static void stylesDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditHighlightStyles(window->shell, NULL);
 }
 
 static void languageDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditLanguageModes(window->shell);
 }
 
 #ifndef VMS
 static void shellDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditShellMenu(window);
 }
 #endif /* VMS */
 
 static void macroDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditMacroMenu(window);
 }
 
 static void bgMenuDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     EditBGMenu(window);
 }
 
 static void customizeTitleDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-   EditCustomTitleFormat(window->shell, window);
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
+    EditCustomTitleFormat(window->shell, window);
 }
 
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1836,6 +1905,8 @@ static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchDlogs(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1847,6 +1918,8 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefBeepOnSearchWrap(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1858,6 +1931,8 @@ static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefKeepSearchDlogs(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1869,6 +1944,8 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchWraps(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1880,6 +1957,8 @@ static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefAppendLF(state);
     for (win = WindowList; win != NULL; win = win->next)
     {
@@ -1892,6 +1971,8 @@ static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
@@ -1906,6 +1987,8 @@ static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefRepositionDialogs(state);
     SetPointerCenteredDialogs(state);
@@ -1918,6 +2001,8 @@ static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnFileMods(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1929,6 +2014,8 @@ static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnExit(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1940,6 +2027,8 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefStatsLine(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1951,6 +2040,8 @@ static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefISearchLine(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1962,6 +2053,8 @@ static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefLineNums(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1973,6 +2066,8 @@ static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callDat
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowPathInWindowsMenu(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1983,6 +2078,8 @@ static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL);
@@ -2001,6 +2098,8 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE);
@@ -2019,6 +2118,8 @@ static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL_WORD);
@@ -2032,10 +2133,13 @@ static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData)
     	}
     }
 }
+
 static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE_WORD);
@@ -2054,6 +2158,8 @@ static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX);
@@ -2072,6 +2178,8 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX_NOCASE);
@@ -2091,6 +2199,8 @@ static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
@@ -2106,6 +2216,8 @@ static void replaceScopeSelectionCB(Widget w, WindowInfo *window, caddr_t callDa
 {
    WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
@@ -2121,6 +2233,8 @@ static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
@@ -2135,32 +2249,44 @@ static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void size24x80CB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     setWindowSizeDefault(24, 80);
 }
 
 static void size40x80CB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     setWindowSizeDefault(40, 80);
 }
 
 static void size60x80CB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     setWindowSizeDefault(60, 80);
 }
 
 static void size80x80CB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     setWindowSizeDefault(80, 80);
 }
 
 static void sizeCustomCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     RowColumnPrefDialog(window->shell);
     updateWindowSizeMenus();
 }
 
 static void savePrefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     SaveNEditPrefs(window->shell, False);
 }
 
@@ -2168,6 +2294,8 @@ static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     static char *params[1] = {"\f"};
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "insert_string",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
@@ -2175,27 +2303,37 @@ static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData)
 static void cancelShellCB(Widget w, WindowInfo *window, XtPointer callData)
 {
 #ifndef VMS
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     AbortShellCommand(window);
 #endif
 }
 
 static void learnCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     BeginLearn(window);
 }
 
 static void finishLearnCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     FinishLearn();
 }
 
 static void cancelLearnCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     CancelMacroOrLearn(window);
 }
 
 static void replayCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     Replay(window);
 }
 
@@ -2217,6 +2355,8 @@ static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     updateTagsFileMenu(window);
 }
 
@@ -3024,6 +3164,7 @@ static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     		"NEdit: shell_menu_command requires item-name argument\n");
     	return;
     }
+    HidePointerOnKeyedEvent(w, event);
     DoNamedShellMenuCmd(WidgetToWindow(w), args[0],
     	    event->xany.send_event == MACRO_EVENT_MARKER);
 }
@@ -3052,6 +3193,7 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
             return;
 	}
     }
+    HidePointerOnKeyedEvent(w, event);
     DoNamedMacroMenuCmd(WidgetToWindow(w), args[0]);
 }
 
@@ -3069,6 +3211,7 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
             return;
 	}
     }
+    HidePointerOnKeyedEvent(w, event);
     DoNamedBGMenuCmd(WidgetToWindow(w), args[0]);
 }
 
@@ -4275,18 +4418,18 @@ static char **shiftKeyToDir(XtPointer callData)
 
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     RaiseShellWindow(window->shell);
 }
 
 static void openPrevCB(Widget w, char *name, caddr_t callData)
 {
     char *params[1];
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     params[0] = name;
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "open",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
@@ -4296,12 +4439,10 @@ static void openPrevCB(Widget w, char *name, caddr_t callData)
 static void unloadTagsFileCB(Widget w, char *name, caddr_t callData)
 {
     char *params[1];
-#if XmVersion >= 1002
-    Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */
-#else
-    Widget menu = w;
-#endif
+    Widget menu = MENU_WIDGET(w);
     
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     params[0] = name;
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tags_file",
 	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
@@ -4418,6 +4559,8 @@ static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData)
     int i, state = XmToggleButtonGetState(w);
     Widget parent;
 
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference */
     SetPrefShortMenus(state);
     

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.8 2002/02/05 18:16:58 edg Exp $ */
+/* $Id: textDisp.h,v 1.9 2002/04/19 16:22:53 slobasso Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -79,6 +79,7 @@ typedef struct _textDisp {
 				           when resynchronization is suppressed) */
     int modifyingTabDist;		/* Whether tab distance is being
     					   modified */
+    Boolean pointerHidden;              /* true if the mouse pointer is hidden */
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,

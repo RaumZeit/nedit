@@ -1,4 +1,4 @@
-/* $Id: menu.h,v 1.5 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: menu.h,v 1.6 2002/04/19 16:22:52 slobasso Exp $ */
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
 
@@ -12,3 +12,4 @@ void WriteNEditDB(void);
 void ReadNEditDB(void);
 Widget CreateBGMenu(WindowInfo *window);
 void AddBGMenuAction(Widget widget);
+void HidePointerOnKeyedEvent(Widget w, XEvent *event);

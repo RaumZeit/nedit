@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.25 2002/03/14 17:20:08 amai Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.26 2002/04/19 16:22:52 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -74,6 +74,10 @@ static const char CVSID[] = "$Id: text.c,v 1.25 2002/03/14 17:20:08 amai Exp $";
 #define VERTICAL_SCROLL_DELAY 50
 
 static void initialize(TextWidget request, TextWidget new);
+static void handleHidePointer(TextWidget w, XtPointer unused, 
+        XEvent *event, Boolean *continue_to_dispatch);
+static void handleShowPointer(TextWidget w, XtPointer unused, 
+        XEvent *event, Boolean *continue_to_dispatch);
 static void redisplay(TextWidget w, XEvent *event, Region region);
 static void destroy(TextWidget w);
 static void resize(TextWidget w);
@@ -723,6 +727,10 @@ static TextClassRec textClassRec = {
 };
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
+#define NEDIT_HIDE_CURSOR_MASK (KeyPressMask)
+#define NEDIT_SHOW_CURSOR_MASK (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask)
+static char empty_bits[] = {0x00, 0x00, 0x00, 0x00};
+static Cursor empty_cursor = 0;
 
 /*
 ** Widget initialize method
@@ -737,7 +745,10 @@ static void initialize(TextWidget request, TextWidget new)
     int charWidth = fs->max_bounds.width;
     int marginWidth = new->text.marginWidth;
     int lineNumCols = new->text.lineNumCols;
-   
+    Pixmap empty_pixmap;
+    XColor black_color;
+    Display *theDisplay;
+    
     /* Set the initial window size based on the rows and columns resources */
     if (request->core.width == 0)
     	new->core.width = charWidth * new->text.columns + marginWidth*2 +
@@ -809,6 +820,69 @@ static void initialize(TextWidget request, TextWidget new)
     /* In case some Resources for the IC need to be set, add them below */
     XmImVaSetValues((Widget)new, NULL);
 #endif
+
+    if (GetPrefTypingHidesPointer()) {
+        /* Set up the empty Cursor */
+        if (empty_cursor == 0) {
+            theDisplay = XtDisplay((Widget)new);
+            empty_pixmap = XCreateBitmapFromData(theDisplay,
+                    RootWindowOfScreen(XtScreen((Widget)new)), empty_bits, 1, 1);
+            XParseColor(theDisplay, DefaultColormapOfScreen(XtScreen((Widget)new)), 
+                    "black", &black_color);
+            empty_cursor = XCreatePixmapCursor(theDisplay, empty_pixmap, 
+                    empty_pixmap, &black_color, &black_color, 0, 0);
+        }
+
+        /* Add event handler to hide the pointer on keypresses */
+        XtAddEventHandler((Widget)new, NEDIT_HIDE_CURSOR_MASK, False, 
+                (XtEventHandler)handleHidePointer, (Opaque)NULL);
+    }
+}
+
+/* Hide the pointer while the user is typing */
+static void handleHidePointer(TextWidget w, XtPointer unused, 
+        XEvent *event, Boolean *continue_to_dispatch) {
+    ShowHidePointer(w, True);
+}
+
+/* Restore the pointer if the mouse moves or focus changes */
+static void handleShowPointer(TextWidget w, XtPointer unused, 
+        XEvent *event, Boolean *continue_to_dispatch) {
+    ShowHidePointer(w, False);
+}
+
+void ShowHidePointer(TextWidget w, Boolean hidePointer)
+{
+    if (GetPrefTypingHidesPointer()) {
+        if (hidePointer != w->text.textD->pointerHidden) {
+            if (hidePointer) {
+                /* Don't listen for keypresses any more */
+                XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, 
+                        (XtEventHandler)handleHidePointer, (Opaque)NULL);
+                /* Switch to empty cursor */
+                XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
+
+                w->text.textD->pointerHidden = True;
+
+                /* Listen to mouse movement, focus change, and button presses */
+                XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK,
+                        False, (XtEventHandler)handleShowPointer, (Opaque)NULL);
+            }
+            else {
+                /* Don't listen to mouse/focus events any more */
+                XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK,
+                        False, (XtEventHandler)handleShowPointer, (Opaque)NULL);
+                /* Switch to regular cursor */
+                XUndefineCursor(XtDisplay(w), XtWindow(w));
+
+                w->text.textD->pointerHidden = False;
+
+                /* Listen for keypresses now */
+                XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, 
+                        (XtEventHandler)handleHidePointer, (Opaque)NULL);
+            }
+        }
+    }
 }
 
 /*

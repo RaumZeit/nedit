@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.20 2002/03/11 22:05:11 edg Exp $ */
+/* $Id: preferences.h,v 1.21 2002/04/19 16:22:52 slobasso Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -105,6 +105,7 @@ void SetPrefStdOpenDialog(int state);
 int GetPrefStdOpenDialog(void);
 char *GetPrefDelimiters(void);
 int GetPrefMaxPrevOpenFiles(void);
+int GetPrefTypingHidesPointer(void);
 #ifdef SGI_CUSTOM
 void SetPrefShortMenus(int state);
 int GetPrefShortMenus(void);

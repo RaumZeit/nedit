@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.51 2002/03/14 17:17:52 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.52 2002/04/19 16:22:52 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -245,6 +245,7 @@ static struct prefData {
     int stdOpenDialog;		/* w. to retain redundant text field in Open */
     char tagFile[MAXPATHLEN];	/* name of tags file to look for at startup */
     int maxPrevOpenFiles;   	/* limit to size of Open Previous menu */
+    int typingHidesPointer;     /* hide mouse pointer when typing */
     char delimiters[MAX_WORD_DELIMITERS]; /* punctuation characters */
     char shell[MAXPATHLEN];	/* shell to use for executing commands */
     char geometry[MAX_GEOM_STRING_LEN];	/* per-application geometry string,
@@ -822,6 +823,8 @@ static PrefDescripRec PrefDescrip[] = {
       (void *)sizeof(PrefData.bgMenuBtn), False},
     {"smartTags", "SmartTags", PREF_BOOLEAN, "True",
     	&PrefData.smartTags, NULL, True},
+    {"typingHidesPointer", "TypingHidesPointer", PREF_BOOLEAN, "False",
+        &PrefData.typingHidesPointer, NULL, True},
     {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", 
       	PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, NULL, False},
     {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False",
@@ -1654,6 +1657,11 @@ char *GetPrefBGMenuBtn(void)
 int GetPrefMaxPrevOpenFiles(void)
 {
     return PrefData.maxPrevOpenFiles;
+}
+
+int GetPrefTypingHidesPointer(void)
+{
+    return(PrefData.typingHidesPointer);
 }
 
 #ifdef SGI_CUSTOM

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.21 2002/03/14 17:41:01 amai Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.22 2002/04/19 16:22:53 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -201,6 +201,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->suppressResync = 0;
     textD->nLinesDeleted = 0;
     textD->modifyingTabDist = 0;
+    textD->pointerHidden = False;
     
     /* Attach an event handler to the widget so we can know the visibility
        (used for choosing the fastest drawing method) */
