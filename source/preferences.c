@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.50 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.51 2002/03/14 17:17:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -41,6 +41,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.50 2002/03/14 01:25:23 amai 
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
@@ -75,6 +76,11 @@ static const char CVSID[] = "$Id: preferences.c,v 1.50 2002/03/14 01:25:23 amai 
 #include "regularExp.h"
 #include "smartIndent.h"
 #include "windowTitle.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 #define PREF_FILE_NAME ".nedit"
 

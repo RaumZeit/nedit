@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.20 2002/03/14 17:19:00 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -56,6 +56,11 @@ static const char CVSID[] = "$Id: selection.c,v 1.19 2002/03/14 01:25:24 amai Ex
 #include "file.h"
 #include "window.h"
 #include "menu.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.28 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.29 2002/03/14 17:16:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -64,6 +64,10 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.28 2002/03/14 01:25:23 ama
 #include "window.h"
 #include "regexConvert.h"
 #include "highlightData.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /* Maximum allowed number of styles (also limited by representation of
    styles as a byte - 'b') */

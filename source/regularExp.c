@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.13 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.14 2002/03/14 17:18:29 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -63,6 +63,11 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.13 2002/03/14 01:25:23 amai E
 #include <limits.h>
 
 #include "regularExp.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 /* The first byte of the regexp internal `program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the

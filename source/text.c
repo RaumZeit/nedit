@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.24 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.25 2002/03/14 17:20:08 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -55,6 +55,11 @@ static const char CVSID[] = "$Id: text.c,v 1.24 2002/03/14 01:25:24 amai Exp $";
 #include "textP.h"
 #include "textSel.h"
 #include "textDrag.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 #ifdef UNICOS
 #define XtOffset(p_type,field) ((size_t)__INTADDR__(&(((p_type)0)->field)))

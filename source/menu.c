@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.54 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.55 2002/03/14 17:17:13 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -77,6 +77,10 @@ static const char CVSID[] = "$Id: menu.c,v 1.54 2002/03/14 01:25:23 amai Exp $";
 #include "interpret.h"
 #include "smartIndent.h"
 #include "windowTitle.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /* File name for Open Previous file database */
 #ifdef VMS

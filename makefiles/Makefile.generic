@@ -1,9 +1,9 @@
-# $Id: Makefile.generic,v 1.7 2001/11/12 13:46:54 amai Exp $
+# $Id: Makefile.generic,v 1.8 2002/03/14 17:15:16 amai Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
 # NEdit does not use any kind of automated configuration like the popular GNU
-# configure utility, or IMake. Instead, it has a set of hand-generated
+# configure utility, or Imake. Instead, it has a set of hand-generated
 # system-specific Makefiles.  The Makefiles serve two purposes.  The obvious
 # purpose is to build NEdit.  The less obvious purpose is to document on which
 # systems effort has been put into verifying that NEdit actually works properly.
@@ -93,6 +93,14 @@ AR=ar
 #
 # NO_READLINK       Define if your system doesn't have the UNIX interface
 #                   readlink(2) - or just no symlinks at all.
+#
+# HAVE_CONFIG_H     Include config.h from toplevel directory in front
+#                   of all other headers in each .c source file.
+#                   Only useful for developers so far.
+#
+# HAVE_DEBUG_H      Include debug.h from toplevel directory after
+#                   all other headers in each .c source file.
+#                   Only useful for developers.
 #
 # Some compilers need to be told to operate in ansi-standard mode, some have
 # different levels of optimization that you can select (optimization improves

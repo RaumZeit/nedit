@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.30 2002/02/08 23:26:26 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.31 2002/03/14 17:17:48 amai Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -29,9 +29,15 @@ static const char CVSID[] = "$Id: nedit.c,v 1.30 2002/02/08 23:26:26 tringali Ex
 *	8/18/93 - Mark Edel & Joy Kyriakopulos - Ported to VMS		       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #ifndef NO_XMIM
 #include <X11/Xlocale.h>
 #else
@@ -51,6 +57,11 @@ static const char CVSID[] = "$Id: nedit.c,v 1.30 2002/02/08 23:26:26 tringali Ex
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
+#include "../util/misc.h"
+#include "../util/printUtils.h"
+#include "../util/fileUtils.h"
+#include "../util/getfiles.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "file.h"
@@ -65,10 +76,10 @@ static const char CVSID[] = "$Id: nedit.c,v 1.30 2002/02/08 23:26:26 tringali Ex
 #include "interpret.h"
 #include "parse.h"
 #include "help.h"
-#include "../util/misc.h"
-#include "../util/printUtils.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 
 static void nextArg(int argc, char **argv, int *argIndex);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.77 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.78 2002/03/14 17:15:53 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -67,6 +67,10 @@ static const char CVSID[] = "$Id: help.c,v 1.77 2002/03/14 01:25:23 amai Exp $";
 #include "help_data.h"
 #include "file.h"
 #include "highlight.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /*============================================================================*/
 /*                              SYMBOL DEFINITIONS                            */

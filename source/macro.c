@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.39 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.40 2002/03/14 17:17:07 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -82,6 +82,10 @@ static const char CVSID[] = "$Id: macro.c,v 1.39 2002/03/14 01:25:23 amai Exp $"
 #include "smartIndent.h"
 #include "userCmds.h"
 #include "selection.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 #define AUTO_LOAD_MACRO_FILE_NAME ".neditmacro"
 	
@@ -2173,11 +2177,13 @@ static int writeFileMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     return writeOrAppendFile(False, window, argList, nArgs, result, errMsg);
 }
+
 static int appendFileMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     return writeOrAppendFile(True, window, argList, nArgs, result, errMsg);
 }
+
 static int writeOrAppendFile(int append, WindowInfo *window,
     	DataValue *argList, int nArgs, DataValue *result, char **errMsg)
 {

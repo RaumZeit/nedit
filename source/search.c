@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.44 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.45 2002/03/14 17:18:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -76,6 +76,11 @@ static const char CVSID[] = "$Id: search.c,v 1.44 2002/03/14 01:25:24 amai Exp $
 #include "textDisp.h"
 #include "textP.h"
 #endif
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 int NHist = 0;
 

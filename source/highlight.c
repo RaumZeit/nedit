@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.26 2002/03/14 01:25:23 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.27 2002/03/14 17:16:07 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -62,6 +62,10 @@ static const char CVSID[] = "$Id: highlight.c,v 1.26 2002/03/14 01:25:23 amai Ex
 #include "highlightData.h"
 #include "preferences.h"
 #include "window.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /* How much re-parsing to do when an unfinished style is encountered */
 #define PASS_2_REPARSE_CHUNK_SIZE 1000

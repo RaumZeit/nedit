@@ -1,4 +1,4 @@
-/* $Id: linkdate.c,v 1.2 2002/03/14 01:25:23 amai Exp $ */
+/* $Id: linkdate.c,v 1.3 2002/03/14 17:17:06 amai Exp $ */
 /*******************************************************************************
 *                                                                              *
 * linkdate.c -- Compile time configuration                                     *
@@ -28,6 +28,10 @@
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
+#endif
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
 #endif
 
 const char linkdate[] = __DATE__;
