@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.70 2004/04/19 15:46:56 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.71 2004/04/28 01:54:19 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -317,8 +317,8 @@ static char *fallbackResources[] = {
     "*macroMenu.repeat.accelerator: Ctrl<Key>comma",
     "*macroMenu.repeat.acceleratorText: Ctrl+,",
     "*windowsMenu.mnemonic: W",
-    "*windowsMenu.splitWindow.accelerator: Ctrl<Key>2",
-    "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
+    "*windowsMenu.splitPane.accelerator: Ctrl<Key>2",
+    "*windowsMenu.splitPane.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
     "*windowsMenu.nextDocument.acceleratorText: Ctrl+Page Down",

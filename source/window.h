@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.22 2004/04/17 10:32:25 tksoh Exp $ */
+/* $Id: window.h,v 1.23 2004/04/28 01:54:20 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -35,7 +35,7 @@ void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);
 void SetAutoScroll(WindowInfo *window, int margin);
-void SplitWindow(WindowInfo *window);
+void SplitPane(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void ClosePane(WindowInfo *window);

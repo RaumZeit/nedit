@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.63 2004/04/17 03:51:48 n8gray Exp $
+.. $Id: help.etx,v 1.64 2004/04/28 01:54:19 tksoh Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2928,7 +2928,7 @@ Action Routines
     fill_paragraph()          
     control_code_dialog()     Windows Menu
                               -------------------------
-                              split_window()
+                              split_pane()
                               close_pane()
                               detach_document()
                               move_document_dialog()

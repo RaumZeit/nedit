@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Apr 16, 2004 (Do NOT edit!)
+                 Generated on Apr 28, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -2735,7 +2735,7 @@ static char * htxt_actions [] = {
 "    fill_paragraph()          \n",
 "    control_code_dialog()     Windows Menu\n",
 "                              -------------------------\n",
-"                              split_window()\n",
+"                              split_pane()\n",
 "                              close_pane()\n",
 "                              detach_document()\n",
 "                              move_document_dialog()\n",
@@ -5420,4 +5420,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Apr 13, 2004\n";
+static const char * NEditVersion = "NEdit release of Apr 28, 2004\n";

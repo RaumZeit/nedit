@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.152 2004/04/27 01:35:28 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.153 2004/04/28 01:54:19 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -699,7 +699,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->menuBar = menuBar;
     XtManageChild(menuBar);
     
-    /* Create paned window to manage split window behavior */
+    /* Create paned window to manage split pane behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
             XmNseparatorOn, False,
             XmNspacing, 3, XmNsashIndent, -2, NULL);
@@ -1142,10 +1142,10 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
 }
 
 /*
-** Add another independently scrollable window pane to the current window,
+** Add another independently scrollable pane to the current document,
 ** splitting the pane which currently has keyboard focus.
 */
-void SplitWindow(WindowInfo *window)
+void SplitPane(WindowInfo *window)
 {
     short paneHeights[MAX_PANES+1];
     int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
@@ -1176,7 +1176,7 @@ void SplitWindow(WindowInfo *window)
     XtUnmanageChild(window->splitPane);
     
     /* Create a text widget to add to the pane and set its buffer and
-       highlight data to be the same as the other panes in the window */
+       highlight data to be the same as the other panes in the document */
     XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist,
             textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
             textNlineNumCols, &lineNumCols, NULL);
@@ -2826,7 +2826,7 @@ void UpdateWMSizeHints(WindowInfo *window)
 }
 
 /*
-** Update the minimum allowable height for a split window pane after a change
+** Update the minimum allowable height for a split pane after a change
 ** to font or margin height.
 */
 void UpdateMinPaneHeights(WindowInfo *window)
@@ -3904,7 +3904,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
     SetLanguageMode(window, window->languageMode, FALSE);
     
     /* Windows Menu */
-    XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+    XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
     XtSetSensitive(window->closePaneItem, window->nPanes > 0);
     XtSetSensitive(window->detachDocumentItem, NDocuments(window)>1);
     XtSetSensitive(window->contextDetachDocumentItem, NDocuments(window)>1);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.101 2004/04/27 01:35:28 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.102 2004/04/28 01:54:19 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -292,7 +292,7 @@ static void gotoMatchingAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
-static void splitWindowAP(Widget w, XEvent *event, String *args,
+static void splitPaneAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void detachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
@@ -509,8 +509,8 @@ static XtActionsRec Actions[] = {
     {"find-definition", findDefAP},
     {"find_definition", findDefAP},
     {"show_tip", showTipAP},
-    {"split-window", splitWindowAP},
-    {"split_window", splitWindowAP},
+    {"split-pane", splitPaneAP},
+    {"split_pane", splitPaneAP},
     {"close-pane", closePaneAP},
     {"close_pane", closePaneAP},
     {"detach_document", detachDocumentAP},
@@ -1185,9 +1185,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Windows", 0, &cascade, FULL);
     XtAddCallback(cascade, XmNcascadingCallback, (XtCallbackProc)windowMenuCB,
     	    window);
-    window->splitWindowItem = createMenuItem(menuPane, "splitWindow",
-    	    "Split Window", 'S', doActionCB, "split_window", SHORT);
-    XtVaSetValues(window->splitWindowItem, XmNuserData, PERMANENT_MENU_ITEM,
+    window->splitPaneItem = createMenuItem(menuPane, "splitPane",
+    	    "Split Pane", 'S', doActionCB, "split_pane", SHORT);
+    XtVaSetValues(window->splitPaneItem, XmNuserData, PERMANENT_MENU_ITEM,
 	    NULL);
     window->closePaneItem = createMenuItem(menuPane, "closePane",
     	    "Close Pane", 'C', doActionCB, "close_pane", SHORT);
@@ -3411,14 +3411,14 @@ static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	    *nArgs == 0 ? NULL : args[0]);
 }
 
-static void splitWindowAP(Widget w, XEvent *event, String *args,
+static void splitPaneAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
     
-    SplitWindow(window);
+    SplitPane(window);
     if (IsTopDocument(window)) {
-	XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+	XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
 	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
     }
 }
@@ -3429,7 +3429,7 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     
     ClosePane(window);
     if (IsTopDocument(window)) {
-	XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+	XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
 	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
     }
 }

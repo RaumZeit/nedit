@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.54 2004/04/27 01:35:28 tksoh Exp $ */
+/* $Id: nedit.h,v 1.55 2004/04/28 01:54:19 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -413,7 +413,7 @@ typedef struct _WindowInfo {
     Widget	cancelMacroItem;
     Widget	replayItem;
     Widget	repeatItem;
-    Widget	splitWindowItem;
+    Widget	splitPaneItem;
     Widget	closePaneItem;
     Widget	detachDocumentItem;
     Widget	moveDocumentItem;
