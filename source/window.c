@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.32 2001/08/20 20:36:03 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.33 2001/08/21 14:29:37 tringali Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -432,17 +432,17 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->menuBar = menuBar;
     XtManageChild(menuBar);
     
-    /* Patch around Motif's most idiotic "feature", that its menu accelerators
-       recognize Caps Lock and Num Lock as modifiers, and don't trigger if
-       they are engaged */ 
-    AccelLockBugPatch(mainWin, menuBar);
-
     /* Create paned window to manage split window behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2, NULL);
     window->splitPane = pane;
     XmMainWindowSetAreas(mainWin, menuBar, statsForm, NULL, NULL, pane);
+
+    /* Patch around Motif's most idiotic "feature", that its menu accelerators
+       recognize Caps Lock and Num Lock as modifiers, and don't trigger if
+       they are engaged */ 
+    AccelLockBugPatch(pane, menuBar);
 
     /* Create the first, and most permanent text area (other panes may
        be added & removed, but this one will never be removed */

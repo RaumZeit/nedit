@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.16 2001/08/15 08:56:33 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.17 2001/08/21 14:29:37 tringali Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1187,7 +1187,7 @@ static void updateMenu(WindowInfo *window, int menuType)
 		    window->bgMenuUndoItem = btn;
 		else if (menuType == BG_MENU_CMDS && !strcmp(f->cmd,"redo()\n"))
 		    window->bgMenuRedoItem = btn;
-		UpdateAccelLockPatch(window->shell, btn);
+		UpdateAccelLockPatch(window->splitPane, btn);
 		break;
 	    }
 	    hierName = copySubstring(strippedName, subSep - strippedName);
