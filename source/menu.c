@@ -2724,7 +2724,7 @@ static Widget createMenu(Widget parent, char *name, char *label,
     Widget menu, cascade;
     XmString st1;
 
-    menu = XmCreatePulldownMenu(parent, name, NULL, 0);
+    menu = CreatePulldownMenu(parent, name, NULL, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple(label),
     	XmNsubMenuId, menu, 0);
@@ -3440,7 +3440,7 @@ Widget CreateBGMenu(WindowInfo *window)
        when it failed often in development, and certainly ignores the ~ syntax
        in translation event specifications. */
     XtSetArg(args[0], XmNmenuPost, GetPrefBGMenuBtn());
-    return XmCreatePopupMenu(window->textArea, "bgMenu", args, 1);
+    return CreatePopupMenu(window->textArea, "bgMenu", args, 1);
 }
 
 /*

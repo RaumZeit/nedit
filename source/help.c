@@ -2434,6 +2434,36 @@ resource names, see your .nedit file):\n\
         to display in the print dialog, and has no effect\n\
         on printing.\n\
 \n\
+    nedit.visualID: (Best) -- If your screen supports\n\
+        multiple visuals (color mapping models), this\n\
+	resource allows you to manually choose among\n\
+	them.  The default value of \"Best\" chooses\n\
+	the deepest (most colors) visual available.\n\
+	Since NEdit does not depend on the specific\n\
+	characteristics of any given color model, Best\n\
+	probably IS the best choice for everyone, and\n\
+	the only reason for setting this resource would\n\
+	be to patch around some kind of X server problem.\n\
+	The resource may also be set to \"Default\",\n\
+	which chooses the screen's default visual (often\n\
+	a color-mapped, PseudoColor, visual for\n\
+	compatibility with older X applications).  It\n\
+	may also be set to a numeric visual-id value\n\
+	(use xdpyinfo to see the list of visuals\n\
+	supported by your display), or a visual class\n\
+	name: PseudoColor, DirectColor, TrueColor, etc..\n\
+\n\
+    nedit.installColormap (False) -- Force the\n\
+        installation of a private colormap.  If you have\n\
+	a humble 8-bit color display, and netscape is\n\
+	hogging all of the color cells, you may want to\n\
+	try turning this on.  On most systems, this will\n\
+	result in colors flashing wildly when you switch\n\
+	between NEdit and other applications.  But a few\n\
+	systems (SGI) have hardware support for multiple\n\
+	simultaneous colormaps, and applications with\n\
+	installed colormaps are well behaved.\n\
+\n\
     nedit.multiClickTime: (system specific) -- Maximum\n\
         time in milliseconds allowed between mouse clicks\n\
         within double and triple click actions.\n\
@@ -4275,7 +4305,7 @@ static Widget createHelpPanel(Widget parent, int topic)
     XtSetArg(al[ac], XmNtitle, HelpTitles[topic]); ac++;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(al[ac], XmNiconName, HelpTitles[topic]); ac++;
-    appShell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, al, ac);
     AddSmallIcon(appShell);
     form = XtVaCreateManagedWidget("helpForm", xmFormWidgetClass, appShell, 0);

@@ -968,7 +968,7 @@ void RepeatDialog(WindowInfo *window)
     strcpy(&lastCmdLabel[14 + cmdNameLen], ")");
     
     XtSetArg(selBoxArgs[0], XmNautoUnmanage, False);
-    selBox = XmCreatePromptDialog(window->shell, "repeat", selBoxArgs, 1);
+    selBox = CreatePromptDialog(window->shell, "repeat", selBoxArgs, 1);
     rd->shell = XtParent(selBox);
     XtAddCallback(rd->shell, XmNdestroyCallback, repeatDestroyCB, rd);
     XtAddCallback(selBox, XmNokCallback, repeatOKCB, rd);

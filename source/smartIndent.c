@@ -908,7 +908,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
     XtSetArg(args[n], XmNiconName, "Smart Indent Macros"); n++;
     XtSetArg(args[n], XmNtitle, "Smart Indent Macros"); n++;
-    SmartIndentDialog.shell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    SmartIndentDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);
     AddSmallIcon(SmartIndentDialog.shell);
     form = XtVaCreateManagedWidget("editSmartIndentMacros", xmFormWidgetClass,
@@ -1435,7 +1435,7 @@ void EditCommonSmartIndentMacro(void)
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
     XtSetArg(args[n], XmNiconName, "Common Smart Indent Macros"); n++;
     XtSetArg(args[n], XmNtitle, "Common Smart Indent Macros"); n++;
-    CommonDialog.shell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    CommonDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);
     AddSmallIcon(CommonDialog.shell);
     form = XtVaCreateManagedWidget("editCommonSIMacros", xmFormWidgetClass,

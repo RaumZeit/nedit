@@ -1132,7 +1132,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, s2=XmStringCreateSimple(" ")); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
-    fileSB = XmCreateFileSelectionDialog(window->shell,"FileSelect",args,n);
+    fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
     formatForm = XtVaCreateManagedWidget("formatBtns", xmFormWidgetClass,

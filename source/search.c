@@ -264,7 +264,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
-    form = XmCreateFormDialog(parent, "replaceDialog", args, argcnt);
+    form = CreateFormDialog(parent, "replaceDialog", args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, 0);
     if (GetPrefKeepSearchDlogs()) {
     	sprintf(title, "Replace (in %s)", window->filename);
@@ -584,7 +584,7 @@ static void createFindDlog(Widget parent, WindowInfo *window)
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
-    form = XmCreateFormDialog(parent, "findDialog", args, argcnt);
+    form = CreateFormDialog(parent, "findDialog", args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, 0);
     if (GetPrefKeepSearchDlogs()) {
     	sprintf(title, "Find (in %s)", window->filename);

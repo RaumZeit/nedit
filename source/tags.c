@@ -711,7 +711,7 @@ static Widget createSelectMenu(Widget parent, char *name, char *label,
     XtSetArg(csdargs[ac], XmNlistItemCount, nArgs); ac++;
     XtSetArg(csdargs[ac], XmNvisibleItemCount, 12); ac++;
     XtSetArg(csdargs[ac], XmNautoUnmanage, False); ac++;
-    menu = XmCreateSelectionDialog(parent,label,csdargs,ac);
+    menu = CreateSelectionDialog(parent,label,csdargs,ac);
     XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_TEXT));
     XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_SELECTION_LABEL));

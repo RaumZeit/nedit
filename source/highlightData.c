@@ -1128,7 +1128,7 @@ static Widget createHighlightStylesMenu(Widget parent)
     int i;
     XmString s1;
 
-    menu = XmCreatePulldownMenu(parent, "highlightStyles", NULL, 0);
+    menu = CreatePulldownMenu(parent, "highlightStyles", NULL, 0);
     for (i=0; i<NHighlightStyles; i++) {
         XtVaCreateManagedWidget("highlightStyles", xmPushButtonWidgetClass,menu,
     	      XmNlabelString, s1=XmStringCreateSimple(HighlightStyles[i]->name),
@@ -1457,7 +1457,7 @@ void EditHighlightStyles(Widget parent, char *initialStyle)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "Highlight Styles"); ac++;
     XtSetArg(args[ac], XmNtitle, "Highlight Styles"); ac++;
-    HSDialog.shell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    HSDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(HSDialog.shell);
     form = XtVaCreateManagedWidget("editHighlightStyles", xmFormWidgetClass,
@@ -1947,7 +1947,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
     XtSetArg(args[n], XmNiconName, "Highlight Patterns"); n++;
     XtSetArg(args[n], XmNtitle, "Syntax Highlighting Patterns"); n++;
-    HighlightDialog.shell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    HighlightDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, n);
     AddSmallIcon(HighlightDialog.shell);
     form = XtVaCreateManagedWidget("editHighlightPatterns", xmFormWidgetClass,

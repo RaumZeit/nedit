@@ -249,7 +249,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
 	    iconic ? IconicState : NormalState); ac++;
-    appShell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 		applicationShellWidgetClass, TheDisplay, al, ac);
     window->shell = appShell;
 

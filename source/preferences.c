@@ -1512,7 +1512,7 @@ void RowColumnPrefDialog(Widget parent)
 
     XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-    selBox = XmCreatePromptDialog(parent, "customSize", selBoxArgs, 2);
+    selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
     XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)sizeOKCB, NULL);
     XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)sizeCancelCB,NULL);
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
@@ -1605,7 +1605,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
 
     XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-    selBox = XmCreatePromptDialog(parent, "customSize", selBoxArgs, 2);
+    selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
     XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)tabsOKCB, NULL);
     XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)tabsCancelCB,NULL);
     XtAddCallback(selBox, XmNhelpCallback, (XtCallbackProc)tabsHelpCB,NULL);
@@ -1815,7 +1815,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
 
     XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-    selBox = XmCreatePromptDialog(parent, "wrapMargin", selBoxArgs, 2);
+    selBox = CreatePromptDialog(parent, "wrapMargin", selBoxArgs, 2);
     XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)wrapOKCB, NULL);
     XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)wrapCancelCB,NULL);
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
@@ -1971,7 +1971,7 @@ void EditLanguageModes(Widget parent)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "Language Modes"); ac++;
     XtSetArg(args[ac], XmNtitle, "Language Modes"); ac++;
-    LMDialog.shell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    LMDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(LMDialog.shell);
     form = XtVaCreateManagedWidget("editLanguageModes", xmFormWidgetClass,
@@ -2765,7 +2765,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     ac = 0;
     XtSetArg(args[ac], XmNautoUnmanage, False); ac++;
     XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE); ac++;
-    form = XmCreateFormDialog(window->shell, "choose Fonts", args, ac);
+    form = CreateFormDialog(window->shell, "choose Fonts", args, ac);
     XtVaSetValues(form, XmNshadowThickness, 0, 0);
     fd->shell = XtParent(form);
     XtVaSetValues(fd->shell, XmNtitle, "Fonts", 0);
@@ -3910,7 +3910,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
     int i;
     XmString s1;
 
-    menu = XmCreatePulldownMenu(parent, "languageModes", NULL, 0);
+    menu = CreatePulldownMenu(parent, "languageModes", NULL, 0);
     for (i=0; i<NLanguageModes; i++) {
         btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass,
         	menu,
@@ -3982,7 +3982,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
     XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, 0);
     if (menu != NULL)
     	XtDestroyWidget(menu);
-    menu = XmCreatePulldownMenu(XtParent(window->langModeCascade),
+    menu = CreatePulldownMenu(XtParent(window->langModeCascade),
     	    "languageModes", args, 1);
     btn = XtVaCreateManagedWidget("languageMode",
             xmToggleButtonGadgetClass, menu,

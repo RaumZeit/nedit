@@ -216,7 +216,7 @@ void EditShellMenu(WindowInfo *window)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "Shell Commands"); ac++;
     XtSetArg(args[ac], XmNtitle, "Shell Commands"); ac++;
-    ucd->dlogShell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    ucd->dlogShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editShellCommands", xmFormWidgetClass,
@@ -632,7 +632,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, title); ac++;
     XtSetArg(args[ac], XmNtitle, title); ac++;
-    ucd->dlogShell = XtAppCreateShell(APP_NAME, APP_CLASS,
+    ucd->dlogShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, args, ac);
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editMacroCommands", xmFormWidgetClass,
@@ -1303,7 +1303,7 @@ static Widget createUserSubMenu(Widget parent, char *label)
     XmString st1;
     static Arg args[1] = {{XmNuserData, (XtArgVal)TEMPORARY_MENU_ITEM}};
    
-    menu = XmCreatePulldownMenu(parent, "userPulldown", args, 1);
+    menu = CreatePulldownMenu(parent, "userPulldown", args, 1);
     XtVaCreateManagedWidget("userCascade", xmCascadeButtonWidgetClass, parent, 
     	    XmNlabelString, st1=XmStringCreateSimple(label),
     	    XmNsubMenuId, menu, XmNuserData, TEMPORARY_MENU_ITEM, 0);
