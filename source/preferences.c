@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.97 2003/05/28 08:26:02 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.98 2003/06/04 15:34:30 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5729,7 +5729,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
 void ChooseColors(WindowInfo *window, int forWindow)
 {
     Widget form, tmpW, topW, infoLbl;
-    Widget okBtn, applyBtn, dismissBtn, fillBtn;
+    Widget okBtn, applyBtn, dismissBtn;
     colorDialog *cd;
     XmString s1;
     int ac;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.83 2003/05/27 21:31:31 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.84 2003/06/04 15:34:30 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -154,7 +154,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     WindowInfo *window;
     Pixel bgpix, fgpix;
     Arg al[20];
-    int ac, c;
+    int ac;
     XmString s1;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
@@ -1649,8 +1649,6 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int lineNumCols)
 {
     Widget text, sw, hScrollBar, vScrollBar, frame;
-    int dummy;
-    int i;
         
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
