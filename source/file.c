@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.20 2001/07/11 15:21:52 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.21 2001/08/02 22:54:29 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -791,11 +791,14 @@ int WriteBackupFile(WindowInfo *window)
        Well, this might fail - we'll notice later however. */
     remove(name);
     
-    /* open the file */
+    /* open the file, set more restrictive permissions (using default
+        permissions was somewhat of a security hole, because permissions were
+        independent of those of the original file being edited */
 #ifdef VMS
     if ((fp = fopen(name, "w", "rfm = stmlf")) == NULL) {
 #else
-    if ((fd = open(name, O_CREAT|O_EXCL|O_WRONLY)) < 0 || (fp = fdopen(fd, "w")) == NULL) {
+    if ((fd = open(name, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
+        || (fp = fdopen(fd, "w")) == NULL) {
 #endif /* VMS */
     	DialogF(DF_WARN, window->shell, 1,
     	       "Unable to save backup for %s:\n%s\nAutomatic backup is now off",
@@ -805,13 +808,9 @@ int WriteBackupFile(WindowInfo *window)
         return FALSE;
     }
 
-    /* Set more restrictive permissions (using default permissions was
-       somewhat of a security hole, because permissions were independent
-       of those of the original file being edited */
-#ifdef NO_FCHMOD
-    chmod(name, S_IRUSR | S_IWUSR);    
-#else
-    fchmod(fileno(fp), S_IRUSR | S_IWUSR);    
+    /* Set VMS permissions */
+#ifdef VMS
+    chmod(name, S_IRUSR | S_IWUSR);
 #endif
 
     /* get the text buffer contents and its length */
@@ -895,7 +894,7 @@ static int writeBckVersion(WindowInfo *window)
     char fullname[MAXPATHLEN], bckname[MAXPATHLEN];
     struct stat statbuf;
     FILE *inFP, *outFP;
-    int fileLen;
+    int fd, fileLen;
     char *fileString;
 
     /* Do only if version backups are turned on */
@@ -911,6 +910,10 @@ static int writeBckVersion(WindowInfo *window)
     	return bckError(window, "file name too long", window->filename);
     sprintf(bckname, "%s.bck", fullname);
 
+    /* Delete the old backup file */
+    /* Errors are ignored; we'll notice them later. */
+    unlink(bckname);
+
     /* open the file being edited.  If there are problems with the
        old file, don't bother the user, just skip the backup */
 #ifdef WRITES_DOS_TEXT
@@ -925,17 +928,24 @@ static int writeBckVersion(WindowInfo *window)
     if (fstat(fileno(inFP), &statbuf) != 0)
 	return FALSE;
     fileLen = statbuf.st_size;
-    
-    /* open the file to receive a copy of the old version */
-#ifdef WRITES_DOS_TEXT
-    outFP = fopen(bckname, "wb");
+
+    /* open the file exclusive and with restrictive permissions. */
+#ifdef VMS
+    if ((outFP = fopen(bckname, "w", "rfm = stmlf")) == NULL) {
 #else
-    outFP = fopen(bckname, "w");
-#endif
-    if (outFP == NULL) {
+    if ((fd = open(bckname, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
+#ifdef WRITES_DOS_TEXT
+        || (outFP = fdopen(fd, "wb")) == NULL) {
+#else
+        || (outFP = fdopen(fd, "w")) == NULL) {
+#endif /* WRITES_DOS_TEXT */
+#endif /* VMS */
     	fclose(inFP);
-    	return bckError(window, errorString(), bckname);
+        return bckError(window, "Error open backup file", bckname);
     }
+#ifdef VMS
+    chmod(bckname, S_IRUSR | S_IWUSR);    
+#endif
     
     /* Allocate space for the whole contents of the file */
     fileString = (char *)malloc(fileLen);
@@ -956,16 +966,8 @@ static int writeBckVersion(WindowInfo *window)
  
     /* close the input file, ignore any errors */
     fclose(inFP);
-    
-    /* set the protection for the backup file */
-    if (window->fileMode)
-#ifdef NO_FCHMOD
-	chmod(bckname, window->fileMode);
-#else
-	fchmod(fileno(outFP), window->fileMode);
-#endif
-   
-     /* write to the file */
+
+    /* write to the file */
 #ifdef IBM_FWRITE_BUG
     write(fileno(outFP), fileString, fileLen);
 #else
@@ -1061,7 +1063,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 #ifdef VMS
     if ((fp = fopen(tmpFileName, "w", "rfm = stmlf")) == NULL) {
 #else
-    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY)) < 0 || (fp = fdopen(fd, "w")) == NULL) {
+    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL) {
 #endif /* VMS */
     	DialogF(DF_WARN, parent, 1, "Unable to write file for printing:\n%s",
 		"Dismiss", errorString());
