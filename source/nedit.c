@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.51 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.52 2003/12/05 00:05:54 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -450,8 +450,13 @@ int main(int argc, char **argv)
     /* Load the default tags file. Don't complain if it doesn't load, the tag
        file resource is intended to be set and forgotten.  Running nedit in a
        directory without a tags should not cause it to spew out errors. */
-    if (*GetPrefTagFile() != '\0')
-    	AddTagsFile(GetPrefTagFile(), TAG);
+    if (*GetPrefTagFile() != '\0') {
+        AddTagsFile(GetPrefTagFile(), TAG);
+    }
+
+    if (strcmp(GetPrefServerName(), "") != 0) {
+        IsServer = True;
+    }
 
     /* Process any command line arguments (-tags, -do, -read, -create,
        +<line_number>, -line, -server, and files to edit) not already
