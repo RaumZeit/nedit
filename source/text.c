@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.32 2002/08/13 22:12:20 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.33 2002/08/31 07:24:00 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -680,6 +680,8 @@ static XtResource resources[] = {
     {textNsmartIndentCallback, textCSmartIndentCallback, XmRCallback,
       sizeof(caddr_t), XtOffset(TextWidget, text.smartIndentCB), XtRCallback,
       NULL},
+    {textNcursorVPadding, textCCursorVPadding, XtRCardinal, sizeof(Cardinal),
+      XtOffset(TextWidget, text.cursorVPadding), XmRString, "0"},
 };
 
 static TextClassRec textClassRec = {
@@ -2821,29 +2823,32 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     int insertPos = TextDGetInsertPosition(textD);
-	int lastTopLine;
+    int lastTopLine;
 
     cancelDrag(w);
-	if (hasKey("scrollbar", args, nArgs)) {
-		lastTopLine = max(1, textD->nBufferLines - (textD->nVisibleLines - 2));
-		if (lastTopLine != textD->topLineNum) {
-			TextDSetScroll(textD, lastTopLine, textD->horizOffset);
-		}
-	}
-	else {
-    	TextDSetInsertPosition(textD, textD->buffer->length);
-    	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-    	checkAutoShowInsertPos(w);
-    	callCursorMovementCBs(w, event);
-	}
+    if (hasKey("scrollbar", args, nArgs)) {
+        lastTopLine = max(1, 
+                textD->nBufferLines - (textD->nVisibleLines - 2) +
+                ((TextWidget)w)->text.cursorVPadding);
+        if (lastTopLine != textD->topLineNum) {
+            TextDSetScroll(textD, lastTopLine, textD->horizOffset);
+        }
+    }
+    else {
+        TextDSetInsertPosition(textD, textD->buffer->length);
+        checkMoveSelectionChange(w, event, insertPos, args, nArgs);
+        checkAutoShowInsertPos(w);
+        callCursorMovementCBs(w, event);
+    }
 }
 
 static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    /*int lastTopLine; = textD->nBufferLines - (textD->nVisibleLines - 2);*/
-    int lastTopLine = max(1, textD->nBufferLines - (textD->nVisibleLines - 2));
+    int lastTopLine = max(1, 
+            textD->nBufferLines - (textD->nVisibleLines - 2) + 
+            ((TextWidget)w)->text.cursorVPadding );
     int insertPos = TextDGetInsertPosition(textD);
     int column = 0, visLineNum, lineStartPos;
     int pos, targetLine;

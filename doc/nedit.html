@@ -4380,14 +4380,6 @@ When Auto Newline Wrap is turned on, apply automatic wrapping (which
 normally only applies to typed text) to pasted text as well.
 <P>
 <PRE>
-<B>nedit*text.heavyCursor</B>: False
-</PRE>
-<P>
-For monitors with poor resolution or users who have difficulty seeing the
-cursor, makes the cursor in the text editing area of the window heavier and
-darker.
-<P>
-<PRE>
 <B>nedit*text.foreground</B>: black
 </PRE>
 <P>
@@ -4437,6 +4429,23 @@ Color for text cursor in the text editing area of the NEdit window.
 </PRE>
 <P>
 Color for displaying line numbers in the NEdit window.
+<P>
+<PRE>
+<B>nedit*text.heavyCursor</B>: False
+</PRE>
+<P>
+For monitors with poor resolution or users who have difficulty seeing the
+cursor, makes the cursor in the text editing area of the window heavier and
+darker.
+<P>
+<PRE>
+<B>nedit*text.cursorVPadding</B>: 0
+</PRE>
+<P>
+Number of lines to keep the cursor away from the top or bottom line of the 
+window.  Keyboard operations that would cause the cursor to get closer than
+this distance cause the window to scroll up or down instead, except at the 
+beginning of the file.  Mouse operations are not affected.
 <P>
 <PRE>
 <B>nedit*text.blinkRate</B>: 500
@@ -5175,8 +5184,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Aug 13, 2002
-Aug 13, 2002
+NEdit release of Aug 30, 2002
+Aug 30, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

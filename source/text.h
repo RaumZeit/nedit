@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.8 2002/07/11 21:18:11 slobasso Exp $ */
+/* $Id: text.h,v 1.9 2002/08/31 07:24:00 n8gray Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
@@ -79,6 +79,8 @@
 #define textCReadOnly "ReadOnly"
 #define textNemulateTabs "emulateTabs"
 #define textCEmulateTabs "EmulateTabs"
+#define textNcursorVPadding "cursorVPadding"
+#define textCCursorVPadding "CursorVPadding"
 
 extern WidgetClass textWidgetClass;
 

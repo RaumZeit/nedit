@@ -1,4 +1,4 @@
-/* $Id: textP.h,v 1.4 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: textP.h,v 1.5 2002/08/31 07:24:00 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTP_H_INCLUDED
 #define NEDIT_TEXTP_H_INCLUDED
@@ -58,6 +58,7 @@ typedef struct _TextPart {
     int emulateTabs;
     int lineNumCols;
     char *delimiters;
+    Cardinal cursorVPadding;
     Widget hScrollBar, vScrollBar;
     XtCallbackList focusInCB;
     XtCallbackList focusOutCB;

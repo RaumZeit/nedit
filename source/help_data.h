@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 13, 2002 (Do NOT edit!)
+                 Generated on Aug 30, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -3558,12 +3558,6 @@ static char * htxt_resources [] = {
 "When Auto Newline Wrap is turned on, apply automatic wrapping (which ",
 "normally only applies to typed text) to pasted text as well. ",
 "\n\n",
-"\01A\01Bnedit*text.heavyCursor\01A: False\n",
-"\01I\n",
-"For monitors with poor resolution or users who have difficulty seeing the ",
-"cursor, makes the cursor in the text editing area of the window heavier and ",
-"darker. ",
-"\n\n",
 "\01A\01Bnedit*text.foreground\01A: black\n",
 "\01I\n",
 "Foreground color of the text editing area of the NEdit window. ",
@@ -3598,6 +3592,19 @@ static char * htxt_resources [] = {
 "\01A\01Bnedit*text.lineNumForeground\01A: gray47\n",
 "\01I\n",
 "Color for displaying line numbers in the NEdit window. ",
+"\n\n",
+"\01A\01Bnedit*text.heavyCursor\01A: False\n",
+"\01I\n",
+"For monitors with poor resolution or users who have difficulty seeing the ",
+"cursor, makes the cursor in the text editing area of the window heavier and ",
+"darker. ",
+"\n\n",
+"\01A\01Bnedit*text.cursorVPadding\01A: 0\n",
+"\01I\n",
+"Number of lines to keep the cursor away from the top or bottom line of the ",
+"window.  Keyboard operations that would cause the cursor to get closer than ",
+"this distance cause the window to scroll up or down instead, except at the ",
+"beginning of the file.  Mouse operations are not affected. ",
 "\n\n",
 "\01A\01Bnedit*text.blinkRate\01A: 500\n",
 "\01I\n",
@@ -4983,4 +4990,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Aug 13, 2002\n";
+static const char * NEditVersion = "NEdit release of Aug 30, 2002\n";

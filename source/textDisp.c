@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.31 2002/08/27 08:05:51 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.32 2002/08/31 07:24:00 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -75,6 +75,9 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.31 2002/08/27 08:05:51 edg Exp 
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
 #define MAX_DISP_LINE_LEN 1000
+
+/* Macro for getting the TextPart from a textD */
+#define TEXT_OF_TEXTD(t)    (((TextWidget)((t)->w))->text)
 
 enum positionTypes {CURSOR_POS, CHARACTER_POS};
 
@@ -470,21 +473,21 @@ void TextDResize(textDisp *textD, int width, int height)
        lines in the buffer, and can leave the top line number incorrect, and
        the top character no longer pointing at a valid line start */
     if (textD->continuousWrap && textD->wrapMargin==0 && width!=oldWidth) {
-    	int oldFirstChar = textD->firstChar;
-    	textD->nBufferLines = TextDCountLines(textD, 0, textD->buffer->length,
-    	    	True);
-	textD->firstChar = TextDStartOfLine(textD, textD->firstChar);
-	textD->topLineNum = TextDCountLines(textD, 0, textD->firstChar, True)+1;
-    	redrawAll = True;
-    	offsetAbsLineNum(textD, oldFirstChar);
+        int oldFirstChar = textD->firstChar;
+        textD->nBufferLines = TextDCountLines(textD, 0, textD->buffer->length,
+                True);
+        textD->firstChar = TextDStartOfLine(textD, textD->firstChar);
+        textD->topLineNum = TextDCountLines(textD, 0, textD->firstChar, True)+1;
+        redrawAll = True;
+        offsetAbsLineNum(textD, oldFirstChar);
     }
  
     /* reallocate and update the line starts array, which may have changed
        size and/or contents. (contents can change in continuous wrap mode
        when the width changes, even without a change in height) */
     if (oldVisibleLines < newVisibleLines) {
-	XtFree((char *)textD->lineStarts);
-	textD->lineStarts = (int *)XtMalloc(sizeof(int) * newVisibleLines);
+        XtFree((char *)textD->lineStarts);
+        textD->lineStarts = (int *)XtMalloc(sizeof(int) * newVisibleLines);
     }
     textD->nVisibleLines = newVisibleLines;
     calcLineStarts(textD, 0, newVisibleLines);
@@ -493,28 +496,29 @@ void TextDResize(textDisp *textD, int width, int height)
     /* if the window became shorter, there may be partially drawn
        text left at the bottom edge, which must be cleaned up */
     if (canRedraw && oldVisibleLines>newVisibleLines && exactHeight!=height)
-    	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->left,
-    		textD->top + exactHeight,  textD->width,
-    		height - exactHeight, False);
+        XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->left,
+                textD->top + exactHeight,  textD->width,
+                height - exactHeight, False);
     
     /* if the window became taller, there may be an opportunity to display
        more text by scrolling down */
     if (canRedraw && oldVisibleLines < newVisibleLines && textD->topLineNum +
-    	    textD->nVisibleLines > textD->nBufferLines)
-    	setScroll(textD, max(1, textD->nBufferLines - textD->nVisibleLines + 2),
-    		textD->horizOffset, False, False);
+            textD->nVisibleLines > textD->nBufferLines)
+        setScroll(textD, max(1, textD->nBufferLines - textD->nVisibleLines + 
+                                2 + TEXT_OF_TEXTD(textD).cursorVPadding),
+                  textD->horizOffset, False, False);
     
     /* Update the scroll bar page increment size (as well as other scroll
        bar parameters.  If updating the horizontal range caused scrolling,
        redraw */
     updateVScrollBarRange(textD);
     if (updateHScrollBarRange(textD))
-    	redrawAll = True;
+        redrawAll = True;
 
     /* If a full redraw is needed */
     if (redrawAll && canRedraw)
-    	TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
-    		textD->height);
+        TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
+                textD->height);
 
     /* Decide if the horizontal scroll bar needs to be visible */
     hideOrShowHScrollBar(textD);
@@ -632,17 +636,19 @@ void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset)
     
     /* Limit the requested scroll position to allowable values */
     if (topLineNum < 1)
-    	topLineNum = 1;
+        topLineNum = 1;
     else if (topLineNum > textD->topLineNum &&
-    	     topLineNum > textD->nBufferLines + 2 - textD->nVisibleLines)
-    	topLineNum = max(textD->topLineNum,
-    	    	textD->nBufferLines + 2 - textD->nVisibleLines);
+             topLineNum > textD->nBufferLines + 2 - textD->nVisibleLines +
+                          TEXT_OF_TEXTD(textD).cursorVPadding)
+        topLineNum = max(textD->topLineNum,
+                textD->nBufferLines + 2 - textD->nVisibleLines +
+                TEXT_OF_TEXTD(textD).cursorVPadding);
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-    	    XmNsliderSize, &sliderSize, NULL);
+            XmNsliderSize, &sliderSize, NULL);
     if (horizOffset < 0)
-    	horizOffset = 0;
+        horizOffset = 0;
     if (horizOffset > sliderMax - sliderSize)
-    	horizOffset = sliderMax - sliderSize;
+        horizOffset = sliderMax - sliderSize;
 
     setScroll(textD, topLineNum, horizOffset, True, True);
 }
@@ -1044,23 +1050,51 @@ void TextDMakeInsertPosVisible(textDisp *textD)
 {
     int hOffset, topLine, x, y;
     int cursorPos = textD->cursorPos;
+    int linesFromTop = 0, do_padding = 1; 
+    Cardinal cursorVPadding = TEXT_OF_TEXTD(textD).cursorVPadding;
     
     hOffset = textD->horizOffset;
     topLine = textD->topLineNum;
     
+    /* Don't do padding if this is a mouse operation */
+    do_padding = ((TEXT_OF_TEXTD(textD).dragState == NOT_CLICKED) &&
+                  (cursorVPadding > 0));
+    
     /* Find the new top line number */
-    if (cursorPos < textD->firstChar)
-    	topLine -= TextDCountLines(textD, cursorPos, textD->firstChar, False);
-    else if (cursorPos > textD->lastChar && !emptyLinesVisible(textD)) {
-    	topLine += TextDCountLines(textD, textD->lastChar -
-    	    	(wrapUsesCharacter(textD, textD->lastChar) ? 0 : 1),
-    	    	cursorPos, False);
+    if (cursorPos < textD->firstChar) {
+        topLine -= TextDCountLines(textD, cursorPos, textD->firstChar, False);
+        /* linesFromTop = 0; */
+    } else if (cursorPos > textD->lastChar && !emptyLinesVisible(textD)) {
+        topLine += TextDCountLines(textD, textD->lastChar -
+                (wrapUsesCharacter(textD, textD->lastChar) ? 0 : 1),
+                cursorPos, False);
+        linesFromTop = textD->nVisibleLines-1;
     } else if (cursorPos == textD->lastChar && !emptyLinesVisible(textD) &&
-    	    !wrapUsesCharacter(textD, textD->lastChar))
-    	topLine++;
+            !wrapUsesCharacter(textD, textD->lastChar)) {
+        topLine++;
+        linesFromTop = textD->nVisibleLines-1;
+    } else {
+        /* Avoid extra counting if cursorVPadding is disabled */
+        if (do_padding)
+            linesFromTop = TextDCountLines(textD, textD->firstChar, 
+                    cursorPos, True);
+    }
     if (topLine < 1) {
-    	fprintf(stderr, "internal consistency check tl1 failed\n");
-    	topLine = 1;
+        fprintf(stderr, "internal consistency check tl1 failed\n");
+        topLine = 1;
+    }
+    
+    if (do_padding) {
+        /* Keep the cursor away from the top or bottom of screen. */
+        if (textD->nVisibleLines <= 2*cursorVPadding) {
+            topLine += (linesFromTop - textD->nVisibleLines/2);
+            topLine = max(topLine, 1);
+        } else if (linesFromTop < cursorVPadding) {
+            topLine -= (cursorVPadding - linesFromTop);
+            topLine = max(topLine, 1);
+        } else if (linesFromTop > textD->nVisibleLines-cursorVPadding-1) {
+            topLine += (linesFromTop - (textD->nVisibleLines-cursorVPadding-1));
+        }
     }
     
     /* Find the new setting for horizontal offset (this is a bit ungraceful).
@@ -1068,14 +1102,14 @@ void TextDMakeInsertPosVisible(textDisp *textD)
        to scroll to, otherwise, do the vertical scrolling first, then the
        horizontal */
     if (!TextDPositionToXY(textD, cursorPos, &x, &y)) {
-    	setScroll(textD, topLine, hOffset, True, True);
-    	if (!TextDPositionToXY(textD, cursorPos, &x, &y))
-    	    return; /* Give up, it's not worth it (but why does it fail?) */
+        setScroll(textD, topLine, hOffset, True, True);
+        if (!TextDPositionToXY(textD, cursorPos, &x, &y))
+            return; /* Give up, it's not worth it (but why does it fail?) */
     }
     if (x > textD->left + textD->width)
-    	hOffset += x - (textD->left + textD->width);
+        hOffset += x - (textD->left + textD->width);
     else if (x < textD->left)
-    	hOffset += x - textD->left;
+        hOffset += x - textD->left;
     
     /* Do the scroll */
     setScroll(textD, topLine, hOffset, True, True);
@@ -1088,22 +1122,22 @@ void TextDMakeInsertPosVisible(textDisp *textD)
 */
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos)
 {
-	int column;
+    int column;
 
-	/* Find the position of the start of the line.  Use the line starts array
-	if possible, to avoid unbounded line-counting in continuous wrap mode */
-	if (posToVisibleLineNum(textD, textD->cursorPos, visLineNum)) {
-		*lineStartPos = textD->lineStarts[*visLineNum];
-	}
-	else {
-		*lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
-		*visLineNum = -1;
-	}
+    /* Find the position of the start of the line.  Use the line starts array
+    if possible, to avoid unbounded line-counting in continuous wrap mode */
+    if (posToVisibleLineNum(textD, textD->cursorPos, visLineNum)) {
+        *lineStartPos = textD->lineStarts[*visLineNum];
+    }
+    else {
+        *lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
+        *visLineNum = -1;
+    }
 
-	/* Decide what column to move to, if there's a preferred column use that */
-	column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
-		BufCountDispChars(textD->buffer, *lineStartPos, textD->cursorPos);
-	return(column);
+    /* Decide what column to move to, if there's a preferred column use that */
+    column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
+        BufCountDispChars(textD->buffer, *lineStartPos, textD->cursorPos);
+    return(column);
 }
 
 /*
@@ -1112,13 +1146,13 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos)
 */
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos)
 {
-	int newPos;
+    int newPos;
 
-	newPos = BufCountForwardDispChars(textD->buffer, lineStartPos, column);
-	if (textD->continuousWrap) {
-		newPos = min(newPos, TextDEndOfLine(textD, lineStartPos, True));
-	}
-	return(newPos);
+    newPos = BufCountForwardDispChars(textD->buffer, lineStartPos, column);
+    if (textD->continuousWrap) {
+        newPos = min(newPos, TextDEndOfLine(textD, lineStartPos, True));
+    }
+    return(newPos);
 }
 
 /*
@@ -2116,8 +2150,8 @@ static void offsetLineStarts(textDisp *textD, int newTopLineNum)
     	/* printf("taking new start from lineStarts[%d]\n",
     		newTopLineNum - oldTopLineNum); */
     } else if (newTopLineNum-lastLineNum < textD->nBufferLines-newTopLineNum) {
-    	textD->firstChar = TextDCountForwardNLines(textD, lineStarts[nVisLines-1],
-    		newTopLineNum - lastLineNum, True);
+    	textD->firstChar = TextDCountForwardNLines(textD, 
+                lineStarts[nVisLines-1], newTopLineNum - lastLineNum, True);
     	/* printf("counting forward %d lines from start of last line\n",
     		newTopLineNum - lastLineNum); */
     } else {
@@ -2502,7 +2536,7 @@ static void updateVScrollBarRange(textDisp *textD)
     int sliderSize, sliderMax, sliderValue;
     
     if (textD->vScrollBar == NULL)
-    	return;
+        return;
     
     /* The Vert. scroll bar value and slider size directly represent the top
        line number, and the number of visible lines respectively.  The scroll
@@ -2510,12 +2544,14 @@ static void updateVScrollBarRange(textDisp *textD)
        buffer, with minor adjustments to keep the scroll bar widget happy */
     sliderSize = max(textD->nVisibleLines, 1); /* Avoid X warning (size < 1) */
     sliderValue = textD->topLineNum;
-    sliderMax = max(textD->nBufferLines + 2, sliderSize + sliderValue);
+    sliderMax = max(textD->nBufferLines + 2 + 
+                    TEXT_OF_TEXTD(textD).cursorVPadding, 
+                    sliderSize + sliderValue);
     XtVaSetValues(textD->vScrollBar,
-    	    XmNmaximum, sliderMax,
-    	    XmNsliderSize, sliderSize,
-     	    XmNpageIncrement, max(1, textD->nVisibleLines - 1),
-   	    XmNvalue, sliderValue, NULL);
+            XmNmaximum, sliderMax,
+            XmNsliderSize, sliderSize,
+            XmNpageIncrement, max(1, textD->nVisibleLines - 1),
+            XmNvalue, sliderValue, NULL);
 }
 
 /*
