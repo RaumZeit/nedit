@@ -1,0 +1,12 @@
+#
+# Makefile for QNX
+# (reference: NEdit develop mailinglist)
+#
+CC=cc 
+AR=ar
+
+CFLAGS=-O0 -I/usr/X11R6/include -DNO_XMIM 
+ARFLAGS=-urs
+LIBS=-L/x86/usr/X11R6/lib -lm -lsocket -lXm -lXt -lICE -lSM -lX11
+
+include Makefile.common
