@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.64 2002/08/17 14:28:21 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.65 2002/08/22 08:05:26 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1462,8 +1462,10 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
     int scrollOffset, leftX, rightX, y, rows, margin;
     int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
     textBuffer *buf = window->buffer;
+    textDisp *textD = ((TextWidget)textPane)->text.textD;
     int topChar = TextFirstVisiblePos(textPane);
     int lastChar = TextLastVisiblePos(textPane);
+    int targetLineNum;
     Dimension width;
     
     /* find out where the selection is */
@@ -1481,31 +1483,39 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
        top or bottom of the window, to scroll the selection to (if scrolling is
        necessary), around 1/3 of the height of the window */
     if (!((left >= topChar && right <= lastChar) ||
-            (left < topChar && right > lastChar))) {
+            (left <= topChar && right >= lastChar))) {
         XtVaGetValues(textPane, textNrows, &rows, NULL);
         scrollOffset = rows/3;
         TextGetScroll(textPane, &topLineNum, &horizOffset);
-        lastLineNum = topLineNum + rows;
-        if (right > lastChar) {
-            if (left <= topChar)
-                return;
-            leftLineNum = topLineNum + BufCountLines(buf, topChar, left);
-            if (leftLineNum < topLineNum + scrollOffset)
-                return;
-            linesToScroll = BufCountLines(buf, lastChar, right) + scrollOffset;
-            if (leftLineNum - linesToScroll < topLineNum + scrollOffset)
-                linesToScroll = leftLineNum - (topLineNum + scrollOffset);
-            TextSetScroll(textPane, topLineNum+linesToScroll, horizOffset);
-        } else if (left < topChar) {
-            if (right >= lastChar)
-                return;
-            rightLineNum = lastLineNum - BufCountLines(buf, right, lastChar);
-            if (rightLineNum > lastLineNum - scrollOffset)
-                return;
-            linesToScroll = BufCountLines(buf, left, topChar) + scrollOffset;
-            if (rightLineNum + linesToScroll > lastLineNum - scrollOffset)
-                linesToScroll = (lastLineNum - scrollOffset) - rightLineNum;
-            TextSetScroll(textPane, topLineNum-linesToScroll, horizOffset);
+        if (right > lastChar) { 
+            /* End of sel. is below bottom of screen */
+            leftLineNum = topLineNum + 
+                    TextDCountLines(textD, topChar, left, False);
+            targetLineNum = topLineNum + scrollOffset;
+            if (leftLineNum >= targetLineNum) {
+                /* Start of sel. is not between top & target */
+                linesToScroll = TextDCountLines(textD, lastChar, right, False) +
+                        scrollOffset;
+                if (leftLineNum - linesToScroll < targetLineNum)
+                    linesToScroll = leftLineNum - targetLineNum;
+                /* Scroll start of selection to the target line */
+                TextSetScroll(textPane, topLineNum+linesToScroll, horizOffset);
+            }
+        } else if (left < topChar) { 
+            /* Start of sel. is above top of screen */
+            lastLineNum = topLineNum + rows;
+            rightLineNum = lastLineNum - 
+                    TextDCountLines(textD, right, lastChar, False);
+            targetLineNum = lastLineNum - scrollOffset;
+            if (rightLineNum <= targetLineNum) {
+                /* End of sel. is not between bottom & target */
+                linesToScroll = TextDCountLines(textD, left, topChar, False) + 
+                        scrollOffset;
+                if (rightLineNum + linesToScroll > targetLineNum)
+                    linesToScroll = targetLineNum - rightLineNum;
+                /* Scroll end of selection to the target line */
+                TextSetScroll(textPane, topLineNum-linesToScroll, horizOffset);
+            }            
         }
     }
     
@@ -1519,17 +1529,17 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
        reqested position to be vertically on screen) */
     if (    TextPosToXY(textPane, left, &leftX, &y) &&
             TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
-        textDisp *textD = ((TextWidget)textPane)->text.textD;
         TextGetScroll(textPane, &topLineNum, &horizOffset);
         XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin,
                 NULL);
         if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
-            horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
+            horizOffset -= 
+                    margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
         else if (rightX > width - margin)
             horizOffset += rightX - (width - margin);
         TextSetScroll(textPane, topLineNum, horizOffset);
     }
-     
+    
     /* make sure that the statistics line is up to date */
     UpdateStatsLine(window);
 }
