@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.9 2002/07/11 21:18:09 slobasso Exp $ */
+/* $Id: utils.h,v 1.10 2002/10/26 00:06:42 yooden Exp $ */
 
 #ifndef NEDIT_UTILS_H_INCLUDED
 #define NEDIT_UTILS_H_INCLUDED
@@ -20,7 +20,7 @@ extern int Max(int i1, int i2);
 extern int Min(int i1, int i2);
 extern int Min3(int i1, int i2, int i3);
 extern int Max3(int i1, int i2, int i3);
-const char* GetRCFileName(int type);
+const char* GetRCFileName(const int type);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
 enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};

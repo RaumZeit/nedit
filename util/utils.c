@@ -1,13 +1,14 @@
-static const char CVSID[] = "$Id: utils.c,v 1.17 2002/07/20 09:37:39 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.18 2002/10/26 00:06:42 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
 *                                                                              *
+* Copyright (C) 2002 Mark Edel                                                 *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							                               *
+* version.                                                                     *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
@@ -16,7 +17,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.17 2002/07/20 09:37:39 amai Exp $"
 *                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                         *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
 *                                                                              *
 *******************************************************************************/
 
@@ -288,7 +289,7 @@ const char* GetRCFileName(const int type)
                 }
             } else
             {
-                /* LEGACY_NEDIT_RC does not exist as a regular file. */
+                /* ${HOME}/.nedit does not exist as a regular file. */
                 /* FIXME: Devices, sockets and fifos are ignored for now. */
                 char defaultNEditHome[MAXPATHLEN + 1];
                 buildFilePath(defaultNEditHome, GetHomeDir(), DEFAULT_NEDIT_HOME);
