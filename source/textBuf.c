@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.21 2002/07/11 21:18:11 slobasso Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.22 2002/08/23 07:52:33 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -438,7 +438,8 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     nLines = countLines(text);
     lineStartPos = BufStartOfLine(buf, startPos);
     if(rectEnd == -1)
-        rectEnd = rectStart + textWidth(text, buf->tabDist, buf->nullSubsChar);     lineStartPos = BufStartOfLine(buf, startPos);
+        rectEnd = rectStart + textWidth(text, buf->tabDist, buf->nullSubsChar);
+    lineStartPos = BufStartOfLine(buf, startPos);
     nDeleted = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) -
     	    lineStartPos;
     callPreDeleteCBs(buf, lineStartPos, nDeleted);
@@ -1774,6 +1775,8 @@ static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
 ** returns the number of characters from the beginning of the string to
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
+**
+** This code does not handle control characters very well, but oh well.
 */
 static void overlayRectInLine(const char *line, const char *insLine,
         int rectStart, int rectEnd, int tabDist, int useTabs,
@@ -1783,7 +1786,8 @@ static void overlayRectInLine(const char *line, const char *insLine,
     const char *linePtr;
     int inIndent, outIndent, len, postRectIndent;
         
-    /* copy the line up to "rectStart" */ 
+    /* copy the line up to "rectStart" or just before the char that 
+        contains it*/ 
     outPtr = outStr;
     inIndent = outIndent = 0;
     for (linePtr=line; *linePtr!='\0'; linePtr++) {
@@ -1801,6 +1805,7 @@ static void overlayRectInLine(const char *line, const char *insLine,
        outIndent accordingly. */
     if (inIndent < rectStart && *linePtr != '\0') {
     	if (*linePtr == '\t') {
+            /* Skip past the tab */
     	    linePtr++;
     	    inIndent += len;
     	} else {
@@ -1811,15 +1816,14 @@ static void overlayRectInLine(const char *line, const char *insLine,
     }
     
     /* skip the characters between rectStart and rectEnd */
-    postRectIndent = rectEnd;
-    for(; *linePtr!='\0'; linePtr++) {
+    for(; *linePtr!='\0' && inIndent < rectEnd; linePtr++)
 	inIndent += BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
-	if (inIndent >= rectEnd) {
-	    linePtr++;
-	    postRectIndent = inIndent;
-	    break;
-	}
-    }
+    postRectIndent = inIndent;
+    
+    /* After this inIndent is dead and linePtr is supposed to point at the
+        character just past the last character that will be altered by
+        the overlay, whether that's a \t or otherwise.  postRectIndent is
+        the position at which that character is supposed to appear */
     
     /* If there's no text after rectStart and no text to insert, that's all */
     if (*insLine == '\0' && *linePtr == '\0') {
