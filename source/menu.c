@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.57 2002/05/06 15:52:40 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.58 2002/05/08 15:30:32 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -540,7 +540,7 @@ static WindowInfo *ShortMenuWindow;
 
 void HidePointerOnKeyedEvent(Widget w, XEvent *event)
 {
-    if (event->type == KeyPress) {
+    if (event && event->type == KeyPress) {
         ShowHidePointer((TextWidget)w, True);
     }
 }
