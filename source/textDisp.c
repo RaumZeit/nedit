@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.45 2003/03/25 01:33:24 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.46 2003/03/25 18:31:36 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -150,7 +150,8 @@ static int emptyLinesVisible(textDisp *textD);
 static void blankCursorProtrusions(textDisp *textD);
 static void allocateFixedFontGCs(textDisp *textD, XFontStruct *fontStruct,
         Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
+        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel,
+        Pixel cursorFGPixel);
 static GC allocateGC(Widget w, unsigned long valueMask,
         unsigned long foreground, unsigned long background, Font font,
         unsigned long dynamicMask, unsigned long dontCareMask);
@@ -231,14 +232,13 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->wrapMargin = wrapMargin;
     textD->continuousWrap = continuousWrap;
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
-            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
+            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel,
+            cursorFGPixel);
     textD->styleGC = allocateGC(textD->w, 0, 0, 0, fontStruct->fid,
             GCClipMask|GCForeground|GCBackground, GCArcMode);
     textD->lineNumLeft = lineNumLeft;
     textD->lineNumWidth = lineNumWidth;
     textD->nVisibleLines = (height - 1) / (textD->ascent + textD->descent) + 1;
-    gcValues.foreground = cursorFGPixel;
-    textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
     textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
     textD->lineStarts[0] = 0;
     textD->calltipW = NULL;
@@ -306,6 +306,7 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->styleGC);
     releaseGC(textD->w, textD->lineNumGC);
+    releaseGC(textD->w, textD->cursorFGGC);
     XtFree((char *)textD->lineStarts);
     while (TextDPopGraphicExposeQueueEntry(textD)) {
     }
@@ -388,38 +389,16 @@ void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP,
     textD->bgPixel = textBgP;
     textD->selectBGPixel = selectBgP;
     textD->highlightBGPixel = hiliteBgP;
-    
-    /* Change the main gc */
-    values.foreground = textFgP;
-    values.background = textBgP;
-    XChangeGC( d, textD->gc, GCForeground | GCBackground, &values );
-    
-    /* Change the select GC */
-    values.foreground = selectFgP;
-    values.background = selectBgP;
-    XChangeGC( d, textD->selectGC, GCForeground | GCBackground, &values );
-    
-    /* Change the select BGGC */
-    values.foreground = selectBgP;
-    XChangeGC( d, textD->selectBGGC, GCForeground, &values );
-    
-    /* Change the highlight GC */
-    values.foreground = hiliteFgP;
-    values.background = hiliteBgP;
-    XChangeGC( d, textD->highlightGC, GCForeground | GCBackground, &values );
-    
-    /* Change the highlight BGGC */
-    values.foreground = hiliteBgP;
-    XChangeGC( d, textD->highlightBGGC, GCForeground, &values );
-    
-    /* Change the line number GC */
-    values.foreground = lineNoFgP;
-    values.background = textBgP;
-    XChangeGC( d, textD->lineNumGC, GCForeground | GCBackground, &values );
-    
-    /* Change the cursor GC */
-    values.foreground = cursorFgP;
-    XChangeGC( d, textD->cursorFGGC, GCForeground, &values );
+
+    releaseGC(textD->w, textD->gc);
+    releaseGC(textD->w, textD->selectGC);
+    releaseGC(textD->w, textD->selectBGGC);
+    releaseGC(textD->w, textD->highlightGC);
+    releaseGC(textD->w, textD->highlightBGGC);
+    releaseGC(textD->w, textD->lineNumGC);
+    releaseGC(textD->w, textD->cursorFGGC);
+    allocateFixedFontGCs(textD, textD->fontStruct, textBgP, textFgP, selectFgP,
+            selectBgP, hiliteFgP, hiliteBgP, lineNoFgP, cursorFgP);
     
     /* Redisplay */
     TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
@@ -436,7 +415,7 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     int i, maxAscent = fontStruct->ascent, maxDescent = fontStruct->descent;
     int width, height, fontWidth;
     Pixel bgPixel, fgPixel, selectFGPixel, selectBGPixel;
-    Pixel highlightFGPixel, highlightBGPixel, lineNumFGPixel;
+    Pixel highlightFGPixel, highlightBGPixel, lineNumFGPixel, cursorFGPixel;
     XGCValues values;
     XFontStruct *styleFont;
     
@@ -490,14 +469,18 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     highlightBGPixel = values.background;
     XGetGCValues(display, textD->lineNumGC, GCForeground, &values);
     lineNumFGPixel = values.foreground;
+    XGetGCValues(display, textD->cursorFGGC, GCForeground, &values);
+    cursorFGPixel = values.foreground;
     releaseGC(textD->w, textD->gc);
     releaseGC(textD->w, textD->selectGC);
     releaseGC(textD->w, textD->highlightGC);
     releaseGC(textD->w, textD->selectBGGC);
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->lineNumGC);
+    releaseGC(textD->w, textD->cursorFGGC);
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
-            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
+            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel,
+            cursorFGPixel);
     XSetFont(display, textD->styleGC, fontStruct->fid);
     
     /* Do a full resize to force recalculation of font related parameters */
@@ -2937,7 +2920,8 @@ static void blankCursorProtrusions(textDisp *textD)
 */
 static void allocateFixedFontGCs(textDisp *textD, XFontStruct *fontStruct,
         Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel)
+        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel,
+        Pixel cursorFGPixel)
 {
     textD->gc = allocateGC(textD->w, GCFont | GCForeground | GCBackground,
             fgPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode); 
@@ -2954,6 +2938,8 @@ static void allocateFixedFontGCs(textDisp *textD, XFontStruct *fontStruct,
     textD->lineNumGC = allocateGC(textD->w, GCFont | GCForeground | 
             GCBackground, lineNumFGPixel, bgPixel, fontStruct->fid, 
             GCClipMask, GCArcMode);
+    textD->cursorFGGC = allocateGC(textD->w, GCForeground, cursorFGPixel,
+            bgPixel, fontStruct->fid, GCClipMask, GCArcMode);
 }
 
 /*
@@ -3008,9 +2994,9 @@ static void resetClipRectangles(textDisp *textD)
     XRectangle clipRect;
     Display *display = XtDisplay(textD->w);
     
-    clipRect.x = textD->left;
+    clipRect.x = textD->lineNumLeft; /* Line numbers may share GC ! */
     clipRect.y = textD->top;
-    clipRect.width = textD->width;
+    clipRect.width = textD->left - textD->lineNumLeft + textD->width;
     clipRect.height = textD->height - textD->height %
     	    (textD->ascent + textD->descent);
     
@@ -3025,6 +3011,8 @@ static void resetClipRectangles(textDisp *textD)
     XSetClipRectangles(display, textD->highlightBGGC, 0, 0,
             &clipRect, 1, Unsorted);
     XSetClipRectangles(display, textD->styleGC, 0, 0,
+            &clipRect, 1, Unsorted);
+    XSetClipRectangles(display, textD->lineNumGC, 0, 0,
             &clipRect, 1, Unsorted);
 } 
 

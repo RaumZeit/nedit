@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.19 2003/03/05 23:51:00 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.20 2003/03/25 18:31:36 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -109,6 +109,7 @@ typedef struct _textDisp {
     GC gc, selectGC, highlightGC;	/* GCs for drawing text */
     GC selectBGGC, highlightBGGC;	/* GCs for erasing text */
     GC cursorFGGC;			/* GC for drawing the cursor */
+    GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     GC styleGC;     	    	    	/* GC with color and font unspecified
     	    	    	    	    	   for drawing colored/styled text */
     Pixel fgPixel;			/* Foreground colors */
@@ -116,7 +117,6 @@ typedef struct _textDisp {
     Pixel highlightFGPixel;
     Pixel *bgClassPixel;		/* table of colors for each BG class */
     unsigned char *bgClass;		/* obtains index into bgClassPixel[] */
-    GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     
     Widget calltipW;                    /* The Label widget for the calltip */
     Widget calltipShell;                /* The Shell that holds the calltip */
