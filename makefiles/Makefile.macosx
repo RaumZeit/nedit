@@ -1,0 +1,11 @@
+# $Id: Makefile.macosx,v 1.1 2001/12/04 11:14:58 amai Exp $
+# Makefile for MacOS X, using Tenon's Xtools
+# Contributed from hopperj@macconnect.com
+CC=cc
+AR=Libtool
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS\\
+CFLAGS=-O -no-cpp-precomp -DNO_XMIM -I${PREFIX}/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DUSE_XMIM
+LIBS= ${MOTIFLIB} -bind_at_load -L/usr/X11R6/lib /usr/X11R6/lib/libXm.2.dylib /usr/X11R6/lib/libXp.6.dylib -lm -lXpm \\
+-lXext -lXt -lSM -lICE -lX11
+ARFLAGS=-static -o 
+include Makefile.common
