@@ -1,4 +1,162 @@
-2004-05-03 11:59  edg
+2004-07-07 03:39  n8gray
+
+	* README (1.36), makefiles/Makefile.macosx (1.6): Updating some OS
+	X documentation.
+
+2004-07-07 03:14  n8gray
+
+	* Makefile (1.15), README (1.35), source/help_data.h (1.66),
+	source/nc.c (1.41): I guess we should go to BETA1 before RC1.
+
+2004-07-07 02:51  n8gray
+
+	* Makefile (1.14), README (1.34), source/help_data.h (1.65),
+	source/help_topic.h (1.57), source/nc.c (1.40): Updating version
+	information for 5.5RC1.
+
+2004-07-03 00:16  edg
+
+	* source/highlightData.c (1.64): Minor update to the Python
+	patterns: added new built-in functions, exceptions, warnings, ...
+	that were introduced in Python 2.3.
+
+2004-06-30 13:56  edg
+
+	* source/help.c (1.97): Increased the help window size from 65 to
+	75 columns as a workaround for the window becoming smaller due to
+	changes in the font specifications.  (SF bug #982589: Help font
+	inconsistent with window size)
+
+2004-06-28 10:23  edg
+
+	* source/menu.c (1.106): Fix for SF bug #933146: VMS Open Previous
+	DB file error.
+
+2004-06-23 15:25  edg
+
+	* source/server.c (1.30): Race condition fix for SF bug #978104:
+	nedit -sync option.  The server missed the first property change in
+	synchronous mode.
+
+2004-06-21 09:42  edg
+
+	* doc/help.etx (1.69), source/help_data.h (1.64),
+	source/help_topic.h (1.56): Cross-reference fixes (Yury
+	Burkatovsky).
+
+2004-06-13 03:08  tksoh
+
+	* source/window.c (1.160): Fixed shrinking-window bug on some
+	window manager such as Metacity, where window would shrink when
+	switching between documents with different font size.
+
+2004-06-11 12:33  edg
+
+	* Microline/XmL/XmL.h (1.3): Fixed a #define collision when
+	compiling with OM 2.2.3.
+
+2004-06-11 12:16  edg
+
+	* source/: menu.c (1.105), nedit.h (1.56), window.c (1.159): Fixes
+	for SF bug #779454: SGI_CUSTOM & windows names.  Removed all
+	obsolete SGI_WINDOW_TITLE stuff.
+
+2004-06-11 10:14  edg
+
+	* source/highlightData.c (1.63): Removed unused declaration.
+
+2004-06-10 19:04  edg
+
+	* doc/help.etx (1.68), source/help_data.h (1.63),
+	source/help_topic.h (1.55): More help updates from Joerg Fischer.
+
+2004-06-10 19:01  edg
+
+	* source/: highlight.c (1.47), highlightData.c (1.62), macro.c
+	(1.86): Commit SF patch #970491: Forbid deletion of the "Plain"
+	Text Drawing Style (Tony Balinski).
+
+2004-06-09 19:52  edg
+
+	* source/: userCmds.c (1.46), window.c (1.158): Crash fix:
+	bgMenuUndo/RedoItem were memcopied when opening multiple tabs in a
+	window. This could eventually result in accesses to destroyed bg
+	menu items (and crashes), but only when the tabs use different
+	language modes.  That's why crashes were rather rare (and the
+	illegal accesses didn't always result in a crash).
+
+2004-06-08 17:36  edg
+
+	* doc/help.etx (1.67), doc/nc.pod (1.5), doc/nedit.pod (1.6),
+	source/help_data.h (1.62), source/help_topic.h (1.54): Help
+	updates: tabbed editing and incremental search bar (Joerg Fischer).
+
+2004-06-08 17:30  edg
+
+	* source/server.c (1.29), util/misc.c (1.64), util/misc.h (1.23):
+	Committed SF patch #963120: Open tab in window on current desktop. 
+	New files opened via nc no longer appear in a tab of some
+	pseudo-random window, possible on a different window manager
+	desktop, but on a window of the current desktop. If no window
+	exists on the current desktop, a new one is created.  Requires the
+	window manager to be EWMH compliant, but falls back to the old
+	behaviour for non-compliant wms.
+
+2004-06-08 17:08  tringali
+
+	* source/shell.c (1.31): Fix from Tony Balinski: close unused fds
+	so that shell commands can be invoked asynchronously.  Otherwise,
+	we will wait for the command to end even if the input/output/error
+	streams were redirected to /dev/null.
+
+2004-06-01 14:23  edg
+
+	* source/server_common.c (1.4): Memory leak and malloc/free
+	mismatch fixes.
+
+2004-05-25 21:31  tringali
+
+	* source/nedit.c (1.74): Don't use labelFontList et al on
+	Cygwin/LessTif.
+
+2004-05-16 14:02  tksoh
+
+	* source/window.c (1.157): Fixed coredump if offers to save file
+	were refused when closing window with several modified documents.
+
+2004-05-12 11:21  edg
+
+	* source/interpret.c (1.39): Missed a spot in the debug code when I
+	applied the macro string changes.
+
+2004-05-11 21:56  edg
+
+	* doc/help.etx (1.66), doc/nc.pod (1.4), doc/nedit.pod (1.5),
+	source/help_data.h (1.61), source/help_topic.h (1.53): Updated
+	rangeset documentation (SF bug #922282) and -do documentation
+	(Joerg, with remarks of Tony).
+
+2004-05-06 10:39  jlous
+
+	* source/menu.c (1.104): Changed "Tabs..." to "Tab Stops..." in
+	menus.
+
+2004-05-04 16:19  edg
+
+	* README (1.33), doc/help.etx (1.65), doc/nc.pod (1.3),
+	doc/nedit.pod (1.4), source/help_data.h (1.60), source/help_topic.h
+	(1.52): Added TK to the list of authors.
+
+2004-05-04 09:41  edg
+
+	* Xlt/BubbleButton.c (1.5): Added declaration of
+	_XmStringCreateExternal (SF bug #923924).
+
+2004-05-03 14:08  edg
+
+	* ChangeLog (1.37): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
+2004-05-03 13:59  edg
 
 	* source/window.c (1.156): Bug fix: File->Close in the original
 	window was disabled after calling calling the detach_document()
