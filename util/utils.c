@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.4 2001/07/11 07:55:17 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -25,7 +25,11 @@ static const char CVSID[] = "$Id: utils.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#ifdef VMS
+#include "vmsparam.h"
+#else
 #include <sys/param.h>
+#endif /*VMS*/
 #include <pwd.h>
 
 #include "utils.h"
