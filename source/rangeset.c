@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.8 2003/11/22 13:03:40 edg Exp $ */
+/* $Id: rangeset.c,v 1.9 2004/01/20 02:48:44 tksoh Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -778,6 +778,54 @@ RangesetTable *RangesetTableFree(RangesetTable *table)
 	XtFree((char *)table);
     }
     return (RangesetTable *)0;
+}
+
+/*
+** clone a ranges set table.
+*/
+static void rangesetClone(Rangeset *srcRangeset, Rangeset *destRangeset)
+{
+    destRangeset->update_fn   = srcRangeset->update_fn;
+    destRangeset->update_name = srcRangeset->update_name;
+    destRangeset->maxpos      = srcRangeset->maxpos;
+    destRangeset->last_index  = srcRangeset->last_index;
+    destRangeset->n_ranges    = srcRangeset->n_ranges;
+    destRangeset->color_set   = srcRangeset->color_set;
+    destRangeset->color       = srcRangeset->color;
+
+    if (srcRangeset->color_name) {
+	destRangeset->color_name = XtMalloc(strlen(srcRangeset->color_name) +1);
+	strcpy(destRangeset->color_name, srcRangeset->color_name);
+    }
+
+    if (srcRangeset->name) {
+	destRangeset->name = XtMalloc(strlen(srcRangeset->name) + 1);
+	strcpy(destRangeset->name, srcRangeset->name);
+    }
+
+    destRangeset->ranges = RangesNew(srcRangeset->n_ranges);
+    memcpy(destRangeset->ranges, srcRangeset->ranges,
+	    srcRangeset->n_ranges * sizeof(Range));
+}
+
+RangesetTable *RangesetTableClone(RangesetTable *srcTable)
+{
+    RangesetTable *newTable = srcTable;
+    int i;
+
+    if (srcTable) {
+	newTable = RangesetTableAlloc(srcTable->buf);
+
+	newTable->n_set = srcTable->n_set;
+	memcpy(newTable->order, srcTable->order, sizeof(unsigned char) *N_RANGESETS);
+	memcpy(newTable->active, srcTable->active, sizeof(unsigned char) *N_RANGESETS);
+	memcpy(newTable->depth, srcTable->depth, sizeof(unsigned char) *N_RANGESETS);
+	memcpy(newTable->list, srcTable->list, sizeof(unsigned char) *(N_RANGESETS + 1));
+
+	for (i = 0; i < N_RANGESETS; i++)
+	    rangesetClone(&srcTable->set[i], &newTable->set[i]);
+    }
+    return newTable;
 }
 
 /*
