@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.57 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.58 2001/11/02 12:13:26 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1762,18 +1762,21 @@ NEdit defines some escape sequences that are handy shortcuts for commonly \
 used character classes.\n\
 \n\
    \\d  digits            0-9\n\
-   \\l  letters           a-z and A-Z\n\
+   \\l  letters           a-z, A-Z and possibly others,\n\
+                         depending on locale(7)\n\
    \\s  whitespace        \\t, \\r, \\v, \\f, and space\n\
-   \\w  word characters   a-z, A-Z, 0-9, and underscore, `_'\n\
+   \\w  word characters   letters, digits, and underscore\n\
 \n\
 \\D, \\L, \\S, and \\W are the same as the lowercase versions except that the \
 resulting character class is negated.  For example, \\d is equivalent to \
 `[0-9]', while \\D is equivalent to `[^0-9]'.\n\
 \n\
-These escape sequences can also be used within a character class.  For \
-example, `[\\l_]' is the same as `[a-zA-Z_]'.  The escape sequences for \
-special characters, and octal and hexadecimal escapes are also valid \
-within a class.\n\
+These escape sequences can also be used within a character class.  For example,\
+`[\\da-f]' is the same as `[0-9a-f]'.\n\
+\n\
+The escape sequences for special characters, and octal and hexadecimal escapes\
+are also valid within a class.\n\
+\n\
 \n\
 Word Delimiter Tokens\n\
 \n\

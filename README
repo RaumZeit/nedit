@@ -1,6 +1,6 @@
                     NEdit Version 5.2+ beta,  October 2001
 
-$Id: README,v 1.15 2001/10/21 15:13:07 tringali Exp $
+$Id: README,v 1.16 2001/11/02 12:13:25 edg Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -99,11 +99,11 @@ Optionally one may use:
 
 
 The two directories called 'source' and 'util' contain the sources for NEdit.
-'util' should be built first, followed by 'source'. The Makefile in NEdit's
+'util' should be built first, followed by 'source'. The makefile in NEdit's
 root directory can be used to build both in sequence if your system is one of
-the supported machines and no modifications are necessary to the Makefiles. To
+the supported machines and no modifications are necessary to the makefiles. To
 build NEdit from the root directory, issue the command: 'make <machine-type>';
-where <machine-type> is one of suffixes of a Makefile in the directory
+where <machine-type> is one of suffixes of a makefile in the directory
 'makefiles'. For example, to build the Silicon Graphics version, type:
 
 	make sgi
@@ -121,24 +121,23 @@ about how the directories are organized.
 The util directory builds a library file called libNUtil.a, which is later
 linked with the code in the source directory to create the nedit executable.
 
-The Makefiles in both source directories consist of two parts, a machine
-dependent part and a machine independent part. The machine dependent Makefiles
+The makefiles in both source directories consist of two parts, a machine
+dependent part and a machine independent part. The machine dependent makefiles
 can be found in the directory called 'makefiles', and contain machine specific
 header information. They invoke a common machine independent part called
 Makefile.common (which in turn includes also Makefile.dependencies).
 To compile the files in either of these directories, copy or link one of the
-system-specific Makefiles from the directory 'makefiles' into the directory,
+system-specific makefiles from the directory 'makefiles' into the directory,
 and issue the command:
 
     make -f Makefile.<machine-type>
     
-(where <machine-type> is the Makefile suffix).  Alternatively, you can
+(where <machine-type> is the makefile suffix).  Alternatively, you can
 name the file 'Makefile' and simply type "make".
 
-If no Makefile exists for your system, check the NEdit web site for more
-contributed Makefiles.  If you can't find one that's close, start from
-Makefile.generic.
-See the comments in Makefile.generic for more porting information.
+If no makefile exists for your system, you should start from Makefile.generic,
+which is extensively commented. Contact the developer at develop@nedit.org for
+help.
 
  
 Building NEdit on VMS Systems
