@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.30 2002/12/09 17:18:11 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.31 2002/12/10 12:29:19 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -245,6 +245,9 @@ int main(int argc, char **argv)
     prefDB = CreatePreferencesDatabase(".nc", APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
     
+    /* Process the command line before calling XtOpenDisplay, because the
+       latter consumes certain command line arguments that we still need
+       (-icon, -geometry ...) */
     commandLine = processCommandLine(argc, argv);
         
     /* Open the display and find the root window */
@@ -576,27 +579,41 @@ static CommandLine processCommandLine(int argc, char** argv)
 #if defined(VMS) || defined(__EMX__)
     /* Non-Unix shells don't want/need esc */
     for (i=1; i<argc; i++) {
-    	for (c=argv[i]; *c!='\0'; c++) {
-            *outPtr++ = *c;
-    	}
-    	*outPtr++ = ' ';
+        /* Don't pass macro commands at the command line. They are
+           communicated via properties and we don't want the commands
+           to be executed twice. */
+	if (strcmp(argv[i], "-do")) {
+	    for (c=argv[i]; *c!='\0'; c++) {
+		*outPtr++ = *c;
+	    }
+	    *outPtr++ = ' ';
+	} else {
+	    nextArg(argc, argv, &i);
+	}
     }
     *outPtr = '\0';
 #else
     for (i=1; i<argc; i++) {
-    	*outPtr++ = '\'';
-    	for (c=argv[i]; *c!='\0'; c++) {
-            if (*c == '\'') {
-                *outPtr++ = '\'';
-                *outPtr++ = '\\';
-            }
-            *outPtr++ = *c;
-            if (*c == '\'') {
-                *outPtr++ = '\'';
-            }
-    	}
-        *outPtr++ = '\'';
-    	*outPtr++ = ' ';
+        /* Don't pass macro commands at the command line. They are
+           communicated via properties and we don't want the commands
+           to be executed twice. */
+	if (strcmp(argv[i], "-do")) {
+	    *outPtr++ = '\'';
+	    for (c=argv[i]; *c!='\0'; c++) {
+		if (*c == '\'') {
+		    *outPtr++ = '\'';
+		    *outPtr++ = '\\';
+		}
+		*outPtr++ = *c;
+		if (*c == '\'') {
+		    *outPtr++ = '\'';
+		}
+	    }
+	    *outPtr++ = '\'';
+	    *outPtr++ = ' ';
+	} else {
+	    nextArg(argc, argv, &i);
+	}
     }
     *outPtr = '\0';
 #endif /* VMS */
