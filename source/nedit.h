@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.39 2003/05/24 19:15:20 tringali Exp $ */
+/* $Id: nedit.h,v 1.40 2003/10/22 20:05:12 tringali Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -435,6 +435,7 @@ typedef struct _WindowInfo {
 
 extern WindowInfo *WindowList;
 extern Display *TheDisplay;
+extern Widget TheAppShell;
 extern char *ArgV0;
 extern Boolean IsServer;
 

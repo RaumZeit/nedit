@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.58 2003/07/25 06:50:44 tksoh Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.59 2003/10/22 20:05:14 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -611,8 +611,17 @@ Widget CreateErrorDialog(Widget parent, char *name,
 	    argcount);
 }
 
+Widget CreateWidget(Widget parent, const char *name, WidgetClass class,
+	ArgList arglist, Cardinal  argcount)
+{
+    Widget result;
+    ArgList al = addParentVisArgs(parent, arglist, &argcount);
+    result = XtCreateWidget(name, class, parent, al, argcount);
+    XtFree((char *)al);
+    return result;
+}
 
-Widget CreateShellWithBestVis(String appName, String appClass, 
+Widget CreateShellWithBestVis(String appName, String appClass,
 	   WidgetClass class, Display *display, ArgList args, Cardinal nArgs)
 {
     Visual *visual;
@@ -834,7 +843,8 @@ void RaiseWindow(Display *display, Window w)
 
     XGetWindowAttributes(display, w, &winAttr);
     if (winAttr.map_state == IsViewable)
-    	XSetInputFocus(display, w, RevertToParent, CurrentTime);	
+        XSetInputFocus(display, w, RevertToParent, CurrentTime);	
+
     XMapRaised(display, w);
 }
 

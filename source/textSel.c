@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.12 2003/05/09 17:43:48 edg Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.13 2003/10/22 20:05:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -165,18 +165,25 @@ void CopyToClipboard(Widget w, Time time)
     length = strlen(text);
     BufUnsubstituteNullChars(text, ((TextWidget)w)->text.textD->buffer);
     
+    /* Shut up LessTif */
+    if (XmClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
+        XtFree(text);
+        return;
+    }
+    
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
-    stat = XmClipboardStartCopy(XtDisplay(w), XtWindow(w),
-    	    s=XmStringCreateSimple("NEdit"), time, w, NULL, &itemID);
+    s = XmStringCreateSimple("NEdit");
+    stat = XmClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
+    	    time, w, NULL, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess)
     	return;
-#ifdef notdef
+
     /* Note that we were previously passing length + 1 here, but I suspect
        that this was inconsistent with the somewhat ambiguous policy of
        including a terminating null but not mentioning it in the length */
-#endif
+
     if (XmClipboardCopy(XtDisplay(w), XtWindow(w), itemID, "STRING",
     	    text, length, 0, NULL) != ClipboardSuccess) {
     	XtFree(text);
@@ -184,6 +191,7 @@ void CopyToClipboard(Widget w, Time time)
     }
     XtFree(text);
     XmClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
+    XmClipboardUnlock(XtDisplay(w), XtWindow(w), False);
 }
 
 /*

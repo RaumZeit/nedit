@@ -222,7 +222,7 @@ int main() {
     
     /* Check for the dreaded Open Motif 2.2.2 */
     if (force_bad || 
-            (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 2)) {
+            (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 3)) {
         fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
         fprintf(stderr, 
             "\nThis version of Open Motif is known to be broken and is\n"

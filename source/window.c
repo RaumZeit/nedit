@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.85 2003/08/08 16:20:56 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.86 2003/10/22 20:05:13 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -149,7 +149,7 @@ static Widget containingPane(Widget w);
 */
 WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
-    Widget appShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
+    Widget winShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
     Widget iSearchLabel;
     WindowInfo *window;
     Pixel bgpix, fgpix;
@@ -316,24 +316,24 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
 
-    appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-                applicationShellWidgetClass, TheDisplay, al, ac);
-    window->shell = appShell;
+    winShell = CreateWidget(TheAppShell, "text",
+                topLevelShellWidgetClass, al, ac);
+    window->shell = winShell;
 
 #ifdef EDITRES
-    XtAddEventHandler (appShell, (EventMask)0, True,
+    XtAddEventHandler (winShell, (EventMask)0, True,
                 (XtEventHandler)_XEditResCheckMessages, NULL);
 #endif /* EDITRES */
 
 #ifndef SGI_CUSTOM
-    addWindowIcon(appShell);
+    addWindowIcon(winShell);
 #endif
 
     /* Create a MainWindow to manage the menubar and text area, set the
        userData resource to be used by WidgetToWindow to recover the
        window pointer from the widget id of any of the window's widgets */
     XtSetArg(al[ac], XmNuserData, window); ac++;
-    mainWin = XmCreateMainWindow(appShell, "main", al, ac);
+    mainWin = XmCreateMainWindow(winShell, "main", al, ac);
     XtManageChild(mainWin);
     
     /* The statsAreaForm holds the stats line and the I-Search line. */
@@ -581,11 +581,11 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     InvalidateWindowMenus();
     
     /* realize all of the widgets in the new window */
-    RealizeWithoutForcingPosition(appShell);
+    RealizeWithoutForcingPosition(winShell);
     XmProcessTraversal(text, XmTRAVERSE_CURRENT);
 
     /* Make close command in window menu gracefully prompt for close */
-    AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, window);
+    AddMotifCloseCallback(winShell, (XtCallbackProc)closeCB, window);
     
 #ifndef NO_SESSION_RESTART
     /* Add wm protocol callback for making nedit restartable by session
@@ -594,7 +594,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
         wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", FALSE);
         syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", FALSE);
     }
-    XmAddProtocolCallback(appShell, wmpAtom, syAtom,
+    XmAddProtocolCallback(winShell, wmpAtom, syAtom,
             (XtCallbackProc)saveYourselfCB, (XtPointer)window);
 #endif
         
@@ -1421,7 +1421,7 @@ WindowInfo *WidgetToWindow(Widget w)
         parent = XtParent(w);
         if (parent == NULL)
             return NULL;
-        if (XtClass(parent) == applicationShellWidgetClass)
+        if (XtClass(parent) == topLevelShellWidgetClass)
             break;
         w = parent;
     }

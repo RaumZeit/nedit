@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.99 2003/08/03 17:38:49 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.100 2003/10/22 20:05:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2574,8 +2574,8 @@ void EditLanguageModes()
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "NEdit Language Modes"); ac++;
     XtSetArg(args[ac], XmNtitle, "Language Modes"); ac++;
-    LMDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-	    applicationShellWidgetClass, TheDisplay, args, ac);
+    LMDialog.shell = CreateWidget(TheAppShell, "langModes",
+	    topLevelShellWidgetClass, args, ac);
     AddSmallIcon(LMDialog.shell);
     form = XtVaCreateManagedWidget("editLanguageModes", xmFormWidgetClass,
 	    LMDialog.shell, XmNautoUnmanage, False,

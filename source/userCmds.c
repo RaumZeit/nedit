@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.32 2003/05/02 19:19:02 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.33 2003/10/22 20:05:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -231,8 +231,8 @@ void EditShellMenu(WindowInfo *window)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "NEdit Shell Menu"); ac++;
     XtSetArg(args[ac], XmNtitle, "Shell Menu"); ac++;
-    ucd->dlogShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-	    applicationShellWidgetClass, TheDisplay, args, ac);
+    ucd->dlogShell = CreateWidget(TheAppShell, "shellCommands",
+	    topLevelShellWidgetClass, args, ac);
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editShellCommands", xmFormWidgetClass,
 	    ucd->dlogShell, XmNautoUnmanage, False,
@@ -648,8 +648,8 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, title); ac++;
     XtSetArg(args[ac], XmNtitle, title); ac++;
-    ucd->dlogShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-	    applicationShellWidgetClass, TheDisplay, args, ac);
+    ucd->dlogShell = CreateWidget(TheAppShell, "macros",
+	    topLevelShellWidgetClass, args, ac);
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editMacroCommands", xmFormWidgetClass,
 	    ucd->dlogShell, XmNautoUnmanage, False,

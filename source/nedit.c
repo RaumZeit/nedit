@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.49 2003/06/06 17:07:24 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.50 2003/10/22 20:05:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -93,6 +93,7 @@ WindowInfo *WindowList = NULL;
 Display *TheDisplay = NULL;
 char *ArgV0 = NULL;
 Boolean IsServer = False;
+Widget TheAppShell;
 
 /* iso8859 appears to be necessary for newer versions of XFree86 that
    default to Unicode encoding, which doesn't quite work with Motif.
@@ -389,6 +390,15 @@ int main(int argc, char **argv)
 	XtWarning ("NEdit: Can't open display\n");
 	exit(EXIT_FAILURE);
     }
+
+    /* Create a hidden application shell that is the parent of all the
+       main editor windows. */
+    TheAppShell = CreateShellWithBestVis(APP_NAME, 
+                                         APP_CLASS,
+                                         applicationShellWidgetClass,
+                                         TheDisplay,
+                                         NULL,
+                                         0);
 
     patchResourcesForVisual();
     patchResourcesForKDEbug();

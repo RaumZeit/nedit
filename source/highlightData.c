@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.54 2003/08/24 20:07:53 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.55 2003/10/22 20:05:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1723,8 +1723,8 @@ void EditHighlightStyles(const char *initialStyle)
     XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(args[ac], XmNiconName, "NEdit Text Drawing Styles"); ac++;
     XtSetArg(args[ac], XmNtitle, "Text Drawing Styles"); ac++;
-    HSDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-	    applicationShellWidgetClass, TheDisplay, args, ac);
+    HSDialog.shell = CreateWidget(TheAppShell, "textStyles",
+	    topLevelShellWidgetClass, args, ac);
     AddSmallIcon(HSDialog.shell);
     form = XtVaCreateManagedWidget("editHighlightStyles", xmFormWidgetClass,
 	    HSDialog.shell, XmNautoUnmanage, False,
@@ -2283,8 +2283,8 @@ void EditHighlightPatterns(WindowInfo *window)
     XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING); n++;
     XtSetArg(args[n], XmNiconName, "NEdit Highlight Patterns"); n++;
     XtSetArg(args[n], XmNtitle, "Syntax Highlighting Patterns"); n++;
-    HighlightDialog.shell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-	    applicationShellWidgetClass, TheDisplay, args, n);
+    HighlightDialog.shell = CreateWidget(TheAppShell, "syntaxHighlight",
+	    topLevelShellWidgetClass, args, n);
     AddSmallIcon(HighlightDialog.shell);
     form = XtVaCreateManagedWidget("editHighlightPatterns", xmFormWidgetClass,
 	    HighlightDialog.shell, XmNautoUnmanage, False,

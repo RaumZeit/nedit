@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.95 2003/05/15 19:42:31 n8gray Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.96 2003/10/22 20:05:12 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -582,8 +582,8 @@ static Widget createHelpPanel(enum HelpTopic topic)
 
     ac = 0;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-    appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
-            applicationShellWidgetClass, TheDisplay, al, ac);
+    appShell = CreateWidget(TheAppShell, "help",
+            topLevelShellWidgetClass, al, ac);
     AddSmallIcon(appShell);
     /* With openmotif 2.1.30, a crash may occur when the text widget of the
        help window is (slowly) resized to a zero width. By imposing a 
@@ -956,7 +956,7 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
 ** Find the text of a hyperlink from a clicked character position somewhere
 ** within the hyperlink text, and display the help that it links to.
 */
-static void follow_hyperlink(int topic, int charPosition, int newWindow)
+static void followHyperlink(int topic, int charPosition, int newWindow)
 {
     textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
     char * link_text;
@@ -1130,7 +1130,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
     if (*nArgs == 3)
         XtCallActionProc(w, args[1], event, NULL, 0);
     
-    follow_hyperlink(topic, clickedPos, newWin);
+    followHyperlink(topic, clickedPos, newWin);
 }  
  
 /*
