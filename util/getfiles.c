@@ -105,7 +105,6 @@ static int RemoveRedundantTextField = True;
 /* Text for help button help display */
 /* ... needs variant for VMS */
 #ifndef SGI_CUSTOM
-#ifndef MOTIF10
 static const char *HelpExist =
 "The file open dialog shows a list of directories on the left, and a list \
 of files on the right.  Double clicking on a file name in the list on the \
@@ -143,33 +142,6 @@ in the directory tree, double \
 click on the directory entry ending in \"..\".  You can also move directly \
 to a directory by typing the file specification of the path in the \"Filter\" \
 field and pressing the \"Filter\" button.";
-
-#else /* MOTIF 1.0 file dialogs are different */
-static const char *HelpExist =
-"The file open dialog initially shows a list of files in the current \
-directory.  Double clicking on a file name in the list, or selecting it \
-and pressing the OK button, will open that file.  \n\
-\n\
-To open a file outside of the current directory, click on the field labeled \
-\"Filter\", type in a directory specification, and press return, or \
-press the Filter button in the dialog.  The files in that directory will \
-then show up in the file list and you can select one as above.";
-static const char *HelpNew = 
-"The Save As... dialog allows you to save the file you are editing under a \
-new name, or to specify the name for an Untitled file.  To specify a file \
-name in the current directory, complete the name displayed in the \"Save File \
-As:\" field near the bottom of the dialog.  If you delete or change \
-the path shown in the field, the file will be saved using whatever path \
-you type provided that it is a valid Unix file specification.\n\
-\n\
-To replace an existing file, select it from the Files list \
-and press \"OK\", or simply double click on the name.\n\
-\n\
-If you would like to save a file in another directory, either type the \
-full name in the \"Save File As:\" field, or type the directory name \
-in the \"File Filter\" field and press the \
-\"Filter\" button to see that directory in the file list.";
-#endif
 
 #else /* SGI_CUSTOM */
 static const char *HelpExist =
@@ -486,11 +458,7 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
                   XmSTRING_DEFAULT_CHARSET);
     titleString = XmStringCreateLtoR (" ", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNselectionLabelString, labelString); n++;     
-#ifdef MOTIF10
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
-#else
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-#endif
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
     newFileSB=CreateFileSelectionDialog(parent,"FileSelect",args,n);
@@ -728,11 +696,7 @@ static void createYesNoDialog(Widget parent)
     Arg       args[MAX_ARGS];	      /* arg list                          */
 
     n = 0;
-#ifdef MOTIF10
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
-#else
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-#endif
     XtSetArg(args[n], XmNtitle, " "); n++;
     YesNoDialog = CreateQuestionDialog(parent, "yesNo", args, n);
     XtAddCallback (YesNoDialog, XmNokCallback, (XtCallbackProc)yesNoOKCB, NULL);
@@ -754,11 +718,7 @@ static void createErrorDialog(Widget parent)
     Arg       args[MAX_ARGS];	      /* arg list                          */
 
     n = 0;
-#ifdef MOTIF10
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
-#else
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-#endif
     XtSetArg(args[n], XmNtitle, " "); n++;
     ErrorDialog = CreateErrorDialog(parent, "error", args, n);
     XtAddCallback(ErrorDialog, XmNcancelCallback, (XtCallbackProc)errorOKCB,
@@ -954,7 +914,6 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     ac = 0;
     form = CreateFormDialog(parent, "helpForm", al, ac);
 
-#ifndef MOTIF10
     ac = 0;
     XtSetArg (al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg (al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
@@ -966,7 +925,6 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     XmStringFree(st1);
     XtManageChild(button);
     SET_ONE_RSRC(form, XmNdefaultButton, button);
-#endif
     
     ac = 0;
     XtSetArg(al[ac], XmNrows, 15);  ac++;
@@ -978,13 +936,11 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     XtSetArg(al[ac], XmNeditMode, XmMULTI_LINE_EDIT);  ac++;
     XtSetArg(al[ac], XmNeditable, False);  ac++;
     XtSetArg(al[ac], XmNvalue, helpText);  ac++;
-#ifndef MOTIF10
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);  ac++;
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
-#endif
     text = XmCreateScrolledText(form, "helpText", al, ac);
     XtManageChild(text);
     

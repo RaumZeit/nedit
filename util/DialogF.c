@@ -205,13 +205,8 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 		argcount++;
 	XtSetArg (args[argcount], XmNdialogTitle, titstr_xms);
 		argcount++;
-#ifdef MOTIF10
-	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL);
-		argcount ++;
-#else
 	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 		argcount ++;
-#endif
 
 	dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args,
 			argcount);
@@ -311,13 +306,9 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 		argcount ++;
 	XtSetArg (args[argcount], XmNdialogTitle, titstr_xms);
 		argcount++;
-#ifdef MOTIF10
-	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL);
-		argcount ++;
-#else
 	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 		argcount ++;
-#endif
+
 	dialog_shell = CreateDialogShell (parent, dialog_name[dialog_num],
 			0, 0);
 	dialog = XmCreateMessageBox (dialog_shell, "msg box", args, argcount);

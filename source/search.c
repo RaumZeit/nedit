@@ -46,9 +46,6 @@
 #include <Xm/List.h>
 #include <X11/Xatom.h>		/* for getting selection */
 #include <X11/keysym.h>
-#ifdef MOTIF10
-#include <X11/Selection.h>	/* " " */
-#endif
 #include <X11/X.h>		/* " " */
 #include "../util/DialogF.h"
 #include "../util/misc.h"
@@ -913,13 +910,9 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
     
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
-#ifdef MOTIF10
-    XtSetArg (args[argcnt], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL);
-	    argct ++;
-#else
     XtSetArg (args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	    argcnt ++;
-#endif
+
     /* Ideally, we should create the multi-file dialog as a child widget
        of the replace dialog. However, if we do this, the main window
        can hide the multi-file dialog when raised (I'm not sure why, but 
@@ -3213,28 +3206,10 @@ static void downCaseString(char *outString, char *inString)
 */
 static void resetFindTabGroup(WindowInfo *window)
 {
-#ifdef MOTIF10
-    XmRemoveTabGroup(window->findText);
-    XmRemoveTabGroup(window->findSearchTypeBox);
-    XmRemoveTabGroup(window->findBtns);
-    XmAddTabGroup(window->findText);
-    XmAddTabGroup(window->findSearchTypeBox);
-    XmAddTabGroup(window->findBtns);
-#endif
     XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
 }
 static void resetReplaceTabGroup(WindowInfo *window)
 {
-#ifdef MOTIF10
-    XmRemoveTabGroup(window->replaceText);
-    XmRemoveTabGroup(window->replaceWithText);
-    XmRemoveTabGroup(window->replaceSearchTypeBox);
-    XmRemoveTabGroup(window->replaceBtns);
-    XmAddTabGroup(window->replaceText);
-    XmAddTabGroup(window->replaceWithText);
-    XmAddTabGroup(window->replaceSearchTypeBox);
-    XmAddTabGroup(window->replaceBtns);
-#endif
     XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);
 }
 
