@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.44 2002/02/13 20:47:30 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.45 2002/02/14 14:28:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -730,11 +730,11 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.helpFontNames[BOLD_HELP_FONT],
 	(void *)sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), False},
     {"italicHelpFont", "ItalicHelpFont", PREF_STRING,
-    	"-*-helvetica-medium-i-normal--*-120-*-*-*-iso8859-*",
+    	"-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-*",
 	PrefData.helpFontNames[ITALIC_HELP_FONT],
 	(void *)sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), False},
     {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING,
-    	"-*-helvetica-bold-i-normal--*-120-*-*-*-iso8859-*",
+    	"-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-*",
 	PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT],
 	(void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), False},
     {"fixedHelpFont", "fixedHelpFont", PREF_STRING,
@@ -762,7 +762,7 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.helpFontNames[H1_HELP_FONT],
 	(void *)sizeof(PrefData.helpFontNames[H1_HELP_FONT]), False},
     {"h2HelpFont", "H2HelpFont", PREF_STRING,
-    	"-*-helvetica-bold-i-normal--*-120-*-*-*-iso8859-*",
+    	"-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-*",
 	PrefData.helpFontNames[H2_HELP_FONT],
 	(void *)sizeof(PrefData.helpFontNames[H2_HELP_FONT]), False},
     {"h3HelpFont", "H3HelpFont", PREF_STRING,
