@@ -1,3 +1,31 @@
+2001-06-22 20:27  tringali
+
+	* source/: nedit.c, window.c: Allow stats line background color to
+	be set by user [#431891]
+
+2001-06-22 20:25  tringali
+
+	* source/macro.c: Incremental reading from files via J. Lous [Patch
+	#434465]
+
+2001-06-22 16:32  amai
+
+	* source/file.c: file.c: fail when trying to read in a directory as
+	a file
+
+2001-06-21 16:54  edel
+
+	* source/shell.c: Fixed shell dialog BadMatch crash on Solaris 2.5
+
+2001-06-20 17:48  amai
+
+	* source/macro.c: macro.c: replace snprintf() by sprintf().   Add
+	#include <string.h>
+
+2001-06-20 10:24  amai
+
+	* ChangeLog: ChangeLog: update
+
 2001-06-19 22:00  slobasso
 
 	* source/macro.c: Added Thorsten's code to put correct key codes in
