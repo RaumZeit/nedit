@@ -1,6 +1,6 @@
                     NEdit Version 5.2.0beta,  July 2001
 
-$Id: README,v 1.8 2001/07/07 09:54:40 amai Exp $
+$Id: README,v 1.9 2001/08/06 21:21:39 amai Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -84,16 +84,22 @@ notes for details.
 BUILDING NEDIT
 
 Pre-built executables will be available for most major Unix and VMS systems, so
-check the NEdit web page (http://nedit.org), first.  Building NEdit requires
-the Motif GUI library, e.g. libXm.a or libXm.so, which is a standard part
-of commercial Unix systems, but which requires separate installation on Linux
-and other free Unix variants.  A free version of Motif, called LessTif,
-is now available and stable enough to run NEdit reasonably well on these systems.
-If you are using LessTif, you should have LessTif 0.92.26 or greater.
-Older versions may not work very well.  See the LessTif section under
-PLATFORM SPECIFIC ISSUES for details.
+check the NEdit web page (http://nedit.org), first. 
+Requirements to build NEdit are: 
 
-The two directories called source and util contain the sources for NEdit.
+ - ANSI C89 system (compiler, headers, libraries)
+ - make utility
+ - X11 development stuff (headers, libraries)
+ - Motif 1.2 or above (Motif 1.1 might work, but is no longer supported)
+   This GUI library is a standard part on most systems which have 
+   an X11 installation. Most commercial Unix systems feature this, 
+   others may requires separate installation. 
+   A free version of Motif, called LessTif, is now available and stable enough 
+   to run NEdit reasonably well on these systems. See the LessTif section 
+   under PLATFORM SPECIFIC ISSUES for details.
+
+
+The two directories called 'source' and 'util 'contain the sources for NEdit.
 Util should be built first, followed by source.  The makefile in this directory
 can be used to build both in sequence if your system is one of the supported
 machines and no modifications are necessary to the makefiles.  To build NEdit
