@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.10 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.11 2003/03/18 10:58:20 edg Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -409,9 +409,16 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData)
 	ml->itemList[listPos-2] = item;
     }
     
-    /* Make a copy by requesting the data again */
+    /* Make a copy by requesting the data again.
+       In case getDialogDataCB() returned a fallback value, the dialog may
+       not be in sync with the internal list. If we _explicitly_ request the
+       data again, we could get an invalid answer. Therefore, we first update
+       the dialog to make sure that we can copy the right data. */
+    updateDialogFromList(ml, listPos-2);
     item = (*ml->getDialogDataCB)(ml->itemList[listPos-2], True, &abort,
     	    ml->getDialogDataArg);
+    if (abort)
+	return;
         
     /* add the item to the item list */
     for (i= *ml->nItems; i>=listPos; i--)
