@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.38 2001/11/13 11:10:24 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.39 2001/11/27 22:53:42 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -60,6 +60,7 @@ static const char CVSID[] = "$Id: search.c,v 1.38 2001/11/13 11:10:24 amai Exp $
 #include "search.h"
 #include "window.h" 
 #include "preferences.h"
+#include "file.h"
 #ifdef REPLACE_SCOPE
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
@@ -148,7 +149,8 @@ static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window,
 static void rMultiFilePathCB(Widget w, WindowInfo *window,  
 	XmAnyCallbackStruct *callData);
 static void uploadFileListItems(WindowInfo* window, Bool replace);
-static int countWritableWindows(const WindowInfo* window);
+static int countWindows(void);
+static int countWritableWindows(void);
 static void collectWritableWindows(WindowInfo* window);
 static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData);
@@ -453,14 +455,6 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
        /* No selection -> always choose "In Window" as default. */
        XmToggleButtonSetState(window->replaceScopeWinToggle, True, True);
     }
-
-    /* multiple implies more than one */
-    window->nWritableWindows = countWritableWindows(window);
-    XtSetSensitive(window->replaceScopeMultiToggle, window->nWritableWindows > 1);
-#else
-    /* multiple implies more than one */
-    window->nWritableWindows = countWritableWindows(window);
-    XtSetSensitive(window->replaceAllBtn, window->nWritableWindows > 1);
 #endif
 
     UpdateReplaceActionButtons(window);
@@ -1730,16 +1724,44 @@ static int compareWindowNames(const void *windowA, const void *windowB)
       	    (*((WindowInfo**)windowB))->filename);
 }
  
-/* Count no. of writable windows */
-static int countWritableWindows(const WindowInfo* window)
+/*
+** Count no. of windows
+*/
+static int countWindows(void)
 {
-    int nWritable;
+    int nWindows;
     const WindowInfo *w;
 
-    for (w=WindowList, nWritable=0; w!=NULL; w=w->next)
-       if (!IS_ANY_LOCKED(w->lockReasons)) ++nWritable;
+    for (w=WindowList, nWindows=0; w!=NULL; w=w->next, ++nWindows);
     
-    return(nWritable);
+    return nWindows;
+}
+
+/*
+** Count no. of writable windows, but first update the status of all files.
+*/
+static int countWritableWindows(void)
+{
+    int nWritable, nBefore, nAfter;
+    WindowInfo *w;
+
+    nBefore = countWindows();
+    for (w=WindowList, nWritable=0; w!=NULL; w=w->next) {
+	/* We must be very careful! The status check may trigger a pop-up
+	   dialog when the file has changed on disk, and the user may destroy
+	   arbitrary windows in response. */
+	CheckForChangesToFile(w);
+	nAfter = countWindows();
+	if (nAfter != nBefore) {
+	    /* The user has destroyed a file; start counting all over again */
+	    nBefore = nAfter;
+	    w = WindowList;
+	    nWritable = 0;
+	    continue;
+	}
+	if (!IS_ANY_LOCKED(w->lockReasons)) ++nWritable;
+    }
+    return nWritable;
 }
 
 /*
@@ -1748,7 +1770,7 @@ static int countWritableWindows(const WindowInfo* window)
 **/
 static void collectWritableWindows(WindowInfo* window)
 {
-    int nWritable = countWritableWindows(window);
+    int nWritable = countWritableWindows();
     int i;
     WindowInfo *w;
     WindowInfo **windows;
@@ -1757,7 +1779,7 @@ static void collectWritableWindows(WindowInfo* window)
     {
        XtFree((XtPointer)window->writableWindows);
     }
-   
+
     /* Make a sorted list of writable windows */
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
     for (w=WindowList, i=0; w!=NULL; w=w->next)
@@ -2210,7 +2232,7 @@ void UpdateReplaceActionButtons(WindowInfo* window)
 #else
     rSetActionButtons(window, searchText, searchText, searchText,
                       searchText, searchText && window->wasSelected,
-                      searchText && (countWritableWindows(window) > 1));
+                      searchText && (countWritableWindows() > 1));
 #endif
 }
 
