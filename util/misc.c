@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.62 2004/01/29 10:53:36 tksoh Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.63 2004/05/03 08:53:14 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2124,12 +2124,12 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
 {
    /* 
-      The bug only exists in OpenMotif 2.x. Since it's quite hard to detect
-      OpenMotif reliably, we make a rough cut by excluding Lesstif and all
-      Motif versions < 2.x.
+      The bug only exists in OpenMotif 2.1.x/2.2.[0-2]. Since it's quite hard 
+      to detect OpenMotif reliably, we make a rough cut by excluding Lesstif
+      and all Motif versions >= 2.1.x and < 2.2.3.
    */
 #ifndef LESSTIF_VERSION
-#if XmVersion >= 2000
+#if XmVersion == 2001 || (XmVersion == 2002 && XmUPDATE_LEVEL < 3)
     if (state && XtIsRealized(widget))
     {
         /* 
@@ -2163,7 +2163,7 @@ void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
         XtCallActionProc(widget, "Select", &ev, NULL, 0);
         XtCallActionProc(widget, "Disarm", &ev, NULL, 0);
     }
-#endif /* XmVersion >= 2000 */
+#endif /* XmVersion == 2001 || ... */
 #endif /* LESSTIF_VERSION */
     
     /* This is sufficient on non-OM platforms */
