@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.15 2004/02/04 08:45:01 tksoh Exp $ */
+/* $Id: window.h,v 1.16 2004/02/21 05:45:46 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -76,4 +76,7 @@ void RefreshWindowStates(WindowInfo *window);
 void AllWindowsBusy(const char* message);
 void AllWindowsUnbusy(void);
 void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);
+void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, 
+        Boolean notify);
+void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive);
 #endif /* NEDIT_WINDOW_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.82 2004/02/16 01:02:37 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.83 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -518,8 +518,6 @@ static WindowInfo *MacroRecordWindow = NULL;
 static char ReplaceChars[] = "\\\"ntbrfav";
 static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 
-static WindowInfo *focusShifted = NULL;
-
 /*
 ** Install built-in macro subroutines and special variables for accessing
 ** editor information
@@ -563,13 +561,16 @@ void BeginLearn(WindowInfo *window)
     	return;
     
     /* dim the inappropriate menus and items, and undim finish and cancel */
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XtSetSensitive(win->learnItem, False);
-    XtSetSensitive(window->finishLearnItem, True);
+    }
+    SetSensitive(window, window->finishLearnItem, True);
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
     	    s=XmStringCreateSimple("Cancel Learn"), NULL);
     XmStringFree(s);
-    XtSetSensitive(window->cancelMacroItem, True);
+    SetSensitive(window, window->cancelMacroItem, True);
     
     /* Mark the window where learn mode is happening */
     MacroRecordWindow = window;
@@ -658,14 +659,22 @@ void FinishLearn(void)
     BufFree(MacroRecordBuf);
     
     /* Undim the menu items dimmed during learn */
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XtSetSensitive(win->learnItem, True);
-    XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
-    XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
+    }
+    if (IsTopDocument(MacroRecordWindow)) {
+	XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
+	XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
+    }
     
     /* Undim the replay and paste-macro buttons */
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XtSetSensitive(win->replayItem, True);
+    }
     DimPasteReplayBtns(True);
     
     /* Clear learn-mode banner */
@@ -699,10 +708,15 @@ static void cancelLearn(void)
     BufFree(MacroRecordBuf);
     
     /* Undim the menu items dimmed during learn */
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XtSetSensitive(win->learnItem, True);
-    XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
-    XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
+    }
+    if (IsTopDocument(MacroRecordWindow)) {
+	XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
+	XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
+    }
     
     /* Clear learn-mode banner */
     ClearModeMessage(MacroRecordWindow);
@@ -928,7 +942,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
     	    s=XmStringCreateSimple("Cancel Macro"), NULL);
     XmStringFree(s);
-    XtSetSensitive(window->cancelMacroItem, True);
+    SetSensitive(window, window->cancelMacroItem, True);
 
     /* Create a data structure for passing macro execution information around
        amongst the callback routines which will process i/o and completion */
@@ -1082,7 +1096,7 @@ static void finishMacroCmdExecution(WindowInfo *window)
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
     	    s=XmStringCreateSimple("Cancel Learn"), NULL);
     XmStringFree(s);
-    XtSetSensitive(window->cancelMacroItem, False);
+    SetSensitive(window, window->cancelMacroItem, False);
     if (cmdData->bannerIsUp)
     	ClearModeMessage(window);
 
@@ -1115,24 +1129,6 @@ static void finishMacroCmdExecution(WindowInfo *window)
 	event.type = ClientMessage;
 	XSendEvent(XtDisplay(window->shell), XtWindow(window->shell), False,
 		NoEventMask, (XEvent *)&event);
-    }
-
-    /* any actions performed after focus is shifted into non-top buffers
-       with focus_window() may modify the 'shell-level' properties (menus,
-       statsline, etc) belong to the top buffer, we refresh these 
-       properties in case they did get modified */
-    if (focusShifted) {
-	WindowInfo *macroRunWindow = cmdData->context->runWindow;
-    	WindowInfo *win;
-	
-	for (win=WindowList; win; win=win->next) {
-	    if (win == macroRunWindow && IsTopDocument(win))
-	    	DimSelectionDepUserMenuItems(win, win->wasSelected);
-	    else if (NDocuments(win) > 1 && IsTopDocument(win))
-	    	RefreshMenuToggleStates(win);
-	}
-	
-	focusShifted = NULL;
     }
 }
 
@@ -1845,10 +1841,6 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
 	result->val.str = PERM_ALLOC_STR("");
 	return True;
     }
-
-    /* set flag to indicate focus has been shifted */
-    if (MacroRunWindow() != w)
-    	focusShifted = w;
 	
     /* Change the focused window to the requested one */
     SetMacroFocusWindow(w);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.65 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.66 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1917,20 +1917,7 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
 	    writableWin->multiFileReplSelected = False;
 	}
     }                          
-    
-    /* doing replace on non-top buffers will modified certain shell
-       properties, in this case the menu bar, owned by the top 
-       buffers. we need to restore them for the top buffers */
-    for (i=0; i<window->nWritableWindows; ++i) {
-	if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
-	    WindowInfo *topBuf =
-		    GetTopDocument(window->writableWindows[i]->shell);
-
-	    DimSelectionDepUserMenuItems(topBuf, topBuf->wasSelected);
-	    RefreshMenuToggleStates(topBuf);
-	}
-    }
-    
+        
     if (!XmToggleButtonGetState(window->replaceKeepBtn)) {
        /* Pop down both replace dialogs. */
        unmanageReplaceDialogs(window);
@@ -4589,9 +4576,11 @@ static void saveSearchHistory(const char *searchString,
     
     if (NHist==0) {
     	for (w=WindowList; w!=NULL; w=w->next) {
-       	XtSetSensitive(w->findAgainItem, True);
-    		XtSetSensitive(w->replaceFindAgainItem, True);
-    		XtSetSensitive(w->replaceAgainItem, True);
+    	    if (!IsTopDocument(w))
+		continue;
+	    XtSetSensitive(w->findAgainItem, True);
+	    XtSetSensitive(w->replaceFindAgainItem, True);
+	    XtSetSensitive(w->replaceAgainItem, True);
     	}
     }
 

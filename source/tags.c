@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.54 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.55 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -538,6 +538,8 @@ static void updateMenuItems()
     if (TagsFileList) tagStat=TRUE;
     
     for (w=WindowList; w!=NULL; w=w->next) {
+    	if (!IsTopDocument(w))
+	    continue;
         XtSetSensitive(w->showTipItem, tipStat || tagStat);
         XtSetSensitive(w->unloadTipsMenuItem, tipStat);
         XtSetSensitive(w->findDefItem, tagStat);

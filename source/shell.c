@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.29 2004/01/26 09:23:22 tksoh Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.30 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -497,7 +497,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     
     /* enable the cancel menu item */
     if (!fromMacro)
-    	XtSetSensitive(window->cancelShellItem, True);
+    	SetSensitive(window, window->cancelShellItem, True);
 
     /* fork the subprocess and issue the command */
     childPid = forkCommand(window->shell, command, window->path, &stdinFD,
@@ -796,7 +796,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     /* Clean up waiting-for-shell-command-to-complete mode */
     if (!cmdData->fromMacro) {
 	EndWait(window->shell);
-	XtSetSensitive(window->cancelShellItem, False);
+	SetSensitive(window, window->cancelShellItem, False);
 	if (cmdData->bannerIsUp)
     	    ClearModeMessage(window);
     }

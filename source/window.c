@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.120 2004/02/17 01:01:18 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.121 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -180,7 +180,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin);
 static UndoInfo *cloneUndoItems(UndoInfo *orgList);
 static Widget containingPane(Widget w);
-void CloseAllPopupsFor(Widget shell);
 
 static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
 static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
@@ -1565,10 +1564,12 @@ void SetAutoIndent(WindowInfo *window, int state)
     for (i=0; i<window->nPanes; i++)
         XtVaSetValues(window->textPanes[i], textNautoIndent, autoIndent,
                 textNsmartIndent, smartIndent, NULL);
-    XmToggleButtonSetState(window->smartIndentItem, smartIndent, False);
-    XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
-    XmToggleButtonSetState(window->autoIndentOffItem, state == NO_AUTO_INDENT,
-            False);
+    if (IsTopDocument(window)) {
+	XmToggleButtonSetState(window->smartIndentItem, smartIndent, False);
+	XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
+	XmToggleButtonSetState(window->autoIndentOffItem,
+	        state == NO_AUTO_INDENT, False);
+    }
 }
 
 /*
@@ -1578,12 +1579,14 @@ void SetAutoIndent(WindowInfo *window, int state)
 void SetShowMatching(WindowInfo *window, int state)
 {
     window->showMatchingStyle = state;
-    XmToggleButtonSetState(window->showMatchingOffItem, 
-        state == NO_FLASH, False);
-    XmToggleButtonSetState(window->showMatchingDelimitItem, 
-        state == FLASH_DELIMIT, False);
-    XmToggleButtonSetState(window->showMatchingRangeItem, 
-        state == FLASH_RANGE, False);
+    if (IsTopDocument(window)) {
+	XmToggleButtonSetState(window->showMatchingOffItem, 
+            state == NO_FLASH, False);
+	XmToggleButtonSetState(window->showMatchingDelimitItem, 
+            state == FLASH_DELIMIT, False);
+	XmToggleButtonSetState(window->showMatchingRangeItem, 
+            state == FLASH_RANGE, False);
+    }
 }
 
 /*
@@ -1768,9 +1771,11 @@ void SetAutoWrap(WindowInfo *window, int state)
                 textNcontinuousWrap, contWrap, NULL);
     window->wrapMode = state;
     
-    XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
-    XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
-    XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
+    if (IsTopDocument(window)) {
+	XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
+	XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
+	XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
+    }
 }
 
 /*
@@ -1839,7 +1844,7 @@ WindowInfo *WidgetToWindow(Widget w)
 void SetWindowModified(WindowInfo *window, int modified)
 {
     if (window->fileChanged == FALSE && modified == TRUE) {
-    	XtSetSensitive(window->closeItem, TRUE);
+    	SetSensitive(window, window->closeItem, TRUE);
     	window->fileChanged = TRUE;
     	UpdateWindowTitle(window);
 	RefreshTabState(window);
@@ -2830,7 +2835,7 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
       XtVaSetValues(window->textPanes[i],
               textNbacklightCharTypes, window->backlightCharTypes, 0);
     if (is_applied != do_apply)
-      XmToggleButtonSetState(window->backlightCharsItem, do_apply, False);
+      SetToggleButtonState(window, window->backlightCharsItem, do_apply, False);
 }
 
 static int sortAlphabetical(const void* k1, const void* k2)
@@ -3611,6 +3616,9 @@ void RefreshMenuToggleStates(WindowInfo *window)
 {
     WindowInfo *win;
     
+    if (!IsTopDocument(window))
+	return;
+	
     /* File menu */
     XtSetSensitive(window->printSelItem, window->wasSelected);
 
@@ -4389,4 +4397,25 @@ static Widget containingPane(Widget w)
     /* The containing pane used to simply be the first parent, but with
        the introduction of an XmFrame, it's the grandparent. */
     return XtParent(XtParent(w));
+}
+
+/*
+** set/clear toggle menu state if the calling document is on top.
+*/
+void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, 
+        Boolean notify)
+{
+    if (IsTopDocument(window)) {
+    	XmToggleButtonSetState(w, state, notify);
+    }
+}
+
+/*
+** set/clear menu sensitivity if the calling document is on top.
+*/
+void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive)
+{
+    if (IsTopDocument(window)) {
+    	XtSetSensitive(w, sensitive);
+    }
 }

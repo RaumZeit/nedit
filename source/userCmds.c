@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.40 2004/01/27 18:02:32 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.41 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -943,6 +943,9 @@ void DimPasteReplayBtns(int sensitive)
 */
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive)
 {
+    if (!IsTopDocument(window))
+    	return;
+	
 #ifndef VMS
     dimSelDepItemsInMenu(window->shellMenuPane, ShellMenuItems,
 	    NShellMenuItems, sensitive);
@@ -988,12 +991,12 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive)
 {
     if (window->bgMenuUndoItem != NULL)
-    	XtSetSensitive(window->bgMenuUndoItem, sensitive);
+    	SetSensitive(window, window->bgMenuUndoItem, sensitive);
 }
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive)
 {
     if (window->bgMenuRedoItem != NULL)
-	XtSetSensitive(window->bgMenuRedoItem, sensitive);
+	SetSensitive(window, window->bgMenuRedoItem, sensitive);
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.14 2002/08/27 05:39:27 n8gray Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.15 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -318,7 +318,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo)
     
     /* Make the undo menu item sensitive now that there's something to undo */
     if (window->undo == NULL) {
-    	XtSetSensitive(window->undoItem, True);
+    	SetSensitive(window, window->undoItem, True);
 	SetBGMenuUndoSensitivity(window, True);
     }
 
@@ -346,7 +346,7 @@ static void addRedoItem(WindowInfo *window, UndoInfo *redo)
 {
     /* Make the redo menu item sensitive now that there's something to redo */
     if (window->redo == NULL) {
-    	XtSetSensitive(window->redoItem, True);
+    	SetSensitive(window, window->redoItem, True);
 	SetBGMenuRedoSensitivity(window, True);
     }
     
@@ -375,7 +375,7 @@ static void removeUndoItem(WindowInfo *window)
     
     /* if there are no more undo records left, dim the Undo menu item */
     if (window->undo == NULL) {
-    	XtSetSensitive(window->undoItem, False);
+    	SetSensitive(window, window->undoItem, False);
 	SetBGMenuUndoSensitivity(window, False);
     }
 }
@@ -393,7 +393,7 @@ static void removeRedoItem(WindowInfo *window)
     
     /* if there are no more redo records left, dim the Redo menu item */
     if (window->redo == NULL) {
-    	XtSetSensitive(window->redoItem, False);
+    	SetSensitive(window, window->redoItem, False);
 	SetBGMenuRedoSensitivity(window, False);
     }
 }

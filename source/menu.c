@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.90 2004/02/20 09:27:21 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.91 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -372,8 +372,6 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
-static void showTabBarAP(Widget w, XEvent *event, String *args,
-    Cardinal *nArgs);
 static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args,
@@ -554,7 +552,6 @@ static XtActionsRec Actions[] = {
     {"repeat_dialog", repeatDialogAP},
     {"raise_window", raiseWindowAP},
     {"focus_pane", focusPaneAP},
-    {"show_tabs", showTabBarAP},
     {"set_statistics_line", setStatisticsLineAP},
     {"set_incremental_search_line", setIncrementalSearchLineAP},
     {"set_show_line_numbers", setShowLineNumbersAP},
@@ -1779,6 +1776,8 @@ static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(NO_AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->autoIndentOffDefItem, True, False);
     	XmToggleButtonSetState(win->autoIndentDefItem, False, False);
     	XmToggleButtonSetState(win->smartIndentDefItem, False, False);
@@ -1792,6 +1791,8 @@ static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->autoIndentDefItem, True, False);
 	XmToggleButtonSetState(win->autoIndentOffDefItem, False, False);
 	XmToggleButtonSetState(win->smartIndentDefItem, False, False);
@@ -1805,6 +1806,8 @@ static void smartIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(SMART_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->smartIndentDefItem, True, False);
 	XmToggleButtonSetState(win->autoIndentOffDefItem, False, False);
     	XmToggleButtonSetState(win->autoIndentDefItem, False, False);
@@ -1818,8 +1821,10 @@ static void autoSaveDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoSave(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->autoSaveDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->autoSaveDefItem, state, False);
+    }
 }
 
 static void preserveDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1829,8 +1834,10 @@ static void preserveDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSaveOldVersion(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->saveLastDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->saveLastDefItem, state, False);
+    }
 }
 
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1854,6 +1861,8 @@ static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NO_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->noWrapDefItem, True, False);
     	XmToggleButtonSetState(win->newlineWrapDefItem, False, False);
     	XmToggleButtonSetState(win->contWrapDefItem, False, False);
@@ -1867,6 +1876,8 @@ static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NEWLINE_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->newlineWrapDefItem, True, False);
     	XmToggleButtonSetState(win->contWrapDefItem, False, False);
     	XmToggleButtonSetState(win->noWrapDefItem, False, False);
@@ -1880,6 +1891,8 @@ static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(CONTINUOUS_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->contWrapDefItem, True, False);
     	XmToggleButtonSetState(win->newlineWrapDefItem, False, False);
     	XmToggleButtonSetState(win->noWrapDefItem, False, False);
@@ -1899,6 +1912,8 @@ static void smartTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
 	
     SetPrefSmartTags(True);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XmToggleButtonSetState(win->smartTagsDefItem, True, False);
 	XmToggleButtonSetState(win->allTagsDefItem, False, False);
     }
@@ -1910,6 +1925,8 @@ static void showAllTagsDefCB(Widget w, XtPointer client_data, XtPointer callData
 	
     SetPrefSmartTags(False);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
 	XmToggleButtonSetState(win->allTagsDefItem, True, False);
     }
@@ -1929,6 +1946,8 @@ static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(NO_FLASH);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, True, False);
 	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingRangeDefItem, False, False);
@@ -1942,6 +1961,8 @@ static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callD
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_DELIMIT);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingDelimitDefItem, True, False);
 	XmToggleButtonSetState(win->showMatchingRangeDefItem, False, False);
@@ -1955,6 +1976,8 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
@@ -1970,7 +1993,8 @@ static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData
     /* Set the preference and make the other windows' menus agree */
     SetPrefMatchSyntaxBased(state);
     for (win=WindowList; win!=NULL; win=win->next) {
-	XmToggleButtonSetState(win->matchSyntaxBasedDefItem, state, False);
+    	if (IsTopDocument(win))
+	    XmToggleButtonSetState(win->matchSyntaxBasedDefItem, state, False);
     }
 }
 
@@ -1981,8 +2005,10 @@ static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefBacklightChars(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-      XmToggleButtonSetState(win->backlightCharsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+	    XmToggleButtonSetState(win->backlightCharsDefItem, state, False);
+    }
 }
 
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1992,6 +2018,8 @@ static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(False);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->highlightOffDefItem, True, False);
     	XmToggleButtonSetState(win->highlightDefItem, False, False);
     }
@@ -2004,6 +2032,8 @@ static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(True);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->highlightOffDefItem, False, False);
     	XmToggleButtonSetState(win->highlightDefItem, True, False);
     }
@@ -2076,8 +2106,10 @@ static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchDlogs(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->searchDlogsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->searchDlogsDefItem, state, False);
+    }
 }
 
 static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2087,8 +2119,10 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefBeepOnSearchWrap(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->beepOnSearchWrapDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->beepOnSearchWrapDefItem, state, False);
+    }
 }
 
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2098,8 +2132,10 @@ static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefKeepSearchDlogs(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->keepSearchDlogsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->keepSearchDlogsDefItem, state, False);
+    }
 }
 
 static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2109,8 +2145,10 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchWraps(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
+    }
 }
 
 static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData)
@@ -2119,9 +2157,9 @@ static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData)
     int state = XmToggleButtonGetState(w);
 
     SetPrefAppendLF(state);
-    for (win = WindowList; win != NULL; win = win->next)
-    {
-        XmToggleButtonSetState(win->appendLFItem, state, False);
+    for (win = WindowList; win != NULL; win = win->next) {
+    	if (IsTopDocument(win))
+            XmToggleButtonSetState(win->appendLFItem, state, False);
     }
 }
 
@@ -2135,7 +2173,8 @@ static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefSortOpenPrevMenu(state);
     for (win=WindowList; win!=NULL; win=win->next) {
 	win->prevOpenMenuValid = False;
-    	XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
     }
 }
 
@@ -2147,8 +2186,10 @@ static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefRepositionDialogs(state);
     SetPointerCenteredDialogs(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->reposDlogsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->reposDlogsDefItem, state, False);
+    }
 }
 
 static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2159,6 +2200,8 @@ static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnFileMods(state);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->modWarnDefItem, state, False);
 	XtSetSensitive(win->modWarnRealDefItem, state);
     }
@@ -2171,8 +2214,10 @@ static void modWarnRealDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnRealFileMods(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->modWarnRealDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->modWarnRealDefItem, state, False);
+    }
 }
 
 static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2182,8 +2227,10 @@ static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnExit(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->exitWarnDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->exitWarnDefItem, state, False);
+    }
 }
 
 static void openInTabDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2205,6 +2252,8 @@ static void tabBarDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefTabBar(state);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->tabBarDefItem, state, False);
     	ShowWindowTabBar(win);
     }
@@ -2218,6 +2267,8 @@ static void tabBarHideDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefTabBarHideOne(state);
     for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
     	XmToggleButtonSetState(win->tabBarHideDefItem, state, False);
     	ShowWindowTabBar(win);
     }
@@ -2232,7 +2283,8 @@ static void toolTipsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefToolTips(state);
     for (win=WindowList; win!=NULL; win=win->next) {
     	XtVaSetValues(win->tab, XltNshowBubble, GetPrefToolTips(), NULL);
-    	XmToggleButtonSetState(win->toolTipsDefItem, state, False);
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->toolTipsDefItem, state, False);
     }
 }
 
@@ -2243,8 +2295,10 @@ static void tabNavigateDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefGlobalTabNavigate(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->tabNavigateDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->tabNavigateDefItem, state, False);
+    }
 }
 
 static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2254,8 +2308,10 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefStatsLine(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->statsLineDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->statsLineDefItem, state, False);
+    }
 }
 
 static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2265,8 +2321,10 @@ static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefISearchLine(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->iSearchLineDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->iSearchLineDefItem, state, False);
+    }
 }
 
 static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2276,8 +2334,10 @@ static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefLineNums(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->lineNumsDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->lineNumsDefItem, state, False);
+    }
 }
 
 static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2287,8 +2347,10 @@ static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callDat
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowPathInWindowsMenu(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->pathInWindowsMenuDefItem, state, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->pathInWindowsMenuDefItem, state, False);
+    }
     InvalidateWindowMenus(); 
 }
 
@@ -2300,6 +2362,8 @@ static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, True, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
@@ -2318,6 +2382,8 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE);
     	for (win=WindowList; win!=NULL; win=win->next) {
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, True, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
@@ -2336,6 +2402,8 @@ static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL_WORD);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, True, False);
@@ -2354,6 +2422,8 @@ static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE_WORD);
     	for (win=WindowList; win!=NULL; win=win->next) {
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
@@ -2372,6 +2442,8 @@ static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
@@ -2390,6 +2462,8 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX_NOCASE);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
     	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
@@ -2409,6 +2483,8 @@ static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, True, False);
     	    XmToggleButtonSetState(win->replScopeSelDefItem, False, False);
     	    XmToggleButtonSetState(win->replScopeSmartDefItem, False, False);
@@ -2424,6 +2500,8 @@ static void replaceScopeSelectionCB(Widget w, WindowInfo *window, caddr_t callDa
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
     	    XmToggleButtonSetState(win->replScopeSelDefItem, True, False);
     	    XmToggleButtonSetState(win->replScopeSmartDefItem, False, False);
@@ -2439,6 +2517,8 @@ static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData)
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
     	for (win=WindowList; win!=NULL; win=win->next){
+    	    if (!IsTopDocument(win))
+		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
     	    XmToggleButtonSetState(win->replScopeSelDefItem, False, False);
     	    XmToggleButtonSetState(win->replScopeSmartDefItem, True, False);
@@ -3311,8 +3391,10 @@ static void splitWindowAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     
     SplitWindow(window);
-    XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
-    XtSetSensitive(window->closePaneItem, window->nPanes > 0);
+    if (IsTopDocument(window)) {
+	XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
+    }
 }
 
 static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -3320,8 +3402,10 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     WindowInfo *window = WidgetToWindow(w);
     
     ClosePane(window);
-    XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
-    XtSetSensitive(window->closePaneItem, window->nPanes > 0);
+    if (IsTopDocument(window)) {
+	XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
+    }
 }
 
 static void detachDocumentDialogAP(Widget w, XEvent *event, String *args,
@@ -3797,8 +3881,8 @@ static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
     Boolean newState;
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats, "set_statistics_line");
-
-    XmToggleButtonSetState(window->statsLineItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->statsLineItem, newState, False);
     ShowStatsLine(window, newState);
 }
 
@@ -3810,7 +3894,8 @@ static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showISearchLine, "set_incremental_search_line");
 
-    XmToggleButtonSetState(window->iSearchLineItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->iSearchLineItem, newState, False);
     ShowISearchLine(window, newState);
 }
 
@@ -3822,7 +3907,8 @@ static void setShowLineNumbersAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showLineNumbers, "set_show_line_numbers");
 
-    XmToggleButtonSetState(window->lineNumsItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->lineNumsItem, newState, False);
     ShowLineNumbers(window, newState);
 }
 
@@ -3907,7 +3993,8 @@ static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->highlightSyntax, "set_highlight_syntax");
 
-    XmToggleButtonSetState(window->highlightItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->highlightItem, newState, False);
     window->highlightSyntax = newState;
     if (window->highlightSyntax) {
         StartHighlighting(window, True);
@@ -3924,7 +4011,8 @@ static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->saveOldVersion, "set_make_backup_copy");
 
-    XmToggleButtonSetState(window->saveLastItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->saveLastItem, newState, False);
     window->saveOldVersion = newState;
 }
 
@@ -3936,7 +4024,8 @@ static void setIncrementalBackupAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->autoSave, "set_incremental_backup");
 
-    XmToggleButtonSetState(window->autoSaveItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->autoSaveItem, newState, False);
     window->autoSave = newState;
 }
 
@@ -3982,7 +4071,8 @@ static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->matchSyntaxBased, "set_match_syntax_based");
 
-    XmToggleButtonSetState(window->matchSyntaxBasedItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->matchSyntaxBasedItem, newState, False);
     window->matchSyntaxBased = newState;
 }
 
@@ -3994,7 +4084,8 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike, "set_overtype_mode");
 
-    XmToggleButtonSetState(window->overtypeModeItem, newState, False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->overtypeModeItem, newState, False);
     SetOverstrike(window, newState);
 }
 
@@ -4007,7 +4098,8 @@ static void setLockedAP(Widget w, XEvent *event, String *args,
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, IS_USER_LOCKED(window->lockReasons), "set_locked");
     
     SET_USER_LOCKED(window->lockReasons, newState);
-    XmToggleButtonSetState(window->readOnlyItem, IS_ANY_LOCKED(window->lockReasons), False);
+    if (IsTopDocument(window))
+    	XmToggleButtonSetState(window->readOnlyItem, IS_ANY_LOCKED(window->lockReasons), False);
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
 }
@@ -4260,8 +4352,11 @@ void CheckCloseDim(void)
     	return;
     }
     
-    for (window=WindowList; window!=NULL; window=window->next)
+    for (window=WindowList; window!=NULL; window=window->next) {
+    	if (!IsTopDocument(window))
+	    continue;
     	XtSetSensitive(window->closeItem, True);
+    }
 }
 
 /*
@@ -4370,8 +4465,11 @@ void AddToPrevOpenMenu(const char *filename)
 
     /* Undim the menu in all windows if it was previously empty */
     if (NPrevOpen == 1)
-    	for (w=WindowList; w!=NULL; w=w->next)
+    	for (w=WindowList; w!=NULL; w=w->next) {
+    	    if (!IsTopDocument(w))
+		continue;
     	    XtSetSensitive(w->prevOpenMenuItem, True);
+	}
     
     /* Write the menu contents to disk to restore in later sessions */
     WriteNEditDB();
@@ -4819,6 +4917,9 @@ static void updateWindowSizeMenu(WindowInfo *win)
     char title[50];
     XmString st1;
     
+    if (!IsTopDocument(win))
+	return;
+	
     XmToggleButtonSetState(win->size24x80DefItem, rows==24&&cols==80,False);
     XmToggleButtonSetState(win->size40x80DefItem, rows==40&&cols==80,False);
     XmToggleButtonSetState(win->size60x80DefItem, rows==60&&cols==80,False);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.112 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.113 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2113,11 +2113,13 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
     reapplyLanguageMode(window, mode, forceNewDefaults);
     
     /* Select the correct language mode in the sub-menu */
-    XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, NULL);
-    XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
-    for (n=0; n<(int)nItems; n++) {
-    	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
-    	XmToggleButtonSetState(items[n], (int)userData == mode, False);
+    if (IsTopDocument(window)) {
+	XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, NULL);
+	XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
+	for (n=0; n<(int)nItems; n++) {
+    	    XtVaGetValues(items[n], XmNuserData, &userData, NULL);
+    	    XmToggleButtonSetState(items[n], (int)userData == mode, False);
+	}
     }
 }
 
@@ -4226,9 +4228,11 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
        whether patterns/macros are available */
     haveHighlightPatterns = FindPatternSet(LanguageModeName(mode)) != NULL;
     haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
-    XtSetSensitive(window->highlightItem, haveHighlightPatterns);
-    XtSetSensitive(window->smartIndentItem, haveSmartIndentMacros);
-    
+    if (IsTopDocument(window)) {
+	XtSetSensitive(window->highlightItem, haveHighlightPatterns);
+	XtSetSensitive(window->smartIndentItem, haveSmartIndentMacros);
+    }
+        
     /* Turn off requested options which are not available */
     highlight = haveHighlightPatterns && highlight;
     if (indentStyle == SMART_INDENT && !haveSmartIndentMacros)
@@ -4236,7 +4240,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 
     /* Change highlighting */
     window->highlightSyntax = highlight;
-    XmToggleButtonSetState(window->highlightItem, highlight, False);
+    SetToggleButtonState(window, window->highlightItem, highlight, False);
     StopHighlighting(window);
     if (highlight)
     	StartHighlighting(window, False);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.77 2004/02/16 01:02:37 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.78 2004/02/21 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1020,7 +1020,7 @@ int WriteBackupFile(WindowInfo *window)
                 "Automatic backup is now off", "Dismiss", window->filename,
                 errorString());
         window->autoSave = FALSE;
-        XmToggleButtonSetState(window->autoSaveItem, FALSE, FALSE);
+        SetToggleButtonState(window, window->autoSaveItem, FALSE, FALSE);
         return FALSE;
     }
 
@@ -1226,7 +1226,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
     	return TRUE;
     if (resp == 2) {
     	window->saveOldVersion = FALSE;
-    	XmToggleButtonSetState(window->saveLastItem, FALSE, FALSE);
+    	SetToggleButtonState(window, window->saveLastItem, FALSE, FALSE);
     }
     return FALSE;
 }
@@ -1793,7 +1793,7 @@ static void addWrapNewlines(WindowInfo *window)
 
     /* Show the user that something has happened by turning off
        Continuous Wrap mode */
-    XmToggleButtonSetState(window->continuousWrapItem, False, True);
+    SetToggleButtonState(window, window->continuousWrapItem, False, True);
 }
 
 /* 
