@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.62 2002/07/28 19:25:16 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.63 2002/08/10 23:52:55 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -271,6 +271,7 @@ static struct prefData {
     char titleFormat[MAX_TITLE_FORMAT_LEN];
     char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN];/* fonts for help system */
     char helpLinkColor[30];    	/* Color for hyperlinks in the help system */
+    int  undoModifiesSelection;
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -866,6 +867,8 @@ static PrefDescripRec PrefDescrip[] = {
       PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, False},
     {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d",
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
+    {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN,
+        "True", &PrefData.undoModifiesSelection, NULL, True},
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -1756,7 +1759,17 @@ void SetPrefTitleFormat(const char* format)
 }
 const char* GetPrefTitleFormat(void)
 {
-    return(PrefData.titleFormat);
+    return PrefData.titleFormat;
+}
+
+void SetPrefUndoModifiesSelection(Boolean value)
+{
+    setIntPref(&PrefData.undoModifiesSelection, value);
+}
+
+Boolean GetPrefUndoModifiesSelection(void)
+{
+    return (Boolean)PrefData.undoModifiesSelection;
 }
 
 int GetPrefOverrideVirtKeyBindings(void)
