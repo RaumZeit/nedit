@@ -46,6 +46,10 @@ static char *InPtr;
 %type <inst> cond comastmts while else and or
 %type <sym> evalsym
 
+%nonassoc IF_NO_ELSE
+%nonassoc ELSE
+
+%nonassoc SYMBOL
 %right	  '=' ADDEQ SUBEQ MULEQ DIVEQ MODEQ ANDEQ OREQ
 %left     CONCAT
 %left	  OR
@@ -55,8 +59,10 @@ static char *InPtr;
 %left	  GT GE LT LE EQ NE
 %left	  '+' '-'
 %left	  '*' '/' '%'
-%nonassoc UNARY_MINUS NOT INCR DECR
+%nonassoc UNARY_MINUS NOT
+%nonassoc INCR DECR
 %right	  POW
+%nonassoc '('
 
 %%	/* Rules */
 
@@ -73,8 +79,9 @@ stmts:    stmt
 	| stmts stmt
 	;
 stmt:     simpstmt '\n' blank
-    	| IF '(' cond ')' blank block { SET_BR_OFF((Inst *)$3, GetPC()); }
-    	| IF '(' cond ')' blank block else blank block
+    	| IF '(' cond ')' blank block %prec IF_NO_ELSE
+	    	{ SET_BR_OFF((Inst *)$3, GetPC()); }
+    	| IF '(' cond ')' blank block else blank block %prec ELSE
     	    	{ SET_BR_OFF($3, ($7+1)); SET_BR_OFF($7, GetPC()); }
     	| while '(' cond ')' blank block { ADD_OP(OP_BRANCH); ADD_BR_OFF($1);
     	    	SET_BR_OFF($3, GetPC()); FillLoopAddrs(GetPC(), $1); }
@@ -145,8 +152,10 @@ numexpr:  NUMBER { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
 	| numexpr NE numexpr  { ADD_OP(OP_NE); }
 	| numexpr '&' numexpr { ADD_OP(OP_BIT_AND); }
 	| numexpr '|' numexpr  { ADD_OP(OP_BIT_OR); } 
-	| numexpr and numexpr { ADD_OP(OP_AND); SET_BR_OFF($2, GetPC()); }
-	| numexpr or numexpr  { ADD_OP(OP_OR); SET_BR_OFF($2, GetPC()); } 
+	| numexpr and numexpr %prec AND
+	    	{ ADD_OP(OP_AND); SET_BR_OFF($2, GetPC()); }
+	| numexpr or numexpr %prec OR
+	    	{ ADD_OP(OP_OR); SET_BR_OFF($2, GetPC()); } 
 	| NOT numexpr         { ADD_OP(OP_NOT); }
 	| INCR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
     	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2); }
