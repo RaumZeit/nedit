@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.90 2003/05/22 21:56:39 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.91 2003/05/22 22:12:37 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -697,6 +697,7 @@ static PrefDescripRec PrefDescrip[] = {
     	Numeric Const:darkGreen:Plain\n\
     	Identifier:brown:Plain\n\
     	Identifier1:RoyalBlue4:Plain\n\
+        Identifier2:SteelBlue:Plain\n\
  	Subroutine:brown:Plain\n\
 	Subroutine1:chocolate:Plain\n\
    	Ada Attributes:plum:Bold\n\
