@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.28 2001/12/13 15:44:19 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.29 2002/01/07 10:15:15 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -415,6 +415,8 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index)
     */
     if(searchString[0] == '/' || searchString[0] == '?') {
 
+	pos=-1; /* "search expr without pos info" */
+	
 	/* Situations: /<ANY expr>/\0     
 	**             ?<ANY expr>?\0          --> original ctags 
 	**             /<ANY expr>/;"  <flags>
@@ -442,7 +444,6 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index)
 	    if(searchString[0] == *posTagREEnd)
 		*posTagREEnd=0;
 	}
-	pos=-1;
     } else {
       	pos=atoi(searchString);
 	*searchString=0;
@@ -492,13 +493,15 @@ static int scanETagsLine(const char *line, const char * tagPath, int index,
         searchString[len]=0;
 	/* guess name: take the last alnum (plus _) part of searchString */
 	while(--len >= 0) {
-	    if(isalnum(searchString[len]) || searchString[len]=='_')
+	    if( isalnum((unsigned char)searchString[len]) || 
+      	      	    (searchString[len] == '_'))
 	      	break;
 	}
 	if(len<0)
 	    return 0;
 	pos=len;
-	while(pos>=0 && (isalnum(searchString[pos]) || searchString[pos]=='_'))
+	while (pos >= 0 && (isalnum((unsigned char)searchString[pos]) || 
+	      	(searchString[pos] == '_')))
 	    pos--;
       	strncpy(name, searchString + pos + 1, len - pos);
 	name[len - pos] = 0; /* name ready */
@@ -958,7 +961,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
     startPos=tagPosInf[0];
     
     /* if the search string is a number, select the numbered line */
-    if(!tagSearch[0]) {
+    if(!*(tagSearch[0])) {
       SelectNumberedLine(windowToSearch, startPos);
       return;
     }
@@ -1017,7 +1020,7 @@ static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data)
 
     startPos=tagPosInf[i];
     
-    if(!tagSearch[i]) {
+    if(!*(tagSearch[i])) {
       	/* if the search string is empty, select the numbered line */
       	SelectNumberedLine(windowToSearch, startPos);
     } else {
