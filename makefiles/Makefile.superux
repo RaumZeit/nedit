@@ -1,0 +1,17 @@
+#
+# NEdit Makefile for NEC SUPER-UX
+#
+# CC=/bin/cc
+# CC=/usr/bin/cc
+CC=cc
+AR=ar
+# 
+# The -hansi flag forces ANSI compilation, even 
+# though ANSI should be the compiler default anyway
+#
+CFLAGS=-O -hansi -DUSE_DIRENT -DUSE_MOTIF_GLOB
+ARFLAGS=-urs
+BIGGER_STRINGS=
+LIBS=-lm -lXm -lXt -lX11 -lSM -lICE -lgen
+
+include Makefile.common
