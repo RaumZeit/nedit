@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.50 2003/10/24 10:51:21 edg Exp $
+.. $Id: help.etx,v 1.51 2003/11/16 13:50:12 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2206,7 +2206,8 @@ Macro Language
       x[2, 2] = 3
 
   Internally all indices are part of one string, separated by the string 
-  $sub_sep (ASCII 0x18). The first key in the above example is in fact
+  $sub_sep (ASCII 0x1c, 'FS'). The first key in the above example is in
+  fact:
   
       ["1" $sub_sep "1"]
 
