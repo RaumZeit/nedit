@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.39 2003/03/05 23:50:56 n8gray Exp $
+.. $Id: help.etx,v 1.40 2003/03/07 01:50:25 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3499,9 +3499,9 @@ Preferences
   Change the colors used to display text.  Note that syntax hilighting styles 
   and backlighting will override the colors set in the "Plain Text" fields. 
   (For information on changing syntax highlighting styles and patterns use see 
-  Help -> Features for Programming -> Syntax_Highlighting_.)  The "Matching ()"
-  fields change the colors that matching parens, brackets and braces are flashed
-  when the "Show Matching (..)" option is enabled.
+  Help -> Features for Programming -> Syntax_Highlighting_.)  The 
+  "Matching (..)" fields change the colors that matching parens, brackets 
+  and braces are flashed when the "Show Matching (..)" option is enabled.
 
 **Highlight Syntax**
   If NEdit recognizes the language being edited, and highlighting patterns are

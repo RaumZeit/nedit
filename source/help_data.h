@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Mar 5, 2003 (Do NOT edit!)
+                 Generated on Mar 6, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -3319,9 +3319,9 @@ static char * htxt_preferences [] = {
 "\01IChange the colors used to display text.  Note that syntax hilighting styles ",
 "and backlighting will override the colors set in the \"Plain Text\" fields. ",
 "(For information on changing syntax highlighting styles and patterns use see ",
-"Help -> Features for Programming -> \01QSyntax Highlighting\01I.)  The \"Matching ()\" ",
-"fields change the colors that matching parens, brackets and braces are flashed ",
-"when the \"Show Matching (..)\" option is enabled. ",
+"Help -> Features for Programming -> \01QSyntax Highlighting\01I.)  The ",
+"\"Matching (..)\" fields change the colors that matching parens, brackets ",
+"and braces are flashed when the \"Show Matching (..)\" option is enabled. ",
 "\n\n",
 "\01A\01BHighlight Syntax\01A\n",
 "\01IIf NEdit recognizes the language being edited, and highlighting patterns are ",
