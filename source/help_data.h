@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 21, 2004 (Do NOT edit!)
+                 Generated on Aug 1, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -16,6 +16,16 @@
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.                                                            *
+*                                                                              *
+* In addition, as a special exception to the GNU GPL, the copyright holders    *
+* give permission to link the code of this program with the Motif and Open     *
+* Motif libraries (or with modified versions of these that use the same        *
+* license), and distribute linked combinations including the two. You must     *
+* obey the GNU General Public License in all respects for all of the code used *
+* other than linking with Motif/Open Motif. If you modify this file, you may   *
+* extend this exception to your version of the file, but you are not obligated *
+* to do so. If you do not wish to do so, delete this exception statement from  *
+* your version.                                                                *
 *                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
@@ -4815,6 +4825,8 @@ static char * htxt_version [] = {
 "permission) from original code written by Henry Spencer at the ",
 "University of Toronto. ",
 "\n\n",
+"The Microline widgets are inherited from the Mozilla project. ",
+"\n\n",
 "Syntax highlighting patterns and smart indent macros were contributed by: ",
 "Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk, ",
 "Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr, ",
@@ -4845,8 +4857,7 @@ static char * htxt_version [] = {
 "This program is distributed in the hope that it will be useful, ",
 "but WITHOUT ANY WARRANTY; without even the implied warranty of ",
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the ",
-"GNU General Public License in the Help section \"Distribution Policy\" ",
-"for more details. ",
+"section on the \01QGNU General Public License\01I for more details. ",
 NULL
 };
 
@@ -5488,4 +5499,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.5DEV\nJul 21, 2004\n";
+static const char * NEditVersion = "NEdit release of Aug  1, 2004\n";

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_topic.h --  Nirvana Editor help display                                 *
 *                                                                              *
-                 Generated on Jul 21, 2004 (Do NOT edit!)
+                 Generated on Aug 1, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -16,6 +16,16 @@
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.                                                            *
+*                                                                              *
+* In addition, as a special exception to the GNU GPL, the copyright holders    *
+* give permission to link the code of this program with the Motif and Open     *
+* Motif libraries (or with modified versions of these that use the same        *
+* license), and distribute linked combinations including the two. You must     *
+* obey the GNU General Public License in all respects for all of the code used *
+* other than linking with Motif/Open Motif. If you modify this file, you may   *
+* extend this exception to your version of the file, but you are not obligated *
+* to do so. If you do not wish to do so, delete this exception statement from  *
+* your version.                                                                *
 *                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.72 2004/07/24 17:42:01 yooden Exp $
+.. $Id: help.etx,v 1.73 2004/08/01 07:55:25 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -50,7 +50,7 @@ Table of Contents
       Basic_Regular_Expression_Syntax_   Client/Server_Mode_
       Metacharacters_                    Crash_Recovery_
       Parenthetical_Constructs_          Version_
-      Advanced_Topics_                   Distribution_Policy_
+      Advanced_Topics_                   GNU_General_Public_License_
       Example_Regular_Expressions_       Mailing_Lists_
                                         Problems/Defects_
 
@@ -5088,8 +5088,7 @@ Version
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License in the Help section "Distribution_Policy_" 
-  for more details.
+  section on the GNU_General_Public_License_ for more details.
    ----------------------------------------------------------------------
 
 GNU General Public License
