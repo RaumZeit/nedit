@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.20 2002/02/21 18:53:36 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.21 2002/02/25 14:29:43 edg Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -321,7 +321,7 @@ static char defaultTranslations[] =
     "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
     "Ctrl<KeyPress>osfPageUp: page_left()\n"
     "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
-    "None<KeyPress>osfPageUp: previous_page()\n"
+    "<KeyPress>osfPageUp: previous_page()\n"
 
     /* PageDown */
     "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
@@ -331,7 +331,7 @@ static char defaultTranslations[] =
     "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
     "Ctrl<KeyPress>osfPageDown: page_right()\n"
     "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
-    "None<KeyPress>osfPageDown: next_page()\n"
+    "<KeyPress>osfPageDown: next_page()\n"
 
     /* PageLeft and PageRight are placed later than the PageUp/PageDown
        bindings.  Some systems map osfPageLeft to Ctrl-PageUp. 
@@ -342,13 +342,13 @@ static char defaultTranslations[] =
     "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
     "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
-    "None<KeyPress>osfPageLeft: page_left()\n"
+    "<KeyPress>osfPageLeft: page_left()\n"
 
     /* PageRight */
     "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
     "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
-    "None<KeyPress>osfPageRight: page_right()\n"
+    "<KeyPress>osfPageRight: page_right()\n"
 
     "Shift<KeyPress>osfSelect: key_select()\n"
     "<KeyPress>osfCancel: process_cancel()\n"
