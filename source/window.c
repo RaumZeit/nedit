@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.22 2001/04/18 17:02:25 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.23 2001/04/18 19:12:21 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -829,20 +829,26 @@ void SetTabDist(WindowInfo *window, int tabDist)
 {
     if (window->buffer->tabDist != tabDist) {
         int saveCursorPositions[MAX_PANES + 1];
+        int saveVScrollPositions[MAX_PANES + 1];
+        int saveHScrollPositions[MAX_PANES + 1];
         int paneIndex;
         
         window->ignoreModify = True;
         
         for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-            saveCursorPositions[paneIndex] = 
-                TextGetCursorPos(GetPaneByIndex(window, paneIndex));
+            Widget w = GetPaneByIndex(window, paneIndex);
+
+            TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
+            saveCursorPositions[paneIndex] = TextGetCursorPos(w);
         }
         
         BufSetTabDistance(window->buffer, tabDist);
 
         for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-            TextSetCursorPos(GetPaneByIndex(window, paneIndex),
-                saveCursorPositions[paneIndex]);
+            Widget w = GetPaneByIndex(window, paneIndex);
+
+            TextSetCursorPos(w, saveCursorPositions[paneIndex]);
+            TextSetScroll(w, saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
         }
         
         window->ignoreModify = False;
