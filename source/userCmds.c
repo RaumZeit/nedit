@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.43 2004/03/05 08:10:04 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.44 2004/03/11 12:42:47 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -87,6 +87,10 @@ extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
 /* max. number of user programmable menu commands allowed per each of the
    macro, shell, and background menus */
 #define MAX_ITEMS_PER_MENU 400
+
+/* indicates, that an unknown (i.e. not existing) language mode
+   is bound to an user menu item */
+#define UNKNOWN_LANGUAGE_MODE -2
 
 /* major divisions (in position units) in User Commands dialogs */
 #define LEFT_MARGIN_POS 1
@@ -249,11 +253,12 @@ static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *m
 static void updateMenu(WindowInfo *window, int menuType);
 static void manageTearOffMenu(Widget menuPane);
 static void resetManageMode(UserMenuList *list);
-static void tearOffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event);
 static void manageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void manageMenuWidgets(UserMenuList *list);
-static void manageUserMenu(selectedUserMenu *menu);
+static void removeAccelFromMenuWidgets(UserMenuList *menuList);
+static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window);
+static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window);
 static void createMenuItems(WindowInfo *window, selectedUserMenu *menu);
 static void okCB(Widget w, XtPointer clientData, XtPointer callData);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -315,7 +320,7 @@ static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
 static void freeSubMenuCache(userSubMenuCache *subMenus);
 static void allocUserMenuList(UserMenuList *list, int nbrOfItems);
 static void freeUserMenuList(UserMenuList *list);
-static UserMenuListElement *allocUserMenuListElement(Widget menuItem);
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys);
 static void freeUserMenuListElement(UserMenuListElement *element);
 static UserMenuList *allocUserSubMenuList(int nbrOfItems);
 static void freeUserSubMenuList(UserMenuList *list);
@@ -1377,7 +1382,7 @@ static void updateMenu(WindowInfo *window, int menuType)
         createMenuItems(window, &menu);
 
     /* manage user menu items depending on current language mode */
-    manageUserMenu(&menu);
+    manageUserMenu(&menu, window);
 
     /* Set the proper sensitivity of items which may be dimmed */
     SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
@@ -1596,9 +1601,66 @@ static void manageMenuWidgets(UserMenuList *list)
 
 /*
 ** Cache user menus:
+** Remove accelerators from all items of given user (sub-)menu list.
+*/
+static void removeAccelFromMenuWidgets(UserMenuList *menuList)
+{
+    int i;
+    UserMenuListElement *element;
+
+    /* scan all elements of this (sub-)menu */
+    for (i=0; i<menuList->umlNbrItems; i ++) {
+        element = menuList->umlItems[i];
+
+        if (element->umleSubMenuList != NULL) {
+            /* if element is a sub-menu, then continue removing accelerators
+               from all items of that sub-menu recursively */
+            removeAccelFromMenuWidgets(element->umleSubMenuList);
+        } else if (element->umleAccKeys != NULL &&
+                   element->umleManageMode == UMMM_UNMANAGE &&
+                   element->umlePrevManageMode == UMMM_MANAGE) {
+            /* remove accelerator if one was bound */
+            XtVaSetValues(element->umleMenuItem, XmNaccelerator, NULL, NULL);
+        }
+    }
+}
+
+/*
+** Cache user menus:
+** Assign accelerators to all managed items of given user (sub-)menu list.
+*/
+static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window)
+{
+    int i;
+    UserMenuListElement *element;
+
+    /* scan all elements of this (sub-)menu */
+    for (i=0; i<menuList->umlNbrItems; i ++) {
+        element = menuList->umlItems[i];
+
+        if (element->umleSubMenuList != NULL) {
+            /* if element is a sub-menu, then continue assigning accelerators
+               to all managed items of that sub-menu recursively */
+            assignAccelToMenuWidgets(element->umleSubMenuList, window);
+        } else if (element->umleAccKeys != NULL &&
+                   element->umleManageMode == UMMM_MANAGE &&
+                   element->umlePrevManageMode == UMMM_UNMANAGE) {
+            /* assign accelerator if applicable */
+            XtVaSetValues(element->umleMenuItem, XmNaccelerator,
+                  element->umleAccKeys, NULL);
+            if (!element->umleAccLockPatchApplied) {
+                UpdateAccelLockPatch(window->splitPane, element->umleMenuItem);
+                element->umleAccLockPatchApplied = True;
+            }
+        }
+    }
+}
+
+/*
+** Cache user menus:
 ** (Un)Manage all items of selected user menu.
 */
-static void manageUserMenu(selectedUserMenu *menu)
+static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window)
 {
     int n, i;
     int *id;
@@ -1685,6 +1747,14 @@ static void manageUserMenu(selectedUserMenu *menu)
        user menu window cache */
     manageMenuWidgets(menu->sumMainMenuList);
 
+    /* Note: before new accelerator is assigned it seems to be necessary
+       to remove old accelerator from user menu widgets. Removing same
+       accelerator *after* it was assigned to another user menu widget
+       doesn't work */
+    removeAccelFromMenuWidgets(menu->sumMainMenuList);
+
+    assignAccelToMenuWidgets(menu->sumMainMenuList, window);
+
     /* if the menu is torn off, then adjust & manage the menu */
     if (!XmIsMenuShell(XtParent(menu->sumMenuPane)))
         manageTearOffMenu(menu->sumMenuPane);
@@ -1709,6 +1779,8 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
     UserMenuList *menuList;
     UserMenuListElement *currentLE;
     int subMenuDepth;
+    char accKeysBuf[MAX_ACCEL_LEN+5];
+    char *accKeys;
 
     /* Allocate storage for structures to help find panes of sub-menus */
     size = sizeof(menuTreeItem) * menu->sumNbrOfListItems;
@@ -1748,9 +1820,12 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 		    window->bgMenuUndoItem = btn;
 		else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd,"redo()\n"))
 		    window->bgMenuRedoItem = btn;
-		UpdateAccelLockPatch(window->splitPane, btn);
+                /* generate accelerator keys */
+                genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
+                accKeys = item->keysym == NoSymbol ? NULL : XtNewString(accKeysBuf);
                 /* create corresponding menu list item */
-                menuList->umlItems[menuList->umlNbrItems ++] = allocUserMenuListElement(btn);
+                menuList->umlItems[menuList->umlNbrItems ++] =
+                        allocUserMenuListElement(btn, accKeys);
 		break;
 	    }
 	    hierName = copySubstring(fullName, subSep - fullName);
@@ -1763,7 +1838,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 		menuTree[nTreeEntries].name = hierName;
 		menuTree[nTreeEntries++].menuPane = newSubPane;
 
-                currentLE = allocUserMenuListElement(btn);
+                currentLE = allocUserMenuListElement(btn, NULL);
                 menuList->umlItems[menuList->umlNbrItems ++] = currentLE;
                 currentLE->umleSubMenuPane = newSubPane;
                 currentLE->umleSubMenuList =
@@ -1814,17 +1889,15 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
 	int index, XtCallbackProc cbRtn, XtPointer cbArg)
 {
     XmString st1, st2;
-    char accText[MAX_ACCEL_LEN], accKeys[MAX_ACCEL_LEN+5];
+    char accText[MAX_ACCEL_LEN];
     Widget btn;
     
     generateAcceleratorString(accText, f->modifiers, f->keysym);
-    genAccelEventName(accKeys, f->modifiers, f->keysym);
     st1=XmStringCreateSimple(name);
     st2=XmStringCreateSimple(accText);
     btn = XtVaCreateWidget("cmd", xmPushButtonWidgetClass, menuPane,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
-    	    XmNaccelerator, accKeys,
     	    XmNmnemonic, f->mnemonic,
     	    XmNuserData, index+10, NULL);
     XtAddCallback(btn, XmNactivateCallback, cbRtn, cbArg);
@@ -3139,14 +3212,18 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info)
                     *endPtr=='-' || *endPtr==' ' || *endPtr=='+' || *endPtr=='$' ||
                     *endPtr=='#'; endPtr++);
 
-            /* lookup corresponding language mode index */
+            /* lookup corresponding language mode index; if PLAIN is
+               returned then this means, that language mode name after
+               "@" is unknown (i.e. not defined) */
             c = *endPtr;
             *endPtr = '\0';
             languageMode = FindLanguageMode(atPtr+1);
-            if (languageMode != PLAIN_LANGUAGE_MODE) {
+            if (languageMode == PLAIN_LANGUAGE_MODE) {
+                langModes[nbrLM] = UNKNOWN_LANGUAGE_MODE;
+            } else {
                 langModes[nbrLM] = languageMode;
-                nbrLM ++;
             }
+            nbrLM ++;
             *endPtr = c;
 
             /* look for next "@" */
@@ -3389,17 +3466,19 @@ static void freeUserMenuList(UserMenuList *list)
     }
 }
 
-static UserMenuListElement *allocUserMenuListElement(Widget menuItem)
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys)
 {
     UserMenuListElement *element;
 
     element = (UserMenuListElement *)XtMalloc(sizeof(UserMenuListElement));
 
-    element->umleManageMode     = UMMM_UNMANAGE;
-    element->umlePrevManageMode = UMMM_UNMANAGE;
-    element->umleMenuItem       = menuItem;
-    element->umleSubMenuPane    = NULL;
-    element->umleSubMenuList    = NULL;
+    element->umleManageMode          = UMMM_UNMANAGE;
+    element->umlePrevManageMode      = UMMM_UNMANAGE;
+    element->umleAccKeys             = accKeys;
+    element->umleAccLockPatchApplied = False;
+    element->umleMenuItem            = menuItem;
+    element->umleSubMenuPane         = NULL;
+    element->umleSubMenuList         = NULL;
 
     return element;
 }
@@ -3408,6 +3487,9 @@ static void freeUserMenuListElement(UserMenuListElement *element)
 {
     if (element->umleSubMenuList != NULL)
         freeUserSubMenuList(element->umleSubMenuList);
+
+    if (element->umleAccKeys != NULL)
+        XtFree(element->umleAccKeys);
 
     XtFree((char *)element);
 }

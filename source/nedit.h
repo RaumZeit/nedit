@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.50 2004/03/06 22:44:09 n8gray Exp $ */
+/* $Id: nedit.h,v 1.51 2004/03/11 12:42:47 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -189,14 +189,17 @@ typedef enum {
 
 /* structure representing one user menu item */
 typedef struct _UserMenuListElement {
-    UserMenuManageMode    umleManageMode;     /* current manage mode */
-    UserMenuManageMode    umlePrevManageMode; /* previous manage mode */
-    Widget                umleMenuItem;       /* menu item represented by
-                                                 this element */
-    Widget                umleSubMenuPane;    /* holds menu pane, if item
-                                                 represents a sub menu */
-    struct _UserMenuList *umleSubMenuList;    /* elements of sub menu, if
-                                                 item represents a sub menu */
+    UserMenuManageMode    umleManageMode;          /* current manage mode */
+    UserMenuManageMode    umlePrevManageMode;      /* previous manage mode */
+    char                 *umleAccKeys;             /* accelerator keys of item */
+    Boolean               umleAccLockPatchApplied; /* indicates, if accelerator
+                                                      lock patch is applied */
+    Widget                umleMenuItem;            /* menu item represented by
+                                                      this element */
+    Widget                umleSubMenuPane;         /* holds menu pane, if item
+                                                      represents a sub menu */
+    struct _UserMenuList *umleSubMenuList;         /* elements of sub menu, if
+                                                      item represents a sub menu */
 } UserMenuListElement;
 
 /* structure holding a list of user menu items */
