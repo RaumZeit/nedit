@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.15 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.16 2001/08/28 11:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -38,9 +38,11 @@ static const char CVSID[] = "$Id: tags.c,v 1.15 2001/08/28 11:29:21 amai Exp $";
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <X11/Xatom.h>
+
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
@@ -67,17 +69,20 @@ enum searchDirection {FORWARD, BACKWARD};
 static int loadTagsFile(char *tagSpec, int index);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format);
-static void setTag(tag *t, char *name, char *file, char *searchString);
+static void setTag(tag *t, const char *name, const char *file,
+                   const char *searchString);
 static int fakeRegExSearch(WindowInfo *window, char *searchString, 
     int *start, int *end);
 static unsigned hashAddr(const char *key);
-static int addTag(char *name,char *file,char *search,char *path,int index);
-static int delTag(char *name,char *file,char *search,int index);
+static int addTag(const char *name, const char *file, const char *search,
+                  const  char *path, int index);
+static int delTag(const char *name, const char *file, const char *search, int index);
 static tag *getTag(const char *name);
-static void findAllDialogAP(Widget dialogParent, char *string);
+static void findAllDialogAP(Widget dialogParent, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static Widget createSelectMenu(Widget parent, char *name, char *label,int nArgs, char *args[]);
-static char *normalizePathname(char *);
+static Widget createSelectMenu(Widget parent, const char *name,
+                               char *label, int nArgs, char *args[]);
+static char *normalizePathname(char *str);
 
 /* Parsed list of tags read by LoadTagsFile.  List is terminated by a tag
    structure with the name field == NULL */
@@ -86,7 +91,7 @@ static int DefTagHashSize = 10000;
 
 static char *tagMark;
 static int nTags = 0;
-static char *tagName;
+static const char *tagName;
 static WindowInfo *currentWindow;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
@@ -138,16 +143,17 @@ static tag *getTag(const char *name)
 }
 
 /*	Add a tag specification to the hash table */
-static int addTag(char *name,char *file,char *search,char *path,int index)
+static int addTag(const char *name, const char *file, const char *search,
+                  const char *path, int index)
 {
     int addr = hashAddr(name) % DefTagHashSize;
     tag *t;
-    
     char newfile[MAXPATHLEN];
+
     if (*file == '/')
         strcpy(newfile,file);
     else
-        sprintf(newfile,"%s%s",path,file);
+        sprintf(newfile,"%s%s", path, file);
     normalizePathname(newfile);
    
     if (Tags == NULL) Tags = (tag **)calloc(DefTagHashSize, sizeof(tag*));
@@ -158,15 +164,15 @@ static int addTag(char *name,char *file,char *search,char *path,int index)
 	if (*t->file == '/' && strcmp(newfile,t->file)) continue;
 	if (*t->file != '/') {
 	    char tmpfile[MAXPATHLEN];
-	    sprintf(tmpfile,"%s%s",t->path,t->file);
+	    sprintf(tmpfile, "%s%s", t->path, t->file);
 	    normalizePathname(tmpfile);
-	    if (strcmp(newfile,tmpfile)) continue;
+	    if (strcmp(newfile, tmpfile)) continue;
 	}
 	return FALSE;
     }
 	
     t = (tag *) malloc(sizeof(tag));
-    setTag(t,name,file,search);
+    setTag(t, name, file, search);
     t->index = index;
     t->path = path;
     t->next = Tags[addr];
@@ -178,7 +184,7 @@ static int addTag(char *name,char *file,char *search,char *path,int index)
  *  Search is limited to valid matches of 'name','file', 'search', and 'index'.
  *  EX: delete all tags matching index 2 ==> delTag(tagname,NULL,NULL,2);
  */
-static int delTag(char *name,char *file,char *search,int index)
+static int delTag(const char *name, const char *file, const char *search,int index)
 {
     tag *t, *last;
     int start,finish,i,del=0;
@@ -410,7 +416,8 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 }
 
 /*	store all of the info into a pre-allocated tags struct */
-static void setTag(tag *t, char *name, char *file, char *searchString)
+static void setTag(tag *t, const char *name, const char *file,
+                   const char *searchString)
 {
     t->name         = rcs_strdup(name);
     t->file         = rcs_strdup(file);
@@ -495,7 +502,7 @@ static int fakeRegExSearch(WindowInfo *window, char *searchString,
 /*	Handles tag "collisions". Prompts user with a list of collided
 	tags in the hash table and allows the user to select the correct
 	one. */
-static void findAllDialogAP(Widget dialogParent, char *string)
+static void findAllDialogAP(Widget dialogParent, const char *string)
 {
     char filename[MAXPATHLEN], pathname[MAXPATHLEN], temp[MAXPATHLEN];
     const char *fileToSearch, *searchString, *tagPath;
@@ -692,8 +699,8 @@ static void findAllCloseCB(Widget parent, XtPointer client_data,
 }
 
 /*	Create a Menu for user to select from the collided tags */
-static Widget createSelectMenu(Widget parent, char *name, char *label,
-	int nArgs, char *args[])
+static Widget createSelectMenu(Widget parent, const char *name,
+         char *label, int nArgs, char *args[])
 {
     int i;
     char tmpStr[100];
@@ -733,7 +740,7 @@ static Widget createSelectMenu(Widget parent, char *name, char *label,
 /* remove './' '../' & '//' from pathnames */
 static char *normalizePathname(char *str)
 {
-    char *r,*p=str;
+    char *r, *p=str;
     char result[MAXPATHLEN+1];
     r = result;
 
@@ -749,7 +756,8 @@ static char *normalizePathname(char *str)
 	r++; p++;
     }
     *r = '\0';
-    return strcpy(str,result);
+    strcpy(str, result);
+    return str;
 }
 
 
