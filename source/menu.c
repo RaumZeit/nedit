@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.41 2001/11/27 09:09:11 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.42 2001/11/27 10:47:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -3085,7 +3085,8 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     SetDialogFPromptHistory(cmdHistory, nHistoryCmds);
     resp = DialogF(DF_PROMPT, window->shell, 2,
-    	    "Shell command:   (use up arrow key to recall previous)",
+    	    "Shell command:   (use up arrow key to recall previous;\n" \
+	    "%% expands to current filename, # to line number)",
     	    cmdText, "OK", "Cancel");
     if (resp == 2)
     	return;

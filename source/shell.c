@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.17 2001/11/16 11:02:16 amai Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.18 2001/11/27 10:47:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -170,12 +170,15 @@ void FilterSelection(WindowInfo *window, const char *command, int fromMacro)
 
 /*
 ** Execute shell command "command", depositing the result at the current
-** insert position or in the current selection if if the window has a
+** insert position or in the current selection if the window has a
 ** selection.
 */
 void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
 {
     int left, right, flags = 0;
+    char subsCommand[MAX_SHELL_CMD_LEN], fullName[MAXPATHLEN];
+    int pos, line, column;
+    char lineNumber[11];
 
     /* Can't do two shell commands at once in the same window */
     if (window->shellCmdData != NULL) {
@@ -184,13 +187,30 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
     }
     
     /* get the selection or the insert position */
+    pos = TextGetCursorPos(window->lastFocus);
     if (GetSimpleSelection(window->buffer, &left, &right))
     	flags = ACCUMULATE | REPLACE_SELECTION;
     else
-    	left = right = TextGetCursorPos(window->lastFocus);
+    	left = right = pos;
     
+    /* Substitute the current file name for % and the current line number
+       for # in the shell command */
+    strcpy(fullName, window->path);
+    strcat(fullName, window->filename);
+    TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+    sprintf(lineNumber, "%d", line);
+    
+    if (!substitutePercent(subsCommand, command, fullName, lineNumber,
+    	    MAX_SHELL_CMD_LEN)) {
+    	DialogF(DF_ERR, window->shell, 1,
+	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
+	   "line number substitutions with '#'",
+	    "OK");
+	return;
+    }
+
     /* issue the command */
-    issueCommand(window, command, NULL, 0, flags, window->lastFocus, left,
+    issueCommand(window, subsCommand, NULL, 0, flags, window->lastFocus, left,
 	    right, fromMacro);
 }
 
@@ -220,6 +240,9 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
 {
     char *cmdText;
     int left, right, insertPos;
+    char subsCommand[MAX_SHELL_CMD_LEN], fullName[MAXPATHLEN];
+    int pos, line, column;
+    char lineNumber[11];
 
     /* Can't do two shell commands at once in the same window */
     if (window->shellCmdData != NULL) {
@@ -228,8 +251,9 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     }
 
     /* get all of the text on the line with the insert position */
+    pos = TextGetCursorPos(window->lastFocus);
     if (!GetSimpleSelection(window->buffer, &left, &right)) {
-	left = right = TextGetCursorPos(window->lastFocus);
+	left = right = pos;
 	left = BufStartOfLine(window->buffer, left);
 	right = BufEndOfLine(window->buffer, right);
 	insertPos = right;
@@ -241,8 +265,24 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     /* insert a newline after the entire line */
     BufInsert(window->buffer, insertPos, "\n");
 
+    /* Substitute the current file name for % and the current line number
+       for # in the shell command */
+    strcpy(fullName, window->path);
+    strcat(fullName, window->filename);
+    TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+    sprintf(lineNumber, "%d", line);
+    
+    if (!substitutePercent(subsCommand, cmdText, fullName, lineNumber,
+    	    MAX_SHELL_CMD_LEN)) {
+    	DialogF(DF_ERR, window->shell, 1,
+	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
+	   "line number substitutions with '#'",
+	    "OK");
+	return;
+    }
+
     /* issue the command */
-    issueCommand(window, cmdText, NULL, 0, 0, window->lastFocus, insertPos+1,
+    issueCommand(window, subsCommand, NULL, 0, 0, window->lastFocus, insertPos+1,
 	    insertPos+1, fromMacro);
     XtFree(cmdText);
 }
@@ -1137,34 +1177,51 @@ static int substitutePercent(char *outStr, const char *inStr, const char *fileSt
 {
     const char *inChar, *c;
     char *outChar;
+    int outWritten = 0;
+    int fileLen, lineLen;
     
     inChar = inStr;
     outChar = outStr;
+    fileLen = strlen(fileStr);
+    lineLen = strlen(lineStr);
+    
     while (*inChar != '\0') {
-    	if (*inChar == '%') {
+    	
+	if (outWritten >= outLen)
+	   return False;
+	   
+	if (*inChar == '%') {
     	    if (*(inChar+1) == '%') {
     	    	inChar += 2;
     	    	*outChar++ = '%';
+		outWritten++;
     	    } else  {
-    		for (c=fileStr; *c!='\0'; c++)
+    		if (outWritten + fileLen >= outLen)
+		   return False;
+		for (c=fileStr; *c!='\0'; c++)
     	    	    *outChar++ = *c;
+                outWritten += fileLen;
     		inChar++;
     	    }
 	} else if (*inChar == '#') {
     	    if (*(inChar+1) == '#') {
     	    	inChar += 2;
     	    	*outChar++ = '#';
+		outWritten++;
     	    } else  {
+    		if (outWritten + lineLen >= outLen)
+		   return False;
     		for (c=lineStr; *c!='\0'; c++)
     	    	    *outChar++ = *c;
+		outWritten += lineLen;
     		inChar++;
     	    }
-
-    	} else
+    	} else {
     	    *outChar++ = *inChar++;
-    	if (outChar - outStr >= outLen)
-    	    return False;
+	    outWritten++;
+	}
     }
+
     *outChar = '\0';
     return True;
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.64 2001/11/26 17:17:22 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.65 2001/11/27 10:47:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1552,13 +1552,18 @@ command replaces the contents of the selection.\n\
 \n\
 Execute Command... prompts you for a Unix command and replaces the \
 current selection with the output of the command.  If there is no \
-selection, it deposits the output at the current insertion point.\n\
+selection, it deposits the output at the current insertion point.  \
+In the Shell Command field, the % character expands to the name \
+(including directory path), and the # character expands to the \
+current line number of the file in the window.  \
+To include a % or # character in the command, use %% or ##, respectively.\n\
 \n\
 Execute Command Line uses the position of the cursor in the window \
 to indicate a line to execute as a shell command line.  The cursor may \
 be positioned anywhere on the line.  This command allows you to use \
 an NEdit window as an editable command window for saving output \
-and saving commands for re-execution.\n\
+and saving commands for re-execution.  Note that the same \
+character expansions as for Execute Command take place.\n\
 \n\
 The X resource called nedit.shell (See Customizing NEdit) determines \
 which Unix shell is used to execute commands.  The default value for \
