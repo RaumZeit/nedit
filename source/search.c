@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.57 2003/05/09 17:43:47 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.58 2003/05/26 08:16:37 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3130,6 +3130,7 @@ void FlashMatching(WindowInfo *window, Widget textW)
     void *style;
     int pos, matchIndex;
     int startPos, endPos, searchPos, matchPos;
+    int constrain;
     
     /* if a marker is already drawn, erase it and cancel the timeout */
     if (window->flashTimeoutID != 0) {
@@ -3162,15 +3163,18 @@ void FlashMatching(WindowInfo *window, Widget textW)
     if (matchIndex == N_FLASH_CHARS)
 	return;
 
-    /* Constrain the search to visible text (unless we're in split-window mode,
-       then search the whole buffer), and get the string to search */
+    /* constrain the search to visible text only when in single-pane mode
+       AND using delimiter flashing (otherwise search the whole buffer) */
+    constrain = ((window->nPanes == 0) && 
+        (window->showMatchingStyle == FLASH_DELIMIT));
+          
     if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
-    	startPos = window->nPanes == 0 ? TextFirstVisiblePos(textW) : 0;
+    	startPos = constrain ? TextFirstVisiblePos(textW) : 0;
     	endPos = pos;
     	searchPos = endPos;
     } else {
     	startPos = pos;
-    	endPos = window->nPanes == 0 ? TextLastVisiblePos(textW) :
+    	endPos = constrain ? TextLastVisiblePos(textW) :
     	    	window->buffer->length;
     	searchPos = startPos;
     }
