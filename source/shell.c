@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.11 2001/08/04 20:49:21 tringali Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.12 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: shell.c,v 1.11 2001/08/04 20:49:21 tringali Ex
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <sys/types.h>
 #ifndef __MVS__

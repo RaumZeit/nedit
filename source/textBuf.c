@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.9 2001/07/25 14:36:43 amai Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.10 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -27,8 +27,11 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.9 2001/07/25 14:36:43 amai Exp $
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
+
 #include <Xm/Xm.h>
+
 #include "textBuf.h"
 
 #define PREFERRED_GAP_SIZE 80	/* Initial size for the buffer gap (empty space

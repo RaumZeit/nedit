@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.28 2001/08/04 20:49:21 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.29 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: window.c,v 1.28 2001/08/04 20:49:21 tringali E
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -36,6 +37,7 @@ static const char CVSID[] = "$Id: window.c,v 1.28 2001/08/04 20:49:21 tringali E
 #endif /*VMS*/
 #include <limits.h>
 #include <math.h>
+
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
@@ -56,6 +58,7 @@ static const char CVSID[] = "$Id: window.c,v 1.28 2001/08/04 20:49:21 tringali E
 #include <X11/Xmu/Editres.h>
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "textBuf.h"

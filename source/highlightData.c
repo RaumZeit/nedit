@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.14 2001/08/07 01:53:37 tringali Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.15 2001/08/09 13:34:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.14 2001/08/07 01:53:37 tri
 *									       *
 *******************************************************************************/
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -35,6 +36,7 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.14 2001/08/07 01:53:37 tri
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
 #include <Xm/Frame.h>
@@ -44,6 +46,7 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.14 2001/08/07 01:53:37 tri
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/SeparatoG.h>
+
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/managedList.h"

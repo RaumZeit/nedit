@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.5 2001/07/31 07:46:42 amai Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.6 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -26,10 +26,13 @@ static const char CVSID[] = "$Id: managedList.c,v 1.5 2001/07/31 07:46:42 amai E
 *									       *
 *******************************************************************************/
 #include <stdio.h>
+#include <string.h>
+
 #include <Xm/Form.h>
 #include <Xm/List.h>
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
+
 #include "misc.h"
 #include "managedList.h"
 

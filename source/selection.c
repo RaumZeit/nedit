@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.8 2001/04/16 23:20:11 slobasso Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.9 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -25,6 +25,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.8 2001/04/16 23:20:11 slobasso
 *******************************************************************************/
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -35,8 +36,10 @@ static const char CVSID[] = "$Id: selection.c,v 1.8 2001/04/16 23:20:11 slobasso
 #if !defined(DONT_HAVE_GLOB) && !defined(USE_MOTIF_GLOB) && !defined(VMS)
 #include <glob.h>
 #endif
+
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
+
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "textBuf.h"

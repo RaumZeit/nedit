@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.14 2001/07/29 17:51:49 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.15 2001/08/09 13:34:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -30,6 +30,7 @@ static const char CVSID[] = "$Id: highlight.c,v 1.14 2001/07/29 17:51:49 amai Ex
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -37,11 +38,13 @@ static const char CVSID[] = "$Id: highlight.c,v 1.14 2001/07/29 17:51:49 amai Ex
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
 #endif
+
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "textBuf.h"

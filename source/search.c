@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.30 2001/07/18 13:00:58 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.31 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: search.c,v 1.30 2001/07/18 13:00:58 amai Exp $
 *******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -35,6 +36,7 @@ static const char CVSID[] = "$Id: search.c,v 1.30 2001/07/18 13:00:58 amai Exp $
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <X11/Shell.h>
 #include <Xm/XmP.h>
@@ -48,6 +50,7 @@ static const char CVSID[] = "$Id: search.c,v 1.30 2001/07/18 13:00:58 amai Exp $
 #include <X11/Xatom.h>		/* for getting selection */
 #include <X11/keysym.h>
 #include <X11/X.h>		/* " " */
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "regularExp.h"

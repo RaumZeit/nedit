@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.12 2001/04/14 09:51:30 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.13 2001/08/09 13:34:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.12 2001/04/14 09:51:30 amai Exp
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -35,6 +36,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.12 2001/04/14 09:51:30 amai Exp
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <X11/keysym.h>
 #include <Xm/Text.h>
@@ -46,6 +48,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.12 2001/04/14 09:51:30 amai Exp
 #include <Xm/SelectioB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeB.h>
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/managedList.h"
