@@ -48,6 +48,11 @@
 #include <Xm/AtomMgr.h>
 #include <Xm/Protocols.h>
 #include <Xm/Text.h>
+#include <Xm/MessageB.h>
+#include <Xm/DialogS.h>
+#include <Xm/SelectioB.h>
+#include <Xm/Form.h>
+#include <Xm/FileSB.h>
 #include "DialogF.h"
 #include "misc.h"
 
@@ -61,6 +66,8 @@ typedef struct {
     int *nItems;
     int index;
 } histInfo;
+
+typedef Widget (*MotifDialogCreationCall)(Widget, String, ArgList, Cardinal);
 
 /* Maximum size of a history-recall list.  Typically never invoked, since
    user must first make this many entries in the text field, limited for
@@ -95,12 +102,15 @@ static void addMnemonicGrabs(Widget addTo, Widget w);
 static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
 static void findAndActivateMnemonic(Widget w, unsigned int keycode);
 static void removeWhiteSpace(char *string);
+static int stripCaseCmp(char *str1, char *str2);
 static void warnHandlerCB(String message);
 static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
 	*txtVerStr);
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
+static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine,
+	Widget parent, char *name, ArgList arglist, Cardinal  argcount);
 
 /*
 ** Set up closeCB to be called when the user selects close from the
@@ -217,6 +227,301 @@ void RealizeWithoutForcingPosition(Widget shell)
     
     /* Restore the value of XmNmappedWhenManaged */
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, 0);
+}
+
+/*
+** Older X applications and X servers were mostly designed to operate with
+** visual class PseudoColor, because older displays were at most 8 bits
+** deep.  Modern X servers, however often support 24 bit depth and other
+** color models.  Despite these capabilities, the default visual class is
+** still usually set to PseudoColor, because many X applications don't work
+** properly with the other color models.  The problem with PseudoColor, of
+** course, is that users run out of colors in the default colormap, and if
+** they install additional colormaps for individual applications, colors
+** flash and change weirdly when you change your focus from one application
+** to another.
+**
+** In addition to the poor choice of default, a design flaw in Xt makes it
+** impossible even for savvy users to specify the XtNvisual resource to
+** switch to a deeper visual.  The problem is that the colormap resource is
+** processed independently of the visual resource, and usually results in a
+** colormap for the default visual rather than for the user-selected one.
+**
+** This routine should be called before creating a shell widget, to
+** pre-process the visual, depth, and colormap resources, and return the
+** proper values for these three resources to be passed to XtAppCreateShell.
+** Applications which actually require a particular color model (i.e. for
+** doing color table animation or dynamic color assignment) should not use
+** this routine.
+*/
+void FindBestVisual(Display *display, char *appName, char *appClass,
+	Visual **visual, int *depth, Colormap *colormap)
+{
+    char rsrcName[256], rsrcClass[256], *valueString, *type, *endPtr;
+    XrmValue value;
+    int screen = DefaultScreen(display);
+    int reqDepth = -1;
+    int reqID = -1;
+    int reqClass = -1;
+    int installColormap = FALSE;
+    int maxDepth, bestClass, bestVisual, nVis, i, j;
+    XVisualInfo visTemplate, *visList = NULL;
+    static Visual *cachedVisual = NULL;
+    static Colormap cachedColormap = NULL;
+    static int cachedDepth = 0;
+    int bestClasses[] = {StaticGray, GrayScale, StaticColor, PseudoColor,
+    	    DirectColor, TrueColor};
+
+    /* If results have already been computed, just return them */
+    if (cachedVisual != NULL) {
+	*visual = cachedVisual;
+	*depth = cachedDepth;
+	*colormap = cachedColormap;
+	return;
+    }
+    
+    /* Read the visualID and installColormap resources for the application.
+       visualID can be specified either as a number (the visual id as
+       shown by xdpyinfo), as a visual class name, or as Best or Default. */
+    sprintf(rsrcName,"%s.%s", appName, "visualID");
+    sprintf(rsrcClass, "%s.%s", appClass, "VisualID");
+    if (XrmGetResource(XtDatabase(display), rsrcName, rsrcClass, &type,
+	    &value)) {
+	valueString = value.addr;
+	reqID = (int)strtol(valueString, &endPtr, 0);
+	if (endPtr == valueString) {
+	    reqID = -1;
+	    if (stripCaseCmp(valueString, "Default"))
+		reqID = DefaultVisual(display, screen)->visualid;
+	    else if (stripCaseCmp(valueString, "StaticGray"))
+		reqClass = StaticGray;
+	    else if (stripCaseCmp(valueString, "StaticColor"))
+		reqClass = StaticColor;
+	    else if (stripCaseCmp(valueString, "TrueColor"))
+		reqClass = TrueColor;
+	    else if (stripCaseCmp(valueString, "GrayScale"))
+		reqClass = GrayScale;
+	    else if (stripCaseCmp(valueString, "PseudoColor"))
+		reqClass = PseudoColor;
+	    else if (stripCaseCmp(valueString, "DirectColor"))
+		reqClass = DirectColor;
+	    else if (!stripCaseCmp(valueString, "Best"))
+		fprintf(stderr, "Invalid visualID resource value\n");
+	}
+    }
+    sprintf(rsrcName,"%s.%s", appName, "installColormap");
+    sprintf(rsrcClass, "%s.%s", appClass, "InstallColormap");
+    if (XrmGetResource(XtDatabase(display), rsrcName, rsrcClass, &type,
+	    &value)) {
+	if (stripCaseCmp(value.addr, "Yes") || stripCaseCmp(value.addr, "True"))
+	    installColormap = TRUE;
+    }
+    
+    /* Generate a list of visuals to consider.  (Note, vestigial code for
+       user-requested visual depth is left in, just in case that function
+       might be needed again, but it does nothing)  */
+    if (reqID != -1) {
+	visTemplate.visualid = reqID;
+	visList = XGetVisualInfo(display, VisualIDMask, &visTemplate, &nVis);
+	if (visList == NULL)
+	    fprintf(stderr, "VisualID resource value not valid\n");
+    }
+    if (visList == NULL && reqClass != -1 && reqDepth != -1) {
+	visTemplate.class = reqClass;
+	visTemplate.depth = reqDepth;
+    	visList = XGetVisualInfo(display,
+		VisualClassMask | VisualDepthMask, &visTemplate, &nVis);
+    	if (visList == NULL)
+	    fprintf(stderr, "Visual class/depth combination not available\n");
+    }
+    if (visList == NULL && reqClass != -1) {
+ 	visTemplate.class = reqClass;
+    	visList = XGetVisualInfo(display, VisualClassMask, &visTemplate, &nVis);
+    	if (visList == NULL)
+	    fprintf(stderr,
+		    "Visual Class from resource \"visualID\" not available\n");
+    }
+    if (visList == NULL && reqDepth != -1) {
+	visTemplate.depth = reqDepth;
+	visTemplate.depth = reqDepth;
+    	visList = XGetVisualInfo(display, VisualDepthMask, &visTemplate, &nVis);
+    	if (visList == NULL)
+	    fprintf(stderr, "Requested visual depth not available\n");
+    }
+    if (visList == NULL) {
+	visList = XGetVisualInfo(display, VisualNoMask, &visTemplate, &nVis);
+	if (visList == NULL) {
+	    fprintf(stderr, "Internal Error: no visuals available?\n");
+	    *visual = DefaultVisual(display, screen);
+	    *depth =  DefaultDepth(display, screen);
+    	    *colormap = DefaultColormap(display, screen);
+    	    return;
+	}
+    }
+    
+    /* Choose among the visuals in the candidate list.  Prefer maximum
+       depth first then matching default, then largest value of bestClass
+       (I'm not sure whether we actually care about class) */
+    maxDepth = 0;
+    bestClass = 0;
+    bestVisual = 0;
+    for (i=0; i < nVis; i++) {
+	if (visList[i].depth > maxDepth) {
+	    maxDepth = visList[i].depth;
+	    bestClass = 0;
+	    bestVisual = i;
+	}
+	if (visList[i].depth == maxDepth) {
+	    if (visList[i].visual == DefaultVisual(display, screen))
+		bestVisual = i;
+	    if (visList[bestVisual].visual != DefaultVisual(display, screen)) {
+		for (j = 0; j < XtNumber(bestClasses); j++) {
+		    if (visList[i].class == bestClasses[j] && j > bestClass) {
+			bestClass = j;
+			bestVisual = i;
+		    }
+		}
+	    }
+	}
+    }
+    *visual = cachedVisual = visList[bestVisual].visual;
+    *depth = cachedDepth = visList[bestVisual].depth;
+    
+    /* If the chosen visual is not the default, it needs a colormap allocated */
+    if (*visual == DefaultVisual(display, screen) && !installColormap)
+	*colormap = cachedColormap = DefaultColormap(display, screen);
+    else {
+	*colormap = cachedColormap = XCreateColormap(display,
+		RootWindow(display, screen), cachedVisual, AllocNone);
+	XInstallColormap(display, cachedColormap);
+    }
+    /* printf("Chose visual with depth %d, class %d, colormap %ld, id 0x%x\n",
+	    visList[bestVisual].depth, visList[bestVisual].class,
+	    *colormap, cachedVisual->visualid); */
+}
+
+/*
+** If you want to use a non-default visual with Motif, shells all have to be
+** created with that visual, depth, and colormap, even if the parent has them
+** set up properly. Substituting these routines, will append visual args copied
+** from the parent widget (CreatePopupMenu and CreatePulldownMenu), or from the
+** best visual, obtained via FindBestVisual above (CreateShellWithBestVis).
+*/
+Widget CreateDialogShell(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateDialogShell, parent, name, arglist,
+	    argcount);
+}
+Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
+	Cardinal argcount)
+{
+    return addParentVisArgsAndCall(XmCreatePopupMenu, parent, name,
+	    arglist, argcount);
+}
+Widget CreatePulldownMenu(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreatePulldownMenu, parent, name, arglist,
+	    argcount);
+}
+Widget CreatePromptDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreatePromptDialog, parent, name, arglist,
+	    argcount);
+}
+Widget CreateSelectionDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name,
+	    arglist, argcount);
+}
+Widget CreateFormDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateFormDialog, parent, name, arglist,
+	    argcount);
+}
+Widget CreateFileSelectionDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, name,
+	    arglist, argcount);
+}
+Widget CreateQuestionDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateQuestionDialog, parent, name,
+	    arglist, argcount);
+}
+Widget CreateErrorDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateErrorDialog, parent, name, arglist,
+	    argcount);
+}
+Widget CreateShellWithBestVis(String appName, String appClass, 
+	   WidgetClass class, Display *display, ArgList args, Cardinal nArgs)
+{
+    Visual *visual;
+    int depth;
+    Colormap colormap;
+    ArgList al;
+    Cardinal ac = nArgs;
+    Widget result;
+
+    FindBestVisual(display, appName, appClass, &visual, &depth, &colormap);
+    al = (ArgList)XtMalloc(sizeof(Arg) * (nArgs + 3));
+    if (nArgs != 0)
+    	memcpy(al, args, sizeof(Arg) * nArgs);
+    XtSetArg(al[ac], XtNvisual, visual); ac++;
+    XtSetArg(al[ac], XtNdepth, depth); ac++;
+    XtSetArg(al[ac], XtNcolormap, colormap); ac++;
+    result = XtAppCreateShell(appName, appClass, class, display, al, ac);
+    XtFree(al);
+    return result;
+}
+
+/*
+** Adds visual, colormap, and depth arguments to arglist obtained either from
+** parent widget.  Caller must free returned argument list with XtFree.
+** Returned arglist has argcount arguments + 3.
+*/
+static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
+	Widget parent, char *name, ArgList arglist, Cardinal  argcount)
+{
+    Visual *visual;
+    int depth;
+    Colormap colormap;
+    ArgList al;
+    Cardinal ac = argcount;
+    Widget result;
+    
+    /* Find the application/dialog/menu shell at the top of the widget
+       hierarchy, which has the visual resource being used */
+    while (True) {
+    	if (XtIsShell(parent))
+    	    break;
+    	if (parent == NULL) {
+	    fprintf(stderr, "failed to find shell\n");
+	    exit(1);
+	}
+    	parent = XtParent(parent);
+    }
+
+    /* Add the visual, depth, and colormap resources to the argument list */
+    XtVaGetValues(parent, XtNvisual, &visual, XtNdepth, &depth,
+	    XtNcolormap, &colormap, 0);
+    al = (ArgList)XtMalloc(sizeof(Arg) * (argcount + 3));
+    if (argcount != 0)
+    	memcpy(al, arglist, sizeof(Arg) * argcount);
+    XtSetArg(al[ac], XtNvisual, visual); ac++;
+    XtSetArg(al[ac], XtNdepth, depth); ac++;
+    XtSetArg(al[ac], XtNcolormap, colormap); ac++;
+    result = (*createRoutine)(parent, name, al, ac);
+    XtFree(al);
+    return result;
 }
 
 /*
@@ -547,7 +852,7 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic)
     Widget menu;
     XmString st1;
     
-    menu = XmCreatePulldownMenu(parent, name, NULL, 0);
+    menu = CreatePulldownMenu(parent, name, NULL, 0);
     XtVaCreateManagedWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple(label),
     	XmNmnemonic, mnemonic,
@@ -988,6 +1293,25 @@ static void removeWhiteSpace(char *string)
 	else
 	    string++;
     }
+}
+
+/*
+** Compares two strings and return TRUE if the two strings
+** are the same, ignoring whitespace and case differences.
+*/
+static int stripCaseCmp(char *str1, char *str2)
+{
+    char *c1, *c2;
+    
+    for (c1=str1, c2=str2; *c1!='\0' && *c2!='\0'; c1++, c2++) {
+	while (*c1 == ' ' || *c1 == '\t')
+	    c1++;
+	while (*c2 == ' ' || *c2 == '\t')
+	    c2++;
+    	if (toupper((unsigned char)*c1) != toupper((unsigned char)*c2))
+    	    return FALSE;
+    }
+    return *c1 == '\0' && *c2 == '\0';
 }
 
 static void warnHandlerCB(String message)

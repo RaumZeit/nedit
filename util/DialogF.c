@@ -212,7 +212,7 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 		argcount ++;
 #endif
 
-	dialog = XmCreatePromptDialog (parent, dialog_name[dialog_num], args,
+	dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args,
 			argcount);
 	XtAddCallback (dialog, XmNokCallback, (XtCallbackProc)ok_callback,
 		(char *)&df);
@@ -317,7 +317,7 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 		argcount ++;
 #endif
-	dialog_shell = XmCreateDialogShell (parent, dialog_name[dialog_num],
+	dialog_shell = CreateDialogShell (parent, dialog_name[dialog_num],
 			0, 0);
 	dialog = XmCreateMessageBox (dialog_shell, "msg box", args, argcount);
 	XtAddCallback (dialog, XmNokCallback, (XtCallbackProc)ok_callback,

@@ -45,3 +45,25 @@ void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddToHistoryList(char *newItem, char ***historyList, int *nItems);
 void CreateGeometryString(char *string, short x, short y,
 	short width, short height, int bitmask);
+void FindBestVisual(Display *display, char *appName, char *appClass,
+	Visual **visual, int *depth, Colormap *colormap);
+Widget CreateDialogShell(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
+	Cardinal argcount);
+Widget CreatePulldownMenu(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreatePromptDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateSelectionDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateFormDialog(Widget parent, char *name, ArgList arglist,
+    	Cardinal  argcount);
+Widget CreateFileSelectionDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateQuestionDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateShellWithBestVis(String appName, String appClass, 
+	WidgetClass class, Display *display, ArgList args, Cardinal nArgs);

@@ -177,7 +177,7 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	ctrlBlk.oldFontList = XmFontListCreate(ctrlBlk.oldFont,
 		XmSTRING_DEFAULT_CHARSET);
 
-	dialog	= XmCreateDialogShell (parent, "Font Selector", args, 0);
+	dialog	= CreateDialogShell(parent, "Font Selector", args, 0);
 
 	/* 	Set up window sizes for form widget */
 

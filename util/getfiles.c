@@ -305,7 +305,7 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
-    existFileSB = XmCreateFileSelectionDialog(parent,"FileSelect",args,n);
+    existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
     XmStringFree(labelString);
     XmStringFree(titleString);
 #ifndef SGI_CUSTOM
@@ -481,7 +481,7 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
 #endif
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
-    newFileSB=XmCreateFileSelectionDialog(parent,"FileSelect",args,n);
+    newFileSB=CreateFileSelectionDialog(parent,"FileSelect",args,n);
     XmStringFree(labelString);
     XmStringFree(titleString);
     XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
@@ -710,7 +710,7 @@ static void createYesNoDialog(Widget parent)
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
 #endif
     XtSetArg(args[n], XmNtitle, " "); n++;
-    YesNoDialog = XmCreateQuestionDialog(parent, "yesNo", args, n);
+    YesNoDialog = CreateQuestionDialog(parent, "yesNo", args, n);
     XtAddCallback (YesNoDialog, XmNokCallback, (XtCallbackProc)yesNoOKCB, NULL);
     XtAddCallback (YesNoDialog, XmNcancelCallback,
     	    (XtCallbackProc)yesNoCancelCB, NULL);
@@ -736,7 +736,7 @@ static void createErrorDialog(Widget parent)
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
 #endif
     XtSetArg(args[n], XmNtitle, " "); n++;
-    ErrorDialog = XmCreateErrorDialog(parent, "error", args, n);
+    ErrorDialog = CreateErrorDialog(parent, "error", args, n);
     XtAddCallback(ErrorDialog, XmNcancelCallback, (XtCallbackProc)errorOKCB,
     	    NULL);
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_OK_BUTTON));
@@ -928,7 +928,7 @@ static Widget createPanelHelp(Widget parent, char *helpText, char *title)
     XmString st1;
     
     ac = 0;
-    form = XmCreateFormDialog(parent, "helpForm", al, ac);
+    form = CreateFormDialog(parent, "helpForm", al, ac);
 
 #ifndef MOTIF10
     ac = 0;

@@ -308,7 +308,7 @@ static Widget createForm(Widget parent)
     XtSetArg(args[argcnt], XmNdialogTitle, (st0=XmStringCreateLtoR(
 		"Printer Options", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
-    form = XmCreateFormDialog(parent, "printForm", args, argcnt);
+    form = CreateFormDialog(parent, "printForm", args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, 0);
     
     XmStringFree( st0 );
