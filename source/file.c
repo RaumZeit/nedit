@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.13 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.14 2001/04/16 23:20:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -117,8 +117,7 @@ void EditNewFile(char *geometry, int iconic, char *languageMode,
     window->fileFormat = UNIX_FILE_FORMAT;
     window->lastModTime = 0;
     SetWindowModified(window, FALSE);
-    window->readOnly = FALSE;
-    window->lockWrite = FALSE;
+    CLEAR_ALL_LOCKS(window->lockReasons);
     UpdateWindowReadOnly(window);
     UpdateStatsLine(window);
     UpdateWindowTitle(window);
@@ -218,7 +217,7 @@ void RevertToSaved(WindowInfo *window)
     strcpy(path, window->path);
     RemoveBackupFile(window);
     ClearUndoList(window);
-    if (!doOpen(window, name, path, 0)) {
+    if (!doOpen(window, name, path, IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0)) {
     	CloseWindow(window);
     	return;
     }
@@ -241,8 +240,10 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
     char *fileString, *c;
     FILE *fp = NULL;
     int fd;
-    int readOnly = FALSE;
     int resp;
+    
+    /* initialize lock reasons */
+    CLEAR_ALL_LOCKS(window->lockReasons);
     
     /* Update the window data structure */
     strcpy(window->filename, name);
@@ -260,7 +261,7 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
     {
 	if ((fp = fopen(fullname, "r")) != NULL) {
     	    if(access(fullname, W_OK) != 0)
-		readOnly = TRUE;
+                SET_PERM_LOCKED(window->lockReasons, TRUE);
 #else
 #ifdef WRITES_DOS_TEXT
     fp = fopen(fullname, "rb+");
@@ -276,7 +277,7 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 #endif
 	if (fp != NULL) {
 	    /* File is read only */
-	    readOnly = TRUE;
+            SET_PERM_LOCKED(window->lockReasons, TRUE);
 #endif
 	} else if (flags & CREATE && errno == ENOENT) {
 	    /* Give option to create (or to exit if this is the only window) */
@@ -308,8 +309,12 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 	        remove(fullname);
 	    }
 	    SetWindowModified(window, FALSE);
-	    window->readOnly = FALSE;
-	    window->lockWrite = flags & FORCE_READ_ONLY;
+            if ((flags & PREF_READ_ONLY) != 0) {
+                SET_USER_LOCKED(window->lockReasons, TRUE);
+            }
+            if ((flags & FORCE_READ_ONLY) != 0) {
+                SET_FORCE_LOCKED(window->lockReasons, TRUE);
+            }
 	    UpdateWindowReadOnly(window);
 	    return TRUE;
 	} else {
@@ -378,7 +383,7 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 it, but not modify or re-save its contents.", "View", "Cancel");
 	    if (resp == 2)
 		return FALSE;
-	    readOnly = TRUE;
+            SET_FORCE_LOCKED(window->lockReasons, TRUE);
 	    for (c=fileString; c<&fileString[readLen]; c++)
     		if (*c == '\0')
     		    *c = 0xfe;
@@ -393,16 +398,20 @@ it, but not modify or re-save its contents.", "View", "Cancel");
     free(fileString);
 
     /* Set window title and file changed flag */
-    window->lockWrite = flags & FORCE_READ_ONLY;
-    if (readOnly) {
-	window->readOnly = TRUE;
+    if ((flags & PREF_READ_ONLY) != 0) {
+        SET_USER_LOCKED(window->lockReasons, TRUE);
+    }
+    if ((flags & FORCE_READ_ONLY) != 0) {
+        SET_FORCE_LOCKED(window->lockReasons, TRUE);
+    }
+    if (IS_PERM_LOCKED(window->lockReasons)) {
 	window->fileChanged = FALSE;
 	UpdateWindowTitle(window);
     } else {
-	window->readOnly = FALSE;
 	SetWindowModified(window, FALSE);
-	if (window->lockWrite)
+	if (IS_ANY_LOCKED(window->lockReasons)) {
 	    UpdateWindowTitle(window);
+        }
     }
     UpdateWindowReadOnly(window);
     
@@ -535,7 +544,7 @@ int SaveWindow(WindowInfo *window)
 {
     int stat;
     
-    if (!window->fileChanged || window->lockWrite)
+    if (!window->fileChanged || IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons))
     	return TRUE;
     if (!window->filenameSet)
     	return SaveWindowAs(window, NULL, False);
@@ -618,9 +627,8 @@ int SaveWindowAs(WindowInfo *window, char *newName, int addWrap)
     strcpy(window->filename, filename);
     strcpy(window->path, pathname);
     window->filenameSet = TRUE;
-    window->readOnly = FALSE;
     window->fileMode = 0;
-    window->lockWrite = FALSE;
+    CLEAR_ALL_LOCKS(window->lockReasons);
     retVal = doSave(window);
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
@@ -1296,8 +1304,8 @@ void CheckForChangesToFile(WindowInfo *window)
 	    } else
 		readOnly = TRUE;
 #endif
-	    if (window->readOnly != readOnly) {
-		window->readOnly = readOnly;
+            if (IS_PERM_LOCKED(window->lockReasons) != readOnly) {
+                SET_PERM_LOCKED(window->lockReasons, readOnly);
 		UpdateWindowTitle(window);
 		UpdateWindowReadOnly(window);
 	    }
@@ -1355,7 +1363,7 @@ static int fileWasModifiedExternally(WindowInfo *window)
 */
 int CheckReadOnly(WindowInfo *window)
 {
-    if (window->readOnly || window->lockWrite) {
+    if (IS_ANY_LOCKED(window->lockReasons)) {
     	XBell(TheDisplay, 0);
 	return True;
     }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.27 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.28 2001/04/16 23:20:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1712,10 +1712,10 @@ static void collectWritableWindows(WindowInfo* window)
    
     /* Make a sorted list of writable windows */
     for (w=WindowList, nWritable=0; w!=NULL; w=w->next)
-       if (!w->readOnly && !w->lockWrite) ++nWritable;
+       if (!IS_ANY_LOCKED(w->lockReasons)) ++nWritable;
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
     for (w=WindowList, i=0; w!=NULL; w=w->next)
-       if (!w->readOnly && !w->lockWrite) windows[i++] = w;
+       if (!IS_ANY_LOCKED(w->lockReasons)) windows[i++] = w;
     qsort(windows, nWritable, sizeof(WindowInfo *), compareWindowNames);
     
     window->writableWindows = windows;
@@ -1784,7 +1784,7 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
 	   file status has changed or the file was locked in the mean time
 	   (possible due to Lesstif modal dialog bug), we just skip the 
 	   window. */
-	    if (!writableWin->readOnly && !writableWin->lockWrite) {
+	    if (!IS_ANY_LOCKED(writableWin->lockReasons)) {
 		noWritableLeft = False;
 		writableWin->multiFileReplSelected = True;
 		writableWin->multiFileBusy = True; /* Avoid multi-beep/dialog */

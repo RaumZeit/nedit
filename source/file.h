@@ -1,8 +1,9 @@
-/* $Id: file.h,v 1.5 2001/04/06 09:49:55 amai Exp $ */
+/* $Id: file.h,v 1.6 2001/04/16 23:20:11 slobasso Exp $ */
 /* flags for EditExistingFile */
 #define CREATE 1
 #define SUPPRESS_CREATE_WARN 2
 #define FORCE_READ_ONLY 4
+#define PREF_READ_ONLY 8
 
 void EditNewFile(char *geometry, int iconic, char *languageMode,
     	char *defaultPath);

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.12 2001/04/12 22:02:16 edg Exp $ */
+/* $Id: nedit.h,v 1.13 2001/04/16 23:20:11 slobasso Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -77,6 +77,28 @@ enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
     args[0].value = (XtArgVal)valueAddr; \
     XtGetValues(widget, args, 1); \
 }
+
+/* This handles all the different reasons files can be locked */
+#define USER_LOCKED_BIT     0
+#define PERM_LOCKED_BIT     1
+#define FORCE_LOCKED_BIT    2
+
+#define LOCKED_BIT_TO_MASK(bitNum) (1 << (bitNum))
+#define SET_LOCKED_BY_REASON(reasons, onOrOff, reasonBit) ((onOrOff) ? \
+                    ((reasons) |= LOCKED_BIT_TO_MASK(reasonBit)) : \
+                    ((reasons) &= ~LOCKED_BIT_TO_MASK(reasonBit)))
+
+#define IS_USER_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(USER_LOCKED_BIT)) != 0)
+#define SET_USER_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, USER_LOCKED_BIT)
+#define IS_PERM_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
+#define SET_PERM_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, PERM_LOCKED_BIT)
+#define IS_FORCE_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(FORCE_LOCKED_BIT)) != 0)
+#define SET_FORCE_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, FORCE_LOCKED_BIT)
+
+#define IS_ANY_LOCKED_IGNORING_USER(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(USER_LOCKED_BIT)) != 0)
+#define IS_ANY_LOCKED_IGNORING_PERM(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
+#define IS_ANY_LOCKED(reasons) ((reasons) != 0)
+#define CLEAR_ALL_LOCKS(reasons) ((reasons) = 0)
 
 /* Record on undo list */
 typedef struct _UndoInfo {
@@ -277,8 +299,7 @@ typedef struct _WindowInfo {
     					   of selection related menu items */
     Boolean	filenameSet;		/* is the window still "Untitled"? */ 
     Boolean	fileChanged;		/* has window been modified? */
-    Boolean	readOnly;		/* is current file read only? */
-    Boolean	lockWrite;		/* is Read Only selected in menu? */
+    int         lockReasons;            /* all ways a file can be locked */
     Boolean	autoSave;		/* is autosave turned on? */
     Boolean	saveOldVersion;		/* keep old version in filename.bck */
     char	indentStyle;		/* whether/how to auto indent */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.7 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.8 2001/04/16 23:20:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -243,7 +243,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 #if defined(DONT_HAVE_GLOB) || defined(VMS)
     /* Open the file */
     ParseFilename(nameText, filename, pathname);
-    EditExistingFile(WindowList, filename, pathname, False, NULL, False, NULL);
+    EditExistingFile(WindowList, filename, pathname, 0, NULL, False, NULL);
 #elif defined(USE_MOTIF_GLOB)
     { char **nameList = NULL; int i, nFiles = 0, maxFiles = 30;
       ParseFilename(nameText, filename, pathname);
@@ -251,7 +251,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	      &nameList, &nFiles, &maxFiles);
       for (i=0; i<nFiles; i++) {
 	  ParseFilename(nameList[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, False, NULL, False,
+    	  EditExistingFile(WindowList, filename, pathname, 0, NULL, False,
 		  NULL);
       }
       for (i=0; i<nFiles; i++)
@@ -263,7 +263,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
       glob(nameText, GLOB_NOCHECK, NULL, &globbuf);
       for (i=0; i<globbuf.gl_pathc; i++) {
 	  ParseFilename(globbuf.gl_pathv[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, False, NULL, False,
+    	  EditExistingFile(WindowList, filename, pathname, 0, NULL, False,
 		  NULL);
       }
       globfree(&globbuf);

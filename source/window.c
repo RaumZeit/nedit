@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.19 2001/04/16 16:36:30 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.20 2001/04/16 23:20:12 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -176,8 +176,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     window->autoSaveOpCount = 0;
     window->undoOpCount = 0;
     window->undoMemUsed = 0;
-    window->readOnly = FALSE;
-    window->lockWrite = FALSE;
+    CLEAR_ALL_LOCKS(window->lockReasons);
     window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
     window->autoSave = GetPrefAutoSave();
     window->saveOldVersion = GetPrefSaveOldVersion();
@@ -542,8 +541,7 @@ void CloseWindow(WindowInfo *window)
     if (keepWindow || (WindowList == window && window->next == NULL)) {
 	window->filename[0] = '\0';
 	UniqueUntitledName(name);
-	window->readOnly = FALSE;
-	window->lockWrite = FALSE;
+        CLEAR_ALL_LOCKS(window->lockReasons);
 	window->fileMode = 0;
 	strcpy(window->filename, name);
 	strcpy(window->path, "");
@@ -1248,13 +1246,13 @@ void UpdateWindowTitle(WindowInfo *window)
     if (serverName[0] != '\0')
 	sprintf(&title[strlen(title)], "-%s- ", serverName);
     strcat(title, window->filename);
-    if (window->readOnly && window->fileChanged)
+    if (IS_ANY_LOCKED_IGNORING_USER(window->lockReasons) && window->fileChanged)
     	strcat(title, " (read only, modified)");
-    else if (window->readOnly)
+    else if (IS_ANY_LOCKED_IGNORING_USER(window->lockReasons))
     	strcat(title, " (read only)");
-    else if (window->lockWrite && window->fileChanged)
+    else if (IS_USER_LOCKED(window->lockReasons) && window->fileChanged)
     	strcat(title, " (locked, modified)");
-    else if (window->lockWrite)
+    else if (IS_USER_LOCKED(window->lockReasons))
     	strcat(title, " (locked)");
     else if (window->fileChanged)
     	strcat(title, " (modified)");
@@ -1282,19 +1280,20 @@ void UpdateWindowTitle(WindowInfo *window)
 
 /*
 ** Update the read-only state of the text area(s) in the window, and
-** the ReadOnly toggle button in the File menu to agree the readOnly
-** and lockWrite state in the window data structure.
+** the ReadOnly toggle button in the File menu to agree with the state in
+** the window data structure.
 */
 void UpdateWindowReadOnly(WindowInfo *window)
 {
     int i, state;
     
-    state = window->readOnly || window->lockWrite;
+    state = IS_ANY_LOCKED(window->lockReasons);
     XtVaSetValues(window->textArea, textNreadOnly, state, NULL);
     for (i=0; i<window->nPanes; i++)
     	XtVaSetValues(window->textPanes[i], textNreadOnly, state, NULL);
     XmToggleButtonSetState(window->readOnlyItem, state, FALSE);
-    XtSetSensitive(window->readOnlyItem, !window->readOnly);
+    XtSetSensitive(window->readOnlyItem,
+        !IS_ANY_LOCKED_IGNORING_USER(window->lockReasons));
 }
 
 /*
@@ -1449,7 +1448,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
     	    textNemulateTabs, emTabDist,
     	    textNfont, GetDefaultFontStruct(window->fontList),
     	    textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar,
-	    textNreadOnly, window->readOnly || window->lockWrite,
+	    textNreadOnly, IS_ANY_LOCKED(window->lockReasons),
    	    textNwordDelimiters, delimiters,
     	    textNwrapMargin, wrapMargin,
     	    textNautoIndent, window->indentStyle == AUTO_INDENT,

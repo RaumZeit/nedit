@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.28 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.29 2001/04/16 23:20:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -687,7 +687,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuToggle(menuPane, "overtype", "Overtype", 'O',
     	    doActionCB, "set_overtype_mode", False, SHORT);
     window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
-    	    'y', doActionCB, "set_locked", window->lockWrite, FULL);
+    	    'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons), FULL);
 #endif
 
     /* 
@@ -1001,7 +1001,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O',
     	    doActionCB, "set_overtype_mode", False, SHORT);
     window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
-    	    'y', doActionCB, "set_locked", window->lockWrite, FULL);
+    	    'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons), FULL);
 #endif
 
 #ifndef VMS
@@ -2336,7 +2336,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     }
     ParseFilename(args[0], filename, pathname);
-    EditExistingFile(window, filename, pathname, False, NULL, False, NULL);
+    EditExistingFile(window, filename, pathname, 0, NULL, False, NULL);
     CheckCloseDim();
 }
 
@@ -3480,10 +3480,10 @@ static void setLockedAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->lockWrite, "set_locked");
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, IS_USER_LOCKED(window->lockReasons), "set_locked");
     
-    XmToggleButtonSetState(window->readOnlyItem, window->readOnly || newState, False);
-    window->lockWrite = newState;
+    SET_USER_LOCKED(window->lockReasons, newState);
+    XmToggleButtonSetState(window->readOnlyItem, IS_ANY_LOCKED(window->lockReasons), False);
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
 }

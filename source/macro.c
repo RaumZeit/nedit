@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.21 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.22 2001/04/16 23:20:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -1712,7 +1712,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (from > to) {int temp = from; from = to; to = temp;}
     
     /* Don't allow modifications if the window is read-only */
-    if (window->readOnly || window->lockWrite) {
+    if (IS_ANY_LOCKED(window->lockReasons)) {
 	XBell(XtDisplay(window->shell), 0);
 	result->tag = NO_TAG;
 	return True;
@@ -1751,7 +1751,7 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     
     /* Don't allow modifications if the window is read-only */
-    if (window->readOnly || window->lockWrite) {
+    if (IS_ANY_LOCKED(window->lockReasons)) {
 	XBell(XtDisplay(window->shell), 0);
 	result->tag = NO_TAG;
 	return True;
@@ -3408,7 +3408,7 @@ static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = INT_TAG;
-    result->val.n = (window->readOnly || window->lockWrite) ? 1 : 0;
+    result->val.n = (IS_ANY_LOCKED(window->lockReasons)) ? 1 : 0;
     return True;
 }
 
@@ -3416,7 +3416,7 @@ static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = INT_TAG;
-    result->val.n = window->lockWrite ? 1 : 0;
+    result->val.n = (IS_USER_LOCKED(window->lockReasons)) ? 1 : 0;
     return True;
 }
 
