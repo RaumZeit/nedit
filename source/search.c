@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.18 2001/03/19 16:30:07 slobasso Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.19 2001/03/21 21:25:57 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -82,9 +82,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	Atom *type, char *value, int *length, int *format);
 static void createReplaceDlog(Widget parent, WindowInfo *window);
 static void createFindDlog(Widget parent, WindowInfo *window);
-#ifndef DISABLE_MULTI_FILE_REPLACE   
 static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window);
-#endif
 static void fFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData);
@@ -103,7 +101,6 @@ static void replaceArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void replaceFindCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData);
 static void findCB(Widget w, WindowInfo *window,XmAnyCallbackStruct *callData); 
-#ifndef DISABLE_MULTI_FILE_REPLACE   
 static void replaceMultiFileCB(Widget w, WindowInfo *window,
 	XmAnyCallbackStruct *callData);
 static void rMultiFileReplaceCB(Widget w, WindowInfo *window,  
@@ -122,7 +119,6 @@ static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
 static void checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
                                                      WindowInfo* doomedWindow);
 static void removeDoomedWindowFromList(WindowInfo* window, int index);
-#endif
 static void unmanageReplaceDialogs(WindowInfo *window);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void eraseFlash(WindowInfo *window);
@@ -353,7 +349,6 @@ void DoFindDlog(WindowInfo *window, int direction, int searchType,
     ManageDialogCenteredOnPointer(window->findDlog);
 }
 
-#ifndef DISABLE_MULTI_FILE_REPLACE   
 void DoReplaceMultiFileDlog(WindowInfo *window)
 {
     char	searchString[SEARCHMAX], replaceString[SEARCHMAX];
@@ -408,8 +403,6 @@ void RemoveFromMultiFileReplaceDialogLists(WindowInfo *doomedWindow)
           checkMultiFileReplaceListForDoomedWindow(w, doomedWindow);
 }
 
-#endif /* DISABLE_MULTI_FILE_REPLACE */
-
 static void createReplaceDlog(Widget parent, WindowInfo *window)
 {
     Arg    	args[50];
@@ -423,9 +416,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     Widget	searchDirBox, forwardBtn, reverseBtn, keepBtn;
     char 	title[MAXPATHLEN + 19];
     Dimension	shadowThickness;
-#ifndef DISABLE_MULTI_FILE_REPLACE
     Widget replaceMultiFileBtn;
-#endif
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
@@ -735,27 +726,24 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     	    window);
     XtManageChild(cancelBtn);
 
-#ifndef DISABLE_MULTI_FILE_REPLACE
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Replace All In Multiple Files (experimental)")); 
-	     argcnt++;
+    	     st1=MKSTRING("Replace In\nMultiple Files...")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
     XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
-    XtSetArg(args[argcnt], XmNleftPosition, 10); argcnt++;
-    XtSetArg(args[argcnt], XmNrightPosition, 90); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 30); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 70); argcnt++;
     XtSetArg(args[argcnt], XmNtopWidget, btnForm); argcnt++;
     replaceMultiFileBtn = XmCreatePushButton(form, "multiFile", args, argcnt);
     XtAddCallback(replaceMultiFileBtn, XmNactivateCallback,
     	    (XtCallbackProc)replaceMultiFileCB, window);
     XmStringFree(st1);
     XtManageChild(replaceMultiFileBtn);
-#endif
      
     XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
     AddDialogMnemonicHandler(form);
@@ -1000,7 +988,6 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     window->findSearchTypeBox = searchTypeBox;
 }
 
-#ifndef DISABLE_MULTI_FILE_REPLACE
 static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window) 
 {
     Arg		args[50];
@@ -1274,8 +1261,6 @@ static void removeDoomedWindowFromList(WindowInfo* window, int index)
     XmListDeletePos(window->replaceMultiFileList, index + 1);
 }
 
-#endif /* DISABLE_MULTI_FILE_REPLACE */
-
 /*
 ** These callbacks fix a Motif 1.1 problem that the default button gets the
 ** keyboard focus when a dialog is created.  We want the first text field
@@ -1369,7 +1354,6 @@ static void replaceAllCB(Widget w, WindowInfo *window,
     	unmanageReplaceDialogs(window);
 }
 
-#ifndef DISABLE_MULTI_FILE_REPLACE
 static void replaceMultiFileCB(Widget w, WindowInfo *window,
 				   XmAnyCallbackStruct *callData) 
 {
@@ -1638,6 +1622,10 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
        
        XtFree((XtPointer)selected);
     } else {
+       Arg args[1];
+       int nVisible;
+       int firstSelected = 0;
+       
        /* Remove the old list, if any */
        XmListDeleteAllItems(list);
        
@@ -1645,11 +1633,43 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
        XmListAddItems(list, names, nWritable, 1);
        
        /* Pre-select the files from the last run. */   
+       selectedCount = 0;
        for (i = 0; i < nWritable; ++i) {
           if (window->writableWindows[i]->multiFileReplSelected) {
              XmListSelectPos(list, i+1, False);
+             ++selectedCount;
+             /* Remember the first selected item */
+             if (firstSelected == 0) firstSelected = i+1;
           }
        }
+       /* If no files are selected, we select them all. Normally this only
+          happens the first time the dialog is used, but it looks "silly" 
+          if the dialog pops up with nothing selected. */
+       if (selectedCount == 0) {
+          for (i = 0; i < nWritable; ++i) {
+             XmListSelectPos(list, i+1, False);
+          }
+          firstSelected = 1;
+       }
+       
+       /* Make sure that the first selected item is visible; otherwise, the
+          user could get the impression that nothing is selected. By
+          visualizing at least the first selected item, the user will more
+          easily be confident that the previous selection is still active. */
+       XtSetArg(args[0], XmNvisibleItemCount, &nVisible);
+       XtGetValues(list, args, 1);
+       /* Make sure that we don't create blank lines at the bottom by
+          positioning too far. */
+       if (nWritable <= nVisible) {
+          /* No need to shift the visible position */
+          firstSelected = 1;
+       }
+       else {
+          int maxFirst = nWritable - nVisible + 1;
+          if (firstSelected > maxFirst)
+             firstSelected = maxFirst;
+       }
+       XmListSetPos(list, firstSelected);
     }
     
     /* Put the list back into its original selection policy. */
@@ -1659,7 +1679,6 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
        XmStringFree(names[i]);
     XtFree((XtPointer)names);
 }
-#endif /* DISABLE_MULTI_FILE_REPLACE */
 
 /*
 ** Unconditionally pops down the replace dialog and the
@@ -1667,15 +1686,12 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
 */
 static void unmanageReplaceDialogs(WindowInfo *window)
 {
-   
-#ifndef DISABLE_MULTI_FILE_REPLACE 
     /* If the replace dialog goes down, the multi-file replace dialog must
        go down too */
     if (window->replaceMultiFileDlog &&
       XtIsManaged(window->replaceMultiFileDlog)) {
           XtUnmanageChild(window->replaceMultiFileDlog);
     }
-#endif
         
     if (window->replaceDlog &&
       XtIsManaged(window->replaceDlog)) {
