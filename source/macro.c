@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.27 2001/06/22 18:25:13 tringali Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.28 2001/07/31 23:16:34 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -914,6 +914,10 @@ int MacroWindowCloseActions(WindowInfo *window)
 {
     macroCmdInfo *mcd, *cmdData = window->macroCmdData;
     WindowInfo *w;
+
+    if (MacroRecordActionHook != 0 && MacroRecordWindow == window) {
+        FinishLearn();
+    }
 
     /* If no macro is executing in the window, allow the close, but check
        if macros executing in other windows have it as focus.  If so, set
