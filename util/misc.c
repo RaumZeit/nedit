@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.71 2004/10/18 19:27:26 arnef Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.72 2004/11/26 17:54:33 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -964,6 +964,8 @@ char *GetXmStringText(XmString fromString)
     	    *toPtr++ = *fromPtr;
     	if (separator)
     	    *toPtr++ = '\n';
+	XtFree(text);
+	XtFree(charset);
     }
     
     /* terminate the string, free the context, and return the string */
