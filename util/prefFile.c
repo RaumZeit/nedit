@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.16 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.17 2002/07/05 22:28:11 uid71894 Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -122,11 +122,10 @@ static char *removeWhiteSpace(const char *string);
 **			recognized in the option table.
 **	argvInOut	Argument vector.  Will be altered as argcInOut.
 */
-XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName, 
+XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName, 
 	 XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut,
 	 char **argvInOut)
 {
-    char fullName[MAXPATHLEN];
     XrmDatabase db;
     int argcCopy;
     char **argvCopy;
@@ -136,13 +135,6 @@ XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName,
         
     /* read the preferences file into an X database.
        On failure prefDB will be NULL. */
-#ifdef VMS
-    sprintf(fullName, "%s%s", "SYS$LOGIN:", fileName);
-#else
-    if (! *PrependHome(fileName, fullName, sizeof(fullName))) {
-       return NULL;
-    }
-#endif /*VMS*/
     db = XrmGetFileDatabase(fullName);
     
     /* parse the command line, storing results in the preferences database */
@@ -254,23 +246,14 @@ void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc)
 ** Create or replace an application preference file according to
 ** the resource descriptions in rsrcDesrcip.
 */
-int SavePreferences(Display *display, const char *fileName,
+int SavePreferences(Display *display, const char *fullName,
         const char *fileHeader,	PrefDescripRec *rsrcDescrip, int nRsrc)
 {
-    char fullName[MAXPATHLEN], *appName, *appClass, **enumStrings;
+    char *appName, *appClass, **enumStrings;
     FILE *fp;
     int type;
     int i;
     
-    /* preferences files reside in the home directory. */
-#ifdef VMS
-    sprintf(fullName, "%s%s", "SYS$LOGIN:", fileName);
-#else
-    if (! *PrependHome(fileName, fullName, sizeof(fullName))) {
-       return False;
-    }
-#endif /*VMS*/
-
     /* open the file */
     if ((fp = fopen(fullName, "w")) == NULL)
     	return False;

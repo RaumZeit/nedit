@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.7 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: utils.h,v 1.8 2002/07/05 22:28:11 uid71894 Exp $ */
 
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
@@ -12,7 +12,10 @@ extern int Max(int i1, int i2);
 extern int Min(int i1, int i2);
 extern int Min3(int i1, int i2, int i3);
 extern int Max3(int i1, int i2, int i3);
+const char* GetRCFileName(int type);
 
+/* N_FILE_TYPES must be the last entry!! This saves us from counting. */
+enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
 
 /* If anyone knows where to get this from system include files (in a machine
    independent way), please change this (L_cuserid is apparently not ANSI) */

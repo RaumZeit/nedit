@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.40 2002/03/14 17:17:07 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.41 2002/07/05 22:28:11 uid71894 Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -87,8 +87,6 @@ static const char CVSID[] = "$Id: macro.c,v 1.40 2002/03/14 17:17:07 amai Exp $"
 #include "../debug.h"
 #endif
 
-#define AUTO_LOAD_MACRO_FILE_NAME ".neditmacro"
-	
 /* Maximum number of actions in a macro and args in 
    an action (to simplify the reader) */
 #define MAX_MACRO_ACTIONS 1024
@@ -629,18 +627,11 @@ void Replay(WindowInfo *window)
 }
 
 /*
-** Read the .neditmacro file if one exists
+**  Read the initial NEdit macro file if one exists.
 */
 void ReadMacroInitFile(WindowInfo *window)
 {
-    char fullName[MAXPATHLEN];
-    
-#ifdef VMS
-    sprintf(fullName, "%s%s", "SYS$LOGIN:", AUTO_LOAD_MACRO_FILE_NAME);
-#else
-    sprintf(fullName, "%s/%s", GetHomeDir(), AUTO_LOAD_MACRO_FILE_NAME);
-#endif /*VMS*/
-    ReadMacroFile(window, fullName, False);
+    ReadMacroFile(window, GetRCFileName(AUTOLOAD_NM), False);
 }
 
 /*
@@ -3828,3 +3819,4 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     *errMsg = "%s called with unknown object";
     return False;
 }
+

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.59 2002/05/08 16:19:03 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.60 2002/07/05 22:28:11 uid71894 Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -81,13 +81,6 @@ static const char CVSID[] = "$Id: menu.c,v 1.59 2002/05/08 16:19:03 slobasso Exp
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
-/* File name for Open Previous file database */
-#ifdef VMS
-#define NEDIT_DB_FILE_NAME ".neditdb;1"
-#else
-#define NEDIT_DB_FILE_NAME ".neditdb"
-#endif /*VMS*/
 
 #if XmVersion >= 1002
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
@@ -4100,7 +4093,7 @@ static int cmpStrPtr(const void *strA, const void *strB)
 */
 void WriteNEditDB(void)
 {
-    char fullName[MAXPATHLEN];
+    const char* fullName = GetRCFileName(NEDIT_HISTORY);
     FILE *fp;
     int i;
     static char fileHeader[] =
@@ -4109,16 +4102,6 @@ void WriteNEditDB(void)
     /* If the Open Previous command is disabled, just return */
     if (GetPrefMaxPrevOpenFiles() == 0)
     	return;
-
-    /* the nedit database file resides in the home directory, prepend the
-       contents of the $HOME environment variable */
-#ifdef VMS
-    sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
-#else
-    if (! *PrependHome(NEDIT_DB_FILE_NAME, fullName, sizeof(fullName))) {
-       return;
-    }
-#endif /*VMS*/
 
     /* open the file */
     if ((fp = fopen(fullName, "w")) == NULL)
@@ -4144,12 +4127,13 @@ void WriteNEditDB(void)
 */
 void ReadNEditDB(void)
 {
-    char fullName[MAXPATHLEN], line[MAXPATHLEN];
+    const char* fullName = GetRCFileName(NEDIT_HISTORY);
+    char line[MAXPATHLEN];
     char *nameCopy;
     FILE *fp;
     int lineLen;
 #ifdef VMS
-    static char badFilenameChars[] = "\n \t*?(){}";
+    static char badFilenameChars[] = "\n\t*?()[]{}!@#%^&:;' ";
 #else
     static char badFilenameChars[] = "\n\t*?()[]{}";
 #endif
@@ -4163,16 +4147,6 @@ void ReadNEditDB(void)
     PrevOpen = (char **)XtMalloc(sizeof(char *) * GetPrefMaxPrevOpenFiles());
     NPrevOpen = 0;
     
-    /* the nedit database file resides in the home directory, prepend the
-       contents of the $HOME environment variable */
-#ifdef VMS
-    sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
-#else
-    if (! *PrependHome(NEDIT_DB_FILE_NAME, fullName, sizeof(fullName))) {
-       return;
-    }
-#endif /*VMS*/
-
     /* open the file */
     if ((fp = fopen(fullName, "r")) == NULL)
     	return;
@@ -4536,4 +4510,4 @@ static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName)
     }
     return False; /* not reached */
 }
-#endif /* SGI_CUSTOM */
+#endif

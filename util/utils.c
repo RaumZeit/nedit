@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.14 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.15 2002/07/05 22:28:11 uid71894 Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.14 2002/06/26 23:39:21 slobasso Ex
 #include "../util/VMSparam.h"
 #include "../util/VMSutils.h"
 #endif
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #ifdef VMS
@@ -47,12 +48,24 @@ static const char CVSID[] = "$Id: utils.c,v 1.14 2002/06/26 23:39:21 slobasso Ex
 #include <pwd.h>
 
 /* just to get 'Boolean' types defined: */
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
 
+#define DEFAULT_NEDIT_HOME ".nedit"
+#ifdef VMS
+    char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb;1"};
+    char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history;1"};
+#else
+    char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
+    char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
+#endif
+
+static void buildFilePath(char* fullPath, const char* dir, const char* file);
+static Boolean isDir(const char* file);
+static Boolean isRegFile(const char* file);
 
 extern const char
 *GetCurrentDir(void)
@@ -90,7 +103,7 @@ extern const char
           ptr= passwdEntry->pw_dir;
        } else {
           /* This is really serious, so just exit. */
-          perror("NEdit/nc: getpwuid() failed ");
+          perror("nedit: getpwuid() failed ");
           exit(EXIT_FAILURE);
        }
     }
@@ -130,7 +143,7 @@ const char
     passwdEntry = getpwuid(getuid());
     if (!passwdEntry) {
        /* This is really serious, so just exit. */
-       perror("NEdit/nc: getpwuid() failed ");
+       perror("nedit: getpwuid() failed ");
        exit(EXIT_FAILURE);
     }
     userName=malloc(strlen(passwdEntry->pw_name)+1);
@@ -169,7 +182,7 @@ const char
         syi_status = lib$getsyi(&syiItemCode, &unused, hostnameDesc, &hostnameLen,
     			        0, 0);
         if (syi_status != SS$_NORMAL) {
-	    fprintf(stderr, "Error return from lib$getsyi: %d", syi_status);
+	    fprintf(stderr, "nedit: Error return from lib$getsyi: %d", syi_status);
 	    strcpy(hostname, "VMS");
         } else
     	    hostname[hostnameLen] = '\0';
@@ -179,7 +192,7 @@ const char
         int rc = uname(&nameStruct);
         if (rc<0) {
             /* Shouldn't ever happen, so we better exit() here */
-           perror("NEdit/nc: uname() failed ");
+           perror("nedit: uname() failed ");
            exit(EXIT_FAILURE);
         }
         strcpy(hostname, nameStruct.nodename);
@@ -236,4 +249,165 @@ extern int Max3(int i1, int i2, int i3)
     if (i1 >= i2 && i1 >= i3)
     	return i1;
     return i2 >= i3 ? i2 : i3;
+}
+
+/*
+**  Returns a pointer to the name of an rc file of the requested type.
+**
+**  Preconditions:
+**      - MAXPATHLEN is set to the max. allowed path length
+**      - fullPath points to a buffer of at least MAXPATHLEN
+**
+**  Returns:
+**      - Pointer to a static array containing the file name
+**      - Exits when the intended rc file directory can not be created
+*/
+const char* GetRCFileName(const int type)
+{
+    static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
+    static int namesDetermined = False;
+
+    if (!namesDetermined)
+    {
+        char* nedit_home;
+        int i;
+
+        if ((nedit_home = getenv("NEDIT_HOME")) == NULL)
+        {
+            /*  No NEDIT_HOME */
+#ifdef VMS
+            /* This is a default VMS setup */
+            for (i = 0; i < N_FILE_TYPES; i++)
+            {
+                buildFilePath(rcFiles[i], "SYS$LOGIN", hiddenFileNames[i]);
+            }
+#else /* #ifdef VMS */
+            /* Let's try if ~/.nedit is a regular file or not. */
+            char legacyFile[MAXPATHLEN + 1];
+            buildFilePath(legacyFile, GetHomeDir(), hiddenFileNames[NEDIT_RC]);
+            if (isRegFile(legacyFile))
+            {
+                /* This is a legacy setup with rc files in $HOME */
+                for (i = 0; i < N_FILE_TYPES; i++)
+                {
+                    buildFilePath(rcFiles[i], GetHomeDir(), hiddenFileNames[i]);
+                }
+            } else
+            {
+                /* LEGACY_NEDIT_RC does not exist as a regular file. */
+                /* FIXME: Devices, sockets and fifos are ignored for now. */
+                char defaultNEditHome[MAXPATHLEN + 1];
+                buildFilePath(defaultNEditHome, GetHomeDir(), DEFAULT_NEDIT_HOME);
+                if (!isDir(defaultNEditHome))
+                {
+                    /* Create DEFAULT_NEDIT_HOME */
+                    if (mkdir(defaultNEditHome, 0777) != 0)
+                    {
+                        perror("nedit: Error while creating rc file directory"
+                                " $HOME/" DEFAULT_NEDIT_HOME
+                                " (Make sure all parent directories exist.)");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+
+                /* All set for DEFAULT_NEDIT_HOME, let's copy the names */
+                for (i = 0; i < N_FILE_TYPES; i++)
+                {
+                    buildFilePath(rcFiles[i], defaultNEditHome, plainFileNames[i]);
+                }
+            }
+#endif /* #ifdef VMS */
+        } else
+        {
+            /*  $NEDIT_HOME is set. */
+#ifndef VMS
+            /* FIXME: Is this required? Does VMS know stat(), mkdir()? */
+            if (!isDir(nedit_home))
+            {
+                /* Create $NEDIT_HOME */
+                if (mkdir(nedit_home, 0777) != 0)
+                {
+                    perror("nedit: Error while creating rc file directory $NEDIT_HOME\n"
+                            "(Make sure all parent directories exist.)");
+                    exit(EXIT_FAILURE);
+                }
+            }
+#endif /* #ifndef VMS */
+
+            /* All set for NEDIT_HOME, let's copy the names */
+            for (i = 0; i < N_FILE_TYPES; i++)
+            {
+                buildFilePath(rcFiles[i], nedit_home, plainFileNames[i]);
+            }
+        }
+
+        namesDetermined = True;
+    }
+
+    return rcFiles[type];
+}
+
+/*
+**  Builds a file path from 'dir' and 'file', watching for buffer overruns.
+**
+**  Preconditions:
+**      - MAXPATHLEN is set to the max. allowed path length
+**      - 'fullPath' points to a buffer of at least MAXPATHLEN
+**      - 'dir' and 'file' are valid strings
+**
+**  Postcondition:
+**      - 'fullpath' will contain 'dir/file'
+**      - Exits when the result would be greater than MAXPATHLEN
+*/
+static void buildFilePath(char* fullPath, const char* dir, const char* file)
+{
+    if ((MAXPATHLEN) < strlen(dir) + strlen(file) + 2)
+    {
+        /*  We have no way to build the path. */
+        fprintf(stderr, "nedit: rc file path too long for %s.\n", file);
+        exit(EXIT_FAILURE);
+    }
+
+    /*  The length is already checked */
+    strcpy(fullPath, dir);
+#ifdef VMS
+    strcat(fullPath, ":");
+#else /* #ifdef VMS */
+    strcat(fullPath, "/");
+#endif /* #ifdef VMS */
+    strcat(fullPath, file);
+}
+
+/*
+**  Returns true if 'file' is a directory, false otherwise.
+**  Links are followed.
+**
+**  Preconditions:
+**      - None
+**
+**  Returns:
+**      - True for directories, false otherwise
+*/
+static Boolean isDir(const char* file)
+{
+    struct stat attribute;
+
+    return ((stat(file, &attribute) == 0) && S_ISDIR(attribute.st_mode));
+}
+
+/*
+**  Returns true if 'file' is a regular file, false otherwise.
+**  Links are followed.
+**
+**  Preconditions:
+**      - None
+**
+**  Returns:
+**      - True for regular files, false otherwise
+*/
+static Boolean isRegFile(const char* file)
+{
+    struct stat attribute;
+
+    return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));
 }

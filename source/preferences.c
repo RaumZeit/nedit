@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.55 2002/06/29 13:56:06 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.56 2002/07/05 22:28:11 uid71894 Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -63,6 +63,8 @@ static const char CVSID[] = "$Id: preferences.c,v 1.55 2002/06/29 13:56:06 yoode
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
 #include "../util/fontsel.h"
+#include "../util/utils.h"
+#include "../util/clearcase.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "text.h"
@@ -80,9 +82,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.55 2002/06/29 13:56:06 yoode
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
-
-#define PREF_FILE_NAME ".nedit"
 
 /* New styles added in 5.2 for auto-upgrade */
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
@@ -985,8 +984,8 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
 {
-    return CreatePreferencesDatabase(PREF_FILE_NAME, APP_NAME, 
-	    OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+    return CreatePreferencesDatabase(GetRCFileName(NEDIT_RC), APP_NAME,
+            OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
 }
     
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
@@ -1125,15 +1124,17 @@ static void translatePrefFormats(int convertOld)
 void SaveNEditPrefs(Widget parent, int quietly)
 {
     if (!quietly) {
-	if (DialogF(DF_INF, parent, 2, ImportedFile == NULL ?
-"Default preferences will be saved in the .nedit file\n\
-in your home directory.  NEdit automatically loads\n\
-this file each time it is started." :
-"Default preferences will be saved in the .nedit\n\
-file in your home directory.\n\n\
-SAVING WILL INCORPORATE SETTINGS\n\
-FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
-	    return;
+        if (DialogF(DF_INF, parent, 2, ImportedFile == NULL ?
+                "Default preferences will be saved in the file:\n"
+                "%s\n"
+                "NEdit automatically loads this file\n"
+                "each time it is started." :
+                "Default preferences will be saved in the file:\n"
+                "%s\n"
+                "SAVING WILL INCORPORATE SETTINGS\n"
+                "FROM FILE: %s", "OK", "Cancel",
+                GetRCFileName(NEDIT_RC), ImportedFile) == 2)
+        return;
     }    
 #ifndef VMS
     TempStringPrefs.shellCmds = WriteShellCmdsString();
@@ -1146,14 +1147,16 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
     strcpy(PrefData.fileVersion, "5.3");
-    if (!SavePreferences(XtDisplay(parent), PREF_FILE_NAME, HeaderText,
-    	    PrefDescrip, XtNumber(PrefDescrip)))
-    	DialogF(DF_WARN, parent, 1,
-#ifdef VMS
-    		"Unable to save preferences in SYS$LOGIN:.NEDIT", "Dismiss");
-#else
-    		"Unable to save preferences in $HOME/.nedit", "Dismiss");
-#endif /*VMS*/
+    if (!SavePreferences(XtDisplay(parent), GetRCFileName(NEDIT_RC), HeaderText,
+            PrefDescrip, XtNumber(PrefDescrip)))
+    {
+        DialogF(DF_WARN,
+                parent,
+                1,
+                "Unable to save preferences in %s",
+                "Dismiss",
+                GetRCFileName(NEDIT_RC));
+    }
 
 #ifndef VMS
     XtFree(TempStringPrefs.shellCmds);
@@ -1735,17 +1738,18 @@ int CheckPrefsChangesSaved(Widget dialogParent)
     int resp;
     
     if (!PrefsHaveChanged)
-	return True;
+        return True;
     
     resp = DialogF(DF_WARN, dialogParent, 3, ImportedFile == NULL ?
-    	    "Default Preferences have changed.\nSave changes to .nedit file?" :
-	    "Default Preferences have changed.  SAVING \n\
-CHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s",
-	    "Save", "Don't Save", "Cancel", ImportedFile);
+            "Default Preferences have changed.\n"
+            "Save changes to NEdit preference file?" :
+            "Default Preferences have changed.  SAVING \n"
+            "CHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s",
+            "Save", "Don't Save", "Cancel", ImportedFile);
     if (resp == 2)
-	return True;
+        return True;
     if (resp == 3)
-	return False;
+        return False;
     
     SaveNEditPrefs(dialogParent, True);
     return True;
