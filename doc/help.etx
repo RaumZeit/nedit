@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.83 2004/12/23 22:25:44 edg Exp $
+.. $Id: help.etx,v 1.84 2005/02/06 12:31:59 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2583,7 +2583,8 @@ Macro Subroutines
   Returns a new string with all of the replacements done.
 
 **replace_range( start, end, string )**  
-  Replaces all of the text in the current window between two positions.
+  Replaces all the text between two positions in the current window. If the
+  cursor position is between start and end it will be set to start.
 
 **replace_selection( string )**  
   Replaces the primary-selection selected text in the current window.
