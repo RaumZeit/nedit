@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.21 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.22 2002/06/26 23:37:50 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1230,7 +1230,7 @@ static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr
         const char *lineStr, int outLen, int predictOnly)
 {
     const char *inChar;
-    char *outChar;
+    char *outChar = NULL;
     int outWritten = 0;
     int fileLen, lineLen;
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.23 2002/06/20 21:32:32 slobasso Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.24 2002/06/26 23:37:50 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -41,6 +41,7 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.23 2002/06/20 21:32:32 slobasso
 
 #include "textBuf.h"
 #include "textDisp.h"
+#include "text.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -2450,7 +2451,7 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
     if (lineDelta != 0)
 	redrawLineNumbers(textD, False);
 
-    HandleAllPendingGraphicsExposeNoExposeEvents(textD->w, NULL);
+    HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, NULL);
 }
 
 /*
