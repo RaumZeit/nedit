@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.42 2003/04/07 22:51:40 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.43 2003/04/24 08:57:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -443,24 +443,25 @@ static char *DefaultPatternSets[] = {
 	Parameter:\"#[0-9]*\":::Text Arg::\n\
 	Special Chars:\"[{}&]\":::Keyword::\n\
 	Escape Chars:\"\\\\[$&%#_{}]\":::Text Escape::\n\
-	Super Sub 1 Char:\"(\\^|_)[^{]\":::Text Arg2::\n\
+	Super Sub 1 Char:\"(?:\\^|_)(?:\\\\\\l+|[^{\\\\])\":::Text Arg2::\n\
 	Verbatim Begin End:\"\\\\begin\\{verbatim\\*?}\":\"\\\\end\\{verbatim\\*?}\"::Plain::\n\
 	Verbatim BG Color:\"&\":\"&\"::Keyword:Verbatim Begin End:C\n\
 	Verbatim:\"(\\\\verb\\*?)([^\\l\\s\\*]).*?(\\2)\":::Plain::\n\
 	Verbatim Color:\"\\1\\2\\3\":\"\"::Keyword:Verbatim:C\n\
-	Inline Math:\"\\$|\\\\\\(\":\"\\$|\\\\\\)\":\"\\\\\\(\":LaTeX Math::\n\
-	Inline Math Comment:\"%\":\"$\"::Text Comment:Inline Math:\n\
+	Inline Math:\"\\$|\\\\\\(\":\"\\$|\\\\\\)\":\"\\\\\\(|(?n[^\\\\]%)\":LaTeX Math::\n\
 	Math Color:\"&\":\"&\"::Keyword:Inline Math:C\n\
 	Math Escape Chars:\"\\\\\\$\":::Text Escape:Inline Math:\n\
-	No Arg Command:\"\\\\(left|right)[\\[\\]{}()]\":::Text Key::\n\
-	Command:\"[_^]|[\\\\@](a'|a`|a=|[A-Za-z]+\\*?|\\\\\\*|[-@_='`^\"\"|\\[\\]*:!+<>/~.,\\\\ ])\":\"nevermatch\":\"[^{[(]\":Text Key::\n\
-	Cmd Brace Args:\"\\{\":\"}\"::Text Arg2:Command:\n\
+	No Arg Command:\"\\\\(?:left|right)[\\[\\]{}()]\":::Text Key::\n\
+	Command:\"[_^]|[\\\\@](?:a'|a`|a=|[A-Za-z]+\\*?|\\\\\\*|[-@_='`^\"\"|\\[\\]*:!+<>/~.,\\\\ ])\":\"nevermatch\":\"[^{[(]\":Text Key::\n\
+	Cmd Brace Args:\"\\{\":\"}\":\"(?n[^\\\\]%)\":Text Arg2:Command:\n\
 	Brace Color:\"&\":\"&\"::Text Arg:Cmd Brace Args:C\n\
 	Cmd Paren Args:\"\\(\":\"\\)\":\"$\":Text Arg2:Command:\n\
 	Paren Color:\"&\":\"&\"::Text Arg:Cmd Paren Args:C\n\
-	Cmd Bracket Args:\"\\[\":\"\\]\":\"$\":Text Arg2:Command:\n\
+	Cmd Bracket Args:\"\\[\":\"\\]\":\"$|\\\\\\]\":Text Arg2:Command:\n\
 	Bracket Color:\"&\":\"&\"::Text Arg:Cmd Bracket Args:C\n\
-	Sub Command:\"([_^]|([\\\\@]([A-Za-z]+\\*?|[^A-Za-z$&%#{}~\\\\ \\t])))\":::Text Key1:Cmd Brace Args:\n\
+	Sub Cmd Bracket Args Esc:\"\\\\\\}\":::Plain:Sub Cmd Bracket Args:\n\
+	Sub Cmd Bracket Args:\"\\{\":\"\\}\":\"$|\\\\\\]\":Preprocessor1:Cmd Bracket Args:\n\
+	Sub Command:\"(?:[_^]|(?:[\\\\@](?:[A-Za-z]+\\*?|[^A-Za-z$&%#{}~\\\\ \\t])))\":::Text Key1:Cmd Brace Args:\n\
 	Sub Brace:\"\\{\":\"}\"::Text Arg2:Cmd Brace Args:\n\
 	Sub Sub Brace:\"\\{\":\"}\"::Text Arg2:Sub Brace:\n\
 	Sub Sub Sub Brace:\"\\{\":\"}\"::Text Arg2:Sub Sub Brace:\n\
