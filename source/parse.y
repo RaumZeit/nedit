@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.19 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: parse.y,v 1.20 2002/08/31 00:52:16 slobasso Exp $ */
 %{
 #include "parse.h"
 #include "textBuf.h"
@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.19 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.20 2002/08/31 00:52:16 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -60,199 +60,364 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 %nonassoc ELSE
 
 %nonassoc SYMBOL
-%right	  '=' ADDEQ SUBEQ MULEQ DIVEQ MODEQ ANDEQ OREQ
+%right    '=' ADDEQ SUBEQ MULEQ DIVEQ MODEQ ANDEQ OREQ
 %left     CONCAT
-%left	  OR
-%left	  AND
-%left	  '|'
-%left	  '&'
-%left	  GT GE LT LE EQ NE IN
-%left	  '+' '-'
-%left	  '*' '/' '%'
+%left     OR
+%left     AND
+%left     '|'
+%left     '&'
+%left     GT GE LT LE EQ NE IN
+%left     '+' '-'
+%left     '*' '/' '%'
 %nonassoc UNARY_MINUS NOT
 %nonassoc DELETE
 %nonassoc INCR DECR
-%right	  POW
+%right    POW
 %nonassoc '['
 %nonassoc '('
 
-%%	/* Rules */
+%%      /* Rules */
 
-program:  blank stmts { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-        | blank '{' blank stmts '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-        | blank '{' blank '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-        | error { return 1; }
+program:    blank stmts {
+                ADD_OP(OP_RETURN_NO_VAL); return 0;
+            }
+            | blank '{' blank stmts '}' {
+                ADD_OP(OP_RETURN_NO_VAL); return 0;
+            }
+            | blank '{' blank '}' {
+                ADD_OP(OP_RETURN_NO_VAL); return 0;
+            }
+            | error {
+                return 1;
+            }
+            ;
+block:      '{' blank stmts '}' blank
+            | '{' blank '}' blank
+            | stmt
+            ;
+stmts:      stmt
+            | stmts stmt
+            ;
+stmt:       simpstmt '\n' blank
+            | IF '(' cond ')' blank block %prec IF_NO_ELSE {
+                SET_BR_OFF($3, GetPC());
+            }
+            | IF '(' cond ')' blank block else blank block %prec ELSE {
+                SET_BR_OFF($3, ($7+1)); SET_BR_OFF($7, GetPC());
+            }
+            | while '(' cond ')' blank block {
+                ADD_OP(OP_BRANCH); ADD_BR_OFF($1);
+                SET_BR_OFF($3, GetPC()); FillLoopAddrs(GetPC(), $1);
+            }
+            | for '(' comastmts ';' cond ';' comastmts ')' blank block {
+                FillLoopAddrs(GetPC()+2+($7-($5+1)), GetPC());
+                SwapCode($5+1, $7, GetPC());
+                ADD_OP(OP_BRANCH); ADD_BR_OFF($3); SET_BR_OFF($5, GetPC());
+            }
+            | for '(' SYMBOL IN SYMBOL ')' {
+                Symbol *iterSym = InstallIteratorSymbol();
+                ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM($5); ADD_SYM(iterSym);
+                ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym);
+                ADD_BR_OFF(0);
+            }
+            blank block {
+                FillLoopAddrs(GetPC()+2, GetPC());
+                ADD_OP(OP_BRANCH); ADD_BR_OFF($1+3);
+                SET_BR_OFF($1+6, GetPC());
+            }
+            | BREAK '\n' blank {
+                ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
+                if (AddBreakAddr(GetPC()-1)) {
+                    yyerror("break outside loop"); YYERROR;
+                }
+            }
+            | CONTINUE '\n' blank {
+                ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
+                if (AddContinueAddr(GetPC()-1)) {
+                    yyerror("continue outside loop"); YYERROR;
+                }
+            }
+            | RETURN expr '\n' blank {
+                ADD_OP(OP_RETURN);
+            }
+            | RETURN '\n' blank {
+                ADD_OP(OP_RETURN_NO_VAL);
+            }
+            ; 
+simpstmt:   SYMBOL '=' expr {
+                ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym ADDEQ expr {
+                ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym SUBEQ expr {
+                ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym MULEQ expr {
+                ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym DIVEQ expr {
+                ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym MODEQ expr {
+                ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym ANDEQ expr {
+                ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | evalsym OREQ expr {
+                ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | DELETE arraylv '[' arglist ']' {
+                ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((void *)$4);
+            }
+            | initarraylv '[' arglist ']' '=' expr {
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' ADDEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ADD);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' SUBEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_SUB);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' MULEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_MUL);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' DIVEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_DIV);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' MODEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_MOD);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' ANDEQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_BIT_AND);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' OREQ expr {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_BIT_OR);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' INCR {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$3);
+                ADD_OP(OP_INCR);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | initarraylv '[' arglist ']' DECR {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$3);
+                ADD_OP(OP_DECR);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+            }
+            | INCR initarraylv '[' arglist ']' {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$4);
+                ADD_OP(OP_INCR);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$4);
+            }
+            | DECR initarraylv '[' arglist ']' {
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$4);
+                ADD_OP(OP_DECR);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$4);
+            }
+            | SYMBOL '(' arglist ')' {
+                ADD_OP(OP_SUBR_CALL);
+                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
+            }
+            | INCR SYMBOL {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($2);
+            }
+            | SYMBOL INCR {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_INCR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | DECR SYMBOL {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($2);
+            }
+            | SYMBOL DECR {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DECR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            ;
+evalsym:    SYMBOL {
+                $$ = $1; ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
+            }
+            ;
+comastmts:  /* nothing */ {
+                $$ = GetPC();
+            }
+            | simpstmt {
+                $$ = GetPC();
+            }
+            | comastmts ',' simpstmt {
+                $$ = GetPC();
+            }
+            ;
+arglist:    /* nothing */ {
+                $$ = 0;
+            }
+            | expr {
+                $$ = 1;
+            }
+            | arglist ',' expr {
+                $$ = $1 + 1;
+            }
+            ;
+expr:       numexpr %prec CONCAT
+            | expr numexpr %prec CONCAT {
+                ADD_OP(OP_CONCAT);
+            }
+            ;
+initarraylv:    SYMBOL {
+                    ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED((void *)1);
+                }
+                | initarraylv '[' arglist ']' {
+                    ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+                }
+                ;
+arraylv:    SYMBOL {
+                ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED((void *)0);
+            }
+            | arraylv '[' arglist ']' {
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+            }
+            ;
+numexpr:    NUMBER {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
+            }
+            | STRING {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
+            }
+            | SYMBOL {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
+            }
+            | SYMBOL '(' arglist ')' {
+                ADD_OP(OP_SUBR_CALL);
+                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
+                ADD_OP(OP_FETCH_RET_VAL);
+            }
+            | '(' expr ')'
+            | numexpr '[' arglist ']' {
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+            }
+            | numexpr '+' numexpr {
+                ADD_OP(OP_ADD);
+            }
+            | numexpr '-' numexpr {
+                ADD_OP(OP_SUB);
+            }
+            | numexpr '*' numexpr {
+                ADD_OP(OP_MUL);
+            }
+            | numexpr '/' numexpr {
+                ADD_OP(OP_DIV);
+            }
+            | numexpr '%' numexpr {
+                ADD_OP(OP_MOD);
+            }
+            | numexpr POW numexpr {
+                ADD_OP(OP_POWER);
+            }
+            | '-' numexpr %prec UNARY_MINUS  {
+                ADD_OP(OP_NEGATE);
+            }
+            | numexpr GT numexpr  {
+                ADD_OP(OP_GT);
+            }
+            | numexpr GE numexpr  {
+                ADD_OP(OP_GE);
+            }
+            | numexpr LT numexpr  {
+                ADD_OP(OP_LT);
+            }
+            | numexpr LE numexpr  {
+                ADD_OP(OP_LE);
+            }
+            | numexpr EQ numexpr  {
+                ADD_OP(OP_EQ);
+            }
+            | numexpr NE numexpr  {
+                ADD_OP(OP_NE);
+            }
+            | numexpr '&' numexpr {
+                ADD_OP(OP_BIT_AND);
+            }
+            | numexpr '|' numexpr  {
+                ADD_OP(OP_BIT_OR); 
+            }
+            | numexpr and numexpr %prec AND {
+                ADD_OP(OP_AND); SET_BR_OFF($2, GetPC());
+            }
+            | numexpr or numexpr %prec OR {
+                ADD_OP(OP_OR); SET_BR_OFF($2, GetPC());
+            }
+            | NOT numexpr {
+                ADD_OP(OP_NOT);
+            }
+            | INCR SYMBOL {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
+                ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2);
+            }
+            | SYMBOL INCR {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DUP);
+                ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | DECR SYMBOL {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
+                ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2);
+            }
+            | SYMBOL DECR {
+                ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DUP);
+                ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM($1);
+            }
+            | numexpr IN numexpr {
+                ADD_OP(OP_IN_ARRAY);
+            }
+            ;
+while:  WHILE {
+            $$ = GetPC(); StartLoopAddrList();
+        }
         ;
-block:   '{' blank stmts '}' blank
-        | '{' blank '}' blank
-        | stmt
-    	;
-stmts:    stmt
-        | stmts stmt
+for:    FOR {
+            StartLoopAddrList(); $$ = GetPC();
+        }
         ;
-stmt:     simpstmt '\n' blank
-        | IF '(' cond ')' blank block %prec IF_NO_ELSE
-                { SET_BR_OFF($3, GetPC()); }
-        | IF '(' cond ')' blank block else blank block %prec ELSE
-                { SET_BR_OFF($3, ($7+1)); SET_BR_OFF($7, GetPC()); }
-        | while '(' cond ')' blank block { ADD_OP(OP_BRANCH); ADD_BR_OFF($1);
-                SET_BR_OFF($3, GetPC()); FillLoopAddrs(GetPC(), $1); }
-        | for '(' comastmts ';' cond ';' comastmts ')' blank block
-    	        { FillLoopAddrs(GetPC()+2+($7-($5+1)), GetPC());
-    	          SwapCode($5+1, $7, GetPC());
-    	          ADD_OP(OP_BRANCH); ADD_BR_OFF($3); SET_BR_OFF($5, GetPC()); }
-        | for '(' SYMBOL IN SYMBOL ')'
-                { Symbol *iterSym = InstallIteratorSymbol();
-                  ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM($5); ADD_SYM(iterSym);
-                  ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym);
-                  ADD_BR_OFF(0); }
-            blank block
-                { FillLoopAddrs(GetPC()+2, GetPC());
-                  ADD_OP(OP_BRANCH); ADD_BR_OFF($1+3);
-                  SET_BR_OFF($1+6, GetPC());}
-        | BREAK '\n' blank
-    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddBreakAddr(GetPC()-1)) { yyerror("break outside loop"); YYERROR; } }
-        | CONTINUE '\n' blank
-    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddContinueAddr(GetPC()-1)) { yyerror("continue outside loop"); YYERROR; } }
-        | RETURN expr '\n' blank { ADD_OP(OP_RETURN); }
-        | RETURN '\n' blank { ADD_OP(OP_RETURN_NO_VAL); }
-        ; 
-simpstmt: SYMBOL '=' expr { ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym ADDEQ expr { ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym SUBEQ expr { ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym MULEQ expr { ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym DIVEQ expr { ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym MODEQ expr { ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	| evalsym ANDEQ expr { ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN);
-    	    	ADD_SYM($1); }
-    	| evalsym OREQ expr { ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN);
-    	    	ADD_SYM($1); }
-        | DELETE SYMBOL '[' arglist ']'
-                { ADD_OP(OP_ARRAY_DELETE); ADD_SYM($2); ADD_IMMED((void *)$4); }
-        | SYMBOL '[' arglist ']' '=' expr
-                { ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1); ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']' { ADD_OP(OP_PUSH_SYM);
-                ADD_SYM($1); ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
-            ADDEQ expr
-                { ADD_OP(OP_ADD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
-                  ADD_IMMED((void *)$3);}
-        | SYMBOL '[' arglist ']' { ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
-                  ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
-            SUBEQ expr
-                { ADD_OP(OP_SUB); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
-                  ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']'
-                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
-                  ADD_IMMED((void *)$3); }
-            MULEQ expr
-                { ADD_OP(OP_MUL); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
-                  ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']'
-                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
-                  ADD_IMMED((void *)$3); }
-            DIVEQ expr
-                { ADD_OP(OP_DIV); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
-                  ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']'
-                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
-                  ADD_IMMED((void *)$3); }
-            MODEQ expr
-                { ADD_OP(OP_MOD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
-                  ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']'
-                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
-                  ADD_IMMED((void *)$3); }
-            ANDEQ expr
-                { ADD_OP(OP_BIT_AND); ADD_OP(OP_ARRAY_ASSIGN);
-                ADD_SYM($1); ADD_IMMED((void *)$3); }
-        | SYMBOL '[' arglist ']'
-                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
-                  ADD_IMMED((void *)$3); }
-            OREQ expr
-                { ADD_OP(OP_BIT_OR); ADD_OP(OP_ARRAY_ASSIGN);
-                  ADD_SYM($1); ADD_IMMED((void *)$3); }
-        | SYMBOL '(' arglist ')' { ADD_OP(OP_SUBR_CALL);
-                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3); }
-        | INCR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
-                ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-        | SYMBOL INCR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_INCR);
-                ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-        | DECR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
-                ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-        | SYMBOL DECR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DECR);
-                ADD_OP(OP_ASSIGN); ADD_SYM($1); }
+else:   ELSE {
+            ADD_OP(OP_BRANCH); $$ = GetPC(); ADD_BR_OFF(0);
+        }
         ;
-evalsym: SYMBOL { $$ = $1; ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
+cond:   /* nothing */ {
+            ADD_OP(OP_BRANCH_NEVER); $$ = GetPC(); ADD_BR_OFF(0);
+        }
+        | numexpr {
+            ADD_OP(OP_BRANCH_FALSE); $$ = GetPC(); ADD_BR_OFF(0);
+        }
         ;
-comastmts: /* nothing */ { $$ = GetPC(); }
-        | simpstmt { $$ = GetPC(); }
-        | comastmts ',' simpstmt { $$ = GetPC(); }
+and:    AND {
+            ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); $$ = GetPC();
+            ADD_BR_OFF(0);
+        }
         ;
-arglist:  /* nothing */ { $$ = 0;}
-        | expr { $$ = 1; }
-        | arglist ',' expr { $$ = $1 + 1; }
+or:     OR {
+            ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); $$ = GetPC();
+            ADD_BR_OFF(0);
+        }
         ;
-expr:     numexpr %prec CONCAT
-        | expr numexpr %prec CONCAT { ADD_OP(OP_CONCAT); }
+blank:  /* nothing */
+        | blank '\n'
         ;
-numexpr:  NUMBER { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
-    	| STRING { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
-	| SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
-	| SYMBOL '(' arglist ')' { ADD_OP(OP_SUBR_CALL);
-	    	ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
-		ADD_OP(OP_FETCH_RET_VAL);}
-	| '(' expr ')'
-    | numexpr '[' arglist ']'
-            { ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
-	| numexpr '+' numexpr { ADD_OP(OP_ADD); }
-	| numexpr '-' numexpr { ADD_OP(OP_SUB); }
-	| numexpr '*' numexpr { ADD_OP(OP_MUL); }
-	| numexpr '/' numexpr { ADD_OP(OP_DIV); }
-	| numexpr '%' numexpr { ADD_OP(OP_MOD); }
-	| numexpr POW numexpr { ADD_OP(OP_POWER); }
-	| '-' numexpr %prec UNARY_MINUS  { ADD_OP(OP_NEGATE); }
-	| numexpr GT numexpr  { ADD_OP(OP_GT); }
-	| numexpr GE numexpr  { ADD_OP(OP_GE); }
-	| numexpr LT numexpr  { ADD_OP(OP_LT); }
-	| numexpr LE numexpr  { ADD_OP(OP_LE); }
-	| numexpr EQ numexpr  { ADD_OP(OP_EQ); }
-	| numexpr NE numexpr  { ADD_OP(OP_NE); }
-	| numexpr '&' numexpr { ADD_OP(OP_BIT_AND); }
-	| numexpr '|' numexpr  { ADD_OP(OP_BIT_OR); } 
-	| numexpr and numexpr %prec AND
-	    	{ ADD_OP(OP_AND); SET_BR_OFF($2, GetPC()); }
-	| numexpr or numexpr %prec OR
-	    	{ ADD_OP(OP_OR); SET_BR_OFF($2, GetPC()); } 
-	| NOT numexpr         { ADD_OP(OP_NOT); }
-	| INCR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
-    	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-	| SYMBOL INCR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DUP);
-	    	ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-	| DECR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
-	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-	| SYMBOL DECR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DUP);
-	    	ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    | numexpr IN numexpr { ADD_OP(OP_IN_ARRAY); }
-    ;
-while:	 WHILE { $$ = GetPC(); StartLoopAddrList(); }
-    	;
-for: 	 FOR { StartLoopAddrList(); $$ = GetPC(); }
-    	;
-else:	 ELSE { ADD_OP(OP_BRANCH); $$ = GetPC(); ADD_BR_OFF(0); }
-    	;
-cond:	  /* nothing */ { ADD_OP(OP_BRANCH_NEVER); $$ = GetPC(); ADD_BR_OFF(0); }
-	| numexpr { ADD_OP(OP_BRANCH_FALSE); $$ = GetPC(); ADD_BR_OFF(0); }
-    	;
-and:	AND { ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); $$ = GetPC();
-    	    	ADD_BR_OFF(0); }
-    	;
-or:	OR { ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); $$ = GetPC();
-    	    	ADD_BR_OFF(0); }
-    	;
-blank:	  /* nothing */
-	| blank '\n'
-	;
-	
+
 %% /* User Subroutines Section */
 
 

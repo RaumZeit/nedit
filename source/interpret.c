@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.28 2002/08/23 00:52:22 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.29 2002/08/31 00:52:16 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -83,6 +83,7 @@ static int returnNoVal(void);
 static int returnVal(void);
 static int returnValOrNone(int valOnStack);
 static int pushSymVal(void);
+static int pushArraySymVal(void);
 static int dupStack(void);
 static int add(void);
 static int subtract(void);
@@ -114,6 +115,7 @@ static int branchFalse(void);
 static int branchNever(void);
 static int arrayRef(void);
 static int arrayAssign(void);
+static int arrayRefAndAssignSetup(void);
 static int beginArrayIter(void);
 static int arrayIter(void);
 static int inArray(void);
@@ -128,7 +130,7 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
 static SparseArrayEntry *allocateSparseArrayEntry(void);
-/* #define DEBUG_ASSEMBLY */
+/*#define DEBUG_ASSEMBLY*/
 #ifdef DEBUG_ASSEMBLY
 static void disasm(Program *prog, int nInstr);
 #endif
@@ -177,11 +179,12 @@ static int PreemptRequest;  	    /* passes preemption requests from called
 /* Array for mapping operations to functions for performing the operations
    Must correspond to the enum called "operations" in interpret.h */
 static int (*OpFns[N_OPS])() = {returnNoVal, returnVal, pushSymVal, dupStack,
-	add, subtract, multiply, divide, modulo, negate, increment, decrement,
-	gt, lt, ge, le, eq, ne, bitAnd, bitOr, and, or, not, power, concat,
-	assign, callSubroutine, fetchRetVal, branch, branchTrue, branchFalse,
-	branchNever, arrayRef, arrayAssign, beginArrayIter, arrayIter, inArray,
-    deleteArrayElement};
+    add, subtract, multiply, divide, modulo, negate, increment, decrement,
+    gt, lt, ge, le, eq, ne, bitAnd, bitOr, and, or, not, power, concat,
+    assign, callSubroutine, fetchRetVal, branch, branchTrue, branchFalse,
+    branchNever, arrayRef, arrayAssign, beginArrayIter, arrayIter, inArray,
+    deleteArrayElement, pushArraySymVal,
+    arrayRefAndAssignSetup};
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -999,6 +1002,43 @@ static int pushSymVal(void)
     return STAT_OK;
 }
 
+static int pushArraySymVal(void)
+{
+    Symbol *sym;
+    DataValue *dataPtr;
+    int initEmpty;
+    
+    sym = (Symbol *)*PC;
+    PC++;
+    initEmpty = (int)*PC;
+    PC++;
+    
+    if (sym->type == LOCAL_SYM) {
+    	dataPtr = FrameP + sym->value.val.n;
+    } else if (sym->type == GLOBAL_SYM) {
+    	dataPtr = &sym->value;
+    } else {
+    	return execError("assigning to non-lvalue array or non-array: %s", sym->name);
+    }
+
+    if (initEmpty && dataPtr->tag == NO_TAG) {
+        dataPtr->tag = ARRAY_TAG;
+        dataPtr->val.arrayPtr = ArrayNew();
+    }
+
+    if (dataPtr->tag == NO_TAG) {
+        return execError("variable not set: %s", sym->name);
+    }
+
+    *StackP = *dataPtr;
+    StackP++;
+
+    if (StackP >= &Stack[STACK_SIZE]) {
+    	return execError(StackOverflowMsg, "");
+    }
+    return(STAT_OK);
+}
+
 static int assign(void)      /* assign top value to next symbol */
 {
     Symbol *sym;
@@ -1759,7 +1799,7 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray)
 ** I really need to optimize the size approximation rather than assuming
 ** a worst case size for every integer argument
 */
-static int makeArrayKeyFromArgs(int nArgs, char **keyString)
+static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams)
 {
     DataValue tmpVal;
     int maxIntDigits = (sizeof(tmpVal.val.n) * 3) + 1;
@@ -1797,8 +1837,10 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString)
             return(execError("can only index array with string or int.", NULL));
         }
     }
-    for (i = nArgs - 1; i >= 0; --i) {
-        POP(tmpVal)
+    if (!leaveParams) {
+        for (i = nArgs - 1; i >= 0; --i) {
+            POP(tmpVal)
+        }
     }
     return(STAT_OK);
 }
@@ -2007,7 +2049,7 @@ static int arrayRef(void)
     PC++;
 
     if (nDim > 0) {
-        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
         if (errNum != STAT_OK) {
             return(errNum);
         }
@@ -2015,7 +2057,7 @@ static int arrayRef(void)
         POP(srcArray)
         if (srcArray.tag == ARRAY_TAG) {
             if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-                return(execError("referenced array value not in array", NULL));
+                return(execError("referenced array value not in array: %s", keyString));
             }
             PUSH(valueItem)
             return(STAT_OK);
@@ -2037,47 +2079,41 @@ static int arrayRef(void)
 }
 
 /*
-** assign to an array element, make the symbol an array if it isn't already
+** assign to an array element of a referenced array on the stack
 */
 static int arrayAssign(void)
 {
-    Symbol *sym;
     char *keyString = NULL;
-    DataValue *dstPtr, srcValue;
+    DataValue srcValue, dstArray;
     int errNum;
     int nDim;
     
-    sym = (Symbol *)*PC;
-    PC++;
     nDim = (int)*PC;
     PC++;
 
-    if (sym->type == LOCAL_SYM) {
-            dstPtr = (FrameP + sym->value.val.n);
-    }
-    else if (sym->type == GLOBAL_SYM) {
-        dstPtr = &(sym->value);
-    }
-    else if (sym->type == ARG_SYM) {
-        return(execError("assignment to function argument: %s",  sym->name));
-    }
-    else {
-        return(execError("assignment to non-variable: %s", sym->name));
-    }
-    
     if (nDim > 0) {
         POP(srcValue)
 
-        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
         if (errNum != STAT_OK) {
             return(errNum);
         }
+        
+        POP(dstArray)
 
-        if (dstPtr->tag != ARRAY_TAG) {
-            dstPtr->tag = ARRAY_TAG;
-            dstPtr->val.arrayPtr = ArrayNew();
+        if (dstArray.tag != ARRAY_TAG && dstArray.tag != NO_TAG) {
+            return(execError("cannot assign array element of non-array", NULL));
         }
-        if (ArrayInsert(dstPtr, keyString, &srcValue)) {
+        if (srcValue.tag == ARRAY_TAG) {
+            DataValue arrayCopyValue;
+            
+            errNum = ArrayCopy(&arrayCopyValue, &srcValue);
+            srcValue = arrayCopyValue;
+            if (errNum != STAT_OK) {
+                return(errNum);
+            }
+        }
+        if (ArrayInsert(&dstArray, keyString, &srcValue)) {
             return(STAT_OK);
         }
         else {
@@ -2085,6 +2121,48 @@ static int arrayAssign(void)
         }
     }
     return(execError("empty operator []", NULL));
+}
+
+static int arrayRefAndAssignSetup(void)
+{
+    int errNum;
+    DataValue srcArray, valueItem, moveExpr;
+    char *keyString = NULL;
+    int binaryOp, nDim;
+    
+    binaryOp = (int)*PC;
+    PC++;
+    nDim = (int)*PC;
+    PC++;
+
+    if (binaryOp) {
+        POP(moveExpr)
+    }
+    
+    if (nDim > 0) {
+        errNum = makeArrayKeyFromArgs(nDim, &keyString, 1);
+        if (errNum != STAT_OK) {
+            return(errNum);
+        }
+
+        PEEK(srcArray, nDim)
+        if (srcArray.tag == ARRAY_TAG) {
+            if (!ArrayGet(&srcArray, keyString, &valueItem)) {
+                return(execError("referenced array value not in array: %s", keyString));
+            }
+            PUSH(valueItem)
+            if (binaryOp) {
+                PUSH(moveExpr)
+            }
+            return(STAT_OK);
+        }
+        else {
+            return(execError("operator [] on non-array", NULL));
+        }
+    }
+    else {
+        return(execError("array[] not an lvalue", NULL));
+    }
 }
 
 /*
@@ -2249,46 +2327,35 @@ static int inArray(void)
 */
 static int deleteArrayElement(void)
 {
-    Symbol *sym;
+    DataValue theArray;
     char *keyString = NULL;
-    DataValue *dstPtr;
-    int errNum;
     int nDim;
-    
-    sym = (Symbol *)*PC;
-    PC++;
+
     nDim = (int)*PC;
     PC++;
 
-    if (sym->type == LOCAL_SYM) {
-            dstPtr = (FrameP + sym->value.val.n);
-    }
-    else if (sym->type == GLOBAL_SYM) {
-        dstPtr = &(sym->value);
-    }
-    else if (sym->type == ARG_SYM) {
-        return(execError("can't delete from function argument: %s",  sym->name));
-    }
-    else {
-        return(execError("can't delete non-array element: %s", sym->name));
-    }
-    
-    if (dstPtr->tag != ARRAY_TAG) {
-        return(execError("attempt to delete from non-array: %s", sym->name));
-    }
     if (nDim > 0) {
-        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        int errNum;
+
+        errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
         if (errNum != STAT_OK) {
             return(errNum);
         }
+    }
 
-        ArrayDelete(dstPtr, keyString);
-        return(STAT_OK);
+    POP(theArray)
+    if (theArray.tag == ARRAY_TAG) {
+        if (nDim > 0) {
+            ArrayDelete(&theArray, keyString);
+        }
+        else {
+            ArrayDeleteAll(&theArray);
+        }
     }
     else {
-        ArrayDeleteAll(dstPtr);
-        return(STAT_OK);
+        return(execError("attempt to delete from non-array", NULL));
     }
+    return(STAT_OK);
 }
 
 /*
@@ -2343,11 +2410,12 @@ static void disasm(Program *prog, int nInstr)
 	"ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
 	"assign", "callSubroutine", "fetchRetVal", "branch", "branchTrue",
 	"branchFalse", "branchNever", "arrayRef", "arrayAssign",
-	"beginArrayIter", "arrayIter", "inArray", "deleteArrayElement"};
+	"beginArrayIter", "arrayIter", "inArray", "deleteArrayElement",
+        "pushArraySymVal", "arrayRefAndAssignSetup"};
     int i, j;
     
     for (i=0; i<nInstr; i++) {
-    	printf("%x ", &prog->code[i]);
+    	printf("%x ", (int)&prog->code[i]);
     	for (j=0; j<N_OPS; j++) {
     	    if (prog->code[i] == OpFns[j]) {
     	    	printf("%s", opNames[j]);
@@ -2355,34 +2423,52 @@ static void disasm(Program *prog, int nInstr)
     	    	    printf(" %s", ((Symbol *)prog->code[i+1])->name);
     	    	    i++;
     	    	} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
-    	    	    	j == OP_BRANCH_NEVER) {
+    	    	    	j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
     	    	    printf(" (%d) %x", (int)prog->code[i+1],
-    	    	    	    &prog->code[i+1] + (int)prog->code[i+1]);
+    	    	    	    (int)(&prog->code[i+1] + (int)prog->code[i+1]));
     	    	    i++;
-    	    	} else if (j == OP_SUBR_CALL || j == OP_ARRAY_ASSIGN) {
+    	    	} else if (j == OP_SUBR_CALL) {
     	    	    printf(" %s (%d arg)", ((Symbol *)prog->code[i+1])->name,
-    	    	    	    prog->code[i+2]);
+    	    	    	    (int)prog->code[i+2]);
     	    	    i += 2;
     	    	} else if (j == OP_BEGIN_ARRAY_ITER) {
-					printf(" %s in %s",
-						((Symbol *)prog->code[i+1])->name,
-						((Symbol *)prog->code[i+2])->name);
-					i += 2;
+		    printf(" %s in %s",
+			    ((Symbol *)prog->code[i+1])->name,
+			    ((Symbol *)prog->code[i+2])->name);
+		    i += 2;
     	    	} else if (j == OP_ARRAY_ITER) {
-					printf(" %s in %s (%d) %x",
-						((Symbol *)prog->code[i+1])->name,
-						((Symbol *)prog->code[i+2])->name,
-						(int)prog->code[i+3],
-						&prog->code[i+3] + (int)prog->code[i+3]);
-					i += 3;
-				}
+		    printf(" %s in %s (%d) %x",
+			    ((Symbol *)prog->code[i+1])->name,
+			    ((Symbol *)prog->code[i+2])->name,
+			    (int)prog->code[i+3],
+			    (int)(&prog->code[i+3] + (int)prog->code[i+3]));
+		    i += 3;
+		} else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
+                            j == OP_ARRAY_ASSIGN) {
+		    printf(" %d",
+			    ((int)prog->code[i+1]));
+		    i += 1;
+		} else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
+		    printf(" %d",
+			    ((int)prog->code[i+1]));
+		    i += 1;
+		    printf(" %d",
+			    ((int)prog->code[i+1]));
+		    i += 1;
+		} else if (j == OP_PUSH_ARRAY_SYM) {
+    	    	    printf(" %s", ((Symbol *)prog->code[i+1])->name);
+		    i += 1;
+		    printf(" %d",
+			    ((int)prog->code[i+1]));
+		    i += 1;
+                }
 
     	    	printf("\n");
     	    	break;
     	    }
     	}
     	if (j == N_OPS)
-    	    printf("%x\n", prog->code[i]);
+    	    printf("%x\n", (int)prog->code[i]);
     }
 }
 #endif /* ifdef DEBUG_ASSEMBLY */
