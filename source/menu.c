@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.121 2004/10/18 15:54:11 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.122 2004/11/09 19:37:02 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2772,11 +2772,12 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr, "nedit: open action requires file argument\n");
     	return;
     }
-    if (ParseFilename(args[0], filename, pathname) != 0) {
+    if (0 != ParseFilename(args[0], filename, pathname)
+            || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
         fprintf(stderr, "nedit: invalid file name for open action: %s\n",
-	        args[0]);
-    	return;
-    } 
+                args[0]);
+        return;
+    }
     EditExistingFile(window, filename, pathname, 0, NULL, False, 
             NULL, GetPrefOpenInTab(), False);
     CheckCloseDim();

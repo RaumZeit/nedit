@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.92 2004/11/07 20:03:56 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.93 2004/11/09 19:37:02 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1823,18 +1823,22 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
        it into a pointer to a real WindowInfo */
     if (nArgs != 1)
     	return wrongNArgsErr(errMsg);
-    if (!readStringArg(argList[0], &string, stringStorage, errMsg))
-    	return False;
-    else if (!strcmp(string, "last"))
-	w = WindowList;
-    else if (!strcmp(string, "next"))
-	w = window->next;
-    else {
+
+    if (!readStringArg(argList[0], &string, stringStorage, errMsg)) {
+        return False;
+    } else if (!strcmp(string, "last")) {
+        w = WindowList;
+    } else if (!strcmp(string, "next")) {
+        w = window->next;
+    } else if (strlen(string) > MAXPATHLEN) {
+        *errMsg = "Pathname too long in focus_window()";
+        return False;
+    } else {
         strncpy(normalizedString, string, MAXPATHLEN);
         normalizedString[MAXPATHLEN-1] = '\0';
         if (1 == NormalizePathname(normalizedString)) {
             /*  Something is broken with the input pathname. */
-            *errMsg = "Pathname too long in focus_window()";
+            *errMsg = "Error normalizing path in focus_window()";
             return False;
         }
 	for (w=WindowList; w != NULL; w = w->next) {
