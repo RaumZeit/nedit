@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.33 2002/07/27 08:55:05 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.34 2002/08/10 23:54:33 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -249,29 +249,29 @@ static char *DefaultPatternSets[] = {
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
 	cplus comment:\"//\":\"$\"::Comment::\n\
 	string:\"L?\"\"\":\"\"\"\":\"\\n\":String::\n\
-	preprocessor line:\"^\\s*#\\s*(include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
-	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
-	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
+	preprocessor line:\"^\\s*#\\s*(?:include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
+	string escape chars:\"\\\\(?:.|\\n)\":::String1:string:\n\
+	preprocessor esc chars:\"\\\\(?:.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
 	preproc cplus comment:\"//\":\"$\"::Comment:preprocessor line:\n\
-	preprocessor keywords:\"<__(LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
+	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
-	storage keyword:\"<(class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>\":::Storage Type::D\n\
-	keyword:\"<(new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>\":::Keyword::D\n\
+	numeric constant:\"<(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	storage keyword:\"<(?:class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>\":::Storage Type::D\n\
+	keyword:\"<(?:new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>\":::Keyword::D\n\
 	braces:\"[{}]\":::Keyword::D}",
     "C:1:0 {\n\
     	comment:\"/\\*\":\"\\*/\"::Comment::\n\
 	string:\"L?\"\"\":\"\"\"\":\"\\n\":String::\n\
-	preprocessor line:\"^\\s*#\\s*(include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
-    	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
-    	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
+	preprocessor line:\"^\\s*#\\s*(?:include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
+    	string escape chars:\"\\\\(?:.|\\n)\":::String1:string:\n\
+    	preprocessor esc chars:\"\\\\(?:.|\\n)\":::Preprocessor1:preprocessor line:\n\
     	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
-	preprocessor keywords:\"<__(LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
+	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
-    	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
-    	keyword:\"<(return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
+	numeric constant:\"<(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+    	storage keyword:\"<(?:const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
+    	keyword:\"<(?:return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
     	braces:\"[{}]\":::Keyword::D}",
     "CSS:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
