@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.47 2002/12/11 18:24:49 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.48 2003/01/10 15:29:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -616,6 +616,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     unsigned int mask;
     unsigned int width, height, borderWidth, depth;
     int x, y, winX, winY, maxX, maxY, maxWidth, maxHeight;
+    Dimension xtWidth, xtHeight;
     Boolean mappedWhenManaged;
     static const int slop = 25;
     
@@ -640,7 +641,17 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     
     /* Manage the dialog */
     XtManageChild(dialogChild);
-    
+
+    /* Check to see if the window manager doesn't respect XmNmaxWidth
+       and XmNmaxHeight on the first geometry pass (sawfish, twm, fvwm).
+       For this to work XmNresizePolicy must be XmRESIZE_NONE, otherwise
+       the dialog will try to expand anyway. */
+    XtVaGetValues(shell, XmNwidth, &xtWidth, XmNheight, &xtHeight, NULL);
+    if (xtWidth > maxWidth)
+        XtVaSetValues(shell, XmNwidth, (Dimension) maxWidth, NULL);
+    if (xtHeight > maxHeight)
+        XtVaSetValues(shell, XmNheight, (Dimension) maxHeight, NULL);
+        
     /* Only set the x/y position if the centering option is enabled.
        Avoid getting the coordinates if not so, to save a few round-trips
        to the server. */
@@ -662,10 +673,10 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
 	/* Ensure that the dialog remains on screen */
 	maxX = maxWidth - width;
 	maxY = maxHeight - height;
-	if (x < 0) x = 0;
 	if (x > maxX) x = maxX;
-	if (y < 0) y = 0;
+	if (x < 0) x = 0;
 	if (y > maxY) y = maxY;
+	if (y < 0) y = 0;
 
         /* Some window managers (Sawfish) don't appear to respond
            to the geometry set call in synchronous mode.  This causes
@@ -680,7 +691,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     
     /* Map the widget */
     XtMapWidget(shell);
-    
+
     /* Restore the value of XmNmappedWhenManaged */
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
