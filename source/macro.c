@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.95 2005/02/02 09:07:36 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.96 2005/02/10 03:35:12 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4622,7 +4622,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
 
         /* make sure range is in order and fits buffer size */
-        maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+        maxpos = buffer->length;
         if (start < 0) start = 0;
         if (start > maxpos) start = maxpos;
         if (end < 0) end = 0;
@@ -4715,7 +4715,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
             return False;
 
         /* make sure range is in order and fits buffer size */
-        maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+        maxpos = buffer->length;
         if (start < 0) start = 0;
         if (start > maxpos) start = maxpos;
         if (end < 0) end = 0;
@@ -4947,7 +4947,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
             return False;
     }
 
-    maxpos = buffer->gapEnd - buffer->gapStart + buffer->length;
+    maxpos = buffer->length;
     if (pos < 0 || pos > maxpos) {
         rangeIndex = 0;
     }
