@@ -2621,7 +2621,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	/*int lastTopLine; = textD->nBufferLines - (textD->nVisibleLines - 2);*/
 	int lastTopLine = max(1, textD->nBufferLines - (textD->nVisibleLines - 2));
 	int insertPos = TextDGetInsertPosition(textD);
-	int column, visLineNum, lineStartPos;
+	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
 	int pageForwardCount = max(1, textD->nVisibleLines - 1);
 	int maintainColumn = 0;
@@ -2724,7 +2724,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args,
 {
 	textDisp *textD = ((TextWidget)w)->text.textD;
 	int insertPos = TextDGetInsertPosition(textD);
-	int column, visLineNum, lineStartPos;
+	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
 	int pageBackwardCount = max(1, textD->nVisibleLines - 1);
 	int maintainColumn = 0;
