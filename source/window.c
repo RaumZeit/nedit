@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.177 2004/10/07 22:34:12 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.178 2004/10/08 11:24:38 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3913,6 +3913,16 @@ void RaiseDocument(WindowInfo *window)
 
     /* restore the bg menu tearoffs of active document */
     redisplayTearOffs(window->bgMenuPane);
+
+    /* Make sure that the "In Selection" button tracks the presence of a
+       selection and that the window inherits the proper search scope. */
+    if (window->replaceDlog != NULL && XtIsManaged(window->replaceDlog))
+    {
+#ifdef REPLACE_SCOPE
+        window->replaceScope = win->replaceScope;
+#endif
+        UpdateReplaceActionButtons(window);
+    }
 
     UpdateWMSizeHints(window);
 }
