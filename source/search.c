@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.21 2001/04/03 22:59:38 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.22 2001/04/04 19:38:33 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -242,42 +242,60 @@ static void initToggleButtons(int searchType, Widget regexToggle,
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
 	      XmToggleButtonSetState(caseToggle,  False, False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  False, False);
+	      if (wordToggle) {
+		  XmToggleButtonSetState(*wordToggle, False, False);
+                  XtSetSensitive(*wordToggle, True);
+              }
       break;
       case SEARCH_CASE_SENSE:
               *lastLiteralCase = True;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
 	      XmToggleButtonSetState(caseToggle,  True,  False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  False, False);
+	      if (wordToggle) {
+                  XmToggleButtonSetState(*wordToggle, False, False);
+                  XtSetSensitive(*wordToggle, True);
+              }
       break;
       case SEARCH_LITERAL_WORD:
               *lastLiteralCase = False;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
-	      XmToggleButtonSetState(caseToggle,  False, False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  True,  False);
+	      XmToggleButtonSetState(caseToggle, False, False);
+	      if (wordToggle) {
+                  XmToggleButtonSetState(*wordToggle,  True,  False);
+                  XtSetSensitive(*wordToggle, True);
+              }
       break;
       case SEARCH_CASE_SENSE_WORD:
               *lastLiteralCase = True;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
 	      XmToggleButtonSetState(caseToggle,  True,  False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  True,  False);
+	      if (wordToggle) {
+                  XmToggleButtonSetState(*wordToggle,  True,  False);
+                  XtSetSensitive(*wordToggle, True);
+              }
       break;
       case SEARCH_REGEX:
               *lastLiteralCase = False;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, True,  False);
 	      XmToggleButtonSetState(caseToggle,  True,  False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  False, False);
+	      if (wordToggle) {
+                  XmToggleButtonSetState(*wordToggle,  False, False);
+                  XtSetSensitive(*wordToggle, False);
+              }
       break;
       case SEARCH_REGEX_NOCASE:
               *lastLiteralCase = False;
               *lastRegexCase   = False;
 	      XmToggleButtonSetState(regexToggle, True,  False);
 	      XmToggleButtonSetState(caseToggle,  False, False);
-	      if (wordToggle) XmToggleButtonSetState(*wordToggle,  False, False);
+	      if (wordToggle) {
+                  XmToggleButtonSetState(*wordToggle,  False, False);
+                  XtSetSensitive(*wordToggle, False);
+              }
       break;
     }
 }
