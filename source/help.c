@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.48 2001/08/17 23:02:55 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.49 2001/08/18 11:48:37 jlous Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -112,7 +112,7 @@ static const char *const HelpText[NUM_TOPICS] = {
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max \
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve \
-LoBasso, Alexander Mai, and Scott Tringali.\n\
+LoBasso, Alexander Mai, Scott Tringali, and Thorsten Haude.\n\
 \n\
 The regular expression matching routines used in NEdit are adapted (with \
 permission) from original code written by Henry Spencer at the \
@@ -124,7 +124,7 @@ Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr, \
 Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, \
 Max Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, \
 Michael Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, \
-Mike Duigou, Seak Teng-Fong, Joor Loohuis, Thorsten Haude, Mark Jones, \
+Mike Duigou, Seak Teng-Fong, Joor Loohuis, Mark Jones, \
 and Niek van den Berg.\n\
 \n\
 NEdit sources, executables, additional documentation, and contributed \

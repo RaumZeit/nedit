@@ -1,6 +1,6 @@
                     NEdit Version 5.2.0beta,  July 2001
 
-$Id: README,v 1.12 2001/08/17 23:02:55 edg Exp $
+$Id: README,v 1.13 2001/08/18 11:48:37 jlous Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -18,7 +18,7 @@ AUTHORS
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-LoBasso, Alexander Mai, and Scott Tringali.
+LoBasso, Alexander Mai, Scott Tringali, and Thorsten Haude.
 
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the University of
@@ -30,7 +30,7 @@ Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr,
 Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, Max
 Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, Michael
 Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike
-Duigou, Seak Teng-Fong, Joor Loohuis, Thorsten Haude, Mark Jones, and
+Duigou, Seak Teng-Fong, Joor Loohuis, Mark Jones, and
 Niek van den Berg.
 
 NEdit sources, executables, additional documentation, and contributed software
