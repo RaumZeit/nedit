@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.27 2002/03/14 17:16:07 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.28 2002/06/08 13:56:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -107,6 +107,7 @@ typedef struct _highlightDataRec {
     signed char endSubexprs[NSUBEXP+1];
     int flags;
     int nSubPatterns;
+    int userStyleIndex;
     struct _highlightDataRec **subPatterns;
 } highlightDataRec;
 
@@ -136,6 +137,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent,
     	highlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
+static void handleUnparsedRegion(WindowInfo* win, textBuffer *buf, int pos);
 static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData,
     	textBuffer *buf, int pos, int nInserted, const char *delimiters);
@@ -480,11 +482,34 @@ int TestHighlightPatterns(patternSet *patSet)
 **/
 void* GetHighlightInfo(WindowInfo *window, int pos)
 {
+    int style;
+    highlightDataRec *pattern = NULL;
     windowHighlightData *highlightData = 
 	(windowHighlightData *)window->highlightData; 
     if (!highlightData)
 	return NULL;
-    return (void*)(int)BufGetCharacter(highlightData->styleBuffer, pos);
+    
+    /* Be careful with signed/unsigned conversions. NO conversion here! */
+    style = (int)BufGetCharacter(highlightData->styleBuffer, pos);
+    
+    /* Beware of unparsed regions. */
+    if (style == UNFINISHED_STYLE) {
+	handleUnparsedRegion(window, highlightData->styleBuffer, pos);
+	style = (int)BufGetCharacter(highlightData->styleBuffer, pos);
+    }
+	    
+    if (highlightData->pass1Patterns) {
+       pattern = patternOfStyle(highlightData->pass1Patterns, style);
+    }
+    
+    if (!pattern && highlightData->pass2Patterns) {
+	pattern = patternOfStyle(highlightData->pass2Patterns, style);
+    }
+    
+    if (!pattern) {
+	return NULL;
+    }
+    return (void*)pattern->userStyleIndex;    
 }
     
 /*
@@ -688,9 +713,9 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
 	pass2Pats[0].style = PLAIN_STYLE;
     }
     for (i=1; i<nPass1Patterns; i++)
-    	pass1Pats[i].style = 'B' + i;
+       	pass1Pats[i].style = 'B' + i;
     for (i=1; i<nPass2Patterns; i++)
-    	pass2Pats[i].style = 'B' + (noPass1 ? 0 : nPass1Patterns-1) + i;
+       	pass2Pats[i].style = 'B' + (noPass1 ? 0 : nPass1Patterns-1) + i;
     
     /* Create table for finding parent styles */
     parentStylesPtr = parentStyles = XtMalloc(nPass1Patterns+nPass2Patterns+2);
@@ -808,6 +833,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
        just colors and fonts for sub-expressions of the parent pattern */
     for (i=0; i<nPatterns; i++) {
         compiledPats[i].colorOnly = patternSrc[i].flags & COLOR_ONLY;
+        compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
 	if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
 	    DialogF(DF_WARN, dialogParent, 1,
    		   "Color-only pattern \"%s\" may not have subpatterns",
@@ -971,11 +997,10 @@ static void freePatterns(highlightDataRec *patterns)
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
+static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf, 
+                                 int pos)
 {
-    WindowInfo *window = (WindowInfo *)cbArg;
     textBuffer *buf = window->buffer;
-    textBuffer *styleBuf = textD->styleBuffer;
     int beginParse, endParse, beginSafety, endSafety, p;
     windowHighlightData *highlightData =
     	    (windowHighlightData *)window->highlightData;
@@ -1044,6 +1069,14 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     	    &styleString[beginParse-beginSafety]);
     XtFree(styleString);
     XtFree(string);    
+}
+
+/*
+** Callback wrapper around the above function.
+*/
+static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
+{
+    handleUnparsedRegion((WindowInfo*)cbArg, textD->styleBuffer, pos);
 }
 
 /*
@@ -1684,9 +1717,17 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
     
     compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
     if (compiledRE == NULL) {
+        char *boundedRe = XtNewString(re);
+        size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
+        /* Prevent buffer overflow in DialogF. If the re is too long, 
+           truncate it and append ... */
+        if (strlen(boundedRe) > maxLength) {
+           strcpy(&boundedRe[maxLength-3], "...");
+        }
    	DialogF(DF_WARN, parent, 1,
    	       "Error in syntax highlighting regular expression:\n%s\n%s",
-   	       "Dismiss", re, compileMsg);
+   	       "Dismiss", boundedRe, compileMsg);
+        XtFree(boundedRe);
  	return NULL;
     }
     return compiledRE;
@@ -1929,7 +1970,6 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style)
 {
     int i;
-    
     for (i=0; patterns[i].style!=0; i++)
     	if (patterns[i].style == style)
     	    return &patterns[i];

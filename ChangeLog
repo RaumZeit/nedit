@@ -337,6 +337,412 @@
 	* ChangeLog (1.23), README (1.26), ReleaseNotes (1.14): Update for
 	5.3.
 
+2002-05-02 00:01  slobasso
+
+	* source/shell.c (BETA-5-3.3): Added code to allow substituted
+	command strings to be arbitrarily long.
+
+2002-05-01 06:36  n8gray
+
+	* source/: nedit.h (1.24), window.c (1.52): Committed separate
+	line/col patch.
+	
+	Commit Haiku:	  Line and Col on Right     Not Customizable Yet   
+	 Hope There Are No Bugs
+
+2002-04-29 17:16  slobasso
+
+	* doc/.cvsignore (1.2): added .version
+
+2002-04-29 08:39  edg
+
+	* util/comutil.com (BETA-5-3.1): VMS "makefile" enhancements (Jack
+	Patteeuw).
+
+2002-04-29 00:35  amai
+
+	* .cvsignore (1.1), doc/.cvsignore (1.1), source/.cvsignore (1.3),
+	util/.cvsignore (1.1): Add/enhance .cvsignore .cvsignore files
+
+2002-04-29 00:28  amai
+
+	* source/window.c (1.51): Drop an unused #include
+
+2002-04-26 16:10  slobasso
+
+	* source/tags.c (1.37): Removed unused variables and double free.
+
+2002-04-26 16:06  slobasso
+
+	* source/tags.c (1.36): Cleanup FindDefinition and how globals are
+	used. Changes were actually in previous revision, but I
+	accidentally committed without comment.
+
+2002-04-26 16:04  slobasso
+
+	* source/tags.c (1.35): [no log message]
+
+2002-04-24 20:40  edg
+
+	* source/: comnedit.com, lnknedit.com (BETA-5-3.[1,1]): VMS
+	compilation and linking fixes (Jack Patteeuw).
+
+2002-04-23 19:52  edg
+
+	* source/nc.c, source/preferences.c, source/window.c,
+	source/windowTitle.c, util/fileUtils.c (BETA-5-3.[2,4,4,9,1]):
+	Various VMS compilation & linking fixes. 5.3 now compiles and runs
+	at least on Alpha OpenVMS V7.2-1 (confirmed by Jack Patteeuw, who
+	also reported the problems).
+
+2002-04-22 16:37  slobasso
+
+	* source/text.c (1.27): fix compiler warning.
+
+2002-04-22 15:24  amai
+
+	* ChangeLog (1.24): Update
+
+2002-04-22 15:22  amai
+
+	* makefiles/Makefile.macosx (BETA-5-3.2): Fix line endings from
+	"\\" to "\".  Correct linking order in alternative set of flags
+	using XFree86 with LessTif
+
+2002-04-19 21:40  slobasso
+
+	* doc/help.etx (1.11): Added new feature to hide mouse pointer
+	while typing.
+
+2002-04-19 16:22  slobasso
+
+	* source/: help_data.h (1.10), menu.c (1.56), menu.h (1.6),
+	preferences.c (1.52), preferences.h (1.21), text.c (1.26), text.h
+	(1.6), textDisp.c (1.22), textDisp.h (1.9): Added new feature to
+	hide mouse pointer while typing.
+
+2002-04-16 17:29  edg
+
+	* source/nc.c, source/server.c, source/windowTitle.c, util/utils.c,
+	util/utils.h (BETA-5-3.[1,1,8,1,1]): Renamed GetHostName() to
+	GetNameOfHost() to avoid linking problems on VMS (the VMS linker is
+	case-insensitive; GetHostName() conflicts with standard
+	gethostname()).
+
+2002-04-15 10:46  edg
+
+	* source/: file.c, preferences.c, preferences.h (BETA-5-3.[1,3,1]):
+	Fix for linking problem on VMS: function
+	GetPrefAlwaysCheckRelativeTagsSpecs had more than 31 characters.
+	Replaced it by GetPrefAlwaysCheckRelTagsSpecs.
+
+2002-04-13 20:24  edg
+
+	* source/window.c (BETA-5-3.3): Minor fix: MakeSelectionVisible()
+	did not take into account line numbers.  (SF #543178: Line numbers
+	hide CTRL-M matches).
+
+2002-04-12 18:12  edg
+
+	* doc/help.etx, doc/nedit.doc, doc/nedit.html, source/help_data.h
+	(BETA-5-3.[1,3,3,3]): Documentation fixes (X-resource section).
+
+2002-04-12 18:09  edg
+
+	* source/help.c (BETA-5-3.7): Backed out previous change because
+	affects default width of help windows.	Will consult developers
+	first.
+
+2002-04-12 17:50  edg
+
+	* source/help.c (BETA-5-3.6): Small fix: nedit.helpFont was ignored
+	when determining initial size of help windows (instead, the value
+	of the now obsolete nedit*helpText.font resource was used
+	implicitly).
+
+2002-04-10 09:41  edg
+
+	* source/highlight.c (BETA-5-3.4): Crash fix for syntax
+	highlighting pattern sets containing only pass-2 patterns.
+
+2002-03-28 14:21  edg
+
+	* util/printUtils.c (tags: BETA-5-3-RC1) (BETA-5-3.1): Applied
+	patch submitted with SF bug #536168: printing to KDE print
+	framework.
+
+2002-03-26 22:32  amai
+
+	* makefiles/Makefile.macosx (tags: BETA-5-3-RC1) (BETA-5-3.1): Add
+	sample linker command using LessTif as posted on discuss@
+
+2002-03-26 13:43  edg
+
+	* util/fontsel.c (tags: BETA-5-3-RC1) (BETA-5-3.1): Prevent
+	possible crash when the Font dialog is destroyed while a modal Font
+	Selection dialog is up.
+
+2002-03-25 10:02  edg
+
+	* source/highlight.c (tags: BETA-5-3-RC1) (BETA-5-3.3): Prevent
+	buffer overflow in DialogF when reporting a RE compilation error
+	for a very large RE.
+
+2002-03-23 17:04  edg
+
+	* source/shell.c (tags: BETA-5-3-RC1) (BETA-5-3.2): The line
+	counting algorithm for shell command output dialog is still not
+	fullproof (it would require emulating word wrapping). Now a
+	scrollbar is created when there is a risk of underestimating the
+	number of lines, to make sure that no line ever gets obscured.
+
+2002-03-22 15:54  edg
+
+	* source/shell.c (BETA-5-3.1): Fix for shell command output dialog
+	obscuring final lines under certain conditions (reported at discuss
+	list).
+
+2002-03-21 08:41  edg
+
+	* source/: window.c, tags.c (BETA-5-3.[2,2]) (utags: BETA-5-3-RC1):
+	Got rid of strdup() call (+related comment in disabled code in
+	tags.c).
+
+2002-03-21 00:19  amai
+
+	* source/highlightData.c (tags: BETA-5-3-RC1) (BETA-5-3.4): SF
+	Patch [ 531549 ] TCL highlight patterns updated.
+
+2002-03-21 00:15  amai
+
+	* makefiles/Makefile.os2 (tags: BETA-5-3-RC1) (BETA-5-3.2): Correct
+	linker flags for omf/debuggable build
+
+2002-03-20 18:30  edg
+
+	* source/highlightData.c (BETA-5-3.3): Double bug fix in X
+	Resources pattern: context distance violation and missing escapes
+	and continuation highlights.
+
+2002-03-19 21:39  edg
+
+	* source/help.c (tags: BETA-5-3-RC1) (BETA-5-3.5): Replaced
+	(non-ANSI) snprintf() call by equivalent code.
+
+2002-03-19 18:29  edg
+
+	* source/windowTitle.c (tags: BETA-5-3-RC1) (BETA-5-3.7): The
+	background color copying code for the preview didn't work with all
+	Motif versions (it even crashed). Now copied the color from the
+	form iso. a label.  This should work also for Motif 1.2.
+
+2002-03-19 17:42  edg
+
+	* Makefile (tags: BETA-5-3-RC1) (BETA-5-3.2): Include nedit.html in
+	binary distributions.
+
+2002-03-19 17:39  edg
+
+	* ChangeLog, doc/nedit.doc, doc/nedit.html, source/help_data.h,
+	source/help_topic.h (BETA-5-3.[1,2,2,2,2]) (utags: BETA-5-3-RC1):
+	Final update for 5.3RC1 (hopefully).
+
+2002-03-19 08:51  edg
+
+	* source/windowTitle.c (BETA-5-3.6): Changed the preview field's
+	background color to make it clear that it is read-only.
+
+2002-03-18 23:41  edg
+
+	* source/highlight.c (BETA-5-3.2): Fix for SF #531577: Balance
+	fails before text viewed.  Unparsed parens are parsed with pass-2
+	patterns when necessary.
+
+2002-03-18 23:15  edg
+
+	* source/: help.c, nedit.c (tags: BETA-5-3-RC1) (BETA-5-3.[4,2]):
+	Committed Markus' latest enhancements (focus related).
+
+2002-03-17 11:21  yooden
+
+	* source/windowTitle.c, util/prefFile.c (tags: BETA-5-3-RC1)
+	(BETA-5-3.[5,1]): Makes the cursor in the Window Title Dialog's
+	preview field invisible.
+
+2002-03-16 20:40  edg
+
+	* source/window.c (BETA-5-3.1): Changed 2 free() calls into XFree
+	calls().
+
+2002-03-15 14:36  amai
+
+	* source/: Makefile.dependencies (tags: BETA-5-3-RC1) (BETA-5-3.1),
+	Makefile.dependencies (1.16): Update
+
+2002-03-15 08:51  edg
+
+	* source/: help.c, help.h (tags: BETA-5-3-RC1), nedit.c
+	(BETA-5-3.[3,1,1]): Applied patch 526967: single window help with
+	history (with a minor modification in the mnemonics: P for Previous
+	iso. Print).
+
+2002-03-14 17:41  amai
+
+	* source/textDisp.c (1.21), source/textDrag.c (1.7),
+	source/textSel.c (1.9), source/undo.c (1.10), source/userCmds.c
+	(1.25), source/window.c (1.50), source/windowTitle.c (1.6),
+	util/DialogF.c (1.22), util/clearcase.c (1.3), util/fileUtils.c
+	(1.23), util/fontsel.c (1.16), util/getfiles.c (1.20),
+	util/managedList.c (1.9), util/misc.c (1.38), util/prefFile.c
+	(1.14), util/printUtils.c (1.17), util/utils.c (1.12): Attempt to
+	complete last commit (add trailing optional #include)
+
+2002-03-14 17:18  amai
+
+	* source/: rbTree.c (1.6), regexConvert.c (1.7), regularExp.c
+	(1.14), search.c (1.45), selection.c (1.20), server.c (1.15),
+	shell.c (1.20), shift.c (1.12), smartIndent.c (1.15), tags.c
+	(1.34), text.c (1.25), textBuf.c (1.20): Add an optional #include
+	at the end of all #includes in each .c source file. Document that
+	stuff in Makefile.generic
+
+2002-03-14 17:15  amai
+
+	* makefiles/Makefile.generic (1.8), source/file.c (1.44),
+	source/help.c (1.78), source/highlight.c (1.27),
+	source/highlightData.c (1.29), source/interpret.c (1.24),
+	source/linkdate.c (1.3), source/macro.c (1.40), source/menu.c
+	(1.55), source/nc.c (1.23), source/nedit.c (1.31),
+	source/preferences.c (1.51): Add an optional #include at the end of
+	all #includes in each .c source file. Document that stuff in
+	Makefile.generic
+
+2002-03-14 15:33  edg
+
+	* source/windowTitle.c (BETA-5-3.4): Removed some toggle button
+	margin height overrides that caused the mnemonic underscores to
+	disappear with certain Motif versions.
+
+2002-03-14 01:25  amai
+
+	* source/file.c (1.43), source/help.c (1.77), source/highlight.c
+	(1.26), source/highlightData.c (1.28), source/interpret.c (1.23),
+	source/linkdate.c (1.2), source/macro.c (1.39), source/menu.c
+	(1.54), source/nc.c (1.22), source/preferences.c (1.50),
+	source/rbTree.c (1.5), source/regexConvert.c (1.6),
+	source/regularExp.c (1.13), source/search.c (1.44),
+	source/selection.c (1.19), source/server.c (1.14), source/shell.c
+	(1.19), source/shift.c (1.11), source/smartIndent.c (1.14),
+	source/tags.c (1.33), source/text.c (1.24), source/textBuf.c
+	(1.19), source/textDisp.c (1.20), source/textDrag.c (1.6),
+	source/textSel.c (1.8), source/undo.c (1.9), source/userCmds.c
+	(1.24), source/window.c (1.49), source/windowTitle.c (1.5),
+	util/DialogF.c (1.21), util/clearcase.c (1.2), util/fileUtils.c
+	(1.22), util/fontsel.c (1.15), util/getfiles.c (1.19),
+	util/managedList.c (1.8), util/misc.c (1.37), util/prefFile.c
+	(1.13), util/printUtils.c (1.16), util/utils.c (1.11): Optionally
+	#include "../config.h" anywhere at first place in all(?) .c files
+
+2002-03-13 17:15  edg
+
+	* source/help.c (BETA-5-3.2): Leak fix: style buffers were leaked
+	when help windows were closed or dismissed.
+
+2002-03-13 13:19  edg
+
+	* source/highlightData.c (BETA-5-3.2): Minor fix in Tcl patterns:
+	newlines are allowed in double quoted strings.
+
+2002-03-13 12:05  edg
+
+	* source/preferences.c, util/DialogF.c, util/misc.c
+	(BETA-5-3.[2,1,1]) (utags: BETA-5-3-RC1): Various minor leak fixes.
+
+2002-03-13 12:04  edg
+
+	* source/windowTitle.c (BETA-5-3.3): Made the preview field use a
+	variable width font to avoid obscuring it too easily.
+
+2002-03-12 20:22  edg
+
+	* source/preferences.c (BETA-5-3.1): Small leak fix in language
+	mode detection.
+
+2002-03-12 20:20  edg
+
+	* source/: highlight.c, highlightData.c, highlightData.h (tags:
+	BETA-5-3-RC1) (BETA-5-3.[1,1,1]): Revised syntax-based paren
+	matching algorithm: relaxes constraints on highlight patterns.
+	Valid matches should no longer be missed.
+
+2002-03-12 16:59  edg
+
+	* source/help.c (BETA-5-3.1): Leak fix: text was leaked when
+	printed.
+
+2002-03-12 16:22  edg
+
+	* source/windowTitle.c (BETA-5-3.2): Removed an XmStringFree() call
+	that was left behind (and caused a crash).
+
+2002-03-12 16:16  amai
+
+	* makefiles/Makefile.os2 (BETA-5-3.1): Reduce stack size of
+	binaries.
+
+2002-03-12 14:52  edg
+
+	* Makefile, README (tags: BETA-5-3-RC1), ReleaseNotes (tags:
+	BETA-5-3-RC1), doc/nedit.doc, doc/nedit.html, source/help_data.h,
+	source/help_topic.h (BETA-5-3.[1,2,2,1,1,1,1]): Set version to
+	5.3RC1.
+
+2002-03-12 09:04  edg
+
+	* ReleaseNotes, source/tags.c (BETA-5-3.[1,1]): Applied patch
+	#520941: FindDefinition function incorrectly reads the X selection
+	even when an argument has been provided for the find_definition()
+	action routine.
+
+2002-03-12 00:46  amai
+
+	* README (BETA-5-3.1): Small updates on LessTif info
+
+2002-03-11 23:09  tringali
+
+	* source/windowTitle.c (BETA-5-3.1): Fix UI so dialog doesn't jump
+	around.  Also prevent overflow bug in text field.
+
+2002-03-11 22:41  amai
+
+	* source/windowTitle.c (1.4): Fix compiler warning
+
+2002-03-11 22:40  amai
+
+	* README (1.28): Small updates on LessTif info
+
+2002-03-11 22:18  edg
+
+	* doc/nedit.doc (1.12), doc/nedit.html (1.6), source/help_data.h
+	(1.9), source/help_topic.h (1.6), README (1.27), ReleaseNotes
+	(1.15): Last update before 5.3 branch.
+
+2002-03-11 22:05  edg
+
+	* doc/help.etx (1.10, BETA-5-3-RC1), source/highlight.c (1.25),
+	source/highlight.h (1.5, BETA-5-3-RC1), source/menu.c (1.53,
+	BETA-5-3-RC1), source/nedit.h (1.23, BETA-5-3-RC1),
+	source/preferences.c (1.49), source/preferences.h (1.20,
+	BETA-5-3-RC1), source/search.c (1.43, BETA-5-3-RC1),
+	source/window.c (1.48): Applied SF patch #513976: Syntax-based
+	parenthesis matching.
+
+2002-03-11 18:17  edg
+
+	* ChangeLog (1.23), README (1.26), ReleaseNotes (1.14): Update for
+	5.3.
+
+>>>>>>> 1.23.2.2
 2002-03-08 10:40  edg
 
 	* source/window.c (1.47): Fix for #527319: segfault in

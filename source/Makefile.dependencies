@@ -1,4 +1,4 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.16 2002/03/15 14:38:54 amai Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.17 2002/06/08 13:56:50 tringali Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h ../util/utils.h textBuf.h \
  text.h nedit.h window.h preferences.h undo.h menu.h file.h tags.h

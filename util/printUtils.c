@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.17 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.18 2002/06/08 13:56:52 tringali Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -720,7 +720,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
 #else
     int nRead;
     FILE *pipe;
-    char errorString[MAX_PRINT_ERROR_LENGTH];
+    char errorString[MAX_PRINT_ERROR_LENGTH], discarded[1024];
 
     /* get the print command from the command text area */
     str = XmTextGetString(Text4);
@@ -739,6 +739,11 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     }
     errorString[0] = 0;
     nRead = fread(errorString, sizeof(char), MAX_PRINT_ERROR_LENGTH-1, pipe);
+    /* Make sure that the print command doesn't get stuck when trying to 
+       write a lot of output on stderr (pipe may fill up). We discard 
+       the additional output, though. */
+    while (fread(discarded, sizeof(char), 1024, pipe) > 0);
+
     if (!ferror(pipe))
 	errorString[nRead] = '\0';
     if (pclose(pipe)) {

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.29 2002/03/14 17:16:27 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.30 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -819,12 +819,12 @@ static char *DefaultPatternSets[] = {
 	delimiters:\"[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
 	built ins:\"<(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)>[\\s\\n;]\":::Subroutine1::D}",
     "Tcl:1:0{\n\
-	Double Quote String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	Double Quote String:\"\"\"\":\"\"\"\"::String::\n\
 	Single Quote String:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
 	Ignore Escaped Chars:\"\\\\(.|\\n)\":::Plain::\n\
 	Variable Ref:\"\\$\\w+|\\$\\{[^}]*}|\\$|#auto\":::Identifier1::\n\
 	Comment:\"#\":\"$\"::Comment::\n\
-	Keywords:\"<(after\\s+(\\d+|cancel|idle|info){0,1}|append|array\\s+(anymore|donesearch|exists|get|names|nextelement|set|size|startsearch|unset)|bell|bgerror|binary\\s+(format|scan)|bind(tags){0,1}|body|break|case|catch|cd|class|clipboard\\s+(clear|append)|clock\\s+(clicks|format|scan|seconds)|close|code|common|concat|configbody|constructor|continue|delete\\s+(class|object|namespace)|destroy|destructor|else|elseif|encoding\\s+(convertfrom|convertto|names|system)|ensemble|eof|error|eval|event\\s+(add|delete|generate|info)|exec|exit|expr|fblocked|fconfigure|fcopy|file\\s+(atime|attributes|channels|copy|delete|dirname|executable|exists|extension|isdirectory|isfile|join|lstat|mkdir|mtime|nativename|owned|pathtype|readable|readlink|rename|rootname|size|split|stat|tail|type|volume|writable)|fileevent|find\\s+(classes|objects)|flush|focus|font\\s+(actual|configure|create|delete|families|measure|metrics|names)|foreach|format|gets|glob(al){0,1}|grab\\s+(current|release|set|status|(-global\\s+){0,1}\\w+)|grid(\\s+bbox|(column|row){0,1}configure|forget|info|location|propagate|remove|size|slaves){0,1}|history\\s+(add|change|clear|event|info|keep|nextid|redo)|if|image\\s+(create|delete|height|names|type|width)|incr|info\\s+(args|body|cmdcount|commands|complete|default|exists|globals|hostname|level|library|loaded|locals|nameofexecutable|patchlevel|procs|script|sharedlibextension|tclversion|vars)|inherit|interp\\s+(alias(es){0,1}|create|delete|eval|exists|expose|hide|hidden|invokehidden|issafe|marktrusted|share|slaves|target|transfer)|join|lappend|lindex|linsert|list|llength|load|local|lrange|lreplace|lsearch|lsort|method|memory\\s+(info|(trace|validate)\\s+(on|off)|trace_on_at_malloc|break_on_malloc|display)|namespace\\s+(children|code|current|delete|eval|export|forget|import|inscope|origin|parent|qualifiers|tail|which)|open|option\\s+(add|clear|get|read(file))|pack\\s+(configure|forget|info|propagate|slaves){0,1}|package\\s+(forget|ifneeded|names|present|provide|require|unknown|vcompare|versions|vsatisfies)|pid|place\\s+(configure|forget|info|slaves){0,1}|proc|puts|pwd|raise|read|regexp|regsub|rename|resource\\s+(close|delete|files|list|open|read|types|write)|return|scan|scope(dobject){0,1}|seek|selection\\s+(clear|get|handle|own)|send|set|socket|source|split|string\\s+(bytelength|compare|equal|first|index|is|last|length|map|match|range|repeat|replace|tolower|totitle|toupper|trim|trimleft|trimright|wordend|wordstart)|subst|switch|tell|time|tk\\s+(appname|scaling|useinputmethods)|tk_(bindForTraversal|bisque|chooseColor|chooseDirectory|dialog|focusFollowsMouse|focusNext|focusPrev|getOpenFile|getSaveFile|menuBar|messageBox|optionMenu|popup|setPalette)|tkerror|tkwait\\s+(variable|visibility|window)|unknown|unset|update|uplevel|upvar|usual|variable|while|winfo\\s+(atom|atomname|cells|children|class|colormapfull|containing|depth|exists|fpixels|geometry|height|id|interp|ismapped|manager|name|parent|pathname|pixels|pointerx|pointerxy|pointery|reqheight|reqwidth|rgb|rootx|rooty|screen(cells|depth|height|mmheigth|mmidth|visual|width){0,1}|server|toplevel|viewable|visual(id|savailable){0,1}|vroot(height|width|x|y)|width|x|y)|wm\\s+(aspect|client|colormapwindows|command|deiconify|focusmodel|frame|geometry|grid|group|iconbitmap|icon(ify|mask|name|position|window)|(max|min)size|overrideredirect|positionfrom|protocol|resizable|sizefrom|state|title|transient|withdraw))>\":::Keyword::D\n\
+	Keywords:\"<(after\\s+(\\d+|cancel|idle|info){0,1}|append|array\\s+(anymore|donesearch|exists|get|names|nextelement|set|size|startsearch|unset)|bell|bgerror|binary\\s+(format|scan)|bind(tags){0,1}|body|break|case|catch|cd|class|clipboard\\s+(clear|append)|clock\\s+(clicks|format|scan|seconds)|close|code|common|concat|configbody|constructor|continue|delete\\s+(class|object|namespace)|destroy|destructor|else|elseif|encoding\\s+(convertfrom|convertto|names|system)|ensemble|eof|error|eval|event\\s+(add|delete|generate|info)|exec|exit|expr|fblocked|fconfigure|fcopy|file\\s+(atime|attributes|channels|copy|delete|dirname|executable|exists|extension|isdirectory|isfile|join|lstat|mkdir|mtime|nativename|owned|pathtype|readable|readlink|rename|rootname|size|split|stat|tail|type|volume|writable)|fileevent|find\\s+(classes|objects)|flush|focus|font\\s+(actual|configure|create|delete|families|measure|metrics|names)|foreach|format|gets|glob(al){0,1}|grab\\s+(current|release|set|status|(-global\\s+){0,1}\\w+)|grid(\\s+bbox|(column|row){0,1}configure|forget|info|location|propagate|remove|size|slaves){0,1}|history\\s+(add|change|clear|event|info|keep|nextid|redo)|if|image\\s+(create|delete|height|names|type|width)|incr|info\\s+(args|body|cmdcount|commands|complete|default|exists|globals|hostname|level|library|loaded|locals|nameofexecutable|patchlevel|procs|script|sharedlibextension|tclversion|vars)|inherit|interp\\s+(alias(es){0,1}|create|delete|eval|exists|expose|hide|hidden|invokehidden|issafe|marktrusted|share|slaves|target|transfer)|join|lappend|lindex|linsert|list|llength|load|local|lrange|lreplace|lsearch|lsort|method|memory\\s+(info|(trace|validate)\\s+(on|off)|trace_on_at_malloc|break_on_malloc|display)|namespace\\s+(children|code|current|delete|eval|export|forget|import|inscope|origin|parent|qualifiers|tail|which)|open|option\\s+(add|clear|get|read(file))|pack\\s+(configure|forget|info|propagate|slaves){0,1}|package\\s+(forget|ifneeded|names|present|provide|require|unknown|vcompare|versions|vsatisfies)|pid|place\\s+(configure|forget|info|slaves){0,1}|proc|puts|pwd|raise|read|regexp|regsub|rename|resource\\s+(close|delete|files|list|open|read|types|write)|return|scan|scope(dobject){0,1}|seek|selection\\s+(clear|get|handle|own)|send|set|socket|source|split|string\\s+(bytelength|compare|equal|first|index|is|last|length|map|match|range|repeat|replace|tolower|totitle|toupper|trim|trimleft|trimright|wordend|wordstart)|subst|switch|tell|time|tk\\s+(appname|scaling|useinputmethods)|tk_(bindForTraversal|bisque|chooseColor|chooseDirectory|dialog|focusFollowsMouse|focusNext|focusPrev|getOpenFile|getSaveFile|menuBar|messageBox|optionMenu|popup|setPalette)|tkerror|tkwait\\s+(variable|visibility|window)|trace\\s+(variable|vdelete|vinfo)|unknown|unset|update|uplevel|upvar|usual|variable|while|winfo\\s+(atom|atomname|cells|children|class|colormapfull|containing|depth|exists|fpixels|geometry|height|id|interp|ismapped|manager|name|parent|pathname|pixels|pointerx|pointerxy|pointery|reqheight|reqwidth|rgb|rootx|rooty|screen(cells|depth|height|mmheigth|mmidth|visual|width){0,1}|server|toplevel|viewable|visual(id|savailable){0,1}|vroot(height|width|x|y)|width|x|y)|wm\\s+(aspect|client|colormapwindows|command|deiconify|focusmodel|frame|geometry|grid|group|iconbitmap|icon(ify|mask|name|position|window)|(max|min)size|overrideredirect|positionfrom|protocol|resizable|sizefrom|state|title|transient|withdraw))>\":::Keyword::D\n\
 	Widgets:\"<(button(box){0,1}|calendar|canvas(printbox|printdialog){0,1}|check(box|button)|combobox|date(entry|field)|dialog(shell){0,1}|entry(field){0,1}|(ext){0,1}fileselection(box|dialog)|feedback|finddialog|frame|hierarchy|hyperhelp|label(edframe|edwidget){0,1}|listbox|mainwindow|menu(bar|button){0,1}|message(box|dialog){0,1}|notebook|optionmenu|panedwindow|promptdialog|pushbutton|radio(box|button)|scale|scrollbar|scrolled(canvas|frame|html|listbox|text)|selection(box|dialog)|shell|spin(date|int|ner|time)|tab(notebook|set)|text|time(entry|field)|toolbar|toplevel|watch)>\":::Identifier::\n\
 	Braces and Brackets:\"[\\[\\]{}]\":::Keyword::D\n\
 	DQ String Esc Chars:\"\\\\(.|\\n)\":::String1:Double Quote String:\n\
@@ -936,20 +936,22 @@ static char *DefaultPatternSets[] = {
 	marked section entity ref:\"\\1\":::Identifier:marked section:C\n\
 	internal subset delims:\"[\\[\\]>]\":::Keyword::D\n\
 	info:\"(?# version 0.1; author/maintainer: Joor Loohuis, joor@loohuis-consulting.nl)\":::Comment::D}",
-    "X Resources:1:0{\n\
+    "X Resources:2:0{\n\
 	Preprocessor:\"^\\s*#\":\"$\"::Preprocessor::\n\
 	Preprocessor Wrap:\"\\\\\\n\":::Preprocessor1:Preprocessor:\n\
 	Comment:\"^\\s*!\":\"$\"::Comment::\n\
 	Comment Wrap:\"\\\\\\n\":::Comment:Comment:\n\
-	Resource Continued:\"^(\\s*[^:\\s]+\\s*:).*\\\\\\n\":\"$\"::Plain::\n\
+	Resource Continued:\"^(\\s*[^:\\s]+\\s*:)(?:(\\\\.)|.)*(\\\\)\\n\":\"$\"::Plain::\n\
 	RC Space Warning:\"\\\\\\s+$\":::Flag:Resource Continued:\n\
 	RC Esc Chars:\"\\\\.\":::Text Arg2:Resource Continued:\n\
-	RC Name:\"\\1\":\"\"::Storage Type:Resource Continued:C\n\
+	RC Esc Chars 2:\"\\2\":\"\"::Text Arg2:Resource Continued:C\n\
+	RC Name:\"\\1\":\"\"::Identifier:Resource Continued:C\n\
 	RC Wrap:\"\\\\\\n\":::Text Arg1:Resource Continued:\n\
+	RC Wrap2:\"\\3\":\"\"::Text Arg1:Resource Continued:C\n\
 	Resource:\"^\\s*[^:\\s]+\\s*:\":\"$\"::Plain::\n\
 	Resource Space Warning:\"\\S+\\s+$\":::Flag:Resource:\n\
 	Resource Esc Chars:\"\\\\.\":::Text Arg2:Resource:\n\
-	Resource Name:\"&\":\"\"::Storage Type:Resource:C\n\
+	Resource Name:\"&\":\"\"::Identifier:Resource:C\n\
 	Free Text:\"^.*$\":::Flag::}",
     "Yacc:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
@@ -3442,6 +3444,14 @@ static int lookupNamedStyle(const char *styleName)
     	if (!strcmp(styleName, HighlightStyles[i]->name))
     	    return i;
     return -1;
+}
+
+/*
+** Returns a unique number of a given style name
+*/
+int IndexOfNamedStyle(const char *styleName)
+{
+    return lookupNamedStyle(styleName);
 }
 
 /*

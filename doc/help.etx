@@ -3651,47 +3651,47 @@ X Resources
   
   Default font for menus, dialogs, scroll bars, etc..
 
-**nedit.helpFont**: adobe times 14
+**nedit.helpFont**: helvetica medium 12 points
 
   Font used for displaying online help.
   
-**nedit.boldHelpFont**: adobe times 14 bold
+**nedit.boldHelpFont**: helvetica bold 12 points
 
   Bold font for online help.
   
-**nedit.italicHelpFont**: adobe times 14 italic
+**nedit.italicHelpFont**: helvetica italic 12 points
 
   Italic font for online help.
   
-**nedit.fixedHelpFont**: adobe courier 12
+**nedit.fixedHelpFont**: courier medium 12 points
 
   Fixed font for online help.
   
-**nedit.boldFixedHelpFont**: adobe courier 12 bold
+**nedit.boldFixedHelpFont**: courier bold 12 points
 
   Fixed bold for online help.
   
-**nedit.italicFixedHelpFont**: adobe courier 12 italic
+**nedit.italicFixedHelpFont**: courier italic 12 points
 
   Fixed italic font for online help.
   
-**nedit.h1HelpFont**: adobe times 14 bold
+**nedit.h1HelpFont**: helvetica bold 14 points
 
   Font for level-1 titles in help text.
   
-**nedit.h2HelpFont**: adobe times 14 italic
+**nedit.h2HelpFont**: helvetica bold italic 12 points
 
   Font for level-2 titles in help text.
   
-**nedit.h3HelpFont**: adobe courier 12 bold
+**nedit.h3HelpFont**: courier bold 12 points
 
   Font for level-3 titles in help text.
 
-**nedit.helpLinkFont**: adobe adobe times 14
+**nedit.helpLinkFont**: helvetica medium 12 points
 
   Font for hyperlinks in the help text
 
-**nedit.helpLinkColor**: blue2
+**nedit.helpLinkColor**: #009900
 
   Color for hyperlinks in the help text
   
@@ -3709,22 +3709,24 @@ X Resources
   ~.background, .foreground, .fontList, etc., to change colors, fonts~
   ~ and other characteristics):~
 
-**nedit.statsForm**
+**nedit@*statsForm**
 
   Statistics line and incremental search bar.  Use this to set statistics line
   background color.  To set attributes affecting both the statistics line and
   the incremental search bar, use '*' rather than '.' to separate the resource
-  name.  For example, to set the foreground color: nedit.statsForm.foreground.
+  name.  For example, to set the foreground color of both components: 
+  nedit*statsForm*foreground, or to set the foreground color of the
+  statistics line only: nedit*statsForm.statsLine.foreground.
 
-**nedit.menuBar**
+**nedit@*menuBar**
 
   Top-of-window menu-bar.
 
-**nedit.textHorScrollBar**
+**nedit@*textHorScrollBar**
 
   Horizontal scroll bar.
 
-**nedit.textVertScrollBar**
+**nedit@*textVertScrollBar**
 
   Vertical scroll bar.
    ----------------------------------------------------------------------

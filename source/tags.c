@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.37 2002/04/26 16:10:59 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.38 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -716,6 +716,7 @@ static void findDef(WindowInfo *window, const char *value) {
 */
 void FindDefinition(WindowInfo *window, Time time, const char *arg)
 {
+#if 1 /* This was on the mainline */
     if (arg) {
         findDef(window, arg);
     }
@@ -723,6 +724,19 @@ void FindDefinition(WindowInfo *window, Time time, const char *arg)
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
             (XtSelectionCallbackProc)findDefCB, window, time);
     }
+#else /* This was on the 5.3 branch */
+    tagMark = arg;
+    currentWindow = window;
+    if(tagMark == NULL)
+    {
+        XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
+	        (XtSelectionCallbackProc)findDefCB, window, time);
+    }
+    else
+    {
+        findAllDialogAP(window->textArea, tagMark); 
+    }
+#endif
 }
 
 /*	Callback function for FindDefinition */
@@ -1168,7 +1182,7 @@ static const char *rcs_strdup(const char *str)
        count.  My tests show that it's better to leave this out.  */
     if (len <= sizeof(struct rcs))
     {
-        new_str = strdup(str);
+        new_str = strdup(str); /* GET RID OF strdup() IF EVER ENABLED (not ANSI) */ 
         RcsStats.tgiveup++;
         return;
     }

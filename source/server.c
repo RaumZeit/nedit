@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.15 2002/03/14 17:19:11 amai Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.16 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -91,7 +91,7 @@ void InitServerCommunication(void)
        concatenating NEDIT_SERVER_REQUEST_, and NEDIT_SERVER_EXITS_
        with hostname and user name. */
     userName = GetUserName();
-    hostName = GetHostName();
+    hostName = GetNameOfHost();
     if (GetPrefServerName()[0] != '\0') {
     	serverName[0] = '_';
     	strcpy(&serverName[1], GetPrefServerName());

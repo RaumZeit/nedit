@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.14 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.15 2002/06/08 13:56:52 tringali Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -128,7 +128,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName,
 {
     char fullName[MAXPATHLEN];
     XrmDatabase db;
-    int argcCopy, len;
+    int argcCopy;
     char **argvCopy;
     FILE *fp;
     static XrmOptionDescRec xrmOnlyTable[] =
@@ -260,7 +260,7 @@ int SavePreferences(Display *display, const char *fileName,
     char fullName[MAXPATHLEN], *appName, *appClass, **enumStrings;
     FILE *fp;
     int type;
-    int i, len;
+    int i;
     
     /* preferences files reside in the home directory. */
 #ifdef VMS

@@ -4291,67 +4291,67 @@ Default background color for menus, dialogs, scroll bars, etc..
 Default font for menus, dialogs, scroll bars, etc..
 <P>
 <PRE>
-<B>nedit.helpFont</B>: adobe times 14
+<B>nedit.helpFont</B>: helvetica medium 12 points
 </PRE>
 <P>
 Font used for displaying online help.
 <P>
 <PRE>
-<B>nedit.boldHelpFont</B>: adobe times 14 bold
+<B>nedit.boldHelpFont</B>: helvetica bold 12 points
 </PRE>
 <P>
 Bold font for online help.
 <P>
 <PRE>
-<B>nedit.italicHelpFont</B>: adobe times 14 italic
+<B>nedit.italicHelpFont</B>: helvetica italic 12 points
 </PRE>
 <P>
 Italic font for online help.
 <P>
 <PRE>
-<B>nedit.fixedHelpFont</B>: adobe courier 12
+<B>nedit.fixedHelpFont</B>: courier medium 12 points
 </PRE>
 <P>
 Fixed font for online help.
 <P>
 <PRE>
-<B>nedit.boldFixedHelpFont</B>: adobe courier 12 bold
+<B>nedit.boldFixedHelpFont</B>: courier bold 12 points
 </PRE>
 <P>
 Fixed bold for online help.
 <P>
 <PRE>
-<B>nedit.italicFixedHelpFont</B>: adobe courier 12 italic
+<B>nedit.italicFixedHelpFont</B>: courier italic 12 points
 </PRE>
 <P>
 Fixed italic font for online help.
 <P>
 <PRE>
-<B>nedit.h1HelpFont</B>: adobe times 14 bold
+<B>nedit.h1HelpFont</B>: helvetica bold 14 points
 </PRE>
 <P>
 Font for level-1 titles in help text.
 <P>
 <PRE>
-<B>nedit.h2HelpFont</B>: adobe times 14 italic
+<B>nedit.h2HelpFont</B>: helvetica bold italic 12 points
 </PRE>
 <P>
 Font for level-2 titles in help text.
 <P>
 <PRE>
-<B>nedit.h3HelpFont</B>: adobe courier 12 bold
+<B>nedit.h3HelpFont</B>: courier bold 12 points
 </PRE>
 <P>
 Font for level-3 titles in help text.
 <P>
 <PRE>
-<B>nedit.helpLinkFont</B>: adobe adobe times 14
+<B>nedit.helpLinkFont</B>: helvetica medium 12 points
 </PRE>
 <P>
 Font for hyperlinks in the help text
 <P>
 <PRE>
-<B>nedit.helpLinkColor</B>: blue2
+<B>nedit.helpLinkColor</B>: #009900
 </PRE>
 <P>
 Color for hyperlinks in the help text
@@ -4375,28 +4375,30 @@ Command used by the nc program to start an NEdit server.
 <I> and other characteristics):</I>
 <P>
 <PRE>
-<B>nedit.statsForm</B>
+<B>nedit*statsForm</B>
 </PRE>
 <P>
 Statistics line and incremental search bar.  Use this to set statistics line
 background color.  To set attributes affecting both the statistics line and
 the incremental search bar, use '*' rather than '.' to separate the resource
-name.  For example, to set the foreground color: nedit.statsForm.foreground.
+name.  For example, to set the foreground color of both components: 
+nedit*statsForm*foreground, or to set the foreground color of the
+statistics line only: nedit*statsForm.statsLine.foreground.
 <P>
 <PRE>
-<B>nedit.menuBar</B>
+<B>nedit*menuBar</B>
 </PRE>
 <P>
 Top-of-window menu-bar.
 <P>
 <PRE>
-<B>nedit.textHorScrollBar</B>
+<B>nedit*textHorScrollBar</B>
 </PRE>
 <P>
 Horizontal scroll bar.
 <P>
 <PRE>
-<B>nedit.textVertScrollBar</B>
+<B>nedit*textVertScrollBar</B>
 </PRE>
 <P>
 Vertical scroll bar.
@@ -4983,8 +4985,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Mar 11, 2002
-Mar 11, 2002
+NEdit 5.3
+Jun 1, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

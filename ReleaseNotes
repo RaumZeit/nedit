@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.3, February 2002
+          Release Notes for NEdit Version 5.3RC1, March 2002
 
 
-$Id: ReleaseNotes,v 1.15 2002/03/11 22:21:10 edg Exp $
+$Id: ReleaseNotes,v 1.16 2002/06/08 13:56:49 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -36,6 +36,9 @@ New Features in 5.3
     (SF #513976).
 
 Bugs Fixed in 5.3
+
+  - Find Definition incorrectly reads the X selection when not needed 
+    (SF #520941).
 
   - Background popup menu could lock up X-server when used with any of 
     the lock keys on.

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.53 2002/05/07 01:13:58 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.54 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.53 2002/05/07 01:13:58 n8gra
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
+#include "../util/clearcase.h"
 #endif /*VMS*/
 
 #include <Xm/Xm.h>
@@ -62,7 +63,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.53 2002/05/07 01:13:58 n8gra
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
 #include "../util/fontsel.h"
-#include "../util/clearcase.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "text.h"
@@ -955,6 +955,7 @@ static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
 static void updatePatternsTo5dot3(void);
+static void updateShellCmdsTo5dot3(void);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
@@ -1010,6 +1011,7 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     if (PrefData.prefFileRead && fileVer < 5003) {
         fprintf(stderr, "NEdit: Converting .nedit file from pre-5.3 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
+	updateShellCmdsTo5dot3();
         updatePatternsTo5dot3();
     }
        
@@ -1531,7 +1533,7 @@ int GetPrefSmartTags(void)
     return PrefData.smartTags;
 }
 
-int GetPrefAlwaysCheckRelativeTagsSpecs(void)
+int GetPrefAlwaysCheckRelTagsSpecs(void)
 {
     return PrefData.alwaysCheckRelativeTagsSpecs;
 }
@@ -3130,6 +3132,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, NULL);
+    XmStringFree(s1);
     XtAddCallback(primaryBtn, XmNactivateCallback, primaryBrowseCB, fd);
 
     fd->primaryW = XtVaCreateManagedWidget("primary", xmTextWidgetClass,
@@ -3178,6 +3181,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, NULL);
+    XmStringFree(s1);
     XtAddCallback(fd->fillW, XmNactivateCallback, fillFromPrimaryCB, fd);
 
     italicLbl = XtVaCreateManagedWidget("italicLbl", xmLabelGadgetClass,
@@ -3215,6 +3219,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, NULL);
+    XmStringFree(s1);
     XtAddCallback(italicBtn, XmNactivateCallback, italicBrowseCB, fd);
 
     fd->italicW = XtVaCreateManagedWidget("italic", xmTextWidgetClass,
@@ -3265,6 +3270,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, NULL);
+    XmStringFree(s1);
     XtAddCallback(boldBtn, XmNactivateCallback, boldBrowseCB, fd);
 
     fd->boldW = XtVaCreateManagedWidget("bold", xmTextWidgetClass,
@@ -3315,6 +3321,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, NULL);
+    XmStringFree(s1);
     XtAddCallback(boldItalicBtn, XmNactivateCallback, boldItalicBrowseCB, fd);
 
     fd->boldItalicW = XtVaCreateManagedWidget("boldItalic",
@@ -3765,7 +3772,10 @@ static int matchLanguageMode(WindowInfo *window)
     	    if (SearchString(first200, LanguageModes[i]->recognitionExpr,
     	    	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos,
     	    	    &endPos, NULL, NULL))
+            {
+		XtFree(first200);
     	    	return i;
+	    }
     	}
     }
     XtFree(first200);
@@ -3777,9 +3787,10 @@ static int matchLanguageMode(WindowInfo *window)
 #ifdef VMS
     if (strchr(window->filename, ';') != NULL)
     	fileNameLen = strchr(window->filename, ';') - window->filename;
-#endif
+#else
     if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename)) != NULL)
         fileNameLen = versionExtendedPath - window->filename;
+#endif
     for (i=0; i<NLanguageModes; i++) {
     	for (j=0; j<LanguageModes[i]->nExtensions; j++) {
     	    ext = LanguageModes[i]->extensions[j];
@@ -4718,6 +4729,91 @@ static int regexReplace(char **inString, const char *expr, const char *replaceWi
     *inString = newString;
     return TRUE;
 }
+
+
+#ifndef VMS
+/* 
+** Replace all '#' characters in shell commands by '##' to keep commands
+** containing those working. '#' is a line number placeholder in 5.3 and
+** had no special meaning before.
+*/
+static void updateShellCmdsTo5dot3(void)
+{
+    char *cOld, *cNew, *pCol, *pNL;
+    int  nHash, isCmd;
+    char *newString;
+
+    if(!TempStringPrefs.shellCmds)
+	return;
+
+    /* Count number of '#'. If there are '#' characters in the non-command
+    ** part of the definition we count too much and later allocate too much
+    ** memory for the new string, but this doesn't hurt.
+    */
+    for(cOld=TempStringPrefs.shellCmds, nHash=0; *cOld; cOld++)
+	if(*cOld == '#')
+	    nHash++;
+
+    /* No '#' -> no conversion necessary. */
+    if(!nHash)
+	return;
+
+    newString=XtMalloc(strlen(TempStringPrefs.shellCmds) + 1 + nHash);
+
+    cOld  = TempStringPrefs.shellCmds;
+    cNew  = newString;
+    isCmd = 0;
+    pCol  = NULL;
+    pNL   = NULL;
+
+    /* Copy all characters from TempStringPrefs.shellCmds into newString
+    ** and duplicate '#' in command parts. A simple check for really beeing
+    ** inside a command part (starting with '\n', between the the two last
+    ** '\n' a colon ':' must have been found) is preformed.
+    */
+    while(*cOld) {
+	/* actually every 2nd line is a command. We additionally
+	** check if there is a colon ':' in the previous line.
+	*/
+	if(*cOld=='\n') {
+	    if((pCol > pNL) && !isCmd)
+	      	isCmd=1;
+	    else
+	      	isCmd=0;
+	    pNL=cOld;
+	}
+
+	if(!isCmd && *cOld ==':')
+	    pCol = cOld;
+
+	/* Duplicate hashes if we're in a command part */
+	if(isCmd && *cOld=='#')
+	    *cNew++ = '#';
+
+	/* Copy every character */
+	*cNew++ = *cOld++;
+
+    }
+
+    /* Terminate new preferences string */
+    *cNew = 0;
+
+    /* free the old memory */
+    XtFree(TempStringPrefs.shellCmds);
+
+    /* exchange the string */
+    TempStringPrefs.shellCmds = newString;
+
+}
+
+#else
+
+static void updateShellCmdsTo5dot3(void) {
+    /* No shell commands in VMS ! */
+    return;
+}  
+
+#endif
 
 #ifdef SGI_CUSTOM
 /*

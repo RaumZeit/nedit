@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.23 2002/03/14 17:17:36 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.24 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -49,7 +49,8 @@ static const char CVSID[] = "$Id: nc.c,v 1.23 2002/03/14 17:17:36 amai Exp $";
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <pwd.h>
-#endif
+#include "../util/clearcase.h"
+#endif /* VMS */
 #ifdef __EMX__
 #include <process.h>
 #endif
@@ -60,7 +61,6 @@ static const char CVSID[] = "$Id: nc.c,v 1.23 2002/03/14 17:17:36 amai Exp $";
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "../util/prefFile.h"
-#include "../util/clearcase.h"
 #include "../util/system.h"
 
 #ifdef HAVE_DEBUG_H
@@ -204,6 +204,7 @@ int main(int argc, char **argv)
     RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME,
     	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
     
+#ifndef VMS
     /* For Clearcase users who have not set a server name, use the clearcase
        view name.  Clearcase views make files with the same absolute path names
        but different contents (and therefore can't be edited in the same nedit
@@ -214,6 +215,7 @@ int main(int argc, char **argv)
             strcpy(Preferences.serverName, viewTag);
         }
     }
+#endif /* VMS */
     
     /* Add back the server name resource from the command line or resource
        database to the command line for starting the server.  If -svrcmd
@@ -230,7 +232,7 @@ int main(int argc, char **argv)
        concatenating NEDIT_SERVER_REQUEST_, and NEDIT_SERVER_EXITS_
        with hostname,  user name and optional server name */
     userName = GetUserName();
-    hostName = GetHostName();
+    hostName = GetNameOfHost();
     if (Preferences.serverName[0] != '\0') {
     	serverName[0] = '_';
     	strcpy(&serverName[1], Preferences.serverName);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.23 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.24 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -417,7 +417,46 @@ copyThruSlash(char **toString, char **fromString)
 	to++;
     }
 }
-#endif /* UNIX */
+
+#else /* VMS */
+
+/* 
+** Dummy versions of the public functions for VMS.
+*/
+
+/*
+** Return 0 if everything's fine, 1 else.
+*/
+int NormalizePathname(char *pathname)
+{
+    return 0;
+}
+
+/*
+** Return 0 if everything's fine, 1 else.
+*/
+int CompressPathname(char *pathname)
+{
+    return 0;
+}
+
+/*
+ * Returns:
+ *   TRUE  if no error occured
+ *
+ *   FALSE if an error occured.
+ */
+int ResolvePath(const char * pathIn, char * pathResolved)
+{
+    if (strlen(pathIn) < MAXPATHLEN) {
+	strcpy(pathResolved, pathIn);
+	return TRUE;
+    } else {
+ 	return FALSE;
+    }
+}
+
+#endif /* VMS */
 
 /*
 ** Return the trailing 'n' no. of path components

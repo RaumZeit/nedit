@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.38 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.39 2002/06/08 13:56:52 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1653,11 +1653,16 @@ static void addAccelGrab(Widget topWidget, Widget w)
     Modifiers numLockMask = getNumLockModMask(XtDisplay(topWidget));
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
-    if (accelString == NULL || *accelString == '\0')
+    if (accelString == NULL || *accelString == '\0') {
+        if (accelString != NULL) XtFree(accelString);
 	return;
+    }
     
-    if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers))
+    if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers)) {
+        XtFree(accelString);
 	return;
+    }
+    XtFree(accelString);
 
     /* Check to see if this server has this key mapped.  Some cruddy PC X
        servers (Xoftware) have terrible default keymaps. If not,

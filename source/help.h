@@ -69,3 +69,4 @@ extern const char linktime[];
 
 void Help(Widget parent, enum HelpTopic topic);
 void PrintVersion(void);
+void InstallHelpLinkActions(XtAppContext context);

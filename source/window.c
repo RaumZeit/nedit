@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.52 2002/05/01 06:36:11 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.53 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: window.c,v 1.52 2002/05/01 06:36:11 n8gray Exp
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
+#include "../util/clearcase.h"
 #endif /*VMS*/
 #include <limits.h>
 #include <math.h>
@@ -1331,7 +1332,11 @@ void UpdateWindowTitle(const WindowInfo *window)
 {
     char *title = FormatWindowTitle(window->filename,
                                     window->path,
+#ifdef VMS
+                                    NULL,
+#else
                                     GetClearCaseViewTag(),
+#endif /* VMS */
                                     GetPrefServerName(),
                                     IsServer,
                                     window->filenameSet,
@@ -1495,11 +1500,12 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
        reqested position to be vertically on screen) */
     if (    TextPosToXY(textPane, left, &leftX, &y) &&
     	    TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
+	textDisp *textD = ((TextWidget)textPane)->text.textD;
     	TextGetScroll(textPane, &topLineNum, &horizOffset);
     	XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin,
 		NULL);
-    	if (leftX < margin)
-    	    horizOffset -= margin - leftX;
+    	if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
+    	    horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
     	else if (rightX > width - margin)
     	    horizOffset += rightX - (width - margin);
     	TextSetScroll(textPane, topLineNum, horizOffset);
@@ -2193,7 +2199,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     if (maxCount == 1) return False; /* One binding is always ok */
     
     keys = (char**)malloc(maxCount*sizeof(char*));
-    copy = strdup((const char*)bindings);
+    copy = XtNewString((const char*)bindings);
     i = 0;
     pos2 = copy;
     
@@ -2219,7 +2225,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     if (count <= 1)
     {
        free(keys);
-       free(copy);
+       XtFree(copy);
        return False; /* No conflict */
     }
     
@@ -2231,12 +2237,12 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
 	{
             /* Duplicate detected */
 	    free(keys);
-	    free(copy);
+	    XtFree(copy);
 	    return True;
 	}
     }
     free(keys);
-    free(copy);
+    XtFree(copy);
     return False;
 }
 
@@ -2284,7 +2290,7 @@ static unsigned char* sanitizeVirtualKeyBindings()
             XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
                             PropModeReplace, insaneVirtKeyBindings, 
                             strlen((const char*)insaneVirtKeyBindings));
-            free(insaneVirtKeyBindings);
+            XFree((char*)insaneVirtKeyBindings);
             return NULL; /* Prevent restoration */
         }
     }
@@ -2305,6 +2311,6 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings
       XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
                       PropModeReplace, insaneVirtKeyBindings, 
                       strlen((const char*)insaneVirtKeyBindings));
-      free(insaneVirtKeyBindings);
+      XFree((char*)insaneVirtKeyBindings);
    }
 }

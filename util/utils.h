@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.5 2001/12/13 13:27:01 amai Exp $ */
+/* $Id: utils.h,v 1.6 2002/06/08 13:56:52 tringali Exp $ */
 #ifndef _UTILS_H
 #define _UTILS_H
 
@@ -6,7 +6,7 @@ extern const char *GetCurrentDir(void);
 extern const char *GetHomeDir(void);
 extern char *PrependHome(const char *filename, char *buf, int buflen);
 const char *GetUserName(void);
-const char *GetHostName(void);
+const char *GetNameOfHost(void);
 extern int Max(int i1, int i2);
 extern int Min(int i1, int i2);
 extern int Min3(int i1, int i2, int i3);

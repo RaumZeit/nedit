@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.6 2002/03/14 17:41:03 amai Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.7 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.6 2002/03/14 17:41:03 amai E
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
+#include "../util/clearcase.h"
 #endif /*VMS*/
 
 #include <Xm/Xm.h>
@@ -56,13 +57,13 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.6 2002/03/14 17:41:03 amai E
 #include <Xm/CascadeBG.h>
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
+#include <Xm/TextF.h>
 
 #include "../util/prefFile.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
-#include "../util/clearcase.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "windowTitle.h"
@@ -352,7 +353,7 @@ char *FormatWindowTitle(const char* filename,
                     
                 case 'h': /* host name */
 		    hostNamePresent = True;
-		    titlePtr = safeStrCpy(titlePtr, titleEnd, GetHostName());
+		    titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHost());
                     break;
 		    
                 case 'S': /* file status */
@@ -424,7 +425,9 @@ char *FormatWindowTitle(const char* filename,
         XmToggleButtonSetState(etDialog.fileW,   fileNamePresent,   False);
         XmToggleButtonSetState(etDialog.statusW, fileStatusPresent, False);
         XmToggleButtonSetState(etDialog.serverW, serverNamePresent, False);
+#ifndef VMS
         XmToggleButtonSetState(etDialog.ccW,     clearCasePresent,  False);
+#endif /* VMS */
         XmToggleButtonSetState(etDialog.dirW,    dirNamePresent,    False);
         XmToggleButtonSetState(etDialog.hostW,   hostNamePresent,   False);
         XmToggleButtonSetState(etDialog.nameW,   userNamePresent,   False);
@@ -464,9 +467,11 @@ char *FormatWindowTitle(const char* filename,
 	    
         XtSetSensitive(etDialog.oServerNameW, serverNamePresent);
 	
+#ifndef VMS
         XtSetSensitive(etDialog.oCcViewTagW,       clearCasePresent);
         XtSetSensitive(etDialog.oServerEqualViewW, clearCasePresent &&
-	                                           serverNamePresent);                           
+	                                           serverNamePresent);
+#endif  /* VMS */      
 	
         XtSetSensitive(etDialog.oDirW,    dirNamePresent);
 	
@@ -492,6 +497,9 @@ static void setToggleButtons(void)
     /* Read-only takes precedence on locked */
     XtSetSensitive(etDialog.oFileLockedW, !IS_PERM_LOCKED(etDialog.lockReasons));
 
+#ifdef VMS
+    XmToggleButtonSetState(etDialog.oServerNameW, etDialog.isServer, False);
+#else
     XmToggleButtonSetState(etDialog.oCcViewTagW,
     	    	GetClearCaseViewTag() != NULL, False);
     XmToggleButtonSetState(etDialog.oServerNameW,
@@ -507,6 +515,7 @@ static void setToggleButtons(void)
         XmToggleButtonSetState(etDialog.oServerEqualViewW,
     	    	    False, False);
     }
+#endif /* VMS */
 }    
 
 static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -515,7 +524,6 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
     int  filenameSet = XmToggleButtonGetState(etDialog.oDirW);
     char *title;
     const char* serverName;
-    XmString s1;
     
     if (etDialog.suppressFormatUpdate)
     {
@@ -524,20 +532,28 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
     
     format = XmTextGetString(etDialog.formatW);
     
+#ifndef VMS
     if (XmToggleButtonGetState(etDialog.oServerEqualViewW) &&
 	XmToggleButtonGetState(etDialog.ccW)) {
        serverName = etDialog.viewTag;
-    } else {
+    } else
+#endif /* VMS */
+    {
        serverName = XmToggleButtonGetState(etDialog.oServerNameW) ?
                                        etDialog.serverName : "";
     }
+
     title = FormatWindowTitle(
                   etDialog.filename,
                   etDialog.filenameSet == True ?
                                    etDialog.path :
                                    "/a/very/long/path/used/as/example/",
+#ifdef VMS
+		  NULL,
+#else
                   XmToggleButtonGetState(etDialog.oCcViewTagW) ?
                                    etDialog.viewTag : NULL,
+#endif /* VMS */
                   serverName,
                   etDialog.isServer,
                   filenameSet,
@@ -545,12 +561,10 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
                   XmToggleButtonGetState(etDialog.oFileChangedW),
                   format);
     XtFree(format);
-    XtVaSetValues(etDialog.previewW, XmNlabelString, 
-	          s1=XmStringCreateSimple(title), NULL);
-    XmStringFree(s1);
+    XmTextFieldSetString(etDialog.previewW, title);
 }
 
-
+#ifndef VMS
 static void ccViewTagCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w) == False) {
@@ -558,6 +572,7 @@ static void ccViewTagCB(Widget w, XtPointer clientData, XtPointer callData)
     }
     formatChangedCB(w, clientData, callData);
 }
+#endif /* VMS */
 
 static void serverNameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -586,6 +601,7 @@ static void fileReadOnlyCB(Widget w, XtPointer clientData, XtPointer callData)
     formatChangedCB(w, clientData, callData);
 }
 
+#ifndef VMS
 static void serverEqualViewCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w) == True) {
@@ -595,7 +611,7 @@ static void serverEqualViewCB(Widget w, XtPointer clientData, XtPointer callData
     }
     formatChangedCB(w, clientData, callData);
 }         
-
+#endif /* VMS */
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -738,6 +754,7 @@ static void toggleHostCB(Widget w, XtPointer clientData, XtPointer callData)
 	removeFromFormat("%h");
 }
 
+#ifndef VMS
 static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(etDialog.ccW))
@@ -745,6 +762,7 @@ static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData
     else
 	removeFromFormat("%c");
 }
+#endif /* VMS */
 
 static void toggleStatusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -959,19 +977,22 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 #define RIGHT_MARGIN_POS 98
 #define V_MARGIN 5
 #define RADIO_INDENT 3
-    Widget buttonForm, formatLbl, previewFrame, sampleFrame;
+
+    Widget buttonForm, formatLbl, previewFrame;
     Widget previewForm, previewBox, selectFrame, selectBox, selectForm;
-    Widget previewLbl, testLbl, selectLbl, sampleLbl;
+    Widget testLbl, selectLbl;
     Widget applyBtn, dismissBtn, restoreBtn, helpBtn;
     XmString s1;
+    XmFontList fontList;
     Arg args[20];
     int defaultBtnOffset;
     Dimension	shadowThickness;
     Dimension	radioHeight, textHeight;
+    Pixel background;
     
     int ac = 0;
     XtSetArg(args[ac], XmNautoUnmanage, False); ac++;
-    XtSetArg(args[ac], XmNtitle, "Customize window title"); ac++;
+    XtSetArg(args[ac], XmNtitle, "Customize Window Title"); ac++;
     etDialog.form = CreateFormDialog(parent, "customizeTitle", args, ac);
 
     /*
@@ -1034,7 +1055,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     
     etDialog.fileW = XtVaCreateManagedWidget("file", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -1045,7 +1065,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.statusW = XtVaCreateManagedWidget("status", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1057,7 +1076,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.shortStatusW = XtVaCreateManagedWidget("shortStatus", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_WIDGET,
 	    XmNleftWidget, etDialog.statusW,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1069,19 +1087,21 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.ccW = XtVaCreateManagedWidget("ccView", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, etDialog.statusW,
     	    XmNlabelString, s1=XmStringCreateSimple("ClearCase view tag (%c) "),
     	    XmNmnemonic, 'C', NULL);
+#ifdef VMS
+    XtSetSensitive(etDialog.ccW, False);
+#else
     XtAddCallback(etDialog.ccW, XmNvalueChangedCallback, toggleClearCaseCB, NULL);
+#endif /* VMS */
     XmStringFree(s1);
 
     etDialog.dirW = XtVaCreateManagedWidget("directory", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1093,7 +1113,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     
     etDialog.mdirW = XtVaCreateManagedWidget("componentLab", 
     	    xmLabelGadgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNheight, radioHeight,
 	    XmNleftAttachment, XmATTACH_WIDGET,
 	    XmNleftWidget, etDialog.dirW,
@@ -1107,7 +1126,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     	    xmTextWidgetClass, selectBox,
    	    XmNcolumns, 1,
    	    XmNmaxLength, 1,
-            XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_WIDGET,
 	    XmNleftWidget, etDialog.mdirW,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1123,7 +1141,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     
     etDialog.hostW = XtVaCreateManagedWidget("host", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 50 + RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -1134,7 +1151,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.nameW = XtVaCreateManagedWidget("name", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 50 + RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1146,7 +1162,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.serverW = XtVaCreateManagedWidget("server", 
     	    xmToggleButtonWidgetClass, selectBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 50 + RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1168,6 +1183,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     XmStringFree(s1);
     etDialog.formatW = XtVaCreateManagedWidget("format", xmTextWidgetClass,
     	    selectForm,
+	    XmNmaxLength, WINDOWTITLE_MAX_LEN,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, selectBox,
 	    XmNtopOffset, 5,
@@ -1208,23 +1224,26 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 	    XmNtopOffset, V_MARGIN,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
-    sampleFrame = XtVaCreateManagedWidget("sampleFrame", xmFrameWidgetClass,
-	    previewForm,
-	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNtopOffset, V_MARGIN,
-	    XmNbottomOffset, V_MARGIN,
-	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, LEFT_MARGIN_POS,
-	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
     
-    etDialog.previewW = XtVaCreateManagedWidget("sample", xmLabelGadgetClass,
-    	    sampleFrame,
-    	    XmNlabelString, s1=XmStringCreateSimple(""),
-	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNleftAttachment, XmATTACH_FORM,
-	    XmNrightAttachment, XmATTACH_FORM, NULL);
-    XmStringFree(s1);
+    /* Copy a variable width font from one of the labels to use for the
+       preview (no editing is allowed, and with a fixed size font the
+       preview easily gets partially obscured). Also copy the form background
+       color to make it clear that this field is not editable */
+    XtVaGetValues(formatLbl, XmNfontList, &fontList, NULL);
+    XtVaGetValues(previewForm, XmNbackground, &background, NULL);
+    
+    etDialog.previewW = XtVaCreateManagedWidget("sample",
+            xmTextFieldWidgetClass, previewForm,
+            XmNeditable, False,
+            XmNcursorPositionVisible, False,
+            XmNtopAttachment, XmATTACH_FORM,
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNleftOffset, V_MARGIN,
+            XmNrightAttachment, XmATTACH_FORM,
+            XmNrightOffset, V_MARGIN,
+            XmNfontList, fontList,
+            XmNbackground, background,
+            NULL);
     
     previewBox = XtVaCreateManagedWidget("previewBox", xmFormWidgetClass,
     	    previewForm,
@@ -1234,7 +1253,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNtopAttachment, XmATTACH_WIDGET,
-	    XmNtopWidget, sampleFrame, NULL);
+	    XmNtopWidget, etDialog.previewW, NULL);
     
     testLbl = XtVaCreateManagedWidget("testLabel", xmLabelGadgetClass,
     	    previewBox,
@@ -1248,7 +1267,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.oFileChangedW = XtVaCreateManagedWidget("fileChanged", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1260,7 +1278,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     
     etDialog.oFileReadOnlyW = XtVaCreateManagedWidget("fileReadOnly", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_WIDGET,
 	    XmNleftWidget, etDialog.oFileChangedW,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1272,7 +1289,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     
     etDialog.oFileLockedW = XtVaCreateManagedWidget("fileLocked", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_WIDGET,
 	    XmNleftWidget, etDialog.oFileReadOnlyW,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1284,7 +1300,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.oServerNameW = XtVaCreateManagedWidget("servernameSet", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1296,32 +1311,41 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 
     etDialog.oCcViewTagW = XtVaCreateManagedWidget("ccViewTagSet", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, etDialog.oServerNameW,
     	    XmNlabelString, s1=XmStringCreateSimple("CC view tag present"),
-    	    XmNset, GetClearCaseViewTag() != NULL,
+#ifdef VMS
+   	    XmNset, False,
+#else
+   	    XmNset, GetClearCaseViewTag() != NULL,
+#endif /* VMS */
     	    XmNmnemonic, 'w', NULL);
+#ifdef VMS
+    XtSetSensitive(etDialog.oCcViewTagW, False);
+#else
     XtAddCallback(etDialog.oCcViewTagW, XmNvalueChangedCallback, ccViewTagCB, NULL);
+#endif /* VMS */
     XmStringFree(s1);
 
     etDialog.oServerEqualViewW = XtVaCreateManagedWidget("serverEqualView", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_WIDGET,
     	    XmNleftWidget, etDialog.oCcViewTagW,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, etDialog.oServerNameW,
     	    XmNlabelString, s1=XmStringCreateSimple("Server name equals CC view tag  "),
     	    XmNmnemonic, 'q', NULL);
+#ifdef VMS
+    XtSetSensitive(etDialog.oServerEqualViewW, False);
+#else
     XtAddCallback(etDialog.oServerEqualViewW, XmNvalueChangedCallback, serverEqualViewCB, NULL);
+#endif /* VMS */
     XmStringFree(s1);
 
     etDialog.oDirW = XtVaCreateManagedWidget("pathSet", 
     	    xmToggleButtonWidgetClass, previewBox,
-    	    XmNmarginHeight, 0,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, RADIO_INDENT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -1341,6 +1365,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
 	    XmNtopWidget, previewFrame,
 	    XmNtopOffset, V_MARGIN,
 	    XmNbottomOffset, V_MARGIN,
+	    XmNbottomAttachment, XmATTACH_FORM,
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
 
@@ -1365,9 +1390,9 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     	    XmNhighlightThickness, 2,
     	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
     	    XmNleftAttachment, XmATTACH_POSITION,
-    	    XmNleftPosition, 29,
+    	    XmNleftPosition, 52,
     	    XmNrightAttachment, XmATTACH_POSITION,
-    	    XmNrightPosition, 48,
+    	    XmNrightPosition, 71,
     	    XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, defaultBtnOffset,
 	    NULL);
@@ -1379,9 +1404,9 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     	    XmNhighlightThickness, 2,
     	    XmNlabelString, s1=XmStringCreateSimple("Default"),
     	    XmNleftAttachment, XmATTACH_POSITION,
-    	    XmNleftPosition, 52,
+    	    XmNleftPosition, 29,
     	    XmNrightAttachment, XmATTACH_POSITION,
-    	    XmNrightPosition, 71,
+    	    XmNrightPosition, 48,
     	    XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, defaultBtnOffset,
 	    XmNmnemonic, 'e', NULL);
@@ -1420,9 +1445,11 @@ void EditCustomTitleFormat(Widget parent, WindowInfo *window)
      */
     strcpy(etDialog.path, window->path);
     strcpy(etDialog.filename, window->filename);
+#ifndef VMS
     strcpy(etDialog.viewTag, GetClearCaseViewTag() != NULL ?
                              GetClearCaseViewTag() :
                              "viewtag");
+#endif /* VMS */
     strcpy(etDialog.serverName, IsServer ?
                              GetPrefServerName() :
                              "servername");

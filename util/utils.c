@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.12 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.13 2002/06/08 13:56:52 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -142,9 +142,13 @@ const char
 
 /*
 ** Writes the hostname of the current system in string "hostname".
+**
+** NOTE: This function used to be called "GetHostName" but that resulted in a 
+** linking conflict on VMS with the standard gethostname function, because
+** VMS links case-insensitively.
 */
 const char
-*GetHostName(void)
+*GetNameOfHost(void)
 {
     static char hostname[MAXNODENAMELEN+1];
     static int  hostnameFound = False;

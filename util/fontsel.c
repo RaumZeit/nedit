@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.16 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.17 2002/06/08 13:56:52 tringali Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -92,6 +92,7 @@ typedef struct
 	XFontStruct	*oldFont;	/* font data structure for dispSample */
 	XmFontList	oldFontList;	/* font data structure for dispSample */
 	int	exitFlag;		/* used for program exit control */
+	int	destroyedFlag;		/* used to prevent double destruction */
 }	xfselControlBlkType;
 
 
@@ -121,6 +122,8 @@ static void	sizeAction(Widget widget, xfselControlBlkType *ctrlBlk,
 				 XmListCallbackStruct *call_data);
 static void	choiceMade(xfselControlBlkType *ctrlBlk);
 static void	dispSample(xfselControlBlkType *ctrlBlk);
+static void	destroyCB(Widget widget, xfselControlBlkType *ctrlBlk,
+				 XmListCallbackStruct *call_data);
 static void	cancelAction(Widget widget, xfselControlBlkType *ctrlBlk,
 				 XmListCallbackStruct *call_data);
 static void	okAction(Widget widget, xfselControlBlkType *ctrlBlk,
@@ -182,6 +185,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XmString		tempStr;
 	char			bigFont[MAX_FONT_NAME_LEN];
 	xfselControlBlkType	ctrlBlk;
+	Display			*theDisplay;
 
 	ctrlBlk.fontData	= XListFonts(XtDisplay(parent), 
 					     "-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 
@@ -416,6 +420,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 		ctrlBlk.propFontToggle	= propFontToggle;
 	ctrlBlk.dispLabel	= dispLabel;
 	ctrlBlk.exitFlag	= FALSE;
+	ctrlBlk.destroyedFlag	= FALSE;
 	ctrlBlk.showPropFonts	= showPropFonts;
 	ctrlBlk.showSizeInPixels= TRUE;
 	ctrlBlk.sel1		= NULL;
@@ -464,6 +469,11 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XmAddTabGroup(okButton);
 	XmAddTabGroup(cancelButton);
 
+        /* Make sure that we don't try to access the dialog if the user
+           destroyed it (possibly indirectly, by destroying the parent). */
+        XtAddCallback(dialog, XmNdestroyCallback,
+		(XtCallbackProc)destroyCB, (char *)&ctrlBlk);
+        
 	/*	Link Motif Close option to cancel action */
 
 	AddMotifCloseCallback(dialog, (XtCallbackProc)cancelAction, &ctrlBlk);
@@ -481,16 +491,25 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	if (currFont[0] != '\0')
 		startupFont(&ctrlBlk, currFont); 
 
+	/* Make sure that we can still access the display in case the form
+	   gets destroyed */
+	theDisplay = XtDisplay(form);
+
 	/*	enter event loop */
 
-	while (! ctrlBlk.exitFlag)
+	while (! ctrlBlk.exitFlag && ! ctrlBlk.destroyedFlag)
 		XtAppProcessEvent(XtWidgetToApplicationContext(form), XtIMAll);
 
-	XtDestroyWidget(dialog);
+	if (! ctrlBlk.destroyedFlag) {
+		/* Don't let the callback destroy the font name */
+		XtRemoveCallback(dialog, XmNdestroyCallback,
+		    (XtCallbackProc)destroyCB, (char *)&ctrlBlk);
+		XtDestroyWidget(dialog);
+	}
 
 	if (ctrlBlk.oldFont != NULL)
 	{
- 		XFreeFont(XtDisplay(form),  ctrlBlk.oldFont);
+		XFreeFont(theDisplay, ctrlBlk.oldFont);
 		XmFontListFree(ctrlBlk.oldFontList);
 	}
 
@@ -1137,6 +1156,14 @@ static void	dispSample(xfselControlBlkType *ctrlBlk)
 	ctrlBlk->oldFontList	= fontList;
 }
 
+
+static void	destroyCB(Widget widget, xfselControlBlkType *ctrlBlk,
+				 XmListCallbackStruct *call_data)
+{
+	/* Prevent double destruction of the font selection dialog */
+	ctrlBlk->destroyedFlag = TRUE;
+	cancelAction(widget, ctrlBlk, call_data);
+}
 
 static void	cancelAction(Widget widget, xfselControlBlkType *ctrlBlk,
 				 XmListCallbackStruct *call_data)

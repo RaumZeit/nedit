@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.31 2002/03/14 17:17:48 amai Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.32 2002/06/08 13:56:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -273,6 +273,18 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
     "*helpMenu.mnemonic: H",
+    "nedit.helpForm.sw.helpText*translations: #override\
+<Key>Tab:help-focus-buttons()\\n\
+<Key>Return:help-button-action(\"dismiss\")\\n\
+<KeyPress>osfCancel:help-button-action(\"dismiss\")\\n\
+~Meta~Ctrl~Shift<Btn1Down>:\
+    grab-focus() help-hyperlink()\\n\
+~Meta~Ctrl~Shift<Btn1Up>:\
+    help-hyperlink(\"current\", \"process-cancel\", \"extend-end\")\\n\
+~Meta~Ctrl~Shift<Btn2Down>:\
+    process-bdrag() help-hyperlink()\\n\
+~Meta~Ctrl~Shift<Btn2Up>:\
+    help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")",
     NULL
 };
 
@@ -366,6 +378,9 @@ int main(int argc, char **argv)
     
     /* Set up action procedures for menu item commands */
     InstallMenuActions(context);
+    
+    /* Add Actions for following hyperlinks in the help window */
+    InstallHelpLinkActions(context);
     
     /* Install word delimiters for regular expression matching */
     SetREDefaultWordDelimiters(GetPrefDelimiters());
