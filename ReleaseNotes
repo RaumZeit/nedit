@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5RC1, July 2004
 
 
-$Id: ReleaseNotes,v 1.24 2004/07/09 12:20:54 edg Exp $
+$Id: ReleaseNotes,v 1.25 2004/07/15 18:47:29 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -60,6 +60,8 @@ Bugs fixed in 5.5
   - Allow zero-length ranges to be added to range sets (SF bug #871209).
 
   - Improved shell syntax highlighting patterns (SF bug #770855).
+  
+  - Regular expression crash fix (SF bug #987102).
 
 New Features in 5.4
 
