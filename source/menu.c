@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.51 2002/03/02 17:02:22 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.52 2002/03/07 17:40:53 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -4331,9 +4331,19 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args,
     /* Pop up the menu */
     XmMenuPosition(window->bgMenuPane, (XButtonPressedEvent *)event);
     XtManageChild(window->bgMenuPane); 
-    XtPopup(XtParent(window->bgMenuPane), XtGrabNonexclusive);
-    XtMapWidget(XtParent(window->bgMenuPane));
-    XtMapWidget(window->bgMenuPane);
+    
+    /* 
+       These statements have been here for a very long time, but seem 
+       unnecessary and are even dangerous: when any of the lock keys are on,
+       Motif thinks it shouldn't display the background menu, but this 
+       callback is called anyway. When we then grab the focus and force the
+       menu to be drawn, bad things can happen (like a total lockup of the X
+       server).
+       
+       XtPopup(XtParent(window->bgMenuPane), XtGrabNonexclusive); 
+       XtMapWidget(XtParent(window->bgMenuPane));
+       XtMapWidget(window->bgMenuPane);  
+    */
 }
 
 #ifdef SGI_CUSTOM
