@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.80 2003/08/03 17:38:49 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.81 2003/11/18 15:11:59 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -701,7 +701,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    doActionCB, "control_code_dialog", FULL);
 #ifdef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep4", SHORT);
-    createMenuToggle(menuPane, "overtype", "Overtype", 'O',
+    window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O',
     	    doActionCB, "set_overtype_mode", False, SHORT);
     window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
     	    'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons), FULL);
