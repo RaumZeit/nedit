@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.32 2002/07/30 13:54:38 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.33 2002/07/31 20:08:49 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -107,6 +107,7 @@ typedef struct _highlightDataRec {
     signed char endSubexprs[NSUBEXP+1];
     int flags;
     int nSubPatterns;
+    int nSubBranches; /* Number of top-level branches of subPatternRE */
     int userStyleIndex;
     struct _highlightDataRec **subPatterns;
 } highlightDataRec;
@@ -803,8 +804,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     compiledPats[nPatterns].style = 0;
     
     /* Build the tree of parse expressions */
-    for (i=0; i<nPatterns; i++)
+    for (i=0; i<nPatterns; i++) {
     	compiledPats[i].nSubPatterns = 0;
+    	compiledPats[i].nSubBranches = 0;
+    }
     for (i=1; i<nPatterns; i++)
     	if (patternSrc[i].subPatternOf == NULL)
     	    compiledPats[0].nSubPatterns++;
@@ -929,6 +932,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    ptr += strlen(patternSrc[patternNum].endRE);
     	    *ptr++ = ')';
     	    *ptr++ = '|';
+	    compiledPats[patternNum].nSubBranches++;
 	}
 	if (patternSrc[patternNum].errorRE != NULL) {
 	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
@@ -936,6 +940,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    ptr += strlen(patternSrc[patternNum].errorRE);
     	    *ptr++ = ')';
     	    *ptr++ = '|';
+	    compiledPats[patternNum].nSubBranches++;
 	}
 	for (i=0; i<compiledPats[patternNum].nSubPatterns; i++) {
     	    subPatIndex = compiledPats[patternNum].subPatterns[i]-compiledPats;
@@ -946,6 +951,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    ptr += strlen(patternSrc[subPatIndex].startRE);
     	    *ptr++ = ')';
     	    *ptr++ = '|';
+	    compiledPats[patternNum].nSubBranches++;
 	}
 	*(ptr-1) = '\0';
 	compiledPats[patternNum].subPatternRE = CompileRE(bigPattern,
@@ -1338,7 +1344,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo)
 {
-    int i, subExecuted, subIndex, numBranches;
+    int i, subExecuted, subIndex;
     char *stringPtr, *stylePtr, *startingStringPtr, *savedStartPtr;
     signed char *subExpr;
     char savedPrevChar;
@@ -1347,10 +1353,6 @@ static int parseString(highlightDataRec *pattern, char **string,
     if (length <= 0)
     	return False;
 
-    numBranches = pattern->nSubPatterns;
-    if (pattern->endRE != NULL) ++numBranches;
-    if (pattern->errorRE != NULL) ++numBranches;
-    
     stringPtr = *string;
     stylePtr = *styleString;
     
@@ -1359,7 +1361,8 @@ static int parseString(highlightDataRec *pattern, char **string,
 	/* Beware of the case where only one real branch exists, but that 
 	   branch has sub-branches itself. In that case the top_branch refers 
 	   to the matching sub-branch and must be ignored. */
-	subIndex = (numBranches > 1) ? pattern->subPatternRE->top_branch : 0;
+	subIndex = (pattern->nSubBranches > 1) ? 
+	   pattern->subPatternRE->top_branch : 0;
     	/* Combination of all sub-patterns and end pattern matched */
     	/* printf("combined patterns RE matched at %d\n",
     	    	pattern->subPatternRE->startp[0] - *string); */
