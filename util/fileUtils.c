@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.13 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.14 2001/08/17 10:56:46 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -51,8 +51,6 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.13 2001/08/14 08:37:16 jlous E
 #define TRUE 1
 #define FALSE 0
 
-static int normalizePathname(char *pathname);
-static int compressPathname(char *pathname);
 static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
 static int compareThruSlash(char *string1, char *string2);
@@ -102,7 +100,7 @@ int ParseFilename(const char *fullname, char *filename, char *pathname)
 #ifdef VMS
     return TRUE;
 #else     /* UNIX specific... Modify at a later date for VMS */
-    return normalizePathname(pathname);
+    return NormalizePathname(pathname);
 #endif
 }
 
@@ -134,7 +132,7 @@ int ExpandTilde(char *pathname)
     return TRUE;
 }
     
-static int normalizePathname(char *pathname)
+int NormalizePathname(char *pathname)
 {
     char oldPathname[MAXPATHLEN];
 
@@ -162,16 +160,31 @@ static int normalizePathname(char *pathname)
     }
 
     /* compress out .. and . */
-    return compressPathname(pathname);
+    return CompressPathname(pathname);
 }
 
-
-static int compressPathname(char *pathname)
+int CompressPathname(char *pathname)
 {
     char buf[MAXPATHLEN+1];
     char *inPtr, *outPtr;
     struct stat statbuf;
 
+    /* (Added by schwarzenberg)
+    ** replace multiple slashes by a single slash 
+    */
+    inPtr=pathname;
+    outPtr=buf;
+    while (*inPtr) {
+      	*outPtr=*inPtr++;
+      	if(*outPtr=='/') {
+	    while(*inPtr=='/')
+	      	inPtr++;
+      	}
+      	outPtr++;
+    }
+    *outPtr=0;
+    strcpy(pathname, buf);
+    
     /* compress out . and .. */
     inPtr = pathname;
     outPtr = buf;
