@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.37 2004/04/30 14:35:16 edg Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.38 2004/04/30 15:27:00 edg Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -809,6 +809,11 @@ char *AllocString(int length)
     return mem + sizeof(char *) + 1;
 }
 
+/* 
+ * Allocate a new NString buffer of length chars (terminating \0 included), 
+ * The buffer length is initialized to length-1 and the terminating \0 is 
+ * filled in. 
+ */
 int AllocNString(NString *string, int length)
 {
     char *mem;
@@ -843,6 +848,12 @@ char *AllocStringNCpy(const char *s, int length)
     return strncpy(p, s, length);
 }
 
+/* 
+ * Allocate a new NString buffer of length chars (terminating \0 NOT included),
+ * and copy at most length characters of the given string.
+ * The buffer length is properly set and the buffer is guaranteed to be 
+ * \0-terminated.
+ */
 int AllocNStringNCpy(NString *string, const char *s, int length)
 {
     if (!AllocNString(string, length + 1)) /* add extra char for forced \0 */
@@ -860,6 +871,11 @@ char *AllocStringCpy(const char *s)
     return AllocStringNCpy(s, s ? strlen(s) : 0);
 }
 
+/* 
+ * Allocate a new NString buffer, containing a copy of the given string.
+ * The length is set to the length of the string and resulting string is
+ * guaranteed to be \0-terminated.
+ */
 int AllocNStringCpy(NString *string, const char *s)
 {
     size_t length = s ? strlen(s) : 0;
