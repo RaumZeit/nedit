@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.45 2001/12/13 13:14:31 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.46 2001/12/24 09:46:57 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -650,7 +650,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuSeparator(menuPane, "sep3", FULL);
     createMenuItem(menuPane, "insertFormFeed", "Insert Form Feed", 'I',
     	    formFeedCB, window, FULL);
-    createMenuItem(menuPane, "insertCtrlCode", "Insert Ctrl Code", 'n',
+    createMenuItem(menuPane, "insertCtrlCode", "Insert Ctrl Code...", 'n',
     	    doActionCB, "control_code_dialog", FULL);
 #ifdef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep4", SHORT);
@@ -2160,7 +2160,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     char fullname[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "File to Edit:", fullname);
+    response = PromptForExistingFile(window, "File to Edit", fullname);
     if (response != GFN_OK)
     	return;
     params[0] = fullname;
@@ -2228,7 +2228,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
     int response, addWrap, fileFormat;
     char fullname[MAXPATHLEN], *params[2];
     
-    response = PromptForNewFile(window, "Save File As:", fullname,
+    response = PromptForNewFile(window, "Save File As", fullname,
 	    &fileFormat, &addWrap);
     if (response != GFN_OK)
     	return;
@@ -2281,7 +2281,7 @@ static void includeDialogAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    response = PromptForExistingFile(window, "File to include:", filename);
+    response = PromptForExistingFile(window, "File to Include", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2308,7 +2308,7 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args,
     char filename[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "NEdit macro file:", filename);
+    response = PromptForExistingFile(window, "NEdit Macro File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;
@@ -2331,7 +2331,7 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args,
     char filename[MAXPATHLEN], *params[1];
     int response;
     
-    response = PromptForExistingFile(window, "ctags file:", filename);
+    response = PromptForExistingFile(window, "ctags File", filename);
     if (response != GFN_OK)
     	return;
     params[0] = filename;

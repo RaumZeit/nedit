@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.17 2001/12/04 18:03:39 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.18 2001/12/24 09:46:57 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -265,38 +265,35 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
     int       n;                      /* number of arguments               */
     Arg	      args[MAX_ARGS];	      /* arg list	                   */
     Widget    existFileSB;	      /* widget file select box 	   */
-    XmString  labelString;            /* compound string for prompt label  */
     XmString  titleString;	      /* compound string for dialog title  */
 
     n = 0;
-    labelString = XmStringCreateSimple(promptString);
-    titleString = XmStringCreateSimple(" ");
-    XtSetArg(args[n], XmNlistLabelString, labelString); n++;
+    titleString = XmStringCreateSimple(promptString);
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
     existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
-    XmStringFree(labelString);
     XmStringFree(titleString);
 #ifndef SGI_CUSTOM
     if (RemoveRedundantTextField)
-    	XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT)); 
-    XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB,
-    	    XmDIALOG_SELECTION_LABEL));
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB,
-    	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB,
-    	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST), NULL);
+        XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT)); 
+    XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_SELECTION_LABEL));
+
+    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_LABEL),
+            XmNmnemonic, 'l',
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST_LABEL),
+            XmNmnemonic, 'D',
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST),
+            NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
-    	    XmNmnemonic, promptString[strspn(promptString, "lD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), NULL);
+            XmNmnemonic, promptString[strspn(promptString, "lD")],
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST),
+            NULL);
     AddDialogMnemonicHandler(existFileSB, FALSE);
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB,
-                    XmDIALOG_FILTER_TEXT));
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB,
-                    XmDIALOG_TEXT));
+    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT));
+    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT));
 #endif
     return HandleCustomExistFileSB(existFileSB, filename);
 }

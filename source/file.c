@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.40 2001/12/07 10:50:14 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.41 2001/12/24 09:46:57 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -625,7 +625,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     
     /* Get the new name for the file */
     if (newName == NULL) {
-	response = PromptForNewFile(window, "Save File As:", fullname,
+	response = PromptForNewFile(window, "Save File As", fullname,
 		&fileFormat, &addWrap);
 	if (response != GFN_OK)
     	    return FALSE;
@@ -1175,10 +1175,13 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     /* Present a file selection dialog with an added field for requesting
        long line wrapping to become permanent via inserted newlines */
     n = 0;
-    XtSetArg(args[n], XmNselectionLabelString, 
-    	    s1=XmStringCreateSimple(prompt)); n++;     
+    XtSetArg(args[n],
+            XmNselectionLabelString,
+            s1 = XmStringCreateLocalized("New File Name:")); n++;
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-    XtSetArg(args[n], XmNdialogTitle, s2=XmStringCreateSimple(" ")); n++;
+    XtSetArg(args[n],
+            XmNdialogTitle,
+            s2 = XmStringCreateSimple(prompt)); n++;
     XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
     fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);

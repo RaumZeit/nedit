@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.21 2001/12/10 04:58:00 edel Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.22 2001/12/24 09:46:57 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -129,19 +129,19 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 static void freePatterns(highlightDataRec *patterns);
 static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData,
-    	textBuffer *buf, int pos, int nInserted, char *delimiters);
+    	textBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns,
     	highlightDataRec *pass2Patterns, textBuffer *buf, textBuffer *styleBuf,
         reparseContext *contextRequirements, int beginParse, int endParse,
-        char *delimiters);
+        const char *delimiters);
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	char *delimiters);
+    	const char *delimiters);
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	char *delimiters);
+    	const char *delimiters);
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *delimiters, char *prevChar);
+    	char style, const char *delimiters, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
@@ -193,8 +193,6 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
     WindowInfo *window = (WindowInfo *)cbArg;
     windowHighlightData 
     	    *highlightData = (windowHighlightData *)window->highlightData;
-    char *insStyle;
-    int i;
     
     if (highlightData == NULL)
     	return;
@@ -210,14 +208,18 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
     /* First and foremost, the style buffer must track the text buffer
        accurately and correctly */
     if (nInserted > 0) {
+        char *insStyle;
+        int i;
+
     	insStyle = XtMalloc(sizeof(char) * (nInserted + 1));
     	for (i=0; i<nInserted; i++)
     	    insStyle[i] = UNFINISHED_STYLE;
     	insStyle[i] = '\0';
     	BufReplace(highlightData->styleBuffer, pos, pos+nDeleted, insStyle);
     	XtFree(insStyle);
-    } else
+    } else {
     	BufRemove(highlightData->styleBuffer, pos, pos+nDeleted);
+    }
 
     /* Mark the changed region in the style buffer as requiring redraw.  This
        is not necessary for getting it redrawn, it will be redrawn anyhow by
@@ -1023,7 +1025,7 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
 ** with the parsing result.
 */
 static void incrementalReparse(windowHighlightData *highlightData,
-    	textBuffer *buf, int pos, int nInserted, char *delimiters)
+    	textBuffer *buf, int pos, int nInserted, const char *delimiters)
 {
     int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
     textBuffer *styleBuf = highlightData->styleBuffer;
@@ -1116,7 +1118,7 @@ static void incrementalReparse(windowHighlightData *highlightData,
 static int parseBufferRange(highlightDataRec *pass1Patterns,
     	highlightDataRec *pass2Patterns, textBuffer *buf, textBuffer *styleBuf,
         reparseContext *contextRequirements, int beginParse, int endParse,
-        char *delimiters)
+        const char *delimiters)
 {
     char *string, *styleString, *stringPtr, *stylePtr, *temp, prevChar;
     int endSafety, endPass2Safety, startPass2Safety, tempLen;
@@ -1273,7 +1275,7 @@ parseDone:
 */
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	char *delimiters)
+    	const char *delimiters)
 {
     int i;
     char *stringPtr, *stylePtr, *startingStringPtr;
@@ -1404,10 +1406,11 @@ static int parseString(highlightDataRec *pattern, char **string,
 */
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	char *delimiters)
+    	const char *delimiters)
 {
     int inParseRegion = False;
     char *stylePtr, *stringPtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
+    const 
     int firstPass2Style = (unsigned char)pattern[1].style;
     
     for (c = string, s = styleString; ; c++, s++) {
@@ -1444,7 +1447,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
 ** routines for determining word and line boundaries at the start of the string.
 */
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *delimiters, char *prevChar)
+    	char style, const char *delimiters, char *prevChar)
 {
     int i;
     
