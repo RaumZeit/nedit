@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.129 2004/03/06 02:24:33 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.130 2004/03/19 09:53:21 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -837,15 +837,11 @@ static int compareWindowNames(const void *windowA, const void *windowB)
 
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
-**
-** This makes no assumptions about whether or not the docs from window->shell
-** are grouped together or interleaved with docs from other shells in
-** WindowList.
 */
 void SortTabBar(WindowInfo *window)
 {
-    WindowInfo *w, *otherWins;
-    WindowInfo **windows, **twFirst, **owLast;
+    WindowInfo *w;
+    WindowInfo **windows;
     WidgetList tabList;
     int i, nDoc;
 
@@ -857,39 +853,17 @@ void SortTabBar(WindowInfo *window)
     if (nDoc < 2)
         return;
 
-    /* first sort the documents, choosing only those files in this window */
-    
-    /* point twFirst at the ptr to the first document from this window */
-    for( twFirst = &WindowList; (*twFirst)->shell != window->shell; )
-        twFirst = &(*twFirst)->next;
-    
-    otherWins = NULL;
-    owLast = &otherWins;
+    /* first sort the documents */
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
-    for (w=*twFirst, i=0; w!=NULL; w=w->next) {
-    	if (window->shell == w->shell) {
+    for (w=WindowList, i=0; w!=NULL; w=w->next) {
+    	if (window->shell == w->shell)
     	    windows[i++] = w;
-        } else {
-            if (NULL == otherWins)  /* This is the first doc of other wins */
-                otherWins = w;
-            *owLast = w;
-            owLast = &(w->next);
-        }
-            
     }
-    /* Now otherWins should be a linked list of the docs from other windows
-        "after" this window, and owLast should point at the final dangling
-        "next" pointer in that list (or otherWins if it's empty). */
-    *owLast = NULL;
     qsort(windows, nDoc, sizeof(WindowInfo *), compareWindowNames);
 
-    /* assign tabs to documents in sorted order & clean up "next" pointers */
-    *twFirst = windows[nDoc-1];
-    windows[0]->next = otherWins;
+    /* assign tabs to documents in sorted order */
     XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, NULL);
     for (i=0; i<nDoc; i++) {
-        if (i>0)
-            windows[i]->next = windows[i-1];
     	if (windows[i]->tab == tabList[i])
 	    continue;
 	    
@@ -3483,34 +3457,64 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 }
 
 /*
-** return the next window/buffer on the tab list.
+** return the next/previous docment on the tab list.
 */
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin)
 {
-    int n, tabPos = 0, nextPos;
-    WindowInfo **winList, *win;
+    WidgetList tabList, tabs;
+    WindowInfo *win;
+    int tabCount, tabTotalCount;
+    int tabPos, nextPos;
+    int i, n;
     int nBuf = crossWin? NWindows() : NDocuments(window);
-    
+
     if (nBuf <= 1)
     	return NULL;
+
+    /* get the list of tabs */
+    tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
+    tabTotalCount = 0;
+    if (crossWin) {
+	int n, nItems;
+	WidgetList children;
+
+	XtVaGetValues(TheAppShell, XmNchildren, &children, 
+    		XmNnumChildren, &nItems, NULL);
 	
-    winList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nBuf);
-    n = nBuf -1;
-    for (win=WindowList; win && n>=0; win=win->next) {
-    	if (crossWin)
-	    winList[n--] = win;
-	else if (win->shell == window->shell)
-	    winList[n--] = win;
+	/* get list of tabs in all windows */
+    	for (n=0; n<nItems; n++) {
+	    if (strcmp(XtName(children[n]), "textShell") ||
+	      ((win = WidgetToWindow(children[n])) == NULL))
+	    	continue;   /* skip non-text-editor windows */ 
+	    
+    	    XtVaGetValues(win->tabBar, XmNtabWidgetList, &tabList,
+            	    XmNtabCount, &tabCount, NULL);
+	    
+    	    for (i=0; i< tabCount; i++) {
+	    	tabs[tabTotalCount++] = tabList[i];
+	    }
+	}
+    }
+    else {
+	/* get list of tabs in this window */
+    	XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList,
+            	XmNtabCount, &tabCount, NULL);
+
+    	for (i=0; i< tabCount; i++) {
+	    tabs[tabTotalCount++] = tabList[i];
+	}
     }
     
-    for (n=0; n<nBuf; n++) {
-    	if (winList[n] == window) {
+    /* find the position of the tab in the tablist */
+    tabPos = 0;
+    for (n=0; n<tabTotalCount; n++) {
+    	if (tabs[n] == window->tab) {
 	    tabPos = n;
 	    break;
-	}   
+	}
     }
-
+    
     /* calculate index position of next tab */
     nextPos = tabPos + direction;
     if (nextPos >= nBuf)
@@ -3518,9 +3522,9 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     else if (nextPos < 0)
     	nextPos = nBuf - 1;
     
-    /* find which window next tab belongs to */
-    win = winList[nextPos];
-    XtFree((char *)winList);
+    /* return the document where the next tab belongs to */
+    win = TabToWindow(tabs[nextPos]);
+    XtFree((char *)tabs);
     return win;
 }
 
