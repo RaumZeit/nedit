@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.147 2004/04/23 16:35:44 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.148 2004/04/24 03:12:58 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1053,13 +1053,6 @@ void CloseWindow(WindowInfo *window)
 	    topBuf = GetTopDocument(window->shell);	    
     }
     
-    /* remove the window from the global window list, update window menus */
-    removeFromWindowList(window);
-    InvalidateWindowMenus();
-
-    /* remove tab from tab bar */
-    XtDestroyWidget(window->tab);
-
     if (nextBuf) {
         /* show the replacement buffer */
     	RaiseDocument(nextBuf);
@@ -1070,6 +1063,13 @@ void CloseWindow(WindowInfo *window)
 	ShowWindowTabBar(topBuf);
     }
     
+    /* remove the window from the global window list, update window menus */
+    removeFromWindowList(window);
+    InvalidateWindowMenus();
+
+    /* remove tab from tab bar */
+    XtDestroyWidget(window->tab);
+
     /* dim/undim Detach_Tab menu items */
     win = nextBuf? nextBuf : topBuf;
     if (win) {
