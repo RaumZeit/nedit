@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.83 2003/03/21 18:22:14 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.84 2003/04/03 19:05:32 jlous Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -50,6 +50,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.83 2003/03/21 18:22:14 edg E
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
 #include "../util/fontsel.h"
+#include "../util/fileUtils.h"
 #include "../util/utils.h"
 
 #include <stdlib.h>
@@ -1307,20 +1308,22 @@ void SaveNEditPrefs(Widget parent, int quietly)
 void ImportPrefFile(const char *filename, int convertOld)
 {
     XrmDatabase db;
+    char *fileString;
     
-    if ((db = XrmGetFileDatabase(filename)) != NULL)
-    	{		
-     	 OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
-    	    	XtNumber(PrefDescrip));
-         
-       translatePrefFormats(convertOld, -1);
-       ImportedFile = XtNewString(filename);
-      } else
-      {
-       fprintf(stderr, "Could not open additional preferences file: ");
-       fprintf(stderr, filename);
-       fprintf(stderr, "\n");
-	}
+    fileString = ReadAnyTextFile(filename);
+    if (fileString != NULL){
+        db = XrmGetStringDatabase(fileString);
+        XtFree(fileString);
+        OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
+        XtNumber(PrefDescrip));
+        translatePrefFormats(convertOld, -1);
+        ImportedFile = XtNewString(filename);
+    } else
+    {
+        fprintf(stderr, "Could not read additional preferences file: ");
+        fprintf(stderr, filename);
+        fprintf(stderr, "\n");
+    }
 }
 
 void SetPrefWrap(int state)

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.35 2003/03/24 17:05:26 edg Exp $ */
+/* $Id: nedit.h,v 1.36 2003/04/03 19:05:31 jlous Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -72,7 +72,6 @@
 
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
-enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT};
 enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
 enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
                        VIRT_KEY_OVERRIDE_ALWAYS };

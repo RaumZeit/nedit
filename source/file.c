@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.57 2003/02/20 17:30:00 arnef Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.58 2003/04/03 19:05:26 jlous Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -77,14 +77,6 @@ static const char CVSID[] = "$Id: file.c,v 1.57 2003/02/20 17:30:00 arnef Exp $"
 #include "../debug.h"
 #endif
 
-/* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
-   scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
-   characters of the beginning of the file, checking that all newlines are
-   paired with carriage returns.  If even a single counterexample exists,
-   the file is judged to be in Unix format. */
-#define FORMAT_SAMPLE_LINES 5
-#define FORMAT_SAMPLE_CHARS 2000
-
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
@@ -103,12 +95,6 @@ static const char *errorString(void);
 static void addWrapNewlines(WindowInfo *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static int formatOfFile(const char *fileString);
-static void convertFromDosFileString(char *inString, int *length, 
-     char* pendingCR);
-static void convertFromMacFileString(char *fileString, int length);
-static int convertToDosFileString(char **fileString, int *length);
-static void convertToMacFileString(char *fileString, int length);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
 static int min(int i1, int i2);
 
@@ -424,11 +410,11 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     window->lastModTime = statbuf.st_mtime;
     window->fileMissing = FALSE;
     /* Detect and convert DOS and Macintosh format files */
-    window->fileFormat = formatOfFile(fileString);
+    window->fileFormat = FormatOfFile(fileString);
     if (window->fileFormat == DOS_FILE_FORMAT)
-	convertFromDosFileString(fileString, &readLen, NULL);
+	ConvertFromDosFileString(fileString, &readLen, NULL);
     else if (window->fileFormat == MAC_FILE_FORMAT)
-	convertFromMacFileString(fileString, readLen);
+	ConvertFromMacFileString(fileString, readLen);
     
     /* Display the file contents in the text widget */
     window->ignoreModify = True;
@@ -524,11 +510,11 @@ int IncludeFile(WindowInfo *window, const char *name)
     fileString[readLen] = 0;
     
     /* Detect and convert DOS and Macintosh format files */
-    switch (formatOfFile(fileString)) {
+    switch (FormatOfFile(fileString)) {
         case DOS_FILE_FORMAT:
-	    convertFromDosFileString(fileString, &readLen, NULL); break;
+	    ConvertFromDosFileString(fileString, &readLen, NULL); break;
         case MAC_FILE_FORMAT:
-	    convertFromMacFileString(fileString, readLen); break;
+	    ConvertFromMacFileString(fileString, readLen); break;
     }
     
     /* If the file contained ascii nulls, re-map them */
@@ -781,13 +767,13 @@ static int doSave(WindowInfo *window)
     
     /* If the file is to be saved in DOS or Macintosh format, reconvert */
     if (window->fileFormat == DOS_FILE_FORMAT) {
-	if (!convertToDosFileString(&fileString, &fileLen)) {
+	if (!ConvertToDosFileString(&fileString, &fileLen)) {
 	    DialogF(DF_ERR, window->shell, 1, "Out of memory!  Try\n"
 		    "saving in Unix format", "Dismiss");
 	    return FALSE;
 	}
     } else if (window->fileFormat == MAC_FILE_FORMAT)
-	convertToMacFileString(fileString, fileLen);
+	ConvertToMacFileString(fileString, fileLen);
  	
     /* add a terminating newline if the file doesn't already have one for
     Unix utilities which get confused otherwise */
@@ -1634,141 +1620,6 @@ static void addWrapNewlines(WindowInfo *window)
     XmToggleButtonSetState(window->continuousWrapItem, False, True);
 }
 
-/*
-** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
-** characters, to determine whether fileString represents a MS DOS or Macintosh
-** format file.  If there's ANY ambiguity (a newline in the sample not paired
-** with a return in an otherwise DOS looking file, or a newline appearing in
-** the sampled portion of a Macintosh looking file), the file is judged to be
-** Unix format.
-*/
-static int formatOfFile(const char *fileString)
-{
-    const char *p;
-    int nNewlines = 0, nReturns = 0;
-    
-    for (p=fileString; *p!='\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
-	if (*p == '\n') {
-	    nNewlines++;
-	    if (p == fileString || *(p-1) != '\r')
-		return UNIX_FILE_FORMAT;
-	    if (nNewlines >= FORMAT_SAMPLE_LINES)
-		return DOS_FILE_FORMAT;
-	} else if (*p == '\r')
-	    nReturns++;
-    }
-    if (nNewlines > 0)
-	return DOS_FILE_FORMAT;
-    if (nReturns > 1)
-	return MAC_FILE_FORMAT;
-    return UNIX_FILE_FORMAT;
-}
-
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
-** In the DOS case, the length will be shorter, and passed length will be
-** modified to reflect the new length. The routine has support for blockwise
-** file to string conversion: if the fileString has a trailing '\r' and 
-** 'pendingCR' is not zero, the '\r' is deposited in there and is not
-** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
-** It's the caller's responsability to make sure that the pending character, 
-** if present, is inserted at the beginning of the next block to convert.
-*/
-static void convertFromDosFileString(char *fileString, int *length, 
-    char* pendingCR)
-{
-    char *outPtr = fileString;
-    char *inPtr = fileString;
-    if (pendingCR) *pendingCR = 0;
-    while (inPtr < fileString + *length) {
-    	if (*inPtr == '\r') {
-	    if (inPtr < fileString + *length - 1) {
-		if (*(inPtr + 1) == '\n')
-		    inPtr++;
-	    } else {
-		if (pendingCR) {
-		    *pendingCR = *inPtr;
-		    break; /* Don't copy this trailing '\r' */
-		}
-	    }
-	}
-	*outPtr++ = *inPtr++;
-    }
-    *outPtr = '\0';
-    *length = outPtr - fileString;
-}
-static void convertFromMacFileString(char *fileString, int length)
-{
-    char *inPtr = fileString;
-    while (inPtr < fileString + length) {
-        if (*inPtr == '\r' )
-            *inPtr = '\n';
-        inPtr++;
-    }
-}
-
-/*
-** Converts a string (which may represent the entire contents of the file) from
-** Unix to DOS format.  String is re-allocated (with malloc), and length is
-** modified.  If allocation fails, which it may, because this can potentially
-** be a huge hunk of memory, returns FALSE and no conversion is done.
-**
-** This could be done more efficiently by asking doSave to allocate some
-** extra memory for this, and only re-allocating if it wasn't enough.  If
-** anyone cares about the performance or the potential for running out of
-** memory on a save, it should probably be redone.
-*/
-static int convertToDosFileString(char **fileString, int *length)
-{
-    char *outPtr, *outString;
-    char *inPtr = *fileString;
-    int inLength = *length;
-    int outLength = 0;
-
-    /* How long a string will we need? */
-    while (inPtr < *fileString + inLength) {
-    	if (*inPtr == '\n')
-	    outLength++;
-	inPtr++;
-	outLength++;
-    }
-    
-    /* Allocate the new string */
-    outString = (char *)XtMalloc(outLength + 1);
-    if (outString == NULL)
-	return FALSE;
-    
-    /* Do the conversion, free the old string */
-    inPtr = *fileString;
-    outPtr = outString;
-    while (inPtr < *fileString + inLength) {
-    	if (*inPtr == '\n')
-	    *outPtr++ = '\r';
-	*outPtr++ = *inPtr++;
-    }
-    *outPtr = '\0';
-    XtFree(*fileString);
-    *fileString = outString;
-    *length = outLength;
-    return TRUE;
-}
-
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from Unix to Macintosh format.
-*/
-static void convertToMacFileString(char *fileString, int length)
-{
-    char *inPtr = fileString;
-    
-    while (inPtr < fileString + length) {
-	if (*inPtr == '\n' )
-            *inPtr = '\r';
-	inPtr++;
-    }
-}
-
 /* 
  * Number of bytes read at once by cmpWinAgainstFile
  */
@@ -1843,9 +1694,9 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
         nRead += offset;
 
         if (fileFormat == MAC_FILE_FORMAT)
-            convertFromMacFileString(fileString, nRead);
+            ConvertFromMacFileString(fileString, nRead);
         else if (fileFormat == DOS_FILE_FORMAT)
-            convertFromDosFileString(fileString, &nRead, &pendingCR);
+            ConvertFromDosFileString(fileString, &nRead, &pendingCR);
 
         /* Beware of 0 chars ! */
         BufSubstituteNullChars(fileString, nRead, buf);

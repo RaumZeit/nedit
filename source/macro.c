@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.60 2002/12/12 17:25:54 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.61 2003/04/03 19:05:29 jlous Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -50,6 +50,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.60 2002/12/12 17:25:54 slobasso Ex
 #include "calltips.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "highlight.h"
 #include "highlightData.h"
@@ -780,37 +781,20 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
     FILE *fp;
     int fileLen, readLen, result;
     char *fileString;
-    
-    /* Read the whole file into fileString */
-    if ((fp = fopen(fileName, "r")) == NULL) {
-    	if (warnNotExist)
-	    DialogF(DF_ERR, window->shell, 1, "Can't open macro file %s",
-    	    	    "dismiss", fileName);
-    	return False;
-    }
-    if (fstat(fileno(fp), &statbuf) != 0) {
-	DialogF(DF_ERR, window->shell, 1, "Can't read macro file %s",
-    	    	"dismiss", fileName);
-	fclose(fp);
-	return False;
-    }
-    fileLen = statbuf.st_size;
-    fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
-    readLen = fread(fileString, sizeof(char), fileLen, fp);
-    if (ferror(fp)) {
-    	DialogF(DF_ERR, window->shell, 1, "Error reading macro file %s: %s",
-    	    	"dismiss", fileName,
+
+    fileString = ReadAnyTextFile(fileName);
+    if (fileString == NULL){
+        if (errno != ENOENT || warnNotExist){
+    	    DialogF(DF_ERR, window->shell, 1, "Error reading macro file %s: %s",
+                "dismiss", fileName,
 #ifdef VMS
-    	    	strerror(errno, vaxc$errno));
+                strerror(errno, vaxc$errno));
 #else
-    	    	strerror(errno));
+                strerror(errno));
 #endif
-	XtFree(fileString);
-	fclose(fp);
-	return False;
+        }
+        return False;                    
     }
-    fclose(fp);
-    fileString[readLen] = 0;
 
     /* Parse fileString */
     result = readCheckMacroString(window->shell, fileString, window, fileName,

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.27 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.28 2003/04/03 19:05:36 jlous Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.27 2002/09/26 12:37:40 ajhood 
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <X11/Intrinsic.h>
 #ifdef VAXC
 #define NULL (void *) 0
 #endif /*VAXC*/
@@ -65,6 +66,14 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.27 2002/09/26 12:37:40 ajhood 
 
 #define TRUE 1
 #define FALSE 0
+
+/* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
+   scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
+   characters of the beginning of the file, checking that all newlines are
+   paired with carriage returns.  If even a single counterexample exists,
+   the file is judged to be in Unix format. */
+#define FORMAT_SAMPLE_LINES 5
+#define FORMAT_SAMPLE_CHARS 2000
 
 static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
@@ -485,3 +494,181 @@ const char
     }
     return(ptr);
 } 
+
+/*
+** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
+** characters, to determine whether fileString represents a MS DOS or Macintosh
+** format file.  If there's ANY ambiguity (a newline in the sample not paired
+** with a return in an otherwise DOS looking file, or a newline appearing in
+** the sampled portion of a Macintosh looking file), the file is judged to be
+** Unix format.
+*/
+int FormatOfFile(const char *fileString)
+{
+    const char *p;
+    int nNewlines = 0, nReturns = 0;
+    
+    for (p=fileString; *p!='\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
+	if (*p == '\n') {
+	    nNewlines++;
+	    if (p == fileString || *(p-1) != '\r')
+		return UNIX_FILE_FORMAT;
+	    if (nNewlines >= FORMAT_SAMPLE_LINES)
+		return DOS_FILE_FORMAT;
+	} else if (*p == '\r')
+	    nReturns++;
+    }
+    if (nNewlines > 0)
+	return DOS_FILE_FORMAT;
+    if (nReturns > 1)
+	return MAC_FILE_FORMAT;
+    return UNIX_FILE_FORMAT;
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file)
+** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
+** In the DOS case, the length will be shorter, and passed length will be
+** modified to reflect the new length. The routine has support for blockwise
+** file to string conversion: if the fileString has a trailing '\r' and 
+** 'pendingCR' is not zero, the '\r' is deposited in there and is not
+** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
+** It's the caller's responsability to make sure that the pending character, 
+** if present, is inserted at the beginning of the next block to convert.
+*/
+void ConvertFromDosFileString(char *fileString, int *length, 
+    char* pendingCR)
+{
+    char *outPtr = fileString;
+    char *inPtr = fileString;
+    if (pendingCR) *pendingCR = 0;
+    while (inPtr < fileString + *length) {
+    	if (*inPtr == '\r') {
+	    if (inPtr < fileString + *length - 1) {
+		if (*(inPtr + 1) == '\n')
+		    inPtr++;
+	    } else {
+		if (pendingCR) {
+		    *pendingCR = *inPtr;
+		    break; /* Don't copy this trailing '\r' */
+		}
+	    }
+	}
+	*outPtr++ = *inPtr++;
+    }
+    *outPtr = '\0';
+    *length = outPtr - fileString;
+}
+void ConvertFromMacFileString(char *fileString, int length)
+{
+    char *inPtr = fileString;
+    while (inPtr < fileString + length) {
+        if (*inPtr == '\r' )
+            *inPtr = '\n';
+        inPtr++;
+    }
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file) from
+** Unix to DOS format.  String is re-allocated (with malloc), and length is
+** modified.  If allocation fails, which it may, because this can potentially
+** be a huge hunk of memory, returns FALSE and no conversion is done.
+**
+** This could be done more efficiently by asking doSave to allocate some
+** extra memory for this, and only re-allocating if it wasn't enough.  If
+** anyone cares about the performance or the potential for running out of
+** memory on a save, it should probably be redone.
+*/
+int ConvertToDosFileString(char **fileString, int *length)
+{
+    char *outPtr, *outString;
+    char *inPtr = *fileString;
+    int inLength = *length;
+    int outLength = 0;
+
+    /* How long a string will we need? */
+    while (inPtr < *fileString + inLength) {
+    	if (*inPtr == '\n')
+	    outLength++;
+	inPtr++;
+	outLength++;
+    }
+    
+    /* Allocate the new string */
+    outString = XtMalloc(outLength + 1);
+    if (outString == NULL)
+	return FALSE;
+    
+    /* Do the conversion, free the old string */
+    inPtr = *fileString;
+    outPtr = outString;
+    while (inPtr < *fileString + inLength) {
+    	if (*inPtr == '\n')
+	    *outPtr++ = '\r';
+	*outPtr++ = *inPtr++;
+    }
+    *outPtr = '\0';
+    XtFree(*fileString);
+    *fileString = outString;
+    *length = outLength;
+    return TRUE;
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file)
+** from Unix to Macintosh format.
+*/
+void ConvertToMacFileString(char *fileString, int length)
+{
+    char *inPtr = fileString;
+    
+    while (inPtr < fileString + length) {
+	if (*inPtr == '\n' )
+            *inPtr = '\r';
+	inPtr++;
+    }
+}
+
+/*
+** Reads a text file into a string buffer, converting line breaks to 
+** unix-style if appropriate. 
+*/
+char *ReadAnyTextFile(const char *fileName)
+{
+    struct stat statbuf;
+    FILE *fp;
+    int fileLen, readLen, result;
+    char *fileString;
+    int format;
+            
+    /* Read the whole file into fileString */
+    if ((fp = fopen(fileName, "r")) == NULL) {
+      return NULL;
+    }
+    if (fstat(fileno(fp), &statbuf) != 0) {
+      fclose(fp);
+      return NULL;
+    }
+    fileLen = statbuf.st_size;
+    fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
+    readLen = fread(fileString, sizeof(char), fileLen, fp);
+    if (ferror(fp)) {
+      XtFree(fileString);
+      fclose(fp);
+      return NULL;
+    }
+    fclose(fp);
+    fileString[readLen] = 0;
+
+    /* Convert linebreaks? */
+    format = FormatOfFile(fileString);
+    if (format == DOS_FILE_FORMAT){
+        char pendingCR;
+        ConvertFromDosFileString(fileString, &readLen, &pendingCR);
+    } else if (format == MAC_FILE_FORMAT){
+        ConvertFromMacFileString(fileString, readLen);
+    }
+
+    return fileString;
+}

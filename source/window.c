@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.78 2003/04/03 15:45:18 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.79 2003/04/03 19:05:34 jlous Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -54,6 +54,7 @@ static const char CVSID[] = "$Id: window.c,v 1.78 2003/04/03 15:45:18 edg Exp $"
 #include "windowTitle.h"
 #include "../util/clearcase.h"
 #include "../util/misc.h"
+#include "../util/fileUtils.h"
 #include "../util/utils.h"
 
 #include <stdio.h>
