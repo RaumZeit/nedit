@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.19 2001/11/16 10:06:34 amai Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.20 2002/02/21 18:53:36 tringali Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -226,25 +226,34 @@ static int min(int i1, int i2);
 static int strCaseCmp(char *str1, char *str2);
 
 static char defaultTranslations[] = 
+    /* Backspace */
     "Ctrl<KeyPress>osfBackSpace: delete_previous_word()\n"
     "<KeyPress>osfBackSpace: delete_previous_character()\n"
+
+    /* Delete */
     "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
     "Shift Ctrl<KeyPress>osfDelete: cut_primary()\n"
     "Ctrl<KeyPress>osfDelete: delete_to_end_of_line()\n"
     "Shift<KeyPress>osfDelete: cut_clipboard()\n"
     "<KeyPress>osfDelete: delete_next_character()\n"
+
+    /* Insert */
     "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
     "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
     "Shift<KeyPress>osfInsert: paste_clipboard()\n"
     "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
     "~Shift ~Ctrl<KeyPress>osfInsert: toggle_overstrike()\n"
+
+    /* Cut/Copy/Paste */
     "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
     "<KeyPress>osfCut: cut_clipboard()\n"
     "<KeyPress>osfCopy: copy_clipboard()\n"
     "<KeyPress>osfPaste: paste_clipboard()\n"
     "<KeyPress>osfPrimaryPaste: copy_primary()\n"
+
+    /* BeginLine */
     "Alt Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\" \"rect\")\n"
     "Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
@@ -253,6 +262,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfBeginLine: beginning_of_file()\n"
     "Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
     "<KeyPress>osfBeginLine: beginning_of_line()\n"
+
+    /* EndLine */
     "Alt Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
@@ -261,6 +272,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfEndLine: end_of_file()\n"
     "Shift<KeyPress>osfEndLine: end_of_line(\"extend\")\n"
     "<KeyPress>osfEndLine: end_of_line()\n"
+
+    /* Left */
     "Alt Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
@@ -269,6 +282,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfLeft: backward_word()\n"
     "Shift<KeyPress>osfLeft: key_select(\"left\")\n"
     "<KeyPress>osfLeft: backward_character()\n"
+
+    /* Right */
     "Alt Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
@@ -277,6 +292,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfRight: forward_word()\n"
     "Shift<KeyPress>osfRight: key_select(\"right\")\n"
     "<KeyPress>osfRight: forward_character()\n"
+
+    /* Up */
     "Alt Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
@@ -285,6 +302,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfUp: backward_paragraph()\n"
     "Shift<KeyPress>osfUp: process_shift_up()\n"
     "<KeyPress>osfUp: process_up()\n"
+
+    /* Down */
     "Alt Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
@@ -293,14 +312,8 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfDown: forward_paragraph()\n"
     "Shift<KeyPress>osfDown: process_shift_down()\n"
     "<KeyPress>osfDown: process_down()\n"
-    "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-    "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
-    "<KeyPress>osfPageLeft: page_left()\n"
-    "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-    "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
-    "<KeyPress>osfPageRight: page_right()\n"
+
+    /* PageUp */
     "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
@@ -308,7 +321,9 @@ static char defaultTranslations[] =
     "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
     "Ctrl<KeyPress>osfPageUp: page_left()\n"
     "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
-    "<KeyPress>osfPageUp: previous_page()\n"
+    "None<KeyPress>osfPageUp: previous_page()\n"
+
+    /* PageDown */
     "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
@@ -316,7 +331,25 @@ static char defaultTranslations[] =
     "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
     "Ctrl<KeyPress>osfPageDown: page_right()\n"
     "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
-    "<KeyPress>osfPageDown: next_page()\n"
+    "None<KeyPress>osfPageDown: next_page()\n"
+
+    /* PageLeft and PageRight are placed later than the PageUp/PageDown
+       bindings.  Some systems map osfPageLeft to Ctrl-PageUp. 
+       Overloading this single key gives problems, and we want to give
+       priority to the normal version. */
+
+    /* PageLeft */
+    "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+    "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
+    "None<KeyPress>osfPageLeft: page_left()\n"
+
+    /* PageRight */
+    "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+    "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
+    "None<KeyPress>osfPageRight: page_right()\n"
+
     "Shift<KeyPress>osfSelect: key_select()\n"
     "<KeyPress>osfCancel: process_cancel()\n"
     "Ctrl~Alt~Meta<KeyPress>v: paste_clipboard()\n"
