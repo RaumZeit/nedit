@@ -52,7 +52,7 @@ static int yygrowstack();
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.8 2003/12/19 23:23:31 slobasso Exp $";
+static const char CVSID[] = "$Id: parse_noyacc.c,v 1.9 2005/02/16 03:44:16 ajbj Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -778,8 +778,12 @@ static int yylex(void)
     int i, len;
     Symbol *s;
     static DataValue value = {NO_TAG, {0}};
-    static char escape[] = "\\\"ntbrfav";
-    static char replace[] = "\\\"\n\t\b\r\f\a\v";
+    static char escape[] = "\\\"ntbrfave";
+#ifdef EBCDIC_CHARSET
+    static char replace[] = "\\\"\n\t\b\r\f\a\v\x27"; /* EBCDIC escape */
+#else
+    static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
+#endif
 
     /* skip whitespace, backslash-newline combinations, and comments, which are
        all considered whitespace */
@@ -858,9 +862,18 @@ static int yylex(void)
         return SYMBOL;
     }
 
-    /* process quoted strings w/ embedded escape sequences */
+    /* Process quoted strings with embedded escape sequences:
+         For backslashes we recognise hexadecimal values with initial 'x' such
+       as "\x1B"; octal value (upto 3 oct digits with a possible leading zero)
+       such as "\33", "\033" or "\0033", and the C escapes: \", \', \n, \t, \b,
+       \r, \f, \a, \v, and the added \e for the escape character, as for REs.
+         Disallow hex/octal zero values (NUL): instead ignore the introductory
+       backslash, eg "\x0xyz" becomes "x0xyz" and "\0000hello" becomes
+       "0000hello". */
+
     if (*InPtr == '\"') {
         char string[MAX_STRING_CONST_LEN], *p = string;
+        char *backslash;
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
             if (p >= string + MAX_STRING_CONST_LEN) {
@@ -868,23 +881,91 @@ static int yylex(void)
                 continue;
             }
             if (*InPtr == '\\') {
+                backslash = InPtr;
                 InPtr++;
                 if (*InPtr == '\n') {
                     InPtr++;
                     continue;
                 }
+                if (*InPtr == 'x') {
+                    /* a hex introducer */
+                    int hexValue = 0;
+                    const char *hexDigits = "0123456789abcdef";
+                    const char *hexD;
+                    InPtr++;
+                    if (*InPtr == '\0' ||
+                        (hexD = strchr(hexDigits, tolower(*InPtr))) == NULL) {
+                        *p++ = 'x';
+                    }
+                    else {
+                        hexValue = hexD - hexDigits;
+                        InPtr++;
+                        /* now do we have another digit? only accept one more */
+                        if (*InPtr != '\0' &&
+                            (hexD = strchr(hexDigits,tolower(*InPtr))) != NULL){
+                          hexValue = hexD - hexDigits + (hexValue << 4);
+                          InPtr++;
+                        }
+                        if (hexValue != 0) {
+                            *p++ = (char)hexValue;
+                        }
+                        else {
+                            InPtr = backslash + 1; /* just skip the backslash */
+                        }
+                    }
+                    continue;
+                }
+                /* the RE documentation requires \0 as the octal introducer;
+                   here you can start with any octal digit, but you are only
+                   allowed up to three (or four if the first is '0'). */
+                if ('0' <= *InPtr && *InPtr <= '7') {
+                    if (*InPtr == '0') {
+                        InPtr++;  /* octal introducer: don't count this digit */
+                    }
+                    if ('0' <= *InPtr && *InPtr <= '7') {
+                        /* treat as octal - first digit */
+                        char octD = *InPtr++;
+                        int octValue = octD - '0';
+                        if ('0' <= *InPtr && *InPtr <= '7') {
+                            /* second digit */
+                            octD = *InPtr++;
+                            octValue = (octValue << 3) + octD - '0';
+                            /* now do we have another digit? can we add it?
+                               if value is going to be too big for char (greater
+                               than 0377), stop converting now before adding the
+                               third digit */
+                            if ('0' <= *InPtr && *InPtr <= '7' &&
+                                octValue <= 037) {
+                                /* third digit is acceptable */
+                                octD = *InPtr++;
+                                octValue = (octValue << 3) + octD - '0';
+                            }
+                        }
+                        if (octValue != 0) {
+                            *p++ = (char)octValue;
+                        }
+                        else {
+                            InPtr = backslash + 1; /* just skip the backslash */
+                        }
+                    }
+                    else { /* \0 followed by non-digits: go back to 0 */
+                        InPtr = backslash + 1; /* just skip the backslash */
+                    }
+                    continue;
+                }
                 for (i=0; escape[i]!='\0'; i++) {
-                    if (escape[i] == '\0') {
-                        *p++= *InPtr++;
-                        break;
-                    } else if (escape[i] == *InPtr) {
+                    if (escape[i] == *InPtr) {
                         *p++ = replace[i];
                         InPtr++;
                         break;
                     }
                 }
-            } else
+                /* if we get here, we didn't recognise the character after
+                   the backslash: just copy it next time round the loop */
+            }
+            else {
                 *p++= *InPtr++;
+            }
         }
         *p = '\0';
         InPtr++;
