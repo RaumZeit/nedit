@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.29 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.30 2004/02/23 02:51:36 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -37,8 +37,6 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.29 2003/11/22 13:03:40 edg Exp $
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-#include <Xm/Xm.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
