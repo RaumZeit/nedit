@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.73 2004/04/30 04:06:28 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.74 2004/05/25 19:31:45 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -124,16 +124,26 @@ static char *fallbackResources[] = {
        if the user's environment provides no usable defaults.  We try
        to choose a Windows-y default color setting here.  Editable text 
        fields are forced to a fixed-pitch font for usability.
-       
+
        By using the VendorShell fontList resources, Motif automatically
        groups the fonts into the right classes.  It's then easier for
        the user or environment to override this sensibly:
-    
+
        nedit -xrm '*textFontList: myfont'
-     */
+      */
+
+#if (defined(LESSTIF_VERSION) && defined(__CYGWIN__))
+    "*FontList: "               NEDIT_DEFAULT_FONT,
+    "*XmText.FontList: "        NEDIT_FIXED_FONT,
+    "*XmTextField.FontList: "   NEDIT_FIXED_FONT,
+    "*XmList.FontList: "        NEDIT_FIXED_FONT,
+    "*XmFileSelectionBox*XmList.FontList: " 	 NEDIT_FIXED_FONT,
+#else
     "*buttonFontList: "         NEDIT_DEFAULT_FONT,
     "*labelFontList: "          NEDIT_DEFAULT_FONT,
     "*textFontList: "           NEDIT_FIXED_FONT,
+#endif
+
     "*background: "             NEDIT_DEFAULT_BG,
     "*foreground: "             NEDIT_DEFAULT_FG,
     "*XmText.foreground: "      NEDIT_DEFAULT_FG,
