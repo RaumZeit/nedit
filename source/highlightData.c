@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.53 2003/08/03 17:38:49 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.54 2003/08/24 20:07:53 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -796,44 +796,45 @@ static char *DefaultPatternSets[] = {
 	keywords2:\"END IF;|(?<!\\Y)(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>\":::Preprocessor1::\n\
 	comment2:\"/\\*\":\"\\*/\"::Comment::}",
     "Sh Ksh Bash:1:0{\n\
-	escaped special characters:\"\\\\[\\\\\"\"$`']\":::Keyword::\n\
-	single quoted string:\"'\":\"'\"::String1::\n\
-	double quoted string:\"\"\"\":\"\"\"\"::String::\n\
-	double quoted escape:\"\\\\[\\\\\"\"$`]\":::String2:double quoted string:\n\
-	dq command sub:\"`\":\"`\":\"\"\"\":Subroutine:double quoted string:\n\
-	dq arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\":\"\"\"\":String:double quoted string:\n\
-	dq new command sub:\"\\$\\(\":\"\\)\":\"\"\"\":Subroutine:double quoted string:\n\
-	dq variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:double quoted string:\n\
-	dq variables2:\"\\$\\{\":\"}\":\"\\n\":Identifier1:double quoted string:\n\
-	arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String::\n\
-	ae escapes:\"\\\\[\\\\$`\"\"']\":::String2:arithmetic expansion:\n\
-	ae single quoted string:\"'\":\"'\":\"\\)\\)\":String1:arithmetic expansion:\n\
-	ae command sub:\"`\":\"`\":\"\\)\\)\":Subroutine:arithmetic expansion:\n\
-	ae arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String:arithmetic expansion:\n\
-	ae new command sub:\"\\$\\(\":\"\\)\":\"\\)\\)\":Subroutine:arithmetic expansion:\n\
-	ae variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:arithmetic expansion:\n\
-	ae variables2:\"\\$\\{\":\"}\":\"\\)\\)\":Identifier1:arithmetic expansion:\n\
-	comments:\"^[ \\t]*#\":\"$\"::Comment::\n\
-	command substitution:\"`\":\"`\"::Subroutine::\n\
-	cs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:command substitution:\n\
-	cs single quoted string:\"'\":\"'\":\"`\":String1:command substitution:\n\
-	cs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:command substitution:\n\
-	cs variables2:\"\\$\\{\":\"}\":\"`\":Identifier1:command substitution:\n\
-	new command substitution:\"\\$\\(\":\"\\)\"::Subroutine::\n\
-	ncs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:new command substitution:\n\
-	ncs single quoted string:\"'\":\"'\"::String1:new command substitution:\n\
-	ncs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:new command substitution:\n\
-	ncs variables2:\"\\$\\{\":\"}\":\"\\)\":Identifier1:new command substitution:\n\
-	assignment:\"[a-zA-Z_][0-9a-zA-Z_]*=\":::Identifier1::\n\
-	variables:\"\\$([-*@#?$!0-9_]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1::\n\
-	variables2:\"\\$\\{\":\"}\"::Identifier1::\n\
-	internal var:\"\\$\\{\":\"}\"::Identifier1:variables2:\n\
-	comments in line:\"#\":\"$\"::Comment::\n\
-	numbers:\"<(?i0x[\\da-f]+)|((\\d*\\.)?\\d+([eE][-+]?\\d+)?(?iul?|l|f)?)>\":::Numeric Const::D\n\
-	keywords:\"(?<!\\Y)(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\\[\\[|\\]\\])(?!\\Y)[\\s\\n]\":::Keyword::D\n\
-	command options:\"[ \\t]-[^ \\t{}[\\],()'\"\"~!@#$%^&*|\\\\<>?]+\":::Identifier::\n\
-	delimiters:\"[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
-	built ins:\"(?<!\\Y)(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)(?!\\Y)[\\s\\n;]\":::Subroutine1::D}",
+        README:\"Shell syntax highlighting patterns, version 2.1, maintainer Thorsten Haude, nedit at thorstenhau.de\":::Flag::D\n\
+        escaped special characters:\"\\\\[\\\\\"\"$`']\":::Keyword::\n\
+        single quoted string:\"'\":\"'\"::String1::\n\
+        double quoted string:\"\"\"\":\"\"\"\"::String::\n\
+        double quoted escape:\"\\\\[\\\\\"\"$`]\":::String2:double quoted string:\n\
+        dq command sub:\"`\":\"`\":\"\"\"\":Subroutine:double quoted string:\n\
+        dq arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\":\"\"\"\":String:double quoted string:\n\
+        dq new command sub:\"\\$\\(\":\"\\)\":\"\"\"\":Subroutine:double quoted string:\n\
+        dq variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:double quoted string:\n\
+        dq variables2:\"\\$\\{\":\"}\":\"\\n\":Identifier1:double quoted string:\n\
+        arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String::\n\
+        ae escapes:\"\\\\[\\\\$`\"\"']\":::String2:arithmetic expansion:\n\
+        ae single quoted string:\"'\":\"'\":\"\\)\\)\":String1:arithmetic expansion:\n\
+        ae command sub:\"`\":\"`\":\"\\)\\)\":Subroutine:arithmetic expansion:\n\
+        ae arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String:arithmetic expansion:\n\
+        ae new command sub:\"\\$\\(\":\"\\)\":\"\\)\\)\":Subroutine:arithmetic expansion:\n\
+        ae variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:arithmetic expansion:\n\
+        ae variables2:\"\\$\\{\":\"}\":\"\\)\\)\":Identifier1:arithmetic expansion:\n\
+        comments:\"^[ \\t]*#\":\"$\"::Comment::\n\
+        command substitution:\"`\":\"`\"::Subroutine::\n\
+        cs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:command substitution:\n\
+        cs single quoted string:\"'\":\"'\":\"`\":String1:command substitution:\n\
+        cs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:command substitution:\n\
+        cs variables2:\"\\$\\{\":\"}\":\"`\":Identifier1:command substitution:\n\
+        new command substitution:\"\\$\\(\":\"\\)\"::Subroutine::\n\
+        ncs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:new command substitution:\n\
+        ncs single quoted string:\"'\":\"'\"::String1:new command substitution:\n\
+        ncs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:new command substitution:\n\
+        ncs variables2:\"\\$\\{\":\"}\":\"\\)\":Identifier1:new command substitution:\n\
+        assignment:\"[a-zA-Z_][0-9a-zA-Z_]*=\":::Identifier1::\n\
+        variables:\"\\$([-*@#?$!0-9_]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1::\n\
+        variables2:\"\\$\\{\":\"}\"::Identifier1::\n\
+        internal var:\"\\$\\{\":\"}\"::Identifier1:variables2:\n\
+        comments in line:\"#\":\"$\"::Comment::\n\
+        numbers:\"<(?i0x[\\da-f]+)|((\\d*\\.)?\\d+([eE][-+]?\\d+)?(?iul?|l|f)?)>\":::Numeric Const::D\n\
+        keywords:\"(?<!\\Y)(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\\[\\[|\\]\\])(?!\\Y)[\\s\\n]\":::Keyword::D\n\
+        command options:\"(?<=\\s)-[^ \\t{}[\\],()'\"\"~!@#$%^&*|\\\\<>?]+\":::Identifier::\n\
+        delimiters:\"[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
+        built ins:\"(?<!\\Y)(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)(?!\\Y)[\\s\\n;]\":::Subroutine1::D}",
     "Tcl:1:0{\n\
 	Double Quote String:\"\"\"\":\"\"\"\"::String::\n\
 	Single Quote String:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
