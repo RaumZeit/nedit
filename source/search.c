@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.36 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.37 2001/11/08 12:55:55 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3475,7 +3475,18 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
 		    selStart+endPos) > rectEnd) {
 		if (fileString[endPos] == '\0')
 		    break;
-		beginPos = (startPos == endPos) ? endPos+1 : endPos;
+		/* If the match starts before the left boundary of the
+		   selection, and extends past it, we should not continue
+		   search after the end of the (false) match, because we 
+		   could miss a valid match starting between the left boundary
+		   and the end of the false match. */
+		if (BufCountDispChars(window->buffer, lineStart, 
+				      selStart+startPos) < rectStart && 
+		    BufCountDispChars(window->buffer, lineStart,
+				      selStart+endPos) > rectStart) 
+		    beginPos += 1;
+		else
+		    beginPos = (startPos == endPos) ? endPos+1 : endPos;
 		continue;
 	    }
 	}
