@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.23 2001/07/25 13:03:26 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.24 2001/07/25 18:05:44 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -111,7 +111,7 @@ static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
 static void findAndActivateMnemonic(Widget w, unsigned int keycode);
 static void addAccelGrabs(Widget topWidget, Widget w);
 static void addAccelGrab(Widget topWidget, Widget w);
-static int parseAccelString(const char *string, KeySym *keysym,
+static int parseAccelString(Display *display, const char *string, KeySym *keysym,
 	unsigned int *modifiers);
 static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
@@ -1404,18 +1404,65 @@ static void warnHandlerCB(String message)
     fputc('\n', stderr);
 }
 
+static XModifierKeymap *getKeyboardMapping(Display *display) {
+    static XModifierKeymap *keyboardMap = NULL;
+
+    if (keyboardMap == NULL) {
+        keyboardMap = XGetModifierMapping(display);
+    }
+    return(keyboardMap);
+}
+
+/*
+** get mask for a modifier
+**
+*/
+
+static Modifiers findModifierMapping(Display *display, KeyCode keyCode) {
+    int i, j;
+    KeyCode *mapentry;
+    XModifierKeymap *modMap = getKeyboardMapping(display);
+
+    if (modMap == NULL || keyCode == 0) {
+        return(0);
+    }
+
+    mapentry = modMap->modifiermap;
+    for (i = 0; i < 8; ++i) {
+        for (j = 0; j < (modMap->max_keypermod); ++j) {
+            if (keyCode == *mapentry) {
+                return(1 << ((mapentry - modMap->modifiermap) / modMap->max_keypermod));
+            }
+            ++mapentry;
+        }
+    }
+    return(0);
+}
+
+static Modifiers getNumLockModMask(Display *display) {
+    static int numLockMask = -1;
+
+    if (numLockMask == -1) {
+        numLockMask = findModifierMapping(display, XKeysymToKeycode(display, XK_Num_Lock));
+    }
+    return(numLockMask);
+}
+
 /*
 ** Grab a key regardless of caps-lock and other silly latching keys.
 **
 */
 
-static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask)
-    {
+static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask) {
+    Modifiers numLockMask = getNumLockModMask(XtDisplay(dialog));
+
     XtGrabKey(dialog, keyCode, mask, True, GrabModeAsync, GrabModeAsync);
     XtGrabKey(dialog, keyCode, mask|LockMask, True, GrabModeAsync, GrabModeAsync);
-    XtGrabKey(dialog, keyCode, mask|Mod3Mask, True, GrabModeAsync, GrabModeAsync);
-    XtGrabKey(dialog, keyCode, mask|LockMask|Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+    if (numLockMask && numLockMask != LockMask) {
+        XtGrabKey(dialog, keyCode, mask|numLockMask, True, GrabModeAsync, GrabModeAsync);
+        XtGrabKey(dialog, keyCode, mask|LockMask|numLockMask, True, GrabModeAsync, GrabModeAsync);
     }
+}
 
 /*
 ** Part of dialog mnemonic processing.  Search the widget tree under w
@@ -1554,36 +1601,40 @@ static void addAccelGrab(Widget topWidget, Widget w)
     char *accelString = NULL;
     KeySym keysym;
     unsigned int modifiers;
+    Modifiers numLockMask = getNumLockModMask(XtDisplay(topWidget));
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
     if (accelString == NULL || *accelString == '\0')
 	return;
     
-    if (!parseAccelString(accelString, &keysym, &modifiers))
+    if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers))
 	return;
     XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
 	    modifiers | LockMask, True, GrabModeAsync, GrabModeAsync);
-    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
-	    modifiers | Mod3Mask, True, GrabModeAsync, GrabModeAsync);
-    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
-	    modifiers | LockMask | Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+    if (numLockMask && numLockMask != LockMask) {
+        XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+	        modifiers | numLockMask, True, GrabModeAsync, GrabModeAsync);
+        XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+	        modifiers | LockMask | numLockMask, True, GrabModeAsync, GrabModeAsync);
+    }
 }
 
 /*
 ** Read a Motif accelerator string and translate it into a keysym + modifiers.
 ** Returns TRUE if the parse was successful, FALSE, if not.
 */
-static int parseAccelString(const char *string, KeySym *keySym,
+static int parseAccelString(Display *display, const char *string, KeySym *keySym,
 	unsigned int *modifiers)
 {
-#define N_MODIFIERS 11
+#define N_MODIFIERS 12
     /*... Is NumLock always Mod3? */
     static char *modifierNames[N_MODIFIERS] = {"Ctrl", "Shift", "Alt", "Mod2",
-	    "Mod4", "Mod5", "Button1", "Button2", "Button3", "Button4",
+	    "Mod3", "Mod4", "Mod5", "Button1", "Button2", "Button3", "Button4",
 	    "Button5"};
     static unsigned int modifierMasks[N_MODIFIERS] = {ControlMask, ShiftMask,
-	    Mod1Mask, Mod2Mask, Mod4Mask, Mod5Mask, Button1Mask, Button2Mask,
+	    Mod1Mask, Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask, Button1Mask, Button2Mask,
 	    Button3Mask, Button4Mask, Button5Mask};
+    Modifiers numLockMask = getNumLockModMask(display);
     char modStr[MAX_ACCEL_LEN];
     char evtStr[MAX_ACCEL_LEN];
     char keyStr[MAX_ACCEL_LEN];
@@ -1628,8 +1679,10 @@ static int parseAccelString(const char *string, KeySym *keySym,
 	    break;
 	for (i = 0; i < N_MODIFIERS; i++) {
 	    if (!strncmp(c, modifierNames[i], strlen(modifierNames[i]))) {
-		*modifiers |= modifierMasks[i];
 	    	c += strlen(modifierNames[i]);
+                if (modifierMasks[i] != numLockMask) {
+		    *modifiers |= modifierMasks[i];
+                }
 		break;
 	    }
 	}
@@ -1648,13 +1701,14 @@ static int parseAccelString(const char *string, KeySym *keySym,
 static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch)
 {
+    Modifiers numLockMask = getNumLockModMask(XtDisplay(w));
     Widget topMenuWidget = (Widget)callData;
     *continueDispatch = TRUE;
-    if (!(((XKeyEvent *)event)->state & (LockMask | Mod3Mask)))
+    if (!(((XKeyEvent *)event)->state & (LockMask | numLockMask)))
 	return;
 
     if (!findAndActivateAccel(topMenuWidget, ((XKeyEvent *)event)->keycode,
-	    ((XKeyEvent *)event)->state & ~(LockMask | Mod3Mask), event))
+	    ((XKeyEvent *)event)->state & ~(LockMask | numLockMask), event))
 	*continueDispatch = FALSE;
 }
 
@@ -1688,7 +1742,7 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
     } else {
 	XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
 	if (accelString != NULL && *accelString != '\0') {
-	    if (!parseAccelString(accelString, &keysym, &mods))
+	    if (!parseAccelString(XtDisplay(w), accelString, &keysym, &mods))
 		return FALSE;
 	    if (keyCode == XKeysymToKeycode(XtDisplay(w), keysym) &&
 		    modifiers == mods) {
