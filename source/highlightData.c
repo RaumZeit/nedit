@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.36 2002/10/15 11:00:41 ajhood Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.37 2002/11/13 17:56:42 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -218,7 +218,7 @@ static char *DefaultPatternSets[] = {
 	Character Literals:\"'(?:[^\\\\]|\\\\.)'\":::Character Const::\n\
 	Ada Attributes:\"(?i'size\\s+(use)>)|'\\l[\\l\\d]*(?:_[\\l\\d]+)*\":::Ada Attributes::\n\
 	Size Attribute:\"\\1\":\"\"::Keyword:Ada Attributes:C\n\
-	Based Numeric Literals:\"<(?:\\d+(?:_\\d+)*)#(?:[\\da-fA-F]+(?:_[\\da-fA-F]+)*)(?:\\.[\\da-fA-F]+(?:_[\\da-fA-F]+)*)?#(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?>\":::Numeric Const::\n\
+	Based Numeric Literals:\"<(?:\\d+(?:_\\d+)*)#(?:[\\da-fA-F]+(?:_[\\da-fA-F]+)*)(?:\\.[\\da-fA-F]+(?:_[\\da-fA-F]+)*)?#(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?(?!\\Y)\":::Numeric Const::\n\
 	Numeric Literals:\"<(?:\\d+(?:_\\d+)*)(?:\\.\\d+(?:_\\d+)*)?(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?>\":::Numeric Const::\n\
 	Pragma:\"(?n(?ipragma)\\s+\\l[\\l\\d]*(?:_\\l[\\l\\d]*)*\\s*\\([^)]*\\)\\s*;)\":::Preprocessor::\n\
 	Withs Use:\"(?#Make \\s work across newlines)(?n(?iwith|use)(?#Leading W/S)\\s+(?#First package name)(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]+)*)(?#Additional package names [optional])(?:\\s*,\\s*(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]+)*))*(?#Trailing W/S)\\s*;)+\":::Preprocessor::\n\
@@ -247,7 +247,7 @@ static char *DefaultPatternSets[] = {
 	Gawk builtin variables:\"\"\"<(ARGIND|ERRNO|RT|IGNORECASE|FIELDWIDTHS)>\"\"\":::Storage Type::D\n\
 	Field:\"\\$[0-9a-zA-Z_]+|\\$[ \\t]*\\([^,;]*\\)\":::Storage Type::D\n\
 	BeginEnd:\"<(BEGIN|END)>\":::Preprocessor1::D\n\
-	Numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	Numeric constant:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	String pattern:\"~[ \\t]*\"\"\":\"\"\"\":\"\\n\":Preprocessor::\n\
 	String pattern escape:\"\\\\(.|\\n)\":::Preprocessor:String pattern:\n\
 	newline escape:\"\\\\$\":::Preprocessor1::\n\
@@ -263,7 +263,7 @@ static char *DefaultPatternSets[] = {
 	preproc cplus comment:\"//\":\"$\"::Comment:preprocessor line:\n\
 	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	numeric constant:\"(?<!\\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(?:class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>\":::Storage Type::D\n\
 	keyword:\"<(?:new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>\":::Keyword::D\n\
 	braces:\"[{}]\":::Keyword::D}",
@@ -276,7 +276,7 @@ static char *DefaultPatternSets[] = {
     	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
 	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	numeric constant:\"(?<!\\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
     	storage keyword:\"<(?:const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
     	keyword:\"<(?:return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
     	braces:\"[{}]\":::Keyword::D}",
@@ -298,7 +298,7 @@ static char *DefaultPatternSets[] = {
 	declaration:\"\\{\":\"\\}\"::Warning::\n\
 	declaration delims:\"&\":\"&\"::Keyword:declaration:C\n\
 	declaration comment:\"/\\*\":\"\\*/\"::Comment:declaration:\n\
-	property:\"<(azimuth|background(-(attachment|color|image|position|repeat))?|border(-(bottom(-(color|style|width))?|(-(color|style|width))?|collapse|color|left(-(color|style|width))?|right(-(color|style|width))?|spacing|style|top(-(color|style|width))?|width))?|bottom|caption-side|clear|clip|color|content|counter-(increment|reset)|cue(-(after|before))?|cursor|direction|display|elevation|empty-cells|float|font(-(family|size|size-adjust|stretch|style|variant|weight))?|height|left|letter-spacing|line-height|list-style(-(image|position|type))?|margin(-(bottom|left|right|top))?|marker-offset|marks|max-(height|width)|min-(height|width)|orphans|outline(-(color|style|width))?|overflow|padding(-(bottom|left|right|top))?|page(-break-(after|before|inside))?|pause(-(after|before))?|pitch(-range)?|play-during|position|quotes|richness|right|size|speak(-(header|numeral|punctuation))?|speech-rate|stress|table-layout|text(-(align|decoration|indent|shadow|transform))|top|unicode-bidi|vertical-align|visibility|voice-family|volume|white-space|widows|width|word-spacing|z-index)>\":::Identifier1:declaration:\n\
+	property:\"<(azimuth|background(-(attachment|color|image|position|repeat))?|border(-(bottom(-(color|style|width))?|-(color|style|width)|collapse|color|left(-(color|style|width))?|right(-(color|style|width))?|spacing|style|top(-(color|style|width))?|width))?|bottom|caption-side|clear|clip|color|content|counter-(increment|reset)|cue(-(after|before))?|cursor|direction|display|elevation|empty-cells|float|font(-(family|size|size-adjust|stretch|style|variant|weight))?|height|left|letter-spacing|line-height|list-style(-(image|position|type))?|margin(-(bottom|left|right|top))?|marker-offset|marks|max-(height|width)|min-(height|width)|orphans|outline(-(color|style|width))?|overflow|padding(-(bottom|left|right|top))?|page(-break-(after|before|inside))?|pause(-(after|before))?|pitch(-range)?|play-during|position|quotes|richness|right|size|speak(-(header|numeral|punctuation))?|speech-rate|stress|table-layout|text(-(align|decoration|indent|shadow|transform))|top|unicode-bidi|vertical-align|visibility|voice-family|volume|white-space|widows|width|word-spacing|z-index)>\":::Identifier1:declaration:\n\
 	value:\":\":\";\":\"\\}\":Warning:declaration:\n\
 	value delims:\"&\":\"&\"::Keyword:value:C\n\
 	value modifier:\"!important|inherit\":::Keyword:value:\n\
@@ -320,7 +320,7 @@ static char *DefaultPatternSets[] = {
 	operators:\"[,/]\":::Keyword:value:\n\
 	selector id:\"#[-\\w]+>\":::Pointer::\n\
 	selector class:\"\\.[-\\w]+>\":::Storage Type::\n\
-	selector pseudo class:\":(first-child|link|visited|hover|active|focus|lang(\\([-\\w]+\\))?)>\":::Text Arg1::\n\
+	selector pseudo class:\":(first-child|link|visited|hover|active|focus|lang(\\([\\-\\w]+\\))?)(?!\\Y)\":::Text Arg1::\n\
 	selector attribute:\"\\[[^\\]]+\\]\":::Ada Attributes::\n\
 	selector operators:\"[,>*+]\":::Keyword::\n\
 	selector pseudo element:\":(first-letter|first-line|before|after)>\":::Text Arg::\n\
@@ -365,7 +365,7 @@ static char *DefaultPatternSets[] = {
 	single quoted error:\".\":::Flag:single quoted:\n\
 	hex const:\"<(?i0[X][\\dA-F]+)>\":::Numeric Const::\n\
 	long const:\"<(?i[\\d]+L)>\":::Numeric Const::\n\
-	decimal const:\"<(?i\\d+(?:\\.\\d*)?(?:E[+-]?[\\d]+)?[FD]?|\\.\\d+(?:E[+-]?[\\d]+)?[FD]?)>\":::Numeric Const::\n\
+	decimal const:\"(?<!\\Y)(?i\\d+(?:\\.\\d*)?(?:E[+\\-]?\\d+)?[FD]?|\\.\\d+(?:E[+\\-]?\\d+)?[FD]?)(?!\\Y)\":::Numeric Const::\n\
 	include:\"<(?:import|package)>\":\";\":\"\\n\":Preprocessor::\n\
 	classdef:\"<(?:class|interface)>\\s*\\n?\\s*([\\l_]\\w*)\":::Keyword::\n\
 	classdef name:\"\\1\":\"\"::Storage Type:classdef:C\n\
@@ -383,7 +383,7 @@ static char *DefaultPatternSets[] = {
 	impl_throw error:\".\":::Flag:impl_throw:\n\
 	case:\"<case>\":\":\"::Label::\n\
 	case single quoted:\"'\\\\?[^']'\":::Character Const:case:\n\
-	case numeric const:\"<(?i0[X][\\dA-F]+|\\d+(:?\\.\\d*)?(?:E[+-]?[\\d]+)?F?|\\.\\d+(?:E[+-]?[\\d]+)?F?|[\\d]+L)>\":::Numeric Const:case:\n\
+	case numeric const:\"(?<!\\Y)(?i0[X][\\dA-F]+|\\d+(:?\\.\\d*)?(?:E[+\\-]?\\d+)?F?|\\.\\d+(?:E[+\\-]?\\d+)?F?|\\d+L)(?!\\Y)\":::Numeric Const:case:\n\
 	case cast:\"\\(\\s*([\\l_][\\w.]*)\\s*\\)\":::Keyword:case:\n\
 	case cast type:\"\\1\":\"\"::Storage Type:case cast:C\n\
 	case variable:\"[\\l_][\\w.]*\":::Identifier1:case:\n\
@@ -422,7 +422,7 @@ static char *DefaultPatternSets[] = {
 	MLComment:\"/\\*\":\"\\*/\"::Comment::\n\
 	DQColors:\"aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen|#[A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9]\":::Text Arg1:DQStrings:\n\
 	SQColors:\"aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen|(#)[A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-Fa-f0-9][A-F-af0-9]\":::Text Arg1:SQStrings:\n\
-	Numeric:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::\n\
+	Numeric:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::\n\
 	Events:\"<(onAbort|onBlur|onClick|onChange|onDblClick|onDragDrop|onError|onFocus|onKeyDown|onKeyPress|onLoad|onMouseDown|onMouseMove|onMouseOut|onMouseOver|onMouseUp|onMove|onResize|onSelect|onSubmit|onUnload)>\":::Keyword::\n\
 	Braces:\"[{}]\":::Keyword::\n\
 	Statements:\"<(break|continue|else|for|if|in|new|return|this|typeof|var|while|with)>\":::Keyword::\n\
@@ -480,14 +480,14 @@ static char *DefaultPatternSets[] = {
 	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
 	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	numeric constant:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
 	keyword:\"<(return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
 	lex keyword:\"<(yylval|yytext|input|unput|output|lex_input|lex_output|yylex|yymore|yyless|yyin|yyout|yyleng|yywtext|yywleng|yyterminate|REJECT|ECHO|BEGIN|YY_NEW_FILE|yy_create_buffer|yy_switch_to_buffer|yy_delete_buffer|YY_CURRENT_BUFFER|YY_BUFFER_STATE|YY_DECL|YY_INPUT|yywrap|YY_USER_ACTION|YY_USER_INIT|YY_BREAK)>\":::Text Arg::D\n\
 	stdlib:\"<(BUFSIZ|CHAR_BIT|CHAR_MAX|CHAR_MIN|CLOCKS_PER_SEC|DBL_DIG|DBL_EPSILON|DBL_MANT_DIG|DBL_MAX|DBL_MAX_10_EXP|DBL_MAX_EXP|DBL_MIN|DBL_MIN_10_EXP|DBL_MIN_EXP|EDOM|EOF|ERANGE|EXIT_FAILURE|EXIT_SUCCESS|FILE|FILENAME_MAX|FLT_DIG|FLT_EPSILON|FLT_MANT_DIG|FLT_MAX|FLT_MAX_10_EXP|FLT_MAX_EXP|FLT_MIN|FLT_MIN_10_EXP|FLT_MIN_EXP|FLT_RADIX|FLT_ROUNDS|FOPEN_MAX|HUGE_VAL|INT_MAX|INT_MIN|LC_ALL|LC_COLLATE|LC_CTYPE|LC_MONETARY|LC_NUMERIC|LC_TIME|LDBL_DIG|LDBL_EPSILON|LDBL_MANT_DIG|LDBL_MAX|LDBL_MAX_10_EXP|LDBL_MAX_EXP|LDBL_MIN|LDBL_MIN_10_EXP|LDBL_MIN_EXP|LONG_MAX|LONG_MIN|L_tmpnam|MB_CUR_MAX|MB_LEN_MAX|NULL|RAND_MAX|SCHAR_MAX|SCHAR_MIN|SEEK_CUR|SEEK_END|SEEK_SET|SHRT_MAX|SHRT_MIN|SIGABRT|SIGFPE|SIGILL|SIGINT|SIGSEGV|SIGTERM|SIG_DFL|SIG_ERR|SIG_IGN|TMP_MAX|UCHAR_MAX|UINT_MAX|ULONG_MAX|USHRT_MAX|WCHAR_MAX|WCHAR_MIN|WEOF|_IOFBF|_IOLBF|_IONBF|abort|abs|acos|asctime|asin|assert|atan|atan2|atexit|atof|atoi|atol|bsearch|btowc|calloc|ceil|clearerr|clock|clock_t|cos|cosh|ctime|difftime|div|div_t|errno|exit|exp|fabs|fclose|feof|ferror|fflush|fgetc|fgetpos|fgets|fgetwc|fgetws|floor|fmod|fopen|fpos_t|fprintf|fputc|fputs|fputwc|fputws|fread|free|freopen|frexp|fscanf|fseek|fsetpos|ftell|fwide|fwprintf|fwrite|fwscanf|getc|getchar|getenv|gets|getwc|getwchar|gmtime|isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|iswalnum|iswalpha|iswcntrl|iswctype|iswdigit|iswgraph|iswlower|iswprint|iswpunct|iswspace|iswupper|iswxdigit|isxdigit|jmp_buf|labs|lconv|ldexp|ldiv|ldiv_t|localeconv|localtime|log|log10|longjmp|malloc|mblen|mbrlen|mbrtowc|mbsinit|mbsrtowcs|mbstate_t|mbstowcs|mbtowc|memchr|memcmp|memcpy|memmove|memset|mktime|modf|offsetof|perror|pow|printf|ptrdiff_t|putc|puts|putwc|putwchar|qsort|raise|rand|realloc|remove|rename|rewind|scanf|setbuf|setjmp|setlocale|setvbuf|sig_atomic_t|signal|sin|sinh|size_t|sprintf|sqrt|srand|sscanf|stderr|stdin|stdout|strcat|strchr|strcmp|strcoll|strcpy|strcspn|strerror|strftime|strlen|strncat|strncmp|strncpy|stroul|strpbrk|strrchr|strspn|strstr|strtod|strtok|strtol|strxfrm|swprintf|swscanf|system|tan|tanh|time|time_t|tm|tmpfile|tmpnam|tolower|toupper|towctrans|towlower|towupper|ungetc|ungetwc|va_arg|va_end|va_list|va_start|vfwprintf|vprintf|vsprintf|vswprintf|vwprintf|wint_t|wmemchr|wmemcmp|wmemcpy|wmemmove|wmemset|wprintf|wscanf)>\":::Subroutine::D\n\
 	label:\"<goto>|(^[ \\t]*[A-Za-z_][A-Za-z0-9_]*[ \\t]*:)\":::Flag::D\n\
 	braces:\"[{}]\":::Keyword::D\n\
-	markers:\"<(%\\{|%}|%%)>\":::Flag::D}",
+	markers:\"(?<!\\Y)(%\\{|%\\}|%%)(?!\\Y)\":::Flag::D}",
     "Makefile:8:0{\n\
 	Comment:\"#\":\"$\"::Comment::\n\
 	Comment Continuation:\"\\\\\\n\":::Keyword:Comment:\n\
@@ -531,7 +531,7 @@ static char *DefaultPatternSets[] = {
 	Braces transp close:\"\\1\":\"\"::Plain:Braces transposed:C\n\
 	Braces:\"[\\{\\}]\":::Text Arg::\n\
 	String:\"'\":\"'\"::String::\n\
-	Numeric const:\"<(((\\d+\\.?\\d*)|(\\.\\d+))([eE][\\+-]?\\d+)?)>\":::Numeric Const::\n\
+	Numeric const:\"(?<!\\Y)(((\\d+\\.?\\d*)|(\\.\\d+))([eE][+\\-]?\\d+)?)(?!\\Y)\":::Numeric Const::\n\
 	Three periods to end:\"(\\.\\.\\.)\":\"$\"::Comment::\n\
 	Three periods:\"\\1\":\"\"::Keyword:Three periods to end:C\n\
 	Shell command:\"!\":\"$\"::String1::\n\
@@ -541,7 +541,7 @@ static char *DefaultPatternSets[] = {
 	Logical operators:\"~|&|\\|\":::Text Arg2::}",
     "NEdit Macro:1:0{\n\
 	Comment:\"#\":\"$\"::Comment::\n\
-	Built-in Vars:\"<\\$([1-9]|column|n_args|cursor|file_name|file_path|text_length|selection_start|selection_end|selection_left|selection_right|wrap_margin|tab_dist|em_tab_dist|use_tabs|language_mode|modified|statistics_line|incremental_search_line|show_line_numbers|auto_indent|wrap_text|highlight_syntax|make_backup_copy|incremental_backup|show_matching|overtype_mode|read_only|locked|file_format|font_name|font_name_italic|font_name_bold|font_name_bold_italic|sub_sep|string_dialog_button|search_end|read_status|shell_cmd_status|list_dialog_button|min_font_width|max_font_width|top_line|n_display_lines|display_width|active_pane|n_panes|line|empty_array|backlight_string|rangeset_(label|ranges|range_index|range_start|range_end|list|color|modify_response))>\":::Identifier::\n\
+	Built-in Vars:\"(?<!\\Y)\\$([1-9]|column|n_args|cursor|file_name|file_path|text_length|selection_start|selection_end|selection_left|selection_right|wrap_margin|tab_dist|em_tab_dist|use_tabs|language_mode|modified|statistics_line|incremental_search_line|show_line_numbers|auto_indent|wrap_text|highlight_syntax|make_backup_copy|incremental_backup|show_matching|overtype_mode|read_only|locked|file_format|font_name|font_name_italic|font_name_bold|font_name_bold_italic|sub_sep|string_dialog_button|search_end|read_status|shell_cmd_status|list_dialog_button|min_font_width|max_font_width|top_line|n_display_lines|display_width|active_pane|n_panes|line|empty_array|backlight_string|rangeset_(label|ranges|range_index|range_start|range_end|list|color|modify_response))>\":::Identifier::\n\
 	Built-in Subrs:\"<(focus_window|shell_command|length|get_range|t_print|dialog|string_dialog|replace_range|replace_selection|set_cursor_pos|get_character|min|max|search|search_string|substring|replace_substring|read_file|write_file|append_file|beep|get_selection|replace_in_string|select|select_rectangle|toupper|tolower|string_to_clipboard|clipboard_to_string|list_dialog|getenv|set_language_mode|string_compare|split|set_backlight_string|rangeset_(defined|inverse|add|remove|forget|get_count|select|includes_pos|set_color|set_modify_response)|highlight_(pattern_of_pos|style_of_pos|color_of_pos|color_value_of_pos|style_of_pos_is_bold|style_of_pos_is_italic|pattern_extends_from|pattern_style|style_color|style_color_value|style_is_bold|style_is_italic))>\":::Subroutine::\n\
 	Menu Actions:\"<(new|open|open-dialog|open_dialog|open-selected|open_selected|close|save|save-as|save_as|save-as-dialog|save_as_dialog|revert-to-saved|revert_to_saved|revert_to_saved_dialog|include-file|include_file|include-file-dialog|include_file_dialog|load-macro-file|load_macro_file|load-macro-file-dialog|load_macro_file_dialog|load-tags-file|load_tags_file|load-tags-file-dialog|load_tags_file_dialog|print|print-selection|print_selection|exit|undo|redo|delete|select-all|select_all|shift-left|shift_left|shift-left-by-tab|shift_left_by_tab|shift-right|shift_right|shift-right-by-tab|shift_right_by_tab|find|find-dialog|find_dialog|find-again|find_again|find-selection|find_selection|replace|replace-dialog|replace_dialog|replace-all|replace_all|replace-in-selection|replace_in_selection|replace-again|replace_again|goto-line-number|goto_line_number|goto-line-number-dialog|goto_line_number_dialog|goto-selected|goto_selected|mark|mark-dialog|mark_dialog|goto-mark|goto_mark|goto-mark-dialog|goto_mark_dialog|match|find-definition|find_definition|split-window|split_window|close-pane|close_pane|uppercase|lowercase|fill-paragraph|fill_paragraph|control-code-dialog|control_code_dialog|filter-selection-dialog|filter_selection_dialog|filter-selection|filter_selection|execute-command|execute_command|execute-command-dialog|execute_command_dialog|execute-command-line|execute_command_line|shell-menu-command|shell_menu_command|macro-menu-command|macro_menu_command|bg_menu_command|post_window_bg_menu|beginning-of-selection|beginning_of_selection|end-of-selection|end_of_selection|repeat_macro|repeat_dialog|raise_window)>\":::Subroutine::\n\
 	Text Actions:\"<(self-insert|self_insert|grab-focus|grab_focus|extend-adjust|extend_adjust|extend-start|extend_start|extend-end|extend_end|secondary-adjust|secondary_adjust|secondary-or-drag-adjust|secondary_or_drag_adjust|secondary-start|secondary_start|secondary-or-drag-start|secondary_or_drag_start|process-bdrag|process_bdrag|move-destination|move_destination|move-to|move_to|move-to-or-end-drag|move_to_or_end_drag|end_drag|copy-to|copy_to|copy-to-or-end-drag|copy_to_or_end_drag|exchange|process-cancel|process_cancel|paste-clipboard|paste_clipboard|copy-clipboard|copy_clipboard|cut-clipboard|cut_clipboard|copy-primary|copy_primary|cut-primary|cut_primary|newline|newline-and-indent|newline_and_indent|newline-no-indent|newline_no_indent|delete-selection|delete_selection|delete-previous-character|delete_previous_character|delete-next-character|delete_next_character|delete-previous-word|delete_previous_word|delete-next-word|delete_next_word|delete-to-start-of-line|delete_to_start_of_line|delete-to-end-of-line|delete_to_end_of_line|forward-character|forward_character|backward-character|backward_character|key-select|key_select|process-up|process_up|process-down|process_down|process-shift-up|process_shift_up|process-shift-down|process_shift_down|process-home|process_home|forward-word|forward_word|backward-word|backward_word|forward-paragraph|forward_paragraph|backward-paragraph|backward_paragraph|beginning-of-line|beginning_of_line|end-of-line|end_of_line|beginning-of-file|beginning_of_file|end-of-file|end_of_file|next-page|next_page|previous-page|previous_page|page-left|page_left|page-right|page_right|toggle-overstrike|toggle_overstrike|scroll-up|scroll_up|scroll-down|scroll_down|scroll_left|scroll_right|scroll-to-line|scroll_to_line|select-all|select_all|deselect-all|deselect_all|focusIn|focusOut|process-return|process_return|process-tab|process_tab|insert-string|insert_string|mouse_pan)>\":::Subroutine::\n\
@@ -550,7 +550,7 @@ static char *DefaultPatternSets[] = {
 	Global Variable:\"\\$[A-Za-z0-9_]*\":::Identifier1::\n\
 	String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
 	String Escape Char:\"\\\\(.|\\n)\":::Text Escape:String:\n\
-	Numeric Const:\"<-?[0-9]+>\":::Numeric Const::\n\
+	Numeric Const:\"(?<!\\Y)-?[0-9]+>\":::Numeric Const::\n\
 	Custom macro:\"\\w+(?=\\s*[\\({])\":::Subroutine1::\n\
 	Variables:\"\\w+\":::Identifier1::D}",
     "Pascal:1:0{\n\
@@ -560,7 +560,7 @@ static char *DefaultPatternSets[] = {
 	Array delimitors:\"\\(\\.|\\.\\)|\\[|\\]\":::Character Const::D\n\
 	Parentheses:\"\\(|\\)\":::Keyword::D\n\
 	X Numeric Values:\"<([2-9]|[12]\\d|3[0-6])#[\\d\\l]+>\":::Text Key::D\n\
-	TP Numeric Values:\"<(#\\d+|\\$[\\da-fA-F]+)>\":::Text Key1::D\n\
+	TP Numeric Values:\"(?<!\\Y)(#\\d+|\\$[\\da-fA-F]+)>\":::Text Key1::D\n\
 	Numeric Values:\"<\\d+(\\.\\d+)?((e|E)(\\+|-)?\\d+)?>\":::Numeric Const::D\n\
 	Reserved Words 1:\"<(?iBegin|Const|End|Program|Record|Type|Var)>\":::Keyword::D\n\
 	Reserved Words 2:\"<(?iForward|Goto|Label|Of|Packed|With)>\":::Identifier::D\n\
@@ -588,7 +588,7 @@ static char *DefaultPatternSets[] = {
 	dq here doc esc chars:\"\\\\([nrtfbaeulULQE@%\\$\\\\]|0[0-7]+|x[0-9a-fA-F]+|c\\l)\":::Text Escape:dq here doc:\n\
 	dq here doc variables:\"\\$([-_./,\"\"\\\\*?#;!@$<>(%=~^|&`'+[\\]]|:(?!:)|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$#?|@|%)(::)?[\\l_](\\w|::(?=\\w))*|(\\$#?|@|%)\\{(::)?[\\l_](\\w|::(?=\\w))*\\}|(\\$|@|%)(?=\\{)\":::Identifier1:dq here doc:\n\
 	dq here doc content:\".\":::String:dq here doc:\n\
-	dq string:\"<\"\"\":\"\"\"\":\"\\n\\s*\\n\":String::\n\
+	dq string:\"(?<!\\Y)\"\"\":\"\"\"\":\"\\n\\s*\\n\":String::\n\
 	dq string delims:\"&\":\"&\"::Keyword:dq string:C\n\
 	dq string esc chars:\"\\\\([nrtfbaeulULQE\"\"@%\\$\\\\]|0[0-7]+|x[0-9a-fA-F]+|c\\l)\":::Text Escape:dq string:\n\
 	dq string variables:\"\\$([-_./,\"\"\\\\*?#;!@$<>(%=~^|&`'+[\\]]|:(?!:)|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$#?|@|%)(::)?[\\l_](\\w|::(?=\\w))*|(\\$#?|@|%)\\{(::)?[\\l_](\\w|::(?=\\w))*\\}|(\\$|@|%)(?=\\{)\":::Identifier1:dq string:\n\
@@ -600,7 +600,7 @@ static char *DefaultPatternSets[] = {
 	sq here doc delims:\"\\1\\2\":::Keyword:sq here doc:C\n\
 	sq here doc esc chars:\"\\\\\\\\\":::Text Escape:sq here doc:\n\
 	sq here doc content:\".\":::String1:sq here doc:\n\
-	sq string:\"<'\":\"'\":\"\\n\\s*\\n\":String1::\n\
+	sq string:\"(?<!\\Y)'\":\"'\":\"\\n\\s*\\n\":String1::\n\
 	sq string delims:\"&\":\"&\"::Keyword:sq string:C\n\
 	sq string esc chars:\"\\\\(\\\\|')\":::Text Escape:sq string:\n\
 	gen sq string:\"<q/\":\"(?!\\\\)/\":\"\\n\\s*\\n\":String1::\n\
@@ -615,7 +615,7 @@ static char *DefaultPatternSets[] = {
 	bq here doc comment:\"#\":\"$\"::Comment:bq here doc:\n\
 	bq here doc variables:\"\\$([-_./,\"\"\\\\*?#;!@$<>(%=~^|&`'+[\\]]|:(?!:)|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$#?|@|%)(::)?[\\l_](\\w|::(?=\\w))*|(\\$#?|@|%)\\{(::)?[\\l_](\\w|::(?=\\w))*\\}|(\\$|@|%)(?=\\{)\":::Identifier1:bq here doc:\n\
 	bq here doc content:\".\":::String1:bq here doc:\n\
-	bq string:\"<`\":\"`>\":\"\\n\\s*\\n\":String1::\n\
+	bq string:\"(?<!\\Y)`\":\"`(?!\\Y)\":\"\\n\\s*\\n\":String1::\n\
 	bq string delims:\"&\":\"&\"::Keyword:bq string:C\n\
 	bq string variables:\"\\$([-_./,\"\"\\\\*?#;!@$<>(%=~^|&`'+[\\]]|:(?!:)|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$#?|@|%)(::)?[\\l_](\\w|::(?=\\w))*|(\\$#?|@|%)\\{(::)?[\\l_](\\w|::(?=\\w))*\\}|(\\$|@|%)(?=\\{)\":::Identifier1:bq string:\n\
 	gen bq string:\"<qx/\":\"(?!\\\\)/\":\"\\n\\s*\\n\":String1::\n\
@@ -646,15 +646,15 @@ static char *DefaultPatternSets[] = {
 	variables:\"\\$([-_./,\"\"\\\\*?#;!@$<>(%=~^|&`'+[\\]]|:(?!:)|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$#?|@|%)(::)?[\\l_](\\w|::(?=\\w))*|(\\$#?|@|%)\\{(::)?[\\l_](\\w|::(?=\\w))*\\}|(\\$|@|%)(?=\\{)\":::Identifier1::\n\
 	named operators:\"<(lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|sub|x)>\":::Keyword::D\n\
 	library functions:\"<((?# arithmetic functions)abs|atan2|cos|exp|int|log|rand|sin|sqrt|srand|time|(?# conversion functions)chr|gmtime|hex|localtime|oct|ord|vec|(?# structure conversion)pack|unpack|(?# string functions)chomp|chop|crypt|eval(?=\\s*[^{])|index|lc|lcfirst|length|quotemeta|rindex|substr|uc|ucfirst|(?# array and hash functions)delete|each|exists|grep|join|keys|map|pop|push|reverse|scalar|shift|sort|splice|split|unshift|values|(?# search and replace functions)pos|study|(?# file operations)chmod|chown|link|lstat|mkdir|readlink|rename|rmdir|stat|symlink|truncate|unlink|utime|(?# input/output)binmode|close|eof|fcntl|fileno|flock|getc|ioctl|open|pipe|print|printf|read|readline|readpipe|seek|select|sprintf|sysopen|sysread|sysseek|syswrite|tell|(?# formats)formline|write|(?# tying variables)tie|tied|untie|(?# directory reading routines)closedir|opendir|readdir|rewinddir|seekdir|telldir|(?# system interaction)alarm|chdir|chroot|die|exec|exit|fork|getlogin|getpgrp|getppid|getpriority|glob|kill|setpgrp|setpriority|sleep|syscall|system|times|umask|wait|waitpid|warn|(?# networking)accept|bind|connect|getpeername|getsockname|getsockopt|listen|recv|send|setsockopt|shutdown|socket|socketpair|(?# system V ipc)msgctl|msgget|msgrcv|msgsnd|semctl|semget|semop|shmctl|shmget|shmread|shmwrite|(?# miscellaneous)defined|do|dump|eval(?=\\s*\\{)|local|my|ref|reset|undef|(?# informations from system databases)endpwent|getpwent|getpwnam|getpwuid|setpwent|endgrent|getgrent|getgrgid|getgrnam|setgrent|endnetent|getnetbyaddr|getnetbyname|getnetent|setnetent|endhostend|gethostbyaddr|gethostbyname|gethostent|sethostent|endservent|getservbyname|getservbyport|getservent|setservent|endprotoent|getprotobyname|getprotobynumber|getprotoent|setprotoent)>\":::Subroutine::\n\
-	subroutine call:\"(&|-\\>)\\w(\\w|::)*>|<\\w(\\w|::)*(?=\\s*\\()\":::Subroutine1::D\n\
+	subroutine call:\"(&|-\\>)\\w(\\w|::)*(?!\\Y)|<\\w(\\w|::)*(?=\\s*\\()\":::Subroutine1::D\n\
 	symbolic operators:\">[-<>+.*/\\\\?!~=%^&:]<\":::Keyword::D\n\
 	braces and parens:\"[\\[\\]{}\\(\\)\\<\\>]\":::Keyword::D\n\
-	numerics:\"<((?i0x[\\da-f]+)|0[0-7]+|(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?|[\\d_]+)>\":::Numeric Const::D\n\
+	numerics:\"(?<!\\Y)((?i0x[\\da-f]+)|0[0-7]+|(\\d+\\.?\\d*|\\.\\d+)([eE][\\-+]?\\d+)?|[\\d_]+)(?!\\Y)\":::Numeric Const::D\n\
 	tokens:\"__(FILE|PACKAGE|LINE|DIE|WARN)__\":::Preprocessor::D\n\
 	end token:\"^__(END|DATA)__\":\"never_match_this_pattern\"::Plain::\n\
 	end token delim:\"&\":::Preprocessor:end token:C\n\
 	pod:\"(?=^=)\":\"^=cut\"::Text Comment::\n\
-	re match:\"<((m|qr|~\\s*)/)\":\"(/(gc?|[imosx])*)\"::Plain::\n\
+	re match:\"(?<!\\Y)((m|qr|~\\s*)/)\":\"(/(gc?|[imosx])*)\"::Plain::\n\
 	re match delims:\"&\":\"&\"::Keyword:re match:C\n\
 	re match esc chars:\"\\\\([/abdeflnrstuwzABDEGLQSUWZ+?.*$^(){}[\\]|\\\\]|0[0-7]{2}|x[0-9a-fA-F]{2})\":::Text Escape:re match:\n\
 	re match class:\"\\[\\^?\":\"\\]\"::Plain:re match:\n\
@@ -689,10 +689,10 @@ static char *DefaultPatternSets[] = {
 	Dictionary:\"(\\<\\<|\\>\\>)\":::Storage Type::\n\
 	hex string:\"\\<\":\"\\>\":\"[^0-9a-fA-F> \\t]\":String1::\n\
 	Literal:\"/[^/%{}\\(\\)\\<\\>\\[\\]\\f\\n\\r\\t ]*\":::Text Key::\n\
-	Number:\"<((([2-9]|[1-2][0-9]|3[0-6])#[0-9a-zA-Z]*)|(((\\+|-)?[0-9]+\\.?[0-9]*)|((\\+|-)?\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)>\":::Numeric Const::D\n\
+	Number:\"(?<!\\Y)((([2-9]|[1-2][0-9]|3[0-6])#[0-9a-zA-Z]*)|(((\\+|-)?[0-9]+\\.?[0-9]*)|((\\+|-)?\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(?!\\Y)\":::Numeric Const::D\n\
 	Array:\"[\\[\\]]\":::Storage Type::D\n\
 	Procedure:\"[{}]\":::Subroutine::D\n\
-	Operator1:\"<(=|==|abs|add|aload|anchorsearch|and|arc|arcn|arcto|array|ashow|astore|atan|awidthshow|begin|bind|bitshift|bytesavailable|cachestatus|ceiling|charpath|clear|cleardictstack|cleartomark|clip|clippath|closefile|closepath|concat|concatmatrix|copy|copypage|cos|count|countdictstack|countexecstack|counttomark|currentdash|currentdict|currentfile|currentflat|currentfont|currentgray|currenthsbcolor|currentlinecap|currentlinejoin|currentlinewidth|currentmatrix|currentmiterlimit|currentpoint|currentrgbcolor|currentscreen|currenttransfer|curveto|cvi|cvlit|cvn|cvr|cvrs|cvs|cvx|def|defaultmatrix|definefont|dict|dictstack|div|dtransform|dup|echo|eexec|end|eoclip|eofill|eq|erasepage|errordict|exch|exec|execstack|executeonly|executive|exit|exitserver|exp|false|file|fill|findfont|flattenpath|floor|flush|flushfile|FontDirectory|for|forall|ge|get|getinterval|grestore|grestoreall|gsave|gt|handleerror|identmatrix|idiv|idtransform|if|ifelse|image|imagemask|index|initclip|initgraphics|initmatrix|internaldict|invertmatrix|itransform|known|kshow|le|length|lineto|ln|load|log|loop|lt|makefont|mark|matrix|maxlength|mod|moveto|mul|ne|neg|newpath|noaccess|not|null|nulldevice|or|pathbbox|pathforall|pop|print|prompt|pstack|put|putinterval|quit|rand|rcheck|rcurveto|read|readhexstring|readline|readonly|readstring|repeat|resetfile|restore|reversepath|rlineto|rmoveto|roll|rotate|round|rrand|run|save|scale|scalefont|search|serverdict|setcachedevice|setcachelimit|setcharwidth|setdash|setflat|setfont|setgray|sethsbcolor|setlinecap|setlinejoin|setlinewidth|setmatrix|setmiterlimit|setrgbcolor|setscreen|settransfer|show|showpage|sin|sqrt|srand|stack|StandardEncoding|start|status|statusdict|stop|stopped|store|string|stringwidth|stroke|strokepath|sub|systemdict|token|transform|translate|true|truncate|type|userdict|usertime|version|vmstatus|wcheck|where|widthshow|write|writehexstring|writestring|xcheck|xor)>\":::Keyword::D\n\
+	Operator1:\"(?<!\\Y)(=|==|abs|add|aload|anchorsearch|and|arc|arcn|arcto|array|ashow|astore|atan|awidthshow|begin|bind|bitshift|bytesavailable|cachestatus|ceiling|charpath|clear|cleardictstack|cleartomark|clip|clippath|closefile|closepath|concat|concatmatrix|copy|copypage|cos|count|countdictstack|countexecstack|counttomark|currentdash|currentdict|currentfile|currentflat|currentfont|currentgray|currenthsbcolor|currentlinecap|currentlinejoin|currentlinewidth|currentmatrix|currentmiterlimit|currentpoint|currentrgbcolor|currentscreen|currenttransfer|curveto|cvi|cvlit|cvn|cvr|cvrs|cvs|cvx|def|defaultmatrix|definefont|dict|dictstack|div|dtransform|dup|echo|eexec|end|eoclip|eofill|eq|erasepage|errordict|exch|exec|execstack|executeonly|executive|exit|exitserver|exp|false|file|fill|findfont|flattenpath|floor|flush|flushfile|FontDirectory|for|forall|ge|get|getinterval|grestore|grestoreall|gsave|gt|handleerror|identmatrix|idiv|idtransform|if|ifelse|image|imagemask|index|initclip|initgraphics|initmatrix|internaldict|invertmatrix|itransform|known|kshow|le|length|lineto|ln|load|log|loop|lt|makefont|mark|matrix|maxlength|mod|moveto|mul|ne|neg|newpath|noaccess|not|null|nulldevice|or|pathbbox|pathforall|pop|print|prompt|pstack|put|putinterval|quit|rand|rcheck|rcurveto|read|readhexstring|readline|readonly|readstring|repeat|resetfile|restore|reversepath|rlineto|rmoveto|roll|rotate|round|rrand|run|save|scale|scalefont|search|serverdict|setcachedevice|setcachelimit|setcharwidth|setdash|setflat|setfont|setgray|sethsbcolor|setlinecap|setlinejoin|setlinewidth|setmatrix|setmiterlimit|setrgbcolor|setscreen|settransfer|show|showpage|sin|sqrt|srand|stack|StandardEncoding|start|status|statusdict|stop|stopped|store|string|stringwidth|stroke|strokepath|sub|systemdict|token|transform|translate|true|truncate|type|userdict|usertime|version|vmstatus|wcheck|where|widthshow|write|writehexstring|writestring|xcheck|xor)(?!\\Y)\":::Keyword::D\n\
 	Operator2:\"<(arct|colorimage|cshow|currentblackgeneration|currentcacheparams|currentcmykcolor|currentcolor|currentcolorrendering|currentcolorscreen|currentcolorspace|currentcolortransfer|currentdevparams|currentglobal|currentgstate|currenthalftone|currentobjectformat|currentoverprint|currentpacking|currentpagedevice|currentshared|currentstrokeadjust|currentsystemparams|currentundercolorremoval|currentuserparams|defineresource|defineuserobject|deletefile|execform|execuserobject|filenameforall|fileposition|filter|findencoding|findresource|gcheck|globaldict|GlobalFontDirectory|glyphshow|gstate|ineofill|infill|instroke|inueofill|inufill|inustroke|ISOLatin1Encoding|languagelevel|makepattern|packedarray|printobject|product|realtime|rectclip|rectfill|rectstroke|renamefile|resourceforall|resourcestatus|revision|rootfont|scheck|selectfont|serialnumber|setbbox|setblackgeneration|setcachedevice2|setcacheparams|setcmykcolor|setcolor|setcolorrendering|setcolorscreen|setcolorspace|setcolortransfer|setdevparams|setfileposition|setglobal|setgstate|sethalftone|setobjectformat|setoverprint|setpacking|setpagedevice|setpattern|setshared|setstrokeadjust|setsystemparams|setucacheparams|setundercolorremoval|setuserparams|setvmthreshold|shareddict|SharedFontDirectory|startjob|uappend|ucache|ucachestatus|ueofill|ufill|undef|undefinefont|undefineresource|undefineuserobject|upath|UserObjects|ustroke|ustrokepath|vmreclaim|writeobject|xshow|xyshow|yshow)>\":::Keyword::D\n\
 	Operator3:\"<(GetHalftoneName|GetPageDeviceName|GetSubstituteCRD|StartData|addglyph|beginbfchar|beginbfrange|begincidchar|begincidrange|begincmap|begincodespacerange|beginnotdefchar|beginnotdefrange|beginrearrangedfont|beginusematrix|cliprestore|clipsave|composefont|currentsmoothness|currenttrapparams|endbfchar|endbfrange|endcidchar|endcidrange|endcmap|endcodespacerange|endnotdefchar|endnotdefrange|endrearrangedfont|endusematrix|findcolorrendering|removeall|removeglyphs|setsmoothness|settrapparams|settrapzone|shfill|usecmap|usefont)>\":::Keyword::D\n\
 	Old operator:\"<(condition|currentcontext|currenthalftonephase|defineusername|detach|deviceinfo|eoviewclip|fork|initviewclip|join|lock|monitor|notify|rectviewclip|sethalftonephase|viewclip|viewclippath|wait|wtranslation|yield)>\":::Keyword::D}",
@@ -708,7 +708,7 @@ static char *DefaultPatternSets[] = {
 	String escape chars 1d:\"\\\\(\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1d:\n\
 	Representation:\"`\":\"`\":\"$\":String2::\n\
 	Representation cont:\"\\\\\\n\":::String2:Representation:\n\
-	Number:\"<((([1-9]\\d*|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[jJ]?|([1-9]\\d*|0)[jJ]|(0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)>\":::Numeric Const::\n\
+	Number:\"(?<!\\Y)((([1-9]\\d*|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[jJ]?|([1-9]\\d*|0)[jJ]|(0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)(?!\\Y)\":::Numeric Const::\n\
 	Import:\"<(import|from)>\":\";|$\":\"#\":Preprocessor::\n\
 	Import continuation:\"\\\\\\n\":::Preprocessor:Import:\n\
 	Member definition:\"<(def)\\s+((__(abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|float|getattr|getitem|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|ipow|irshift|isub|ixor|len|long|lshift|mod|mul|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|xor)__)|((__(bases|class|dict|members|methods)__)|(__(delslice|getslice|setslice)__))|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|class|global|lambda)|([\\l_]\\w*))(?=(\\s*(\\\\\\n\\s*)?\\(\\s*|\\s*\\(\\s*(\\\\?\\n\\s*)?)self>)\":::Plain::\n\
@@ -782,9 +782,9 @@ static char *DefaultPatternSets[] = {
     "SQL:1:0{\n\
 	keywords:\",|%|\\<|\\>|:=|=|<(SELECT|ON|FROM|ORDER BY|DESC|WHERE|AND|OR|NOT|NULL|TRUE|FALSE)>\":::Keyword::\n\
 	comment:\"--\":\"$\"::Comment::\n\
-	data types:\"<(CHAR|VARCHAR2\\([0-9]*\\)|INT[0-9]*|POINT|BOX|TEXT|BOOLEAN|VARCHAR2|VARCHAR|NUMBER\\([0-9]*\\)|NUMBER)>\":::Storage Type::\n\
+	data types:\"<(CHAR|VARCHAR2\\([0-9]*\\)|INT[0-9]*|POINT|BOX|TEXT|BOOLEAN|VARCHAR2|VARCHAR|NUMBER\\([0-9]*\\)|NUMBER)(?!\\Y)\":::Storage Type::\n\
 	string:\"'\":\"'\"::String::\n\
-	keywords2:\"END IF;|<(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>\":::Preprocessor1::\n\
+	keywords2:\"END IF;|(?<!\\Y)(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>\":::Preprocessor1::\n\
 	comment2:\"/\\*\":\"\\*/\"::Comment::}",
     "Sh Ksh Bash:1:0{\n\
 	escaped special characters:\"\\\\[\\\\\"\"$`']\":::Keyword::\n\
@@ -821,17 +821,17 @@ static char *DefaultPatternSets[] = {
 	internal var:\"\\$\\{\":\"}\"::Identifier1:variables2:\n\
 	comments in line:\"#\":\"$\"::Comment::\n\
 	numbers:\"<(?i0x[\\da-f]+)|((\\d*\\.)?\\d+([eE][-+]?\\d+)?(?iul?|l|f)?)>\":::Numeric Const::D\n\
-	keywords:\"<(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\\[\\[|]])>[\\s\\n]\":::Keyword::D\n\
+	keywords:\"(?<!\\Y)(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\\[\\[|\\]\\])(?!\\Y)[\\s\\n]\":::Keyword::D\n\
 	command options:\"[ \\t]-[^ \\t{}[\\],()'\"\"~!@#$%^&*|\\\\<>?]+\":::Identifier::\n\
 	delimiters:\"[{};<>&~=!|^%[\\]+*|]\":::Text Key::D\n\
-	built ins:\"<(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)>[\\s\\n;]\":::Subroutine1::D}",
+	built ins:\"(?<!\\Y)(:|\\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)(?!\\Y)[\\s\\n;]\":::Subroutine1::D}",
     "Tcl:1:0{\n\
 	Double Quote String:\"\"\"\":\"\"\"\"::String::\n\
 	Single Quote String:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
 	Ignore Escaped Chars:\"\\\\(.|\\n)\":::Plain::\n\
 	Variable Ref:\"\\$\\w+|\\$\\{[^}]*}|\\$|#auto\":::Identifier1::\n\
 	Comment:\"#\":\"$\"::Comment::\n\
-	Keywords:\"<(after\\s+(\\d+|cancel|idle|info){0,1}|append|array\\s+(anymore|donesearch|exists|get|names|nextelement|set|size|startsearch|unset)|bell|bgerror|binary\\s+(format|scan)|bind(tags){0,1}|body|break|case|catch|cd|class|clipboard\\s+(clear|append)|clock\\s+(clicks|format|scan|seconds)|close|code|common|concat|configbody|constructor|continue|delete\\s+(class|object|namespace)|destroy|destructor|else|elseif|encoding\\s+(convertfrom|convertto|names|system)|ensemble|eof|error|eval|event\\s+(add|delete|generate|info)|exec|exit|expr|fblocked|fconfigure|fcopy|file\\s+(atime|attributes|channels|copy|delete|dirname|executable|exists|extension|isdirectory|isfile|join|lstat|mkdir|mtime|nativename|owned|pathtype|readable|readlink|rename|rootname|size|split|stat|tail|type|volume|writable)|fileevent|find\\s+(classes|objects)|flush|focus|font\\s+(actual|configure|create|delete|families|measure|metrics|names)|foreach|format|gets|glob(al){0,1}|grab\\s+(current|release|set|status|(-global\\s+){0,1}\\w+)|grid(\\s+bbox|(column|row){0,1}configure|forget|info|location|propagate|remove|size|slaves){0,1}|history\\s+(add|change|clear|event|info|keep|nextid|redo)|if|image\\s+(create|delete|height|names|type|width)|incr|info\\s+(args|body|cmdcount|commands|complete|default|exists|globals|hostname|level|library|loaded|locals|nameofexecutable|patchlevel|procs|script|sharedlibextension|tclversion|vars)|inherit|interp\\s+(alias(es){0,1}|create|delete|eval|exists|expose|hide|hidden|invokehidden|issafe|marktrusted|share|slaves|target|transfer)|join|lappend|lindex|linsert|list|llength|load|local|lrange|lreplace|lsearch|lsort|method|memory\\s+(info|(trace|validate)\\s+(on|off)|trace_on_at_malloc|break_on_malloc|display)|namespace\\s+(children|code|current|delete|eval|export|forget|import|inscope|origin|parent|qualifiers|tail|which)|open|option\\s+(add|clear|get|read(file))|pack\\s+(configure|forget|info|propagate|slaves){0,1}|package\\s+(forget|ifneeded|names|present|provide|require|unknown|vcompare|versions|vsatisfies)|pid|place\\s+(configure|forget|info|slaves){0,1}|proc|puts|pwd|raise|read|regexp|regsub|rename|resource\\s+(close|delete|files|list|open|read|types|write)|return|scan|scope(dobject){0,1}|seek|selection\\s+(clear|get|handle|own)|send|set|socket|source|split|string\\s+(bytelength|compare|equal|first|index|is|last|length|map|match|range|repeat|replace|tolower|totitle|toupper|trim|trimleft|trimright|wordend|wordstart)|subst|switch|tell|time|tk\\s+(appname|scaling|useinputmethods)|tk_(bindForTraversal|bisque|chooseColor|chooseDirectory|dialog|focusFollowsMouse|focusNext|focusPrev|getOpenFile|getSaveFile|menuBar|messageBox|optionMenu|popup|setPalette)|tkerror|tkwait\\s+(variable|visibility|window)|trace\\s+(variable|vdelete|vinfo)|unknown|unset|update|uplevel|upvar|usual|variable|while|winfo\\s+(atom|atomname|cells|children|class|colormapfull|containing|depth|exists|fpixels|geometry|height|id|interp|ismapped|manager|name|parent|pathname|pixels|pointerx|pointerxy|pointery|reqheight|reqwidth|rgb|rootx|rooty|screen(cells|depth|height|mmheigth|mmidth|visual|width){0,1}|server|toplevel|viewable|visual(id|savailable){0,1}|vroot(height|width|x|y)|width|x|y)|wm\\s+(aspect|client|colormapwindows|command|deiconify|focusmodel|frame|geometry|grid|group|iconbitmap|icon(ify|mask|name|position|window)|(max|min)size|overrideredirect|positionfrom|protocol|resizable|sizefrom|state|title|transient|withdraw))>\":::Keyword::D\n\
+	Keywords:\"<(after\\s+(\\d+|cancel|idle|info)?|append|array\\s+(anymore|donesearch|exists|get|names|nextelement|set|size|startsearch|unset)|bell|bgerror|binary\\s+(format|scan)|bind(tags)?|body|break|case|catch|cd|class|clipboard\\s+(clear|append)|clock\\s+(clicks|format|scan|seconds)|close|code|common|concat|configbody|constructor|continue|delete\\s+(class|object|namespace)|destroy|destructor|else|elseif|encoding\\s+(convertfrom|convertto|names|system)|ensemble|eof|error|eval|event\\s+(add|delete|generate|info)|exec|exit|expr|fblocked|fconfigure|fcopy|file\\s+(atime|attributes|channels|copy|delete|dirname|executable|exists|extension|isdirectory|isfile|join|lstat|mkdir|mtime|nativename|owned|pathtype|readable|readlink|rename|rootname|size|split|stat|tail|type|volume|writable)|fileevent|find\\s+(classes|objects)|flush|focus|font\\s+(actual|configure|create|delete|families|measure|metrics|names)|foreach|format|gets|glob(al)?|grab\\s+(current|release|set|status|(-global\\s+)?\\w+)|grid(\\s+bbox|(column|row)?configure|forget|info|location|propagate|remove|size|slaves)?|history\\s+(add|change|clear|event|info|keep|nextid|redo)|if|image\\s+(create|delete|height|names|type|width)|incr|info\\s+(args|body|cmdcount|commands|complete|default|exists|globals|hostname|level|library|loaded|locals|nameofexecutable|patchlevel|procs|script|sharedlibextension|tclversion|vars)|inherit|interp\\s+(alias(es)?|create|delete|eval|exists|expose|hide|hidden|invokehidden|issafe|marktrusted|share|slaves|target|transfer)|join|lappend|lindex|linsert|list|llength|load|local|lrange|lreplace|lsearch|lsort|method|memory\\s+(info|(trace|validate)\\s+(on|off)|trace_on_at_malloc|break_on_malloc|display)|namespace\\s+(children|code|current|delete|eval|export|forget|import|inscope|origin|parent|qualifiers|tail|which)|open|option\\s+(add|clear|get|read(file))|pack\\s+(configure|forget|info|propagate|slaves)?|package\\s+(forget|ifneeded|names|present|provide|require|unknown|vcompare|versions|vsatisfies)|pid|place\\s+(configure|forget|info|slaves)?|proc|puts|pwd|raise|read|regexp|regsub|rename|resource\\s+(close|delete|files|list|open|read|types|write)|return|scan|scope(dobject)?|seek|selection\\s+(clear|get|handle|own)|send|set|socket|source|split|string\\s+(bytelength|compare|equal|first|index|is|last|length|map|match|range|repeat|replace|tolower|totitle|toupper|trim|trimleft|trimright|wordend|wordstart)|subst|switch|tell|time|tk\\s+(appname|scaling|useinputmethods)|tk_(bindForTraversal|bisque|chooseColor|chooseDirectory|dialog|focusFollowsMouse|focusNext|focusPrev|getOpenFile|getSaveFile|menuBar|messageBox|optionMenu|popup|setPalette)|tkerror|tkwait\\s+(variable|visibility|window)|trace\\s+(variable|vdelete|vinfo)|unknown|unset|update|uplevel|upvar|usual|variable|while|winfo\\s+(atom|atomname|cells|children|class|colormapfull|containing|depth|exists|fpixels|geometry|height|id|interp|ismapped|manager|name|parent|pathname|pixels|pointerx|pointerxy|pointery|reqheight|reqwidth|rgb|rootx|rooty|screen(cells|depth|height|mmheigth|mmidth|visual|width)?|server|toplevel|viewable|visual(id|savailable)?|vroot(height|width|x|y)|width|x|y)|wm\\s+(aspect|client|colormapwindows|command|deiconify|focusmodel|frame|geometry|grid|group|iconbitmap|icon(ify|mask|name|position|window)|(max|min)size|overrideredirect|positionfrom|protocol|resizable|sizefrom|state|title|transient|withdraw))(?!\\Y)\":::Keyword::D\n\
 	Widgets:\"<(button(box){0,1}|calendar|canvas(printbox|printdialog){0,1}|check(box|button)|combobox|date(entry|field)|dialog(shell){0,1}|entry(field){0,1}|(ext){0,1}fileselection(box|dialog)|feedback|finddialog|frame|hierarchy|hyperhelp|label(edframe|edwidget){0,1}|listbox|mainwindow|menu(bar|button){0,1}|message(box|dialog){0,1}|notebook|optionmenu|panedwindow|promptdialog|pushbutton|radio(box|button)|scale|scrollbar|scrolled(canvas|frame|html|listbox|text)|selection(box|dialog)|shell|spin(date|int|ner|time)|tab(notebook|set)|text|time(entry|field)|toolbar|toplevel|watch)>\":::Identifier::\n\
 	Braces and Brackets:\"[\\[\\]{}]\":::Keyword::D\n\
 	DQ String Esc Chars:\"\\\\(.|\\n)\":::String1:Double Quote String:\n\
@@ -844,7 +844,7 @@ static char *DefaultPatternSets[] = {
 	String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
 	Vhdl Attributes:\"'[a-zA-Z][a-zA-Z_]+\":::Ada Attributes::\n\
 	Character Literals:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	Numeric Literals:\"<(((2#|8#|10#|16#)[_0-9a-fA-F]*#)|[0-9.]+)>\":::Numeric Const::\n\
+	Numeric Literals:\"(?<!\\Y)(((2#|8#|10#|16#)[_0-9a-fA-F]*#)|[0-9.]+)(?!\\Y)\":::Numeric Const::\n\
 	Predefined Types:\"<(?ialias|constant|signal|variable|subtype|type|resolved|boolean|string|integer|natural|time)>\":::Storage Type::D\n\
 	Predefined SubTypes:\"<(?istd_logic|std_logic_vector|std_ulogic|std_ulogic_vector|bit|bit_vector)>\":::Storage Type::D\n\
 	Reserved Words:\"<(?iabs|access|after|all|and|architecture|array|assert|attribute|begin|block|body|buffer|bus|case|component|configuration|disconnect|downto|else|elsif|end|entity|error|exit|failure|file|for|function|generate|generic|guarded|if|in|inout|is|label|library|linkage|loop|map|mod|nand|new|next|nor|not|note|null|of|on|open|or|others|out|package|port|procedure|process|range|record|register|rem|report|return|select|severity|then|to|transport|units|until|use|wait|warning|when|while|with|xor|group|impure|inertial|literal|postponed|pure|reject|rol|ror|shared|sla|sll|sra|srl|unaffected|xnor)>\":::Keyword::D\n\
@@ -859,16 +859,16 @@ static char *DefaultPatternSets[] = {
 	cplus comment:\"//\":\"$\"::Comment::\n\
 	String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
 	preprocessor line:\"^[ ]*`\":\"$\"::Preprocessor::\n\
-	Reserved WordsA:\"<(module|endmodule|parameter|specify|endspecify|begin|end|initial|always|if|else|task|endtask|force|release|attribute|case|case[xz]|default|endattribute|endcase|endfunction|endprimitive|endtable|for|forever|function|primitive|table|while|;)>\":::Keyword::\n\
+	Reserved WordsA:\"(?<!\\Y)(module|endmodule|parameter|specify|endspecify|begin|end|initial|always|if|else|task|endtask|force|release|attribute|case|case[xz]|default|endattribute|endcase|endfunction|endprimitive|endtable|for|forever|function|primitive|table|while|;)(?!\\Y)\":::Keyword::\n\
 	Predefined Types:\"<(and|assign|buf|bufif[01]|cmos|deassign|defparam|disable|edge|event|force|fork|highz[01]|initial|inout|input|integer|join|large|macromodule|medium|nand|negedge|nmos|nor|not|notif[01]|or|output|parameter|pmos|posedge|pullup|rcmos|real|realtime|reg|release|repeat|rnmos|rpmos|rtran|rtranif[01]|scalered|signed|small|specparam|strength|strong[01]|supply[01]|time|tran|tranif[01]|tri[01]?|triand|trior|trireg|unsigned|vectored|wait|wand|weak[01]|wire|wor|xnor|xor)>\":::Storage Type::D\n\
 	System Functions:\"\\$[a-z_]+\":::Subroutine::D\n\
-	Numeric Literals:\"<([0-9]*'[dD][0-9xz\\\\?_]+|[0-9]*'[hH][0-9a-fxz\\\\?_]+|[0-9]*'[oO][0-7xz\\\\?_]+|[0-9]*'[bB][01xz\\\\?_]+|[0-9.]+((e|E)(\\\\+|-)?)?[0-9]*|[0-9]+)>\":::Numeric Const::\n\
-	Delay Word:\"<((#\\(.*\\))|(#[0-9]*))>\":::Ada Attributes::D\n\
+	Numeric Literals:\"(?<!\\Y)([0-9]*'[dD][0-9xz\\\\?_]+|[0-9]*'[hH][0-9a-fxz\\\\?_]+|[0-9]*'[oO][0-7xz\\\\?_]+|[0-9]*'[bB][01xz\\\\?_]+|[0-9.]+((e|E)(\\\\+|-)?)?[0-9]*|[0-9]+)(?!\\Y)\":::Numeric Const::\n\
+	Delay Word:\"(?<!\\Y)((#\\(.*\\))|(#[0-9]*))(?!\\Y)\":::Ada Attributes::D\n\
 	Simple Word:\"([a-zA-Z][a-zA-Z0-9]*)\":::Plain::D\n\
 	Instance Declaration:\"([a-zA-Z][a-zA-Z0-9_]*)([ \\t]+)([a-zA-Z][a-zA-Z0-9_$]*)([ \\t]*)\\(\":::Plain::\n\
 	Module name:\"\\1\":\"\"::Identifier:Instance Declaration:C\n\
 	Instance Name:\"\\3\":\"\"::Identifier1:Instance Declaration:C\n\
-	Pins Declaration:\"<(\\.([a-zA-Z0-9_]+))>\":::Storage Type1::\n\
+	Pins Declaration:\"(?<!\\Y)(\\.([a-zA-Z0-9_]+))>\":::Storage Type1::\n\
 	Special Chars:\"(\\{|\\}|,|;|=|\\.)\":::Keyword::}",
     "XML:1:0{\n\
 	comment:\"\\<!--\":\"--\\>\"::Comment::\n\
@@ -895,7 +895,7 @@ static char *DefaultPatternSets[] = {
 	element declaration:\"\\<!ELEMENT\":\"\\>\"::Warning::\n\
 	element declaration delims:\"&\":\"&\"::Keyword:element declaration:C\n\
 	element declaration entity ref:\"%(?!(?ixml))[\\l_][\\w:-]*;\":::Identifier1:element declaration:\n\
-	element declaration keyword:\"<(ANY|#PCDATA|EMPTY)>\":::Storage Type:element declaration:\n\
+	element declaration keyword:\"(?<!\\Y)(ANY|#PCDATA|EMPTY)>\":::Storage Type:element declaration:\n\
 	element declaration name:\"<(?!(?ixml))[\\l_][\\w:-]*\":::Identifier:element declaration:\n\
 	element declaration operator:\"[(),?*+|]\":::Keyword:element declaration:\n\
 	entity declaration:\"\\<!ENTITY\":\"\\>\"::Warning::\n\
@@ -968,14 +968,14 @@ static char *DefaultPatternSets[] = {
 	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
 	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	numeric constant:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
 	rule:\"^[ \\t]*[A-Za-z_][A-Za-z0-9_]*[ \\t]*:\":::Preprocessor1::D\n\
 	keyword:\"<(return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
 	yacc keyword:\"<(error|YYABORT|YYACCEPT|YYBACKUP|YYERROR|YYINITDEPTH|YYLTYPE|YYMAXDEPTH|YYRECOVERING|YYSTYPE|yychar|yyclearin|yydebug|yyerrok|yyerror|yylex|yylval|yylloc|yynerrs|yyparse)>\":::Text Arg::D\n\
-	percent keyword:\"<(%left|%nonassoc|%prec|%right|%start|%token|%type|%union)>([ \\t]*\\<.*\\>)?\":::Text Arg::D\n\
+	percent keyword:\"(?<!\\Y)(%left|%nonassoc|%prec|%right|%start|%token|%type|%union)>([ \\t]*\\<.*\\>)?\":::Text Arg::D\n\
 	braces:\"[{}]\":::Keyword::D\n\
-	markers:\"<(%\\{|%}|%%)>\":::Flag::D\n\
+	markers:\"(?<!\\Y)(%\\{|%\\}|%%)(?!\\Y)\":::Flag::D\n\
 	percent sub-expr:\"\\2\":::Text Arg2:percent keyword:DC}"
 };
 

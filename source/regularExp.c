@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.18 2002/07/17 15:14:37 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.19 2002/11/13 17:56:42 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2606,6 +2606,8 @@ static int Prev_Is_BOL;
 static int Succ_Is_EOL;
 static int Prev_Is_Delim;
 static int Succ_Is_Delim;
+static int Prev_Is_WordChar;
+static int Succ_Is_WordChar;
 
 /* Define a pointer to an array to hold general (...){m,n} counts. */
 
@@ -2713,6 +2715,8 @@ int ExecRE (
    Succ_Is_EOL        = ((succ_char == '\n') || (succ_char == '\0') ? 1 : 0);
    Prev_Is_Delim      = (Current_Delimiters [(unsigned char)prev_char] ? 1 : 0);
    Succ_Is_Delim      = (Current_Delimiters [(unsigned char)succ_char] ? 1 : 0);
+   Prev_Is_WordChar   = ((isalnum ((int)prev_char) || prev_char == '_') ? 1 : 0);
+   Succ_Is_WordChar   = ((isalnum ((int)succ_char) || succ_char == '_') ? 1 : 0);
 
    Total_Paren        = (int) (prog->program [1]);
    Num_Braces         = (int) (prog->program [2]);
@@ -3066,33 +3070,73 @@ static int match (unsigned char *prog, int *branch_index_param) {
             return (0);
 
          case BOWORD: /* `<' (beginning of word anchor) */
-            /* Check to see if preceding character is a delimiter. */
-
-            if (Reg_Input == Start_Of_String) {
-               if (Prev_Is_Delim) break;
-            } else if (Current_Delimiters [ *(Reg_Input - 1) ]) {
-               break;
-            }
+            /* Check to see if the current character is a word character
+	       and the preceding character is not. */
+            {
+	       int prev_is_wchar;
+	       if (Reg_Input == Start_Of_String) {
+		   prev_is_wchar = Prev_Is_WordChar;
+	       } else {
+		   prev_is_wchar = (isalnum (*(Reg_Input-1)) 
+		                 || *(Reg_Input-1) == '_');
+	       }
+	       if (!prev_is_wchar) {
+		   int current_is_wchar;
+		   if (*Reg_Input == '\0') {
+		      current_is_wchar = Succ_Is_WordChar;
+		   } else {
+		      current_is_wchar = (isalnum (*Reg_Input) 
+				       || *Reg_Input == '_');
+		   }
+		   if (current_is_wchar) break;
+	       }
+	    }
 
             return (0);
 
          case EOWORD: /* `>' (end of word anchor) */
-            /* Check to see if current character is a delimiter. */
-
-            if (Current_Delimiters [ *(Reg_Input) ]) break;
+            /* Check to see if the current character is not a word character
+	       and the preceding character is. */
+            {
+	       int prev_is_wchar;
+	       if (Reg_Input == Start_Of_String) {
+		   prev_is_wchar = Prev_Is_WordChar;
+	       } else {
+		   prev_is_wchar = (isalnum (*(Reg_Input-1)) 
+		                 || *(Reg_Input-1) == '_');
+	       }
+	       if (prev_is_wchar) {
+		   int current_is_wchar;
+		   if (*Reg_Input == '\0') {
+		      current_is_wchar = Succ_Is_WordChar;
+		   } else {
+		      current_is_wchar = (isalnum (*Reg_Input) 
+				       || *Reg_Input == '_');
+		   }
+		   if (!current_is_wchar) break;
+	       }
+	    }
 
             return (0);
 
          case NOT_BOUNDARY: /* \B (NOT a word boundary) */
-            if (Reg_Input == Start_Of_String) {
-               if (!(Prev_Is_Delim ^ Current_Delimiters [*Reg_Input])) break;
-            } else if (*Reg_Input == '\0') {
-               if (!((Current_Delimiters [ *(Reg_Input - 1) ]) ^
-                      Succ_Is_Delim)) break;
-            } else {
-               if (!(Current_Delimiters [ *(Reg_Input - 1) ] ^
-                         Current_Delimiters [*Reg_Input])) break;
-            }
+            {
+	       int prev_is_wchar;
+	       int current_is_wchar;
+	       if (Reg_Input == Start_Of_String) {
+		   prev_is_wchar = Prev_Is_WordChar;
+	       } else {
+		   prev_is_wchar = (isalnum (*(Reg_Input-1)) 
+		                 || *(Reg_Input-1) == '_');
+	       }
+	       if (*Reg_Input == '\0') {
+		  current_is_wchar = Succ_Is_WordChar;
+	       } else {
+		  current_is_wchar = (isalnum (*Reg_Input) 
+				   || *Reg_Input == '_');
+	       }
+	       if (!(prev_is_wchar ^ current_is_wchar)) break;
+	    }
 
             return (0);
 
