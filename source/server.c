@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.29 2004/06/08 15:30:01 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.30 2004/06/23 13:25:56 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -95,6 +95,12 @@ void InitServerCommunication(void)
                               &ServerExistsAtom,
     	                      &ServerRequestAtom);
 
+    /* Pay attention to PropertyChangeNotify events on the root window.
+       Do this before putting up the server atoms, to avoid a race 
+       condition (when nc sees that the server exists, it sends a command,
+       so we must make sure that we already monitor properties). */
+    XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
+    
     /* Create the server-exists property on the root window to tell clients
        whether to try a request (otherwise clients would always have to
        try and wait for their timeouts to expire) */
@@ -103,9 +109,6 @@ void InitServerCommunication(void)
     
     /* Set up exit handler for cleaning up server-exists property */
     atexit(cleanUpServerCommunication);
-    
-    /* Pay attention to PropertyChangeNotify events on the root window */
-    XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
 }
 
 static void deleteProperty(Atom* atom)
