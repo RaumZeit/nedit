@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.26 2001/06/20 15:48:26 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.27 2001/06/22 18:25:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2097,9 +2097,29 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
     	goto error;
     result->tag = STRING_TAG;
     result->val.str = AllocString(statbuf.st_size+1);
-    readLen = fread(result->val.str, sizeof(char), statbuf.st_size, fp);
+    readLen = fread(result->val.str, sizeof(char), statbuf.st_size+1, fp);
     if (ferror(fp))
 	goto error;
+    if(!feof(fp)){
+        /* Couldn't trust file size. Use slower but more general method */   
+        int chunkSize = 1024;
+        char *buffer;
+        char *final;
+        
+        buffer = XtMalloc(readLen * sizeof(char));
+        memcpy(buffer, result->val.str, readLen * sizeof(char));
+        while (!feof(fp)){
+            buffer = XtRealloc(buffer, (readLen+chunkSize)*sizeof(char));
+            readLen += fread(&buffer[readLen], sizeof(char), chunkSize, fp);
+            if (ferror(fp)){
+                XtFree(buffer);
+	        goto error;
+            }
+        }
+        result->val.str = AllocString(readLen + 1);
+        memcpy(result->val.str, buffer, readLen * sizeof(char));
+        XtFree(buffer);
+    }
     result->val.str[readLen] = '\0';
     fclose(fp);
     
