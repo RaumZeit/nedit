@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.43 2002/09/05 17:48:43 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.44 2002/09/23 12:06:06 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1520,7 +1520,7 @@ static Modifiers findModifierMapping(Display *display, KeyCode keyCode) {
     return(0);
 }
 
-static Modifiers getNumLockModMask(Display *display) {
+Modifiers GetNumLockModMask(Display *display) {
     static int numLockMask = -1;
 
     if (numLockMask == -1) {
@@ -1535,7 +1535,7 @@ static Modifiers getNumLockModMask(Display *display) {
 */
 
 static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask) {
-    Modifiers numLockMask = getNumLockModMask(XtDisplay(dialog));
+    Modifiers numLockMask = GetNumLockModMask(XtDisplay(dialog));
 
     if (keyCode == 0)  /* No anykey grabs, sorry */
         return;
@@ -1686,7 +1686,7 @@ static void addAccelGrab(Widget topWidget, Widget w)
     KeySym keysym;
     unsigned int modifiers;
     KeyCode code;
-    Modifiers numLockMask = getNumLockModMask(XtDisplay(topWidget));
+    Modifiers numLockMask = GetNumLockModMask(XtDisplay(topWidget));
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
     if (accelString == NULL || *accelString == '\0') {
@@ -1735,7 +1735,7 @@ static int parseAccelString(Display *display, const char *string, KeySym *keySym
     static unsigned int modifierMasks[N_MODIFIERS] = {ControlMask, ShiftMask,
 	    Mod1Mask, Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask, Button1Mask, Button2Mask,
 	    Button3Mask, Button4Mask, Button5Mask};
-    Modifiers numLockMask = getNumLockModMask(display);
+    Modifiers numLockMask = GetNumLockModMask(display);
     char modStr[MAX_ACCEL_LEN];
     char evtStr[MAX_ACCEL_LEN];
     char keyStr[MAX_ACCEL_LEN];
@@ -1802,7 +1802,7 @@ static int parseAccelString(Display *display, const char *string, KeySym *keySym
 static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch)
 {
-    Modifiers numLockMask = getNumLockModMask(XtDisplay(w));
+    Modifiers numLockMask = GetNumLockModMask(XtDisplay(w));
     Widget topMenuWidget = (Widget)callData;
     *continueDispatch = TRUE;
     if (!(((XKeyEvent *)event)->state & (LockMask | numLockMask)))

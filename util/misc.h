@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.15 2002/09/05 17:48:43 tringali Exp $ */
+/* $Id: misc.h,v 1.16 2002/09/23 12:06:06 edg Exp $ */
 
 #ifndef NEDIT_MISC_H_INCLUDED
 #define NEDIT_MISC_H_INCLUDED
@@ -86,5 +86,6 @@ Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, 
 	WidgetClass class, Display *display, ArgList args, Cardinal nArgs);
+Modifiers GetNumLockModMask(Display *display);
 
 #endif /* NEDIT_MISC_H_INCLUDED */

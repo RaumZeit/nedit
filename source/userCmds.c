@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.28 2002/08/22 18:43:46 slobasso Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.29 2002/09/23 12:06:05 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -2185,32 +2185,34 @@ static int parseError(const char *message)
 static void generateAcceleratorString(char *text, unsigned int modifiers,
 	KeySym keysym)
 {
-    char *shiftStr = "", *lockStr = "", *ctrlStr = "", *altStr = "";
+    char *shiftStr = "", *ctrlStr = "", *altStr = "";
     char *mod2Str  = "", *mod3Str = "", *mod4Str = "", *mod5Str = "";
     char keyName[20];
+    Modifiers numLockMask = GetNumLockModMask(TheDisplay);
 
     /* if there's no accelerator, generate an empty string */
     if (keysym == NoSymbol) {
     	*text = '\0';
     	return;
     }
+    
 
-    /* translate the modifiers into strings */
+    /* Translate the modifiers into strings.
+       Lock and NumLock are always ignored (see util/misc.c),
+       so we don't display them either. */
     if (modifiers & ShiftMask)
     	shiftStr = "Shift+";
-    if (modifiers & LockMask)
-    	lockStr = "Lock+";
     if (modifiers & ControlMask)
     	ctrlStr = "Ctrl+";
     if (modifiers & Mod1Mask)
     	altStr = "Alt+";
-    if (modifiers & Mod2Mask)
+    if ((modifiers & Mod2Mask) && (Mod2Mask != numLockMask))
         mod2Str = "Mod2+";
-    if (modifiers & Mod3Mask)
+    if ((modifiers & Mod3Mask) && (Mod3Mask != numLockMask))
         mod3Str = "Mod3+";
-    if (modifiers & Mod4Mask)
+    if ((modifiers & Mod4Mask) && (Mod4Mask != numLockMask))
         mod4Str = "Mod4+";
-    if (modifiers & Mod5Mask)
+    if ((modifiers & Mod5Mask) && (Mod5Mask != numLockMask))
         mod5Str = "Mod5+";
     
     /* for a consistent look to the accelerator names in the menus,
@@ -2219,7 +2221,7 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
     *keyName = toupper(*keyName);
     
     /* concatenate the strings together */
-    sprintf(text, "%s%s%s%s%s%s%s%s%s", shiftStr, lockStr, ctrlStr, altStr, 
+    sprintf(text, "%s%s%s%s%s%s%s%s", shiftStr, ctrlStr, altStr, 
             mod2Str, mod3Str, mod4Str, mod5Str, keyName);
 }
 
