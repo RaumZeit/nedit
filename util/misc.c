@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.73 2004/12/23 22:25:47 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.74 2005/01/06 06:09:40 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2141,13 +2141,20 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 */
 void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
 {
-   /* 
+    /* 
       The bug only exists in OpenMotif 2.1.x/2.2.[0-2]. Since it's quite hard 
       to detect OpenMotif reliably, we make a rough cut by excluding Lesstif
       and all Motif versions >= 2.1.x and < 2.2.3.
-   */
+    */
 #ifndef LESSTIF_VERSION
 #if XmVersion == 2001 || (XmVersion == 2002 && XmUPDATE_LEVEL < 3)
+    /* save the widget with current focus in case it moves */
+    Widget focusW, shellW = widget;
+    while (shellW && !XtIsShell(shellW)) {
+        shellW = XtParent(shellW);
+    }
+    focusW = XtGetKeyboardFocusWidget(shellW);
+
     if (state && XtIsRealized(widget))
     {
         /* 
@@ -2180,6 +2187,10 @@ void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
         ev.xany.type = ButtonRelease;
         XtCallActionProc(widget, "Select", &ev, NULL, 0);
         XtCallActionProc(widget, "Disarm", &ev, NULL, 0);
+    }
+    /* restore focus to the originator */
+    if (focusW) {
+        XtSetKeyboardFocus(shellW, focusW);
     }
 #endif /* XmVersion == 2001 || ... */
 #endif /* LESSTIF_VERSION */
