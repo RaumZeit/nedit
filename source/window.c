@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.136 2004/04/01 01:38:09 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.137 2004/04/01 10:29:57 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -149,6 +149,8 @@ static char isrcClear_bits[] = {
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void hideTooltip(Widget tab);
+static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width,
+	unsigned int height);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin);
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
@@ -441,8 +443,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        can be enabled without too much pain and suffering. */
     
     if (isrcFind == 0) {
-        isrcFind = XCreateBitmapFromData(TheDisplay,
-                RootWindowOfScreen(XtScreen(window->iSearchForm)),
+        isrcFind = createBitmapWithDepth(window->iSearchForm,
                 (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
     }
     window->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton",
@@ -508,8 +509,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XmStringFree(s1);
     
     if (isrcClear == 0) {
-        isrcClear = XCreateBitmapFromData(TheDisplay,
-                RootWindowOfScreen(XtScreen(window->iSearchForm)),
+        isrcClear = createBitmapWithDepth(window->iSearchForm,
                 (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
     }
     window->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton",
@@ -560,9 +560,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     /* button to close top buffer */
     if (closeTabPixmap == 0) {
-        closeTabPixmap = XCreateBitmapFromData(TheDisplay,
-                RootWindowOfScreen(XtScreen(tabForm)), (char *)close_bits,
-                close_width, close_height);
+        closeTabPixmap = createBitmapWithDepth(tabForm, 
+	        (char *)close_bits, close_width, close_height);
     }
     closeTabBtn = XtVaCreateManagedWidget("closeTabBtn",
       	    xmPushButtonWidgetClass, tabForm,
@@ -2909,6 +2908,30 @@ void AddSmallIcon(Widget shell)
     }
     XtVaSetValues(shell, XmNiconPixmap, iconPixmap,
             XmNiconMask, maskPixmap, NULL);
+}
+
+/* 
+** Create pixmap per the widget's color depth setting. 
+**
+** This fixes a BadMatch (X_CopyArea) error due to mismatching of 
+** color depth between the bitmap (depth of 1) and the screen, 
+** specifically on when linked to LessTif v1.2 (release 0.93.18 
+** & 0.93.94 tested).  LessTif v2.x showed no such problem. 
+*/
+static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width,
+	unsigned int height)
+{
+    Pixmap pixmap;
+    Pixel fg, bg;
+    int depth;
+
+    XtVaGetValues (w, XmNforeground, &fg, XmNbackground, &bg,
+	    XmNdepth, &depth, NULL);
+    pixmap = XCreatePixmapFromBitmapData(XtDisplay(w),
+            RootWindowOfScreen(XtScreen(w)), (char *)data,
+            width, height, fg, bg, depth);
+
+    return pixmap;
 }
 
 /*
