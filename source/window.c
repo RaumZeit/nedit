@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.144 2004/04/17 10:32:25 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.145 2004/04/19 15:46:55 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -160,7 +160,7 @@ static Widget manageToolBars(Widget toolBarsForm);
 static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
-static void raiseTabCB(Widget w, XtPointer *clientData, XtPointer callData);
+static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int cols, int emTabDist, char *delimiters, int wrapMargin,
         int lineNumCols);
@@ -421,7 +421,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        the i-search bar, while keeping the the top offset of the text widget 
        to 0 seems to avoid avoid the crash. */
        
-    window->iSearchForm = XtVaCreateWidget("iSearchForm", 
+    window->iSearchForm = XtVaCreateManagedWidget("iSearchForm", 
        	    xmFormWidgetClass, statsAreaForm,
 	    XmNshadowThickness, 0,
 	    XmNleftAttachment, XmATTACH_FORM,
@@ -547,7 +547,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     SetISearchTextCallbacks(window);
 
     /* create the buffer tab bar */
-    tabForm = XtVaCreateWidget("tabForm", 
+    tabForm = XtVaCreateManagedWidget("tabForm", 
        	    xmFormWidgetClass, statsAreaForm,
 	    XmNmarginHeight, 0,
 	    XmNmarginWidth, 0,
@@ -605,7 +605,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    NULL);
 
     XtAddCallback(window->tabBar, XmNactivateCallback,
-    	    (XtCallbackProc)raiseTabCB, NULL);
+    	    raiseTabCB, NULL);
 
     window->tab = addTab(window->tabBar, window, name);
 
@@ -834,7 +834,7 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
 {
     Widget tooltipLabel, tab;
     XmString s1;
-    
+
     s1 = XmStringCreateSimple((char *)string);
     tab = XtVaCreateManagedWidget("tab",
 	    xrwsBubbleButtonWidgetClass, folder,
@@ -3048,13 +3048,19 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     char *copy;
     char *pos2, *pos3;
     char **keys;
+
     /* First count the number of bindings; bindings are separated by \n
        strings. The number of bindings equals the number of \n + 1.
        Beware of leading and trailing \n; the number is actually an
        upper bound on the number of entries. */
-    while ((pos = strstr(pos, "\n"))) { ++pos; ++maxCount; }
+    while ((pos = strstr(pos, "\n"))) 
+    { 
+        ++pos; 
+        ++maxCount;
+    }
     
-    if (maxCount == 1) return False; /* One binding is always ok */
+    if (maxCount == 1) 
+        return False; /* One binding is always ok */
     
     keys = (char**)malloc(maxCount*sizeof(char*));
     copy = XtNewString((const char*)bindings);
@@ -3642,6 +3648,7 @@ void RefreshTabState(WindowInfo *win)
 {
     XmString s1, tipString;
     char labelString[MAXPATHLEN];
+    char *tag = XmFONTLIST_DEFAULT_TAG;
     unsigned char alignment;
 
     /* Set tab label to document's filename. Position of
@@ -3656,7 +3663,12 @@ void RefreshTabState(WindowInfo *win)
                win->filename,
                win->fileChanged? "*" : "");
     }
-    s1=XmStringCreateSimple(labelString);
+
+    /* Make the top document stand out a little more */
+    if (IsTopDocument(win))
+        tag = "BOLD";
+
+    s1 = XmStringCreateLtoR(labelString, tag);
 
     if (GetPrefShowPathInWindowsMenu() && win->filenameSet) {
        strcat(labelString, " - ");
@@ -4114,7 +4126,7 @@ void RaiseDocument(WindowInfo *window)
 
     if (win == window)
     	return;    
-    
+
     /* set the buffer as active */
     XtVaSetValues(window->mainWin, XmNuserData, window, NULL);
     
@@ -4151,6 +4163,9 @@ void RaiseDocument(WindowInfo *window)
        the buffers appear to switch immediately */
     XmUpdateDisplay(window->splitPane);
     RefreshWindowStates(window);
+    RefreshTabState(window);
+    if (IsValidWindow(lastwin))
+        RefreshTabState(lastwin);
     
     /* put away the bg menu tearoffs of last active document */
     hideTearOffs(win->bgMenuPane);
@@ -4654,7 +4669,7 @@ static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
 /*
 ** callback to tab (tabbar) that raise the buffer.
 */
-static void raiseTabCB(Widget w, XtPointer *clientData, XtPointer callData)
+static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)callData;
     WidgetList tabList;

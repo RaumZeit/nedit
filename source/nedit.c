@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.69 2004/04/17 10:32:24 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.70 2004/04/19 15:46:56 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -97,7 +97,9 @@ char *ArgV0 = NULL;
 Boolean IsServer = False;
 Widget TheAppShell;
 
-/* iso8859 appears to be necessary for newer versions of XFree86 that
+/* Reasons for choice of default font qualifications:
+
+   iso8859 appears to be necessary for newer versions of XFree86 that
    default to Unicode encoding, which doesn't quite work with Motif.
    Otherwise Motif puts up garbage (square blocks).
 
@@ -107,21 +109,31 @@ Widget TheAppShell;
    RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
    and so reverts to "fixed".  Yech. */
 
-#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1"
-#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
+#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1," \
+                                "-*-helvetica-bold-r-normal-*-*-120-*-*-*-iso8859-1=BOLD," \
+                                "-*-helvetica-medium-o-normal-*-*-120-*-*-*-iso8859-1=ITALIC"
+
+#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1," \
+                                "-*-courier-bold-r-normal-*-*-120-*-*-*-iso8859-1=BOLD," \
+                                "-*-courier-medium-o-normal-*-*-120-*-*-*-iso8859-1=ITALIC"
+
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
 static char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
        if the user's environment provides no usable defaults.  We try
        to choose a Windows-y default color setting here.  Editable text 
-       fields are forced to a fixed-pitch font for usability. */
-    "*FontList: "               NEDIT_DEFAULT_FONT,
-    "*XmText.FontList: "        NEDIT_FIXED_FONT,
-    "*XmTextField.FontList: "   NEDIT_FIXED_FONT,
-    "*XmList.FontList: "        NEDIT_FIXED_FONT,
-    "*XmFileSelectionBox*XmList.FontList: " 
-                                NEDIT_FIXED_FONT,
+       fields are forced to a fixed-pitch font for usability.
+       
+       By using the VendorShell fontList resources, Motif automatically
+       groups the fonts into the right classes.  It's then easier for
+       the user or environment to override this sensibly:
+    
+       nedit -xrm '*textFontList: myfont'
+     */
+    "*buttonFontList: "         NEDIT_DEFAULT_FONT,
+    "*labelFontList: "          NEDIT_DEFAULT_FONT,
+    "*textFontList: "           NEDIT_FIXED_FONT,
     "*background: "             NEDIT_DEFAULT_BG,
     "*foreground: "             NEDIT_DEFAULT_FG,
     "*XmText.foreground: "      NEDIT_DEFAULT_FG,
@@ -177,7 +189,6 @@ static char *fallbackResources[] = {
     "*helpText.selectBackground: " NEDIT_DEFAULT_BG,
     "*statsLine.background: " NEDIT_DEFAULT_BG,
     "*statsLine.FontList: " NEDIT_DEFAULT_FONT,
-    "*helpText.font: " NEDIT_FIXED_FONT,
     "*calltip.background: LemonChiffon1",
     "*calltip.foreground: black",
     "*iSearchForm*highlightThickness: 1",
@@ -310,17 +321,17 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
-    "*windowsMenu.nextDocument.acceleratorText: Alt+Right",
-    "*windowsMenu.prevDocument.acceleratorText: Alt+Left",
+    "*windowsMenu.nextDocument.acceleratorText: Ctrl+Page Down",
+    "*windowsMenu.prevDocument.acceleratorText: Ctrl+Page Up",
     "*windowsMenu.lastDocument.acceleratorText: Alt+Home",
 #ifdef LESSTIF_VERSION
     /* LessTif doesn't like accelerators on virtual keysyms */
-    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>Right",
-    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>Left",
+    "*windowsMenu.nextDocument.accelerator: ~Shift Ctrl ~Alt<Key>Next",
+    "*windowsMenu.prevDocument.accelerator: ~Shift Ctrl ~Alt<Key>Prior",
     "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>Home",
 #else
-    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfRight",
-    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfLeft",
+    "*windowsMenu.nextDocument.accelerator: ~Shift Ctrl ~Alt<Key>osfPageDown",
+    "*windowsMenu.prevDocument.accelerator: ~Shift Ctrl ~Alt<Key>osfPageUp",
     "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfBeginLine",
 #endif
     "*helpMenu.mnemonic: H",
