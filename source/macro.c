@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.97 2005/02/11 01:46:43 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.98 2005/02/11 02:42:18 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2129,7 +2129,8 @@ static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs,
 }
 
 /*
-** Built-in macro subroutine for getting a substring of a string
+** Built-in macro subroutine for getting a substring of a string.
+** Called as substring(string, from [, to])
 */
 static int substringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
@@ -2138,20 +2139,23 @@ static int substringMS(WindowInfo *window, DataValue *argList, int nArgs,
     char stringStorage[TYPE_INT_STR_SIZE(int)], *string;
     
     /* Validate arguments and convert to int */
-    if (nArgs != 3)
+    if (nArgs != 2 && nArgs != 3)
     	return wrongNArgsErr(errMsg);
     if (!readStringArg(argList[0], &string, stringStorage, errMsg))
     	return False;
     if (!readIntArg(argList[1], &from, errMsg))
     	return False;
-    if (!readIntArg(argList[2], &to, errMsg))
-	return False;
-    length = strlen(string);
+    length = to = strlen(string);
+    if (nArgs == 3)
+        if (!readIntArg(argList[2], &to, errMsg))
+            return False;
+    if (from < 0) from += length;
     if (from < 0) from = 0;
     if (from > length) from = length;
+    if (to < 0) to += length;
     if (to < 0) to = 0;
     if (to > length) to = length;
-    if (from > to) {int temp = from; from = to; to = temp;}
+    if (from > to) to = from;
     
     /* Allocate a new string and copy the sub-string into it */
     result->tag = STRING_TAG;

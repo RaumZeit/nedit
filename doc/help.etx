@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.85 2005/02/11 01:46:41 ajbj Exp $
+.. $Id: help.etx,v 1.86 2005/02/11 02:42:16 ajbj Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2663,8 +2663,14 @@ Macro Subroutines
 **string_to_clipboard( string )**  
   Copy the contents of a macro string to the clipboard.
 
-**substring( string, start, end )**  
-  Returns the portion of a string between a starting and ending position.
+**substring( string, start [, end] )**  
+  Returns the portion of a string between a start and end position (with the
+  position of the beginning of the string being 0).  If end is missing, the
+  position of the end of the string is used. If either of the positions are
+  negative, they are treated as relative to the end of the string.  A position
+  specified either before the start of the string or after the end of the string
+  is repositioned to the nearest valid string position.  If the start position
+  is beyond the end position, the empty string is returned.
 
 **t_print( string1, string2, ... )**  
   Writes strings to the terminal (stdout) from which NEdit was started.

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 9, 2005 (Do NOT edit!)
+                 Generated on Feb 10, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -2484,8 +2484,14 @@ static char * htxt_macro_subrs [] = {
 "\01A\01Bstring_to_clipboard( string )\01A  \n",
 "\01ICopy the contents of a macro string to the clipboard. ",
 "\n\n",
-"\01A\01Bsubstring( string, start, end )\01A  \n",
-"\01IReturns the portion of a string between a starting and ending position. ",
+"\01A\01Bsubstring( string, start [, end] )\01A  \n",
+"\01IReturns the portion of a string between a start and end position (with the ",
+"position of the beginning of the string being 0).  If end is missing, the ",
+"position of the end of the string is used. If either of the positions are ",
+"negative, they are treated as relative to the end of the string.  A position ",
+"specified either before the start of the string or after the end of the string ",
+"is repositioned to the nearest valid string position.  If the start position ",
+"is beyond the end position, the empty string is returned. ",
 "\n\n",
 "\01A\01Bt_print( string1, string2, ... )\01A  \n",
 "\01IWrites strings to the terminal (stdout) from which NEdit was started. ",
