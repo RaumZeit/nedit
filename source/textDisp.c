@@ -196,7 +196,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     /* Initialize the scroll bars and attach movement callbacks */
     if (vScrollBar != NULL) {
 	XtVaSetValues(vScrollBar, XmNminimum, 1, XmNmaximum, 2,
-    		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, 0);
+    		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, NULL);
 	XtAddCallback(vScrollBar, XmNdragCallback, vScrollCB, (XtPointer)textD);
 	XtAddCallback(vScrollBar, XmNvalueChangedCallback, vScrollCB, 
 		(XtPointer)textD);
@@ -204,7 +204,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     if (hScrollBar != NULL) {
 	XtVaSetValues(hScrollBar, XmNminimum, 0, XmNmaximum, 1,
     		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 0,
-    		XmNincrement, fontStruct->max_bounds.width, 0);
+    		XmNincrement, fontStruct->max_bounds.width, NULL);
 	XtAddCallback(hScrollBar, XmNdragCallback, hScrollCB, (XtPointer)textD);
 	XtAddCallback(hScrollBar, XmNvalueChangedCallback, hScrollCB,
 		(XtPointer)textD);
@@ -567,7 +567,7 @@ void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset)
     	topLineNum = max(textD->topLineNum,
     	    	textD->nBufferLines + 2 - textD->nVisibleLines);
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-    	    XmNsliderSize, &sliderSize, 0);
+    	    XmNsliderSize, &sliderSize, NULL);
     if (horizOffset < 0)
     	horizOffset = 0;
     if (horizOffset > sliderMax - sliderSize)
@@ -2242,7 +2242,7 @@ static void updateVScrollBarRange(textDisp *textD)
     	    XmNmaximum, sliderMax,
     	    XmNsliderSize, sliderSize,
      	    XmNpageIncrement, max(1, textD->nVisibleLines - 1),
-   	    XmNvalue, sliderValue, 0);
+   	    XmNvalue, sliderValue, NULL);
 }
 
 /*
@@ -2281,7 +2281,7 @@ static int updateHScrollBarRange(textDisp *textD)
     	    XmNmaximum, sliderMax,
     	    XmNsliderSize, sliderWidth,
     	    XmNpageIncrement, max(textD->width - 100, 10),
-    	    XmNvalue, textD->horizOffset, 0);
+    	    XmNvalue, textD->horizOffset, NULL);
     
     /* Return True if scroll position was changed */
     return origHOffset != textD->horizOffset;

@@ -913,7 +913,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     AddSmallIcon(SmartIndentDialog.shell);
     form = XtVaCreateManagedWidget("editSmartIndentMacros", xmFormWidgetClass,
 	    SmartIndentDialog.shell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, 0);
+	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, NULL);
     AddMotifCloseCallback(SmartIndentDialog.shell, dismissCB, NULL);
        
@@ -924,7 +924,7 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 1,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 99, 0);
+	    XmNrightPosition, 99, NULL);
  
     SmartIndentDialog.lmPulldown = CreateLanguageModeMenu(lmForm, langModeCB,
     	    NULL);
@@ -948,14 +948,14 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    XmNrightPosition, 50,
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
-	    XmNbottomWidget, lmOptMenu, 0);
+	    XmNbottomWidget, lmOptMenu, NULL);
     XmStringFree(s1);
     
     lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm,
     	    XmNlabelString, s1=MKSTRING("Add / Modify\nLanguage Mode..."),
     	    XmNmnemonic, 'A',
     	    XmNrightAttachment, XmATTACH_FORM,
-    	    XmNtopAttachment, XmATTACH_FORM, 0);
+    	    XmNtopAttachment, XmATTACH_FORM, NULL);
     XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, NULL);
     XmStringFree(s1);
     
@@ -964,7 +964,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNlabelString, s1=MKSTRING("Common / Shared\nInitialization..."),
     	    XmNmnemonic, 'C',
     	    XmNleftAttachment, XmATTACH_FORM,
-    	    XmNtopAttachment, XmATTACH_FORM, 0);
+    	    XmNtopAttachment, XmATTACH_FORM, NULL);
     XtAddCallback(commonBtn, XmNactivateCallback, commonDialogCB, NULL);
     XmStringFree(s1);
     
@@ -975,7 +975,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 13,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(okBtn, XmNactivateCallback, okCB, NULL);
     XmStringFree(s1);
     
@@ -987,7 +987,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 26,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(applyBtn, XmNactivateCallback, applyCB, NULL);
     XmStringFree(s1);
     
@@ -999,7 +999,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 39,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(checkBtn, XmNactivateCallback, checkCB, NULL);
     XmStringFree(s1);
     
@@ -1011,7 +1011,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 52,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(deleteBtn, XmNactivateCallback, deleteCB, NULL);
     XmStringFree(s1);
     
@@ -1023,7 +1023,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 73,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, NULL);
     XmStringFree(s1);
     
@@ -1035,7 +1035,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 86,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, NULL);
     XmStringFree(s1);
     
@@ -1048,7 +1048,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 99,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, 0);
+    	    XmNbottomOffset, BORDER, NULL);
     XtAddCallback(helpBtn, XmNactivateCallback, helpCB, NULL);
     XmStringFree(s1);
     
@@ -1060,16 +1060,16 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, lmForm,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, okBtn, 0);
+	    XmNbottomWidget, okBtn, NULL);
      	    /* XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2, */
 
     initForm = XtVaCreateManagedWidget("initForm", xmFormWidgetClass,
-	    pane, 0);
+	    pane, NULL);
     initLbl = XtVaCreateManagedWidget("initLbl", xmLabelGadgetClass, initForm,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	     "Language Specific Initialization Macro Commands and Definitions"),
-    	    XmNmnemonic, 'I', 0);
+    	    XmNmnemonic, 'I', NULL);
     XmStringFree(s1);
     n = 0;
     XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT); n++;
@@ -1084,20 +1084,20 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    "initMacro", args, n);
     XtManageChild(SmartIndentDialog.initMacro);
     RemapDeleteKey(SmartIndentDialog.initMacro);
-    XtVaSetValues(initLbl, XmNuserData, SmartIndentDialog.initMacro, 0);
+    XtVaSetValues(initLbl, XmNuserData, SmartIndentDialog.initMacro, NULL);
 
     newlineForm = XtVaCreateManagedWidget("newlineForm", xmFormWidgetClass,
-	    pane, 0);
+	    pane, NULL);
     newlineLbl = XtVaCreateManagedWidget("newlineLbl", xmLabelGadgetClass,
     	    newlineForm,
     	    XmNlabelString, s1=XmStringCreateSimple("Newline Macro"),
-    	    XmNmnemonic, 'N', 0);
+    	    XmNmnemonic, 'N', NULL);
     XmStringFree(s1);
     XtVaCreateManagedWidget("newlineArgsLbl", xmLabelGadgetClass,
     	    newlineForm, XmNalignment, XmALIGNMENT_END,
     	    XmNlabelString, s1=XmStringCreateSimple(
 	       "($1 is insert position, return indent request or -1)"),
-	    XmNrightAttachment, XmATTACH_FORM, 0);
+	    XmNrightAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
     n = 0;
     XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT); n++;
@@ -1112,19 +1112,19 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    "newlineMacro", args, n);
     XtManageChild(SmartIndentDialog.newlineMacro);
     RemapDeleteKey(SmartIndentDialog.newlineMacro);
-    XtVaSetValues(newlineLbl, XmNuserData, SmartIndentDialog.newlineMacro, 0);
+    XtVaSetValues(newlineLbl, XmNuserData, SmartIndentDialog.newlineMacro,NULL);
 
     modifyForm = XtVaCreateManagedWidget("modifyForm", xmFormWidgetClass,
-	    pane, 0);
+	    pane, NULL);
     modifyLbl = XtVaCreateManagedWidget("modifyLbl", xmLabelGadgetClass,
     	    modifyForm, XmNlabelString,s1=XmStringCreateSimple("Type-in Macro"),
-    	    XmNmnemonic, 'M', 0);
+    	    XmNmnemonic, 'M', NULL);
     XmStringFree(s1);
     XtVaCreateManagedWidget("modifyArgsLbl", xmLabelGadgetClass,
     	    modifyForm, XmNalignment, XmALIGNMENT_END,
     	    XmNlabelString, s1=XmStringCreateSimple(
 	        "($1 is position, $2 is character just inserted)"),
-	    XmNrightAttachment, XmATTACH_FORM, 0);
+	    XmNrightAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
     n = 0;
     XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT); n++;
@@ -1139,11 +1139,11 @@ void EditSmartIndentMacros(WindowInfo *window)
     	    "modifyMacro", args, n);
     XtManageChild(SmartIndentDialog.modMacro);
     RemapDeleteKey(SmartIndentDialog.modMacro);
-    XtVaSetValues(modifyLbl, XmNuserData, SmartIndentDialog.modMacro, 0);
+    XtVaSetValues(modifyLbl, XmNuserData, SmartIndentDialog.modMacro, NULL);
 
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, 0);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, 0);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form);
@@ -1170,7 +1170,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     smartIndentRec *oldMacros, *newMacros;
 	    
     /* Get the newly selected mode name.  If it's the same, do nothing */
-    XtVaGetValues(w, XmNuserData, &modeName, 0);
+    XtVaGetValues(w, XmNuserData, &modeName, NULL);
     if (!strcmp(modeName, SmartIndentDialog.langModeName))
     	return;
 
@@ -1440,7 +1440,7 @@ void EditCommonSmartIndentMacro(void)
     AddSmallIcon(CommonDialog.shell);
     form = XtVaCreateManagedWidget("editCommonSIMacros", xmFormWidgetClass,
 	    CommonDialog.shell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, 0);
+	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, comDestroyCB, NULL);
     AddMotifCloseCallback(CommonDialog.shell, comDismissCB, NULL);
     
@@ -1451,7 +1451,7 @@ void EditCommonSmartIndentMacro(void)
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNtopOffset, VERT_BORDER,
 	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, 1, 0);
+	    XmNleftPosition, 1, NULL);
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple("OK"),
@@ -1460,7 +1460,7 @@ void EditCommonSmartIndentMacro(void)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 18,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, VERT_BORDER, 0);
+    	    XmNbottomOffset, VERT_BORDER, NULL);
     XtAddCallback(okBtn, XmNactivateCallback, comOKCB, NULL);
     XmStringFree(s1);
     
@@ -1472,7 +1472,7 @@ void EditCommonSmartIndentMacro(void)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 35,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, VERT_BORDER, 0);
+    	    XmNbottomOffset, VERT_BORDER, NULL);
     XtAddCallback(applyBtn, XmNactivateCallback, comApplyCB, NULL);
     XmStringFree(s1);
     
@@ -1484,7 +1484,7 @@ void EditCommonSmartIndentMacro(void)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 52,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, VERT_BORDER, 0);
+    	    XmNbottomOffset, VERT_BORDER, NULL);
     XtAddCallback(checkBtn, XmNactivateCallback, comCheckCB, NULL);
     XmStringFree(s1);
     
@@ -1497,7 +1497,7 @@ void EditCommonSmartIndentMacro(void)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 77,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, VERT_BORDER, 0);
+    	    XmNbottomOffset, VERT_BORDER, NULL);
     XtAddCallback(restoreBtn, XmNactivateCallback, comRestoreCB, NULL);
     XmStringFree(s1);
     
@@ -1509,7 +1509,7 @@ void EditCommonSmartIndentMacro(void)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 94,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, VERT_BORDER, 0);
+    	    XmNbottomOffset, VERT_BORDER, NULL);
     XtAddCallback(dismissBtn, XmNactivateCallback, comDismissCB, NULL);
     XmStringFree(s1);
     
@@ -1530,11 +1530,11 @@ void EditCommonSmartIndentMacro(void)
     CommonDialog.text = XmCreateScrolledText(form, "commonText", args, n);
     XtManageChild(CommonDialog.text);
     RemapDeleteKey(CommonDialog.text);
-    XtVaSetValues(topLbl, XmNuserData, CommonDialog.text, 0);
+    XtVaSetValues(topLbl, XmNuserData, CommonDialog.text, NULL);
 
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, 0);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, 0);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form);

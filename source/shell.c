@@ -1020,7 +1020,7 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
     button = XmCreatePushButtonGadget(form, "dismiss", al, ac);
     XtManageChild(button);
-    XtVaSetValues(form, XmNdefaultButton, button, 0);
+    XtVaSetValues(form, XmNdefaultButton, button, NULL);
     XmStringFree(st1);
     XtAddCallback(button, XmNactivateCallback, destroyOutDialogCB,
     	    XtParent(form));
@@ -1046,7 +1046,7 @@ static void createOutputDialog(Widget parent, char *text)
     textW = XmCreateScrolledText(form, "outText", al, ac);
     XtManageChild(textW);
     
-    XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", 0);
+    XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", NULL);
     ManageDialogCenteredOnPointer(form);
 }
 

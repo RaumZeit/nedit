@@ -614,7 +614,7 @@ static void findAllDialogAP(Widget dialogParent, char *string)
     /* Position it nicely in the window, about 1/4 of the way down from the
        top */
     lineNum = BufCountLines(windowToSearch->buffer, 0, startPos);
-    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, 0);
+    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, NULL);
     TextSetScroll(windowToSearch->lastFocus, lineNum - rows/4, 0);
     TextSetCursorPos(windowToSearch->lastFocus, endPos);
     
@@ -674,7 +674,7 @@ static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data)
     /* Position it nicely in the window, about 1/4 of the way down from the
        top */
     lineNum = BufCountLines(windowToSearch->buffer, 0, startPos);
-    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, 0);
+    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, NULL);
     TextSetScroll(windowToSearch->lastFocus, lineNum - rows/4, 0);
     TextSetCursorPos(windowToSearch->lastFocus, endPos);
     if (cbs->reason == XmCR_OK)

@@ -728,7 +728,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    keepSearchDlogsDefCB, window, GetPrefKeepSearchDlogs(), SHORT);
     subSubSubPane = createMenu(subSubPane, "defaultSearchStyle",
     	    "Default Search Style", 'D', NULL, FULL);
-    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, 0); 
+    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, NULL); 
     window->searchLiteralDefItem = createMenuToggle(subSubSubPane, "literal",
     	    "Literal", 'L', searchLiteralCB, window,
     	    GetPrefSearch() == SEARCH_LITERAL, FULL);
@@ -786,22 +786,22 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /* Initial Window Size sub menu (simulates radioBehavior) */
     subSubPane = createMenu(subPane, "initialwindowSize",
     	    "Initial Window Size", 'z', NULL, FULL);
-    /* XtVaSetValues(subSubPane, XmNradioBehavior, True, 0);  */
+    /* XtVaSetValues(subSubPane, XmNradioBehavior, True, NULL);  */
     window->size24x80DefItem = btn = createMenuToggle(subSubPane, "24X80",
     	    "24 x 80", '2', size24x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
     window->size40x80DefItem = btn = createMenuToggle(subSubPane, "40X80",
     	    "40 x 80", '4', size40x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
     window->size60x80DefItem = btn = createMenuToggle(subSubPane, "60X80",
     	    "60 x 80", '6', size60x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
     window->size80x80DefItem = btn = createMenuToggle(subSubPane, "80X80",
     	    "80 x 80", '8', size80x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
     window->sizeCustomDefItem = btn = createMenuToggle(subSubPane, "custom",
     	    "Custom...", 'C', sizeCustomCB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
     updateWindowSizeMenu(window);
     
     /*
@@ -879,21 +879,21 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    createMenu(menuBar, "shellMenu", "Shell", 0, NULL, FULL);
     btn = createMenuItem(menuPane, "executeCommand", "Execute Command...",
     	    'E', doActionCB, "execute_command_dialog", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     btn = createMenuItem(menuPane, "executeCommandLine", "Execute Command Line",
     	    'x', doActionCB, "execute_command_line", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     window->filterItem = createMenuItem(menuPane, "filterSelection",
     	    "Filter Selection...", 'F', doActionCB, "filter_selection_dialog",
     	    SHORT);
     XtVaSetValues(window->filterItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, window->wasSelected, 0);
+    	    XmNsensitive, window->wasSelected, NULL);
     window->cancelShellItem = createMenuItem(menuPane, "cancelShellCommand",
     	    "Cancel Shell Command", 'C', cancelShellCB, window, SHORT);
     XtVaSetValues(window->cancelShellItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, 0);
+    	    XmNsensitive, False, NULL);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     /* UpdateShellMenu(window) now done in DetermineLanguageMode */
 #endif
 
@@ -904,25 +904,25 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    createMenu(menuBar, "macroMenu", "Macro", 0, NULL, FULL);
     window->learnItem = createMenuItem(menuPane, "learnKeystrokes",
     	    "Learn Keystrokes", 'L', learnCB, window, SHORT);
-    XtVaSetValues(window->learnItem , XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(window->learnItem , XmNuserData, PERMANENT_MENU_ITEM, NULL);
     window->finishLearnItem = createMenuItem(menuPane, "finishLearn",
     	    "Finish Learn", 'F', finishLearnCB, window, SHORT);
     XtVaSetValues(window->finishLearnItem , XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, 0);
+    	    XmNsensitive, False, NULL);
     window->cancelMacroItem = createMenuItem(menuPane, "cancelLearn",
     	    "Cancel Learn", 'C', cancelLearnCB, window, SHORT);
     XtVaSetValues(window->cancelMacroItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, 0);
+    	    XmNsensitive, False, NULL);
     window->replayItem = createMenuItem(menuPane, "replayKeystrokes",
     	    "Replay Keystrokes", 'K', replayCB, window, SHORT);
     XtVaSetValues(window->replayItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, GetReplayMacro() != NULL, 0);
+    	    XmNsensitive, GetReplayMacro() != NULL, NULL);
     window->repeatItem = createMenuItem(menuPane, "repeat",
     	    "Repeat...", 'R', doActionCB, "repeat_dialog", SHORT);
-    XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, 0);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     /* UpdateMacroMenu(window) now done in DetermineLanguageMode */
 
     /*
@@ -934,19 +934,20 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    window);
     window->splitWindowItem = createMenuItem(menuPane, "splitWindow",
     	    "Split Window", 'S', doActionCB, "split_window", SHORT);
-    XtVaSetValues(window->splitWindowItem, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(window->splitWindowItem, XmNuserData, PERMANENT_MENU_ITEM,
+	    NULL);
     window->closePaneItem = createMenuItem(menuPane, "closePane",
     	    "Close Pane", 'C', doActionCB, "close_pane", SHORT);
-    XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,NULL);
     XtSetSensitive(window->closePaneItem, False);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     
     /* 
     ** Create "Help" pull down menu.
     */
     menuPane = createMenu(menuBar, "helpMenu", "Help", 0, &cascade, SHORT);
-    XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, 0);
+    XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, NULL);
     createMenuItem(menuPane, "gettingStarted", "Getting Started", 'G',
     	    helpStartCB, window, SHORT);
     subPane = createMenu(menuPane, "basicOperation", "Basic Operation",
@@ -2170,7 +2171,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	lineLen = 0;
         strcpy(ptr, "Editing: "); ptr += 9; lineLen += 9;
         for (win=WindowList; win!=NULL; win=win->next) {
-            XtVaGetValues(win->shell, XmNiconName, &title, 0);
+            XtVaGetValues(win->shell, XmNiconName, &title, NULL);
             titleLen = strlen(title);
             if (ptr - exitMsg + titleLen + 30 >= DF_MAX_MSG_LENGTH) {
         	strcpy(ptr, "..."); ptr += 3;
@@ -2727,10 +2728,10 @@ static Widget createMenu(Widget parent, char *name, char *label,
     menu = CreatePulldownMenu(parent, name, NULL, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple(label),
-    	XmNsubMenuId, menu, 0);
+    	XmNsubMenuId, menu, NULL);
     XmStringFree(st1);
     if (mnemonic != 0)
-    	XtVaSetValues(cascade, XmNmnemonic, mnemonic, 0);
+    	XtVaSetValues(cascade, XmNmnemonic, mnemonic, NULL);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
     	XtManageChild(cascade);
@@ -2766,7 +2767,7 @@ static Widget createMenuItem(Widget parent, char *name, char *label,
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
 #else
     XtManageChild(button);
 #endif
@@ -2789,10 +2790,10 @@ static Widget createFakeMenuItem(Widget parent, char *name,
     	    XmNlabelString, st1=XmStringCreateSimple(""),
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
-    	    XmNheight, 0, 0);
+    	    XmNheight, 0, NULL);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, cbArg);
     XmStringFree(st1);
-    XtVaSetValues(button, XmNtraversalOn, False, 0);
+    XtVaSetValues(button, XmNtraversalOn, False, NULL);
 
     return button;
 }
@@ -2820,7 +2821,7 @@ static Widget createMenuToggle(Widget parent, char *name, char *label,
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
 #else
     XtManageChild(button);
 #endif
@@ -2837,7 +2838,7 @@ static Widget createMenuRadioToggle(Widget parent, char *name, char *label,
     Widget button;
     button = createMenuToggle(parent, name, label, mnemonic, callback, cbArg,
 	    set, mode);
-    XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, 0);
+    XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, NULL);
     return button;
 }
 
@@ -2851,7 +2852,7 @@ static Widget createMenuSeparator(Widget parent, char *name, int mode)
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, 0);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
 #else
     XtManageChild(button);
 #endif
@@ -3002,10 +3003,10 @@ static void updateWindowMenu(WindowInfo *window)
     /* Go thru all of the items in the menu and rename them to
        match the window list.  Delete any extras */
     XtVaGetValues(window->windowMenuPane, XmNchildren, &items,
-    	    XmNnumChildren, &nItems,0);
+    	    XmNnumChildren, &nItems, NULL);
     windowIndex = 0;
     for (n=0; n<nItems; n++) {
-    	XtVaGetValues(items[n], XmNuserData, &userData, 0);
+    	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData == TEMPORARY_MENU_ITEM) {
 	    if (windowIndex >= nWindows) {
     		/* unmanaging before destroying stops parent from displaying */
@@ -3013,12 +3014,12 @@ static void updateWindowMenu(WindowInfo *window)
     		XtDestroyWidget(items[n]);	    	
 	    } else {
 		XtVaGetValues(windows[windowIndex]->shell, XmNiconName,
-			&title, 0);
+			&title, NULL);
 #ifdef SGI_CUSTOM
                 title = title + SGI_WINDOW_TITLE_LEN;
 #endif
 		XtVaSetValues(items[n], XmNlabelString,
-    	    		st1=XmStringCreateSimple(title), 0);
+    	    		st1=XmStringCreateSimple(title), NULL);
 		XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 		XtAddCallback(items[n], XmNactivateCallback,
 			(XtCallbackProc)raiseCB, windows[windowIndex]);
@@ -3030,7 +3031,7 @@ static void updateWindowMenu(WindowInfo *window)
     
     /* Add new items for the titles of the remaining windows to the menu */
     for (; windowIndex<nWindows; windowIndex++) {
-    	XtVaGetValues(windows[windowIndex]->shell, XmNiconName, &title, 0);
+    	XtVaGetValues(windows[windowIndex]->shell, XmNiconName, &title, NULL);
 #ifdef SGI_CUSTOM
         title = title + SGI_WINDOW_TITLE_LEN;
 #endif
@@ -3071,7 +3072,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
        code was already written for the Windows menu and is well tested, I'll
        stick with this weird method of re-naming the items */
     XtVaGetValues(window->prevOpenMenuPane, XmNchildren, &items,
-            XmNnumChildren, &nItems,0);
+            XmNnumChildren, &nItems, NULL);
     index = 0;
     for (n=0; n<nItems; n++) {
         if (index >= NPrevOpen) {
@@ -3080,7 +3081,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
             XtDestroyWidget(items[n]);          
         } else {
             XtVaSetValues(items[n], XmNlabelString,
-                    st1=XmStringCreateSimple(prevOpenSorted[index]), 0);
+                    st1=XmStringCreateSimple(prevOpenSorted[index]), NULL);
             XtRemoveAllCallbacks(items[n], XmNactivateCallback);
             XtAddCallback(items[n], XmNactivateCallback,
                     (XtCallbackProc)openPrevCB, prevOpenSorted[index]);
@@ -3122,7 +3123,7 @@ static void updateTagsFileMenu(WindowInfo *window)
        code was already written for the Windows menu and is well tested, I'll
        stick with this weird method of re-naming the items */
     XtVaGetValues(window->unloadTagsMenuPane, XmNchildren, &items,
-	    XmNnumChildren, &nItems,0);
+	    XmNnumChildren, &nItems, NULL);
     tf = TagsFileList;
     for (n=0; n<nItems; n++) {
 	if (!tf) {
@@ -3131,7 +3132,7 @@ static void updateTagsFileMenu(WindowInfo *window)
 	    XtDestroyWidget(items[n]);          
 	} else {
 	    XtVaSetValues(items[n], XmNlabelString,
-		    st1=XmStringCreateSimple(tf->filename),0);
+		    st1=XmStringCreateSimple(tf->filename), NULL);
 	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 	    XtAddCallback(items[n], XmNactivateCallback,
 		    (XtCallbackProc)unloadTagsFileCB, tf->filename);
@@ -3305,12 +3306,12 @@ static void updateWindowSizeMenu(WindowInfo *win)
     	XmToggleButtonSetState(win->sizeCustomDefItem, True, False);
     	sprintf(title, "Custom... (%d x %d)", rows, cols);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple(title), 0);
+    	    	XmNlabelString, st1=XmStringCreateSimple(title), NULL);
     	XmStringFree(st1);
     } else {
     	XmToggleButtonSetState(win->sizeCustomDefItem, False, False);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple("Custom..."), 0);
+    	    	XmNlabelString, st1=XmStringCreateSimple("Custom..."), NULL);
     	XmStringFree(st1);
     }
 }

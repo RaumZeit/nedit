@@ -265,12 +265,12 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
     form = CreateFormDialog(parent, "replaceDialog", args, argcnt);
-    XtVaSetValues(form, XmNshadowThickness, 0, 0);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     if (GetPrefKeepSearchDlogs()) {
     	sprintf(title, "Replace (in %s)", window->filename);
-    	XtVaSetValues(XtParent(form), XmNtitle, title, 0);
+    	XtVaSetValues(XtParent(form), XmNtitle, title, NULL);
     } else
-    	XtVaSetValues(XtParent(form), XmNtitle, "Replace", 0);
+    	XtVaSetValues(XtParent(form), XmNtitle, "Replace", NULL);
 
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -319,7 +319,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     RemapDeleteKey(findText);
     XtManageChild(findText);
     XmAddTabGroup(findText);
-    XtVaSetValues(label1, XmNuserData, findText, 0); /* mnemonic processing */
+    XtVaSetValues(label1, XmNuserData, findText, NULL); /* mnemonic processing */
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
@@ -354,7 +354,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     RemapDeleteKey(replaceText);
     XtManageChild(replaceText);
     XmAddTabGroup(replaceText);
-    XtVaSetValues(label, XmNuserData, replaceText, 0); /* mnemonic processing */
+    XtVaSetValues(label, XmNuserData, replaceText, NULL); /* mnemonic processing */
 
     argcnt = 0;
     XtSetArg(args[argcnt], XmNorientation, XmHORIZONTAL); argcnt++;
@@ -477,7 +477,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     	    window);
     XmStringFree(st1);
     XtManageChild(replaceBtn);
-    XtVaGetValues(replaceBtn, XmNshadowThickness, &shadowThickness, 0);
+    XtVaGetValues(replaceBtn, XmNshadowThickness, &shadowThickness, NULL);
     defaultBtnOffset = shadowThickness + 4;
  
     argcnt = 0;
@@ -553,7 +553,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     	    window);
     XtManageChild(cancelBtn);
 
-    XtVaSetValues(form, XmNcancelButton, cancelBtn, 0);
+    XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
     AddDialogMnemonicHandler(form);
     
     window->replaceDlog = form;
@@ -585,12 +585,12 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
     form = CreateFormDialog(parent, "findDialog", args, argcnt);
-    XtVaSetValues(form, XmNshadowThickness, 0, 0);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     if (GetPrefKeepSearchDlogs()) {
     	sprintf(title, "Find (in %s)", window->filename);
-    	XtVaSetValues(XtParent(form), XmNtitle, title, 0);
+    	XtVaSetValues(XtParent(form), XmNtitle, title, NULL);
     } else
-    	XtVaSetValues(XtParent(form), XmNtitle, "Find", 0);
+    	XtVaSetValues(XtParent(form), XmNtitle, "Find", NULL);
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -639,7 +639,7 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     RemapDeleteKey(findText);
     XtManageChild(findText);
     XmAddTabGroup(findText);
-    XtVaSetValues(label1, XmNuserData, findText, 0); /* mnemonic processing */
+    XtVaSetValues(label1, XmNuserData, findText, NULL); /* mnemonic processing */
 
     argcnt = 0;
     XtSetArg(args[argcnt], XmNorientation, XmHORIZONTAL); argcnt++;
@@ -760,7 +760,7 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     XtAddCallback(findBtn, XmNactivateCallback, (XtCallbackProc)findCB, window);
     XmStringFree(st1);
     XtManageChild(findBtn);
-    XtVaGetValues(findBtn, XmNshadowThickness, &shadowThickness, 0);
+    XtVaGetValues(findBtn, XmNshadowThickness, &shadowThickness, NULL);
     defaultBtnOffset = shadowThickness + 4;
 
     argcnt = 0;
@@ -778,7 +778,7 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     	    window);
     XmStringFree(st1);
     XtManageChild(cancelBtn);
-    XtVaSetValues(form, XmNcancelButton, cancelBtn, 0);
+    XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
     AddDialogMnemonicHandler(form);
     
     window->findDlog = form;
@@ -817,9 +817,9 @@ static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData)
 
     if (XmToggleButtonGetState(w)) {
     	sprintf(title, "Replace (in %s)", window->filename);
-    	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, 0);
+    	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, NULL);
     } else
-    	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, "Replace", 0);
+    	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, "Replace", NULL);
 }
 static void fKeepCB(Widget w, WindowInfo *window, caddr_t *callData) 
 {
@@ -827,9 +827,9 @@ static void fKeepCB(Widget w, WindowInfo *window, caddr_t *callData)
 
     if (XmToggleButtonGetState(w)) {
     	sprintf(title, "Find (in %s)", window->filename);
-    	XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, 0);
+    	XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, NULL);
     } else
-    	XtVaSetValues(XtParent(window->findDlog), XmNtitle, "Find", 0);
+    	XtVaSetValues(XtParent(window->findDlog), XmNtitle, "Find", NULL);
 }
 
 static void replaceCB(Widget w, WindowInfo *window,
@@ -1760,10 +1760,10 @@ void GotoMatchingCharacter(WindowInfo *window)
        string at a pleasing position on the screen (otherwise, the cursor would
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
-    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, 0);
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, NULL);
     TextSetCursorPos(window->lastFocus, matchPos+1);
     MakeSelectionVisible(window, window->lastFocus);
-    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, 0);
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, NULL);
 }
 
 static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
@@ -1910,11 +1910,11 @@ int SearchAndReplace(WindowInfo *window, int direction, char *searchString,
        string at a pleasing position on the screen (otherwise, the cursor would
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
-    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, 0);
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, NULL);
     TextSetCursorPos(window->lastFocus, startPos +
     	((direction == SEARCH_FORWARD) ? replaceLen : 0));
     MakeSelectionVisible(window, window->lastFocus);
-    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, 0);
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, NULL);
     
     return TRUE;
 }

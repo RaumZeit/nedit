@@ -516,10 +516,10 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel)
        cursor position without first using the less pleasing capability
        of the widget itself for bringing the cursor in to view, you have to
        first turn it off, set the position, then turn it back on. */
-    XtVaSetValues(w, textNautoShowInsertPos, False, 0);
+    XtVaSetValues(w, textNautoShowInsertPos, False, NULL);
     TextSetCursorPos(w, cursorPos);
     MakeSelectionVisible(window, window->lastFocus);
-    XtVaSetValues(w, textNautoShowInsertPos, True, 0);
+    XtVaSetValues(w, textNautoShowInsertPos, True, NULL);
 }
 
 /*

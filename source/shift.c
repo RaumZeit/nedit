@@ -104,7 +104,7 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
     
     /* shift the text by the appropriate distance */
     if (byTab) {
-    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, 0);
+    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, NULL);
     	shiftDist = emTabDist == 0 ? buf->tabDist : emTabDist;
     } else
     	shiftDist = 1;
@@ -131,7 +131,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     
     /* Calculate the the left/right offset for the new rectangle */
     if (byTab) {
-    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, 0);
+    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, NULL);
     	offset = emTabDist == 0 ? buf->tabDist : emTabDist;
     } else
     	offset = 1;
@@ -252,7 +252,7 @@ void FillSelection(WindowInfo *window)
     	rightMargin = rectEnd - rectStart;
     } else {
 	XtVaGetValues(window->textArea, textNcolumns, &nCols,
-    		textNwrapMargin, &wrapMargin, 0);
+    		textNwrapMargin, &wrapMargin, NULL);
 	rightMargin = (wrapMargin == 0 ? nCols : wrapMargin) - 1;
     }
     
