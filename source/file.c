@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.49 2002/08/16 14:43:12 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.50 2002/08/21 07:19:25 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -578,6 +578,8 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse)
 	    stat = SaveWindow(window);
 	    if (stat)
 	    	CloseWindow(window);
+            else
+                return FALSE;
 	} else if (response == NO_SBC_DIALOG_RESPONSE) {
 	    /* Don't Save */
 	    RemoveBackupFile(window);
