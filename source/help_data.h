@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 15, 2002 (Do NOT edit!)
+                 Generated on Feb 16, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -657,7 +657,7 @@ NULL
 };
 
 static char * htxt_fill [] = {
-"\01R\01RShift Left, Shift Right\01I",
+"\01RShift Left, Shift Right\01I",
 "\n\n",
 "While shifting blocks of text is most important for programmers (See Features ",
 "for Programming), it is also useful for other tasks, such as creating ",
@@ -857,7 +857,7 @@ NULL
 };
 
 static char * htxt_tabs [] = {
-"\01R\01RChanging the Tab Distance\01I",
+"\01RChanging the Tab Distance\01I",
 "\n\n",
 "Tabs are important for programming in languages which use indentation to show ",
 "nesting, as short-hand for producing white-space for leading indents.  As a ",
@@ -1188,7 +1188,7 @@ NULL
 };
 
 static char * htxt_escapeSequences [] = {
-"\01R\01REscaping Metacharacters\01I",
+"\01REscaping Metacharacters\01I",
 "\n\n",
 "In a regular expression (regex), most ordinary characters match themselves.  ",
 "For example, `ab%' would match anywhere `a' followed by `b' followed by `%' ",
@@ -1278,7 +1278,7 @@ NULL
 };
 
 static char * htxt_parenConstructs [] = {
-"\01R\01RCapturing Parentheses\01I",
+"\01RCapturing Parentheses\01I",
 "\n\n",
 "Capturing Parentheses are of the form `(<regex>)' and can be used to group ",
 "arbitrarily complex regular expressions.  Parentheses can be nested, but the ",
@@ -1420,7 +1420,7 @@ NULL
 };
 
 static char * htxt_advancedTopics [] = {
-"\01R\01RSubstitutions\01I",
+"\01RSubstitutions\01I",
 "\n\n",
 "Regular expression substitution can be used to program automatic editing ",
 "operations.  For example, the following are search and replace strings to find ",
@@ -1473,10 +1473,10 @@ NULL
 };
 
 static char * htxt_examples [] = {
-"\01AThe following are regular expression examples which will match: ",
+"\01IThe following are regular expression examples which will match: ",
 "\n\n",
 "    * An entire line.\n",
-"        ^.*$\n",
+"\01A        ^.*$\n",
 " \n",
 "\01I    * Blank lines.\n",
 "\01A        ^$\n",
@@ -1508,7 +1508,7 @@ NULL
 };
 
 static char * htxt_shell [] = {
-"\01AThe Shell menu (Unix versions only) allows you to execute Unix shell commands ",
+"\01IThe Shell menu (Unix versions only) allows you to execute Unix shell commands ",
 "from within NEdit.  You can add items to the menu to extend NEdit's command ",
 "set or to incorporate custom automatic editing features using shell commands ",
 "or editing languages like awk and sed.  To add items to the menu, select ",
@@ -1534,14 +1534,14 @@ static char * htxt_shell [] = {
 "for re-execution. Note that the same character expansions described above ",
 "in Execute Command also occur with this command. ",
 "\n\n",
-"The X resource called nedit.shell (See \"\01QCustomizing NEdit\01A\") determines which ",
+"The X resource called nedit.shell (See \"\01QCustomizing NEdit\01I\") determines which ",
 "Unix shell is used to execute commands.  The default value for this resource ",
 "is /bin/csh. ",
 NULL
 };
 
 static char * htxt_learn [] = {
-"\01ASelecting Learn Keystrokes from the Macro menu puts NEdit in learn mode.  In ",
+"\01ISelecting Learn Keystrokes from the Macro menu puts NEdit in learn mode.  In ",
 "learn mode, keystrokes and menu commands are recorded, to be played back ",
 "later, using the Replay Keystrokes command, or pasted into a macro in the ",
 "Macro Commands dialog of the Default Settings menu in Preferences. ",
@@ -1962,7 +1962,7 @@ NULL
 };
 
 static char * htxt_macro_subrs [] = {
-"\01R\01RBuilt in Variables\01I",
+"\01RBuilt in Variables\01I",
 "\n\n",
 "These variables are read-only and can not be changed. ",
 "\n\n",
@@ -3592,7 +3592,7 @@ NULL
 };
 
 static char * htxt_patterns [] = {
-"\01R\01RWriting Syntax Highlighting Patterns\01I",
+"\01RWriting Syntax Highlighting Patterns\01I",
 "\n\n",
 "Patterns are the mechanism by which language syntax highlighting is ",
 "implemented in NEdit (see \01QSyntax Highlighting\01I under the heading of Features ",
@@ -4034,7 +4034,7 @@ NULL
 };
 
 static char * htxt_server [] = {
-"\01ANEdit can be operated on its own, or as a two-part client/server ",
+"\01INEdit can be operated on its own, or as a two-part client/server ",
 "application.  Client/server mode is useful for integrating NEdit with ",
 "software development environments, mailers, and other programs; or just as a ",
 "quick way to open files from the shell command line without starting a new ",
@@ -4042,7 +4042,7 @@ static char * htxt_server [] = {
 "\n\n",
 "To run NEdit in server mode, type: ",
 "\n\n",
-"      nedit -server\n",
+"\01A      nedit -server\n",
 "\01I\n",
 "NEdit can also be started in server mode via the Nedit Client (nc) program ",
 "when no servers are available. ",
@@ -4455,7 +4455,7 @@ NULL
 };
 
 static char * htxt_defects [] = {
-"\01R\01RSolutions to Common Problems\01I",
+"\01RSolutions to Common Problems\01I",
 "\n\n",
 "For a much more comprehensive list of common problems and solutions, see the ",
 "NEdit FAQ.  The latest version of the FAQ can always be found on the NEdit ",
@@ -4758,4 +4758,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Feb 15, 2002\n";
+static const char * NEditVersion = "NEdit release of Feb 16, 2002\n";
