@@ -1,10 +1,11 @@
-/* $Id: search.h,v 1.9 2001/04/06 09:49:56 amai Exp $ */
+/* $Id: search.h,v 1.10 2001/05/04 18:33:24 arnef Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
 void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
     int keepDialogs, Time time);
+void UpdateReplaceActionButtons(WindowInfo* window);
 void DoFindDlog(WindowInfo *window, int direction, int searchType,
     int keepDialogs, Time time);
 int SearchAndSelect(WindowInfo *window, int direction, char *searchString,

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.14 2001/04/16 23:49:15 slobasso Exp $ */
+/* $Id: nedit.h,v 1.15 2001/05/04 18:33:24 arnef Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -152,9 +152,9 @@ typedef struct _WindowInfo {
     Widget	replaceKeepBtn;
     Widget	replaceBtns;
     Widget	replaceBtn;
-#ifdef REPLACE_SCOPE
     Widget	replaceAllBtn;
-#else
+#ifndef REPLACE_SCOPE
+    Widget      replaceInWinBtn;
     Widget	replaceInSelBtn;
 #endif
     Widget	replaceSearchTypeBox;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.28 2001/04/16 23:20:11 slobasso Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.29 2001/05/04 18:33:24 arnef Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -84,6 +84,7 @@ static int SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 static int NHist = 0;
 
+static int textFieldNonEmpty(Widget w);
 static void setTextField(WindowInfo* window, Time time, Widget textField);
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
 	Atom *type, char *value, int *length, int *format);
@@ -103,8 +104,18 @@ static void rInSelCB(Widget w, WindowInfo *window,
 static void rCancelCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fCancelCB(Widget w, WindowInfo *window, caddr_t callData);
 static void rFindCB(Widget w,WindowInfo *window,XmAnyCallbackStruct *callData);
+static void rFindTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 
+static void rSetActionButtons(WindowInfo* window,
+                              int replaceBtn,
+                              int replaceFindBtn,
+                              int replaceAndFindBtn,
+#ifndef REPLACE_SCOPE
+                              int replaceInWinBtn,
+                              int replaceInSelBtn,
+#endif      
+                              int replaceAllBtn);
 #ifdef REPLACE_SCOPE
 static void rScopeWinCB(Widget w, WindowInfo *window, 
 	XmAnyCallbackStruct *callData);
@@ -117,6 +128,8 @@ static void replaceAllScopeCB(Widget w, WindowInfo *window,
 #endif
 
 static void replaceArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
+static void fUpdateActionButtons(WindowInfo *window);
+static void findTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void replaceFindCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData);
 static void findCB(Widget w, WindowInfo *window,XmAnyCallbackStruct *callData); 
@@ -132,6 +145,7 @@ static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window,
 static void rMultiFilePathCB(Widget w, WindowInfo *window,  
 	XmAnyCallbackStruct *callData);
 static void uploadFileListItems(WindowInfo* window, Bool replace);
+static int countWritableWindows(const WindowInfo* window);
 static void collectWritableWindows(WindowInfo* window);
 static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData);
@@ -436,7 +450,17 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
        /* No selection -> always choose "In Window" as default. */
        XmToggleButtonSetState(window->replaceScopeWinToggle, True, True);
     }
+
+    /* multiple implies more than one */
+    window->nWritableWindows = countWritableWindows(window);
+    XtSetSensitive(window->replaceScopeMultiToggle, window->nWritableWindows > 1);
+#else
+    /* multiple implies more than one */
+    window->nWritableWindows = countWritableWindows(window);
+    XtSetSensitive(window->replaceAllBtn, window->nWritableWindows > 1);
 #endif
+
+    UpdateReplaceActionButtons(window);
     
     /* Start the search history mechanism at the current history item */
     window->rHistIndex = 0;
@@ -535,6 +559,9 @@ void DoFindDlog(WindowInfo *window, int direction, int searchType,
     /* Set the state of the Keep Dialog Up button */
     XmToggleButtonSetState(window->findKeepBtn, keepDialogs, True);
     
+    /* Set the state of the Find button */
+    fUpdateActionButtons(window);
+
     /* start the search history mechanism at the current history item */
     window->fHistIndex = 0;
     
@@ -668,6 +695,8 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNmaxLength, SEARCHMAX); argcnt++;
     findText = XmCreateText(form, "replaceString", args, argcnt);
     XtAddCallback(findText, XmNfocusCallback, (XtCallbackProc)rFocusCB, window);
+    XtAddCallback(findText, XmNvalueChangedCallback, 
+      (XtCallbackProc)rFindTextValueChangedCB, window);
     XtAddEventHandler(findText, KeyPressMask, False,
     	    (XtEventHandler)rFindArrowKeyCB, window);
     RemapDeleteKey(findText);
@@ -909,7 +938,6 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNlabelString,
     	     st1=MKSTRING("Selection")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
-    XtSetArg(args[argcnt], XmNsensitive, window->wasSelected); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET); argcnt++;
@@ -1088,6 +1116,8 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     window->replaceScopeSelToggle = inSelBtn;
     window->replaceScopeMultiToggle = inMultiBtn;
 #else
+    window->replaceInWinBtn = inWinBtn;
+    window->replaceAllBtn = inMultiBtn;
     window->replaceInSelBtn = inSelBtn;
 #endif
 }
@@ -1155,6 +1185,8 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNmaxLength, SEARCHMAX); argcnt++;
     findText = XmCreateText(form, "searchString", args, argcnt);
     XtAddCallback(findText, XmNfocusCallback, (XtCallbackProc)fFocusCB, window);
+    XtAddCallback(findText, XmNvalueChangedCallback, 
+      (XtCallbackProc)findTextValueChangedCB, window);
     XtAddEventHandler(findText, KeyPressMask, False,
     	    (XtEventHandler)findArrowKeyCB, window);
     RemapDeleteKey(findText);
@@ -1695,13 +1727,26 @@ static int compareWindowNames(const void *windowA, const void *windowB)
       	    (*((WindowInfo**)windowB))->filename);
 }
  
+/* Count no. of writable windows */
+static int countWritableWindows(const WindowInfo* window)
+{
+    int nWritable;
+    const WindowInfo *w;
+
+    for (w=WindowList, nWritable=0; w!=NULL; w=w->next)
+       if (!IS_ANY_LOCKED(w->lockReasons)) ++nWritable;
+    
+    return(nWritable);
+}
+
 /*
 ** Collects a list of writable windows (sorted by file name). 
 ** The previous list, if any is freed first. 
 **/
 static void collectWritableWindows(WindowInfo* window)
 {
-    int nWritable, i;
+    int nWritable = countWritableWindows(window);
+    int i;
     WindowInfo *w;
     WindowInfo **windows;
     
@@ -1711,8 +1756,6 @@ static void collectWritableWindows(WindowInfo* window)
     }
    
     /* Make a sorted list of writable windows */
-    for (w=WindowList, nWritable=0; w!=NULL; w=w->next)
-       if (!IS_ANY_LOCKED(w->lockReasons)) ++nWritable;
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
     for (w=WindowList, i=0; w!=NULL; w=w->next)
        if (!IS_ANY_LOCKED(w->lockReasons)) windows[i++] = w;
@@ -2119,6 +2162,55 @@ static void replaceFindCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *cal
     	unmanageReplaceDialogs(window);
 }
 
+static void rSetActionButtons(WindowInfo* window,
+                              int replaceBtn,
+                              int replaceFindBtn,
+                              int replaceAndFindBtn,
+#ifndef REPLACE_SCOPE
+                              int replaceInWinBtn,
+                              int replaceInSelBtn,
+#endif      
+                              int replaceAllBtn)
+{
+    XtSetSensitive(window->replaceBtn,        replaceBtn);
+    XtSetSensitive(window->replaceFindBtn,    replaceFindBtn);
+    XtSetSensitive(window->replaceAndFindBtn, replaceAndFindBtn);
+#ifndef REPLACE_SCOPE
+    XtSetSensitive(window->replaceInWinBtn, replaceInWinBtn);
+    XtSetSensitive(window->replaceInSelBtn, replaceInSelBtn);
+#endif
+    XtSetSensitive(window->replaceAllBtn,     replaceAllBtn);
+} 
+
+void UpdateReplaceActionButtons(WindowInfo* window)
+{
+    /* Is there any text in the search for field */
+    int searchText = textFieldNonEmpty(window->replaceText);
+#ifdef REPLACE_SCOPE
+    switch (window->replaceScope)
+    {
+        case REPL_SCOPE_WIN:
+	    /* Enable all buttons, if there is any text in the search field. */
+	    rSetActionButtons(window, searchText, searchText, searchText, searchText);
+            break;
+
+        case REPL_SCOPE_SEL:
+	    /* Only enable Replace All, if a selection exists and text in search field. */
+	    rSetActionButtons(window, False, False, False, searchText && window->wasSelected);
+            break;
+
+        case REPL_SCOPE_MULTI:
+	    /* Only enable Replace All, if text in search field. */
+	    rSetActionButtons(window, False, False, False, searchText);
+            break;
+    }
+#else
+    rSetActionButtons(window, searchText, searchText, searchText,
+                      searchText, searchText && window->wasSelected,
+                      searchText && (window->nWritableWindows > 1));
+#endif
+}
+
 #ifdef REPLACE_SCOPE
 /*
 ** The next 3 callback adapt the sensitivity of the replace dialog push 
@@ -2128,12 +2220,8 @@ static void rScopeWinCB(Widget w, WindowInfo *window,
     XmAnyCallbackStruct *callData)
 {
     if (XmToggleButtonGetState(window->replaceScopeWinToggle)) {
-	/* Enable all buttons unconditionally. */
 	window->replaceScope = REPL_SCOPE_WIN;
-	XtSetSensitive(window->replaceBtn, True);
-	XtSetSensitive(window->replaceFindBtn, True);
-	XtSetSensitive(window->replaceAndFindBtn, True);
-	XtSetSensitive(window->replaceAllBtn, True);
+        UpdateReplaceActionButtons(window);
     }
 }
 
@@ -2141,12 +2229,8 @@ static void rScopeSelCB(Widget w, WindowInfo *window,
     XmAnyCallbackStruct *callData)
 {
     if (XmToggleButtonGetState(window->replaceScopeSelToggle)) {
-	/* Only enable Replace All, if a selection exists. */
 	window->replaceScope = REPL_SCOPE_SEL;
-	XtSetSensitive(window->replaceBtn, False);
-	XtSetSensitive(window->replaceFindBtn, False);
-	XtSetSensitive(window->replaceAndFindBtn, False);
-	XtSetSensitive(window->replaceAllBtn, window->wasSelected);
+        UpdateReplaceActionButtons(window);
     }
 }
 
@@ -2154,12 +2238,8 @@ static void rScopeMultiCB(Widget w, WindowInfo *window,
     XmAnyCallbackStruct *callData)
 {
     if (XmToggleButtonGetState(window->replaceScopeMultiToggle)) {
-	/* Only enable Replace All (unconditionally). */
 	window->replaceScope = REPL_SCOPE_MULTI;
-	XtSetSensitive(window->replaceBtn, False);
-	XtSetSensitive(window->replaceFindBtn, False);
-	XtSetSensitive(window->replaceAndFindBtn, False);
-	XtSetSensitive(window->replaceAllBtn, True);
+        UpdateReplaceActionButtons(window);
     }
 }
 
@@ -2183,6 +2263,19 @@ static void replaceAllScopeCB(Widget w, WindowInfo *window,
     }        
 }
 #endif
+
+static int textFieldNonEmpty(Widget w)
+{
+    char *str = XmTextGetString(w);
+    int nonEmpty = (str[0] != '\0');
+    XtFree(str);
+    return(nonEmpty);
+}
+
+static void rFindTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
+{
+    UpdateReplaceActionButtons(window);
+}
 
 static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
 {
@@ -2223,6 +2316,10 @@ static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
     
     XmTextSetString(window->replaceText, searchStr);
     XmTextSetString(window->replaceWithText, replaceStr);
+    
+    /* Set the state of the Replace, Find ... buttons */
+    UpdateReplaceActionButtons(window);
+
     window->rHistIndex = index;
 }
 
@@ -2251,6 +2348,17 @@ static void replaceArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
     	XmTextSetString(window->replaceWithText,
     		ReplaceHistory[historyIndex(index)]);
     window->rHistIndex = index;
+}
+
+static void fUpdateActionButtons(WindowInfo *window)
+{
+    int buttonState = textFieldNonEmpty(window->findText);
+    XtSetSensitive(window->findBtn, buttonState);
+}
+
+static void findTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
+{
+   fUpdateActionButtons(window);
 }
 
 static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
@@ -2288,6 +2396,10 @@ static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
                       &window->findLastLiteralCase,
                       &window->findLastRegexCase);
     XmTextSetString(window->findText, searchStr);
+
+    /* Set the state of the Find ... button */
+    fUpdateActionButtons(window);
+
     window->fHistIndex = index;
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.23 2001/04/18 19:12:21 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.24 2001/05/04 18:33:24 arnef Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -1549,14 +1549,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 #endif
 
 	DimSelectionDepUserMenuItems(window, selected);
-#ifdef REPLACE_SCOPE
-	if (window->replaceDlog != NULL &&
-	    window->replaceScope == REPL_SCOPE_SEL)
-    	    XtSetSensitive(window->replaceAllBtn, selected);
-#else
-    	if (window->replaceDlog != NULL)
-    	    XtSetSensitive(window->replaceInSelBtn, selected);
-#endif
+	if (window->replaceDlog != NULL) {
+    	    UpdateReplaceActionButtons(window);
+        }
     }
     
     /* Make sure line number display is sufficient for new data */
