@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.22 2002/09/26 12:37:39 ajhood Exp $ */
+/* $Id: parse.y,v 1.23 2002/12/12 17:25:59 slobasso Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -37,7 +37,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.22 2002/09/26 12:37:39 ajhood Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.23 2002/12/12 17:25:59 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -471,7 +471,6 @@ static int yylex(void)
 {
     int i, len;
     Symbol *s;
-    static int stringConstIndex = 0;
     static DataValue value = {0, {0}};
     static char escape[] = "\\\"ntbrfav";
     static char replace[] = "\\\"\n\t\b\r\f\a\v";
@@ -550,7 +549,6 @@ static int yylex(void)
     /* process quoted strings w/ embedded escape sequences */
     if (*InPtr == '\"') {
         char string[MAX_STRING_CONST_LEN], *p = string;
-        char stringName[25];
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
             if (p >= string + MAX_STRING_CONST_LEN) {
@@ -578,13 +576,7 @@ static int yylex(void)
         }
         *p = '\0';
         InPtr++;
-        if ((yylval.sym = LookupStringConstSymbol(string)) == NULL) {
-                value.val.str = AllocString(p-string+1);
-                strcpy(value.val.str, string);
-                value.tag = STRING_TAG;
-                sprintf(stringName, "string #%d", stringConstIndex++);
-                yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
-        }
+        yylval.sym = InstallStringConstSymbol(string);
         return STRING;
     }
 
