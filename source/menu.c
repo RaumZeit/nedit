@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.19 2001/03/09 16:58:59 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.20 2001/03/09 22:27:04 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -592,7 +592,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "paste_clipboard", SHORT);
     createMenuItem(menuPane, "pasteColumn", "Paste Column", 's', pasteColCB,
     	    window, SHORT);
-    createMenuItem(menuPane, "delete", "Delete", 'D', doActionCB, "delete",
+    createMenuItem(menuPane, "delete", "Delete", 'D', doActionCB, "delete_selection",
     	    SHORT);
     createMenuItem(menuPane, "selectAll", "Select All", 'A', doActionCB,
     	    "select_all", SHORT);
