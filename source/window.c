@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.153 2004/04/28 01:54:19 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.154 2004/04/30 04:06:28 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -216,12 +216,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 #endif
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
-    int x = 0, y = 0, bitmask, showTabBar;
+    int x = 0, y = 0, bitmask, showTabBar, state;
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
-    XmFontList fontList;
-    int fontWidth, tabWidth, state;
-    XFontStruct *fs;
 
     static Pixmap isrcFind = 0;
     static Pixmap isrcClear = 0;
@@ -569,21 +566,22 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     	    XmNshadowThickness, 1,
             XmNtraversalOn, False,
             XmNrightAttachment, XmATTACH_FORM,
-            XmNrightOffset, 5,
+            XmNrightOffset, 3,
             XmNbottomAttachment, XmATTACH_FORM,	    
             XmNbottomOffset, 3,
 	    NULL);
     XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, 
 	    mainWin);
     
+    /* create the tab bar */
     window->tabBar = XtVaCreateManagedWidget("tabBar", 
        	    xmlFolderWidgetClass, tabForm,
 	    XmNresizePolicy, XmRESIZE_PACK,
 	    XmNleftAttachment, XmATTACH_FORM,
-            XmNleftOffset, 1,
+            XmNleftOffset, 0,
 	    XmNrightAttachment, XmATTACH_WIDGET,
 	    XmNrightWidget, closeTabBtn,
-            XmNrightOffset, 10,
+            XmNrightOffset, 5,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, 0,
             XmNtopAttachment, XmATTACH_FORM,
@@ -605,24 +603,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     	    raiseTabCB, NULL);
 
     window->tab = addTab(window->tabBar, window, name);
-
-    /* set minimum space for filename on tabs */
-    XtVaGetValues(window->tab, XmNfontList, &fontList, NULL);
-    fs = GetDefaultFontStruct(fontList);
-    fontWidth = (fs->min_bounds.width + fs->max_bounds.width)/2;
-    tabWidth = fontWidth * 20 + 5;
-    if (tabWidth < 150)
-    	tabWidth = 150;
-    XtVaSetValues(window->tabBar, XmNmaxTabWidth, tabWidth, NULL);
-
-    /* put a separating line below the tab bar */
-    XtVaCreateManagedWidget("TOOLBAR_SEP", xmSeparatorWidgetClass,
-    	    statsAreaForm,
-	    XmNseparatorType, XmSHADOW_ETCHED_IN,
-	    XmNmargin, 0,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-    	    NULL);
 
     /* A form to hold the stats line text and line/col widgets */
     window->statsLineForm = XtVaCreateWidget("statsLineForm",
@@ -657,8 +637,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        file names and line numbers.  Colors are copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-    XtVaGetValues(statsAreaForm, XmNbackground, &bgpix, NULL);
-    XtVaGetValues(statsAreaForm, XmNforeground, &fgpix, NULL);
+    XtVaGetValues(window->statsLineForm, XmNbackground, &bgpix, NULL);
+    XtVaGetValues(window->statsLineForm, XmNforeground, &fgpix, NULL);
     stats = XtVaCreateManagedWidget("statsLine", 
             xmTextWidgetClass,  window->statsLineForm,
             XmNbackground, bgpix,
@@ -835,9 +815,9 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
     s1 = XmStringCreateSimple((char *)string);
     tab = XtVaCreateManagedWidget("tab",
 	    xrwsBubbleButtonWidgetClass, folder,
-	    XmNmarginWidth, 0,
-	    XmNmarginHeight, 0,
-  	    /* XmNalignment, XmALIGNMENT_BEGINNING, */
+	    /* XmNmarginWidth, <default@nedit.c>, */
+	    /* XmNmarginHeight, <default@nedit.c>, */
+  	    /* XmNalignment, <default@nedit.c>, */
   	    XmNlabelString, s1,
   	    XltNbubbleString, s1,
 	    XltNshowBubble, GetPrefToolTips(),

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.72 2004/04/29 02:34:01 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.73 2004/04/30 04:06:28 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -160,6 +160,8 @@ static char *fallbackResources[] = {
     "*XmLFolder.traversalOn:        False",
     "*XmLFolder.inactiveForeground: #666" ,
     "*tab.alignment: XmALIGNMENT_BEGINNING",
+    "*tab.marginWidth: 0",
+    "*tab.marginHeight: 1",
 
     /* Prevent the file selection box from acting stupid. */
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
