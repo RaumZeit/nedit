@@ -1429,7 +1429,8 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
 {
     Widget menu;
     WidgetList items;
-    int n, nItems;
+    int n;
+    Cardinal nItems;
     void *userData;
     
     /* Do mode-specific actions */
@@ -1437,7 +1438,7 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
     
     /* Select the correct language mode in the sub-menu */
     XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, NULL);
-    XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems,NULL);
+    XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
     for (n=0; n<nItems; n++) {
     	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	XmToggleButtonSetState(items[n], (int)userData == mode, False);

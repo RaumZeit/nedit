@@ -2888,7 +2888,7 @@ static void setStyleMenu(char *styleName)
     char *itemStyle;
 
     XtVaGetValues(HighlightDialog.stylePulldown, XmNchildren, &items,
-    	    XmNnumChildren, &nItems, 0);
+    	    XmNnumChildren, &nItems, NULL);
     if (nItems == 0)
     	return;
     selectedItem = items[0];
@@ -2899,7 +2899,7 @@ static void setStyleMenu(char *styleName)
     	    break;
     	}
     }
-    XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem,0);
+    XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem, (char *)0);
 }
 
 /*

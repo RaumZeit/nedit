@@ -938,7 +938,8 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
     WidgetList items;
     Widget subMenu;
     XtArgVal userData;
-    int n, nItems, index;
+    int n, index;
+    Cardinal nItems;
     
     XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
     for (n=0; n<nItems; n++) {
@@ -1317,7 +1318,8 @@ static void removeMenuItems(Widget menuPane)
     WidgetList items, itemList;
     Widget subMenuID;
     XtArgVal userData;
-    int n, nItems;
+    int n;
+    Cardinal nItems;
     
     /* Fetch the list of children from the menu pane, and make a copy
        (because the widget alters this list as you delete widgets) */

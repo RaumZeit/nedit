@@ -1387,7 +1387,8 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
 {
     char mneString[2];
     WidgetList children;
-    int numChildren, i, isMenu;
+    Cardinal numChildren;
+    int i, isMenu;
     KeySym mnemonic = '\0';
     unsigned char rowColType;
     unsigned int keyCode;
@@ -1442,7 +1443,8 @@ static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event)
 static void findAndActivateMnemonic(Widget w, unsigned int keycode)
 {
     WidgetList children;
-    int numChildren, i, isMenu;
+    Cardinal numChildren;
+    int i, isMenu;
     KeySym mnemonic = '\0';
     char mneString[2];
     Widget userData;
@@ -1491,7 +1493,8 @@ static void addAccelGrabs(Widget topWidget, Widget w)
 {
     WidgetList children;
     Widget menu;
-    int numChildren, i;
+    Cardinal numChildren;
+    int i;
     
     if (XtIsComposite(w)) {
 	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
@@ -1629,7 +1632,8 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 
     WidgetList children;
     Widget menu;
-    int numChildren, i;
+    Cardinal numChildren;
+    int i;
     char *accelString = NULL;
     KeySym keysym;
     unsigned int mods;

@@ -2981,7 +2981,8 @@ static void updateWindowMenu(WindowInfo *window)
     char *title;
     Widget btn;
     WidgetList items;
-    int nItems, n, userData;
+    Cardinal nItems;
+    int n, userData;
     XmString st1;
     int i, nWindows, windowIndex;
     WindowInfo **windows;
@@ -3056,7 +3057,8 @@ static void updatePrevOpenMenu(WindowInfo *window)
 {
     Widget btn;
     WidgetList items;
-    int nItems, n, index;
+    Cardinal nItems;
+    int n, index;
     XmString st1;
     char **prevOpenSorted;
                 
@@ -3114,7 +3116,8 @@ static void updateTagsFileMenu(WindowInfo *window)
     tagFile *tf;
     Widget btn;
     WidgetList items;
-    int nItems, n;
+    Cardinal nItems;
+    int n;
     XmString st1;
 		
     /* Go thru all of the items in the menu and rename them to match the file
