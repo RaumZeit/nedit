@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.35 2004/01/06 02:38:48 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.36 2004/01/09 05:56:54 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -75,6 +75,11 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.35 2004/01/06 02:38:48 tksoh Ex
 #include "../debug.h"
 #endif
 
+#if XmVersion >= 1002
+#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
+#else
+#define MENU_WIDGET(w) (w)
+#endif
 
 /* max number of user programmable menu commands allowed per each of the
    macro, shell, and bacground menus */
@@ -1627,6 +1632,8 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     int index;
     char *params[1];
 
+    window = WidgetToWindow(w);
+    
     /* get the index of the shell command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
     index = (int)userData - 10;
@@ -1643,6 +1650,8 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     XtArgVal userData;
     int index;
     char *params[1];
+
+    window = WidgetToWindow(w);
 
     /* Don't allow users to execute a macro command from the menu (or accel)
        if there's already a macro command executing.  NEdit can't handle
@@ -1673,6 +1682,8 @@ static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     XtArgVal userData;
     int index;
     char *params[1];
+
+    window = WidgetToWindow(w);
 
     /* Same remark as for macro menu commands (see above). */
     if (window->macroCmdData != NULL) {
