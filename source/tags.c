@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.30 2002/01/28 10:43:10 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.31 2002/03/04 20:10:20 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -526,10 +526,8 @@ static int scanETagsLine(const char *line, const char * tagPath, int index,
         	strcat(incPath, file);
         	CompressPathname(incPath);
         	return(loadTagsFile(incPath, index, recLevel+1));
-        	*file=0; /* done, invalidate */
             } else {
         	return(loadTagsFile(file, index, recLevel+1));
-        	*file=0; /* done, invalidate */
             }
         }
     }
