@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.20 2002/08/31 00:52:16 slobasso Exp $ */
+/* $Id: parse.y,v 1.21 2002/09/05 23:17:25 slobasso Exp $ */
 %{
 #include "parse.h"
 #include "textBuf.h"
@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.20 2002/08/31 00:52:16 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.21 2002/09/05 23:17:25 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -53,7 +53,7 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 %token <sym> NUMBER STRING SYMBOL
 %token IF WHILE ELSE FOR BREAK CONTINUE RETURN
 %type <nArgs> arglist
-%type <inst> cond comastmts for while else and or
+%type <inst> cond comastmts for while else and or arrayexpr
 %type <sym> evalsym
 
 %nonassoc IF_NO_ELSE
@@ -114,16 +114,15 @@ stmt:       simpstmt '\n' blank
                 SwapCode($5+1, $7, GetPC());
                 ADD_OP(OP_BRANCH); ADD_BR_OFF($3); SET_BR_OFF($5, GetPC());
             }
-            | for '(' SYMBOL IN SYMBOL ')' {
+            | for '(' SYMBOL IN arrayexpr ')' {
                 Symbol *iterSym = InstallIteratorSymbol();
-                ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM($5); ADD_SYM(iterSym);
-                ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym);
-                ADD_BR_OFF(0);
+                ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(iterSym);
+                ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym); ADD_BR_OFF(0);
             }
-            blank block {
-                FillLoopAddrs(GetPC()+2, GetPC());
-                ADD_OP(OP_BRANCH); ADD_BR_OFF($1+3);
-                SET_BR_OFF($1+6, GetPC());
+                blank block {
+                    ADD_OP(OP_BRANCH); ADD_BR_OFF($5+2);
+                    SET_BR_OFF($5+5, GetPC());
+                    FillLoopAddrs(GetPC(), $5+2);
             }
             | BREAK '\n' blank {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
@@ -143,7 +142,7 @@ stmt:       simpstmt '\n' blank
             | RETURN '\n' blank {
                 ADD_OP(OP_RETURN_NO_VAL);
             }
-            ; 
+            ;
 simpstmt:   SYMBOL '=' expr {
                 ADD_OP(OP_ASSIGN); ADD_SYM($1);
             }
@@ -293,6 +292,10 @@ arraylv:    SYMBOL {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
             }
             ;
+arrayexpr:  numexpr {
+                $$ = GetPC();
+            }
+            ;
 numexpr:    NUMBER {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
             }
@@ -354,7 +357,7 @@ numexpr:    NUMBER {
                 ADD_OP(OP_BIT_AND);
             }
             | numexpr '|' numexpr  {
-                ADD_OP(OP_BIT_OR); 
+                ADD_OP(OP_BIT_OR);
             }
             | numexpr and numexpr %prec AND {
                 ADD_OP(OP_AND); SET_BR_OFF($2, GetPC());
@@ -432,23 +435,23 @@ blank:  /* nothing */
 Program *ParseMacro(char *expr, char **msg, char **stoppedAt)
 {
     Program *prog;
-    
+
     BeginCreatingProgram();
-    
+
     /* call yyparse to parse the string and check for success.  If the parse
        failed, return the error message and string index (the grammar aborts
        parsing at the first error) */
     InPtr = expr;
     if (yyparse()) {
-    	*msg = ErrMsg;
-    	*stoppedAt = InPtr;
-    	FreeProgram(FinishCreatingProgram());
-    	return NULL;
+        *msg = ErrMsg;
+        *stoppedAt = InPtr;
+        FreeProgram(FinishCreatingProgram());
+        return NULL;
     }
-    
+
     /* get the newly created program */
     prog = FinishCreatingProgram();
-    
+
     /* parse succeeded */
     *msg = "";
     *stoppedAt = InPtr;
@@ -464,27 +467,27 @@ static int yylex(void)
     static DataValue value = {0, {0}};
     static char escape[] = "\\\"ntbrfav";
     static char replace[] = "\\\"\n\t\b\r\f\a\v";
-    
+
     /* skip whitespace and backslash-newline combinations which are
        also considered whitespace */
     for (;;) {
-    	if (*InPtr == '\\' && *(InPtr + 1) == '\n')
-    	    InPtr += 2;
-    	else if (*InPtr == ' ' || *InPtr == '\t')
-    	    InPtr++;
-    	else
-    	    break;
+        if (*InPtr == '\\' && *(InPtr + 1) == '\n')
+            InPtr += 2;
+        else if (*InPtr == ' ' || *InPtr == '\t')
+            InPtr++;
+        else
+            break;
     }
-    
+
     /* skip comments */
     if (*InPtr == '#')
-    	while (*InPtr != '\n' && *InPtr != '\0') InPtr++;
-    
+        while (*InPtr != '\n' && *InPtr != '\0') InPtr++;
+
     /* return end of input at the end of the string */
     if (*InPtr == '\0') {
-	return 0;
+        return 0;
     }
-    
+
     /* process number tokens */
     if (isdigit((unsigned char)*InPtr))  { /* number */
         char name[28];
@@ -496,7 +499,7 @@ static int yylex(void)
             yylval.sym = InstallSymbol(name, CONST_SYM, value);
         return NUMBER;
     }
-    
+
     /* process symbol tokens.  "define" is a special case not handled
        by this parser, considered end of input.  Another special case
        is action routine names which are allowed to contain '-' despite
@@ -506,92 +509,92 @@ static int yylex(void)
             char symName[MAX_SYM_LEN+1], *p = symName;
             *p++ = *InPtr++;
             while (isalnum((unsigned char)*InPtr) || *InPtr=='_') {
-		if (p >= symName + MAX_SYM_LEN)
-		    InPtr++;
-		else
-		    *p++ = *InPtr++;
-	    }
-	    *p = '\0';
-	    if (!strcmp(symName, "while")) return WHILE;
-	    if (!strcmp(symName, "if")) return IF;
-	    if (!strcmp(symName, "else")) return ELSE;
-	    if (!strcmp(symName, "for")) return FOR;
-	    if (!strcmp(symName, "break")) return BREAK;
-	    if (!strcmp(symName, "continue")) return CONTINUE;
-	    if (!strcmp(symName, "return")) return RETURN;
+                if (p >= symName + MAX_SYM_LEN)
+                    InPtr++;
+                else
+                    *p++ = *InPtr++;
+            }
+            *p = '\0';
+            if (!strcmp(symName, "while")) return WHILE;
+            if (!strcmp(symName, "if")) return IF;
+            if (!strcmp(symName, "else")) return ELSE;
+            if (!strcmp(symName, "for")) return FOR;
+            if (!strcmp(symName, "break")) return BREAK;
+            if (!strcmp(symName, "continue")) return CONTINUE;
+            if (!strcmp(symName, "return")) return RETURN;
         if (!strcmp(symName, "in")) return IN;
         if (!strcmp(symName, "delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
-	    if (!strcmp(symName, "define")) {
-	    	InPtr -= 6;
-	    	return 0;
-	    }
-	    if ((s=LookupSymbol(symName)) == NULL) {
-        	s = InstallSymbol(symName, symName[0]=='$' ? 
-		      	(isdigit((unsigned char)symName[1]) ?
-            		ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
-            	s->value.tag = NO_TAG;
+            if (!strcmp(symName, "define")) {
+                InPtr -= 6;
+                return 0;
             }
-	}
-	yylval.sym = s;
+            if ((s=LookupSymbol(symName)) == NULL) {
+                s = InstallSymbol(symName, symName[0]=='$' ?
+                        (isdigit((unsigned char)symName[1]) ?
+                        ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
+                s->value.tag = NO_TAG;
+            }
+        }
+        yylval.sym = s;
         return SYMBOL;
     }
-    
+
     /* process quoted strings w/ embedded escape sequences */
     if (*InPtr == '\"') {
         char string[MAX_STRING_CONST_LEN], *p = string;
         char stringName[25];
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
-	    if (p >= string + MAX_STRING_CONST_LEN) {
-	    	InPtr++;
-	    	continue;
-	    }
-	    if (*InPtr == '\\') {
-		InPtr++;
-		if (*InPtr == '\n') {
-		    InPtr++;
-		    continue;
-		}
-		for (i=0; escape[i]!='\0'; i++) {
-		    if (escape[i] == '\0') {
-		    	*p++= *InPtr++;
-		    	break;
-		    } else if (escape[i] == *InPtr) {
-		    	*p++ = replace[i];
-		    	InPtr++;
-		    	break;
-		    }
-		}
-	    } else
-		*p++= *InPtr++;
-	}
-	*p = '\0';
-	InPtr++;
-	if ((yylval.sym = LookupStringConstSymbol(string)) == NULL) {
-		value.val.str = AllocString(p-string+1);
-		strcpy(value.val.str, string);
-		value.tag = STRING_TAG;
-		sprintf(stringName, "string #%d", stringConstIndex++);
-		yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
-	}
-	return STRING;
+            if (p >= string + MAX_STRING_CONST_LEN) {
+                InPtr++;
+                continue;
+            }
+            if (*InPtr == '\\') {
+                InPtr++;
+                if (*InPtr == '\n') {
+                    InPtr++;
+                    continue;
+                }
+                for (i=0; escape[i]!='\0'; i++) {
+                    if (escape[i] == '\0') {
+                        *p++= *InPtr++;
+                        break;
+                    } else if (escape[i] == *InPtr) {
+                        *p++ = replace[i];
+                        InPtr++;
+                        break;
+                    }
+                }
+            } else
+                *p++= *InPtr++;
+        }
+        *p = '\0';
+        InPtr++;
+        if ((yylval.sym = LookupStringConstSymbol(string)) == NULL) {
+                value.val.str = AllocString(p-string+1);
+                strcpy(value.val.str, string);
+                value.tag = STRING_TAG;
+                sprintf(stringName, "string #%d", stringConstIndex++);
+                yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
+        }
+        return STRING;
     }
-    
+
     /* process remaining two character tokens or return single char as token */
     switch(*InPtr++) {
-    case '>':	return follow('=', GE, GT);
-    case '<':	return follow('=', LE, LT);
-    case '=':	return follow('=', EQ, '=');
-    case '!':	return follow('=', NE, NOT);
-    case '+':	return follow2('+', INCR, '=', ADDEQ, '+');
-    case '-':	return follow2('-', DECR, '=', SUBEQ, '-');
-    case '|':	return follow2('|', OR, '=', OREQ, '|');
-    case '&':	return follow2('&', AND, '=', ANDEQ, '&');
-    case '*':	return follow2('*', POW, '=', MULEQ, '*');
+    case '>':   return follow('=', GE, GT);
+    case '<':   return follow('=', LE, LT);
+    case '=':   return follow('=', EQ, '=');
+    case '!':   return follow('=', NE, NOT);
+    case '+':   return follow2('+', INCR, '=', ADDEQ, '+');
+    case '-':   return follow2('-', DECR, '=', SUBEQ, '-');
+    case '|':   return follow2('|', OR, '=', OREQ, '|');
+    case '&':   return follow2('&', AND, '=', ANDEQ, '&');
+    case '*':   return follow2('*', POW, '=', MULEQ, '*');
     case '/':   return follow('=', DIVEQ, '/');
-    case '%':	return follow('=', MODEQ, '%');
-    case '^':	return POW;
-    default:	return *(InPtr-1);
+    case '%':   return follow('=', MODEQ, '%');
+    case '^':   return POW;
+    default:    return *(InPtr-1);
     }
 }
 
@@ -601,7 +604,7 @@ static int yylex(void)
 static int follow(char expect, int yes, int no)
 {
     if (*InPtr++ == expect)
-	return yes;
+        return yes;
     InPtr--;
     return no;
 }
@@ -609,9 +612,9 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
 {
     char next = *InPtr++;
     if (next == expect1)
-	return yes1;
+        return yes1;
     if (next == expect2)
-    	return yes2;
+        return yes2;
     InPtr--;
     return no;
 }
@@ -619,7 +622,7 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
 static int follow_non_whitespace(char expect, int yes, int no)
 {
     char *localInPtr = InPtr;
-    
+
     while (1) {
         if (*localInPtr == ' ' || *localInPtr == '\t') {
             ++localInPtr;
@@ -651,20 +654,20 @@ static Symbol *matchesActionRoutine(char **inPtr)
     int hasDash = False;
     char symbolName[MAX_SYM_LEN+1];
     Symbol *s;
-    
+
     symPtr = symbolName;
-    for (c = *inPtr; isalnum((unsigned char)*c) || *c=='_' || 
-      	    ( *c=='-' && isalnum((unsigned char)(*(c+1)))); c++) {
-    	if (*c == '-')
-    	    hasDash = True;
-    	*symPtr++ = *c;
+    for (c = *inPtr; isalnum((unsigned char)*c) || *c=='_' ||
+            ( *c=='-' && isalnum((unsigned char)(*(c+1)))); c++) {
+        if (*c == '-')
+            hasDash = True;
+        *symPtr++ = *c;
     }
     if (!hasDash)
-    	return NULL;
+        return NULL;
     *symPtr = '\0';
     s = LookupSymbol(symbolName);
     if (s != NULL)
-    	*inPtr = c;
+        *inPtr = c;
     return s;
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.29 2002/08/31 00:52:16 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.30 2002/09/05 23:17:24 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2171,62 +2171,27 @@ static int arrayRefAndAssignSetup(void)
 static int beginArrayIter(void)
 {
     Symbol *iterator;
-    Symbol *array;
     DataValue *iteratorValPtr;
-    DataValue *arrayValPtr;
-    DataValue procValue;
+    DataValue arrayVal;
 
-    array = (Symbol *)*PC;
-    PC++;
     iterator = (Symbol *)*PC;
     PC++;
 
-    if (array->type == LOCAL_SYM) {
-        arrayValPtr = (FrameP + array->value.val.n);
-    }
-    else if (array->type == GLOBAL_SYM) {
-        arrayValPtr = &(array->value);
-    }
-    else if (array->type == ARG_SYM) {
-        int nArgs = (FrameP-1)->val.n;
-        int argNum = array->value.val.n;
-        if (argNum >= nArgs) {
-            return(execError("referenced undefined argument: %s",  array->name));
-        }
-        if (argNum != N_ARGS_ARG_SYM) {
-            arrayValPtr = (FrameP + argNum - nArgs - 3);
-        }
-        else {
-            return(execError("can't iterate non-array",  array->name));
-        }
-    }
-    else if (array->type == PROC_VALUE_SYM) {
-        char *errMsg;
-        
-        if ((array->value.val.subr)(FocusWindow, NULL, 0, &procValue, &errMsg)) {
-            arrayValPtr = &procValue;
-        }
-        else {
-            return(execError(errMsg, array->name));
-        }
-    }
-    else {
-        return(execError("can't iterate variable: %s",  array->name));
-    }
-
+    POP(arrayVal)
+    
     if (iterator->type == LOCAL_SYM) {
         iteratorValPtr = (FrameP + iterator->value.val.n);
     }
     else {
         return(execError("bad temporary iterator: %s",  iterator->name));
     }
-    iteratorValPtr->tag = INT_TAG;
 
-    if (arrayValPtr->tag != ARRAY_TAG) {
-        return(execError("can't iterate non-array: %s", array->name));
+    iteratorValPtr->tag = INT_TAG;
+    if (arrayVal.tag != ARRAY_TAG) {
+        return(execError("can't iterate non-array", NULL));
     }
 
-    iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateFirst(arrayValPtr);
+    iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateFirst(&arrayVal);
     return(STAT_OK);
 }
 
@@ -2405,70 +2370,69 @@ static int stringToNum(const char *string, int *number)
 static void disasm(Program *prog, int nInstr)
 {
     static const char *opNames[N_OPS] = {"returnNoVal", "returnVal", "pushSymVal",
-    	"dupStack", "add", "subtract", "multiply", "divide", "modulo",
+        "dupStack", "add", "subtract", "multiply", "divide", "modulo",
         "negate", "increment", "decrement", "gt", "lt", "ge", "le", "eq",
-	"ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
-	"assign", "callSubroutine", "fetchRetVal", "branch", "branchTrue",
-	"branchFalse", "branchNever", "arrayRef", "arrayAssign",
-	"beginArrayIter", "arrayIter", "inArray", "deleteArrayElement",
+        "ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
+        "assign", "callSubroutine", "fetchRetVal", "branch", "branchTrue",
+        "branchFalse", "branchNever", "arrayRef", "arrayAssign",
+        "beginArrayIter", "arrayIter", "inArray", "deleteArrayElement",
         "pushArraySymVal", "arrayRefAndAssignSetup"};
     int i, j;
     
     for (i=0; i<nInstr; i++) {
-    	printf("%x ", (int)&prog->code[i]);
-    	for (j=0; j<N_OPS; j++) {
-    	    if (prog->code[i] == OpFns[j]) {
-    	    	printf("%s", opNames[j]);
-    	    	if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
-    	    	    printf(" %s", ((Symbol *)prog->code[i+1])->name);
-    	    	    i++;
-    	    	} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
-    	    	    	j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-    	    	    printf(" (%d) %x", (int)prog->code[i+1],
-    	    	    	    (int)(&prog->code[i+1] + (int)prog->code[i+1]));
-    	    	    i++;
-    	    	} else if (j == OP_SUBR_CALL) {
-    	    	    printf(" %s (%d arg)", ((Symbol *)prog->code[i+1])->name,
-    	    	    	    (int)prog->code[i+2]);
-    	    	    i += 2;
-    	    	} else if (j == OP_BEGIN_ARRAY_ITER) {
-		    printf(" %s in %s",
-			    ((Symbol *)prog->code[i+1])->name,
-			    ((Symbol *)prog->code[i+2])->name);
-		    i += 2;
-    	    	} else if (j == OP_ARRAY_ITER) {
-		    printf(" %s in %s (%d) %x",
-			    ((Symbol *)prog->code[i+1])->name,
-			    ((Symbol *)prog->code[i+2])->name,
-			    (int)prog->code[i+3],
-			    (int)(&prog->code[i+3] + (int)prog->code[i+3]));
-		    i += 3;
-		} else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
+        printf("%x ", (int)&prog->code[i]);
+        for (j=0; j<N_OPS; j++) {
+            if (prog->code[i] == OpFns[j]) {
+                printf("%s", opNames[j]);
+                if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
+                    printf(" %s", ((Symbol *)prog->code[i+1])->name);
+                    i++;
+                } else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
+                        j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
+                    printf(" (%d) %x", (int)prog->code[i+1],
+                            (int)(&prog->code[i+1] + (int)prog->code[i+1]));
+                    i++;
+                } else if (j == OP_SUBR_CALL) {
+                    printf(" %s (%d arg)", ((Symbol *)prog->code[i+1])->name,
+                            (int)prog->code[i+2]);
+                    i += 2;
+                } else if (j == OP_BEGIN_ARRAY_ITER) {
+                    printf(" %s in",
+                            ((Symbol *)prog->code[i+1])->name);
+                    i += 1;
+                } else if (j == OP_ARRAY_ITER) {
+                    printf(" %s = %s++ (%d) %x",
+                            ((Symbol *)prog->code[i+1])->name,
+                            ((Symbol *)prog->code[i+2])->name,
+                            (int)prog->code[i+3],
+                            (int)(&prog->code[i+3] + (int)prog->code[i+3]));
+                    i += 3;
+                } else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
                             j == OP_ARRAY_ASSIGN) {
-		    printf(" %d",
-			    ((int)prog->code[i+1]));
-		    i += 1;
-		} else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
-		    printf(" %d",
-			    ((int)prog->code[i+1]));
-		    i += 1;
-		    printf(" %d",
-			    ((int)prog->code[i+1]));
-		    i += 1;
-		} else if (j == OP_PUSH_ARRAY_SYM) {
-    	    	    printf(" %s", ((Symbol *)prog->code[i+1])->name);
-		    i += 1;
-		    printf(" %d",
-			    ((int)prog->code[i+1]));
-		    i += 1;
+                    printf(" %d",
+                            ((int)prog->code[i+1]));
+                    i += 1;
+                } else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
+                    printf(" %d",
+                            ((int)prog->code[i+1]));
+                    i += 1;
+                    printf(" %d",
+                            ((int)prog->code[i+1]));
+                    i += 1;
+                } else if (j == OP_PUSH_ARRAY_SYM) {
+                    printf(" %s", ((Symbol *)prog->code[i+1])->name);
+                    i += 1;
+                    printf(" %d",
+                            ((int)prog->code[i+1]));
+                    i += 1;
                 }
 
-    	    	printf("\n");
-    	    	break;
-    	    }
-    	}
-    	if (j == N_OPS)
-    	    printf("%x\n", (int)prog->code[i]);
+                printf("\n");
+                break;
+            }
+        }
+        if (j == N_OPS)
+            printf("%x\n", (int)prog->code[i]);
     }
 }
 #endif /* ifdef DEBUG_ASSEMBLY */
