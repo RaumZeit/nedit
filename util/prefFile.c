@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.20 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.21 2003/12/07 15:56:53 yooden Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -137,18 +137,27 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
         
     /* read the preferences file into an X database.
        On failure prefDB will be NULL. */
-    if (fullName == NULL)
+    if (NULL == fullName)
     {
         db = NULL;
     } else
     {
         fileString = ReadAnyTextFile(fullName);
-        if (fileString == NULL){
+        if (NULL == fileString)
+        {
             db = NULL;
         } else
         {
+            char* rsrcName;
             db = XrmGetStringDatabase(fileString);
             XtFree(fileString);
+
+            /*  Add a resource to the database which remembers that
+                the file is read, so that NEdit will know it.  */
+            rsrcName = (char*) XtMalloc(strlen(appName) + 14);
+            sprintf(rsrcName, "%s.prefFileRead", appName);
+            XrmPutStringResource(&db, rsrcName, "True");
+            XtFree(rsrcName);
         }
     }
     
@@ -166,18 +175,6 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
     XrmParseCommand(&db, xrmOnlyTable, XtNumber(xrmOnlyTable), appName,
     	    &argcCopy, argvCopy);
     XtFree((char *)argvCopy);
-    
-    /* If the resource database file existed, add a resource to the database
-       which notes this fact, so that programs will know whether the file
-       was really ever found or not */
-    if (fullName && (fp = fopen(fullName, "r")) != NULL) {
-	char *rsrcName = (char*)XtMalloc(strlen(appName) + 14);
-    	fclose(fp);
-	sprintf(rsrcName, "%s.prefFileRead", appName);
-	XrmPutStringResource(&db, rsrcName, "True");
-	XtFree(rsrcName);
-    }
-
     return db;
 }
 
