@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.42 2003/03/24 23:56:56 yooden Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.43 2003/04/17 21:46:21 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -105,8 +105,6 @@ Boolean IsServer = False;
 
 #define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1"
 #define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
-#define NEDIT_DEFAULT_FG        "black"
-#define NEDIT_DEFAULT_TEXT_BG   "#e5e5e5"
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
 static char *fallbackResources[] = {
@@ -148,11 +146,11 @@ static char *fallbackResources[] = {
        the accelerators to be there even if someone creates an app-defaults
        file against our wishes. */
 
-    "*text.lineNumForeground: #777777",
-    "*text.background: ", NEDIT_DEFAULT_TEXT_BG,
-    "*text.foreground: ", NEDIT_DEFAULT_FG,
-    "*text.highlightBackground: red",
-    "*text.highlightForeground: black",
+    "*text.lineNumForeground: " NEDIT_DEFAULT_LINENO_FG,
+    "*text.background: " NEDIT_DEFAULT_TEXT_BG,
+    "*text.foreground: " NEDIT_DEFAULT_FG,
+    "*text.highlightForeground: " NEDIT_DEFAULT_HI_FG,
+    "*text.highlightBackground: " NEDIT_DEFAULT_HI_BG,
     "*textFrame.shadowThickness: 1",
     "*menuBar.marginHeight: 0",
     "*menuBar.shadowThickness: 1",

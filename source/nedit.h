@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.36 2003/04/03 19:05:31 jlous Exp $ */
+/* $Id: nedit.h,v 1.37 2003/04/17 21:46:21 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -21,6 +21,16 @@
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
+/* Some default colors */
+#define NEDIT_DEFAULT_FG        "black"
+#define NEDIT_DEFAULT_TEXT_BG   "rgb:e5/e5/e5"
+#define NEDIT_DEFAULT_SEL_FG    "black"
+#define NEDIT_DEFAULT_SEL_BG    "rgb:cc/cc/cc"
+#define NEDIT_DEFAULT_HI_FG     "white" /* These are colors for flashing */
+#define NEDIT_DEFAULT_HI_BG     "red"   /*   matching parens. */
+#define NEDIT_DEFAULT_LINENO_FG "black"
+#define NEDIT_DEFAULT_CURSOR_FG "black"
 
 /* Tuning parameters */
 #define SEARCHMAX 511		/* Maximum length of search/replace strings */

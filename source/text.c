@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.38 2003/04/10 18:47:22 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.39 2003/04/17 21:46:21 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -610,19 +610,25 @@ static XtResource resources[] = {
     {textNfont, textCFont, XmRFontStruct, sizeof(XFontStruct *),
       XtOffset(TextWidget, text.fontStruct), XmRString, "fixed"},
     {textNselectForeground, textCSelectForeground, XmRPixel, sizeof(Pixel),
-      XtOffset(TextWidget, text.selectFGPixel), XmRString, "black"},
+      XtOffset(TextWidget, text.selectFGPixel), XmRString, 
+      NEDIT_DEFAULT_SEL_FG},
     {textNselectBackground, textCSelectBackground, XmRPixel, sizeof(Pixel),
-      XtOffset(TextWidget, text.selectBGPixel), XmRString, "#cccccc"},
+      XtOffset(TextWidget, text.selectBGPixel), XmRString, 
+      NEDIT_DEFAULT_SEL_BG},
     {textNhighlightForeground, textCHighlightForeground, XmRPixel,sizeof(Pixel),
-      XtOffset(TextWidget, text.highlightFGPixel), XmRString, "white"},
+      XtOffset(TextWidget, text.highlightFGPixel), XmRString, 
+      NEDIT_DEFAULT_HI_FG},
     {textNhighlightBackground, textCHighlightBackground, XmRPixel,sizeof(Pixel),
-      XtOffset(TextWidget, text.highlightBGPixel), XmRString, "red"},
+      XtOffset(TextWidget, text.highlightBGPixel), XmRString, 
+      NEDIT_DEFAULT_HI_BG},
+    {textNlineNumForeground, textCLineNumForeground, XmRPixel,sizeof(Pixel),
+      XtOffset(TextWidget, text.lineNumFGPixel), XmRString, 
+      NEDIT_DEFAULT_LINENO_FG},
     {textNcursorForeground, textCCursorForeground, XmRPixel,sizeof(Pixel),
-      XtOffset(TextWidget, text.cursorFGPixel), XmRString, "black"},
+      XtOffset(TextWidget, text.cursorFGPixel), XmRString, 
+      NEDIT_DEFAULT_CURSOR_FG},
     {textNbacklightCharTypes,textCBacklightCharTypes,XmRString,sizeof(XmString),
       XtOffset(TextWidget, text.backlightCharTypes), XmRString, NULL},
-    {textNlineNumForeground, textCLineNumForeground, XmRPixel,sizeof(Pixel),
-      XtOffset(TextWidget, text.lineNumFGPixel), XmRString, "black"},
     {textNrows, textCRows, XmRInt,sizeof(int),
       XtOffset(TextWidget, text.rows), XmRString, "24"},
     {textNcolumns, textCColumns, XmRInt, sizeof(int),

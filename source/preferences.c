@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.87 2003/04/08 08:54:40 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.88 2003/04/17 21:46:21 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -858,28 +858,28 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.helpLinkColor,
 	(void *)sizeof(PrefData.helpLinkColor), False},
         
-    {"textFgColor", "textFgColor", PREF_STRING, "black",
-	PrefData.colorNames[TEXT_FG_COLOR],
-	(void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), True},
-    {"textBgColor", "textBgColor", PREF_STRING, "#e5e5e5",
-	PrefData.colorNames[TEXT_BG_COLOR],
-	(void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), True},
-    {"selectFgColor", "selectFgColor", PREF_STRING, "black",
+    {"textFgColor", "textFgColor", PREF_STRING, NEDIT_DEFAULT_FG,
+        PrefData.colorNames[TEXT_FG_COLOR],
+        (void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), True},
+    {"textBgColor", "textBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG,
+        PrefData.colorNames[TEXT_BG_COLOR],
+        (void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), True},
+    {"selectFgColor", "selectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG,
         PrefData.colorNames[SELECT_FG_COLOR],
         (void *)sizeof(PrefData.colorNames[SELECT_FG_COLOR]), True},
-    {"selectBgColor", "selectBgColor", PREF_STRING, "#cccccc",
+    {"selectBgColor", "selectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG,
         PrefData.colorNames[SELECT_BG_COLOR],
         (void *)sizeof(PrefData.colorNames[SELECT_BG_COLOR]), True},
-    {"hiliteFgColor", "hiliteFgColor", PREF_STRING, "black",
+    {"hiliteFgColor", "hiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG,
         PrefData.colorNames[HILITE_FG_COLOR],
         (void *)sizeof(PrefData.colorNames[HILITE_FG_COLOR]), True},
-    {"hiliteBgColor", "hiliteBgColor", PREF_STRING, "red",
+    {"hiliteBgColor", "hiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG,
         PrefData.colorNames[HILITE_BG_COLOR],
         (void *)sizeof(PrefData.colorNames[HILITE_BG_COLOR]), True},
-    {"lineNoFgColor", "lineNoFgColor", PREF_STRING, "#777777",
+    {"lineNoFgColor", "lineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG,
         PrefData.colorNames[LINENO_FG_COLOR],
         (void *)sizeof(PrefData.colorNames[LINENO_FG_COLOR]), True},
-    {"cursorFgColor", "cursorFgColor", PREF_STRING, "black",
+    {"cursorFgColor", "cursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG,
         PrefData.colorNames[CURSOR_FG_COLOR],
         (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), True},
                 
@@ -1075,6 +1075,7 @@ static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
 static void updatePatternsTo5dot3(void);
 static void updateShellCmdsTo5dot3(void);
+static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
@@ -1126,11 +1127,11 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     }
 
     if (PrefData.prefFileRead && fileVer < 5002) {
-	updatePatternsTo5dot2();
+        updatePatternsTo5dot2();
     }
     
     if (PrefData.prefFileRead && fileVer < 5003) {
-	updateShellCmdsTo5dot3();
+        updateShellCmdsTo5dot3();
         updatePatternsTo5dot3();
     }
 
@@ -1141,12 +1142,15 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
        We only do auto-upgrading for a real release. */
 
     if (PrefData.prefFileRead && (fileVer < 5004)) {
-	/* There are some implict conversions done later - show this
+        /* There are some implict conversions done later - show this
            message even if there's no explicit call to upgrade. */
-        
         fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
     }
+    /* XXX: When 5.4 is released maybe we should move this into the above
+        if stmt.  It's here now for developers who have been using CVS
+        versions and want their colors migrated. */
+    migrateColorResources(prefDB, appDB);
    
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
@@ -5111,7 +5115,83 @@ static void updatePatternsTo5dot3(void)
 	regexReplace(&TempStringPrefs.language, psLm5dot2, psLm5dot3);
 #endif 
 }
- 
+
+/* 
+ * We migrate a color from the X resources to the prefs if:
+ *      1.  The prefs entry is equal to the default entry
+ *      2.  The X resource is not equal to the default entry
+ */
+static void migrateColor(XrmDatabase prefDB, XrmDatabase appDB,
+        char *class, char *name, int color_index, char *default_val)
+{
+    char *type, *valueString;
+    XrmValue rsrcValue;
+    
+    /* If this color has been customized in the color dialog then use
+        that value */
+    if ( strcmp(default_val, PrefData.colorNames[color_index]) )
+        return;
+    
+    /* Retrieve the value of the resource from the DB */
+    if (XrmGetResource(prefDB, name, class, &type, &rsrcValue)) {
+        if (strcmp(type, XmRString)) {
+            fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
+                    type);
+            return;
+        }
+        valueString = rsrcValue.addr;
+    } else if (XrmGetResource(appDB, name, class, &type, &rsrcValue)) {
+        if (strcmp(type, XmRString)) {
+            fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
+                    type);
+            return;
+        }
+        valueString = rsrcValue.addr;
+    } else
+        /* No resources set */
+        return;
+    
+    /* An X resource is set.  If it's non-default, update the prefs. */
+    if ( strcmp(valueString, default_val) ) {
+        strncpy(PrefData.colorNames[color_index], valueString, 
+                MAX_COLOR_LEN);
+    }
+}
+
+/*
+ * In 5.4 we moved color preferences from X resources to a color dialog,
+ * meaning they're in the normal prefs system.  Users who have customized
+ * their colors with X resources would probably prefer not to have to redo
+ * the customization in the dialog, so we migrate them to the prefs for them.  
+ */
+static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB)
+{
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.Foreground",
+            APP_NAME ".text.foreground", TEXT_FG_COLOR, 
+            NEDIT_DEFAULT_FG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.Background",
+            APP_NAME ".text.background", TEXT_BG_COLOR, 
+            NEDIT_DEFAULT_TEXT_BG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.SelectForeground",
+            APP_NAME ".text.selectForeground", SELECT_FG_COLOR, 
+            NEDIT_DEFAULT_SEL_FG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.SelectBackground",
+            APP_NAME ".text.selectBackground", SELECT_BG_COLOR, 
+            NEDIT_DEFAULT_SEL_BG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.HighlightForeground",
+            APP_NAME ".text.highlightForeground", HILITE_FG_COLOR, 
+            NEDIT_DEFAULT_HI_FG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.HighlightBackground",
+            APP_NAME ".text.highlightBackground", HILITE_BG_COLOR, 
+            NEDIT_DEFAULT_HI_BG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.LineNumForeground",
+            APP_NAME ".text.lineNumForeground", LINENO_FG_COLOR, 
+            NEDIT_DEFAULT_LINENO_FG);
+    migrateColor(prefDB, appDB, APP_CLASS ".Text.CursorForeground",
+            APP_NAME ".text.cursorForeground", CURSOR_FG_COLOR, 
+            NEDIT_DEFAULT_CURSOR_FG);
+}
+
 /*
 ** Inserts a string into intoString, reallocating it with XtMalloc.  If
 ** regular expression atExpr is found, inserts the string before atExpr
