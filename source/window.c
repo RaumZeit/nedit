@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.128 2004/03/05 08:10:04 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.129 2004/03/06 02:24:33 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -837,11 +837,15 @@ static int compareWindowNames(const void *windowA, const void *windowB)
 
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
+**
+** This makes no assumptions about whether or not the docs from window->shell
+** are grouped together or interleaved with docs from other shells in
+** WindowList.
 */
 void SortTabBar(WindowInfo *window)
 {
-    WindowInfo *w;
-    WindowInfo **windows;
+    WindowInfo *w, *otherWins;
+    WindowInfo **windows, **twFirst, **owLast;
     WidgetList tabList;
     int i, nDoc;
 
@@ -853,17 +857,39 @@ void SortTabBar(WindowInfo *window)
     if (nDoc < 2)
         return;
 
-    /* first sort the documents */
+    /* first sort the documents, choosing only those files in this window */
+    
+    /* point twFirst at the ptr to the first document from this window */
+    for( twFirst = &WindowList; (*twFirst)->shell != window->shell; )
+        twFirst = &(*twFirst)->next;
+    
+    otherWins = NULL;
+    owLast = &otherWins;
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
-    for (w=WindowList, i=0; w!=NULL; w=w->next) {
-    	if (window->shell == w->shell)
+    for (w=*twFirst, i=0; w!=NULL; w=w->next) {
+    	if (window->shell == w->shell) {
     	    windows[i++] = w;
+        } else {
+            if (NULL == otherWins)  /* This is the first doc of other wins */
+                otherWins = w;
+            *owLast = w;
+            owLast = &(w->next);
+        }
+            
     }
+    /* Now otherWins should be a linked list of the docs from other windows
+        "after" this window, and owLast should point at the final dangling
+        "next" pointer in that list (or otherWins if it's empty). */
+    *owLast = NULL;
     qsort(windows, nDoc, sizeof(WindowInfo *), compareWindowNames);
 
-    /* assign tabs to documents in sorted order */
+    /* assign tabs to documents in sorted order & clean up "next" pointers */
+    *twFirst = windows[nDoc-1];
+    windows[0]->next = otherWins;
     XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, NULL);
     for (i=0; i<nDoc; i++) {
+        if (i>0)
+            windows[i]->next = windows[i-1];
     	if (windows[i]->tab == tabList[i])
 	    continue;
 	    
