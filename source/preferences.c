@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.96 2003/05/27 22:32:21 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.97 2003/05/28 08:26:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1076,6 +1076,7 @@ static void updatePatternsTo5dot2(void);
 static void updatePatternsTo5dot3(void);
 static void updatePatternsTo5dot4(void);
 static void updateShellCmdsTo5dot3(void);
+static void updateShellCmdsTo5dot4(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
@@ -1152,6 +1153,7 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
        the above if stmt.  It's here now for developers who have been using CVS
        versions and want their colors and patterns migrated. */
     migrateColorResources(prefDB, appDB);
+    updateShellCmdsTo5dot4();
     updatePatternsTo5dot4();
    
     /* Do further parsing on resource types which RestorePreferences does
@@ -5365,6 +5367,30 @@ static void updateShellCmdsTo5dot3(void) {
 }  
 
 #endif
+
+static void updateShellCmdsTo5dot4(void) 
+{
+#ifndef VMS /* No shell commands on VMS */
+
+#ifdef __FreeBSD__
+    const char* wc5dot3 = 
+      "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"words,\" \\$wc\\[2\\] \"lines,\" \\$wc\\[3\\] \"characters\"\\n";
+    const char* wc5dot4 = 
+      "wc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n";
+#else    
+    const char* wc5dot3 = 
+      "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"lines,\" \\$wc\\[2\\] \"words,\" \\$wc\\[3\\] \"characters\"\\n";
+    const char* wc5dot4 = 
+      "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
+#endif /* __FreeBSD__ */
+    
+    if (regexFind(TempStringPrefs.shellCmds, wc5dot3))
+	regexReplace(&TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
+    
+#endif /* VMS */
+    
+    return;
+}
 
 #ifdef SGI_CUSTOM
 /*
