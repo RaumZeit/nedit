@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.11 2002/07/11 21:18:09 slobasso Exp $ */
+/* $Id: system.h,v 1.12 2002/08/09 20:48:06 tringali Exp $ */
 
 #ifndef NEDIT_SYSTEM_H_INCLUDED
 #define NEDIT_SYSTEM_H_INCLUDED
@@ -44,9 +44,12 @@
    Better compilers/OSs document the symbols they define, but not all do.
    Usually, the correct ones are prepended with an _ or __, as this is
    namespace is reserved by ANSI C for the compiler implementation.
+   
+   The order is important for the x86 macros.  Some compilers will
+   simulatenously define __i386 and __pentium, so we pick the highest one.
 */
 
-#if defined(__alpha)
+#if defined(__alpha) || defined (_M_ALPHA)
 #   define COMPILE_MACHINE "Alpha"
 #elif defined(__mips)
 #   define COMPILE_MACHINE "MIPS"
@@ -56,9 +59,21 @@
 #   define COMPILE_MACHINE "PA-RISC"
 #elif defined(__PPC__) || defined(_POWER)
 #   define COMPILE_MACHINE "PowerPC"
-#elif defined(__ia64)
+#elif defined(__ia64) || defined(_M_IA64)
 #   define COMPILE_MACHINE "IA64"
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86) || defined(__i386)
+#elif defined(__k6) || defined(__k6__)
+#   define COMPILE_MACHINE "K6"
+#elif defined(__athlon) || defined(__athlon__)
+#   define COMPILE_MACHINE "Athlon"
+#elif defined(__pentiumpro) || defined(__pentiumpro__)
+#   define COMPILE_MACHINE "Pentium Pro"
+#elif defined(__pentium) || defined(__pentium__)
+#   define COMPILE_MACHINE "Pentium"
+#elif defined(__i486) || defined(__i486__)
+#   define COMPILE_MACHINE "486"
+#elif defined(__i386) || defined(__i386__)
+#   define COMPILE_MACHINE "386"
+#elif defined(_M_IX86) || defined(_X86_)
 #   define COMPILE_MACHINE "x86"
 #elif defined(__VAX)
 #   define COMPILE_MACHINE "VAX"        /* Untested, please verify */
@@ -67,10 +82,8 @@
 #endif
 
 
-#if defined(__digital__) && defined(__unix__)
+#if defined(__osf__)
 #   define COMPILE_OS "Tru64/Digital Unix"
-#elif defined(__osf__)
-#   define COMPILE_OS "OSF/1"           /* Non-digital OSF */
 #elif defined(__sun)
 #   define COMPILE_OS "Solaris"
 #elif defined(__hpux)
@@ -79,6 +92,8 @@
 #   define COMPILE_OS "Win32"
 #elif defined(__sgi)
 #   define COMPILE_OS "IRIX"
+#elif defined(__Lynx__)
+#   define COMPILE_OS "Lynx"
 #elif defined(__linux__)
 #   define COMPILE_OS "Linux"
 #elif defined(_AIX)
@@ -95,8 +110,10 @@
 #   define COMPILE_OS "BSDI"
 #elif defined(__ultrix)                 /* Untested, please verify */
 #   define COMPILE_OS "Ultrix"
-#elif defined(__EMX__)                  /* Might be used on non-OS/2, too */
+#elif defined(__EMX__)                  /* I think this should be __OS2__ */
 #   define COMPILE_OS "OS/2"
+#elif defined(__APPLE__) || defined(__MACOSX__)
+#   define COMPILE_OS "MacOS X"
 #else
 #   define COMPILE_OS "Unknown"
 #endif
