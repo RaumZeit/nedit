@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.30 2002/08/19 07:22:17 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.31 2002/08/27 08:05:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -2299,6 +2299,7 @@ static void calcLineStarts(textDisp *textD, int startLine, int endLine)
     int *lineStarts = textD->lineStarts;
     
     /* Clean up (possibly) messy input parameters */
+    if (nVis == 0) return;
     if (endLine < 0) endLine = 0;
     if (endLine >= nVis) endLine = nVis - 1;
     if (startLine < 0) startLine = 0;
@@ -2507,7 +2508,7 @@ static void updateVScrollBarRange(textDisp *textD)
        line number, and the number of visible lines respectively.  The scroll
        bar maximum value is chosen to generally represent the size of the whole
        buffer, with minor adjustments to keep the scroll bar widget happy */
-    sliderSize = textD->nVisibleLines;
+    sliderSize = max(textD->nVisibleLines, 1); /* Avoid X warning (size < 1) */
     sliderValue = textD->topLineNum;
     sliderMax = max(textD->nBufferLines + 2, sliderSize + sliderValue);
     XtVaSetValues(textD->vScrollBar,
