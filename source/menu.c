@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.26 2001/04/03 22:59:38 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.27 2001/04/12 15:09:55 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2836,17 +2836,20 @@ static void controlDialogAP(Widget w, XEvent *event, String *args,
 {
     WindowInfo *window = WidgetToWindow(w);
     unsigned char charCodeString[2];
-    char charCodeText[DF_MAX_PROMPT_LENGTH], *params[1];
+    char charCodeText[DF_MAX_PROMPT_LENGTH], dummy[DF_MAX_PROMPT_LENGTH];
+    char *params[1];
     int charCode, nRead, response;
     
     if (CheckReadOnly(window))
     	return;
     response = DialogF(DF_PROMPT, window->shell, 2,
-    	    "ASCII Character Code (decimal):", charCodeText, "OK", "Cancel");
+    	    "ASCII Character Code:", charCodeText, "OK", "Cancel");
     if (response == 2)
     	return;
-    nRead = sscanf(charCodeText, "%d", &charCode);
-    if (nRead != 1 || charCode < 0 || charCode >= 256) {
+    /* If we don't scan for a trailing string invalid input
+       would be accepted sometimes. */
+    nRead = sscanf(charCodeText, "%i%s", &charCode, dummy);
+    if (nRead != 1 || charCode < 0 || charCode > 255) {
     	XBell(TheDisplay, 0);
 	return;
     }
