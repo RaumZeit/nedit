@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.32 2003/03/05 23:50:59 n8gray Exp $ */
+/* $Id: preferences.h,v 1.33 2003/05/09 17:43:47 edg Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -136,7 +136,7 @@ int GetPrefTypingHidesPointer(void);
 void SetPrefShortMenus(int state);
 int GetPrefShortMenus(void);
 #endif
-void EditLanguageModes(Widget parent);
+void EditLanguageModes();
 void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window, int forWindow);
 char *LanguageModeName(int mode);

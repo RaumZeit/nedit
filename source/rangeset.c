@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.5 2003/05/07 10:51:52 edg Exp $ */
+/* $Id: rangeset.c,v 1.6 2003/05/09 17:43:47 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -720,7 +720,7 @@ void RangesetSetMaxpos(Rangeset *rangeset, int maxpos)
 
 /* -------------------------------------------------------------------------- */
 
-static Rangeset *RangesetFixMaxpos(Rangeset *rangeset, int pos, int ins, int del)
+static Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del)
 {
     rangeset->maxpos += ins - del;
     return rangeset;
@@ -895,7 +895,7 @@ int RangesetCreate(RangesetTable *table)
     unsigned char label;
     int setIndex;
     
-    int firstAvailableIndex = strspn((char*)rangeset_labels, (char*)table->list);
+    size_t firstAvailableIndex = strspn((char*)rangeset_labels, (char*)table->list);
 
     if(firstAvailableIndex >= sizeof(rangeset_labels))
         return '\0';
@@ -1210,7 +1210,7 @@ static Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, in
     i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n)
-	return RangesetFixMaxpos(rangeset, pos, ins, del);	/* all beyond the end */
+	return rangesetFixMaxpos(rangeset, ins, del);	/* all beyond the end */
 
     end_del = pos + del;
     movement = ins - del;
@@ -1242,7 +1242,7 @@ static Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, in
     rangeset->ranges = RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
     /* final adjustments */
-    return RangesetFixMaxpos(rangeset, pos, ins, del);
+    return rangesetFixMaxpos(rangeset, ins, del);
 }
 
 /* "Inclusive": if the start point is in, at the start of, or at the end of a
@@ -1261,7 +1261,7 @@ static Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int 
     i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n)
-	return RangesetFixMaxpos(rangeset, pos, ins, del);	/* all beyond the end */
+	return rangesetFixMaxpos(rangeset, ins, del);	/* all beyond the end */
 
     /* if the insert occurs at the start of a range, the following lines will
        extend the range, leaving the start of the range at pos. */
@@ -1299,7 +1299,7 @@ static Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int 
     rangeset->ranges = RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
     /* final adjustments */
-    return RangesetFixMaxpos(rangeset, pos, ins, del);
+    return rangesetFixMaxpos(rangeset, ins, del);
 }
 
 /* "Delete/Insert": if the start point is in a range (start < pos &&
@@ -1319,7 +1319,7 @@ static Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, in
     i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n)
-	return RangesetFixMaxpos(rangeset, pos, ins, del);	/* all beyond the end */
+	return rangesetFixMaxpos(rangeset, ins, del);	/* all beyond the end */
 
     end_del = pos + del;
     movement = ins - del;
@@ -1353,7 +1353,7 @@ static Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, in
     rangeset->ranges = RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
     /* final adjustments */
-    return RangesetFixMaxpos(rangeset, pos, ins, del);
+    return rangesetFixMaxpos(rangeset, ins, del);
 }
 
 /* "Exclusive": if the start point is in, but not at the end of, a range
@@ -1373,7 +1373,7 @@ static Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int 
     i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n)
-	return RangesetFixMaxpos(rangeset, pos, ins, del);	/* all beyond the end */
+	return rangesetFixMaxpos(rangeset, ins, del);	/* all beyond the end */
 
     /* if the insert occurs at the end of a range, the following lines will
        skip the range, leaving the end of the range at pos. */
@@ -1413,7 +1413,7 @@ static Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int 
     rangeset->ranges = RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
     /* final adjustments */
-    return RangesetFixMaxpos(rangeset, pos, ins, del);
+    return rangesetFixMaxpos(rangeset, ins, del);
 }
 
 /* "Break": if the modification point pos is strictly inside a range, that range
@@ -1431,7 +1431,7 @@ static Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int
     i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n)
-	return RangesetFixMaxpos(rangeset, pos, ins, del);	/* all beyond the end */
+	return rangesetFixMaxpos(rangeset, ins, del);	/* all beyond the end */
 
     /* if the insert occurs at the end of a range, the following lines will
        skip the range, leaving the end of the range at pos. */
@@ -1490,7 +1490,7 @@ static Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int
     rangeset->ranges = RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
     /* final adjustments */
-    return RangesetFixMaxpos(rangeset, pos, ins, del);
+    return rangesetFixMaxpos(rangeset, ins, del);
 }
 
 /* -------------------------------------------------------------------------- */

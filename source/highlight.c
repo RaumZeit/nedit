@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.41 2003/04/08 08:54:40 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.42 2003/05/09 17:43:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -155,7 +155,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo);
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, const char *delimiters, char *prevChar);
+    	char style, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
@@ -1612,7 +1612,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 	/* Fill in the pattern style for the text that was skipped over before
 	   the match, and advance the pointers to the start of the pattern */
 	fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0],
-	    	pattern->style, delimiters, prevChar);
+	    	pattern->style, prevChar);
     	
     	/* If the combined pattern matched this pattern's end pattern, we're
     	   done.  Fill in the style string, update the pointers, color the
@@ -1622,8 +1622,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 	if (pattern->endRE != NULL) {
 	    if (subIndex == 0) {
 		fillStyleString(&stringPtr, &stylePtr, 
-		    pattern->subPatternRE->endp[0], pattern->style, 
-		    delimiters, prevChar);
+		    pattern->subPatternRE->endp[0], pattern->style, prevChar);
 		subExecuted = False;
 		for (i=0;i<pattern->nSubPatterns; i++) {
 		    subPat = pattern->subPatterns[i];
@@ -1655,8 +1654,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	if (pattern->errorRE != NULL) {
 	    if (subIndex == 0) {
 		fillStyleString(&stringPtr, &stylePtr, 
-		    pattern->subPatternRE->startp[0], pattern->style, 
-		    delimiters, prevChar);
+		    pattern->subPatternRE->startp[0], pattern->style, prevChar);
     		    *string = stringPtr;
 		*styleString = stylePtr;
 		return False;
@@ -1678,7 +1676,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	/* the sub-pattern is a simple match, just color it */
     	if (subPat->subPatternRE == NULL) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
-    	    	    subPat->style, delimiters, prevChar);
+    	    	    subPat->style, prevChar);
     	
     	/* Parse the remainder of the sub-pattern */	    
     	} else {
@@ -1687,7 +1685,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	       to that point */
     	    if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
     		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
-			subPat->style, delimiters, prevChar);
+			subPat->style, prevChar);
 
    	    /* Parse to the end of the subPattern */
    	    parseString(subPat, &stringPtr, &stylePtr, length -
@@ -1724,7 +1722,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 	    if (*stringPtr == '\0')
 		break;
 	    fillStyleString(&stringPtr, &stylePtr, stringPtr+1,
-			pattern->style, delimiters, prevChar);
+			pattern->style, prevChar);
 	}
     }
     
@@ -1736,8 +1734,8 @@ static int parseString(highlightDataRec *pattern, char **string,
     /* Reached end of string, fill in the remaining text with pattern style
        (unless this was an anchored match) */
     if (!anchored)
-	fillStyleString(&stringPtr, &stylePtr, *string+length, pattern->style,
-    		delimiters, prevChar);
+        fillStyleString(&stringPtr, &stylePtr, *string+length, pattern->style,
+                prevChar);
     
     /* Advance the string and style pointers to the end of the parsed text */
     *string = stringPtr;
@@ -1794,7 +1792,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
 ** routines for determining word and line boundaries at the start of the string.
 */
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, const char *delimiters, char *prevChar)
+    	char style, char *prevChar)
 {
     int i, len = toPtr-*stringPtr;
     
@@ -2270,8 +2268,7 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
     	
     stringPtr = re->startp[subexpr];
     stylePtr = &styleString[stringPtr - string];
-    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, NULL,
-	    NULL);
+    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, NULL);
 }
 
 /*

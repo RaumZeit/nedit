@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regexConvert.c,v 1.8 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: regexConvert.c,v 1.9 2003/05/09 17:43:47 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `ConvertSubstituteRE' -- regular expression parsing
  *
@@ -107,7 +107,7 @@ static int            piece             (int *flag_param);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-char * ConvertRE (const char *exp, char **errorText, char *cap_parens) {
+char * ConvertRE (const char *exp, char **errorText) {
 
    int  flags_local, pass;
 

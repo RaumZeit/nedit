@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.26 2003/05/02 19:19:02 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.27 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1288,7 +1288,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    EditLanguageModes(SmartIndentDialog.shell);
+    EditLanguageModes();
 }
 
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1402,7 +1402,7 @@ static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    Help(SmartIndentDialog.shell, HELP_SMART_INDENT);
+    Help(HELP_SMART_INDENT);
 }
 
 static int checkSmartIndentDialogData(void)

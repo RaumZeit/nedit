@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.93 2003/05/07 10:51:52 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.94 2003/05/09 17:43:44 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -173,7 +173,7 @@ static unsigned char AlphabetToAsciiTable[256];
 /*                             PROGRAM PROTOTYPES                             */
 /*============================================================================*/
 
-static Widget createHelpPanel(Widget parent, enum HelpTopic topic);
+static Widget createHelpPanel(enum HelpTopic topic);
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData);
 static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -519,12 +519,12 @@ static char * stitch (
 ** user, and may appear posted over a previous parent, regardless of the parent
 ** argument.
 */
-void Help(Widget parent, enum HelpTopic topic)
+void Help(enum HelpTopic topic)
 {
     if (HelpWindows[topic] != NULL)
         RaiseShellWindow(HelpWindows[topic]);
     else
-        HelpWindows[topic] = createHelpPanel(parent, topic);
+        HelpWindows[topic] = createHelpPanel(topic);
     adaptNavigationButtons(topic);
 }
 
@@ -549,13 +549,13 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
 /*
 ** Create a new help window displaying a given subject, "topic"
 **
-** Importand hint: If this widget is restructured or the name of the text
+** Important hint: If this widget is restructured or the name of the text
 ** subwidget is changed don't forget to adapt the default translations of the
 ** help text. They are located in nedit.c, look for 
 **   static char *fallbackResources 
 **   (currently:  nedit.helpForm.sw.helpText*translations...)
 */
-static Widget createHelpPanel(Widget parent, enum HelpTopic topic)
+static Widget createHelpPanel(enum HelpTopic topic)
 {
     Arg al[50];
     int ac;
@@ -968,8 +968,7 @@ static void follow_hyperlink(int topic, int charPosition, int newWindow)
         {
             if (newWindow)
             {
-                HelpWindows[link_topic] = createHelpPanel(HelpWindows[topic], 
-                        link_topic);
+                HelpWindows[link_topic] = createHelpPanel(link_topic);
             } else
             {
                 changeWindowTopic(topic, link_topic);

@@ -1,4 +1,4 @@
-/* $Id: highlightData.h,v 1.10 2002/10/15 11:00:41 ajhood Exp $ */
+/* $Id: highlightData.h,v 1.11 2003/05/09 17:43:45 edg Exp $ */
 
 #ifndef NEDIT_HIGHLIGHTDATA_H_INCLUDED
 #define NEDIT_HIGHLIGHTDATA_H_INCLUDED
@@ -14,7 +14,7 @@ int LoadHighlightString(char *inString, int convertOld);
 char *WriteHighlightString(void);
 int LoadStylesString(char *inString);
 char *WriteStylesString(void);
-void EditHighlightStyles(Widget parent, const char *initialStyle);
+void EditHighlightStyles(const char *initialStyle);
 void EditHighlightPatterns(WindowInfo *window);
 void UpdateLanguageModeMenu(void);
 int LMHasHighlightPatterns(const char *languageMode);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.10 2003/05/05 16:25:56 edg Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.11 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -641,7 +641,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    Help(etDialog.form, HELP_CUSTOM_TITLE_DIALOG);
+    Help(HELP_CUSTOM_TITLE_DIALOG);
 }
 
 static void wtDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -973,7 +973,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData)
     XtFree(value);
 }
 
-static void createEditTitleDialog(Widget parent, WindowInfo *window)
+static void createEditTitleDialog(Widget parent)
 {
 #define LEFT_MARGIN_POS 2
 #define RIGHT_MARGIN_POS 98
@@ -1439,7 +1439,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     etDialog.suppressFormatUpdate = FALSE;
 }
 
-void EditCustomTitleFormat(Widget parent, WindowInfo *window)
+void EditCustomTitleFormat(WindowInfo *window)
 {
     /* copy attributes from current window so that we can use as many
      * 'real world' defaults as possible when testing the effect
@@ -1475,7 +1475,7 @@ void EditCustomTitleFormat(Widget parent, WindowInfo *window)
     /* Create the dialog if it doesn't already exist */
     if (etDialog.form == NULL)
     {
-        createEditTitleDialog(window->shell, window);
+        createEditTitleDialog(window->shell);
     }
     else
     {

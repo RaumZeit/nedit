@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.40 2003/04/18 01:07:38 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.41 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -1336,7 +1336,7 @@ void TextPasteClipboard(Widget w, Time time)
     if (checkReadOnly(w))
 	return;
     TakeMotifDestination(w, time);
-    InsertClipboard(w, time, False);
+    InsertClipboard(w, False);
     callCursorMovementCBs(w, NULL);
 }
 
@@ -1346,7 +1346,7 @@ void TextColPasteClipboard(Widget w, Time time)
     if (checkReadOnly(w))
 	return;
     TakeMotifDestination(w, time);
-    InsertClipboard(w, time, True);
+    InsertClipboard(w, True);
     callCursorMovementCBs(w, NULL);
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.45 2003/05/02 19:19:01 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.46 2003/05/09 17:43:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -172,7 +172,7 @@ static struct {
     Widget managedListW;
     highlightStyleRec **highlightStyleList;
     int nHighlightStyles;
-} HSDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0};
+} HSDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0};
 
 /* Highlight dialog information */
 static struct {
@@ -1228,7 +1228,7 @@ static void convertPatternExpr(char **patternRE, char *patSetName,
 	*patternRE = XtNewString(newRE);
 	XtFree(newRE);
     } else{
-	newRE = ConvertRE(*patternRE, &errorText, NULL);
+	newRE = ConvertRE(*patternRE, &errorText);
 	if (newRE == NULL) {
 	    fprintf(stderr, "NEdit error converting old format regular "
 		    "expression in pattern set %s, pattern %s: %s\n",
@@ -1680,7 +1680,7 @@ static int styleError(const char *stringStart, const char *stoppedAt,
 /*
 ** Present a dialog for editing highlight style information
 */
-void EditHighlightStyles(Widget parent, const char *initialStyle)
+void EditHighlightStyles(const char *initialStyle)
 {
 #define HS_LIST_RIGHT 60
 #define HS_LEFT_MARGIN_POS 1
@@ -2922,7 +2922,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    EditLanguageModes(HighlightDialog.shell);
+    EditLanguageModes();
 }
 
 static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2930,9 +2930,13 @@ static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData)
     Widget selectedItem;
     char *style;
     
-    XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, NULL);
-    XtVaGetValues(selectedItem, XmNuserData, &style, NULL);
-    EditHighlightStyles(HighlightDialog.shell, style);
+    XtVaGetValues(HighlightDialog.styleOptMenu,
+            XmNmenuHistory, &selectedItem,
+            NULL);
+    XtVaGetValues(selectedItem,
+            XmNuserData, &style,
+            NULL);
+    EditHighlightStyles(style);
 }
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -3053,7 +3057,7 @@ static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    Help(w, HELP_PATTERNS);
+    Help(HELP_PATTERNS);
 }
 
 static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData)

@@ -1,4 +1,4 @@
-/* $Id: windowTitle.h,v 1.2 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: windowTitle.h,v 1.3 2003/05/09 17:43:48 edg Exp $ */
 
 #ifndef NEDIT_WINDOWTITLE_H_INCLUDED
 #define NEDIT_WINDOWTITLE_H_INCLUDED
@@ -43,6 +43,6 @@ char *FormatWindowTitle(const char* filename,
                         int fileChanged,
                         const char* titleFormat);
                         
-void EditCustomTitleFormat(Widget parent, WindowInfo *window);
+void EditCustomTitleFormat(WindowInfo *window);
 
 #endif /* NEDIT_WINDOWTITLE_H_INCLUDED */

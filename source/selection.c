@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.24 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.25 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -196,7 +196,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     	XBell(TheDisplay, 0);
 	return;
     }
-    if (*length > sizeof(lineText) - 1) {
+    if (((size_t) *length) > sizeof(lineText) - 1) {
     	XBell(TheDisplay, 0);
 	XtFree(value);
 	return;

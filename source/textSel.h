@@ -1,4 +1,4 @@
-/* $Id: textSel.h,v 1.3 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: textSel.h,v 1.4 2003/05/09 17:43:48 edg Exp $ */
 
 #ifndef NEDIT_TEXTSEL_H_INCLUDED
 #define NEDIT_TEXTSEL_H_INCLUDED
@@ -13,7 +13,7 @@ void InsertPrimarySelection(Widget w, Time time, int isColumnar);
 void MovePrimarySelection(Widget w, Time time, int isColumnar);
 void SendSecondarySelection(Widget w, Time time, int removeAfter);
 void ExchangeSelections(Widget w, Time time);
-void InsertClipboard(Widget w, Time time, int isColumnar);
+void InsertClipboard(Widget w, int isColumnar);
 void TakeMotifDestination(Widget w, Time time);
 
 #endif /* NEDIT_TEXTSEL_H_INCLUDED */

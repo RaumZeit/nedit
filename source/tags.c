@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.50 2003/05/05 16:25:56 edg Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.51 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -119,8 +119,8 @@ static tag *getTag(const char *name, int search_type);
 static int findDef(WindowInfo *window, const char *value, int search_type);
 static int findAllMatches(WindowInfo *window, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static Widget createSelectMenu(Widget parent, const char *name,
-                               char *label, int nArgs, char *args[]);
+static Widget createSelectMenu(Widget parent, char *label, int nArgs,
+        char *args[]);
 static void editTaggedLocation( Widget parent, int i );
 static void showMatchingCalltip( Widget parent, int i );
 
@@ -167,7 +167,7 @@ static int tagsShowCalltip( WindowInfo *window, char *text ) {
 }
 
 /* Set the head of the proper file list (Tags or Tips) to t */
-static tagFile *setFileListHead( tagFile *FileList, tagFile *t, int file_type ) 
+static tagFile *setFileListHead(tagFile *t, int file_type ) 
 {
     if (file_type == TAG)
         TagsFileList = t;
@@ -382,7 +382,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
         t->date = statbuf.st_mtime;
         t->index = ++tagFileIndex;
         t->next = FileList;
-        FileList = setFileListHead(FileList, t, file_type);
+        FileList = setFileListHead(t, file_type);
         added=1;
     }
     free(tmptagSpec);
@@ -454,7 +454,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
         t->date = statbuf.st_mtime;
         t->index = ++tagFileIndex;
         t->next = FileList;
-        FileList = setFileListHead( FileList, t, file_type );
+        FileList = setFileListHead(t, file_type );
     }
     free(tmptagSpec);
     updateMenuItems();
@@ -509,7 +509,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type)
             if (t->loaded)
                 delTag(NULL,NULL,-2,NULL,-2,t->index);
             if (last) last->next = t->next;
-            else FileList = setFileListHead(FileList, t->next, file_type);
+            else FileList = setFileListHead(t->next, file_type);
             free(t->filename);
             free(t);
             updateMenuItems();
@@ -1220,8 +1220,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
             }
             strcpy(dupTagsList[i],temp);
         }
-        createSelectMenu(dialogParent,"tagList","Duplicate Tags",nMatches,
-                dupTagsList);
+        createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
         for (i=0; i<nMatches; i++)
             free(dupTagsList[i]);
         free(dupTagsList);
@@ -1393,7 +1392,7 @@ static void showMatchingCalltip( Widget parent, int i )
         endPos = startPos;
         moveAheadNLines( fileString, &endPos, TIP_DEFAULT_LINES );
         /* Make sure not to overrun the fileString with ". . ." */
-        if (endPos <= (strlen(fileString)-5)) {
+        if (((size_t) endPos) <= (strlen(fileString)-5)) {
             sprintf( &fileString[endPos], ". . ." );
             endPos += 5;
         }
@@ -1466,8 +1465,8 @@ static void editTaggedLocation( Widget parent, int i )
 }
 
 /*      Create a Menu for user to select from the collided tags */
-static Widget createSelectMenu(Widget parent, const char *name,
-         char *label, int nArgs, char *args[])
+static Widget createSelectMenu(Widget parent, char *label, int nArgs,
+        char *args[])
 {
     int i;
     char tmpStr[100];

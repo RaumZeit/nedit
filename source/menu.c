@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.75 2003/05/04 13:20:47 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.76 2003/05/09 17:43:45 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1175,14 +1175,13 @@ static Widget makeHelpMenuItem(
 
 static void helpCB( Widget menuItem, XtPointer clientData, XtPointer callData )
 {
-    WindowInfo *window = (WindowInfo*) clientData;
     enum HelpTopic topic;
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtVaGetValues( menuItem, XmNuserData, &topic, 0 );
     
-    Help( window->shell, topic );
+    Help(topic);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1905,14 +1904,14 @@ static void stylesDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    EditHighlightStyles(window->shell, NULL);
+    EditHighlightStyles(NULL);
 }
 
 static void languageDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    EditLanguageModes(window->shell);
+    EditLanguageModes();
 }
 
 #ifndef VMS
@@ -1942,7 +1941,7 @@ static void customizeTitleDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    EditCustomTitleFormat(window->shell, window);
+    EditCustomTitleFormat(window);
 }
 
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2780,8 +2779,7 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args,
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs),
-               searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs),
-               event->xbutton.time);
+               searchKeepDialogs(0, args, nArgs), event->xbutton.time);
 }
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2836,8 +2834,7 @@ static void replaceDialogAP(Widget w, XEvent *event, String *args,
     if (CheckReadOnly(window))
     	return;
     DoFindReplaceDlog(window, searchDirection(0, args, nArgs),
-        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs),
-        event->xbutton.time);
+        searchKeepDialogs(0, args, nArgs), event->xbutton.time);
 }
 
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -4049,7 +4046,7 @@ void AddToPrevOpenMenu(const char *filename)
     WriteNEditDB();
 }
 
-static char* getWindowsMenuEntry(const WindowInfo* thisWindow, const WindowInfo* window)
+static char* getWindowsMenuEntry(const WindowInfo* window)
 {
     static char fullTitle[MAXPATHLEN * 2 + 3+ 1];
     const char *title;
@@ -4109,7 +4106,7 @@ static void updateWindowMenu(const WindowInfo *window)
     		XtDestroyWidget(items[n]);	    	
 	    } else {
                 XmString st1;
-                char* title = getWindowsMenuEntry(window, windows[windowIndex]);
+                char* title = getWindowsMenuEntry(windows[windowIndex]);
 		XtVaSetValues(items[n], XmNlabelString,
     	    		st1=XmStringCreateSimple(title), NULL);
 		XtRemoveAllCallbacks(items[n], XmNactivateCallback);
@@ -4124,7 +4121,7 @@ static void updateWindowMenu(const WindowInfo *window)
     /* Add new items for the titles of the remaining windows to the menu */
     for (; windowIndex<nWindows; windowIndex++) {
         XmString st1;
-        char* title = getWindowsMenuEntry(window, windows[windowIndex]);
+        char* title = getWindowsMenuEntry(windows[windowIndex]);
         Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
     		window->windowMenuPane, 
     		XmNlabelString, st1=XmStringCreateSimple(title),

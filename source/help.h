@@ -1,4 +1,4 @@
-/* $Id: help.h,v 1.10 2002/07/11 21:18:09 slobasso Exp $ */
+/* $Id: help.h,v 1.11 2003/05/09 17:43:45 edg Exp $ */
 
 #ifndef NEDIT_HELP_H_INCLUDED
 #define NEDIT_HELP_H_INCLUDED
@@ -74,7 +74,7 @@ extern const char linktime[];
 /*                             PROGRAM PROTOTYPES                             */
 /*============================================================================*/
 
-void Help(Widget parent, enum HelpTopic topic);
+void Help(enum HelpTopic topic);
 void PrintVersion(void);
 void InstallHelpLinkActions(XtAppContext context);
 

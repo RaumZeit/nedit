@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.11 2002/10/14 18:41:09 n8gray Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.12 2003/05/09 17:43:48 edg Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -263,7 +263,7 @@ void MovePrimarySelection(Widget w, Time time, int isColumnar)
 ** Insert the X CLIPBOARD selection at the cursor position.  If isColumnar,
 ** do an BufInsertCol for a columnar paste instead of BufInsert.
 */
-void InsertClipboard(Widget w, Time time, int isColumnar)
+void InsertClipboard(Widget w, int isColumnar)
 {
     unsigned long length, retLength;
     textDisp *textD = ((TextWidget)w)->text.textD;

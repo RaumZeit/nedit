@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.33 2003/02/20 17:30:02 arnef Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.34 2003/05/09 17:43:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -101,8 +101,7 @@ static void waitUntilRequestProcessed(XtAppContext context,
                                       char* commandString,
                                       Atom serverRequestAtom);
 static void waitUntilFilesOpenedOrClosed(XtAppContext context,
-                                         Window rootWindow,
-                                         Atom serverExistsAtom);
+                                         Window rootWindow);
 
 Display *TheDisplay;
 static Atom currentWaitForAtom;
@@ -309,9 +308,7 @@ int main(int argc, char **argv)
                               commandLine.serverRequest,
                               serverRequestAtom);
 
-    waitUntilFilesOpenedOrClosed(context,
-                                 rootWindow,
-                                 serverExistsAtom);
+    waitUntilFilesOpenedOrClosed(context, rootWindow);
 
     XtCloseDisplay(TheDisplay);
     XtFree(commandLine.shell);
@@ -821,8 +818,7 @@ static void waitUntilRequestProcessed(XtAppContext context,
 } 
 
 static void waitUntilFilesOpenedOrClosed(XtAppContext context,
-                                         Window rootWindow,
-                                         Atom serverExistsAtom)
+        Window rootWindow)
 {
     XtIntervalId timerId;
     Boolean timeOut = False;

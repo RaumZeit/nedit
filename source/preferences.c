@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.88 2003/04/17 21:46:21 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.89 2003/05/09 17:43:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2395,7 +2395,7 @@ static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    Help(XtParent(EmTabLabel), HELP_TABS_DIALOG);
+    Help(HELP_TABS_DIALOG);
 }
 
 static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2553,7 +2553,7 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
 /*
 ** Present a dialog for editing language mode information
 */
-void EditLanguageModes(Widget parent)
+void EditLanguageModes()
 {
 #define LIST_RIGHT 40
 #define LEFT_MARGIN_POS 1
