@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.171 2004/08/31 21:37:57 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.172 2004/09/01 13:50:49 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4268,16 +4268,19 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 */
 WindowInfo *DetachDocument(WindowInfo *window)
 {
-    WindowInfo *win, *cloneWin;
+    WindowInfo *win = NULL, *cloneWin;
     char geometry[MAX_GEOM_STRING_LEN];
     int rows, cols;
     
     if (NDocuments(window) < 2)
     	return NULL;
 
-    /* raise another document in the same shell window */
-    win = getNextTabWindow(window, 1, 0, 0);
-    RaiseDocument(win);
+    /* raise another document in the same shell window if the window
+       being detached is the top document */
+    if (IsTopDocument(window)) {
+    	win = getNextTabWindow(window, 1, 0, 0);
+    	RaiseDocument(win);
+    }
     
     /* Create a new window */
     cloneWin = CreateWindow(window->filename, NULL, False);
@@ -4306,7 +4309,8 @@ WindowInfo *DetachDocument(WindowInfo *window)
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
     /* refresh former host window */
-    RefreshWindowStates(win);
+    if (win)
+    	RefreshWindowStates(win);
     
     /* this should keep the new document window fresh */
     RefreshWindowStates(cloneWin);
@@ -4324,18 +4328,18 @@ WindowInfo *DetachDocument(WindowInfo *window)
 */
 WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
 {
-    WindowInfo *win, *cloneWin;
+    WindowInfo *win = NULL, *cloneWin;
 
-    /* raise another document to replace the document being moved */
-    for (win = WindowList; win; win = win->next) {
-    	if (win->shell == window->shell && window != win)
-	    break;
-    }
-
-    if (win) 
-    	RaiseDocument(win);
-    else
+    /* prepare to move document */
+    if (NDocuments(window) < 2) {
+    	/* hide the window to make it look like we are moving */
     	XtUnmapWidget(window->shell);
+    }
+    else if (IsTopDocument(window)) {
+    	/* raise another document to replace the document being moved */
+    	win = getNextTabWindow(window, 1, 0, 0);
+    	RaiseDocument(win);
+    }
     
     /* relocate the document to target window */
     cloneWin = CreateDocument(toWindow, window->filename, NULL, False);
@@ -4357,9 +4361,8 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
     /* some menu states might have changed when deleting document */
-    if (win) {
+    if (win)
     	RefreshWindowStates(win);
-    }
     
     /* this should keep the new document window fresh */
     RaiseDocumentWindow(cloneWin);
