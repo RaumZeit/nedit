@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.126 2005/02/15 09:13:28 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.127 2005/02/16 07:18:47 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3022,14 +3022,9 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		"nedit: unload_tips_file action requires file argument\n");
 	return;
     }
-    DeleteTagsFile(args[0], TIP, True);
-    /* By symmetry to the Tags case, this code should appear here too.  But I'm
-        not 100% sure so it's commented out for now.  Also, I don't
-        think you can tear off the "Unload calltips file" menu in any case, but
-        maybe it's possible with some version of *tif... -- n8 */
     /* refresh the "Unload Calltips File" tear-offs after unloading, or 
        close the tear-offs if all tips files have been unloaded */
-    /* if (DeleteTagsFile(args[0], TIP, True)) {
+    if (DeleteTagsFile(args[0], TIP, True)) {
     	WindowInfo *win;
 
 	for (win=WindowList; win!=NULL; win=win->next) {
@@ -3042,7 +3037,7 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		            NULL, NULL);
 	    }
 	}
-    } */
+    }
 }
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
