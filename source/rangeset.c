@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.12 2004/10/18 19:27:24 arnef Exp $ */
+/* $Id: rangeset.c,v 1.13 2005/01/29 01:57:12 ajbj Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -259,7 +259,7 @@ void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf)
     rangeset->color_set = 0;
     rangeset->buf = buf;
 
-    rangeset->maxpos = buf->gapEnd - buf->gapStart + buf->length;
+    rangeset->maxpos = buf->length;
 
     RangesetChangeModifyResponse(rangeset, DEFAULT_UPDATE_FN_NAME);
 }
