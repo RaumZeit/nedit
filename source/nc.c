@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.19 2002/01/11 18:21:19 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.20 2002/01/12 00:59:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -152,6 +152,7 @@ int main(int argc, char **argv)
     	for (c=argv[i]; *c!='\0'; c++) {
             *outPtr++ = *c;
     	}
+    	*outPtr++ = ' ';
     }
     *outPtr = '\0';
 #else
