@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.66 2004/04/14 00:49:47 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.67 2004/04/14 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -358,12 +358,12 @@ int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int gotoLine = False, macroFileRead = False, opts = True;
-    int iconic =False, lastIconic =False, tabbed = -1, group = 0, isTabbed;
+    int iconic=False, tabbed = -1, group = 0, isTabbed;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
     XrmDatabase prefDB;
-    WindowInfo *window = NULL;
+    WindowInfo *window = NULL, *lastFile = NULL;
     static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry",
             "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth",
 	    "-bw", "-title", NULL};
@@ -555,7 +555,6 @@ int main(int argc, char **argv)
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {
-	    WindowInfo *hostWin;
 #ifdef VMS
 	    int numFiles, j;
 	    char **nameList = NULL;
@@ -570,46 +569,49 @@ int main(int argc, char **argv)
     		    if (group == 2) {
 	        	isTabbed = 0;  /* start a new window for new group */
 			group = 1;     /* next file will be within group */
-		    } 
-		    else if (group == 1) {
+		    } else if (group == 1) {
 	    		isTabbed = 1;  /* new tab for file in group */
-		    }
-		    else {
-    	    	    	/* not in group */
+		    } else {           /* not in group */
 	    		isTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed; 
 		    }
 
-		    /* raise the last file of previous window */
-		    if (!isTabbed && window) {
-			CleanUpTabBarExposeQueue(window);
-			if (iconic)
-			    RaiseDocument(window);
-			else
-			    RaiseDocumentWindow(window);
-		    }
-
-		    hostWin = isTabbed? WindowList : NULL;
 		    /* Files are opened in background to improve opening speed
 		       by defering certain time  consuiming task such as syntax
 		       highlighting. At the end of the file-opening loop, the 
 		       last file opened will be raised to restore those deferred
 		       items. The current file may also be raised if there're
 		       macros to execute on. */
-		    window = EditExistingFile(hostWin, filename, pathname, 
+		    window = EditExistingFile(WindowList, filename, pathname, 
 		    	    editFlags, geometry, iconic, langMode, isTabbed, 
 			    True);
-
 		    fileSpecified = TRUE;
-		    if (!macroFileRead) {
-		        ReadMacroInitFile(WindowList);
-		        macroFileRead = True;
+
+		    if (window) {
+			CleanUpTabBarExposeQueue(window);
+
+			/* raise the last file of previous window */
+			if (lastFile && window->shell != lastFile->shell) {
+			    CleanUpTabBarExposeQueue(lastFile);
+			    RaiseDocument(lastFile);
+			}
+			
+			if (!macroFileRead) {
+		            ReadMacroInitFile(WindowList);
+		            macroFileRead = True;
+			}
+	    		if (gotoLine)
+	    	            SelectNumberedLine(window, lineNum);
+			if (toDoCommand != NULL) {
+			    DoMacro(window, toDoCommand, "-do macro");
+			    toDoCommand = NULL;
+			    if (!IsValidWindow(window))
+		    		window = NULL; /* window closed by macro */
+			}
 		    }
-		    if (toDoCommand != NULL) {
-			RaiseDocumentWindow(window);
-			DoMacro(window, toDoCommand, "-do macro");
-		    }
-	    	    if (gotoLine)
-	    	        SelectNumberedLine(WindowList, lineNum);
+		    
+		    /* register last opened file for later use */
+		    if (window)
+    	    		lastFile = window;
                 } else {
 		    fprintf(stderr, "nedit: file name too long: %s\n", nameList[j]);
                 }
@@ -624,52 +626,51 @@ int main(int argc, char **argv)
     		if (group == 2) {
 	            isTabbed = 0;  /* start a new window for new group */
 		    group = 1;     /* next file will be within group */
-		} 
-		else if (group == 1) {
+		} else if (group == 1) {
 	    	    isTabbed = 1;  /* new tab for file in group */
-		}
-		else {
-    	    	    /* not in group */
+		} else {           /* not in group */
 	    	    isTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed; 
 		}
 		
-		/* raise the last file of previous window */
-		if (!isTabbed && window) {
-		    CleanUpTabBarExposeQueue(window);
-		    if (lastIconic)
-			RaiseDocument(window);
-		    else
-			RaiseDocumentWindow(window);
-		}
-
-		hostWin = isTabbed? WindowList : NULL;
 		/* Files are opened in background to improve opening speed
 		   by defering certain time  consuiming task such as syntax
 		   highlighting. At the end of the file-opening loop, the 
 		   last file opened will be raised to restore those deferred
 		   items. The current file may also be raised if there're
 		   macros to execute on. */
-		window = EditExistingFile(hostWin, filename, pathname, 
+		window = EditExistingFile(WindowList, filename, pathname, 
 		    	editFlags, geometry, iconic, langMode, isTabbed, True);
-		CleanUpTabBarExposeQueue(window);
+    	    	fileSpecified = TRUE;
+		if (window) {
+		    CleanUpTabBarExposeQueue(window);
 
-		fileSpecified = TRUE;
-		if (!macroFileRead) {
-		    ReadMacroInitFile(WindowList);
-		    macroFileRead = True;
+		    /* raise the last tab of previous window */
+		    if (lastFile && window->shell != lastFile->shell) {
+			CleanUpTabBarExposeQueue(lastFile);
+			RaiseDocument(lastFile);
+		    }
+
+		    if (!macroFileRead) {
+			ReadMacroInitFile(WindowList);
+			macroFileRead = True;
+		    }
+		    if (gotoLine)
+			SelectNumberedLine(window, lineNum);
+		    if (toDoCommand != NULL) {
+			DoMacro(window, toDoCommand, "-do macro");
+	    	    	toDoCommand = NULL;
+			if (!IsValidWindow(window))
+		    	    window = NULL; /* window closed by macro */
+		    }
 		}
-		if (toDoCommand != NULL) {
-		    RaiseDocumentWindow(window);
-		    DoMacro(window, toDoCommand, "-do macro");
-		}
-		if (gotoLine)
-		    SelectNumberedLine(window, lineNum);
+		
+		/* register last opened file for later use */
+		if (window)
+    	    	    lastFile = window;
 	    } else {
 		fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 	    }
 #endif /*VMS*/
-	    toDoCommand = NULL;
-	    lastIconic = iconic;
 	}
     }
 #ifdef VMS
@@ -677,11 +678,11 @@ int main(int argc, char **argv)
 #endif /*VMS*/
     
     /* Raise the last file opened */
-    CleanUpTabBarExposeQueue(window);
-    if (iconic)
-	RaiseDocument(window);
-    else
-	RaiseDocumentWindow(window);
+    if (lastFile) {
+	CleanUpTabBarExposeQueue(lastFile);
+	RaiseDocument(lastFile);
+    }
+    CheckCloseDim();
 
     /* If no file to edit was specified, open a window to edit "Untitled" */
     if (!fileSpecified) {

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.26 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.27 2004/04/14 05:45:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -289,7 +289,7 @@ static void processServerCommandString(char *string)
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, iconicFlag, tabbed, isTabbed;
+    int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window, *lastFile = NULL;
 
@@ -400,21 +400,10 @@ static void processServerCommandString(char *string)
 	if (ParseFilename(fullname, filename, pathname) != 0) {
 	   fprintf(stderr, "NEdit: invalid file name\n");
            deleteFileClosedProperty2(filename, pathname);
-	   return;
+	   break;
 	}
 
     	window = FindWindowWithFile(filename, pathname);
-    	isTabbed = tabbed == -1? GetPrefOpenInTab() : tabbed;
-	if ((!isTabbed && lastFile) || (window && lastFile && 
-	        window->shell != lastFile->shell)) {
-	    CleanUpTabBarExposeQueue(lastFile);
-	    if (iconicFlag)
-		RaiseDocument(lastFile);
-	    else
-		RaiseDocumentWindow(lastFile);
-    	    EndWait(lastFile->shell);
-	}
-	
     	if (window == NULL) {
 	    /* Files are opened in background to improve opening speed
 	       by defering certain time  consuiming task such as syntax
@@ -422,11 +411,19 @@ static void processServerCommandString(char *string)
 	       last file opened will be raised to restore those deferred
 	       items. The current file may also be raised if there're
 	       macros to execute on. */
-	    lastFile = window = EditExistingFile(WindowList,
+	    window = EditExistingFile(WindowList,
 		    filename, pathname, editFlags, geometry, iconicFlag, 
-		    lmLen == 0 ? NULL : langMode, isTabbed, True);
-	    CleanUpTabBarExposeQueue(window);
-    	    BeginWait(window->shell);
+		    lmLen == 0 ? NULL : langMode, 
+		    tabbed == -1? GetPrefOpenInTab() : tabbed, True);
+
+    	    if (window) {
+	    	CleanUpTabBarExposeQueue(window);
+		if (lastFile && window->shell != lastFile->shell) {
+		    CleanUpTabBarExposeQueue(lastFile);
+		    RaiseDocument(lastFile);
+		}
+	    }
+	    
 	}
 	
 	/* Do the actions requested (note DoMacro is last, since the do
@@ -450,23 +447,33 @@ static void processServerCommandString(char *string)
 		    XBell(TheDisplay, 0);
 		} else {
 		    DoMacro(window, doCommand, "-do macro");
+		    /* in case window is closed by macro functions
+		       such as close() or detach_document() */
+		    if (!IsValidWindow(window))
+		    	window = NULL;
 		}
+	    }
+	    
+	    /* register the last file opened for later use */
+	    if (window) {
+	    	lastFile = window;
+		lastIconic = iconicFlag;
 	    }
 	} else {
             deleteFileOpenProperty2(filename, pathname);
             deleteFileClosedProperty2(filename, pathname);
         }
-            
     }
     
     /* Raise the last file opened */
-    CleanUpTabBarExposeQueue(window);
-    if (iconicFlag)
-	RaiseDocument(window);
-    else
-	RaiseDocumentWindow(window);
-    CheckCloseDim();
-    EndWait(window->shell);
+    if (lastFile) {
+	CleanUpTabBarExposeQueue(lastFile);
+	if (lastIconic)
+	    RaiseDocument(lastFile);
+	else
+	    RaiseDocumentWindow(lastFile);
+	CheckCloseDim();
+    }
     return;
 
 readError:
