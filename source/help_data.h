@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 26, 2002 (Do NOT edit!)
+                 Generated on Jul 28, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -1073,7 +1073,7 @@ static char * htxt_calltips [] = {
 "word that is matched when a calltip is requested.  The rest of the block is ",
 "displayed as the calltip.  ",
 "\n\n",
-"Almost any text at all can appear in a calltip key or a  calltip.  There are no ",
+"Almost any text at all can appear in a calltip key or a calltip.  There are no ",
 "special characters that need to be escaped.  The only issues to note are that ",
 "trailing whitespace is ignored, and you cannot have a blank line inside a ",
 "calltip.  (Use a single period instead --  it'll be nearly invisible.)  You should ",
@@ -3413,9 +3413,9 @@ static char * htxt_resources [] = {
 "\n\n",
 "\01A\01Bnedit.typingHidesPointer\01A: False\n",
 "\01I\n",
-"Setting this resource to True causes the mouse pointer to be hidden while ",
-"over the text area. As soon as the mouse pointer is moved, it will reappear. ",
-"This is useful to stop the mouse pointer from obscuring text. ",
+"Setting this resource to True causes the mouse pointer to be hidden when you ",
+"type in the text area. As soon as the mouse pointer is moved, it will ",
+"reappear.  This is useful to stop the mouse pointer from obscuring text. ",
 "\n\n",
 "\01A\01Bnedit.overrideDefaultVirtualKeyBindings\01A: Auto\n",
 "\01I\n",
@@ -4963,4 +4963,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jul 26, 2002\n";
+static const char * NEditVersion = "NEdit release of Jul 28, 2002\n";

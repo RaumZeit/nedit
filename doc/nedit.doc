@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Jul 26, 2002                                               July 26, 2002
+NEdit release of Jul 28, 2002                                               July 28, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -3484,9 +3484,9 @@ nedit.remapDeleteKey: False
 
 nedit.typingHidesPointer: False
 
-  Setting this resource to True causes the mouse pointer to be hidden while 
-  over the text area. As soon as the mouse pointer is moved, it will reappear. 
-  This is useful to stop the mouse pointer from obscuring text. 
+  Setting this resource to True causes the mouse pointer to be hidden when you 
+  type in the text area. As soon as the mouse pointer is moved, it will 
+  reappear. This is useful to stop the mouse pointer from obscuring text. 
 
 nedit.overrideDefaultVirtualKeyBindings: Auto
 
@@ -4287,8 +4287,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Jul 26, 2002
-Jul 26, 2002
+NEdit release of Jul 28, 2002
+Jul 28, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
