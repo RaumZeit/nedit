@@ -146,8 +146,8 @@ static char getPrevChar(textBuffer *buf, int pos);
 static regexp *compileREAndWarn(Widget parent, char *re);
 static int parentStyleOf(char *parentStyles, int style);
 static int isParentStyle(char *parentStyles, int style1, int style2);
-static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
-    	reparseContext *context, char *parentStyles, int *pos);
+static int findSafeParseRestartPos(textBuffer *buf,
+    	windowHighlightData *highlightData, int *pos);
 static int backwardOneContext(textBuffer *buf, reparseContext *context,
     	int fromPos);
 static int forwardOneContext(textBuffer *buf, reparseContext *context,
@@ -1023,8 +1023,7 @@ static void incrementalReparse(windowHighlightData *highlightData,
        far enough back in the buffer such that the guranteed number of
        lines and characters of context are examined. */
     beginParse = pos;
-    parseInStyle = moveBackwardToEnsureContext(buf, styleBuf, context,
-    	    parentStyles, &beginParse);
+    parseInStyle = findSafeParseRestartPos(buf, highlightData, &beginParse);
 
     /* Find the position "endParse" at which point it is safe to stop
        parsing, unless styles are getting changed beyond the last
@@ -1569,24 +1568,36 @@ static int isParentStyle(char *parentStyles, int style1, int style2)
 }
 
 /*
+** Discriminates patterns which can be used with parseString from those which
+** can't.  Leaf patterns are not suitable for parsing, because patterns
+** contain the expressions used for parsing within the context of their own
+** operation, i.e. the parent pattern initiates, and leaf patterns merely
+** confirm and color.  Returns TRUE if the pattern is suitable for parsing.
+*/
+static int patternIsParsable(highlightDataRec *pattern)
+{
+    return pattern->subPatternRE != NULL;
+}
+
+/*
 ** Back up position pointed to by "pos" enough that parsing from that point
 ** on will satisfy context gurantees for pattern matching for modifications
 ** at pos.  Returns the style with which to begin parsing.  The caller is
 ** guranteed that parsing may safely BEGIN with that style, but not that it
 ** will continue at that level.
 **
-** A point for concern here is that this routine can be fooled if a
-** continuous style run of more than one context distance in length is
-** produced by multiple pattern matches which abut, rather than by a single
-** continuous match.  In this  case the position returned by this routine
-** could be unsafe, or worse (but yet more unlikely), the returned style
-** could be a color-only pattern.  In practice this doesn't happen, but it
-** might be worth protecting against, and we're not...
+** This routine can be fooled if a continuous style run of more than one
+** context distance in length is produced by multiple pattern matches which
+** abut, rather than by a single continuous match.  In this  case the
+** position returned by this routine may be a bad starting point which will
+** result in an incorrect re-parse.  However this will happen very rarely,
+** and, if it does, is unlikely to result in incorrect highlighting.
 */
-static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
-    	reparseContext *context, char *parentStyles, int *pos)
+static int findSafeParseRestartPos(textBuffer *buf,
+    	windowHighlightData *highlightData, int *pos)
 {
-    int style, safeStartStyle, checkBackTo, safeParseStart, i;
+    int style, startStyle, checkBackTo, safeParseStart, i;
+    reparseContext *context = &highlightData->contextRequirements;
     
     /* We must begin at least one context distance back from the change */
     *pos = backwardOneContext(buf, context, *pos);
@@ -1595,8 +1606,8 @@ static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
        the buffer, this is a safe place to begin parsing, and we're done */
     if (*pos == 0)
     	return PLAIN_STYLE;
-    safeStartStyle = BufGetCharacter(styleBuf, *pos);
-    if (IS_PLAIN(safeStartStyle))
+    startStyle = BufGetCharacter(highlightData->styleBuffer, *pos);
+    if (IS_PLAIN(startStyle))
     	return PLAIN_STYLE;
     
     /*
@@ -1607,15 +1618,23 @@ static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
     ** its beginning, at least we've found a safe place to begin parsing
     ** within the styled region.
     **
-    ** A safe starting position within a style either at a style
-    ** boundary, or far enough from the beginning and end of the style to guaranty
-    ** that it's not within the start or end expression match.
-    */   
-    safeParseStart = backwardOneContext(buf, context, *pos);
-    checkBackTo = backwardOneContext(buf, context, safeParseStart);
+    ** A safe starting position within a style is either at a style
+    ** boundary, or far enough from the beginning and end of the style run
+    ** to ensure that it's not within the start or end expression match
+    ** (unfortunately, abutting styles can produce false runs so we're not
+    ** really ensuring it, just making it likely).
+    */ 
+    if (patternIsParsable(
+    	    patternOfStyle(highlightData->pass1Patterns, startStyle))) {
+    	safeParseStart = backwardOneContext(buf, context, *pos);
+    	checkBackTo = backwardOneContext(buf, context, safeParseStart);
+    } else {
+	safeParseStart = 0;
+	checkBackTo = 0;
+    }
     for (i = *pos-1; ; i--) {
     	
-    	/* The start of buffer is certainly a safe place to parse from */
+    	/* The start of the buffer is certainly a safe place to parse from */
     	if (i == 0) {
     	    *pos = 0;
     	    return PLAIN_STYLE;
@@ -1623,32 +1642,32 @@ static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
     	
     	/* If the style is preceded by a parent style, it's safe to parse
 	   with the parent style. */
-    	style = BufGetCharacter(styleBuf, i);
-	if (isParentStyle(parentStyles, style, safeStartStyle)) {
+    	style = BufGetCharacter(highlightData->styleBuffer, i);
+	if (isParentStyle(highlightData->parentStyles, style, startStyle)) {
     	    *pos = i + 1;
     	    return style;
     	}
 	
 	/* If the style is preceded by a child style, it's safe to resume
 	   parsing with the original style */
-    	if (isParentStyle(parentStyles, safeStartStyle, style)) {
+    	if (isParentStyle(highlightData->parentStyles, startStyle, style)) {
 	    *pos = i + 1;
-    	    return safeStartStyle;
+    	    return startStyle;
     	}
 	
 	/* If the style is preceded by an unrelated style, it's safe to
 	   resume parsing with PLAIN_STYLE */
-	if (safeStartStyle != style) {
+	if (startStyle != style) {
 	    *pos = i + 1;
     	    return PLAIN_STYLE;
     	}
 	
-	/* If the style didn't change for one whole context distance, on
-	   either side of safeParseStart, safeParseStart is a safe place
-	   to start parsing */
+	/* If the style is parsable and didn't change for one whole context
+	   distance on either side of safeParseStart, safeParseStart is a
+	   reasonable guess at a place to start parsing. */
     	if (i == checkBackTo) {
     	    *pos = safeParseStart;
-    	    return safeStartStyle;
+    	    return startStyle;
     	}
     }
 }
