@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.4 2001/08/17 23:02:55 edg Exp $
+# $Id: Makefile.generic,v 1.5 2001/10/26 20:17:04 amai Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -82,6 +82,11 @@ AR=ar
 #		    if you see crashes in routines beginning with XmIm.  Such
 #		    bugs exist in IRIX 6.5 and some older Motif versions.
 #
+# WRITES_DOS_TEXT     Used on non-unix platforms to ensure that non-native
+#                   textformats are written properly. Actually it should be
+#                   safe to use this on any platform which has proper ANSI C 
+#                   support.
+#
 # REPLACE_SCOPE     Currently, two alternative (but functionally equivalent)
 #                   Replace/Find dialog box layouts are available. By default,
 #                   a layout with 2 rows of push buttons is built. Compiling 
@@ -114,7 +119,7 @@ BIGGER_STRINGS=
 # libraries which are required by the X and Motif libraries.  These vary from
 # system to system, and it helps to have a working Motif program (or at least
 # an X program) as an example.
-LIBS=-lm -lXm -lXt -lX11
+LIBS= -lXm -lXt -lX11 -lm
 
 # System independent part
 include Makefile.common
