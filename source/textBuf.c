@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.11 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.12 2001/11/16 09:39:26 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -49,7 +49,7 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
 static void insertCol(textBuffer *buf, int column, int startPos, const char *insText,
 	int *nDeleted, int *nInserted, int *endPos);
 static void overlayRect(textBuffer *buf, int startPos, int rectStart,
-    	int rectEnd, char *insText, int *nDeleted, int *nInserted, int *endPos);
+    	int rectEnd, const char *insText, int *nDeleted, int *nInserted, int *endPos);
 static void insertColInLine(const char *line, const char *insLine, int column, int insWidth,
 	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
 	int *endOffset);
@@ -1046,11 +1046,11 @@ int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines)
 ** with the character "startPos", and returning the result in "foundPos"
 ** returns True if found, False if not.
 */
-int BufSearchForward(textBuffer *buf, int startPos, char *searchChars,
+int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
-    char *c;
+    const char *c;
     
     pos = startPos;
     while (pos < buf->gapStart) {
@@ -1080,11 +1080,11 @@ int BufSearchForward(textBuffer *buf, int startPos, char *searchChars,
 ** with the character BEFORE "startPos", returning the result in "foundPos"
 ** returns True if found, False if not.
 */
-int BufSearchBackward(textBuffer *buf, int startPos, char *searchChars,
+int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
-    char *c;
+    const char *c;
     
     if (startPos == 0) {
     	*foundPos = 0;
@@ -1295,8 +1295,8 @@ static void delete(textBuffer *buf, int start, int end)
 ** position of the lower left edge of the inserted column (as a hint for
 ** routines which need to set a cursor position).
 */
-static void insertCol(textBuffer *buf, int column, int startPos, const char *insText,
-	int *nDeleted, int *nInserted, int *endPos)
+static void insertCol(textBuffer *buf, int column, int startPos,
+        const char *insText, int *nDeleted, int *nInserted, int *endPos)
 {
     int nLines, start, end, insWidth, lineStart, lineEnd;
     int expReplLen, expInsLen, len, endOffset;
@@ -1436,11 +1436,13 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
 ** column (as a hint for routines which need to set a cursor position).
 */
 static void overlayRect(textBuffer *buf, int startPos, int rectStart,
-    	int rectEnd, char *insText, int *nDeleted, int *nInserted, int *endPos)
+    	int rectEnd, const char *insText,
+	int *nDeleted, int *nInserted, int *endPos)
 {
     int nLines, start, end, lineStart, lineEnd;
     int expInsLen, len, endOffset;
-    char *c, *outStr, *outPtr, *line, *expText, *insLine, *insPtr;
+    char *c, *outStr, *outPtr, *line, *expText, *insLine;
+    const char *insPtr;
 
     /* Allocate a buffer for the replacement string large enough to hold
        possibly expanded tabs in the inserted text, as well as per line: 1)
@@ -1506,9 +1508,9 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-static void insertColInLine(const char *line, const char *insLine, int column, int insWidth,
-	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
-	int *endOffset)
+static void insertColInLine(const char *line, const char *insLine,
+        int column, int insWidth, int tabDist, int useTabs, char nullSubsChar,
+	char *outStr, int *outLen, int *endOffset)
 {
     char *c, *outPtr, *retabbedStr;
     const char *linePtr;
@@ -1658,9 +1660,9 @@ static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-static void overlayRectInLine(const char *line, const char *insLine, int rectStart,
-    	int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr,
-    	int *outLen, int *endOffset)
+static void overlayRectInLine(const char *line, const char *insLine,
+        int rectStart, int rectEnd, int tabDist, int useTabs,
+	char nullSubsChar, char *outStr, int *outLen, int *endOffset)
 {
     char *c, *outPtr, *retabbedStr;
     const char *linePtr;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.23 2001/11/12 13:46:54 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.24 2001/11/16 09:39:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -98,7 +98,7 @@ static Widget createSelectMenu(Widget parent, const char *name,
 static tag **Tags = NULL;
 static int DefTagHashSize = 10000;
 
-static char *tagMark;
+static const char *tagMark;
 static int nTags = 0;
 static const char *tagName;
 static WindowInfo *currentWindow;
@@ -542,7 +542,7 @@ int LookupTag(const char *name, const char **file,
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void FindDefinition(WindowInfo *window, Time time,char *arg)
+void FindDefinition(WindowInfo *window, Time time, const char *arg)
 {
     tagMark = arg;
     currentWindow = window;
@@ -554,7 +554,8 @@ void FindDefinition(WindowInfo *window, Time time,char *arg)
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format)
 {
-    static char tagText[MAX_TAG_LEN+1],*p;
+    static char tagText[MAX_TAG_LEN+1];
+    const char *p;
     int l,ml;
     
     if (tagMark == NULL) tagMark = value;

@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.4 2001/04/06 09:49:56 amai Exp $ */
+/* $Id: textBuf.h,v 1.5 2001/11/16 09:39:26 amai Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -108,9 +108,9 @@ int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
 int BufCountLines(textBuffer *buf, int startPos, int endPos);
 int BufCountForwardNLines(textBuffer *buf, int startPos, int nLines);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
-int BufSearchForward(textBuffer *buf, int startPos, char *searchChars,
+int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
-int BufSearchBackward(textBuffer *buf, int startPos, char *searchChars,
+int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
 int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);

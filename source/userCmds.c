@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.19 2001/10/27 20:19:02 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.20 2001/11/16 09:39:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -139,7 +139,7 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 static void updateMenus(int menuType);
 static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
 	char *hierName);
-static char *copySubstring(char *string, int length);
+static char *copySubstring(const char *string, int length);
 static char *findStripLanguageMode(char *menuItemName, int languageMode,
 	int *isDefaultLM);
 static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
@@ -182,7 +182,7 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
 	KeySym keysym);
 static void genAccelEventName(char *text, unsigned int modifiers,
 	KeySym keysym);
-static int parseAcceleratorString(char *string, unsigned int *modifiers,
+static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 	KeySym *keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(char **inPtr);
@@ -1231,7 +1231,7 @@ static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
     return NULL;
 }
 
-static char *copySubstring(char *string, int length)
+static char *copySubstring(const char *string, int length)
 {
     char *retStr = XtMalloc(length + 1);
     
@@ -2249,7 +2249,7 @@ static void genAccelEventName(char *text, unsigned int modifiers,
 ** and a KeySym code.  Returns false if string can't be read
 ** ... does not handle whitespace in string (look at scanf)
 */
-static int parseAcceleratorString(char *string, unsigned int *modifiers,
+static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 	KeySym *keysym)
 {
     int i, nFields, inputLength = strlen(string);
