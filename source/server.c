@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.19 2002/09/11 18:59:49 arnef Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.20 2002/10/29 15:49:21 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -349,8 +349,19 @@ static void processServerCommandString(char *string)
 	/* An empty file name means: choose a random window for
 	   executing the -do macro upon */
 	if (fileLen <= 0) {
-	    if (*doCommand != '\0')
-	    	DoMacro(WindowList, doCommand, "-do macro");
+	    if (*doCommand != '\0') {
+                WindowInfo *win = WindowList;
+		/* Starting a new command while another one is still running
+		   in the same window is not possible (crashes). */
+		while (win != NULL && win->macroCmdData != NULL) {
+		    win = win->next;
+		}
+		if (!win) {
+		    XBell(TheDisplay, 0);
+		} else {
+		    DoMacro(win, doCommand, "-do macro");
+		}
+	    }
 	    CheckCloseDim();
 	    return;
 	}
@@ -378,8 +389,15 @@ static void processServerCommandString(char *string)
 	    	XMapRaised(TheDisplay, XtWindow(window->shell));
 	    if (lineNum > 0)
 		SelectNumberedLine(window, lineNum);
-	    if (*doCommand != '\0')
-		DoMacro(window, doCommand, "-do macro");
+	    if (*doCommand != '\0') {
+		/* Starting a new command while another one is still running
+		   in the same window is not possible (crashes). */
+		if (window->macroCmdData != NULL) {
+		    XBell(TheDisplay, 0);
+		} else {
+		    DoMacro(window, doCommand, "-do macro");
+		}
+	    }
 	} else {
             deleteFileOpenProperty2(filename, pathname);
             deleteFileClosedProperty2(filename, pathname);
