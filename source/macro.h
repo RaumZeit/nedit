@@ -1,4 +1,4 @@
-/* $Id: macro.h,v 1.4 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: macro.h,v 1.5 2004/01/08 06:19:27 tksoh Exp $ */
 
 #ifndef NEDIT_MACRO_H_INCLUDED
 #define NEDIT_MACRO_H_INCLUDED
@@ -30,5 +30,6 @@ int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
 char *GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
+void MakeMacroBanner(WindowInfo *window);
 
 #endif /* NEDIT_MACRO_H_INCLUDED */

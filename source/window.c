@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.96 2004/01/06 02:38:48 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.97 2004/01/08 06:19:27 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1454,10 +1454,11 @@ static void showStatsForm(WindowInfo *window, int state)
 */
 void SetModeMessage(WindowInfo *window, const char *message)
 {
+    window->modeMessageDisplayed = True;
+
     if (!IsTopBuffer(window))
     	return;
 	
-    window->modeMessageDisplayed = True;
     XmTextSetString(window->statsLine, (char*)message);
     /*
      * Don't invoke the stats line again, if stats line is already displayed.
@@ -1472,10 +1473,11 @@ void SetModeMessage(WindowInfo *window, const char *message)
 */
 void ClearModeMessage(WindowInfo *window)
 {
+    window->modeMessageDisplayed = False;
+
     if (!IsTopBuffer(window))
     	return;
 
-    window->modeMessageDisplayed = False;
     /*
      * Remove the stats line only if indicated by it's window state.
      */
@@ -3990,10 +3992,35 @@ void RefreshBufferWindowState(WindowInfo *window)
     UpdateWindowReadOnly(window);
     UpdateWindowTitle(window);
 
-    /* we need to force the statsline to reveal itself */
-    XmTextSetCursorPosition(window->statsLine, 0);	/* start of line */
-    XmTextSetCursorPosition(window->statsLine, 9000);	/* end of line */
+    /* show/hide statsline as need */
+    if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm))
+    	showStats(window, True);
+    else if (!window->showStats && XtIsManaged(window->statsLineForm))
+    	showStats(window, False);
+    else if (window->showStats && !XtIsManaged(window->statsLineForm))
+    	showStats(window, True);
 
+    /* signal if macro/shell is running */
+    if (window->shellCmdData || window->macroCmdData) {
+    	if (window->showStats || window->modeMessageDisplayed) {
+    	    if (window->shellCmdData)
+		MakeShellBanner(window);
+    	    else if (window->macroCmdData)
+		MakeMacroBanner(window);
+	}
+	
+    	BeginWait(window->shell);
+    }
+    else {
+    	EndWait(window->shell);
+    }
+
+    /* we need to force the statsline to reveal itself */
+    if (XtIsManaged(window->statsLineForm)) {
+	XmTextSetCursorPosition(window->statsLine, 0);     /* start of line */
+	XmTextSetCursorPosition(window->statsLine, 9000);  /* end of line */
+    }
+    
     XmUpdateDisplay(window->statsLine);    
     refreshBufferMenuBar(window);
 }

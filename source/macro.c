@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.77 2004/01/06 06:25:16 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.78 2004/01/08 06:19:27 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1621,20 +1621,12 @@ static int isIgnoredAction(const char *action)
     return False;
 }
 
-/*
-** Timer proc for putting up the "Macro Command in Progress" banner if
-** the process is taking too long.
-*/
 #define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
-static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
+void MakeMacroBanner(WindowInfo *window)
 {
-    WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
     XmString xmCancel;
     char *cCancel;
     char message[MAX_TIMEOUT_MSG_LEN];
-    
-    cmdData->bannerIsUp = True;
 
     /* Extract accelerator text from menu PushButtons */
     XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
@@ -1660,6 +1652,19 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     XtFree(cCancel);
 
     SetModeMessage(window, message);
+}
+
+/*
+** Timer proc for putting up the "Macro Command in Progress" banner if
+** the process is taking too long.
+*/
+static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
+{
+    WindowInfo *window = (WindowInfo *)clientData;
+    macroCmdInfo *cmdData = window->macroCmdData;
+    
+    cmdData->bannerIsUp = True;
+    MakeMacroBanner(window);
     cmdData->bannerTimeoutID = 0;
 }
 
