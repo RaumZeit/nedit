@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.73 2003/04/24 08:26:41 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.74 2003/04/24 17:20:37 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4364,13 +4364,6 @@ void ReadNEditDB(void)
     static char badFilenameChars[] = "\n\t*?()[]{}";
 #endif
     
-    if (fullName == NULL)
-    {
-        /*  GetRCFileName() might return NULL if an error occurs during
-            creation of the preference file directory. */
-        return;
-    }
-
     /* If the Open Previous command is disabled, just return */
     if (GetPrefMaxPrevOpenFiles() == 0)
     	return;
@@ -4380,6 +4373,15 @@ void ReadNEditDB(void)
     PrevOpen = (char **)XtMalloc(sizeof(char *) * GetPrefMaxPrevOpenFiles());
     NPrevOpen = 0;
     
+    /* Don't move this check ahead of the previous statements. PrevOpen
+       must be initialized at all times. */
+    if (fullName == NULL)
+    {
+        /*  GetRCFileName() might return NULL if an error occurs during
+            creation of the preference file directory. */
+        return;
+    }
+
     /* open the file */
     if ((fp = fopen(fullName, "r")) == NULL)
     	return;
