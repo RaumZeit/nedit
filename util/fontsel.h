@@ -1,4 +1,4 @@
-/* $Id: fontsel.h,v 1.8 2003/03/05 23:51:01 n8gray Exp $ */
+/* $Id: fontsel.h,v 1.9 2003/05/29 21:07:53 tringali Exp $ */
 
 #ifndef NEDIT_FONTSEL_H_INCLUDED
 #define NEDIT_FONTSEL_H_INCLUDED
@@ -56,6 +56,6 @@
 /* function prototype */
 
 char    *FontSel(Widget parent, int showPropFont, const char *currFont,
-        const Pixel sampleFG, const Pixel sampleBG);
+        Pixel sampleFG, Pixel sampleBG);
 
 #endif /* NEDIT_FONTSEL_H_INCLUDED */
