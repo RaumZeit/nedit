@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.31 2002/03/04 20:10:20 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.32 2002/03/08 08:43:49 edg Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -288,7 +288,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath)
 	}
 	if (stat(pathName, &statbuf) != 0)
 	    continue;
-	t = (tagFile *) malloc(sizeof(tag));
+	t = (tagFile *) malloc(sizeof(tagFile));
 	t->filename = STRSAVE(pathName);
 	t->loaded = 0;
 	t->date = statbuf.st_mtime;
@@ -342,7 +342,7 @@ int AddTagsFile(const char *tagSpec)
 	}
 	if (stat(pathName,&statbuf) != 0)
 	    continue;
-	t = (tagFile *) malloc(sizeof(tag));
+	t = (tagFile *) malloc(sizeof(tagFile));
 	t->filename = STRSAVE(pathName);
 	t->loaded = 0;
 	t->date = statbuf.st_mtime;
