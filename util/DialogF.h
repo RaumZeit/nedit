@@ -1,4 +1,4 @@
-/* $Id: DialogF.h,v 1.10 2004/07/21 11:32:07 yooden Exp $ */
+/* $Id: DialogF.h,v 1.11 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * DialogF.h -- Nirvana Editor Dialog Header File                               *
@@ -8,13 +8,13 @@
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
-* for more details.                                                            *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for    *
+* more details.                                                                *
 *                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *

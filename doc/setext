@@ -5,7 +5,7 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #
 # setext.pl -- Structure Enhanced Text Converter (to HTML or simple text)
 # 
-# $Id: setext,v 1.12 2004/07/21 11:32:04 yooden Exp $
+# $Id: setext,v 1.13 2004/11/09 21:58:43 yooden Exp $
 # 
 # Copyright (c) 2000 Steven Haehn
 # 
@@ -26,8 +26,8 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #                                                                             
 # This software is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
-# for more details.                                                           
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.                                                           
 #                                                                             
 # You should have received a copy of the GNU General Public License along with
 # software; if not, write to the Free Software Foundation, Inc., 59 Temple    
