@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.3 2001/07/25 18:36:44 tringali Exp $ */
+/* $Id: system.h,v 1.4 2001/08/02 23:45:44 tringali Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -53,7 +53,7 @@
 #   define COMPILE_MACHINE "PowerPC"
 #elif defined(__ia64)
 #   define COMPILE_MACHINE "IA64"
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
+#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86)
 #   define COMPILE_MACHINE "x86"
 #elif defined(__VAX)
 #   define COMPILE_MACHINE "VAX"        /* Untested, please verify */
@@ -95,6 +95,8 @@
 #   define COMPILE_OS "Unknown"
 #endif
 
+/* Wanted: definitions for IBM xlc, HP aCC/ANSI C, SGI cc */
+
 #if defined(__GNUC__)
 #   define COMPILE_COMPILER "GNU C"
 #elif defined (__DECC)
@@ -103,6 +105,13 @@
 #   define COMPILE_COMPILER "DEC C++"
 #elif defined (__APOGEE)
 #   define COMPILE_COMPILER "Apogee"
+#elif defined (__SUNPRO_C)
+#   define COMPILE_COMPILER "Forte C"       /* aka Sun WorkShop Pro */
+#elif defined (__LCC__)
+#   define COMPILE_COMPILER "LCC"
+#elif defined (_MSC_VER)
+#   define COMPILE_COMPILER "Microsoft C"
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif
+
