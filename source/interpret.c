@@ -1287,7 +1287,9 @@ static int stringToNum(const char *string, int *number)
     for (c=string, i=0; *c != '\0'; i++, c++)
     	if (!(isdigit(*c) || *c != ' ' || *c != '\t'))
     	    return False;
-    sscanf(string, "%d", number);
+    if (sscanf(string, "%d", number) != 1) {
+    	*number = 0;
+    }
     return True;
 }
 
