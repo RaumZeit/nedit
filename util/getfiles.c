@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.13 2001/07/17 07:31:58 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.14 2001/07/31 07:43:30 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -87,9 +87,9 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.13 2001/07/17 07:31:58 amai Exp
 
 #define SET_ONE_RSRC(widget, name, newValue) \
 { \
-    static Arg args[1] = {{name, (XtArgVal)0}}; \
-    args[0].value = (XtArgVal)newValue; \
-    XtSetValues(widget, args, 1); \
+    static Arg tmpargs[1] = {{name, (XtArgVal)0}}; \
+    tmpargs[0].value = (XtArgVal)newValue; \
+    XtSetValues(widget, tmpargs, 1); \
 }	
 
 enum yesNoValues {ynNone, ynYes, ynNo};
