@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.11 2001/07/18 13:00:58 amai Exp $ */
+/* $Id: search.h,v 1.12 2001/08/25 15:24:52 amai Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -8,7 +8,7 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
 void UpdateReplaceActionButtons(WindowInfo* window);
 void DoFindDlog(WindowInfo *window, int direction, int searchType,
     int keepDialogs, Time time);
-int SearchAndSelect(WindowInfo *window, int direction, char *searchString,
+int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap);
 int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);
 int SearchAndSelectIncremental(WindowInfo *window, int direction,
@@ -21,18 +21,18 @@ int ReplaceAndSearch(WindowInfo *window, int direction, char *searchString,
 	char *replaceString, int searchType, int searchWrap);
 int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap);
 int ReplaceSame(WindowInfo *window, int direction, int searchWrap);
-int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
+int ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString,
 	int searchType);
-int ReplaceInSelection(WindowInfo *window, char *searchString,
-	char *replaceString, int searchType);
-int SearchWindow(WindowInfo *window, int direction, char *searchString,
+int ReplaceInSelection(WindowInfo *window, const char *searchString,
+	const char *replaceString, int searchType);
+int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extent);
 int SearchString(const char *string, const char *searchString, int direction,
        int searchType, int wrap, int beginPos, int *startPos, int *endPos,
        int *searchExtent, const char *delimiters);
-char *ReplaceAllInString(char *inString, char *searchString,
-	char *replaceString, int searchType, int *copyStart,
-	int *copyEnd, int *replacementLength, char *delimiters);
+char *ReplaceAllInString(char *inString, const char *searchString,
+	const char *replaceString, int searchType, int *copyStart,
+	int *copyEnd, int *replacementLength, const char *delimiters);
 void BeginISearch(WindowInfo *window, int direction);
 void EndISearch(WindowInfo *window);
 void SetISearchTextCallbacks(WindowInfo *window);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.24 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.25 2001/08/25 15:24:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -80,10 +80,11 @@ static const char CVSID[] = "$Id: file.c,v 1.24 2001/08/14 08:37:16 jlous Exp $"
 #define MOD_CHECK_INTERVAL 3000
 
 static int doSave(WindowInfo *window);
-static int doOpen(WindowInfo *window, char *name, char *path, int flags);
+static int doOpen(WindowInfo *window, const char *name, const char *path,
+     int flags);
 static void backupFileName(WindowInfo *window, char *name);
 static int writeBckVersion(WindowInfo *window);
-static int bckError(WindowInfo *window, char *errString, char *file);
+static int bckError(WindowInfo *window, const char *errString, const char *file);
 static int fileWasModifiedExternally(WindowInfo *window);
 static char *errorString(void);
 static void addWrapNewlines(WindowInfo *window);
@@ -98,8 +99,8 @@ static void convertToMacFileString(char *fileString, int length);
 void removeVersionNumber(char *fileName);
 #endif /*VMS*/
 
-void EditNewFile(char *geometry, int iconic, char *languageMode,
-	char *defaultPath)
+void EditNewFile(char *geometry, int iconic, const char *languageMode,
+	const char *defaultPath)
 {
     char name[MAXPATHLEN];
     WindowInfo *window;
@@ -141,8 +142,9 @@ void EditNewFile(char *geometry, int iconic, char *languageMode,
 ** If languageMode is passed as NULL, it will be determined automatically
 ** from the file extension or file contents.
 */
-WindowInfo *EditExistingFile(WindowInfo *inWindow, char *name, char *path,
-	int flags, char *geometry, int iconic, char *languageMode)
+WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
+        const char *path, int flags, char *geometry, int iconic,
+	const char *languageMode)
 {
     WindowInfo *window;
     char fullname[MAXPATHLEN];
@@ -235,7 +237,8 @@ void RevertToSaved(WindowInfo *window)
     }
 }
 
-static int doOpen(WindowInfo *window, char *name, char *path, int flags)
+static int doOpen(WindowInfo *window, const char *name, const char *path,
+     int flags)
 {
     char fullname[MAXPATHLEN];
     struct stat statbuf;
@@ -593,7 +596,7 @@ int SaveWindow(WindowInfo *window)
     return stat;
 }
     
-int SaveWindowAs(WindowInfo *window, char *newName, int addWrap)
+int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
 {
     int response, retVal, fileFormat;
     char fullname[MAXPATHLEN], filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -983,7 +986,7 @@ static int writeBckVersion(WindowInfo *window)
 ** Error processing for writeBckVersion, gives the user option to cancel
 ** the subsequent save, or continue and optionally turn off versioning
 */
-static int bckError(WindowInfo *window, char *errString, char *file)
+static int bckError(WindowInfo *window, const char *errString, const char *file)
 {
     int resp;
 

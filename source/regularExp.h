@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.5 2001/04/06 09:49:56 amai Exp $ */
+/* $Id: regularExp.h,v 1.6 2001/08/25 15:24:52 amai Exp $ */
 /*----------------------------------------------------------------------*
  *  This is regularExp.h: NEdit Regular Expression Package Header File
  *----------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ int ExecRE (
 
 void SubstituteRE (
    regexp *prog,
-   char   *source,
+   const char   *source,
    char   *dest,
    int     max);
 

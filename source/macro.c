@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.32 2001/08/24 08:19:20 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.33 2001/08/25 15:24:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -126,7 +126,7 @@ static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, char *string,
-	WindowInfo *runWindow, char *errIn, char **errPos);
+	WindowInfo *runWindow, const char *errIn, char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
 static int escapeStringChars(char *fromString, char *toString);
@@ -638,7 +638,7 @@ void ReadMacroInitFile(WindowInfo *window)
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-int ReadMacroFile(WindowInfo *window, char *fileName, int warnNotExist)
+int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 {
     struct stat statbuf;
     FILE *fp;
@@ -687,7 +687,7 @@ int ReadMacroFile(WindowInfo *window, char *fileName, int warnNotExist)
 ** Parse and execute a macro string including macro definitions.  Report
 ** parsing errors in a dialog posted over window->shell.
 */
-int ReadMacroString(WindowInfo *window, char *string, char *errIn)
+int ReadMacroString(WindowInfo *window, char *string, const char *errIn)
 {   
     return readCheckMacroString(window->shell, string, window, errIn, NULL);
 }  
@@ -697,7 +697,7 @@ int ReadMacroString(WindowInfo *window, char *string, char *errIn)
 ** if macro compiled successfully.  Returns False and puts up
 ** a dialog explaining if macro did not compile successfully.
 */  
-int CheckMacroString(Widget dialogParent, char *string, char *errIn,
+int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
 	char **errPos)
 {
     return readCheckMacroString(dialogParent, string, NULL, errIn, errPos);
@@ -712,7 +712,7 @@ int CheckMacroString(Widget dialogParent, char *string, char *errIn,
 ** returns a pointer to the error location in the string.
 */
 static int readCheckMacroString(Widget dialogParent, char *string,
-	WindowInfo *runWindow, char *errIn, char **errPos)
+	WindowInfo *runWindow, const char *errIn, char **errPos)
 {
     char *stoppedAt, *inPtr, *namePtr, *errMsg;
     char subrName[MAX_SYM_LEN];
@@ -1036,7 +1036,7 @@ void SafeGC(void)
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacro(WindowInfo *window, char *macro, char *errInName)
+void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
 {
     Program *prog;
     char *errMsg, *stoppedAt, *tMacro;
@@ -1280,7 +1280,7 @@ static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 ** Note that as with most macro routines, this returns BEFORE the macro is
 ** finished executing
 */
-void RepeatMacro(WindowInfo *window, char *command, int how)
+void RepeatMacro(WindowInfo *window, const char *command, int how)
 {
     Program *prog;
     char *errMsg, *stoppedAt, *loopMacro, *loopedCmd;
@@ -2519,7 +2519,7 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void ReturnShellCommandOutput(WindowInfo *window, char *outText, int status)
+void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status)
 {
     DataValue retVal;
     macroCmdInfo *cmdData = window->macroCmdData;

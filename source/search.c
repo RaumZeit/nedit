@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.34 2001/08/23 17:42:04 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.35 2001/08/25 15:24:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -189,14 +189,14 @@ static void upCaseString(char *outString, const char *inString);
 static void downCaseString(char *outString, const char *inString);
 static void resetFindTabGroup(WindowInfo *window);
 static void resetReplaceTabGroup(WindowInfo *window);
-static int searchMatchesSelection(WindowInfo *window, char *searchString,
+static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 	int searchType, int *left, int *right, int *searchExtent);
 static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
 	int startLimit, int endLimit, int *matchPos);
-static void replaceUsingRE(char *searchStr, char *replaceStr, char *sourceStr,
-	char *destStr, int maxDestLen, int prevChar, char *delimiters, 
-        int defaultFlags);
-static void saveSearchHistory(char *searchString, char *replaceString,
+static void replaceUsingRE(const char *searchStr, const char *replaceStr,
+        const char *sourceStr, char *destStr, int maxDestLen, int prevChar,
+	const char *delimiters, int defaultFlags);
+static void saveSearchHistory(const char *searchString, const char *replaceString,
 	int searchType, int isIncremental);
 static int historyIndex(int nCycles);
 static char *searchTypeArg(int searchType);
@@ -2574,7 +2574,7 @@ int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap)
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-int SearchAndSelect(WindowInfo *window, int direction, char *searchString,
+int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap)
 {
     int startPos, endPos;
@@ -3422,8 +3422,8 @@ int SearchAndReplace(WindowInfo *window, int direction, char *searchString,
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
-int ReplaceInSelection(WindowInfo *window, char *searchString,
-	char *replaceString, int searchType)
+int ReplaceInSelection(WindowInfo *window, const char *searchString,
+	const char *replaceString, int searchType)
 {
     int selStart, selEnd, beginPos, startPos, endPos, realOffset, replaceLen;
     int found, anyFound, isRect, rectStart, rectEnd, lineStart, cursorPos;
@@ -3551,8 +3551,8 @@ int ReplaceInSelection(WindowInfo *window, char *searchString,
 ** Replace all occurences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
-int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
-	int searchType)
+int ReplaceAll(WindowInfo *window, const char *searchString,
+        const char *replaceString, int searchType)
 {
     char *fileString, *newFileString;
     int copyStart, copyEnd, replacementLen;
@@ -3605,9 +3605,9 @@ int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-char *ReplaceAllInString(char *inString, char *searchString,
-	char *replaceString, int searchType, int *copyStart,
-	int *copyEnd, int *replacementLength, char *delimiters)
+char *ReplaceAllInString(char *inString, const char *searchString,
+	const char *replaceString, int searchType, int *copyStart,
+	int *copyEnd, int *replacementLength, const char *delimiters)
 {
     int beginPos, startPos, endPos, lastEndPos;
     int found, nFound, removeLen, replaceLen, copyLen, addLen;
@@ -3720,7 +3720,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction,
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-int SearchWindow(WindowInfo *window, int direction, char *searchString,
+int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extent)
 {
     char *fileString;
@@ -4228,7 +4228,7 @@ static void resetReplaceTabGroup(WindowInfo *window)
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static int searchMatchesSelection(WindowInfo *window, char *searchString,
+static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 	int searchType, int *left, int *right, int *searchExtent)
 {
     int selLen, selStart, selEnd, startPos, endPos, extent;
@@ -4293,16 +4293,16 @@ static int searchMatchesSelection(WindowInfo *window, char *searchString,
 
 /*
 ** Substitutes a replace string for a string that was matched using a
-** regular expression.  This was added later and is rather inneficient
+** regular expression.  This was added later and is rather ineficient
 ** because instead of using the compiled regular expression that was used
 ** to make the match in the first place, it re-compiles the expression
 ** and redoes the search on the already-matched string.  This allows the
 ** code to continue using strings to represent the search and replace
 ** items.
 */  
-static void replaceUsingRE(char *searchStr, char *replaceStr, char *sourceStr,
-	char *destStr, int maxDestLen, int prevChar, char *delimiters, 
-        int defaultFlags)
+static void replaceUsingRE(const char *searchStr, const char *replaceStr,
+        const char *sourceStr, char *destStr, int maxDestLen, int prevChar,
+	const char *delimiters, int defaultFlags)
 {
     regexp *compiledRE;
     char *compileMsg;
@@ -4321,7 +4321,7 @@ static void replaceUsingRE(char *searchStr, char *replaceStr, char *sourceStr,
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-static void saveSearchHistory(char *searchString, char *replaceString,
+static void saveSearchHistory(const char *searchString, const char *replaceString,
 	int searchType, int isIncremental)
 {
     char *sStr, *rStr;

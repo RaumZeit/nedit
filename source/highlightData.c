@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.21 2001/08/25 12:09:17 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.22 2001/08/25 15:24:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -81,7 +81,7 @@ typedef struct {
 } highlightStyleRec;
 
 static int styleError(const char *stringStart, const char *stoppedAt, char *message);
-static int lookupNamedStyle(char *styleName);
+static int lookupNamedStyle(const char *styleName);
 static highlightPattern *readHighlightPatterns(char **inPtr, int withBraces,
     	char **errMsg, int *nPatterns);
 static int readHighlightPattern(char **inPtr, char **errMsg,
@@ -93,7 +93,7 @@ static patternSet *highlightError(char *stringStart, char *stoppedAt,
     	char *message);
 static char *intToStr(int i);
 static char *createPatternsString(patternSet *patSet, char *indentStr);
-static void setStyleByName(char *style);
+static void setStyleByName(const char *style);
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -130,7 +130,7 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     	void *cbArg);
 static void setDisplayedCB(void *item, void *cbArg);
-static void setStyleMenu(char *styleName);
+static void setStyleMenu(const char *styleName);
 static highlightPattern *readDialogFields(int silent);
 static int dialogEmpty(void);
 static int updatePatternSet(void);
@@ -1209,7 +1209,7 @@ static void convertPatternExpr(char **patternRE, char *patSetName,
 ** This routine must only be called with a valid styleName (call
 ** NamedStyleExists to find out whether styleName is valid).
 */
-XFontStruct *FontOfNamedStyle(WindowInfo *window, char *styleName)
+XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
 {
     int fontNum = HighlightStyles[lookupNamedStyle(styleName)]->font;
     XFontStruct *font;
@@ -1232,7 +1232,7 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, char *styleName)
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
-char *ColorOfNamedStyle(char *styleName)
+char *ColorOfNamedStyle(const char *styleName)
 {
     return HighlightStyles[lookupNamedStyle(styleName)]->color;
 }
@@ -1240,7 +1240,7 @@ char *ColorOfNamedStyle(char *styleName)
 /*
 ** Determine whether a named style exists
 */
-int NamedStyleExists(char *styleName)
+int NamedStyleExists(const char *styleName)
 {
     return lookupNamedStyle(styleName) != -1;
 }
@@ -1280,7 +1280,7 @@ int LMHasHighlightPatterns(char *languageMode)
 ** "newName" in both the stored patterns, and the pattern set currently being
 ** edited in the dialog.
 */
-void RenameHighlightPattern(char *oldName, char *newName)
+void RenameHighlightPattern(const char *oldName, const char *newName)
 {
     int i;
     
@@ -1603,7 +1603,7 @@ static int styleError(const char *stringStart, const char *stoppedAt, char *mess
 /*
 ** Present a dialog for editing highlight style information
 */
-void EditHighlightStyles(Widget parent, char *initialStyle)
+void EditHighlightStyles(Widget parent, const char *initialStyle)
 {
 #define HS_LIST_RIGHT 60
 #define HS_LEFT_MARGIN_POS 1
@@ -2019,7 +2019,7 @@ static void freeHighlightStyleRec(highlightStyleRec *hs)
 /*
 ** Select a particular style in the highlight styles dialog
 */
-static void setStyleByName(char *style)
+static void setStyleByName(const char *style)
 {
     int i;
     
@@ -3059,7 +3059,7 @@ Regular Expression";
 ** Set the styles menu in the currently displayed highlight dialog to show
 ** a particular style
 */
-static void setStyleMenu(char *styleName)
+static void setStyleMenu(const char *styleName)
 {
     int i;
     Cardinal nItems;
@@ -3415,7 +3415,7 @@ static void freePatternSet(patternSet *p)
 ** Find the index into the HighlightStyles array corresponding to "styleName".
 ** If styleName is not found, return -1.
 */
-static int lookupNamedStyle(char *styleName)
+static int lookupNamedStyle(const char *styleName)
 {
     int i;
     

@@ -1,4 +1,4 @@
-/* $Id: file.h,v 1.7 2001/04/18 17:02:25 slobasso Exp $ */
+/* $Id: file.h,v 1.8 2001/08/25 15:24:52 amai Exp $ */
 /* flags for EditExistingFile */
 #define CREATE 1
 #define SUPPRESS_CREATE_WARN 2
@@ -9,13 +9,14 @@
 #define YES_SBC_DIALOG_RESPONSE 1
 #define NO_SBC_DIALOG_RESPONSE 2
 
-void EditNewFile(char *geometry, int iconic, char *languageMode,
-    	char *defaultPath);
-WindowInfo *EditExistingFile(WindowInfo *inWindow, char *name, char *path,
-	int flags, char *geometry, int iconic, char *languageMode);
+void EditNewFile(char *geometry, int iconic, const char *languageMode,
+    	const char *defaultPath);
+WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
+        const char *path, int flags, char *geometry, int iconic,
+	const char *languageMode);
 void RevertToSaved(WindowInfo *window);
 int SaveWindow(WindowInfo *window);
-int SaveWindowAs(WindowInfo *window, char *newName, int addWrap);
+int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap);
 int CloseAllFilesAndWindows(void);
 int CloseFileAndWindow(WindowInfo *window, int preResponse);
 void PrintWindow(WindowInfo *window, int selectedOnly);
