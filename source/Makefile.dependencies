@@ -1,4 +1,4 @@
-# $Id: Makefile.dependencies,v 1.3 2001/02/26 23:38:03 edg Exp $
+# $Id: Makefile.dependencies,v 1.4 2001/03/05 15:00:13 slobasso Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h textBuf.h text.h nedit.h \
  window.h preferences.h undo.h menu.h file.h ../util/utils.h
@@ -10,20 +10,21 @@ highlight.o: highlight.c ../util/misc.h ../util/DialogF.h textBuf.h \
 highlightData.o: highlightData.c ../util/misc.h ../util/DialogF.h \
  ../util/managedList.h textBuf.h nedit.h highlight.h regularExp.h \
  preferences.h help.h window.h regexConvert.h highlightData.h
-interpret.o: interpret.c textBuf.h nedit.h menu.h text.h interpret.h
+interpret.o: interpret.c textBuf.h nedit.h menu.h text.h interpret.h \
+ rbTree.h
 macro.o: macro.c ../util/DialogF.h ../util/misc.h textBuf.h text.h \
  nedit.h window.h macro.h preferences.h interpret.h parse.h search.h \
- shell.h userCmds.h selection.h ../util/utils.h
+ shell.h userCmds.h selection.h ../util/utils.h rbTree.h
 menu.o: menu.c ../util/getfiles.h ../util/DialogF.h ../util/misc.h \
  ../util/fileUtils.h textBuf.h text.h nedit.h file.h menu.h window.h \
  search.h selection.h undo.h shift.h help.h preferences.h tags.h \
  userCmds.h shell.h macro.h highlight.h highlightData.h interpret.h \
- smartIndent.h ../util/utils.h
+ smartIndent.h ../util/utils.h rbTree.h
 nc.o: nc.c ../util/fileUtils.h ../util/prefFile.h
 nedit.o: nedit.c ../util/misc.h ../util/printUtils.h \
  ../util/fileUtils.h ../util/getfiles.h textBuf.h nedit.h file.h \
  preferences.h regularExp.h selection.h tags.h menu.h macro.h server.h \
- interpret.h parse.h
+ interpret.h parse.h rbTree.h
 preferences.o: preferences.c ../util/prefFile.h ../util/misc.h \
  ../util/DialogF.h ../util/managedList.h ../util/fontsel.h textBuf.h \
  nedit.h text.h search.h preferences.h window.h userCmds.h highlight.h \
@@ -37,12 +38,14 @@ selection.o: selection.c ../util/DialogF.h ../util/fileUtils.h \
 server.o: server.c ../util/fileUtils.h textBuf.h nedit.h window.h \
  file.h selection.h macro.h menu.h server.h preferences.h
 shell.o: shell.c ../util/DialogF.h ../util/misc.h textBuf.h text.h \
- nedit.h window.h preferences.h file.h shell.h macro.h interpret.h
+ nedit.h window.h preferences.h file.h shell.h macro.h interpret.h \
+ rbTree.h
 shift.o: shift.c ../util/DialogF.h textBuf.h text.h nedit.h shift.h \
  window.h
 smartIndent.o: smartIndent.c ../util/DialogF.h ../util/misc.h \
  textBuf.h nedit.h text.h preferences.h interpret.h macro.h window.h \
- parse.h shift.h help.h smartIndent.h
+ parse.h shift.h help.h smartIndent.h rbTree.h
+rbTree.o: rbTree.c rbTree.h
 tags.o: tags.c ../util/DialogF.h ../util/fileUtils.h ../util/misc.h \
  textBuf.h text.h nedit.h window.h file.h preferences.h search.h \
  selection.h tags.h ../util/utils.h
@@ -56,7 +59,7 @@ undo.o: undo.c textBuf.h text.h nedit.h undo.h search.h window.h \
  file.h userCmds.h
 userCmds.o: userCmds.c ../util/DialogF.h ../util/misc.h \
  ../util/managedList.h textBuf.h text.h nedit.h preferences.h window.h \
- menu.h shell.h macro.h file.h interpret.h parse.h
+ menu.h shell.h macro.h file.h interpret.h parse.h rbTree.h
 window.o: window.c ../util/DialogF.h ../util/misc.h textBuf.h \
  textSel.h text.h textDisp.h textP.h nedit.h window.h menu.h file.h \
  search.h undo.h preferences.h selection.h shell.h macro.h highlight.h \

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.17 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.18 2001/03/05 15:00:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -66,6 +66,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.17 2001/02/26 23:38:03 edg Exp $";
 #include "macro.h"
 #include "highlight.h"
 #include "highlightData.h"
+#include "rbTree.h"
 #include "interpret.h"
 #include "smartIndent.h"
 #include "../util/utils.h"

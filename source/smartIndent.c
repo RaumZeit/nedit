@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.8 2001/03/05 15:00:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -49,6 +49,7 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.7 2001/02/26 23:38:03 edg Ex
 #include "nedit.h"
 #include "text.h"
 #include "preferences.h"
+#include "rbTree.h"
 #include "interpret.h"
 #include "macro.h"
 #include "window.h"

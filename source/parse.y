@@ -12,6 +12,7 @@
 #endif /*VMS*/
 #include "textBuf.h"
 #include "nedit.h"
+#include "rbTree.h"
 #include "interpret.h"
 #include "parse.h"
 
@@ -20,12 +21,12 @@
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) *((int *)from) = to - from
+#define SET_BR_OFF(from, to) *((int *)(from)) = (to) - (Inst *)(from)
 
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.8 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.9 2001/03/05 15:00:13 slobasso Exp $";
 static int yylex(void);
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
@@ -44,7 +45,7 @@ static char *InPtr;
 %token <sym> NUMBER STRING SYMBOL
 %token IF WHILE ELSE FOR BREAK CONTINUE RETURN
 %type <nArgs> arglist
-%type <inst> cond comastmts while else and or
+%type <inst> cond comastmts for while else and or
 %type <sym> evalsym
 
 %nonassoc IF_NO_ELSE
@@ -57,46 +58,57 @@ static char *InPtr;
 %left	  AND
 %left	  '|'
 %left	  '&'
-%left	  GT GE LT LE EQ NE
+%left	  GT GE LT LE EQ NE IN
 %left	  '+' '-'
 %left	  '*' '/' '%'
 %nonassoc UNARY_MINUS NOT
+%nonassoc DELETE
 %nonassoc INCR DECR
 %right	  POW
+%nonassoc '['
 %nonassoc '('
 
 %%	/* Rules */
 
 program:  blank stmts { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-    	| blank '{' blank stmts '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-	| blank '{' blank '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
-	| error { return 1; }
-	;
+        | blank '{' blank stmts '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
+        | blank '{' blank '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
+        | error { return 1; }
+        ;
 block:   '{' blank stmts '}' blank
-    	| '{' blank '}' blank
-    	| stmt
+        | '{' blank '}' blank
+        | stmt
     	;
 stmts:    stmt
-	| stmts stmt
-	;
+        | stmts stmt
+        ;
 stmt:     simpstmt '\n' blank
-    	| IF '(' cond ')' blank block %prec IF_NO_ELSE
-	    	{ SET_BR_OFF((Inst *)$3, GetPC()); }
-    	| IF '(' cond ')' blank block else blank block %prec ELSE
-    	    	{ SET_BR_OFF($3, ($7+1)); SET_BR_OFF($7, GetPC()); }
-    	| while '(' cond ')' blank block { ADD_OP(OP_BRANCH); ADD_BR_OFF($1);
-    	    	SET_BR_OFF($3, GetPC()); FillLoopAddrs(GetPC(), $1); }
-    	| for '(' comastmts ';' cond ';' comastmts ')' blank block
-    	    	{ FillLoopAddrs(GetPC()+2+($7-($5+1)), GetPC());
-    	    	  SwapCode($5+1, $7, GetPC());
-    	    	  ADD_OP(OP_BRANCH); ADD_BR_OFF($3); SET_BR_OFF($5, GetPC()); }
-    	| BREAK '\n' blank
-    	    	{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddBreakAddr(GetPC()-1); }
-    	| CONTINUE '\n' blank
-    	    	{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddContinueAddr(GetPC()-1); }
-	| RETURN expr '\n' blank { ADD_OP(OP_RETURN); }
-	| RETURN '\n' blank { ADD_OP(OP_RETURN_NO_VAL); }
-	; 
+        | IF '(' cond ')' blank block %prec IF_NO_ELSE
+                { SET_BR_OFF($3, GetPC()); }
+        | IF '(' cond ')' blank block else blank block %prec ELSE
+                { SET_BR_OFF($3, ($7+1)); SET_BR_OFF($7, GetPC()); }
+        | while '(' cond ')' blank block { ADD_OP(OP_BRANCH); ADD_BR_OFF($1);
+                SET_BR_OFF($3, GetPC()); FillLoopAddrs(GetPC(), $1); }
+        | for '(' comastmts ';' cond ';' comastmts ')' blank block
+    	        { FillLoopAddrs(GetPC()+2+($7-($5+1)), GetPC());
+    	          SwapCode($5+1, $7, GetPC());
+    	          ADD_OP(OP_BRANCH); ADD_BR_OFF($3); SET_BR_OFF($5, GetPC()); }
+        | for '(' SYMBOL IN SYMBOL ')'
+                { Symbol *iterSym = InstallIteratorSymbol();
+                  ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM($5); ADD_SYM(iterSym);
+                  ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym);
+                  ADD_BR_OFF(0); }
+            blank block
+                { FillLoopAddrs(GetPC()+2, GetPC());
+                  ADD_OP(OP_BRANCH); ADD_BR_OFF($1+3);
+                  SET_BR_OFF($1+6, GetPC());}
+        | BREAK '\n' blank
+    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddBreakAddr(GetPC()-1); }
+        | CONTINUE '\n' blank
+    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddContinueAddr(GetPC()-1); }
+        | RETURN expr '\n' blank { ADD_OP(OP_RETURN); }
+        | RETURN '\n' blank { ADD_OP(OP_RETURN_NO_VAL); }
+        ; 
 simpstmt: SYMBOL '=' expr { ADD_OP(OP_ASSIGN); ADD_SYM($1); }
     	| evalsym ADDEQ expr { ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
     	| evalsym SUBEQ expr { ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
@@ -107,37 +119,83 @@ simpstmt: SYMBOL '=' expr { ADD_OP(OP_ASSIGN); ADD_SYM($1); }
     	    	ADD_SYM($1); }
     	| evalsym OREQ expr { ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN);
     	    	ADD_SYM($1); }
-	| SYMBOL '(' arglist ')' { ADD_OP(OP_SUBR_CALL);
-	    	ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3); }
-    	| INCR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
-    	    	ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-	| SYMBOL INCR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_INCR);
-		ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-	| DECR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
-	    	ADD_OP(OP_ASSIGN); ADD_SYM($2); }
-	| SYMBOL DECR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DECR);
-		ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-	;
+        | DELETE SYMBOL '[' arglist ']'
+                { ADD_OP(OP_ARRAY_DELETE); ADD_SYM($2); ADD_IMMED((void *)$4); }
+        | SYMBOL '[' arglist ']' '=' expr
+                { ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1); ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']' { ADD_OP(OP_PUSH_SYM);
+                ADD_SYM($1); ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
+            ADDEQ expr
+                { ADD_OP(OP_ADD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
+                  ADD_IMMED((void *)$3);}
+        | SYMBOL '[' arglist ']' { ADD_OP(OP_PUSH_SYM); ADD_SYM($1);
+                  ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
+            SUBEQ expr
+                { ADD_OP(OP_SUB); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
+                  ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']'
+                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
+                  ADD_IMMED((void *)$3); }
+            MULEQ expr
+                { ADD_OP(OP_MUL); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
+                  ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']'
+                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
+                  ADD_IMMED((void *)$3); }
+            DIVEQ expr
+                { ADD_OP(OP_DIV); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
+                  ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']'
+                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
+                  ADD_IMMED((void *)$3); }
+            MODEQ expr
+                { ADD_OP(OP_MOD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM($1);
+                  ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']'
+                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
+                  ADD_IMMED((void *)$3); }
+            ANDEQ expr
+                { ADD_OP(OP_BIT_AND); ADD_OP(OP_ARRAY_ASSIGN);
+                ADD_SYM($1); ADD_IMMED((void *)$3); }
+        | SYMBOL '[' arglist ']'
+                { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_ARRAY_REF);
+                  ADD_IMMED((void *)$3); }
+            OREQ expr
+                { ADD_OP(OP_BIT_OR); ADD_OP(OP_ARRAY_ASSIGN);
+                  ADD_SYM($1); ADD_IMMED((void *)$3); }
+        | SYMBOL '(' arglist ')' { ADD_OP(OP_SUBR_CALL);
+                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3); }
+        | INCR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($2); }
+        | SYMBOL INCR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_INCR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($1); }
+        | DECR SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_DECR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($2); }
+        | SYMBOL DECR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DECR);
+                ADD_OP(OP_ASSIGN); ADD_SYM($1); }
+        ;
 evalsym: SYMBOL { $$ = $1; ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
-    	;
+        ;
 comastmts: /* nothing */ { $$ = GetPC(); }
-    	| simpstmt { $$ = GetPC(); }
-    	| comastmts ',' simpstmt { $$ = GetPC(); }
-    	;
+        | simpstmt { $$ = GetPC(); }
+        | comastmts ',' simpstmt { $$ = GetPC(); }
+        ;
 arglist:  /* nothing */ { $$ = 0;}
-    	| expr { $$ = 1; }
-    	| arglist ',' expr { $$ = $1 + 1; }
-    	;
+        | expr { $$ = 1; }
+        | arglist ',' expr { $$ = $1 + 1; }
+        ;
 expr:     numexpr %prec CONCAT
-    	| expr numexpr %prec CONCAT { ADD_OP(OP_CONCAT); }
-    	;
+        | expr numexpr %prec CONCAT { ADD_OP(OP_CONCAT); }
+        ;
 numexpr:  NUMBER { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
     	| STRING { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
 	| SYMBOL { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
 	| SYMBOL '(' arglist ')' { ADD_OP(OP_SUBR_CALL);
 	    	ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
 		ADD_OP(OP_FETCH_RET_VAL);}
-	| '(' numexpr ')'
+	| '(' expr ')'
+    | numexpr '[' arglist ']'
+            { ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3); }
 	| numexpr '+' numexpr { ADD_OP(OP_ADD); }
 	| numexpr '-' numexpr { ADD_OP(OP_SUB); }
 	| numexpr '*' numexpr { ADD_OP(OP_MUL); }
@@ -166,10 +224,11 @@ numexpr:  NUMBER { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); }
 	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM($2); }
 	| SYMBOL DECR { ADD_OP(OP_PUSH_SYM); ADD_SYM($1); ADD_OP(OP_DUP);
 	    	ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM($1); }
-    	;
+    | numexpr IN numexpr { ADD_OP(OP_IN_ARRAY); }
+    ;
 while:	 WHILE { $$ = GetPC(); StartLoopAddrList(); }
     	;
-for: 	 FOR { StartLoopAddrList(); }
+for: 	 FOR { StartLoopAddrList(); $$ = GetPC(); }
     	;
 else:	 ELSE { ADD_OP(OP_BRANCH); $$ = GetPC(); ADD_BR_OFF(0); }
     	;
@@ -285,6 +344,8 @@ static int yylex(void)
 	    if (!strcmp(symName, "break")) return BREAK;
 	    if (!strcmp(symName, "continue")) return CONTINUE;
 	    if (!strcmp(symName, "return")) return RETURN;
+        if (!strcmp(symName, "in")) return IN;
+        if (!strcmp(symName, "delete")) return DELETE;
 	    if (!strcmp(symName, "define")) {
 	    	InPtr -= 6;
 	    	return 0;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.11 2001/03/05 15:00:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -65,6 +65,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
 #include "window.h"
 #include "macro.h"
 #include "preferences.h"
+#include "rbTree.h"
 #include "interpret.h"
 #include "parse.h"
 #include "search.h"
@@ -206,6 +207,8 @@ static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg);
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -260,6 +263,8 @@ static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
 static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
+static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -282,7 +287,7 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
-#define N_MACRO_SUBRS 33
+#define N_MACRO_SUBRS 34
 static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	dialogMS, stringDialogMS, replaceRangeMS, replaceSelectionMS,
     	setCursorPosMS, getCharacterMS, minMS, maxMS, searchMS,
@@ -291,7 +296,7 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
 	replaceInStringMS, selectMS, selectRectangleMS, focusWindowMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
 	tolowerMS, listDialogMS, getenvMS, setLanguageModeMS,
-    stringCompareMS};
+    stringCompareMS, splitMS};
 static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
     	"set_cursor_pos", "get_character", "min", "max", "search",
@@ -300,8 +305,8 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
 	"replace_in_string", "select", "select_rectangle", "focus_window",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
 	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode",
-    "string_compare"};
-#define N_SPECIAL_VARS 33
+    "string_compare", "split"};
+#define N_SPECIAL_VARS 34
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
     	selectionLeftMV, selectionRightMV, wrapMarginMV, tabDistMV,
@@ -311,7 +316,7 @@ static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
         makeBackupCopyMV, incBackupMV, showMatchingMV,
         overTypeModeMV, readOnlyMV, lockedMV, fileFormatMV,
         fontNameMV, fontNameItalicMV,
-        fontNameBoldMV, fontNameBoldItalicMV};
+        fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV};
 static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
@@ -322,7 +327,7 @@ static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
     "$make_backup_copy", "$incremental_backup", "$show_matching",
     "$overtype_mode", "$read_only", "$locked", "$file_format",
     "$font_name", "$font_name_italic",
-    "$font_name_bold", "$font_name_bold_italic"};
+    "$font_name_bold", "$font_name_bold_italic", "$sub_sep"};
 
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
@@ -3062,6 +3067,118 @@ static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
+static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg)
+{
+    char stringStorage[3][25];
+    char *sourceStr, *splitStr, *typeSplitStr;
+    int searchType, beginPos, foundStart, foundEnd, strLength;
+    int found, elementEnd, indexNum;
+    
+    if (nArgs < 1) {
+        return(wrongNArgsErr(errMsg));
+    }
+    if (!readStringArg(argList[0], &sourceStr, stringStorage[0], errMsg)) {
+        *errMsg = "first argument must be a string: %s";
+        return False;
+    }
+    if (!readStringArg(argList[1], &splitStr, stringStorage[1], errMsg)) {
+        splitStr = NULL;
+    }
+    else {
+        if (splitStr[0] == 0) {
+            splitStr = NULL;
+        }
+    }
+    if (splitStr == NULL) {
+        *errMsg = "second argument must be a non-empty string: %s";
+        return False;
+    }
+    if (readStringArg(argList[2], &typeSplitStr, stringStorage[2], errMsg)) {
+    	if (!strcmp(typeSplitStr, "literal")) {
+    	    searchType = SEARCH_LITERAL;
+        }
+    	else if (!strcmp(typeSplitStr, "case")) {
+            searchType = SEARCH_CASE_SENSE;
+        }
+    	else if (!strcmp(typeSplitStr, "regex")) {
+            searchType = SEARCH_REGEX;
+        }
+        else {
+            *errMsg = "unrecognized argument to %s";
+            return False;
+        }
+    }
+    else {
+    	searchType = SEARCH_LITERAL;
+    }
+    
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = NULL;
+
+    strLength = strlen(sourceStr);
+    if (strLength > 0) {
+        char indexStr[28], *allocIndexStr;
+        DataValue element;
+        int elementLen;
+
+        beginPos = 0;
+        indexNum = 0;
+        found = 0;
+        do {
+            sprintf(indexStr, "%d", indexNum);
+            allocIndexStr = AllocString(strlen(indexStr) + 1);
+            if (!allocIndexStr) {
+                *errMsg = "array element failed to allocate key: %s";
+                return False;
+            }
+            strcpy(allocIndexStr, indexStr);
+            found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType,
+                False, beginPos, &foundStart, &foundEnd,
+	            NULL, GetWindowDelimiters(window));
+            elementEnd = found ? foundStart : strLength;
+            elementLen = elementEnd - beginPos;
+            element.tag = STRING_TAG;
+            element.val.str = AllocString(elementLen + 1);
+            if (!element.val.str) {
+                *errMsg = "failed to allocate element value: %s";
+                return False;
+            }
+            strncpy(element.val.str, &sourceStr[beginPos], elementLen);
+            element.val.str[elementLen] = 0;
+            
+            if (!arrayInsert(result, allocIndexStr, &element)) {
+                *errMsg = "array element failed to insert: %s";
+                return False;
+            }
+            
+            beginPos = found ? foundEnd : strLength;
+            ++indexNum;
+        } while (found && beginPos < strLength);
+        if (found) {
+            sprintf(indexStr, "%d", indexNum);
+            allocIndexStr = AllocString(strlen(indexStr) + 1);
+            if (!allocIndexStr) {
+                *errMsg = "array element failed to allocate key: %s";
+                return False;
+            }
+            strcpy(allocIndexStr, indexStr);
+            element.tag = STRING_TAG;
+            element.val.str = AllocString(1);
+            if (!element.val.str) {
+                *errMsg = "failed to allocate element value: %s";
+                return False;
+            }
+            element.val.str[0] = 0;
+
+            if (!arrayInsert(result, allocIndexStr, &element)) {
+                *errMsg = "array element failed to insert: %s";
+                return False;
+            }
+        }
+    }
+    return True;
+}
 
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
@@ -3352,6 +3469,19 @@ static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArg
     result->tag = STRING_TAG;
     result->val.str = AllocString(strlen(window->boldItalicFontName) + 1);
     strcpy(result->val.str, window->boldItalicFontName);
+    return True;
+}
+
+static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    static char subSepStr[sizeof(ARRAY_DIM_SEP)+2];
+    
+    result->tag = STRING_TAG;
+    strcpy(&subSepStr[1], ARRAY_DIM_SEP);
+     /* This allows grabage collection to think this is allocated */
+     /* but since it isn't, it won't get deleted */
+    result->val.str = &subSepStr[1];
     return True;
 }
 

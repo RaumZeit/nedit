@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.16 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.17 2001/03/05 15:00:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -2744,11 +2744,13 @@ at the end of each line to be continued.\n\
 \n\
 DATA TYPES\n\
 \n\
-The NEdit macro language recognizes only two data types, dynamic \
-character strings, and integer values.  In general strings and \
-integers can be used interchangeably.  If a string represents an \
-integer value, it can be used as an integer.  Integers can be \
-compared and concatenated with strings.\n\
+The NEdit macro language recognizes only three data types, dynamic \
+character strings, integer values and associative arrays.  In general \
+strings and integers can be used interchangeably.  If a string \
+represents an integer value, it can be used as an integer.  Integers \
+can be compared and concatenated with strings.  Arrays may contain \
+integers, strings, or arrays. Arrays are stored key/value pairs. Keys \
+are always stored as strings.\n\
 \n\
 Integer Constants\n\
 \n\
@@ -2944,6 +2946,57 @@ operators, (as with integers).  There are a number of useful \
 built-in routines for working with character strings, which are \
 listed in the section called Macro Subroutines.\n\
 \n\
+Arrays and Array Operators\n\
+\n\
+Arrays may contain either strings, integers, or other arrays. Arrays \
+are associative, which means that they relate two pieces of information, \
+the key and the value. The key is always a string, although you can use \
+integers and strings, they are always converted to strings. Array keys \
+can also contain multiple sub-scripts:\n\
+\n\
+    x[1,2,3] = \"string\"\n\
+    x[1 $sub_sep 2 $sub_sep 3] = \"string\"\n\
+    x[\"1\" $sub_sep \"2\" $sub_sep \"3\"] = \"string\"\n\
+\n\
+The sub-scripts are concatenated with $sub_sep. The above assignments \
+are eqivalent. To determine if a given key is in an array, use the in \
+keyword.\n\
+\n\
+    if (\"6\" in x) <body>\n\
+\n\
+If the left side of the in keyword is an array, the result is true if \
+every key in the left array is in the right array. Array values are \
+not compared.\n\
+\n\
+To iterate through all the keys of an array use the for looping \
+construct. Keys are not guarranteed in any particular order:\n\
+\n\
+    for (aKey in x) <body>\n\
+\n\
+Elements can be removed from an array using the delete command:\n\
+\n\
+    delete x[3] # deletes element with key 3\n\
+    delete x[] # deletes all elements\n\
+\n\
+The number of elements in an array can be determined by referencing \
+the array with no sub-scripts:\n\
+\n\
+    dialog(\"array x has \" x[] \" elemnts\")\n\
+\n\
+Arrays can be combined with some operators. All the following operators \
+only compare the keys of the arrays.\n\
+\n\
+   + merge arrays\n\
+   - remove keys\n\
+   & common keys\n\
+   | all keys that are not shared\n\
+\n\
+When duplicate keys are encountered using the + and & operators, the \
+values from the array on the right side of the operators are used \
+for the result. All of the above operators are array only, meaning \
+both the left and right sides of the operator must be arrays. The \
+results are also arrays.\n\
+\n\
 \n\
 LOOPING AND CONDITIONALS\n\
 \n\
@@ -3060,6 +3113,8 @@ $show_matching -- Contains 1 if matching items are highlighted, such as \
 \n\
 $statistics_line -- Has a value of 1 if the statistics line is shown, \
 otherwise 0.\n\
+\n\
+$sub_sep -- Contains the value of the array sub-script separation string.\n\
 \n\
 $tab_dist -- The distance between tab stops for a hardware tab \
 character, as set in the Tabs... dialog of the Preferences menu.\n\
@@ -3203,6 +3258,12 @@ shell_command(command, input_string) -- executes a shell command, feeding \
 it input from input_string.  On completion, output from the command \
 is returned as the function value, and the command's exit status is \
 returned in the global variable $shell_cmd_status.\n\
+\n\
+split(string, separation_string [, search_type]) -- Splits a string \
+using the separator specified. Optionally the search_type argument \
+can specify how the separation_string is interpreted. The default \
+is \"literal\". The returned value is an array with keys beginning \
+at 0.\n\
 \n\
 string_dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a \
 dialog prompting the user to enter information.  The first \

@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: interpret.h,v 1.4 2001/03/05 15:00:13 slobasso Exp $ */
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
@@ -8,25 +8,36 @@
 
 enum symTypes {CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM,
     	C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM};
-#define N_OPS 32
+#define N_OPS 38
 enum operations {OP_RETURN_NO_VAL, OP_RETURN, OP_PUSH_SYM, OP_DUP, OP_ADD,
     OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_NEGATE, OP_INCR, OP_DECR, OP_GT, OP_LT,
     OP_GE, OP_LE, OP_EQ, OP_NE, OP_BIT_AND, OP_BIT_OR, OP_AND, OP_OR, OP_NOT,
     OP_POWER, OP_CONCAT, OP_ASSIGN, OP_SUBR_CALL, OP_FETCH_RET_VAL, OP_BRANCH,
-    OP_BRANCH_TRUE, OP_BRANCH_FALSE, OP_BRANCH_NEVER};
+    OP_BRANCH_TRUE, OP_BRANCH_FALSE, OP_BRANCH_NEVER, OP_ARRAY_REF,
+    OP_ARRAY_ASSIGN, OP_BEGIN_ARRAY_ITER, OP_ARRAY_ITER, OP_IN_ARRAY,
+    OP_ARRAY_DELETE};
 
-enum typeTags {NO_TAG, INT_TAG, STRING_TAG};
+enum typeTags {NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG};
 
 enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
+
+#define ARRAY_DIM_SEP "\034"
 
 typedef struct {
     char tag;
     union {
-    	int n;
-    	char *str;
-    	void *ptr;
+        int n;
+        char *str;
+        void *ptr;
+        struct SparseArrayEntry *arrayPtr;
     } val;
 } DataValue;
+
+typedef struct {
+    rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
+    char *key;
+    DataValue value;
+} SparseArrayEntry;
 
 /* symbol table entry */
 typedef struct SymbolRec {
@@ -58,6 +69,15 @@ typedef int (*BuiltInSubr)(WindowInfo *window, DataValue *argList, int nArgs,
 
 void InitMacroGlobals(void);
 
+SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
+SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
+int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
+void arrayDelete(DataValue *theArray, char *keyStr);
+void arrayDeleteAll(DataValue *theArray);
+int arraySize(DataValue *theArray);
+int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
+int copyArray(DataValue *dstArray, DataValue *srcArray);
+
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
 void BeginCreatingProgram(void);
@@ -66,6 +86,7 @@ int AddSym(Symbol *sym, char **msg);
 int AddImmediate(void *value, char **msg);
 int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
+Symbol *InstallIteratorSymbol();
 Symbol *LookupStringConstSymbol(char *value);
 Symbol *LookupSymbol(char *name);
 Symbol *InstallSymbol(char *name, int type, DataValue value);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.8 2001/03/05 15:00:13 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: interpret.c,v 1.7 2001/02/26 23:38:03 edg Exp 
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"
+#include "rbTree.h"
 #include "interpret.h"
 
 #define PROGRAM_SIZE  4096	/* Maximum program size */
@@ -99,17 +100,39 @@ static int branch(void);
 static int branchTrue(void);
 static int branchFalse(void);
 static int branchNever(void);
+static int arrayRef(void);
+static int arrayAssign(void);
+static int beginArrayIter(void);
+static int arrayIter(void);
+static int inArray(void);
+static int deleteArrayElement(void);
 static void freeSymbolTable(Symbol *symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
 static int stringToNum(const char *string, int *number);
+static rbTreeNode *arrayEmptyAllocator(void);
+static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
+static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
+static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
+static void arrayDisposeNode(rbTreeNode *src);
+/*#define DEBUG_ASSEMBLY*/
+#ifdef DEBUG_ASSEMBLY
 static void disasm(Program *prog, int nInstr);
+#endif
 
 /* Global symbols and function definitions */
 static Symbol *GlobalSymList = NULL;
 
 /* List of all memory allocated for strings */
 static char *AllocatedStrings = NULL;
+
+typedef struct {
+    SparseArrayEntry 	data; /* LEAVE this as top entry */
+    int inUse;
+    struct SparseArrayEntryWrapper *next;
+} SparseArrayEntryWrapper;
+
+static SparseArrayEntryWrapper *AllocatedSparseArrayEntries = NULL; 
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
@@ -144,7 +167,8 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal, pushSymVal, dupStack,
 	add, subtract, multiply, divide, modulo, negate, increment, decrement,
 	gt, lt, ge, le, eq, ne, bitAnd, bitOr, and, or, not, power, concat,
 	assign, callSubroutine, fetchRetVal, branch, branchTrue, branchFalse,
-	branchNever};
+	branchNever, arrayRef, arrayAssign, beginArrayIter, arrayIter, inArray,
+    deleteArrayElement};
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -224,7 +248,9 @@ Program *FinishCreatingProgram(void)
     for (s = newProg->localSymList; s != NULL; s = s->next)
 	s->value.val.n = fpOffset++;
     
-    /* disasm(newProg, ProgP - Prog); */
+#ifdef DEBUG_ASSEMBLY
+    disasm(newProg, ProgP - Prog);
+#endif
     
     return newProg;
 }
@@ -558,6 +584,19 @@ void SetMacroFocusWindow(WindowInfo *window)
     FocusWindow = window;
 }
 
+Symbol *InstallIteratorSymbol()
+{
+    char symbolName[10 + (sizeof(int) * 3) + 2];
+    DataValue value;
+    static int interatorNameIndex = 0;
+
+    sprintf(symbolName, "aryiter #%d", interatorNameIndex);
+    ++interatorNameIndex;
+    value.tag = INT_TAG;
+    value.val.arrayPtr = NULL;
+    return(InstallSymbol(symbolName, LOCAL_SYM, value));
+}
+
 /*
 ** Lookup a constant string by it's value. This allows reuse of string
 ** constants and fixing a leak in the interpreter.
@@ -652,6 +691,13 @@ Symbol *PromoteToGlobal(Symbol *sym)
 ** character, so to allocate space for a string of strlen == n, you must
 ** use AllocString(n+1).
 */
+
+/*#define TRACK_GARBAGE_LEAKS*/
+#ifdef TRACK_GARBAGE_LEAKS
+static int numAllocatedStrings = 0;
+static int numAllocatedSparseArrayElements = 0;
+#endif
+
 char *AllocString(int length)
 {
     char *mem;
@@ -659,7 +705,45 @@ char *AllocString(int length)
     mem = XtMalloc(length + sizeof(char *) + 1);
     *((char **)mem) = AllocatedStrings;
     AllocatedStrings = mem;
+#ifdef TRACK_GARBAGE_LEAKS
+    ++numAllocatedStrings;
+#endif
     return mem + sizeof(char *) + 1;
+}
+
+SparseArrayEntry *AllocateSparseArrayEntry(void)
+{
+    SparseArrayEntryWrapper *mem;
+
+    mem = (SparseArrayEntryWrapper *)XtMalloc(sizeof(SparseArrayEntryWrapper));
+    mem->next = (struct SparseArrayEntryWrapper *)AllocatedSparseArrayEntries;
+    AllocatedSparseArrayEntries = mem;
+#ifdef TRACK_GARBAGE_LEAKS
+    ++numAllocatedSparseArrayElements;
+#endif
+    return(&(mem->data));
+}
+
+static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr)
+{
+    SparseArrayEntry *globalSEUse;
+
+    if (arrayPtr) {
+        ((SparseArrayEntryWrapper *)arrayPtr)->inUse = 1;
+        for (globalSEUse = (SparseArrayEntry *)rbTreeBegin((rbTreeNode *)arrayPtr);
+            globalSEUse != NULL;
+            globalSEUse = (SparseArrayEntry *)rbTreeNext((rbTreeNode *)globalSEUse)) {
+
+            ((SparseArrayEntryWrapper *)globalSEUse)->inUse = 1;
+            *(globalSEUse->key - 1) = 1;
+            if (globalSEUse->value.tag == STRING_TAG) {
+                *(globalSEUse->value.val.str - 1) = 1;
+            }
+            else if (globalSEUse->value.tag == ARRAY_TAG) {
+                MarkArrayContentsAsUsed((SparseArrayEntry *)globalSEUse->value.val.arrayPtr);
+            }
+        }
+    }
 }
 
 /*
@@ -667,21 +751,31 @@ char *AllocString(int length)
 ** list.  THIS CAN NOT BE RUN WHILE ANY MACROS ARE EXECUTING.  It must
 ** only be run after all macro activity has ceased.
 */
+
 void GarbageCollectStrings(void)
 {
+    SparseArrayEntryWrapper *nextAP, *thisAP;
     char *p, *next;
     Symbol *s;
-    
+
     /* mark all strings as unreferenced */
     for (p = AllocatedStrings; p != NULL; p = *((char **)p))
     	*(p + sizeof(char *)) = 0;
     
+    for (thisAP = AllocatedSparseArrayEntries;
+        thisAP != NULL; thisAP = (SparseArrayEntryWrapper *)thisAP->next) {
+        thisAP->inUse = 0;
+    }
+
     /* Sweep the global symbol list, marking which strings are still
        referenced */
     for (s = GlobalSymList; s != NULL; s = s->next)
     	if (s->value.tag == STRING_TAG)
     	    *(s->value.val.str - 1) = 1;
-    	    
+        else if (s->value.tag == ARRAY_TAG) {
+            MarkArrayContentsAsUsed((SparseArrayEntry *)s->value.val.arrayPtr);
+        }
+
     /* Collect all of the strings which remain unreferenced */
     next = AllocatedStrings;
     AllocatedStrings = NULL;
@@ -692,9 +786,33 @@ void GarbageCollectStrings(void)
     	    *((char **)p) = AllocatedStrings;
     	    AllocatedStrings = p;
     	} else {
+#ifdef TRACK_GARBAGE_LEAKS
+            --numAllocatedStrings;
+#endif
     	    XtFree(p);
     	}
     }
+    
+    nextAP = AllocatedSparseArrayEntries;
+    AllocatedSparseArrayEntries = NULL;
+    while (nextAP != NULL) {
+        thisAP = nextAP;
+        nextAP = (SparseArrayEntryWrapper *)nextAP->next;
+        if (thisAP->inUse != 0) {
+            thisAP->next = (struct SparseArrayEntryWrapper *)AllocatedSparseArrayEntries;
+            AllocatedSparseArrayEntries = thisAP;
+       }
+        else {
+#ifdef TRACK_GARBAGE_LEAKS
+            --numAllocatedSparseArrayElements;
+#endif
+            XtFree((void *)thisAP);
+        }
+    }
+
+#ifdef TRACK_GARBAGE_LEAKS
+    printf("str count = %d\nary count %d\n", numAllocatedStrings, numAllocatedSparseArrayElements);
+#endif
 }
 
 /*
@@ -741,6 +859,12 @@ static void freeSymbolTable(Symbol *symTab)
     	return execError(StackOverflowMsg, ""); \
     *StackP++ = dataVal;
 
+#define PEEK(dataVal, peekIndex) \
+    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
+        return(execError(StackUnderflowMsg, NULL)); \
+    } \
+    dataVal = *(StackP - peekIndex - 1);
+
 #define POP_INT(number) \
     if (StackP == Stack) \
 	return execError(StackUnderflowMsg, ""); \
@@ -748,8 +872,10 @@ static void freeSymbolTable(Symbol *symTab)
     if (StackP->tag == STRING_TAG) { \
     	if (!stringToNum(StackP->val.str, &number)) \
     	    return execError(StringToNumberMsg, ""); \
-    } else \
-    	number = StackP->val.n;
+    } else if (StackP->tag == INT_TAG) \
+        number = StackP->val.n; \
+    else \
+        return(execError("can't convert array to integer", NULL));
 
 #define POP_STRING(string) \
     if (StackP == Stack) \
@@ -758,9 +884,41 @@ static void freeSymbolTable(Symbol *symTab)
     if (StackP->tag == INT_TAG) { \
     	string = AllocString(21); \
     	sprintf(string, "%d", StackP->val.n); \
-    } else \
-    	string = StackP->val.str; \
+    } else if (StackP->tag == STRING_TAG) \
+        string = StackP->val.str; \
+    else \
+        return(execError("can't convert array to string", NULL));
    
+#define PEEK_STRING(string, peekIndex) \
+    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
+        return(execError(StackUnderflowMsg, NULL)); \
+    } \
+    if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
+        string = AllocString(21); \
+        sprintf(string, "%d", (StackP - peekIndex - 1)->val.n); \
+    } \
+    else if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
+        string = (StackP - peekIndex - 1)->val.str; \
+    } \
+    else { \
+        return(execError("can't convert array to string", NULL)); \
+    }
+
+#define PEEK_INT(number, peekIndex) \
+    if ((unsigned int)(StackP - peekIndex) <= (unsigned int)Stack) { \
+        return(execError(StackUnderflowMsg, NULL)); \
+    } \
+    if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
+        if (!stringToNum((StackP - peekIndex - 1)->val.str, &number)) { \
+    	    return execError(StringToNumberMsg, ""); \
+        } \
+    } else if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
+        number = (StackP - peekIndex - 1)->val.n; \
+    } \
+    else { \
+        return(execError("can't convert array to string", NULL)); \
+    }
+
 #define PUSH_INT(number) \
     if (StackP >= &Stack[STACK_SIZE]) \
     	return execError(StackOverflowMsg, ""); \
@@ -828,22 +986,30 @@ static int pushSymVal(void)
 static int assign(void)      /* assign top value to next symbol */
 {
     Symbol *sym;
+    DataValue *dataPtr;
+    
     sym = (Symbol *)(*PC++);
     if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
-	if (sym->type == ARG_SYM)
-	    return execError("assignment to function argument: %s",  sym->name);
-    	else if (sym->type == PROC_VALUE_SYM)
-    	    return execError("assignment to read-only variable: %s", sym->name);
-    	else
-	    return execError("assignment to non-variable: %s", sym->name);
+        if (sym->type == ARG_SYM)
+            return execError("assignment to function argument: %s",  sym->name);
+        else if (sym->type == PROC_VALUE_SYM)
+            return execError("assignment to read-only variable: %s", sym->name);
+        else
+            return execError("assignment to non-variable: %s", sym->name);
     }
     if (StackP == Stack)
-	return execError(StackUnderflowMsg, "");
+        return execError(StackUnderflowMsg, "");
     --StackP;
     if (sym->type == LOCAL_SYM)
-    	*(FrameP + sym->value.val.n) = *StackP;
+        dataPtr = (FrameP + sym->value.val.n);
     else
-	sym->value = *StackP;
+        dataPtr = &sym->value;
+    if (StackP->tag == ARRAY_TAG) {
+        copyArray(dataPtr, StackP);
+    }
+    else {
+        *dataPtr = *StackP;
+    }
     return STAT_OK;
 }
 
@@ -858,12 +1024,120 @@ static int dupStack(void)
 
 static int add(void)
 {
-    BINARY_NUMERIC_OPERATION(+)
+    DataValue leftVal, rightVal, resultArray;
+    int n1, n2;
+    
+    PEEK(rightVal, 0)
+    if (rightVal.tag == ARRAY_TAG) {
+        PEEK(leftVal, 1)
+        if (leftVal.tag == ARRAY_TAG) {
+            SparseArrayEntry *leftIter, *rightIter;
+            resultArray.tag = ARRAY_TAG;
+            resultArray.val.arrayPtr = NULL;
+            
+            POP(rightVal)
+            POP(leftVal)
+            leftIter = arrayIterateFirst(&leftVal);
+            rightIter = arrayIterateFirst(&rightVal);
+            while (leftIter || rightIter) {
+                int insertResult = 1;
+                
+                if (leftIter && rightIter) {
+                    int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+                    if (compareResult < 0) {
+                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        leftIter = arrayIterateNext(leftIter);
+                    }
+                    else if (compareResult > 0) {
+                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                    else {
+                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        leftIter = arrayIterateNext(leftIter);
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                }
+                else if (leftIter) {
+                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    leftIter = arrayIterateNext(leftIter);
+                }
+                else {
+                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    rightIter = arrayIterateNext(rightIter);
+                }
+                if (!insertResult) {
+                    return(execError("array insertion failure", NULL));
+                }
+            }
+            PUSH(resultArray)
+        }
+        else {
+            return(execError("can't mix math with arrays and non-arrays", NULL));
+        }
+    }
+    else {
+        POP_INT(n2)
+        POP_INT(n1)
+        PUSH_INT(n1 + n2)
+    }
+    return(STAT_OK);
 }
 
 static int subtract(void)
 {
-    BINARY_NUMERIC_OPERATION(-)
+    DataValue leftVal, rightVal, resultArray;
+    int n1, n2;
+    
+    PEEK(rightVal, 0)
+    if (rightVal.tag == ARRAY_TAG) {
+        PEEK(leftVal, 1)
+        if (leftVal.tag == ARRAY_TAG) {
+            SparseArrayEntry *leftIter, *rightIter;
+            resultArray.tag = ARRAY_TAG;
+            resultArray.val.arrayPtr = NULL;
+            
+            POP(rightVal)
+            POP(leftVal)
+            leftIter = arrayIterateFirst(&leftVal);
+            rightIter = arrayIterateFirst(&rightVal);
+            while (leftIter) {
+                int insertResult = 1;
+                
+                if (leftIter && rightIter) {
+                    int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+                    if (compareResult < 0) {
+                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        leftIter = arrayIterateNext(leftIter);
+                    }
+                    else if (compareResult > 0) {
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                    else {
+                        leftIter = arrayIterateNext(leftIter);
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                }
+                else if (leftIter) {
+                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    leftIter = arrayIterateNext(leftIter);
+                }
+                if (!insertResult) {
+                    return(execError("array insertion failure", NULL));
+                }
+            }
+            PUSH(resultArray)
+        }
+        else {
+            return(execError("can't mix math with arrays and non-arrays", NULL));
+        }
+    }
+    else {
+        POP_INT(n2)
+        POP_INT(n1)
+        PUSH_INT(n1 - n2)
+    }
+    return(STAT_OK);
 }
 
 static int multiply(void)
@@ -925,29 +1199,39 @@ static int le(void)
 static int eq(void)
 {
     DataValue v1, v2;
-    
+
     POP(v1)
     POP(v2)
-    if (v1.tag == INT_TAG && v2.tag == INT_TAG)
-	v1.val.n = v1.val.n == v2.val.n;
-    else if (v1.tag == STRING_TAG && v2.tag == STRING_TAG)
-    	v1.val.n = !strcmp(v1.val.str, v2.val.str);
-    else if (v1.tag == STRING_TAG) {
- 	int number;
- 	if (!stringToNum(v1.val.str, &number))
-    	    v1.val.n = 0;
-    	else
-    	    v1.val.n = number == v2.val.n;
-    } else {
-    	int number;
- 	if (!stringToNum(v2.val.str, &number))
-    	    v1.val.n = 0;
-    	else
-    	    v1.val.n = number == v1.val.n;
+    if (v1.tag == INT_TAG && v2.tag == INT_TAG) {
+        v1.val.n = v1.val.n == v2.val.n;
+    }
+    else if (v1.tag == STRING_TAG && v2.tag == STRING_TAG) {
+        v1.val.n = !strcmp(v1.val.str, v2.val.str);
+    }
+    else if (v1.tag == STRING_TAG && v2.tag == INT_TAG) {
+        int number;
+        if (!stringToNum(v1.val.str, &number)) {
+            v1.val.n = 0;
+        }
+        else {
+            v1.val.n = number == v2.val.n;
+        }
+    }
+    else if (v2.tag == STRING_TAG && v1.tag == INT_TAG) {
+        int number;
+        if (!stringToNum(v2.val.str, &number)) {
+            v1.val.n = 0;
+        }
+        else {
+            v1.val.n = number == v1.val.n;
+        }
+    }
+    else {
+        return(execError("incompatible types to compare", NULL));
     }
     v1.tag = INT_TAG;
     PUSH(v1)
-    return STAT_OK;
+    return(STAT_OK);
 }
 
 static int ne(void)
@@ -958,12 +1242,113 @@ static int ne(void)
 
 static int bitAnd(void)
 { 
-    BINARY_NUMERIC_OPERATION(&)
+    DataValue leftVal, rightVal, resultArray;
+    int n1, n2;
+    
+    PEEK(rightVal, 0)
+    if (rightVal.tag == ARRAY_TAG) {
+        PEEK(leftVal, 1)
+        if (leftVal.tag == ARRAY_TAG) {
+            SparseArrayEntry *leftIter, *rightIter;
+            resultArray.tag = ARRAY_TAG;
+            resultArray.val.arrayPtr = NULL;
+            
+            POP(rightVal)
+            POP(leftVal)
+            leftIter = arrayIterateFirst(&leftVal);
+            rightIter = arrayIterateFirst(&rightVal);
+            while (leftIter && rightIter) {
+                int insertResult = 1;
+                int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+
+                if (compareResult < 0) {
+                    leftIter = arrayIterateNext(leftIter);
+                }
+                else if (compareResult > 0) {
+                    rightIter = arrayIterateNext(rightIter);
+                }
+                else {
+                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    leftIter = arrayIterateNext(leftIter);
+                    rightIter = arrayIterateNext(rightIter);
+                }
+                if (!insertResult) {
+                    return(execError("array insertion failure", NULL));
+                }
+            }
+            PUSH(resultArray)
+        }
+        else {
+            return(execError("can't mix math with arrays and non-arrays", NULL));
+        }
+    }
+    else {
+        POP_INT(n2)
+        POP_INT(n1)
+        PUSH_INT(n1 & n2)
+    }
+    return(STAT_OK);
 }
 
 static int bitOr(void)
 { 
-    BINARY_NUMERIC_OPERATION(|)
+    DataValue leftVal, rightVal, resultArray;
+    int n1, n2;
+    
+    PEEK(rightVal, 0)
+    if (rightVal.tag == ARRAY_TAG) {
+        PEEK(leftVal, 1)
+        if (leftVal.tag == ARRAY_TAG) {
+            SparseArrayEntry *leftIter, *rightIter;
+            resultArray.tag = ARRAY_TAG;
+            resultArray.val.arrayPtr = NULL;
+            
+            POP(rightVal)
+            POP(leftVal)
+            leftIter = arrayIterateFirst(&leftVal);
+            rightIter = arrayIterateFirst(&rightVal);
+            while (leftIter || rightIter) {
+                int insertResult = 1;
+                
+                if (leftIter && rightIter) {
+                    int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+                    if (compareResult < 0) {
+                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        leftIter = arrayIterateNext(leftIter);
+                    }
+                    else if (compareResult > 0) {
+                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                    else {
+                        leftIter = arrayIterateNext(leftIter);
+                        rightIter = arrayIterateNext(rightIter);
+                    }
+                }
+                else if (leftIter) {
+                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    leftIter = arrayIterateNext(leftIter);
+                }
+                else {
+                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    rightIter = arrayIterateNext(rightIter);
+                }
+                if (!insertResult) {
+                    return(execError("array insertion failure", NULL));
+                }
+            }
+            PUSH(resultArray)
+        }
+        else {
+            return(execError("can't mix math with arrays and non-arrays", NULL));
+        }
+    }
+    else {
+        POP_INT(n2)
+        POP_INT(n1)
+        PUSH_INT(n1 | n2)
+    }
+    return(STAT_OK);
 }
 
 static int and(void)
@@ -1252,6 +1637,483 @@ static int branchNever(void)
     return STAT_OK;
 }
 
+int copyArray(DataValue *dstArray, DataValue *srcArray)
+{
+    SparseArrayEntry *srcIter;
+    
+    dstArray->tag = ARRAY_TAG;
+    dstArray->val.arrayPtr = NULL;
+    
+    srcIter = arrayIterateFirst(srcArray);
+    while (srcIter) {
+        if (srcIter->value.tag == ARRAY_TAG) {
+            int errNum;
+            DataValue tmpArray;
+            
+            errNum = copyArray(&tmpArray, &srcIter->value);
+            if (errNum != STAT_OK) {
+                return(errNum);
+            }
+            if (!arrayInsert(dstArray, srcIter->key, &tmpArray)) {
+                return(execError("array copy failed", NULL));
+            }
+        }
+        else {
+            if (!arrayInsert(dstArray, srcIter->key, &srcIter->value)) {
+                return(execError("array copy failed", NULL));
+            }
+        }
+        srcIter = arrayIterateNext(srcIter);
+    }
+    return(STAT_OK);
+}
+
+static int makeArrayKeyFromArgs(int nArgs, char **keyString)
+{
+    DataValue tmpVal;
+    int maxIntDigits = (sizeof(tmpVal.val.n) * 3) + 1;
+    int sepLen = strlen(ARRAY_DIM_SEP);
+    int keyLength = 0;
+    int i;
+
+    keyLength = sepLen * (nArgs - 1);
+    for (i = nArgs - 1; i >= 0; --i) {
+        PEEK(tmpVal, i)
+        if (tmpVal.tag == INT_TAG) {
+            keyLength += maxIntDigits;
+        }
+        else if (tmpVal.tag == STRING_TAG) {
+            keyLength += strlen(tmpVal.val.str);
+        }
+        else {
+            return(execError("can only index array with string or int.", NULL));
+        }
+    }
+    *keyString = AllocString(keyLength + 1);
+    (*keyString)[0] = 0;
+    for (i = nArgs - 1; i >= 0; --i) {
+        if (i != nArgs - 1) {
+            strcat(*keyString, ARRAY_DIM_SEP);
+        }
+        PEEK(tmpVal, i)
+        if (tmpVal.tag == INT_TAG) {
+            sprintf(&((*keyString)[strlen(*keyString)]), "%d", tmpVal.val.n);
+        }
+        else if (tmpVal.tag == STRING_TAG) {
+            strcat(*keyString, tmpVal.val.str);
+        }
+        else {
+            return(execError("can only index array with string or int.", NULL));
+        }
+    }
+    for (i = nArgs - 1; i >= 0; --i) {
+        POP(tmpVal)
+    }
+    return(STAT_OK);
+}
+
+static rbTreeNode *arrayEmptyAllocator(void)
+{
+    return((rbTreeNode *)AllocateSparseArrayEntry());
+}
+
+static rbTreeNode *arrayAllocateNode(rbTreeNode *src)
+{
+    SparseArrayEntry *newNode = AllocateSparseArrayEntry();
+    if (newNode) {
+        newNode->key = ((SparseArrayEntry *)src)->key;
+        newNode->value = ((SparseArrayEntry *)src)->value;
+    }
+    return((rbTreeNode *)newNode);
+}
+
+static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src)
+{
+    ((SparseArrayEntry *)dst)->key = ((SparseArrayEntry *)src)->key;
+    ((SparseArrayEntry *)dst)->value = ((SparseArrayEntry *)src)->value;
+    return(1);
+}
+
+static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right)
+{
+    return(strcmp(((SparseArrayEntry *)left)->key, ((SparseArrayEntry *)right)->key));
+}
+
+static void arrayDisposeNode(rbTreeNode *src)
+{
+    /* Let garbage collection handle this but mark it so iterators can tell */
+    src->left = NULL;
+    src->right = NULL;
+    src->parent = NULL;
+    src->color = -1;
+}
+
+int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
+{
+    SparseArrayEntry tmpEntry;
+    rbTreeNode *insertedNode;
+    
+    tmpEntry.key = keyStr;
+    tmpEntry.value = *theValue;
+    
+    if (theArray->val.arrayPtr == NULL) {
+        theArray->val.arrayPtr = (struct SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator);
+    }
+    if (theArray->val.arrayPtr != NULL) {
+        insertedNode = rbTreeInsert((rbTreeNode *)(theArray->val.arrayPtr),
+            (rbTreeNode *)&tmpEntry,
+            arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
+        if (insertedNode) {
+            return(1);
+        }
+        else {
+            return(0);
+        }
+    }
+    return(0);
+}
+
+void arrayDelete(DataValue *theArray, char *keyStr)
+{
+    SparseArrayEntry searchEntry;
+
+    if (theArray->val.arrayPtr) {
+        searchEntry.key = keyStr;
+        rbTreeDelete((rbTreeNode *)theArray->val.arrayPtr, (rbTreeNode *)&searchEntry,
+                    arrayEntryCompare, arrayDisposeNode);
+    }
+}
+
+void arrayDeleteAll(DataValue *theArray)
+{
+    
+    if (theArray->val.arrayPtr) {
+        rbTreeNode *iter = rbTreeBegin((rbTreeNode *)theArray->val.arrayPtr);
+        while (iter) {
+            rbTreeNode *nextIter = rbTreeNext(iter);
+            rbTreeDeleteNode((rbTreeNode *)theArray->val.arrayPtr,
+                        iter, arrayDisposeNode);
+
+            iter = nextIter;
+        }
+    }
+}
+
+int arraySize(DataValue *theArray)
+{
+    if (theArray->val.arrayPtr) {
+        return(rbTreeSize((rbTreeNode *)theArray->val.arrayPtr));
+    }
+    else {
+        return(0);
+    }
+}
+
+int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
+{
+    SparseArrayEntry searchEntry;
+    rbTreeNode *foundNode;
+
+    if (theArray->val.arrayPtr) {
+        searchEntry.key = keyStr;
+        foundNode = rbTreeFind((rbTreeNode *)theArray->val.arrayPtr,
+                (rbTreeNode *)&searchEntry, arrayEntryCompare);
+        if (foundNode) {
+            *theValue = ((SparseArrayEntry *)foundNode)->value;
+            return(1);
+        }
+    }
+    return(0);
+}
+
+SparseArrayEntry *arrayIterateFirst(DataValue *theArray)
+{
+    SparseArrayEntry *startPos;
+    if (theArray->val.arrayPtr) {
+        startPos = (SparseArrayEntry *)rbTreeBegin((rbTreeNode *)theArray->val.arrayPtr);
+    }
+    else {
+        startPos = NULL;
+    }
+    return(startPos);
+}
+
+SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator)
+{
+    SparseArrayEntry *nextPos;
+    if (iterator) {
+        nextPos = (SparseArrayEntry *)rbTreeNext((rbTreeNode *)iterator);
+    }
+    else {
+        nextPos = NULL;
+    }
+    return(nextPos);
+}
+
+static int arrayRef(void)
+{
+    int errNum;
+    DataValue srcArray, valueItem;
+    char *keyString = NULL;
+    int nDim;
+    
+    nDim = (int)*PC;
+    PC++;
+
+    if (nDim > 0) {
+        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        if (errNum != STAT_OK) {
+            return(errNum);
+        }
+
+        POP(srcArray)
+        if (srcArray.tag == ARRAY_TAG) {
+            if (!arrayGet(&srcArray, keyString, &valueItem)) {
+                return(execError("referenced array value not in array", NULL));
+            }
+            PUSH(valueItem)
+            return(STAT_OK);
+        }
+        else {
+            return(execError("operator [] on non-array", NULL));
+        }
+    }
+    else {
+        POP(srcArray)
+        if (srcArray.tag == ARRAY_TAG) {
+            PUSH_INT(arraySize(&srcArray))
+            return(STAT_OK);
+        }
+        else {
+            return(execError("operator [] on non-array", NULL));
+        }
+    }
+    return(execError("bad array reference", NULL)); /* never should get here */
+}
+
+static int arrayAssign(void)
+{
+    Symbol *sym;
+    char *keyString = NULL;
+    DataValue *dstPtr, srcValue;
+    int errNum;
+    int nDim;
+    
+    sym = (Symbol *)*PC;
+    PC++;
+    nDim = (int)*PC;
+    PC++;
+
+    if (sym->type == LOCAL_SYM) {
+            dstPtr = (FrameP + sym->value.val.n);
+    }
+    else if (sym->type == GLOBAL_SYM) {
+        dstPtr = &(sym->value);
+    }
+    else if (sym->type == ARG_SYM) {
+        return(execError("assignment to function argument: %s",  sym->name));
+    }
+    else {
+        return(execError("assignment to non-variable: %s", sym->name));
+    }
+    
+    if (nDim > 0) {
+        POP(srcValue)
+
+        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        if (errNum != STAT_OK) {
+            return(errNum);
+        }
+
+        if (dstPtr->tag != ARRAY_TAG) {
+            dstPtr->tag = ARRAY_TAG;
+            dstPtr->val.arrayPtr = NULL;
+        }
+        if (arrayInsert(dstPtr, keyString, &srcValue)) {
+            return(STAT_OK);
+        }
+        else {
+            return(execError("array member allocation failure", NULL));
+        }
+    }
+    return(execError("empty operator []", NULL));
+}
+
+static int beginArrayIter(void)
+{
+    Symbol *iterator;
+    Symbol *array;
+    DataValue *iteratorValPtr;
+    DataValue *arrayValPtr;
+
+    array = (Symbol *)*PC;
+    PC++;
+    iterator = (Symbol *)*PC;
+    PC++;
+
+    if (array->type == LOCAL_SYM) {
+        arrayValPtr = (FrameP + array->value.val.n);
+    }
+    else if (array->type == GLOBAL_SYM) {
+        arrayValPtr = &(array->value);
+    }
+    else if (array->type == ARG_SYM) {
+        int nArgs = (FrameP-1)->val.n;
+        int argNum = array->value.val.n;
+        if (argNum >= nArgs) {
+            return(execError("referenced undefined argument: %s",  array->name));
+        }
+        if (argNum != N_ARGS_ARG_SYM) {
+            arrayValPtr = (FrameP + argNum - nArgs - 3);
+        }
+        else {
+            return(execError("can't iterate non-array",  array->name));
+        }
+    }
+    else {
+        return(execError("can't iterate variable: %s",  array->name));
+    }
+
+    if (iterator->type == LOCAL_SYM) {
+        iteratorValPtr = (FrameP + iterator->value.val.n);
+    }
+    else {
+        return(execError("bad temporary iterator: %s",  iterator->name));
+    }
+    iteratorValPtr->tag = INT_TAG;
+
+    if (arrayValPtr->tag != ARRAY_TAG) {
+        return(execError("can't iterate non-array: %s", array->name));
+    }
+
+    iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateFirst(arrayValPtr);
+    return(STAT_OK);
+}
+
+static int arrayIter(void)
+{
+    Symbol *iterator;
+    Symbol *item;
+    DataValue *iteratorValPtr;
+    DataValue *itemValPtr;
+    SparseArrayEntry *thisEntry;
+    Inst *branchAddr;
+
+    item = (Symbol *)*PC;
+    PC++;
+    iterator = (Symbol *)*PC;
+    PC++;
+    branchAddr = PC + (int)*PC;
+    PC++;
+
+    if (item->type == LOCAL_SYM) {
+        itemValPtr = (FrameP + item->value.val.n);
+    }
+    else if (item->type == GLOBAL_SYM) {
+        itemValPtr = &(item->value);
+    }
+    else {
+        return(execError("can't assign to: %s",  item->name));
+    }
+    itemValPtr->tag = NO_TAG;
+
+    if (iterator->type == LOCAL_SYM) {
+        iteratorValPtr = (FrameP + iterator->value.val.n);
+    }
+    else {
+        return(execError("bad temporary iterator: %s",  iterator->name));
+    }
+
+    thisEntry = (SparseArrayEntry *)iteratorValPtr->val.arrayPtr;
+    if (thisEntry && thisEntry->nodePtrs.color != -1) {
+        itemValPtr->tag = STRING_TAG;
+        itemValPtr->val.str = thisEntry->key;
+        
+        iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateNext(thisEntry);
+    }
+    else {
+        PC = branchAddr;
+    }
+    return(STAT_OK);
+}
+
+static int inArray(void)
+{
+    DataValue theArray, leftArray, theValue;
+    char *keyStr;
+    int inResult = 0;
+    
+    POP(theArray)
+    if (theArray.tag != ARRAY_TAG) {
+        return(execError("operator in on non-array", NULL));
+    }
+    PEEK(leftArray, 0)
+    if (leftArray.tag == ARRAY_TAG) {
+        SparseArrayEntry *iter;
+        
+        POP(leftArray)
+        inResult = 1;
+        iter = arrayIterateFirst(&leftArray);
+        while (inResult && iter) {
+            inResult = inResult && arrayGet(&theArray, iter->key, &theValue);
+            iter = arrayIterateNext(iter);
+        }
+    }
+    else {
+        POP_STRING(keyStr)
+        if (arrayGet(&theArray, keyStr, &theValue)) {
+            inResult = 1;
+        }
+    }
+    PUSH_INT(inResult)
+    return(STAT_OK);
+}
+
+static int deleteArrayElement(void)
+{
+    Symbol *sym;
+    char *keyString = NULL;
+    DataValue *dstPtr;
+    int errNum;
+    int nDim;
+    
+    sym = (Symbol *)*PC;
+    PC++;
+    nDim = (int)*PC;
+    PC++;
+
+    if (sym->type == LOCAL_SYM) {
+            dstPtr = (FrameP + sym->value.val.n);
+    }
+    else if (sym->type == GLOBAL_SYM) {
+        dstPtr = &(sym->value);
+    }
+    else if (sym->type == ARG_SYM) {
+        return(execError("can't delete from function argument: %s",  sym->name));
+    }
+    else {
+        return(execError("can't delete non-array element: %s", sym->name));
+    }
+    
+    if (dstPtr->tag != ARRAY_TAG) {
+        return(execError("attempt to delete from non-array: %s", sym->name));
+    }
+    if (nDim > 0) {
+        errNum = makeArrayKeyFromArgs(nDim, &keyString);
+        if (errNum != STAT_OK) {
+            return(errNum);
+        }
+
+        arrayDelete(dstPtr, keyString);
+        return(STAT_OK);
+    }
+    else {
+        arrayDeleteAll(dstPtr);
+        return(STAT_OK);
+    }
+    return(STAT_OK);
+}
+
 /*
 ** checks errno after operations which can set it.  If an error occured,
 ** creates appropriate error messages and returns false
@@ -1294,7 +2156,7 @@ static int stringToNum(const char *string, int *number)
     return True;
 }
 
-#ifdef notdef /* For debugging code generation */
+#ifdef DEBUG_ASSEMBLY /* For debugging code generation */
 static void disasm(Program *prog, int nInstr)
 {
     static char *opNames[N_OPS] = {"returnNoVal", "returnVal", "pushSymVal",
@@ -1302,7 +2164,8 @@ static void disasm(Program *prog, int nInstr)
         "negate", "increment", "decrement", "gt", "lt", "ge", "le", "eq",
 	"ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
 	"assign", "callSubroutine", "fetchRetVal", "branch", "branchTrue",
-	"branchFalse", "branchNever"};
+	"branchFalse", "branchNever", "arrayRef", "arrayAssign",
+	"beginArrayIter", "arrayIter", "inArray", "deleteArrayElement"};
     int i, j;
     
     for (i=0; i<nInstr; i++) {
@@ -1318,12 +2181,24 @@ static void disasm(Program *prog, int nInstr)
     	    	    printf(" (%d) %x", (int)prog->code[i+1],
     	    	    	    &prog->code[i+1] + (int)prog->code[i+1]);
     	    	    i++;
-    	    	} else if (j == OP_SUBR_CALL) {
+    	    	} else if (j == OP_SUBR_CALL || j == OP_ARRAY_ASSIGN) {
     	    	    printf(" %s (%d arg)", ((Symbol *)prog->code[i+1])->name,
     	    	    	    prog->code[i+2]);
     	    	    i += 2;
-    	    	}
-    	    	    
+    	    	} else if (j == OP_BEGIN_ARRAY_ITER) {
+					printf(" %s in %s",
+						((Symbol *)prog->code[i+1])->name,
+						((Symbol *)prog->code[i+2])->name);
+					i += 2;
+    	    	} else if (j == OP_ARRAY_ITER) {
+					printf(" %s in %s (%d) %x",
+						((Symbol *)prog->code[i+1])->name,
+						((Symbol *)prog->code[i+2])->name,
+						(int)prog->code[i+3],
+						&prog->code[i+3] + (int)prog->code[i+3]);
+					i += 3;
+				}
+
     	    	printf("\n");
     	    	break;
     	    }
