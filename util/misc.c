@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.28 2001/08/23 13:57:24 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.29 2001/08/23 14:39:30 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -36,6 +36,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.28 2001/08/23 13:57:24 amai Exp $";
 #include <unixio.h>
 #include <file.h>
 #endif /*VMS*/
+
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
@@ -56,12 +57,10 @@ static const char CVSID[] = "$Id: misc.c,v 1.28 2001/08/23 13:57:24 amai Exp $";
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
 #include <Xm/FileSB.h>
+
 #include "DialogF.h"
 #include "misc.h"
 
-/* math.h on Sun mysteriously excludes strtod and other functions when
-   POSIX compliance is turned on */
-extern double strtod();
 
 /* structure for passing history-recall data to callbacks */
 typedef struct {
@@ -433,60 +432,80 @@ Widget CreateDialogShell(Widget parent, char *name,
     return addParentVisArgsAndCall(XmCreateDialogShell, parent, name, arglist,
 	    argcount);
 }
+
+
 Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
 	Cardinal argcount)
 {
     return addParentVisArgsAndCall(XmCreatePopupMenu, parent, name,
 	    arglist, argcount);
 }
+
+
 Widget CreatePulldownMenu(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreatePulldownMenu, parent, name, arglist,
 	    argcount);
 }
+
+
 Widget CreatePromptDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreatePromptDialog, parent, name, arglist,
 	    argcount);
 }
+
+
 Widget CreateSelectionDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name,
 	    arglist, argcount);
 }
+
+
 Widget CreateFormDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateFormDialog, parent, name, arglist,
 	    argcount);
 }
+
+
 Widget CreateFileSelectionDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, name,
 	    arglist, argcount);
 }
+
+
 Widget CreateQuestionDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateQuestionDialog, parent, name,
 	    arglist, argcount);
 }
+
+
 Widget CreateMessageDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateMessageDialog, parent, name,
 	    arglist, argcount);
 }
+
+
 Widget CreateErrorDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateErrorDialog, parent, name, arglist,
 	    argcount);
 }
+
+
 Widget CreateShellWithBestVis(String appName, String appClass, 
 	   WidgetClass class, Display *display, ArgList args, Cardinal nArgs)
 {
@@ -643,6 +662,8 @@ void RaiseShellWindow(Widget shell)
 {
     RaiseWindow(XtDisplay(shell), XtWindow(shell));
 }
+
+
 void RaiseWindow(Display *display, Window w)
 {
     XWindowAttributes winAttr;
@@ -949,6 +970,8 @@ void SetIntLabel(Widget label, int value)
     XtVaSetValues(label, XmNlabelString, s1, NULL);
     XmStringFree(s1);
 }
+
+
 void SetFloatLabel(Widget label, double value)
 {
     char labelString[20];
@@ -959,6 +982,8 @@ void SetFloatLabel(Widget label, double value)
     XtVaSetValues(label, XmNlabelString, s1, NULL);
     XmStringFree(s1);
 }
+
+
 void SetIntText(Widget text, int value)
 {
     char labelString[20];
@@ -966,6 +991,8 @@ void SetIntText(Widget text, int value)
     sprintf(labelString, "%d", value);
     XmTextSetString(text, labelString);
 }
+
+
 void SetFloatText(Widget text, double value)
 {
     char labelString[20];
@@ -1252,8 +1279,8 @@ void EndWait(Widget topCursorWidget)
 ** position without an x position.  Also note that the X/YNegative flags
 ** mean "add a '-' and negate the value" which is kind of odd.
 */
-void CreateGeometryString(char *string, short x, short y,
-	short width, short height, int bitmask)
+void CreateGeometryString(char *string, int x, int y,
+	int width, int height, int bitmask)
 {
     char *ptr = string;
     int nChars;

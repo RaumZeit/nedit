@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.8 2001/08/15 09:00:21 amai Exp $ */
+/* $Id: misc.h,v 1.9 2001/08/23 14:39:31 amai Exp $ */
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2
@@ -52,8 +52,8 @@ void EndWait(Widget topCursorWidget);
 void PasswordText(Widget w, char *passTxt);
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddToHistoryList(char *newItem, char ***historyList, int *nItems);
-void CreateGeometryString(char *string, short x, short y,
-	short width, short height, int bitmask);
+void CreateGeometryString(char *string, int x, int y,
+	int width, int height, int bitmask);
 void FindBestVisual(Display *display, const char *appName, char *appClass,
 	Visual **visual, int *depth, Colormap *colormap);
 Widget CreateDialogShell(Widget parent, char *name, ArgList arglist,
