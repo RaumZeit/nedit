@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.62 2004/06/10 17:01:26 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.63 2004/06/11 08:14:50 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -2020,7 +2020,6 @@ static void hsSetDisplayedCB(void *item, void *cbArg)
             if (others == 0) {
                 /* this is the last style entry named "Plain" */
                 Widget form = (Widget)cbArg;
-                Widget list = NULL;
                 Widget deleteBtn = XtNameToWidget(form, "*delete");
                 /* disable delete button */
                 if (deleteBtn) {
