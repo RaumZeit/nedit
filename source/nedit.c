@@ -474,7 +474,7 @@ int main(int argc, char **argv)
     
     /* If no file to edit was specified, open a window to edit "Untitled" */
     if (!fileSpecified) {
-    	EditNewFile(geometry, iconic, langMode);
+    	EditNewFile(geometry, iconic, langMode, NULL);
 	ReadMacroInitFile(WindowList);
 	if (toDoCommand != NULL)
 	    DoMacro(WindowList, toDoCommand, "-do macro");

@@ -3,7 +3,8 @@
 #define SUPPRESS_CREATE_WARN 2
 #define FORCE_READ_ONLY 4
 
-void EditNewFile(char *geometry, int iconic, char *languageMode);
+void EditNewFile(char *geometry, int iconic, char *languageMode,
+    	char *defaultPath);
 WindowInfo *EditExistingFile(WindowInfo *inWindow, char *name, char *path,
 	int flags, char *geometry, int iconic, char *languageMode);
 void RevertToSaved(WindowInfo *window);

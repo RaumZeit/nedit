@@ -1930,7 +1930,7 @@ static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 */
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
-    EditNewFile(NULL, False, NULL);
+    EditNewFile(NULL, False, NULL, WidgetToWindow(w)->path);
     CheckCloseDim();
 }
 
@@ -3037,6 +3037,7 @@ static void updateWindowMenu(WindowInfo *window)
     	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
     		window->windowMenuPane, 
     		XmNlabelString, st1=XmStringCreateSimple(title),
+		XmNmarginHeight, 0,
     		XmNuserData, TEMPORARY_MENU_ITEM, NULL);
 	XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)raiseCB, 
 	    	windows[windowIndex]);

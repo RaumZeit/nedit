@@ -96,7 +96,8 @@ static void convertToMacFileString(char *fileString, int length);
 void removeVersionNumber(char *fileName);
 #endif /*VMS*/
 
-void EditNewFile(char *geometry, int iconic, char *languageMode)
+void EditNewFile(char *geometry, int iconic, char *languageMode,
+	char *defaultPath)
 {
     char name[MAXPATHLEN];
     WindowInfo *window;
@@ -109,7 +110,7 @@ void EditNewFile(char *geometry, int iconic, char *languageMode)
     /* create the window */
     window = CreateWindow(name, geometry, iconic);
     strcpy(window->filename, name);
-    strcpy(window->path, "");
+    strcpy(window->path, defaultPath ? defaultPath : "");
     window->filenameSet = FALSE;
     window->fileFormat = UNIX_FILE_FORMAT;
     window->lastModTime = 0;
@@ -152,9 +153,11 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, char *name, char *path,
 	return window;
     }
     
-    /* If an existing window isn't specified, or the window is already
-       in use (not Untitled or Untitled and modified), create the window */
-    if (inWindow == NULL || inWindow->filenameSet || inWindow->fileChanged)
+    /* If an existing window isn't specified; or the window is already
+       in use (not Untitled or Untitled and modified), or is currently
+       busy running a macro; create the window */
+    if (inWindow == NULL || inWindow->filenameSet || inWindow->fileChanged ||
+	    inWindow->macroCmdData != NULL)
 	window = CreateWindow(name, geometry, iconic);
     else
     	window = inWindow;

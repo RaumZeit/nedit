@@ -3427,12 +3427,16 @@ static int matchLanguageMode(WindowInfo *window)
     }
     XtFree(first200);
     
-    /* Look at file extension */
+    /* Look at file extension ("@@/" starts a ClearCase version extended path,
+       which gets appended after the file extension, and therefore must be
+       stripped off to recognize the extension to make ClearCase users happy) */
     fileNameLen = strlen(window->filename);
 #ifdef VMS
     if (strchr(window->filename, ';') != NULL)
     	fileNameLen = strchr(window->filename, ';') - window->filename;
 #endif
+    if (strstr(window->filename, "@@/") != NULL)
+      	fileNameLen = strstr(window->filename, "@@/") - window->filename;
     for (i=0; i<NLanguageModes; i++) {
     	for (j=0; j<LanguageModes[i]->nExtensions; j++) {
     	    ext = LanguageModes[i]->extensions[j];

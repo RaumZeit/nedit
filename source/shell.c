@@ -312,7 +312,7 @@ void DoShellMenuCmd(WindowInfo *window, char *command, int input, int output,
 	flags |= OUTPUT_TO_DIALOG;
     	left = right = 0;
     } else if (output == TO_NEW_WINDOW) {
-    	EditNewFile(NULL, False, NULL);
+    	EditNewFile(NULL, False, NULL, window->path);
     	outWidget = WindowList->textArea;
 	inWindow = WindowList;
     	left = right = 0;

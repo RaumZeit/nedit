@@ -247,7 +247,7 @@ static void processServerCommandString(char *string)
     	    if (!window->filenameSet && !window->fileChanged)
     	    	break;
     	if (window == NULL) {
-    	    EditNewFile(NULL, False, NULL);
+    	    EditNewFile(NULL, False, NULL, NULL);
     	    CheckCloseDim();
     	} else
     	    XMapRaised(TheDisplay, XtWindow(window->shell));
