@@ -1,6 +1,6 @@
-                    NEdit Version 5.2+ beta,  January 2002
+                    NEdit Version 5.3,  February 2002
 
-$Id: README,v 1.21 2002/01/08 16:06:18 amai Exp $
+$Id: README,v 1.22 2002/02/13 23:10:23 edg Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -45,20 +45,18 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License below for more details.
 
-VERSION 5.2+
+VERSION 5.3
 
-Version 5.2+ offers some new features and lots of bug fixes.
+Version 5.3 is mainly a bug fix release but also offers some new features.
 
 The most significant enhancements in this release are:
 
- - Goto Line & Column
- - Fix some rare crashes
- - Customizable Window Titles
- - ...
-
+ - A revamped Help system with hyperlinked cross-references.
+ - Support for Exuberant ctags.
+ - Goto Line also accepts Column numbers.
  
-There are also several smaller improvements and bug fixes, see the file
-ReleaseNotes for details.
+There are also several smaller improvements and bug fixes, see the
+ReleaseNotes file for more details.
 
 
 BUILDING NEDIT
@@ -339,6 +337,13 @@ Preferences->Syntax Highlighting->Recognition Patterns menu, though.
 Next, some version specific upgrading issues are listed. Note that 
 non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
 
+* Upgrading from 5.2 to 5.3
+
+  There are no major changes in the format of the .nedit file for version
+  5.2. Users that have customized the X Resources syntax highlighting 
+  pattern may consider restoring the default patterns, as they resolve
+  a performance issue when editing the .nedit file itself, for instance.
+  
 * Upgrading from 5.1 to 5.2
 
   There are no major changes in the format of the .nedit file for version

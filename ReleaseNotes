@@ -1,18 +1,87 @@
-          Release Notes for NEdit Version 5.2+, ??
+          Release Notes for NEdit Version 5.3, February 2002
 
 
-$Id: ReleaseNotes,v 1.11 2001/11/20 15:36:57 amai Exp $
+$Id: ReleaseNotes,v 1.12 2002/02/13 23:10:23 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
 kits.  It also contains change information, for users who are interested in
-what bugs have been fixed, and what features have been added in the current 
+what bugs have been fixed, and what features have been added in the current
 version.
 
 If you are upgrading NEdit from a version prior to 5.0, please see the notes in
 the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
 
+
+New Features in 5.3
+
+  This is mainly a bug fix release. The list of new features is therefore 
+  limited:
+
+  - The built-in Help system was revamped. Most notably, a hyperlink
+    mechanism was added for following cross-references.
+
+  - Exuberant ctags support (SF #491109).
+
+  - Line numbers are available in shell commands (SF #434451).
+
+  - Goto Line also accepts column numbers (SF #403435).
+
+
+Bugs Fixed in 5.3
+
+  - Crash when running X on 2nd screen (SF #478234, #500353).
+
+  - Line number display updating in continous wrap mode (SF #516920).
+
+  - Performance problem with X Resources highlight patterns (SF #481290).
+
+  - Menu fonts showing up as blocks (SF #434383)
+
+  - Lockup's in syntax highlighting (especially Perl) (SF #512961).
+
+  - Crash when using characters with ASCII code >= 128 in syntax
+    highlighting patterns.
+
+  - Crash when modifying tab distance in continous wrap mode (SF #510631).
+
+  - Crash when running NEdit in low-depth color modes.
+
+  - Continous wrap mode + variable width font display bugs.
+
+  - Potential scroll bar corruption in continuous wrap mode (SF #510765).
+
+  - Workaround for selection copy/paste problems with recent versions
+    of gnome-terminal.
+
+  - Jump to tags only referenced by line number.
+
+  - Composed characters in learned sequence (SF #480966).
+
+  - Missing titles in some dialogs (SF #480960).
+
+  - Macro language: continue statement outside loop crash (SF #495293).
+
+  - Rectangular overstrike past fixes (SF #487945).
+
+  - Hard-coded statistics line font (SF #487153).
+
+  - Open filenames starting with a dash (SF #485610).
+
+  - Crash when closing window of non-existing file while error dialog is up.
+
+  - Bad CapsLock grab on certain keyboard configurations (SF #482504).
+
+  - Replacements in rectangular selections could sometimes fail.
+  
+  - Various buffer overflow fixes.
+
+  - Multiple selection dialog does not pop up on first find (SF #473602).
+  
+  - Tag not found (SF #466742).
+  
+  - Files opened with -read command line option could not be unlocked.
 
 New Features in 5.2
 
@@ -22,9 +91,9 @@ New Features in 5.2
  - Support for high- and true-color systems.  NEdit now will automatically
    select the best visual from your X server.  This reduces the chance of
    running out of colors.
- 
+
  - New features in the Find and Replace dialogs:
- 
+
    o Replacement across multiple windows in a session.
    o Case sensitivity may be set independently of regular expressions.
    o Add "Replace and Find" command, which saves keystrokes when doing
@@ -39,13 +108,13 @@ New Features in 5.2
  - Range highlighting of matching delimiters.
 
  - Undo and Redo highlights the text that has changed, when visible.
- 
- - Support for wheel mouse scrolling on servers that support it (XFree86). 
- 
+
+ - Support for wheel mouse scrolling on servers that support it (XFree86).
+
  - Improved accelerator key handling.
 
  - Insert Control Code dialog accepts value in any valid C notation
- 
+
  - Optional beeping when search operations wrap.
 
  - Additional default search styles.
@@ -56,15 +125,15 @@ New Features in 5.2
 Bug Fixes in 5.2
 
  - Fix a crash when entering an invalid line number in "Goto Line".
- 
+
  - Ignore the Caps-Lock key when invoking accelerators.
- 
+
  - Fix problems when running NEdit on 64-bit platforms like Alpha
- 
+
  - NEdit failed to open files if some directories above were not "readable"
 
  - Fix potential crashes if some system calls fail
- 
+
  - When no colors are left, attempt to reuse the closest matching color.  This
    allows NEdit's syntax highlighting to better coexist with Netscape, which
    unfortuntely takes all available colors.
@@ -76,10 +145,10 @@ Bug Fixes in 5.2
    without the Alt key.
 
  - Don't even try to open a directory for editing
- 
+
  - Fix a couple of memory corruption problems
 
-  
+
 New Features in 5.1
 
  - Significant extensions to the regular expression syntax.  See details
@@ -232,7 +301,7 @@ Details of Regular Expression Changes in 5.1
       that NEdit recognizes as a word delimiter character, while the `\Y' token
       matches any character that is NOT a word delimiter character.  Note:
       these are not anchors and DO consume one character of input.
- 
+
 
     o Quantifiers
 
@@ -273,7 +342,7 @@ Details of Regular Expression Changes in 5.1
       the next regular expression atom, but the text that was consumed by the
       positive look-ahead is first unmatched (backtracked) to the place in the
       text where the positive look-ahead was first encountered.
- 
+
     o Negative Look-Ahead
 
       Negative look-ahead takes the form `(?!<regex>)' and is exactly the same
@@ -315,15 +384,15 @@ Details of Regular Expression Changes in 5.1
 New Features in 5.0.2:
 
  - Word-selection (double click) can be used to select ranges of delimiters
- 
+
  - New built-in macro variables: $line, $column, and $modified
- 
+
  - Smart-indent mode available for Python language
-   
+
  - Minor improvements in default pattern sets for NEdit Macros, X Resources,
    and Sh/Ksh/Bash
- 
- 
+
+
 Bug Fixes in 5.0.2:
 
  - -import did not work as advertised in 5.0.1.  When used, it re-set a
@@ -331,54 +400,54 @@ Bug Fixes in 5.0.2:
    cause a crash.
 
  - Macro -> Repeat crashes on some systems.
- 
+
  - Mouse state can get "stuck" on Alpha-based systems.
- 
+
  - Combination of auto-wrap, auto-indent, and unbreakable lines extending the
    width of the window, caused nedit to unnecessarily insert blank lines.
 
  - Incorrect case-insensitive comparison in character sets > 128 bits.
- 
+
  - in by-word drag-selection (double click then drag) when begun in the middle
    of a whitespace selection, anchor would revert to original cursor position
    rather than maintaining the entire whitespace block.
-   
+
  - Language mode names containing spaces could not be used in language
    sensitive user-defined menu items.
-   
+
  - New windows did not always see existing learn/replay sequence, recorded
    before the window was created.
-   
+
  - Possible crash in search_string and search_window macros, when used with
    long search strings.
- 
+
  - Possible crash in get_selection("any") macro.
- 
+
  - Under Solaris, crashes on window opening, file dialog, and language mode
    selection, when user-defined sub-menus were used.
-   
+
  - Filenames containing spaces could cause the .neditdb file to become
    unreadable.
-   
+
  - Escape key could not be used to cancel file-selection dialogs when the
    file list had keyboard focus (which it almost always does).
-   
-       
+
+
 New Features in 5.0.1:
-   
+
  - Repeat-over-range, and repeat-to-end capability for repeating last
    command and learn/replay sequence.
-   
+
  - Import capability for loading macro/shell menu commands, highlight
    patterns, and style sets created by other users.
 
  - New macro language routines: string_to_clipboard, clipboard_to_string,
    toupper, tolower, variables: $em_tab_dist.
-   
+
  - Additional default highlight patterns for sh and X resources.
- 
+
  - Sorted Open Previous menu.
-   
+
  - Numerous improvements to default highlighting patterns and smart indent
    macros.
 
@@ -388,7 +457,7 @@ Bug Fixes in 5.0.1:
  - Various crashes on Motif 2.0 (Linux and FreeBSD) systems, usually
    associated with opening files and changing language modes.  Usually,
    but not necessarily, following changes to user-defined menu items.
- 
+
  - Background menu activation during drag operation could leave drag
    unfinished, cause undo to malfunction, and eventually lead to a crash (which
    was easy to trigger accidentally when the middle button is emulated with
@@ -398,27 +467,27 @@ Bug Fixes in 5.0.1:
 
  - Rapid repetition of long macros (such as binding to key and using keyboard
    repeat) could cause crash.
-   
+
  - Several commands which put up dialogs were vulnerable to timing windows
    where repeating the command could cause a crash.
- 
+
  - Calling macro close() routine could cause crash if used to close the window
    in which the macro was executing.
-   
+
  - Using load_macro_file() as an "include" statement in macro files could
    cause hang.
- 
+
  - Artifacts when using non-matching highlight fonts, and making certain types
    of changes which change the fonts used to display other (not the line being
    modified) lines in the file.
- 
+
  - Auto-newline wrap in overtype mode could duplicate part of wrapped text.
- 
+
  - Lower panes in split window mode allowed modification to read-only windows.
- 
+
  - Several minor dialog and window focus related problems for explicit (click
    to focus) users.
- 
+
  - Paste Column ignored existing selection.
 
  - After copying and re-naming language mode information, highlight patterns
