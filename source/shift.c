@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.14 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.15 2004/07/18 23:13:44 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -263,10 +263,13 @@ void FillSelection(WindowInfo *window)
        by measuring the text and querying the window's wrap margin (or width) */
     if (hasSelection && isRect) {
     	rightMargin = rectEnd - rectStart;
-    } else {
-	XtVaGetValues(window->textArea, textNcolumns, &nCols,
-    		textNwrapMargin, &wrapMargin, NULL);
-	rightMargin = (wrapMargin == 0 ? nCols : wrapMargin) - 1;
+    } else
+    {
+        XtVaGetValues(window->textArea,
+                textNcolumns, &nCols,
+                textNwrapMargin, &wrapMargin,
+                NULL);
+        rightMargin = (wrapMargin == 0 ? nCols : wrapMargin);
     }
     
     /* Fill the text */
