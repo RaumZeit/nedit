@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.7 2001/11/26 14:17:33 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.8 2001/11/26 21:40:35 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -79,7 +79,11 @@ extern const char
     if (!ptr) {
        passwdEntry = getpwuid(getuid());
        if (passwdEntry && *(passwdEntry->pw_dir)) {
-           ptr= passwdEntry->pw_dir;
+          ptr= passwdEntry->pw_dir;
+       } else {
+          /* This is really serious, so just exit. */
+          perror("NEdit/nc: getpwuid() failed ");
+          exit(EXIT_FAILURE);
        }
     }
     if (!ptr) {
@@ -106,14 +110,22 @@ const char
        getlogin call first, then if that fails, use getpwuid and getuid.  This
        results in the user-name of the original terminal being used, which is
        not correct when the user uses the su command.  Now, getpwuid only: */
-    const struct passwd *passwdEntry = getpwuid(getuid());
 
+    const struct passwd *passwdEntry;
+    static char *userName=NULL;
+    
+    if (userName)
+       return userName;
+    
+    passwdEntry = getpwuid(getuid());
     if (!passwdEntry) {
        /* This is really serious, so just exit. */
        perror("NEdit/nc: getpwuid() failed ");
        exit(EXIT_FAILURE);
     }
-    return passwdEntry->pw_name;
+    userName=malloc(strlen(passwdEntry->pw_name)+1);
+    strcpy(userName, passwdEntry->pw_name);
+    return userName;
 #endif /* VMS */
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.17 2001/11/26 14:54:40 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.18 2001/11/26 21:40:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -138,13 +138,20 @@ ExpandTilde(char *pathname)
        but to keep the code more similar for both cases ... */
     if (username[0] == '\0') {
     	passwdEntry = getpwuid(getuid());
+	if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0')) {
+  	   /* This is really serious, so just exit. */
+           perror("NEdit/nc: getpwuid() failed ");
+           exit(EXIT_FAILURE);
+	}
     }
     else {
     	passwdEntry = getpwnam(username);
+        if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0')) {
+           /* username was just an input by the user, this is no
+	      indication for some (serious) problems */
+           return FALSE;
+	}
     }
-    /* Really paranoid ... */
-    if ( (passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0'))
-	return FALSE;
 
     strcpy(temp, passwdEntry->pw_dir);
     strcat(temp, "/");
