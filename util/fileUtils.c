@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.29 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.30 2003/04/24 11:47:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -121,28 +121,33 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     pathLen = i + 1;
     fileLen = fullLen - pathLen;
     if (pathname) {
-      	if (pathLen > MAXPATHLEN) {
+      	if (pathLen >= MAXPATHLEN) {
             return 1;
 	}
       	strncpy(pathname, fullname, pathLen);
       	pathname[pathLen] = 0;
     }
     if (filename) {
-      	if (fileLen > MAXPATHLEN) {
+      	if (fileLen >= MAXPATHLEN) {
       	    return 2;
       	}
       	strncpy(filename, &fullname[pathLen], fileLen);
       	filename[fileLen] = 0;
     }
 
-#ifdef VMS
-    return 0;
-#else     /* UNIX specific... Modify at a later date for VMS */
-    if(pathname)
-      	return NormalizePathname(pathname);
-    else
-      	return 0;
+#ifndef VMS /* UNIX specific... Modify at a later date for VMS */
+    if(pathname) {
+	if (NormalizePathname(pathname)) {
+	    return 1; /* pathname too long */
+	}
+	pathLen = strlen(pathname);
+    }
 #endif
+    
+    if (filename && pathname && (pathLen + 1 + fileLen) >= MAXPATHLEN) {
+	return 1; /* pathname + filename too long */
+    }
+    return 0;
 }
 
 #ifndef VMS
@@ -243,6 +248,7 @@ ResolvePath(const char * pathIn, char * pathResolved)
         {
             /* It's not a symlink - we are done */
             strncpy(pathResolved, pathIn, MAXPATHLEN);
+            pathResolved[MAXPATHLEN-1] = '\0';
             return TRUE;
         } else
         {
@@ -256,6 +262,7 @@ ResolvePath(const char * pathIn, char * pathResolved)
 
 	if(resolveBuf[0]!='/') {
 	    strncpy(pathBuf, pathIn, MAXPATHLEN);
+	    pathBuf[MAXPATHLEN-1] = '\0';
 	    pathEnd=strrchr(pathBuf, '/');
 	    if(!pathEnd)
 	      	return FALSE;

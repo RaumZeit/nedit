@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.43 2003/04/17 21:46:21 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.44 2003/04/24 11:47:23 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -505,38 +505,41 @@ int main(int argc, char **argv)
 	    numFiles = VMSFileScan(argv[i], &nameList, NULL, INCLUDE_FNF);
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
-	    	ParseFilename(nameList[j], filename, pathname);
-		EditExistingFile(WindowList, filename, pathname, editFlags,
-			geometry, iconic, langMode);
-		if (!macroFileRead) {
-		    ReadMacroInitFile(WindowList);
-		    macroFileRead = True;
-		}
-		if (toDoCommand != NULL)
-	    	    DoMacro(WindowList, toDoCommand, "-do macro");
-	    	if (gotoLine)
-	    	    SelectNumberedLine(WindowList, lineNum);
-		fileSpecified = TRUE;
+	    	if (ParseFilename(nameList[j], filename, pathname) == 0) {
+		    EditExistingFile(WindowList, filename, pathname, editFlags,
+				     geometry, iconic, langMode);
+		    fileSpecified = TRUE;
+		    if (!macroFileRead) {
+		        ReadMacroInitFile(WindowList);
+		        macroFileRead = True;
+		    }
+		    if (toDoCommand != NULL)
+	    	        DoMacro(WindowList, toDoCommand, "-do macro");
+	    	    if (gotoLine)
+	    	        SelectNumberedLine(WindowList, lineNum);
+                } else {
+		    fprintf(stderr, "nedit: file name too long: %s\n", nameList[j]);
+                }
 		free(nameList[j]);
 	    }
 	    if (nameList != NULL)
 	    	free(nameList);
 #else
 	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
-  	        EditExistingFile(WindowList, filename, pathname, editFlags,
-		                 geometry, iconic, langMode);
+		EditExistingFile(WindowList, filename, pathname, editFlags,
+				 geometry, iconic, langMode);
 		fileSpecified = TRUE;
+		if (!macroFileRead) {
+		    ReadMacroInitFile(WindowList);
+		    macroFileRead = True;
+		}
+		if (toDoCommand != NULL)
+		    DoMacro(WindowList, toDoCommand, "-do macro");
+		if (gotoLine)
+		    SelectNumberedLine(WindowList, lineNum);
 	    } else {
-    	        fprintf(stderr, "NEdit: file name too long: %s", argv[i]);
+		fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 	    }
-	    if (!macroFileRead) {
-		ReadMacroInitFile(WindowList);
-		macroFileRead = True;
-	    }
-	    if (toDoCommand != NULL)
-	    	DoMacro(WindowList, toDoCommand, "-do macro");
-	    if (gotoLine)
-	    	SelectNumberedLine(WindowList, lineNum);
 #endif /*VMS*/
 	    toDoCommand = NULL;
 	}

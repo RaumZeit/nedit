@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.26 2003/04/10 17:37:24 edg Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.27 2003/04/24 11:47:23 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * DialogF -- modal dialog printf routine                                       *
@@ -218,7 +218,14 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	    cancel_index = but_index;
     }
 
-    /* Get & translate msg string
+    /* Get & translate msg string. NOTE: the use of vsprintf is inherently
+       dangerous because there is no way to control the length of the written
+       string. vnsprintf isn't available on all platforms, unfortunately.
+       Therefore we have to make sure that msgstr_vsp is large enough such
+       that it cannot overflow under any circumstances (within the context
+       of any DialogF call). A necessary condition is that it can at least
+       hold one file name (MAXPATHLEN). Therefore, DF_MAX_MSG_LENGTH must be
+       sufficiently larger than MAXPATHLEN.
     */
     vsprintf (msgstr_vsp, msgstr, var);
     va_end(var);
