@@ -223,7 +223,9 @@ typedef struct
 #define XmCSimpleHeadings "SimpleHeadings"
 #define XmNsimpleWidths "simpleWidths"
 #define XmCSimpleWidths "SimpleWidths"
+#ifndef XmNselectCallback /* OM 2.2.3 defines this too. */
 #define XmNselectCallback "selectCallback"
+#endif
 #define XmNselectForeground "selectForeground"
 #define XmCSelectForeground "SelectForeground"
 #define XmNselectBackground "selectBackground"
