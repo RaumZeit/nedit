@@ -1,4 +1,4 @@
-/* $Id: textP.h,v 1.6 2002/09/26 12:37:40 ajhood Exp $ */
+/* $Id: textP.h,v 1.7 2003/04/10 18:47:23 tringali Exp $ */
 
 #ifndef NEDIT_TEXTP_H_INCLUDED
 #define NEDIT_TEXTP_H_INCLUDED
@@ -51,6 +51,7 @@ typedef struct _TextPart {
     Boolean overstrike;
     Boolean heavyCursor;
     Boolean readOnly;
+    Boolean hidePointer;
     int rows, columns;
     int marginWidth, marginHeight;
     int cursorBlinkRate;

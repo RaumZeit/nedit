@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.13 2002/12/12 17:26:06 slobasso Exp $ */
+/* $Id: text.h,v 1.14 2003/04/10 18:47:23 tringali Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
@@ -76,6 +76,8 @@
 #define textCHeavyCursor "HeavyCursor"
 #define textNreadOnly "readOnly"
 #define textCReadOnly "ReadOnly"
+#define textNhidePointer "hidePointer"
+#define textCHidePointer "HidePointer"
 #define textNemulateTabs "emulateTabs"
 #define textCEmulateTabs "EmulateTabs"
 #define textNcursorVPadding "cursorVPadding"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.37 2003/01/10 15:33:54 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.38 2003/04/10 18:47:22 tringali Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -35,7 +35,6 @@ static const char CVSID[] = "$Id: text.c,v 1.37 2003/01/10 15:33:54 tringali Exp
 #include "textSel.h"
 #include "textDrag.h"
 #include "nedit.h"
-#include "preferences.h" /* XXX should not be here! */
 #include "calltips.h"
 
 #include <stdio.h>
@@ -80,9 +79,9 @@ static const char CVSID[] = "$Id: text.c,v 1.37 2003/01/10 15:33:54 tringali Exp
 #define VERTICAL_SCROLL_DELAY 50
 
 static void initialize(TextWidget request, TextWidget new);
-static void handleHidePointer(TextWidget w, XtPointer unused, 
+static void handleHidePointer(Widget w, XtPointer unused, 
         XEvent *event, Boolean *continue_to_dispatch);
-static void handleShowPointer(TextWidget w, XtPointer unused, 
+static void handleShowPointer(Widget w, XtPointer unused, 
         XEvent *event, Boolean *continue_to_dispatch);
 static void redisplay(TextWidget w, XEvent *event, Region region);
 static void redisplayGE(TextWidget w, XtPointer client_data,
@@ -648,6 +647,8 @@ static XtResource resources[] = {
       XtOffset(TextWidget, text.heavyCursor), XmRString, "False"},
     {textNreadOnly, textCReadOnly, XmRBoolean, sizeof(Boolean),
       XtOffset(TextWidget, text.readOnly), XmRString, "False"},
+    {textNhidePointer, textCHidePointer, XmRBoolean, sizeof(Boolean),
+      XtOffset(TextWidget, text.hidePointer), XmRString, "False"},
     {textNwrapMargin, textCWrapMargin, XmRInt, sizeof(int),
       XtOffset(TextWidget, text.wrapMargin), XmRString, "0"},
     {textNhScrollBar, textCHScrollBar, XmRWidget, sizeof(Widget),
@@ -835,9 +836,7 @@ static void initialize(TextWidget request, TextWidget new)
     XtAddEventHandler((Widget)new, GraphicsExpose, True,
             (XtEventHandler)redisplayGE, (Opaque)NULL);
 
-    /* The text widget should not be accessing preferences here.  It should
-       be a resource, and the window code sets it from the preferences. */
-    if (GetPrefTypingHidesPointer()) {
+    if (new->text.hidePointer) {
         Display *theDisplay;
         Pixmap empty_pixmap;
         XColor black_color;
@@ -854,30 +853,32 @@ static void initialize(TextWidget request, TextWidget new)
 
         /* Add event handler to hide the pointer on keypresses */
         XtAddEventHandler((Widget)new, NEDIT_HIDE_CURSOR_MASK, False, 
-                (XtEventHandler)handleHidePointer, (Opaque)NULL);
+                handleHidePointer, (Opaque)NULL);
     }
 }
 
 /* Hide the pointer while the user is typing */
-static void handleHidePointer(TextWidget w, XtPointer unused, 
+static void handleHidePointer(Widget w, XtPointer unused, 
         XEvent *event, Boolean *continue_to_dispatch) {
-    ShowHidePointer(w, True);
+    TextWidget tw = (TextWidget) w;
+    ShowHidePointer(tw, True);
 }
 
 /* Restore the pointer if the mouse moves or focus changes */
-static void handleShowPointer(TextWidget w, XtPointer unused, 
+static void handleShowPointer(Widget w, XtPointer unused, 
         XEvent *event, Boolean *continue_to_dispatch) {
-    ShowHidePointer(w, False);
+    TextWidget tw = (TextWidget) w;
+    ShowHidePointer(tw, False);
 }
 
 void ShowHidePointer(TextWidget w, Boolean hidePointer)
 {
-    if (GetPrefTypingHidesPointer()) {
+    if (w->text.hidePointer) {
         if (hidePointer != w->text.textD->pointerHidden) {
             if (hidePointer) {
                 /* Don't listen for keypresses any more */
                 XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, 
-                        (XtEventHandler)handleHidePointer, (Opaque)NULL);
+                        handleHidePointer, (Opaque)NULL);
                 /* Switch to empty cursor */
                 XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
@@ -885,12 +886,12 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer)
 
                 /* Listen to mouse movement, focus change, and button presses */
                 XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK,
-                        False, (XtEventHandler)handleShowPointer, (Opaque)NULL);
+                        False, handleShowPointer, (Opaque)NULL);
             }
             else {
                 /* Don't listen to mouse/focus events any more */
                 XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK,
-                        False, (XtEventHandler)handleShowPointer, (Opaque)NULL);
+                        False, handleShowPointer, (Opaque)NULL);
                 /* Switch to regular cursor */
                 XUndefineCursor(XtDisplay(w), XtWindow(w));
 
@@ -898,7 +899,7 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer)
 
                 /* Listen for keypresses now */
                 XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, 
-                        (XtEventHandler)handleHidePointer, (Opaque)NULL);
+                        handleHidePointer, (Opaque)NULL);
             }
         }
     }
@@ -1164,12 +1165,14 @@ static void realize(Widget w, XtValueMask *valueMask,
 static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed,
 	XtWidgetGeometry *answer)
 {
-    int curHeight = ((TextWidget)w)->core.height;
-    int curWidth = ((TextWidget)w)->core.width;
-    XFontStruct *fs = ((TextWidget)w)->text.textD->fontStruct;
+    TextWidget tw = (TextWidget)w;
+    
+    int curHeight = tw->core.height;
+    int curWidth = tw->core.width;
+    XFontStruct *fs = tw->text.textD->fontStruct;
     int fontWidth = fs->max_bounds.width;
     int fontHeight = fs->ascent + fs->descent;
-    int marginHeight = ((TextWidget)w)->text.marginHeight;
+    int marginHeight = tw->text.marginHeight;
     int propWidth = (proposed->request_mode & CWWidth) ? proposed->width : 0;
     int propHeight = (proposed->request_mode & CWHeight) ? proposed->height : 0;
     

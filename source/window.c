@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.79 2003/04/03 19:05:34 jlous Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.80 2003/04/10 18:47:23 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1687,7 +1687,8 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNsmartIndent, window->indentStyle == SMART_INDENT,
             textNautoWrap, window->wrapMode == NEWLINE_WRAP,
             textNcontinuousWrap, window->wrapMode == CONTINUOUS_WRAP,
-            textNoverstrike, window->overstrike, 
+            textNoverstrike, window->overstrike,
+            textNhidePointer, (Boolean) GetPrefTypingHidesPointer(),
             XmNforeground, AllocColor(sw, window->colorNames[TEXT_FG_COLOR], 
                     &dummy, &dummy, &dummy),
             XmNbackground, AllocColor(sw, window->colorNames[TEXT_BG_COLOR], 
@@ -1713,7 +1714,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             NULL);
     XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
                     hScrollBar, XmNverticalScrollBar, vScrollBar, NULL);
-    
+
     /* add focus, drag, cursor tracking, and smart indent callbacks */
     XtAddCallback(text, textNfocusCallback, (XtCallbackProc)focusCB, window);
     XtAddCallback(text, textNcursorMovementCallback, (XtCallbackProc)movedCB,
