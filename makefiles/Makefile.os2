@@ -1,4 +1,4 @@
-# $Id: Makefile.os2,v 1.5 2001/08/17 23:02:55 edg Exp $
+# $Id: Makefile.os2,v 1.6 2001/10/21 15:09:42 tringali Exp $
 #
 # Makefile for NEdit with XFree86 OS/2
 #
@@ -39,6 +39,8 @@ AR=ar
 DEFINES =                  -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES
 CFLAGS=-Zmt -O5 -mpentium -g -Wall -Wno-unused -W -I$(X11ROOT)/XFree86/include $(DEFINES)
 ARFLAGS=-urs
+# An additional -lXp (just before -lXext) is required if using LessTif's
+# Motif-2.1 compatible libXm
 LIBS= -Zmtd -Zexe -s -Zbsd-signals -L$(X11ROOT)/XFree86/lib -lXm -lXext -lXt -lXmu -lSM -lICE -lX11
 
 

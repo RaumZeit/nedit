@@ -1,7 +1,11 @@
-# $Id: Makefile.solaris,v 1.4 2001/08/17 23:02:55 edg Exp $
+# $Id: Makefile.solaris,v 1.5 2001/10/21 15:09:42 tringali Exp $
+#
+# You may have to select the ANSI C compiler here
 #CC=gcc
-CC=/opt/SUNWspro/bin/cc
+#CC=/opt/SUNWspro/bin/cc
+CC=cc
 AR=ar
+
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
 # For Solaris 2.4, add -DDONT_USE_GLOB
 # On older Solaris systems, Motif may be in /opt/SUNWmotif or even in
@@ -11,9 +15,9 @@ AR=ar
 # To evaluate an alternative layout for the Replace/Find dialog, add
 # -DREPLACE_SCOPE to the CFLAGS. See the README file for more information.
 #
-CFLAGS=-g -I/usr/openwin/include -I/usr/dt/include \
+#CFLAGS=-g -I/usr/openwin/include -I/usr/dt/include \
     	-DUSE_DIRENT -DROWCOLPATCH -DNO_XMIM -DUSE_ACCESS
-#CFLAGS=-O -I/usr/openwin/include -I/opt/SUNWmotif/include -DUSE_DIRENT
+CFLAGS=-O -I/usr/openwin/include -I/opt/SUNWmotif/include -DUSE_DIRENT
 ARFLAGS=-urs
 LIBS= -L/usr/lib -L/usr/openwin/lib -L/usr/dt/lib -lm -lXm -lXt -lX11 \
     	-lsocket -lnsl  -R /usr/openwin/lib -R /usr/dt/lib -R /usr/ucblib

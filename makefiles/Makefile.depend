@@ -1,14 +1,15 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.1 2001/05/15 20:04:50 amai Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.2 2001/10/21 15:09:42 tringali Exp $
 #
 # This is a _generic_ Makefile to generate a dependency file
 # using GNUmake and gcc.
 # Advantage of this method (as compared to "makedepend(1)")
 # is that one can easily filter out dependencies on
 # non-application (i.e. system) headers using the -MM flag
-# of gcc. Demand for GNUMake is basically to have a nice simple
-# rule for $(SRCS) as done below (and for the variable transformation).
+# of gcc. The reason to demand GNUMake is basically to have a nice,
+# simple rule for $(SRCS) as done below (and for the variable
+# transformations).
 # So one doesn't have to modify this file and manually add/update
-# the source file list.
+# the source file list!
 #
 # To use it just you probably just have to edit the
 # variables in the *CONFIG section* as you see fit.
@@ -23,15 +24,18 @@ DEPENDFILE=dependencies
 SHELL=/bin/sh
 
 # Headers are required to determine _all_ files
-# on which the dependency file itself depends ...
+# on which the dependency file itself may depend
 SRCS=$(wildcard *.c)
 HDRS=$(wildcard ../source/*.h) $(wildcard ../util/*.h)
 
 # *************** End CONFIG section ************
 
 
+
+# ************** Now the generic part ***********
+
 .SUFFIXES: .c .o. deps
-.PHONY: all default deps clean
+.PHONY: all default deps new
 
 
 DEPS=$(SRCS:.c=.deps)
@@ -39,17 +43,19 @@ DEPS=$(SRCS:.c=.deps)
 default: all
 
 # This is the more conservative approach
-full: clean deps
+full: clean new deps
 
 # And this a more sophisticated one
 all: $(DEPENDFILE)
 
-$(DEPENDFILE): $(SRCS) $(HDRS)
+# Remove old file, create new one and add CVS info line at top
+new:
 	/bin/rm -f $(DEPENDFILE)
-	$(GCC) $(CPPFLAGS) $(DEFINES) -MM $(SRCS) >>$(DEPENDFILE)
+	echo '# $$Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.2 2001/10/21 15:09:42 tringali Exp $$' >$(DEPENDFILE)
 
-clean:
-	/bin/rm -f $(DEPENDFILE)
+
+$(DEPENDFILE): new $(SRCS) $(HDRS)
+	$(GCC) $(CPPFLAGS) $(DEFINES) -MM $(SRCS) >>$(DEPENDFILE)
 
 deps: $(DEPS)
 
