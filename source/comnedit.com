@@ -1,4 +1,4 @@
-$ ! $Id: comnedit.com,v 1.6 2001/08/12 15:45:03 amai Exp $
+$ ! $Id: comnedit.com,v 1.7 2001/12/20 15:38:26 amai Exp $
 $ !
 $ ! VMS procedure to compile and link modules for NEdit
 $ !
@@ -39,7 +39,7 @@ $ COMPILE smartIndent.c
 $ COMPILE regexconvert.c
 $ COMPILE rbtree.c
 $ !
-$ COPY parse.c_noyacc parse.c
+$ COPY parse_noyacc.c parse.c
 $ COMPILE parse.c
 $ !
 $ COMPILE nc.c
