@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Sep 26, 2002 (Do NOT edit!)
+                 Generated on Oct 1, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -840,6 +840,12 @@ static char * htxt_programmer [] = {
 "Statistics Line in the Preferences menu and position the insertion point ",
 "anywhere on the line.  The statistics line continuously updates the line number ",
 "of the line containing the cursor. ",
+"\n\n",
+"To go to a specific column on a given line, choose Goto Line #... from the ",
+"Search menu and enter a line number and a column number separated by a ",
+"comma.  (e.g. Enter \"100,12\" for line 100 column 12.)  If you want to go to ",
+"a column on the current line just leave out the line number.  (e.g. Enter ",
+"\",45\" to go the column 45 on the current line.) ",
 "\n\n",
 "\01RMatching Parentheses\01I",
 "\n\n",
@@ -2741,7 +2747,7 @@ static char * htxt_actions [] = {
 "\01A    \01Bfind_selection\01A( [\01Csearch-direction\01A] [, \01Csearch-wrap\01A] \n",
 "       [, \01Cnon-regex-search-type\01A] )\n",
 "\01I\n",
-"\01A    \01Bgoto_line_number\01A( [line-number] )\n",
+"\01A    \01Bgoto_line_number\01A( [\01Cline-number\01A] [, \01Ccolumn-number\01A] )\n",
 "\01I\n",
 "\01A    \01Bgoto_mark\01A( \01Cmark-letter\01A )\n",
 "\01I\n",
@@ -5265,4 +5271,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Sep 26, 2002\n";
+static const char * NEditVersion = "NEdit release of Sep  6, 2002\n";

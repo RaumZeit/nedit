@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Sep 26, 2002                                               September 26, 2002
+NEdit release of Sep  6, 2002                                               October 1, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -832,6 +832,12 @@ PROGRAMMING WITH NEDIT
   Statistics Line in the Preferences menu and position the insertion point 
   anywhere on the line. The statistics line continuously updates the line 
   number of the line containing the cursor. 
+
+  To go to a specific column on a given line, choose Goto Line #... from the 
+  Search menu and enter a line number and a column number separated by a 
+  comma. (e.g. Enter "100,12" for line 100 column 12.) If you want to go to a 
+  column on the current line just leave out the line number. (e.g. Enter ",45" 
+  to go the column 45 on the current line.) 
 
 
   MATCHING PARENTHESES
@@ -2821,7 +2827,7 @@ ACTION ROUTINES
     find_selection( [search-direction] [, search-wrap] 
        [, non-regex-search-type] )
 
-    goto_line_number( [line-number] )
+    goto_line_number( [line-number] [, column-number] )
 
     goto_mark( mark-letter )
 
@@ -4584,8 +4590,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Sep 26, 2002
-Sep 26, 2002
+NEdit release of Sep  6, 2002
+Oct 1, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

@@ -955,6 +955,12 @@ Statistics Line in the Preferences menu and position the insertion point
 anywhere on the line.  The statistics line continuously updates the line number
 of the line containing the cursor.
 <P>
+To go to a specific column on a given line, choose Goto Line #... from the
+Search menu and enter a line number and a column number separated by a 
+comma.  (e.g. Enter "100,12" for line 100 column 12.)  If you want to go to
+a column on the current line just leave out the line number.  (e.g. Enter
+",45" to go the column 45 on the current line.)
+<P>
 <H3>Matching Parentheses</H3>
 <P>
 To help you inspect nested parentheses, brackets, braces, quotes, and other
@@ -3273,7 +3279,7 @@ routines which take arguments.  Optional arguments are enclosed in [].
 </PRE>
 <P>
 <PRE>
-    <B>goto_line_number</B>( [line-number] )
+    <B>goto_line_number</B>( [<I>line-number</I>] [, <I>column-number</I>] )
 </PRE>
 <P>
 <PRE>
@@ -5510,8 +5516,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Sep 26, 2002
-Sep 26, 2002
+NEdit release of Sep  6, 2002
+Oct 1, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

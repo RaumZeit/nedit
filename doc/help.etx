@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.30 2002/09/26 12:37:37 ajhood Exp $
+.. $Id: help.etx,v 1.31 2002/10/01 23:45:58 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -869,6 +869,12 @@ Programming with NEdit
   Statistics Line in the Preferences menu and position the insertion point
   anywhere on the line.  The statistics line continuously updates the line number
   of the line containing the cursor.
+  
+  To go to a specific column on a given line, choose Goto Line #... from the
+  Search menu and enter a line number and a column number separated by a 
+  comma.  (e.g. Enter "100,12" for line 100 column 12.)  If you want to go to
+  a column on the current line just leave out the line number.  (e.g. Enter
+  ",45" to go the column 45 on the current line.)
 
 3>Matching Parentheses
 
@@ -2916,7 +2922,7 @@ Action Routines
     **find_selection**( [~search-direction~] [, ~search-wrap~] 
        [, ~non-regex-search-type~] )
     
-    **goto_line_number**( [line-number] )
+    **goto_line_number**( [~line-number~] [, ~column-number~] )
     
     **goto_mark**( ~mark-letter~ )
     
