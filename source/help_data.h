@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 25, 2003 (Do NOT edit!)
+                 Generated on Jun 5, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -2274,7 +2274,7 @@ static char * htxt_macro_subrs [] = {
 "\01A\01Bbeep()\01A\n",
 "\01IRing the bell. ",
 "\n\n",
-"\01A\01Bcalltip( \"text_or_key\" [, mode [, pos [, position_modifier ...]]] )\01A\n",
+"\01A\01Bcalltip( \"text_or_key\" [, pos [, mode or position_modifier, ...]] )\01A\n",
 "\01IPops up a calltip. <pos> is an optional position in the buffer where the tip ",
 "will be displayed.  Passing -1 for <pos> is equivalent to not specifying a ",
 "position, and it guarantees that the tip will appear on-screen somewhere even ",
@@ -5233,4 +5233,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of May 25, 2003\n";
+static const char * NEditVersion = "NEdit release of Mar 14, 2003\n";

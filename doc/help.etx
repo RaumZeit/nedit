@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.48 2003/05/25 15:55:35 edg Exp $
+.. $Id: help.etx,v 1.49 2003/06/05 22:01:48 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2451,7 +2451,7 @@ Macro Subroutines
 **beep()**
   Ring the bell.
 
-**calltip( "text_or_key" [, mode [, pos [, position_modifier ...]]] )**
+**calltip( "text_or_key" [, pos [, mode or position_modifier, ...]] )**
   Pops up a calltip. <pos> is an optional position in the buffer where the tip
   will be displayed.  Passing -1 for <pos> is equivalent to not specifying a 
   position, and it guarantees that the tip will appear on-screen somewhere even
