@@ -17,6 +17,8 @@ void RaiseShellWindow(Widget shell);
 void RaiseWindow(Display *display, Window w);
 void AddDialogMnemonicHandler(Widget dialog);
 void RemoveDialogMnemonicHandler(Widget dialog);
+void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
+void UpdateAccelLockPatch(Widget topWidget, Widget newButton);
 char *GetXmStringText(XmString fromString);
 XFontStruct *GetDefaultFontStruct(XmFontList font);
 XmString* StringTable(int count, ...);
@@ -62,6 +64,8 @@ Widget CreateFormDialog(Widget parent, char *name, ArgList arglist,
 Widget CreateFileSelectionDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateQuestionDialog(Widget parent, char *name, ArgList arglist,
+	Cardinal  argcount);
+Widget CreateMessageDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);

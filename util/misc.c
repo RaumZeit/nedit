@@ -73,8 +73,12 @@ typedef Widget (*MotifDialogCreationCall)(Widget, String, ArgList, Cardinal);
    user must first make this many entries in the text field, limited for
    safety, to the maximum reasonable number of times user can hit up-arrow
    before carpal tunnel syndrome sets in */
-#define HISTORY_LIST_TRIM_TO 3 /* 1000 */
-#define HISTORY_LIST_MAX 6 /* 2000 */
+#define HISTORY_LIST_TRIM_TO 1000
+#define HISTORY_LIST_MAX 2000
+
+/* Maximum length for a menu accelerator string which can be parsed by
+   parseAccelString (how many modifier keys can you hold down at once?) */
+#define MAX_ACCEL_LEN 100
 
 /* flags to enable/disable delete key remapping and pointer centered dialogs */
 static int RemapDeleteEnabled = True;
@@ -101,6 +105,12 @@ static unsigned char watch_mask_bits[] = {
 static void addMnemonicGrabs(Widget addTo, Widget w);
 static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
 static void findAndActivateMnemonic(Widget w, unsigned int keycode);
+static void addAccelGrabs(Widget topWidget, Widget w);
+static void addAccelGrab(Widget topWidget, Widget w);
+static int parseAccelString(char *string, KeySym *keysym,
+	unsigned int *modifiers);
+static void lockCB(Widget w, XtPointer callData, XKeyEvent *event,
+	Boolean *continueDispatch);
 static void removeWhiteSpace(char *string);
 static int stripCaseCmp(char *str1, char *str2);
 static void warnHandlerCB(String message);
@@ -232,9 +242,9 @@ void RealizeWithoutForcingPosition(Widget shell)
 /*
 ** Older X applications and X servers were mostly designed to operate with
 ** visual class PseudoColor, because older displays were at most 8 bits
-** deep.  Modern X servers, however often support 24 bit depth and other
-** color models.  Despite these capabilities, the default visual class is
-** still usually set to PseudoColor, because many X applications don't work
+** deep.  Modern X servers, however, usually support 24 bit depth and other
+** color models.  Sun (and others?) still sets their default visual to
+** 8-bit PseudoColor, because some of their X applications don't work
 ** properly with the other color models.  The problem with PseudoColor, of
 ** course, is that users run out of colors in the default colormap, and if
 ** they install additional colormaps for individual applications, colors
@@ -253,6 +263,11 @@ void RealizeWithoutForcingPosition(Widget shell)
 ** Applications which actually require a particular color model (i.e. for
 ** doing color table animation or dynamic color assignment) should not use
 ** this routine.
+**
+** Note that a consequence of using the "best" as opposed to the default
+** visual is that some color resources are still converted with the default
+** visual (particularly *background), and these must be avoided by widgets
+** which are allowed to handle any visual.
 */
 void FindBestVisual(Display *display, char *appName, char *appClass,
 	Visual **visual, int *depth, Colormap *colormap)
@@ -455,6 +470,12 @@ Widget CreateQuestionDialog(Widget parent, char *name,
     return addParentVisArgsAndCall(XmCreateQuestionDialog, parent, name,
 	    arglist, argcount);
 }
+Widget CreateMessageDialog(Widget parent, char *name,
+	ArgList arglist, Cardinal  argcount)
+{
+    return addParentVisArgsAndCall(XmCreateMessageDialog, parent, name,
+	    arglist, argcount);
+}
 Widget CreateErrorDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
@@ -653,6 +674,36 @@ void RemoveDialogMnemonicHandler(Widget dialog)
     XtUngrabKey(dialog, AnyKey, Mod1Mask);
     XtRemoveEventHandler(dialog, KeyPressMask, False,
     	    (XtEventHandler)mnemonicCB, (XtPointer)0);
+}
+
+/*
+** Patch around Motif's poor handling of menu accelerator keys.  Motif
+** does not process menu accelerators when the caps lock or num lock
+** keys are engaged.  To enable accelerators in these cases, call this
+** routine with the completed menu bar widget as "topMenuContainer", and
+** the top level shell widget as "topWidget".  It will add key grabs for
+** all of the accelerators it finds in the topMenuContainer menu tree, and
+** an event handler which can process dropped accelerator events by (again)
+** traversing the menu tree looking for matching accelerators, and invoking
+** the appropriate button actions.  Any dynamic additions to the menus
+** require a call to UpdateAccelLockPatch to add the additional grabs.
+** Unfortunately, these grabs can not be removed.
+*/
+void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer)
+{
+    XtAddEventHandler(topWidget, KeyPressMask, False,
+    	    (XtEventHandler)lockCB, topMenuContainer);
+    addAccelGrabs(topWidget, topMenuContainer);
+}
+
+/*
+** Add additional key grabs for new menu items added to the menus, for
+** patching around the Motif Caps/Num Lock problem. "topWidget" must be
+** the same widget passed in the original call to AccelLockBugPatch.
+*/
+void UpdateAccelLockPatch(Widget topWidget, Widget newButton)
+{
+    addAccelGrab(topWidget, newButton);
 }
 
 /*
@@ -1337,6 +1388,7 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
     int numChildren, i, isMenu;
     KeySym mnemonic = '\0';
     unsigned char rowColType;
+    unsigned int keyCode;
     
     if (XtIsComposite(w)) {
 	if (XtClass(w) == xmRowColumnWidgetClass) {
@@ -1354,9 +1406,16 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
 	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
 	if (mnemonic != '\0') {
 	    mneString[0] = mnemonic; mneString[1] = '\0';
-	    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog),
-	    	    XStringToKeysym(mneString)), Mod1Mask,
-	    	    True, GrabModeAsync, GrabModeAsync);
+	    keyCode = XKeysymToKeycode(XtDisplay(dialog),
+	    	    XStringToKeysym(mneString));
+	    XtGrabKey(dialog, keyCode, Mod1Mask, True,
+		    GrabModeAsync, GrabModeAsync);
+	    XtGrabKey(dialog, keyCode, Mod1Mask | LockMask, True,
+		    GrabModeAsync, GrabModeAsync);
+	    XtGrabKey(dialog, keyCode, Mod1Mask | Mod3Mask, True,
+		    GrabModeAsync, GrabModeAsync);
+	    XtGrabKey(dialog, keyCode, Mod1Mask | LockMask | Mod3Mask, True,
+		    GrabModeAsync, GrabModeAsync);
 	}
     }
 }
@@ -1417,4 +1476,186 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode)
 	    }
 	}
     }
+}
+
+/*
+** Part of workaround for Motif Caps/Num Lock bug.  Search the widget tree
+** under w for widgets with accelerators.  When found, add three passive
+** grabs to topWidget, one for the accelerator keysym + modifiers + Caps
+** Lock, one for Num Lock, and one for both, thus directing lock +
+** accelerator events to topWidget.
+*/
+static void addAccelGrabs(Widget topWidget, Widget w)
+{
+    WidgetList children;
+    Widget menu;
+    int numChildren, i;
+    
+    if (XtIsComposite(w)) {
+	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
+		&numChildren, NULL);
+	for (i=0; i<numChildren; i++)
+    	    addAccelGrabs(topWidget, children[i]);
+    } else if (XtClass(w) == xmCascadeButtonWidgetClass) {
+	XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
+	if (menu != NULL)
+	    addAccelGrabs(topWidget, menu);
+    } else
+	addAccelGrab(topWidget, w);
+}
+
+/*
+** Grabs the key + modifier defined in the widget's accelerator resource,
+** in combination with the Caps Lock and Num Lock accelerators.
+*/
+static void addAccelGrab(Widget topWidget, Widget w)
+{
+    char *accelString = NULL;
+    KeySym keysym;
+    unsigned int modifiers;
+    
+    XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
+    if (accelString == NULL || *accelString == '\0')
+	return;
+    
+    if (!parseAccelString(accelString, &keysym, &modifiers))
+	return;
+    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+	    modifiers | LockMask, True, GrabModeAsync, GrabModeAsync);
+    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+	    modifiers | Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+	    modifiers | LockMask | Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+}
+
+/*
+** Read a Motif accelerator string and translate it into a keysym + modifiers.
+** Returns TRUE if the parse was successful, FALSE, if not.
+*/
+static int parseAccelString(char *string, KeySym *keySym,
+	unsigned int *modifiers)
+{
+#define N_MODIFIERS 12
+    /*... Is NumLock always Mod3? */
+    static char *modifierNames[N_MODIFIERS] = {"Ctrl", "Shift", "Alt", "Mod2",
+	    "Mod4", "Mod5", "Button1", "Button2", "Button3", "Button4",
+	    "Button5"};
+    static unsigned int modifierMasks[N_MODIFIERS] = {ControlMask, ShiftMask,
+	    Mod1Mask, Mod2Mask, Mod4Mask, Mod5Mask, Button1Mask, Button2Mask,
+	    Button3Mask, Button4Mask, Button5Mask};
+    char modStr[MAX_ACCEL_LEN];
+    char evtStr[MAX_ACCEL_LEN];
+    char keyStr[MAX_ACCEL_LEN];
+    char *c, *evtStart, *keyStart;
+    int i;
+    
+    if (strlen(string) >= MAX_ACCEL_LEN)
+	return FALSE;
+    
+    /* Get the modifier part */
+    for (c = string; *c != '<'; c++)
+	if (*c == '\0')
+	    return FALSE;
+    strncpy(modStr, string, c - string);
+    modStr[c - string] = '\0';
+    
+    /* Verify the <key> or <keypress> part */
+    evtStart = c;
+    for ( ; *c != '>'; c++)
+	if (*c == '\0')
+	    return FALSE;
+    c++;
+    strncpy(evtStr, evtStart, c - evtStart);
+    evtStr[c - evtStart] = '\0';
+    if (!stripCaseCmp(evtStr, "<key>") && !stripCaseCmp(evtStr, "<keypress>"))
+	return FALSE;
+    
+    /* Get the keysym part */
+    keyStart = c;
+    for ( ; *c != '\0'; c++);
+    strncpy(keyStr, keyStart, c - keyStart);
+    keyStr[c - keyStart] = '\0';
+    *keySym = XStringToKeysym(keyStr);
+    
+    /* Parse the modifier part */
+    *modifiers = 0;
+    c = modStr;
+    while (*c != '\0') {
+	while (*c == ' ' || *c == '\t')
+	    c++;
+	if (*c == '\0')
+	    break;
+	for (i = 0; i < N_MODIFIERS; i++) {
+	    if (!strncmp(c, modifierNames[i], strlen(modifierNames[i]))) {
+		*modifiers |= modifierMasks[i];
+	    	c += strlen(modifierNames[i]);
+		break;
+	    }
+	}
+	if (i == N_MODIFIERS)
+	    return FALSE;
+    }
+    
+    return TRUE;
+}
+
+/*
+** Event handler for patching around Motif's lock + accelerator problem.
+** Looks for a menu item in the patched menu hierarchy and invokes
+** SimulateButtonPress on it to invoke its action.
+*/
+static void lockCB(Widget w, XtPointer callData, XKeyEvent *event,
+	Boolean *continueDispatch)
+{
+    Widget topMenuWidget = (Widget)callData;
+    *continueDispatch = TRUE;
+    if (!(event->state & (LockMask | Mod3Mask)))
+	return;
+
+    if (!findAndActivateAccel(topMenuWidget, event->keycode,
+	    event->state & ~(LockMask | Mod3Mask)))
+	*continueDispatch = FALSE;
+}
+
+/*
+** Search through menu hierarchy under w and look for a button with
+** accelerator matching keyCode + modifiers, and do its action
+*/
+static int findAndActivateAccel(Widget w, unsigned int keyCode,
+	unsigned int modifiers)
+{
+
+    WidgetList children;
+    Widget menu;
+    int numChildren, i;
+    char *accelString = NULL;
+    KeySym keysym;
+    unsigned int mods;
+    
+    if (XtIsComposite(w)) {
+	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
+		&numChildren, NULL);
+	for (i=0; i<numChildren; i++)
+    	    if (findAndActivateAccel(children[i], keyCode, modifiers))
+		return TRUE;
+    } else if (XtClass(w) == xmCascadeButtonWidgetClass) {
+	XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
+	if (menu != NULL)
+	    if (findAndActivateAccel(menu, keyCode, modifiers))
+		return TRUE;
+    } else {
+	XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
+	if (accelString != NULL && *accelString != '\0') {
+	    if (!parseAccelString(accelString, &keysym, &mods))
+		return FALSE;
+	    if (keyCode == XKeysymToKeycode(XtDisplay(w), keysym) &&
+		    modifiers == mods) {
+		if (XtIsSensitive(w)) {
+		    SimulateButtonPress(w);
+		    return TRUE;
+		}
+	    }
+	}
+    }
+    return FALSE;
 }
