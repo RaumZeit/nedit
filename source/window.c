@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.44 2002/02/23 20:01:35 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.45 2002/02/27 14:44:07 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -1157,6 +1157,13 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     if (window->highlightData != NULL)
     	UpdateHighlightStyles(window);
         
+    /* Change the window manager size hints. 
+       Note: this has to be done _before_ we set the new sizes. ICCCM2
+       compliant window managers (such as fvwm2) would otherwise resize
+       the window twice: once because of the new sizes requested, and once
+       because of the new size increments, resulting in an overshoot. */
+    UpdateWMSizeHints(window);
+    
     /* Use the information from the old window to re-size the window to a
        size appropriate for the new font */
     fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
@@ -1166,8 +1173,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     XtVaSetValues(window->shell, XmNwidth, newWindowWidth, XmNheight,
     	    newWindowHeight, NULL);
     
-    /* Change the window manager size hints and the minimum pane height */
-    UpdateWMSizeHints(window);
+    /* Change the minimum pane height */
     UpdateMinPaneHeights(window);
 }
 
