@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.60 2002/08/09 13:11:03 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.61 2002/08/12 15:37:28 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -122,8 +122,6 @@ static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData);
 static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData);
-static void focusToISearchTextCB(Widget w, WindowInfo *window,
-        XtPointer callData);
 static int isIconic(WindowInfo *window);
 static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
@@ -361,6 +359,13 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
                                 with toggle buttons below */
             XmNbottomAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
+
+    /* Disable keyboard traversal of the toggle buttons.  We were doing
+       this previously by forcing the keyboard focus back to the text
+       widget whenever a toggle changed.  That causes an ugly focus flash
+       on screen.  It's better just not to go there in the first place. 
+       Plus, if the user really wants traversal, it's an X resource so it
+       can be enabled without too much pain and suffering. */
     
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
@@ -372,11 +377,11 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNbottomAttachment, XmATTACH_FORM,
             XmNtopOffset, 1, /* see openmotif note above */
             XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 0, NULL);
+            XmNmarginHeight, 0, 
+            XmNtraversalOn, False,
+            NULL);
     XmStringFree(s1);
     
-    XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback,
-            (XtCallbackProc)focusToISearchTextCB, window);
     window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
             XmNlabelString, s1=XmStringCreateSimple("RegExp"),
@@ -387,10 +392,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopOffset, 1, /* see openmotif note above */
             XmNrightAttachment, XmATTACH_WIDGET,
             XmNrightWidget, window->iSearchCaseToggle,
-            XmNmarginHeight, 0, NULL);
+            XmNmarginHeight, 0,
+            XmNtraversalOn, False,
+            NULL);
     XmStringFree(s1);
-    XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback,
-            (XtCallbackProc)focusToISearchTextCB, window);
     
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
@@ -401,10 +406,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopOffset, 1, /* see openmotif note above */
             XmNrightAttachment, XmATTACH_WIDGET,
             XmNrightWidget, window->iSearchRegexToggle,
-            XmNmarginHeight, 0, NULL);
+            XmNmarginHeight, 0,
+            XmNtraversalOn, False,
+            NULL);
     XmStringFree(s1);
-    XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback,
-            (XtCallbackProc)focusToISearchTextCB, window);
     
     window->iSearchText = XtVaCreateManagedWidget("iSearchText",
             xmTextWidgetClass, window->iSearchForm,
@@ -1784,20 +1789,6 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
     for (i=0; i<argc; i++)
         XtFree(argv[i]);
     XtFree((char *)argv);
-}
-
-/*
-** Return the focus to the incremental search text field.  This reduces the
-** number of mouse presses the user needs to do to use the toggle buttons in
-** the incremental search bar.  Admittedly, if the user traverses through with
-** the intent of setting both direction and search type via the keyboard, it
-** actually increases the number of keystrokes, but on the whole it appears to
-** be a big winner.
-*/
-static void focusToISearchTextCB(Widget w, WindowInfo *window,
-        XtPointer callData) 
-{
-    XmProcessTraversal(window->iSearchText, XmTRAVERSE_CURRENT);
 }
 
 /*
