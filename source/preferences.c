@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.91 2003/05/22 22:12:37 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.92 2003/05/23 07:48:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -637,7 +637,7 @@ static PrefDescripRec PrefDescrip[] = {
         Lex:.lex:::::::\n\
         Makefile:MAKEFILE:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
-        NEdit Macro:.NM .NEDITMACRO AUTOLOAD.NM:::::::\n\
+        NEdit Macro:.NM .NEDITMACRO:::::::\n\
         Pascal:.PAS .P .INT:::::::\n\
         Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
         PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
@@ -666,7 +666,7 @@ static PrefDescripRec PrefDescrip[] = {
         Lex:.lex:::::::\n\
         Makefile:Makefile makefile .gmk:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
-        NEdit Macro:.nm .neditmacro autoload.nm:::::::\n\
+        NEdit Macro:.nm .neditmacro:::::::\n\
         Pascal:.pas .p .int:::::::\n\
         Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
         PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
@@ -5123,30 +5123,22 @@ static void updatePatternsTo5dot4(void)
 {
 #ifdef VMS
     const char *pyLm5dot3 =
-        "Python:\\.PY:\"\\^#!\\.\\*python\":Auto:None:::\n";
-    const char *nmLm5dot3 =
-        "NEdit Macro:\\.NM \\.NEDITMACRO::::::\n";
+        "Python:\\.PY:\"\\^#!\\.\\*python\":Auto:None::::?\n";
     const char *xrLm5dot3 =
-        "X Resources:\\.XRESOURCES \\.XDEFAULTS \\.NEDIT:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\":::::\n";
-	
+        "X Resources:\\.XRESOURCES \\.XDEFAULTS \\.NEDIT:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::?\n";
+
     const char *pyLm5dot4 = 
         "Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
-    const char *nmLm5dot4 =
-        "NEdit Macro:.NM .NEDITMACRO AUTOLOAD.NM:::::::\n";
     const char *xrLm5dot4 =
         "X Resources:.XRESOURCES .XDEFAULTS .NEDIT NEDIT.RC:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
 #else
     const char *pyLm5dot3 =
-        "Python:\\.py:\"\\^#!\\.\\*python\":Auto:None:::\n";
-    const char *nmLm5dot3 =
-        "NEdit Macro:\\.nm \\.neditmacro::::::\n";
+        "Python:\\.py:\"\\^#!\\.\\*python\":Auto:None::::?\n";
     const char *xrLm5dot3 =
-        "X Resources:\\.Xresources \\.Xdefaults \\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\":::::\n";
-	
+        "X Resources:\\.Xresources \\.Xdefaults \\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::?\n";
+
     const char *pyLm5dot4 = 
         "Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
-    const char *nmLm5dot4 =
-        "NEdit Macro:.nm .neditmacro autoload.nm:::::::\n";
     const char *xrLm5dot4 =
         "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
 #endif
@@ -5155,8 +5147,6 @@ static void updatePatternsTo5dot4(void)
        altered the default 5.3 definitions. */
     if (regexFind(TempStringPrefs.language, pyLm5dot3))
 	regexReplace(&TempStringPrefs.language, pyLm5dot3, pyLm5dot4);
-    if (regexFind(TempStringPrefs.language, nmLm5dot3))
-	regexReplace(&TempStringPrefs.language, nmLm5dot3, nmLm5dot4);
     if (regexFind(TempStringPrefs.language, xrLm5dot3))
 	regexReplace(&TempStringPrefs.language, xrLm5dot3, xrLm5dot4);
 }
