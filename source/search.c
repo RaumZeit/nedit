@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.51 2002/10/07 16:19:27 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.52 2002/11/19 18:05:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3827,7 +3827,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
         int *endPos, int *extentBW, int *extentFW)
 {
     char *fileString;
-    int found, resp, fileEnd;
+    int found, resp, fileEnd = window->buffer->length - 1, outsideBounds;
     
     /* reject empty string */
     if (*searchString == '\0')
@@ -3836,11 +3836,21 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
     /* get the entire text buffer from the text area widget */
     fileString = BufGetAll(window->buffer);
     
+    /* If we're already outside the boundaries, we must consider wrapping
+       immediately (Note: fileEnd+1 is a valid starting position. Consider
+       searching for $ at the end of a file ending with \n.) */
+    if (direction == SEARCH_FORWARD && beginPos > fileEnd + 1 || 
+	direction == SEARCH_BACKWARD && beginPos < 0) 
+	outsideBounds = TRUE;
+    else
+	outsideBounds = FALSE;
+    
     /* search the string copied from the text area widget, and present
        dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
        an incremental search is in progress.  A parameter would be better. */
-    if (GetPrefSearchDlogs() && window->iSearchStartPos == -1) {
-    	found = SearchString(fileString, searchString, direction, searchType,
+    if (window->iSearchStartPos == -1) { /* normal search */
+    	found = !outsideBounds &&
+		SearchString(fileString, searchString, direction, searchType,
     	    	FALSE, beginPos, startPos, endPos, extentBW, extentFW,
 		GetWindowDelimiters(window));
     	/* Avoid Motif 1.1 bug by putting away search dialog before DialogF */
@@ -3852,11 +3862,10 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
     	    unmanageReplaceDialogs(window);
         if (!found) {
             if (searchWrap) {
-		fileEnd = window->buffer->length - 1;
 		if (direction == SEARCH_FORWARD && beginPos != 0) {
 		    if(GetPrefBeepOnSearchWrap()) {
 			XBell(TheDisplay, 0);
-		    } else {
+		    } else if (GetPrefSearchDlogs()) {
 			resp = DialogF(DF_QUES, window->shell, 2,
 				"Continue search from\nbeginning of file?", 
                                 "Continue", "Cancel");
@@ -3871,7 +3880,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 		} else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
 		    if(GetPrefBeepOnSearchWrap()) {
 			XBell(TheDisplay, 0);
-		    } else {
+		    } else if (GetPrefSearchDlogs()) {
 			resp = DialogF(DF_QUES, window->shell, 2,
 				"Continue search\nfrom end of file?", "Continue",
 				"Cancel");
@@ -3881,44 +3890,32 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 			}
 		    }
                     found = SearchString(fileString, searchString, direction,
-			searchType, FALSE, fileEnd, startPos, endPos, extentBW,
+			searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW,
 			extentFW, GetWindowDelimiters(window));
-        	}
-	    }
-            if (!found)
-                DialogF(DF_INF, window->shell,1,"String was not found","OK");
-        }
-    } else { /* no dialogs */
-	if(GetPrefBeepOnSearchWrap() && searchWrap && window->iSearchStartPos == -1) {
-	    found = SearchString(fileString, searchString, direction, searchType,
-		    FALSE, beginPos, startPos, endPos, extentBW, extentFW,
-		    GetWindowDelimiters(window));
-	    if (!found) {
-		fileEnd = window->buffer->length - 1;
-		if (direction == SEARCH_FORWARD && beginPos != 0) {
-		    XBell(TheDisplay, 0);
-		    found = SearchString(fileString, searchString, direction,
-			    searchType, FALSE, 0, startPos, endPos, extentBW,
-			    extentFW, GetWindowDelimiters(window));
-		} else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
-		    XBell(TheDisplay, 0);
-		    found = SearchString(fileString, searchString, direction,
-			    searchType, FALSE, fileEnd, startPos, endPos, 
-			    extentBW, extentFW, GetWindowDelimiters(window));
 		}
-		if (!found)
-		  XBell(TheDisplay, 0);
 	    }
-      	} else {
-	    found = SearchString(fileString, searchString, direction,
-		    searchType, searchWrap, beginPos, startPos, endPos,
-		    extentBW, extentFW, GetWindowDelimiters(window));
-	    if (found) {
-	      	if(window->iSearchStartPos != -1)
-	      	    iSearchTryBeepOnWrap(window, direction, beginPos, *startPos);
-	    } else
-		XBell(TheDisplay, 0);
+            if (!found) {
+		if (GetPrefSearchDlogs()) {
+		    DialogF(DF_INF, window->shell,1,"String was not found","OK");
+		} else {
+		    XBell(TheDisplay, 0);
+		}
+	    }
 	}
+    } else { /* incremental search */
+        if (outsideBounds && searchWrap) {
+	    if (direction == SEARCH_FORWARD) beginPos = 0;
+	    else beginPos = fileEnd+1;
+            outsideBounds = FALSE;
+        }
+	found = !outsideBounds &&
+            SearchString(fileString, searchString, direction,
+	    searchType, searchWrap, beginPos, startPos, endPos,
+	    extentBW, extentFW, GetWindowDelimiters(window));
+	if (found) {
+	    iSearchTryBeepOnWrap(window, direction, beginPos, *startPos);
+	} else
+	    XBell(TheDisplay, 0);
     }
     
     /* Free the text buffer copy returned from BufGetAll */
@@ -4355,7 +4352,7 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
     int found, isRect, rectStart, rectEnd, lineStart = 0;
     
     /* find length of selection, give up on no selection or too long */
-    if (!BufGetSelectionPos(window->buffer, &selStart, &selEnd, &isRect,
+    if (!BufGetEmptySelectionPos(window->buffer, &selStart, &selEnd, &isRect,
     	    &rectStart, &rectEnd))
 	return FALSE;
     if (selEnd - selStart > SEARCHMAX)

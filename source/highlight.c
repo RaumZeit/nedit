@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.36 2002/11/08 20:22:45 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.37 2002/11/19 18:05:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1697,9 +1697,14 @@ static int parseString(highlightDataRec *pattern, char **string,
 	
 	/* Make sure parsing progresses.  If patterns match the empty string,
 	   they can get stuck and hang the process */
-	if (stringPtr == startingStringPtr)
+	if (stringPtr == startingStringPtr) {
+	    /* Avoid stepping over the end of the string (possible for
+               zero-length matches at end of the string) */
+	    if (*stringPtr == '\0')
+		break;
 	    fillStyleString(&stringPtr, &stylePtr, stringPtr+1,
 			pattern->style, delimiters, prevChar);
+	}
     }
     
     /* If this is an anchored match (must match on first character), and

@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.12 2002/10/14 18:41:07 n8gray Exp $ */
+/* $Id: textBuf.h,v 1.13 2002/11/19 18:05:51 edg Exp $ */
 
 #ifndef NEDIT_TEXTBUF_H_INCLUDED
 #define NEDIT_TEXTBUF_H_INCLUDED
@@ -91,6 +91,8 @@ void BufUnselect(textBuffer *buf);
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart,
         int rectEnd);
 int BufGetSelectionPos(textBuffer *buf, int *start, int *end,
+        int *isRect, int *rectStart, int *rectEnd);
+int BufGetEmptySelectionPos(textBuffer *buf, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
 char *BufGetSelectionText(textBuffer *buf);
 void BufRemoveSelected(textBuffer *buf);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.25 2002/10/14 18:41:05 n8gray Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.26 2002/11/19 18:05:51 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -674,6 +674,14 @@ int BufGetSelectionPos(textBuffer *buf, int *start, int *end,
 {
     return getSelectionPos(&buf->primary, start, end, isRect, rectStart,
     	    rectEnd);
+}
+
+/* Same as above, but also returns TRUE for empty selections */
+int BufGetEmptySelectionPos(textBuffer *buf, int *start, int *end,
+        int *isRect, int *rectStart, int *rectEnd)
+{
+    return getSelectionPos(&buf->primary, start, end, isRect, rectStart,
+    	    rectEnd) || buf->primary.zeroWidth;
 }
 
 char *BufGetSelectionText(textBuffer *buf)
@@ -1948,8 +1956,7 @@ static void setRectSelect(selection *sel, int start, int end,
 static int getSelectionPos(selection *sel, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd)
 {
-    if (!sel->selected)
-    	return False;
+    /* Always fill in the parameters (zero-width can be requested too). */
     *isRect = sel->rectangular;
     *start = sel->start;
     *end = sel->end;
@@ -1957,7 +1964,7 @@ static int getSelectionPos(selection *sel, int *start, int *end,
 	*rectStart = sel->rectStart;
 	*rectEnd = sel->rectEnd;
     }
-    return True;
+    return sel->selected;
 }
 
 static char *getSelectionText(textBuffer *buf, selection *sel)
@@ -2198,7 +2205,7 @@ static void updateSelections(textBuffer *buf, int pos, int nDeleted,
 static void updateSelection(selection *sel, int pos, int nDeleted,
 	int nInserted)
 {
-    if (!sel->selected || pos > sel->end)
+    if ((!sel->selected && !sel->zeroWidth) || pos > sel->end)
     	return;
     if (pos+nDeleted <= sel->start) {
     	sel->start += nInserted - nDeleted;
@@ -2207,6 +2214,7 @@ static void updateSelection(selection *sel, int pos, int nDeleted,
     	sel->start = pos;
     	sel->end = pos;
     	sel->selected = False;
+        sel->zeroWidth = False;
     } else if (pos <= sel->start && pos+nDeleted < sel->end) {
     	sel->start = pos;
     	sel->end = nInserted + sel->end - nDeleted;
