@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.25 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: textDisp.h,v 1.26 2004/10/01 08:13:55 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDisp.h -- Nirvana Editor Text Diplay Header File                         *
@@ -103,6 +103,7 @@ typedef struct _textDisp {
     int continuousWrap;     	    	/* Wrap long lines when displaying */
     int wrapMargin; 	    	    	/* Margin in # of char positions for
     	    	    	    	    	   wrapping in continuousWrap mode */
+    int showWrapMargin;                 /* draw line at wrap margin */
     int *lineStarts;
     int topLineNum;			/* Line number of top displayed line
     					   of file (first line of file is 1) */
@@ -150,6 +151,8 @@ typedef struct _textDisp {
     calltipStruct calltip;              /* The info for the calltip itself */
     Pixel calltipFGPixel;
     Pixel calltipBGPixel;
+    Pixel wrapMarginFGPixel;            /* color for drawing wrap margin */
+    GC wrapMarginGC;                    /* GC for drawing wrap margin */
     int suppressResync;			/* Suppress resynchronization of line
                                            starts during buffer updates */
     int nLinesDeleted;			/* Number of lines deleted during
@@ -169,8 +172,9 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
 	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
 	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
+        Pixel wrapMarginFGPixel, 
         int continuousWrap, int wrapMargin, XmString bgClassString, 
-        Pixel calltipFGPixel, Pixel calltipBGPixel);
+        Pixel calltipFGPixel, Pixel calltipBGPixel, int showWrapMargin);
 void TextDFree(textDisp *textD);
 void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
 textBuffer *TextDGetBuffer(textDisp *textD);
@@ -179,7 +183,7 @@ void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
     	unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP,
         Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, 
-        Pixel lineNoFgP, Pixel cursorFgP);
+        Pixel lineNoFgP, Pixel cursorFgP, Pixel wrapMarginFgP);
 void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
 int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
 int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
@@ -212,6 +216,7 @@ void TextDBlankCursor(textDisp *textD);
 void TextDUnblankCursor(textDisp *textD);
 void TextDSetCursorStyle(textDisp *textD, int style);
 void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
+void TextDSetShowWrapMargin(textDisp *textD, int state);
 int TextDEndOfLine(textDisp *textD, int pos, int startPosIsLineStart);
 int TextDStartOfLine(textDisp *textD, int pos);
 int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.128 2004/10/01 08:06:50 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.129 2004/10/01 08:13:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -137,6 +137,9 @@ static char *AutoIndentTypes[N_INDENT_STYLES+3] = {"None", "Auto",
 #define N_VIRTKEY_OVERRIDE_MODES 3
 static char *VirtKeyOverrideModes[N_VIRTKEY_OVERRIDE_MODES+1] = { "Never",
 	"Auto", "Always", NULL};
+#define N_SHOW_WRAP_MARGIN_STYLES 3
+static char *ShowWrapMarginStrings[N_SHOW_WRAP_MARGIN_STYLES+1] = { "Never",
+        "Always", "When Wrap is Enabled", NULL};
 
 #define N_SHOW_MATCHING_STYLES 3
 /* For backward compatibility, "False" and "True" are still accepted.
@@ -228,6 +231,8 @@ typedef struct {
     Widget lineNoFgErrW;
     Widget cursorFgW;
     Widget cursorFgErrW;
+    Widget wrapMarginFgW;
+    Widget wrapMarginFgErrW;
     WindowInfo *window;
 } colorDialog;
 
@@ -236,6 +241,7 @@ static struct prefData {
     int openInTab;		/* open files in new tabs  */
     int wrapStyle;		/* what kind of wrapping to do */
     int wrapMargin;		/* 0=wrap at window width, other=wrap margin */
+    int showWrapMargin;         /* whether to draw line at wrap margin */
     int autoIndent;		/* style for auto-indent */
     int autoSave;		/* whether automatic backup feature is on */
     int saveOldVersion;		/* whether to preserve a copy of last version */
@@ -747,6 +753,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.wrapStyle, AutoWrapTypes, True},
     {"wrapMargin", "WrapMargin", PREF_INT, "0",
     	&PrefData.wrapMargin, NULL, True},
+    {"showWrapMargin", "ShowWrapMargin", PREF_ENUM, "Never",
+        &PrefData.showWrapMargin, ShowWrapMarginStrings, True},
     {"autoIndent", "AutoIndent", PREF_ENUM, "Auto",
     	&PrefData.autoIndent, AutoIndentTypes, True},
     {"autoSave", "AutoSave", PREF_BOOLEAN, "True",
@@ -927,6 +935,9 @@ static PrefDescripRec PrefDescrip[] = {
     {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1",
         PrefData.tooltipBgColor,
         (void *)sizeof(PrefData.tooltipBgColor), False},
+    {"wrapMarginForeground", "wrapMarginForeground", PREF_STRING,
+            NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[WRAPMARGIN_FG_COLOR],
+            (void *)sizeof(PrefData.colorNames[WRAPMARGIN_FG_COLOR]), True},
                 
     {"shell", "Shell", PREF_STRING,
 #if defined(__MVS__) || defined(__EMX__)
@@ -1025,7 +1036,9 @@ static Widget TabDistText, EmTabText, EmTabToggle, UseTabsToggle, EmTabLabel;
 /* Module-global variables for Wrap Margin dialog */
 static int DoneWithWrapDialog;
 static WindowInfo *WrapDialogForWindow;
-static Widget WrapText, WrapTextLabel, WrapWindowToggle;
+static Widget WrapText, WrapTextLabel, WrapWindowToggle, ShowWrapMarginPulldown,
+        ShowWrapMarginPulldownItems[N_SHOW_WRAP_MARGIN_STYLES], 
+        ShowWrapMarginOptMenu, ShowWrapMarginLabel;
 
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
@@ -1416,6 +1429,16 @@ void SetPrefWrapMargin(int margin)
 int GetPrefWrapMargin(void)
 {
     return PrefData.wrapMargin;
+}
+
+void SetPrefShowWrapMargin(int state)
+{
+    setIntPref(&PrefData.showWrapMargin, state);
+}
+
+int GetPrefShowWrapMargin(void)
+{
+    return PrefData.showWrapMargin;
 }
 
 void SetPrefSearch(int searchType)
@@ -2558,6 +2581,9 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
     Arg selBoxArgs[2];
     XmString s1;
     int margin;
+    int showWrapMargin;
+    int i, n;
+    Arg args[20];
 
     XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
@@ -2600,16 +2626,70 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
 	    XmNbottomWidget, WrapText, NULL);
     XmStringFree(s1);
 
+    ShowWrapMarginPulldown = CreatePulldownMenu(form, "ShowWrapMarginPulldown",
+            NULL, 0);
+    for(i=0; i<N_SHOW_WRAP_MARGIN_STYLES; i++) {
+        s1 = XmStringCreateSimple(ShowWrapMarginStrings[i]);
+        ShowWrapMarginPulldownItems[i] = XtVaCreateManagedWidget(
+                "ShowWrapMarginPulldown", 
+                xmPushButtonWidgetClass, ShowWrapMarginPulldown, 
+                XmNlabelString, s1,
+                XmNmarginHeight, 0,
+                XmNuserData, i,
+                NULL);
+        XmStringFree(s1);
+    }
+    n = 0;
+    XtSetArg(args[n], XmNspacing, 0); n++;
+    XtSetArg(args[n], XmNmarginWidth, 0); n++;
+    XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
+    XtSetArg(args[n], XmNtopWidget, WrapText); n++;
+    XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+    XtSetArg(args[n], XmNsubMenuId, ShowWrapMarginPulldown); n++;
+    ShowWrapMarginOptMenu = XmCreateOptionMenu(form,
+            "ShowWrapMarginOptMenu", args, n);
+    XtManageChild(ShowWrapMarginOptMenu);
+
+    ShowWrapMarginLabel = XtVaCreateManagedWidget("ShowWrapMarginLabel", 
+            xmLabelGadgetClass, form,
+            XmNlabelString, s1=XmStringCreateSimple("Show Wrap Margin"),
+            XmNmnemonic, 'S',
+            XmNuserData, XtParent(ShowWrapMarginOptMenu),
+            XmNalignment, XmALIGNMENT_END,
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, WrapText,
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNrightAttachment, XmATTACH_WIDGET,
+            XmNrightWidget, ShowWrapMarginOptMenu,
+            XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
+            XmNbottomWidget, ShowWrapMarginOptMenu,
+            NULL);
+    XmStringFree(s1);
+    
     /* Set default value */
-    if (forWindow == NULL)
+    if (forWindow == NULL) {
     	margin = GetPrefWrapMargin();
-    else
+        showWrapMargin = GetPrefShowWrapMargin();
+    } else {
     	XtVaGetValues(forWindow->textArea, textNwrapMargin, &margin, NULL);
+        showWrapMargin = forWindow->showWrapMargin;
+    }
+
+    if (showWrapMargin > N_SHOW_WRAP_MARGIN_STYLES || showWrapMargin < 0)
+    {
+        fprintf(stderr, "nedit: internal error: illegal value for showWrapMargin: %d\n", showWrapMargin);
+        showWrapMargin = SHOW_WRAP_MARGIN_NEVER;
+    }
+
     XmToggleButtonSetState(WrapWindowToggle, margin==0, True);
+    XtVaSetValues(ShowWrapMarginOptMenu, XmNmenuHistory, 
+            ShowWrapMarginPulldownItems[showWrapMargin], NULL);
     if (margin != 0)
     	SetIntText(WrapText, margin);
     XtSetSensitive(WrapText, margin!=0);
     XtSetSensitive(WrapTextLabel, margin!=0);
+    XtSetSensitive(ShowWrapMarginOptMenu, margin!=0);
+    XtSetSensitive(ShowWrapMarginLabel, margin!=0);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -2632,6 +2712,8 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int wrapAtWindow, margin, stat;
     WindowInfo *window = WrapDialogForWindow;
+    int showWrapMargin;
+    Widget showWrapMarginSelectedItem;
     
     /* get the values that the user entered and make sure they're ok */
     wrapAtWindow = XmToggleButtonGetState(WrapWindowToggle);
@@ -2651,6 +2733,13 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 
     }
 
+    XtVaGetValues(ShowWrapMarginOptMenu, XmNmenuHistory, 
+            &showWrapMarginSelectedItem, NULL);
+    XtVaGetValues(showWrapMarginSelectedItem, XmNuserData, &showWrapMargin, NULL);
+    if (showWrapMargin > N_SHOW_WRAP_MARGIN_STYLES || showWrapMargin < 0) {
+        showWrapMargin = SHOW_WRAP_MARGIN_NEVER;
+    }
+
 #ifdef SGI_CUSTOM
     /* Ask the user about saving as a default preference */
     if (WrapDialogForWindow != NULL) {
@@ -2662,20 +2751,25 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 	}
 	if (setDefault) {
     	    SetPrefWrapMargin(margin);
+            SetPrefShowWrapMargin(showWrapMargin);
 	    SaveNEditPrefs(window->shell, GetPrefShortMenus());
 	}
     }
 #endif
 
     /* Set the value in either the requested window or default preferences */
-    if (WrapDialogForWindow == NULL)
+    if (WrapDialogForWindow == NULL) {
     	SetPrefWrapMargin(margin);
-    else {
+        SetPrefShowWrapMargin(showWrapMargin);
+    } else {
         char *params[1];
         char marginStr[25];
         sprintf(marginStr, "%d", margin);
         params[0] = marginStr;
         XtCallActionProc(window->textArea, "set_wrap_margin", NULL, params, 1);
+        sprintf(marginStr, "%d", showWrapMargin);
+        params[0] = marginStr;
+        XtCallActionProc(window->textArea, "set_show_wrap_margin", NULL, params, 1);
     }
     DoneWithWrapDialog = True;
 }
@@ -2691,6 +2785,8 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
     
     XtSetSensitive(WrapTextLabel, !wrapAtWindow);
     XtSetSensitive(WrapText, !wrapAtWindow);
+    XtSetSensitive(ShowWrapMarginOptMenu, !wrapAtWindow);
+    XtSetSensitive(ShowWrapMarginLabel, !wrapAtWindow);
 }
 
 /*
@@ -5702,6 +5798,13 @@ static void cursorFgModifiedCB(Widget w, XtPointer clientData,
     showColorStatus(cd, cd->cursorFgW, cd->cursorFgErrW);
 }
 
+static void wrapMarginFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->wrapMarginFgW, cd->wrapMarginFgErrW);
+}
+
 
 /* 
  * Helper functions for validating colors
@@ -5754,12 +5857,13 @@ static void updateColors(colorDialog *cd)
             *hiliteFg = XmTextGetString(cd->hiliteFgW),
             *hiliteBg = XmTextGetString(cd->hiliteBgW),
             *lineNoFg = XmTextGetString(cd->lineNoFgW),
-            *cursorFg = XmTextGetString(cd->cursorFgW);
+            *cursorFg = XmTextGetString(cd->cursorFgW),
+            *wrapMarginFg = XmTextGetString(cd->wrapMarginFgW);
 
     for (window = WindowList; window != NULL; window = window->next)
     {
         SetColors(window, textFg, textBg, selectFg, selectBg, hiliteFg, 
-                hiliteBg, lineNoFg, cursorFg);
+                hiliteBg, lineNoFg, cursorFg, wrapMarginFg);
     }
 
     SetPrefColorName(TEXT_FG_COLOR  , textFg  );
@@ -5770,6 +5874,7 @@ static void updateColors(colorDialog *cd)
     SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
     SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
     SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
+    SetPrefColorName(WRAPMARGIN_FG_COLOR, wrapMarginFg);
 
     XtFree(textFg);
     XtFree(textBg);
@@ -5779,6 +5884,7 @@ static void updateColors(colorDialog *cd)
     XtFree(hiliteBg);
     XtFree(lineNoFg);
     XtFree(cursorFg);
+    XtFree(wrapMarginFg);
 }
 
 
@@ -5948,6 +6054,20 @@ void ChooseColors(WindowInfo *window)
     
     topW = infoLbl;
     
+    /* The right column (backgrounds) */
+    tmpW = addColorGroup( form, "textBg", 'T', "Text Area Background",
+            &(cd->textBgW), &(cd->textBgErrW), topW, 51, 99, 
+            textBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "selectBg", 'B', "Selection Background",
+            &(cd->selectBgW), &(cd->selectBgErrW), tmpW, 51, 99, 
+            selectBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "hiliteBg", 'h', "Matching (..) Background",
+            &(cd->hiliteBgW), &(cd->hiliteBgErrW), tmpW, 51, 99, 
+            hiliteBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "wrapMarginFg", 'w', "Wrap Margin Color",
+            &(cd->wrapMarginFgW), &(cd->wrapMarginFgErrW), tmpW, 51, 99, 
+            wrapMarginFgModifiedCB, cd );
+
     /* The left column (foregrounds) of color entry groups */
     tmpW = addColorGroup( form, "textFg", 'P', "Plain Text Foreground", 
             &(cd->textFgW), &(cd->textFgErrW), topW, 1, 49, 
@@ -5961,19 +6081,8 @@ void ChooseColors(WindowInfo *window)
     tmpW = addColorGroup( form, "lineNoFg", 'L', "Line Numbers",
             &(cd->lineNoFgW), &(cd->lineNoFgErrW), tmpW, 1, 49, 
             lineNoFgModifiedCB, cd );
-
-    /* The right column (backgrounds) */
-    tmpW = addColorGroup( form, "textBg", 'T', "Text Area Background",
-            &(cd->textBgW), &(cd->textBgErrW), topW, 51, 99, 
-            textBgModifiedCB, cd );
-    tmpW = addColorGroup( form, "selectBg", 'B', "Selection Background",
-            &(cd->selectBgW), &(cd->selectBgErrW), tmpW, 51, 99, 
-            selectBgModifiedCB, cd );
-    tmpW = addColorGroup( form, "hiliteBg", 'h', "Matching (..) Background",
-            &(cd->hiliteBgW), &(cd->hiliteBgErrW), tmpW, 51, 99, 
-            hiliteBgModifiedCB, cd );
     tmpW = addColorGroup( form, "cursorFg", 'C', "Cursor Color",
-            &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 51, 99, 
+            &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 1, 49, 
             cursorFgModifiedCB, cd );
 
     tmpW = XtVaCreateManagedWidget("infoLbl",
@@ -6056,6 +6165,7 @@ void ChooseColors(WindowInfo *window)
     XmTextSetString(cd->hiliteBgW, GetPrefColorName(HILITE_BG_COLOR));
     XmTextSetString(cd->lineNoFgW, GetPrefColorName(LINENO_FG_COLOR));
     XmTextSetString(cd->cursorFgW, GetPrefColorName(CURSOR_FG_COLOR));
+    XmTextSetString(cd->wrapMarginFgW, GetPrefColorName(WRAPMARGIN_FG_COLOR));
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);

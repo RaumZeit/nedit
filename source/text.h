@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.19 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: text.h,v 1.20 2004/10/01 08:13:54 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * text.h -- Nirvana Editor Text Widget Header File                            *
@@ -61,6 +61,8 @@
 #define textCcalltipForeground "CalltipForeground"
 #define textNcalltipBackground "calltipBackground"
 #define textCcalltipBackground "CalltipBackground"
+#define textNwrapMarginForeground "wrapMarginForeground"
+#define textCWrapMarginForeground "WrapMarginForeground"
 #define textNpendingDelete "pendingDelete"
 #define textCPendingDelete "PendingDelete"
 #define textNhScrollBar "hScrollBar"
@@ -95,6 +97,8 @@
 #define textCContinuousWrap "ContinuousWrap"
 #define textNwrapMargin "wrapMargin"
 #define textCWrapMargin "WrapMargin"
+#define textNshowWrapMargin "showWrapMargin"
+#define textCShowWrapMargin "ShowWrapMargin"
 #define textNautoIndent "autoIndent"
 #define textCAutoIndent "AutoIndent"
 #define textNsmartIndent "smartIndent"

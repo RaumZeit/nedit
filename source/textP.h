@@ -1,4 +1,4 @@
-/* $Id: textP.h,v 1.9 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: textP.h,v 1.10 2004/10/01 08:13:55 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textP.h -- Nirvana Editor Text Editing Widget private include file           *
@@ -59,6 +59,7 @@ typedef struct _TextPart {
     /* resources */
     Pixel selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel;
     Pixel cursorFGPixel, lineNumFGPixel, calltipFGPixel, calltipBGPixel;
+    Pixel wrapMarginFGPixel;
     XFontStruct *fontStruct;
     Boolean pendingDelete;
     Boolean autoShowInsertPos;
@@ -75,6 +76,7 @@ typedef struct _TextPart {
     int marginWidth, marginHeight;
     int cursorBlinkRate;
     int wrapMargin;
+    Boolean showWrapMargin;
     int emulateTabs;
     int lineNumCols;
     char *delimiters;

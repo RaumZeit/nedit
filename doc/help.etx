@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.78 2004/10/01 08:06:49 yooden Exp $
+.. $Id: help.etx,v 1.79 2004/10/01 08:13:54 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3636,6 +3636,14 @@ Preferences
   Set margin for Auto Newline Wrap, Continuous Wrap, and Fill Paragraph.  Lines
   may, be wrapped at the right margin of the window, or the margin can be set
   at a specific column.
+
+**Show Wrap Margin**
+  Visually indicate which column is set as the wrap margin by drawing a vertical
+  line. Choose between never, always and when wrap is enabled. "Never" turns
+  this feature off. "Always" will show the wrap margin irrespecitive of the
+  wrapping style. "When Wrap is Enabled" will show the wrap margin only if
+  continuous or auto-newline wrap styles are choosed and does not show the wrap
+  margin if wrapping is turned off.
 
 **Tab Stops**
   Set the tab distance (number of characters between tab stops) for tab

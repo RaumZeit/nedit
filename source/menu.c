@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.117 2004/10/01 08:06:50 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.118 2004/10/01 08:13:54 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -391,6 +391,8 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setWrapMarginAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
+static void setShowWrapMarginAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
 static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
@@ -565,6 +567,7 @@ static XtActionsRec Actions[] = {
     {"set_auto_indent", setAutoIndentAP},
     {"set_wrap_text", setWrapTextAP},
     {"set_wrap_margin", setWrapMarginAP},
+    {"set_show_wrap_margin", setShowWrapMarginAP},
     {"set_highlight_syntax", setHighlightSyntaxAP},
 #ifndef VMS
     {"set_make_backup_copy", setMakeBackupCopyAP},
@@ -4078,6 +4081,20 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args,
     }
     else {
         fprintf(stderr, "nedit: set_wrap_margin requires argument\n");
+    }
+}
+
+static void setShowWrapMarginAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    int showWrapMargin = 0;
+    int i;
+    
+    if (*nArgs > 0) {
+        if (sscanf(args[0], "%d", &showWrapMargin) == 1) {
+            SetShowWrapMargin(window, showWrapMargin);
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.48 2004/07/28 18:02:03 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.49 2004/10/01 08:13:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -641,6 +641,9 @@ static XtResource resources[] = {
     {textNcalltipBackground, textCcalltipBackground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.calltipBGPixel), XmRString, 
       NEDIT_DEFAULT_CALLTIP_BG},
+    {textNwrapMarginForeground, textCWrapMarginForeground, XmRPixel,sizeof(Pixel),
+      XtOffset(TextWidget, text.wrapMarginFGPixel), XmRString, 
+      NEDIT_DEFAULT_WRAPMARGIN_FG},
     {textNbacklightCharTypes,textCBacklightCharTypes,XmRString,sizeof(XmString),
       XtOffset(TextWidget, text.backlightCharTypes), XmRString, NULL},
     {textNrows, textCRows, XmRInt,sizeof(int),
@@ -671,6 +674,8 @@ static XtResource resources[] = {
       XtOffset(TextWidget, text.hidePointer), XmRString, "False"},
     {textNwrapMargin, textCWrapMargin, XmRInt, sizeof(int),
       XtOffset(TextWidget, text.wrapMargin), XmRString, "0"},
+    {textNshowWrapMargin, textCShowWrapMargin, XmRBoolean, sizeof(Boolean),
+      XtOffset(TextWidget, text.showWrapMargin), XmRString, "True"},
     {textNhScrollBar, textCHScrollBar, XmRWidget, sizeof(Widget),
       XtOffset(TextWidget, text.hScrollBar), XmRString, ""},
     {textNvScrollBar, textCVScrollBar, XmRWidget, sizeof(Widget),
@@ -820,10 +825,10 @@ static void initialize(TextWidget request, TextWidget new)
 	    new->primitive.foreground, new->text.selectFGPixel,
 	    new->text.selectBGPixel, new->text.highlightFGPixel,
 	    new->text.highlightBGPixel, new->text.cursorFGPixel,
-	    new->text.lineNumFGPixel,
-          new->text.continuousWrap, new->text.wrapMargin,
-          new->text.backlightCharTypes, new->text.calltipFGPixel,
-          new->text.calltipBGPixel);
+            new->text.lineNumFGPixel, new->text.wrapMarginFGPixel,
+            new->text.continuousWrap, new->text.wrapMargin,
+            new->text.backlightCharTypes, new->text.calltipFGPixel,
+            new->text.calltipBGPixel, new->text.showWrapMargin);
 
     /* Add mandatory delimiters blank, tab, and newline to the list of
        delimiters.  The memory use scheme here is that new values are
@@ -1120,6 +1125,9 @@ static Boolean setValues(TextWidget current, TextWidget request,
     	    new->text.continuousWrap != current->text.continuousWrap)
     	TextDSetWrapMode(current->text.textD, new->text.continuousWrap,
     	    	new->text.wrapMargin);
+    
+    if (new->text.showWrapMargin != current->text.showWrapMargin)
+        TextDSetShowWrapMargin(current->text.textD, new->text.showWrapMargin);
     
     /* When delimiters are changed, copy the memory, so that the caller
        doesn't have to manage it, and add mandatory delimiters blank,
