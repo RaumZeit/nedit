@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.17 2002/07/15 14:11:18 edg Exp $ */
+/* $Id: search.h,v 1.18 2002/12/12 17:26:04 slobasso Exp $ */
 
 #ifndef NEDIT_SEARCH_H_INCLUDED
 #define NEDIT_SEARCH_H_INCLUDED
@@ -60,17 +60,8 @@ void RemoveFromMultiReplaceDialog(WindowInfo *window);
 */
 enum SearchType {
       	SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX, 
-	SEARCH_LITERAL_WORD, SEARCH_CASE_SENSE_WORD, SEARCH_REGEX_NOCASE };
-/*
-** Definitions for the search method strings, used as arguments for 
-** macro search subroutines and search action routines
-*/
-#define SEARCH_LITERAL_STRING         	"literal"
-#define SEARCH_CASE_SENSE_STRING	"case"
-#define SEARCH_LITERAL_WORD_STRING	"word"
-#define SEARCH_CASE_SENSE_WORD_STRING	"caseWord"
-#define SEARCH_REGEX_STRING             "regex"
-#define SEARCH_REGEX_NOCASE_STRING	"regexNoCase"
+	SEARCH_LITERAL_WORD, SEARCH_CASE_SENSE_WORD, SEARCH_REGEX_NOCASE,
+        N_SEARCH_TYPES /* must be last in enum SearchType */ };
 
 #ifdef REPLACE_SCOPE
 /* Scope on which the replace operations apply */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.53 2002/12/08 09:29:40 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.54 2002/12/12 17:26:04 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -262,6 +262,20 @@ static charMatchTable MatchingChars[N_MATCH_CHARS] = {
     {'\'', '\'', SEARCH_FORWARD},
     {'`', '`', SEARCH_FORWARD},
     {'\\', '\\', SEARCH_FORWARD},
+};
+
+/*
+** Definitions for the search method strings, used as arguments for 
+** macro search subroutines and search action routines
+*/
+static char *searchTypeStrings[] = {
+    "literal",          /* SEARCH_LITERAL         */
+    "case",             /* SEARCH_CASE_SENSE      */
+    "regex",            /* SEARCH_REGEX           */
+    "word",             /* SEARCH_LITERAL_WORD    */
+    "caseWord",         /* SEARCH_CASE_SENSE_WORD */
+    "regexNoCase",      /* SEARCH_REGEX_NOCASE    */
+    NULL
 };
 
 /*
@@ -3975,21 +3989,17 @@ int SearchString(const char *string, const char *searchString, int direction,
 */
 int StringToSearchType(const char * string, int *searchType) 
 {
-    if (!strcmp(string, SEARCH_LITERAL_STRING))
-    	*searchType = SEARCH_LITERAL;
-    else if (!strcmp(string, SEARCH_CASE_SENSE_STRING))
-    	*searchType =  SEARCH_CASE_SENSE;
-    else if (!strcmp(string, SEARCH_REGEX_STRING))
-    	*searchType =  SEARCH_REGEX;
-    else if (!strcmp(string, SEARCH_LITERAL_WORD_STRING))
-    	*searchType =  SEARCH_LITERAL_WORD;
-    else if (!strcmp(string, SEARCH_CASE_SENSE_WORD_STRING))
-    	*searchType =  SEARCH_CASE_SENSE_WORD;
-    else if (!strcmp(string, SEARCH_REGEX_NOCASE_STRING))
-    	*searchType =  SEARCH_REGEX_NOCASE;
-    else 
-      	return FALSE; /* string not recognized  */
-    return TRUE; /* string ok */
+    int i;
+    for (i = 0; searchTypeStrings[i]; i++) {
+        if (!strcmp(string, searchTypeStrings[i])) {
+            break;
+        }
+    }
+    if (!searchTypeStrings[i]) {
+        return FALSE;
+    }
+    *searchType = i;
+    return TRUE;
 } 
 
 /*
@@ -4542,20 +4552,10 @@ static int historyIndex(int nCycles)
 */
 static char *searchTypeArg(int searchType)
 {
-    if (searchType == SEARCH_LITERAL)
-    	return SEARCH_LITERAL_STRING;
-    else if (searchType == SEARCH_CASE_SENSE)
-    	return SEARCH_CASE_SENSE_STRING;
-    else if (searchType == SEARCH_REGEX)
-    	return SEARCH_REGEX_STRING;
-    else if (searchType == SEARCH_LITERAL_WORD)
-    	return SEARCH_LITERAL_WORD_STRING;
-    else if (searchType == SEARCH_CASE_SENSE_WORD)
-    	return SEARCH_CASE_SENSE_WORD_STRING;
-    else if (searchType == SEARCH_REGEX_NOCASE)
-    	return SEARCH_REGEX_NOCASE_STRING;
-    else /* Fallback: */
-      	return SEARCH_LITERAL_STRING;
+    if (0 <= searchType && searchType < N_SEARCH_TYPES) {
+        return searchTypeStrings[searchType];
+    }
+    return searchTypeStrings[SEARCH_LITERAL];
 }
 
 /*
@@ -4729,5 +4729,3 @@ static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
     else
 	window->iSearchLastLiteralCase = searchCaseSense;
 }
-
-
