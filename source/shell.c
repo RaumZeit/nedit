@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.28 2004/01/08 06:19:27 tksoh Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.29 2004/01/26 09:23:22 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -688,12 +688,6 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
     }
 }
 
-void MakeShellBanner(WindowInfo *window)
-{
-    SetModeMessage(window,
-    	    "Shell Command in Progress -- Press Ctrl+. to Cancel");
-}
-
 /*
 ** Timer proc for putting up the "Shell Command in Progress" banner if
 ** the process is taking too long.
@@ -704,7 +698,8 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     shellCmdInfo *cmdData = window->shellCmdData;
     
     cmdData->bannerIsUp = True;
-    MakeShellBanner(window);
+    SetModeMessage(window,
+    	    "Shell Command in Progress -- Press Ctrl+. to Cancel");
     cmdData->bannerTimeoutID = 0;
 }
 

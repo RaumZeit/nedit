@@ -1,4 +1,4 @@
-/* $Id: shell.h,v 1.6 2004/01/08 06:19:27 tksoh Exp $ */
+/* $Id: shell.h,v 1.7 2004/01/26 09:23:22 tksoh Exp $ */
 
 #ifndef NEDIT_SHELL_H_INCLUDED
 #define NEDIT_SHELL_H_INCLUDED
@@ -18,6 +18,5 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input,
         int output, int outputReplaceInput,
 	int saveFirst, int loadAfter, int fromMacro);
 void AbortShellCommand(WindowInfo *window);
-void MakeShellBanner(WindowInfo *window);
 
 #endif /* NEDIT_SHELL_H_INCLUDED */

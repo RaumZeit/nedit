@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.103 2004/01/20 03:31:54 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.104 2004/01/26 09:23:22 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1463,6 +1463,7 @@ static void showStatsForm(WindowInfo *window, int state)
 void SetModeMessage(WindowInfo *window, const char *message)
 {
     window->modeMessageDisplayed = True;
+    window->modeMessage = XtNewString(message);
 
     if (!IsTopDocument(window))
     	return;
@@ -1482,7 +1483,9 @@ void SetModeMessage(WindowInfo *window, const char *message)
 void ClearModeMessage(WindowInfo *window)
 {
     window->modeMessageDisplayed = False;
-
+    XtFree(window->modeMessage);
+    window->modeMessage = NULL;
+    
     if (!IsTopDocument(window))
     	return;
 
@@ -4000,32 +4003,33 @@ void RefreshWindowStates(WindowInfo *window)
     if (!GetPrefTabbedMode() || !IsTopDocument(window))
     	return;
 	
-    UpdateStatsLine(window);
+    if (window->modeMessageDisplayed)
+    	XmTextSetString(window->statsLine, window->modeMessage);
+    else
+    	UpdateStatsLine(window);
     UpdateWindowReadOnly(window);
     UpdateWindowTitle(window);
 
-    /* show/hide statsline as need */
-    if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm))
+    /* show/hide statsline as needed */
+    if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm)) {
+    	/* turn on statline to display mode message */
     	showStats(window, True);
-    else if (!window->showStats && XtIsManaged(window->statsLineForm))
+    }
+    else if (window->showStats && !XtIsManaged(window->statsLineForm)) {
+    	/* turn on statsline since it is enabled */
+    	showStats(window, True);
+    }
+    else if (!window->showStats && !window->modeMessageDisplayed &&
+             XtIsManaged(window->statsLineForm)) {
+    	/* turn off statsline since there's nothing to show */
     	showStats(window, False);
-    else if (window->showStats && !XtIsManaged(window->statsLineForm))
-    	showStats(window, True);
-
+    }
+    
     /* signal if macro/shell is running */
-    if (window->shellCmdData || window->macroCmdData) {
-    	if (window->showStats || window->modeMessageDisplayed) {
-    	    if (window->shellCmdData)
-		MakeShellBanner(window);
-    	    else if (window->macroCmdData)
-		MakeMacroBanner(window);
-	}
-	
+    if (window->shellCmdData || window->macroCmdData)
     	BeginWait(window->shell);
-    }
-    else {
+    else
     	EndWait(window->shell);
-    }
 
     /* we need to force the statsline to reveal itself */
     if (XtIsManaged(window->statsLineForm)) {

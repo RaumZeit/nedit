@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.43 2004/01/16 02:59:15 tksoh Exp $ */
+/* $Id: nedit.h,v 1.44 2004/01/26 09:23:21 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -399,6 +399,8 @@ typedef struct _WindowInfo {
     Boolean	backlightChars;		/* is char backlighting turned on? */
     char	*backlightCharTypes;	/* what backlighting to use */
     Boolean	modeMessageDisplayed;	/* special stats line banner for learn
+    					   and shell command executing modes */
+    char	*modeMessage;		/* stats line banner content for learn
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */
     Boolean	windowMenuValid;	/* is window menu up to date? */
