@@ -1,6 +1,6 @@
                     NEdit Version 5.5, October 2004
 
-$Id: README,v 1.44 2004/09/30 09:30:33 edg Exp $
+$Id: README,v 1.45 2004/09/30 19:35:33 edg Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -64,7 +64,7 @@ John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou,
 Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.
 
 
-VERSION 5.5RC2
+VERSION 5.5
 
 Version 5.5 offers one major new feature along with a few others:
 
@@ -77,12 +77,6 @@ Version 5.5 offers one major new feature along with a few others:
 
 See the ReleaseNotes file for a more detailed description of these new features
 and a list of bugs fixed in this version.
-
-
-KNOWN DEFECTS
-
-  - There is no "Upgrading from 5.4 to 5.5" section in this README file.
-  - The ReleaseNotes file may not be up to date.
 
 
 BUILDING NEDIT
