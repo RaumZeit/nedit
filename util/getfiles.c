@@ -315,13 +315,13 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
     	    XmDIALOG_SELECTION_LABEL));
     XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB,
     	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB,
     	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST), 0);
+    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
     	    XmNmnemonic, promptString[strspn(promptString, "lD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), 0);
+    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), NULL);
     AddDialogMnemonicHandler(existFileSB);
     RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB,
                     XmDIALOG_FILTER_TEXT));
@@ -375,13 +375,13 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
     	    (char *)help);
     if (DefaultDirectory != NULL || DefaultPattern != NULL)
     	XtVaSetValues(existFileSB, XmNdirectory, DefaultDirectory,
-    		XmNpattern, DefaultPattern, 0);
+    		XmNpattern, DefaultPattern, NULL);
 #ifndef SGI_CUSTOM
     makeListTypeable(XmFileSelectionBoxGetChild(existFileSB,XmDIALOG_LIST));
     makeListTypeable(XmFileSelectionBoxGetChild(existFileSB,XmDIALOG_DIR_LIST));
 #if XmVersion >= 1002
     XtVaSetValues(existFileSB, XmNinitialFocus, XtParent(
-    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST)), 0);
+    	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST)), NULL);
 #endif
 #endif
     ManageDialogCenteredOnPointer(existFileSB);
@@ -394,9 +394,9 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
        To sort them properly, we have to patch the directory and file
        searching routines to re-sort the lists when they change */
     XtVaGetValues(existFileSB, XmNdirSearchProc, &OrigDirSearchProc,
-    	    XmNfileSearchProc, &OrigFileSearchProc, 0);
+    	    XmNfileSearchProc, &OrigFileSearchProc, NULL);
     XtVaSetValues(existFileSB, XmNdirSearchProc, replacementDirSearchProc,
-    	    XmNfileSearchProc, replacementFileSearchProc, 0);
+    	    XmNfileSearchProc, replacementFileSearchProc, NULL);
     sortWidgetList(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST));
     sortWidgetList(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST));
 #if XmVersion < 1002
@@ -405,7 +405,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
        button after the keyboard focus is established.  Note the voodoo
        below: calling XmProcess traversal extra times (a recommendation from
        OSF technical support) somehow succeedes in giving the file list focus */
-    XtVaSetValues(existFileSB, XmNdefaultButton, NULL, 0);
+    XtVaSetValues(existFileSB, XmNdefaultButton, NULL, NULL);
     for (i=1; i<30; i++)
     	XmProcessTraversal(XmFileSelectionBoxGetChild(existFileSB,
     		XmDIALOG_LIST), XmTRAVERSE_CURRENT);
@@ -417,7 +417,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
     
     if (SelectResult == GFN_OK) {
 	XtVaGetValues(existFileSB, XmNdirSpec, &cFileString, XmNdirectory,
-		&cDir, XmNpattern, &cPattern, 0);
+		&cDir, XmNpattern, &cPattern, NULL);
 	/* Undocumented: file selection box widget allocates copies of these
 	   strings on getValues calls.  I have risked freeing them to avoid
 	   memory leaks, since I assume other developers have made this same
@@ -486,17 +486,17 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
     XmStringFree(titleString);
     XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
     	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
     	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST), 0);
+    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
     	    XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST), 0);
+    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
     	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
     	    promptString[strspn(promptString, "lFD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), NULL);
     AddDialogMnemonicHandler(newFileSB);
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT));
@@ -548,7 +548,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 #endif
     if (DefaultDirectory != NULL || DefaultPattern != NULL)
     	XtVaSetValues(newFileSB, XmNdirectory, DefaultDirectory,
-    		XmNpattern, DefaultPattern, 0);
+    		XmNpattern, DefaultPattern, NULL);
     help = createPanelHelp(newFileSB, HelpNew, "Saving a File");
     createYesNoDialog(newFileSB);
     createErrorDialog(newFileSB);
@@ -561,11 +561,11 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 #if XmVersion >= 1002
 #ifndef SGI_CUSTOM
     XtVaSetValues(newFileSB, XmNinitialFocus, 
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), NULL);
 #else /* SGI_CUSTOM */
     { Widget finder = XmFileSelectionBoxGetChild(newFileSB, SgDIALOG_FINDER);
       if ( finder != NULL )
-    	  XtVaSetValues(newFileSB, XmNinitialFocus, finder, 0);
+    	  XtVaSetValues(newFileSB, XmNinitialFocus, finder, NULL);
     }
 #endif
 #endif
@@ -578,7 +578,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
        button after the keyboard focus is established.  Note the voodoo
        below: calling XmProcess traversal FOUR times (a recommendation from
        OSF technical support) somehow succeedes in changing the focus */
-    XtVaSetValues(newFileSB, XmNdefaultButton, NULL, 0);
+    XtVaSetValues(newFileSB, XmNdefaultButton, NULL, NULL);
     for (i=1; i<30; i++)
     	XmProcessTraversal(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT),
 	    XmTRAVERSE_CURRENT);
@@ -591,9 +591,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
        To sort them properly, we have to patch the directory and file
        searching routines to re-sort the lists when they change */
     XtVaGetValues(newFileSB, XmNdirSearchProc, &OrigDirSearchProc,
-    	    XmNfileSearchProc, &OrigFileSearchProc, 0);
+    	    XmNfileSearchProc, &OrigFileSearchProc, NULL);
     XtVaSetValues(newFileSB, XmNdirSearchProc, replacementDirSearchProc,
-    	    XmNfileSearchProc, replacementFileSearchProc, 0);
+    	    XmNfileSearchProc, replacementFileSearchProc, NULL);
     sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST));
     sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST));
 #endif /* SGI_CUSTOM */
@@ -604,7 +604,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 	/* See note in existing file routines about freeing the values
 	   obtained in the following call */
 	XtVaGetValues(newFileSB, XmNdirSpec, &cFileString, XmNdirectory,
-		&cDir, XmNpattern, &cPattern, 0);
+		&cDir, XmNpattern, &cPattern, NULL);
 	if (DefaultDirectory != NULL) XmStringFree(DefaultDirectory);
 	if (DefaultPattern != NULL) XmStringFree(DefaultPattern);
 	DefaultDirectory = cDir;
@@ -742,7 +742,7 @@ static void createErrorDialog(Widget parent)
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_OK_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_HELP_BUTTON));
     buttonString = XmStringCreateLtoR ("Dismiss", XmSTRING_DEFAULT_CHARSET);
-    XtVaSetValues(ErrorDialog, XmNcancelLabelString, buttonString, 0);
+    XtVaSetValues(ErrorDialog, XmNcancelLabelString, buttonString, NULL);
     XmStringFree(buttonString);
 }
 
@@ -1034,7 +1034,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
 #endif
     
     /* Get the items (filenames) in the list widget */
-    XtVaGetValues(w, XmNitems, &items, XmNitemCount, &nItems, 0);
+    XtVaGetValues(w, XmNitems, &items, XmNitemCount, &nItems, NULL);
     
     /* compare them with the accumulated user keystrokes & decide the
        appropriate line in the list widget to select */
@@ -1058,7 +1058,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     if (selectPos == 0) /* XmListSelectPos curiously returns 0 for last item */
     	selectPos = nItems + 1;
     XtVaGetValues(w, XmNtopItemPosition, &topPos,
-    	    XmNvisibleItemCount, &nVisible, 0);
+    	    XmNvisibleItemCount, &nVisible, NULL);
     if (selectPos < topPos)
     	XmListSetPos(w, selectPos-2 > 1 ? selectPos-2 : 1);
     else if (selectPos > topPos+nVisible-1)
@@ -1088,7 +1088,7 @@ static void replacementDirSearchProc(Widget w, XtPointer searchData)
     
     /* Call the original search procedure to do the actual search */
     (*OrigDirSearchProc)(w, searchData);
-    XtVaGetValues(w, XmNlistUpdated, &updated, 0);
+    XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
     if (!updated)
     	return;
     	
@@ -1101,7 +1101,7 @@ static void replacementFileSearchProc(Widget w, XtPointer searchData)
     
     /* Call the original search procedure to do the actual search */
     (*OrigFileSearchProc)(w, searchData);
-    XtVaGetValues(w, XmNlistUpdated, &updated, 0);
+    XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
     if (!updated)
     	return;
     	
@@ -1117,7 +1117,7 @@ static void sortWidgetList(Widget listWidget)
     XmString *items, *sortedItems;
     int nItems, i;
     
-    XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, 0);
+    XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, NULL);
     sortedItems = (XmString *)XtMalloc(sizeof(XmString) * nItems);
     for (i=0; i<nItems; i++)
     	sortedItems[i] = XmStringCopy(items[i]);

@@ -325,7 +325,7 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	XtSetArg(args[n], XmNrightPosition, 52); n++;
 	fontList = XmCreateScrolledList(form, "fontlist", args, n);
 	XtManageChild(fontList);
-	XtVaSetValues(nameLabel, XmNuserData, fontList, 0);
+	XtVaSetValues(nameLabel, XmNuserData, fontList, NULL);
 
 	/*	"Style" list */
 

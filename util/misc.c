@@ -123,7 +123,7 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg)
     Display *display = XtDisplay(shell);
 
     /* deactivate the built in delete response of killing the application */
-    XtVaSetValues(shell, XmNdeleteResponse, XmDO_NOTHING, 0);
+    XtVaSetValues(shell, XmNdeleteResponse, XmDO_NOTHING, NULL);
 
     /* add a delete window protocol callback instead */
     if (dwAtom == 0) {
@@ -208,8 +208,8 @@ void RealizeWithoutForcingPosition(Widget shell)
     
     /* Temporarily set value of XmNmappedWhenManaged
        to stop the window from popping up right away */
-    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, 0);
-    XtVaSetValues(shell, XmNmappedWhenManaged, False, 0);
+    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
+    XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
     
     /* Realize the widget in unmapped state */
     XtRealizeWidget(shell);
@@ -226,7 +226,7 @@ void RealizeWithoutForcingPosition(Widget shell)
     XtMapWidget(shell);
     
     /* Restore the value of XmNmappedWhenManaged */
-    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, 0);
+    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
 /*
@@ -512,7 +512,7 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
 
     /* Add the visual, depth, and colormap resources to the argument list */
     XtVaGetValues(parent, XtNvisual, &visual, XtNdepth, &depth,
-	    XtNcolormap, &colormap, 0);
+	    XtNcolormap, &colormap, NULL);
     al = (ArgList)XtMalloc(sizeof(Arg) * (argcount + 3));
     if (argcount != 0)
     	memcpy(al, arglist, sizeof(Arg) * argcount);
@@ -548,8 +548,8 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     
     /* Temporarily set value of XmNmappedWhenManaged
        to stop the dialog from popping up right away */
-    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, 0);
-    XtVaSetValues(shell, XmNmappedWhenManaged, False, 0);
+    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
+    XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
     
     /* Manage the dialog */
     XtManageChild(dialogChild);
@@ -582,7 +582,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     XtMapWidget(shell);
     
     /* Restore the value of XmNmappedWhenManaged */
-    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, 0);
+    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
 /*
@@ -856,7 +856,7 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic)
     XtVaCreateManagedWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple(label),
     	XmNmnemonic, mnemonic,
-    	XmNsubMenuId, menu, 0);
+    	XmNsubMenuId, menu, NULL);
     XmStringFree(st1);
     return menu;
 }
@@ -874,7 +874,7 @@ void SetIntLabel(Widget label, int value)
     
     sprintf(labelString, "%d", value);
     s1=XmStringCreateSimple(labelString);
-    XtVaSetValues(label, XmNlabelString, s1, 0);
+    XtVaSetValues(label, XmNlabelString, s1, NULL);
     XmStringFree(s1);
 }
 void SetFloatLabel(Widget label, double value)
@@ -884,7 +884,7 @@ void SetFloatLabel(Widget label, double value)
     
     sprintf(labelString, "%g", value);
     s1=XmStringCreateSimple(labelString);
-    XtVaSetValues(label, XmNlabelString, s1, 0);
+    XtVaSetValues(label, XmNlabelString, s1, NULL);
     XmStringFree(s1);
 }
 void SetIntText(Widget text, int value)
@@ -1340,18 +1340,18 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
     
     if (XtIsComposite(w)) {
 	if (XtClass(w) == xmRowColumnWidgetClass) {
-	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
 	    isMenu = rowColType != XmWORK_AREA;
 	} else
 	    isMenu = False;
 	if (!isMenu) {
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
-		    &numChildren, 0);
+		    &numChildren, NULL);
 	    for (i=0; i<numChildren; i++)
     		addMnemonicGrabs(dialog, children[i]);
     	}
     } else {
-	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
 	if (mnemonic != '\0') {
 	    mneString[0] = mnemonic; mneString[1] = '\0';
 	    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog),
@@ -1389,25 +1389,25 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode)
     
     if (XtIsComposite(w)) {
 	if (XtClass(w) == xmRowColumnWidgetClass) {
-	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
 	    isMenu = rowColType != XmWORK_AREA;
 	} else
 	    isMenu = False;
 	if (!isMenu) {
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
-		    &numChildren, 0);
+		    &numChildren, NULL);
 	    for (i=0; i<numChildren; i++)
     		findAndActivateMnemonic(children[i], keycode);
     	}
     } else {
-	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
 	if (mnemonic != '\0') {
 	    mneString[0] = mnemonic; mneString[1] = '\0';
 	    if (XKeysymToKeycode(XtDisplay(XtParent(w)),
 	    	    XStringToKeysym(mneString)) == keycode) {
 	    	if (XtClass(w) == xmLabelWidgetClass ||
 	    		XtClass(w) == xmLabelGadgetClass) {
-	    	    XtVaGetValues(w, XmNuserData, &userData, 0);
+	    	    XtVaGetValues(w, XmNuserData, &userData, NULL);
 	    	    if (userData!=NULL && XtIsWidget(userData))
 	    	    	XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
 	    	} else {

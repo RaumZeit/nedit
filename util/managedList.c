@@ -101,18 +101,18 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
     	    XmNpacking, XmPACK_COLUMN,
     	    XmNleftAttachment, XmATTACH_FORM,
     	    XmNtopAttachment, XmATTACH_FORM,
-    	    XmNbottomAttachment, XmATTACH_FORM, 0);
+    	    XmNbottomAttachment, XmATTACH_FORM, NULL);
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Delete"), 0);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Delete"), NULL);
     XmStringFree(s1);
     copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol,
-    	    XmNlabelString, s1=XmStringCreateSimple("Copy"), 0);
+    	    XmNlabelString, s1=XmStringCreateSimple("Copy"), NULL);
     XmStringFree(s1);
     moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move ^"), 0);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move ^"), NULL);
     XmStringFree(s1);
     moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move v"), 0);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move v"), NULL);
     XmStringFree(s1);
     
     /* AFAIK the only way to make a list widget n-columns wide is to make up
@@ -248,7 +248,7 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn,
 
     /* Make the managed list data structure accessible from the list widget
        pointer, and make sure it gets freed when the list is destroyed */
-    XtVaSetValues(ml->listW, XmNuserData, ml, 0);
+    XtVaSetValues(ml->listW, XmNuserData, ml, NULL);
     XtAddCallback(ml->listW, XmNdestroyCallback, destroyCB, ml);
     
     /* Add callbacks for button and list actions */
@@ -280,7 +280,7 @@ int UpdateManagedList(Widget listW, int explicitRequest)
     
     /* Recover the pointer to the managed list structure from the widget's
        userData pointer */
-    XtVaGetValues(listW, XmNuserData, &ml, 0);
+    XtVaGetValues(listW, XmNuserData, &ml, NULL);
     
     /* Make the update */
     return incorporateDialogData(ml, selectedListPosition(ml), explicitRequest);
@@ -296,7 +296,7 @@ void ChangeManagedListData(Widget listW)
     
     /* Recover the pointer to the managed list structure from the widget's
        userData pointer */
-    XtVaGetValues(listW, XmNuserData, &ml, 0);
+    XtVaGetValues(listW, XmNuserData, &ml, NULL);
     
     updateDialogFromList(ml, -1);
 }
@@ -317,7 +317,7 @@ int ManagedListSelectedIndex(Widget listW)
 {
     managedListData *ml;
     
-    XtVaGetValues(listW, XmNuserData, &ml, 0);
+    XtVaGetValues(listW, XmNuserData, &ml, NULL);
     return selectedListPosition(ml)-2;
 }
 
@@ -331,7 +331,7 @@ void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *),
 {
     managedListData *ml;
     
-    XtVaGetValues(listW, XmNuserData, &ml, 0);
+    XtVaGetValues(listW, XmNuserData, &ml, NULL);
     ml->deleteConfirmCB = deleteConfirmCB;
     ml->deleteConfirmArg = deleteConfirmArg;
 }
@@ -557,7 +557,7 @@ static void updateDialogFromList(managedListData *ml, int selection)
     for (i=0; i < *ml->nItems; i++)
     	stringTable[i+1] = XmStringCreateSimple(*(char **)ml->itemList[i]);
     XtVaSetValues(ml->listW, XmNitems, stringTable,
-    	    XmNitemCount, *ml->nItems+1, 0);
+    	    XmNitemCount, *ml->nItems+1, NULL);
     for (i=0; i < *ml->nItems+1; i++)
     	XmStringFree(stringTable[i]);
     XtFree((char *)stringTable);
@@ -629,7 +629,7 @@ static void selectItem(Widget listW, int itemIndex, int updateDialog)
     
     /* If the selected item is not visible, scroll the list */
     XtVaGetValues(listW, XmNtopItemPosition, &topPos, XmNvisibleItemCount,
-    	    &nVisible, 0);
+    	    &nVisible, NULL);
     if (selection < topPos)
     	XmListSetPos(listW, selection);
     else if (selection >= topPos + nVisible)

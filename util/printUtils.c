@@ -309,7 +309,7 @@ static Widget createForm(Widget parent)
 		"Printer Options", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
     form = CreateFormDialog(parent, "printForm", args, argcnt);
-    XtVaSetValues(form, XmNshadowThickness, 0, 0);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     
     XmStringFree( st0 );
 
@@ -345,7 +345,7 @@ static Widget createForm(Widget parent)
 		(XtCallbackProc)updatePrintCmd, NULL);
 	RemapDeleteKey(Text1);
 	topWidget = Text1;
-	XtVaSetValues(label1, XmNuserData, Text1, 0); /* mnemonic procesing */
+	XtVaSetValues(label1, XmNuserData, Text1, NULL); /* mnemonic procesing */
     }
     
     /************************ LABEL 2 and TEXT 2 ************************/
@@ -386,7 +386,7 @@ static Widget createForm(Widget parent)
 		(XtCallbackProc)updatePrintCmd, NULL);
 	bwidgetarray[bwidgetcnt] = Text2; bwidgetcnt++;
 	RemapDeleteKey(Text2);
-	XtVaSetValues(Label2, XmNuserData, Text2, 0); /* mnemonic procesing */
+	XtVaSetValues(Label2, XmNuserData, Text2, NULL); /* mnemonic procesing */
 	topWidget = Text2;
     }
     
@@ -429,7 +429,7 @@ static Widget createForm(Widget parent)
 		(XtCallbackProc)updatePrintCmd, NULL);
 	bwidgetarray[bwidgetcnt] = Text3; bwidgetcnt++; 
     	RemapDeleteKey(Text3);
-	XtVaSetValues(Label3, XmNuserData, Text3, 0); /* mnemonic procesing */
+	XtVaSetValues(Label3, XmNuserData, Text3, NULL); /* mnemonic procesing */
     	topWidget = Text3;
     }
 

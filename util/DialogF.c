@@ -228,13 +228,13 @@ unsigned DialogF (unsigned dialog_type, Widget parent, unsigned n,
 	   since user enters text first.  To fix this, we need to turn
 	   off the default button for the dialog, until after keyboard
 	   focus has been established */
-	XtVaSetValues(dialog, XmNdefaultButton, NULL, 0);
+	XtVaSetValues(dialog, XmNdefaultButton, NULL, NULL);
     	XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT),
     		XmNfocusCallback, (XtCallbackProc)focusCB, (char *)dialog);
 
 	/* Limit the length of the text that can be entered in text field */
 	XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT),
-		XmNmaxLength, DF_MAX_PROMPT_LENGTH-1, 0);
+		XmNmaxLength, DF_MAX_PROMPT_LENGTH-1, NULL);
 	
 	/* Turn on the requested number of buttons in the dialog by
 	   managing/unmanaging the button widgets */
@@ -422,7 +422,7 @@ static void apply_callback (Widget w, struct dfcallbackstruct *client_data,
 static void focusCB(Widget w, Widget dialog, caddr_t call_data)
 {
     XtVaSetValues(dialog, XmNdefaultButton,
-    	    XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), 0);
+    	    XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), NULL);
 }
 
 /*
