@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.122 2004/02/25 02:47:10 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.123 2004/02/26 09:54:35 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3963,18 +3963,27 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 {
     char *orgDocument;
     char *params[4];
+    int emTabDist;
     
     strcpy(window->path, orgWin->path);
     strcpy(window->filename, orgWin->filename);
 
     ShowLineNumbers(window, orgWin->showLineNumbers);
 
-    /* copy the buffer */
     window->ignoreModify = True;
+    
+    /* copy the buffer */
     orgDocument = BufGetAll(orgWin->buffer);
     BufSetAll(window->buffer, orgDocument);
-    window->ignoreModify = False;
     XtFree(orgDocument);
+    
+    /* copy the tab preferences (here!) */
+    BufSetTabDistance(window->buffer, orgWin->buffer->tabDist);
+    window->buffer->useTabs = orgWin->buffer->useTabs;
+    XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, NULL);
+    SetEmTabDist(window, emTabDist);
+    
+    window->ignoreModify = False;
 
     /* transfer text fonts */
     params[0] = orgWin->fontName;
