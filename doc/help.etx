@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.41 2003/03/14 22:27:53 n8gray Exp $
+.. $Id: help.etx,v 1.42 2003/04/15 20:00:17 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -92,12 +92,12 @@ Getting Started
   Help sections of interest to new users are listed under the "Basic Operation"
   heading in the top-level Help menu:
 
-* Selecting_Text_
-* Finding_and_Replacing_Text_
-* Cut_and_Paste_
-* Using_the_Mouse_
-* Keyboard_Shortcuts_
-* Shifting_and_Filling_
+      Selecting_Text_
+      Finding_and_Replacing_Text_
+      Cut_and_Paste_
+      Using_the_Mouse_
+      Keyboard_Shortcuts_
+      Shifting_and_Filling_
 
   Programmers should also read the introductory section under the "Features for
   Programming" section:
@@ -1766,33 +1766,34 @@ Example Regular Expressions
 
 * An entire line.
 !       ^.*$
-!
+
 * Blank lines.
 !       ^$
-!
+
 * Whitespace on a line.
 !       \s+
-!
+
 * Whitespace across lines.
 !       (?n\s+)
-!
+
 * Whitespace that spans at least two lines. Note minimal matching `*?' quantifier.
 !       (?n\s*?\n\s*)
-!
+
 * IP address (not robust).
 !       (?:\d{1,3}(?:\.\d{1,3}){3})
-!
+
 * Two character US Postal state abbreviations (includes territories).
 !       [ACDF-IK-PR-W][A-Z]
-!
+
 * Web addresses.
 !       (?:http://)?www\.\S+
-!
+
 * Case insensitive double words across line breaks.
 !       (?i(?n<(\S+)\s+\1>))
-!
+
 * Upper case words with possible punctuation.
 !       <[A-Z][^a-z\s]*>
+
    ----------------------------------------------------------------------
 
 Macro/Shell Extensions
@@ -2772,79 +2773,40 @@ Highlighting Information
   allows NEdit highlighting to be reproduced. This is suitable for the
   generation of HTML or Postscript output, for example.
 
-3>Highlighting information functions
-
-**get_style( pos )**
-  returns an array containing the attributes of the character at position
-  "pos". **"style"** (name of the highlight style), **"color"** (name of the
-  color), **"rgb"** (the actual screen color expressed in red, green and blue
-  hexadecimal values as "#rrggbb"), **"bold"** (true or false) and **"italic"**
-  (true or false), **"background"** (name of the background color, if any) and
-  **"back_rgb"** (the background color values).
+3>Highlighting Information Functions
 
 **get_pattern( pos )**
-  returns an array containing the attributes of the character at position
-  "pos". **"pattern"** (highlight pattern name), **"style"** (highlight style
-  name) and **"extension"** (the length in the text which uses the same
-  highlighting pattern) 
+  returns an array containing the pattern attributes of the character at
+  position 'pos'. The elements in this array are:
 
-**highlight_pattern_of_pos( [pos] )**
-  ~Deprecated: use get_pattern(pos)["pattern"]~
-  returns the pattern name for highlighting used at the position in the text.
-  If no position is supplied, the current cursor position will be used.
+* **pattern** -- Highlight pattern name
+* **style** -- Highlight style name
+* **extension** -- The length in the text which uses the same highlighting pattern
 
-**highlight_style_of_pos( [pos] )**
-  ~Deprecated: use either get_pattern(pos)["style"] or get_style(pos)["style"]~
-  returns the name of the highlighting style applied at the given position
-  (defaults to the cursor position).
+**get_style( pos )**
+**get_style( style_name )**
+  returns an array containing the style attributes of the character at
+  position 'pos' or for style 'style_name'. The elements in this array are:
 
-**highlight_color_of_pos( [pos] )**
-  ~Deprecated: use get_style(pos)["color"]~
-  returns the name of the color used by the highlighting style applied at the
-  given position (defaults to the cursor position).
+* **style** -- Name of the highlight style
+* **color** -- Name of the style's color
+* **rgb** -- Color's RGB values ('#rrggbb')
+* **bold** -- '1' if style is bold, '0' otherwise
+* **italic** -- '1' if style is italic, '0' otherwise
+* **background** -- Name of the background color, if any
+* **back_rgb** -- Background color's RGB values ('#rrggbb')
 
-**highlight_color_value_of_pos( [pos] )**
-  ~Deprecated: use get_style(pos)["rgb"]~
-  returns the value of the color by the highlighting style applied at the given
-  position (defaults to the cursor position). This is a hexadecimal formatted
-  value, preceded by the "#" sign; each of three pairs of hexadecimal digits
-  indicate the color value for the red, green and blue components of the color,
-  in the range 0 to 255 (0 - 0xFF), for example "#ffff80" is a light yellow
-  color.
+  There are two things to consider with regard to the colors: First, the values
+  for 'color' and/or 'background' are empty if the color values are specified
+  using RGB values. Second, the values for 'rgb' and 'back_rgb' do contain the
+  actual color values as allocated by the X server. This may not be the value
+  listed for your color in rgb.txt.
 
-**highlight_style_of_pos_is_bold( [pos] )**
-  ~Deprecated: use get_style(pos)["bold"]~
-  returns true (non-zero) if the highlighting style applied at the given
-  position (defaults to the cursor position) uses a bold font.
-
-**highlight_style_of_pos_is_italic( [pos] )**
-  ~Deprecated: use get_style(pos)["italic"]~
-  returns true (non-zero) if the highlighting style applied at the given
-  position (defaults to the cursor position) uses an italic font.
-
-**highlight_pattern_extends_from( [pos] )**
-  ~Deprecated: use get_pattern(pos)["extension"]~
-  returns the length in the text starting at the given position (defaults to
-  the cursor position) which uses the same highlighting pattern as that
-  position.
-  
 **highlight_pattern_style( pat_name )**
+  ~Deprecated: Will be removed from the API in the future~
   returns the name of the style used by a particular named highlighting
   pattern.
 
-**highlight_style_color( style_name )**
-  returns the name of the color used by a particular named highlighting style.
-
-**highlight_style_color_value( style_name )**
-  returns the value of the color used by a particular named highlighting style.
-
-**highlight_style_is_bold( style_name )**
-  returns true (non-zero) if the particular named highlighting style uses a
-  bold font.
-
-**highlight_style_is_italic( style_name )**
-  returns true (non-zero) if the particular named highlighting style uses an
-  italic font.
    ----------------------------------------------------------------------
 
 Action Routines
@@ -3564,7 +3526,7 @@ Preferences
   below).
 
 **Customize Window Title**
-  Opens a dialog where the information to be displayed in the windows's title
+  Opens a dialog where the information to be displayed in the window's title
   field can be defined and tested. The dialog contains a Help button, providing
   further information about the options available.
 
@@ -3818,7 +3780,7 @@ X Resources
   are set using X resources.  Like most other X programs, NEdit can be
   customized to vastly unnecessary proportions, from initial window positions
   down to the font and shadow colors of each individual button (A complete
-  discussion of how to do this is left to books on the X Windows System).  Key
+  discussion of how to do this is left to books on the X Window System).  Key
   binding (see "Key_Binding_" is one of the most useful of these resource
   settable options.
 
@@ -4748,13 +4710,13 @@ Client/Server Mode
   server name will default to the name of the view (based on the value of the
   CLEARCASE_ROOT environment variable).
 
-  Communication between nc and nedit is through the X display. So as long as X
-  windows is set up and working properly, nc will work properly as well. 
-  nc uses the DISPLAY environment variable, the machine name and your user name
-  to find the appropriate server, meaning, if you have several machines sharing
-  a common file system, nc will not be able to find a server that is running on
-  a machine with a different host name, even though it may be perfectly
-  appropriate for editing a given file.
+  Communication between nc and nedit is through the X display. So as long as
+  the X Window System is set up and working properly, nc will work properly as
+  well. nc uses the DISPLAY environment variable, the machine name and your
+  user name to find the appropriate server, meaning, if you have several
+  machines sharing a common file system, nc will not be able to find a server
+  that is running on a machine with a different host name, even though it may
+  be perfectly appropriate for editing a given file.
 
   The command which nc uses to start an nedit server is settable via the X
   resource nc.serverCommand, by default, "nedit -server".
