@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.35 2001/11/08 16:05:12 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.36 2001/11/24 11:57:12 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1171,7 +1171,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 	    XmNset, *fileFormat == DOS_FILE_FORMAT,
 	    XmNuserData, DOS_FILE_FORMAT,
     	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'D', NULL);
+	    XmNmnemonic, 'O', NULL);
     XmStringFree(s1);
     XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
