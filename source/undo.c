@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.17 2004/07/21 11:32:06 yooden Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.18 2004/10/07 08:27:49 edg Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -161,9 +161,13 @@ void Redo(WindowInfo *window)
     MakeSelectionVisible(window, window->lastFocus);
     
     /* restore the file's unmodified status if the file was unmodified
-       when the change being redone was originally made */	    
-    if (redo->restoresToSaved)
+       when the change being redone was originally made. Also, remove
+       the backup file, since the text in the buffer is now identical to
+       the original file */
+    if (redo->restoresToSaved) {
     	SetWindowModified(window, False);
+    	RemoveBackupFile(window);
+    }
     
     /* remove the redo record from the chain and free it */
     removeRedoItem(window);
