@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.65 2003/05/05 16:25:55 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.66 2003/05/09 16:40:55 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -809,6 +809,20 @@ static int doSave(WindowInfo *window)
     removeVersionNumber(fullname);
 #endif
 
+    /* add a terminating newline if the file doesn't already have one for
+       Unix utilities which get confused otherwise 
+       NOTE: this must be done _before_ we create/open the file, because the
+             (potential) buffer modification can trigger a check for file
+             changes. If the file is created for the first time, it has
+             zero size on disk, and the check would falsely conclude that the
+             file has changed on disk, and would pop up a warning dialog */
+    if (BufGetCharacter(window->buffer, window->buffer->length - 1) != '\n'
+            && window->buffer->length != 0
+            && GetPrefAppendLF())
+    {
+        BufInsert(window->buffer, window->buffer->length, "\n");
+    }
+    
     /* open the file */
 #ifdef VMS
     fp = fopen(fullname, "w", "rfm = stmlf");
@@ -833,15 +847,6 @@ static int doSave(WindowInfo *window)
     /* get the complete name of the file including the new version number */
     fgetname(fp, fullname);
 #endif
-    
-    /* add a terminating newline if the file doesn't already have one for
-    Unix utilities which get confused otherwise */
-    if (BufGetCharacter(window->buffer, window->buffer->length - 1) != '\n'
-            && window->buffer->length != 0
-            && GetPrefAppendLF())
-    {
-        BufInsert(window->buffer, window->buffer->length, "\n");
-    }
     
     /* get the text buffer contents and its length */
     fileString = BufGetAll(window->buffer);
