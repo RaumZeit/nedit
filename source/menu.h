@@ -6,7 +6,7 @@ void InstallMenuActions(XtAppContext context);
 XtActionsRec *GetMenuActions(int *nActions);
 void InvalidateWindowMenus(void);
 void CheckCloseDim(void);
-void AddToPrevOpenMenu(char *filename);
+void AddToPrevOpenMenu(const char *filename);
 void WriteNEditDB(void);
 void ReadNEditDB(void);
 Widget CreateBGMenu(WindowInfo *window);

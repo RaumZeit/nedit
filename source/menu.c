@@ -44,7 +44,6 @@
 #include <Xm/Separator.h>
 #include <Xm/MenuShell.h>
 #include "../util/getfiles.h"
-#include "../util/fontsel.h" /*... get rid of this */
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
@@ -329,14 +328,14 @@ static int cmpStrPtr(const void *strA, const void *strB);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(WindowInfo *win);
-static int strCaseCmp(char *str1, char *str2);
+static int strCaseCmp(const char *str1, const char *str2);
 static int compareWindowNames(const void *windowA, const void *windowB);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 #ifdef SGI_CUSTOM
 static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
-static int shortPrefAskDefault(Widget parent, Widget w, char *settingName);
+static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName);
 #endif
 
 /* Application action table */
@@ -2926,7 +2925,7 @@ static void invalidatePrevOpenMenus(void)
 ** Add a file to the list of previously opened files for display in the
 ** File menu.
 */
-void AddToPrevOpenMenu(char *filename)
+void AddToPrevOpenMenu(const char *filename)
 {
     int i;
     char *nameCopy;
@@ -2982,7 +2981,7 @@ static void updateWindowMenu(WindowInfo *window)
     Widget btn;
     WidgetList items;
     Cardinal nItems;
-    XtArgVal userData;
+    XtPointer userData;
     XmString st1;
     int i, n, nWindows, windowIndex;
     WindowInfo **windows;
@@ -3411,9 +3410,9 @@ static void unloadTagsFileCB(Widget w, char *name, caddr_t callData)
 ** strCaseCmp compares its arguments and returns 0 if the two strings
 ** are equal IGNORING case differences.  Otherwise returns 1.
 */
-static int strCaseCmp(char *str1, char *str2)
+static int strCaseCmp(const char *str1, const char *str2)
 {
-    char *c1, *c2;
+    const char *c1, *c2;
     
     for (c1=str1, c2=str2; *c1!='\0' && *c2!='\0'; c1++, c2++)
     	if (toupper((unsigned char)*c1) != toupper((unsigned char)*c2))
@@ -3522,7 +3521,7 @@ static void addToToggleShortList(Widget w)
 ** If operation was canceled, will return toggle widget "w" to it's 
 ** original (opposite) state.
 */
-static int shortPrefAskDefault(Widget parent, Widget w, char *settingName)
+static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName)
 {
     char msg[100] = "";
     
