@@ -225,6 +225,40 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -266,16 +300,28 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
 	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode",
     "string_compare"};
-#define N_SPECIAL_VARS 16
+#define N_SPECIAL_VARS 33
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
     	selectionLeftMV, selectionRightMV, wrapMarginMV, tabDistMV,
-    	emTabDistMV, useTabsMV, languageModeMV, modifiedMV};
+    	emTabDistMV, useTabsMV, languageModeMV, modifiedMV,
+        statisticsLineMV, incSearchLineMV, showLineNumbersMV,
+        autoIndentMV, wrapTextMV, highlightSyntaxMV,
+        makeBackupCopyMV, incBackupMV, showMatchingMV,
+        overTypeModeMV, readOnlyMV, lockedMV, fileFormatMV,
+        fontNameMV, fontNameItalicMV,
+        fontNameBoldMV, fontNameBoldItalicMV};
 static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
 	"$wrap_margin", "$tab_dist", "$em_tab_dist", "$use_tabs",
-	"$language_mode", "$modified"};
+	"$language_mode", "$modified",
+    "$statistics_line", "$incremental_search_line", "$show_line_numbers",
+    "$auto_indent", "$wrap_text", "$highlight_syntax",
+    "$make_backup_copy", "$incremental_backup", "$show_matching",
+    "$overtype_mode", "$read_only", "$locked", "$file_format",
+    "$font_name", "$font_name_italic",
+    "$font_name_bold", "$font_name_bold_italic"};
 
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
@@ -3123,6 +3169,188 @@ static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     	    textNwrapMargin, &margin, NULL);
     result->tag = INT_TAG;
     result->val.n = margin == 0 ? nCols : margin;
+    return True;
+}
+
+static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->showStats ? 1 : 0;
+    return True;
+}
+
+static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->showISearchLine ? 1 : 0;
+    return True;
+}
+
+static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->showLineNumbers ? 1 : 0;
+    return True;
+}
+
+static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    char *indentStyleStr = "";
+    
+    switch (window->indentStyle) {
+        case NO_AUTO_INDENT:
+            indentStyleStr = "off";
+        break;
+        case AUTO_INDENT:
+            indentStyleStr = "on";
+        break;
+        case SMART_INDENT:
+            indentStyleStr = "smart";
+        break;
+    }
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(indentStyleStr) + 1);
+    strcpy(result->val.str, indentStyleStr);
+    return True;
+}
+
+static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    char *wrapStyleStr = "";
+    
+    switch (window->wrapMode) {
+        case NO_WRAP:
+            wrapStyleStr = "none";
+        break;
+        case NEWLINE_WRAP:
+            wrapStyleStr = "auto";
+        break;
+        case CONTINUOUS_WRAP:
+            wrapStyleStr = "continuous";
+        break;
+    }
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(wrapStyleStr) + 1);
+    strcpy(result->val.str, wrapStyleStr);
+    return True;
+}
+
+static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->highlightSyntax ? 1 : 0;
+    return True;
+}
+
+static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->saveOldVersion ? 1 : 0;
+    return True;
+}
+
+static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->autoSave ? 1 : 0;
+    return True;
+}
+
+static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->showMatching ? 1 : 0;
+    return True;
+}
+
+static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->overstrike ? 1 : 0;
+    return True;
+}
+
+static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = (window->readOnly || window->lockWrite) ? 1 : 0;
+    return True;
+}
+
+static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->lockWrite ? 1 : 0;
+    return True;
+}
+
+static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    char *linefeedStyleStr = "";
+    
+    switch (window->fileFormat) {
+        case UNIX_FILE_FORMAT:
+            linefeedStyleStr = "unix";
+        break;
+        case DOS_FILE_FORMAT:
+            linefeedStyleStr = "dos";
+        break;
+        case MAC_FILE_FORMAT:
+            linefeedStyleStr = "macintosh";
+        break;
+    }
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(linefeedStyleStr) + 1);
+    strcpy(result->val.str, linefeedStyleStr);
+    return True;
+}
+
+static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(window->fontName) + 1);
+    strcpy(result->val.str, window->fontName);
+    return True;
+}
+
+static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(window->italicFontName) + 1);
+    strcpy(result->val.str, window->italicFontName);
+    return True;
+}
+
+static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(window->boldFontName) + 1);
+    strcpy(result->val.str, window->boldFontName);
+    return True;
+}
+
+static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(window->boldItalicFontName) + 1);
+    strcpy(result->val.str, window->boldItalicFontName);
     return True;
 }
 

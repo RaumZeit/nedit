@@ -2992,6 +2992,9 @@ control to the end of the loop.",
 
 "Built in Variables\n\
 \n\
+$auto_indent -- Contains the current preference for auto indent. Can be \
+\"off\", \"on\" or \"auto\".\n\
+\n\
 $cursor -- Position of the cursor in the current window.\n\
 \n\
 $column -- Column number of the cursor position in the current window.\n\
@@ -3000,18 +3003,46 @@ $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of \
 the Preferences menu, value is the distance between emulated tab stops.  If \
 tab emulation is turned off, value is -1.\n\
 \n\
+$file_format -- Current newline format that the file will be saved with. Can \
+be \"unix\", \"dos\" or \"macintosh\".\n\
+\n\
 $file_name -- Name of the file being edited in the current window, \
 stripped of directory component.\n\
 \n\
 $file_path -- Directory component of file being edited in the \
 current window.\n\
 \n\
+$font_name -- Contains the current plain text font name.\n\
+\n\
+$font_name_bold -- Contains the current bold text font name.\n\
+\n\
+$font_name_bold_italic -- Contains the current bold-italic text font name.\n\
+\n\
+$font_name_italic -- Contains the current italic text font name.\n\
+\n\
+$highlight_syntax -- Whether syntax highlighting is turned on.\n\
+\n\
+$incremental_backup -- Contains 1 if incremental auto saving is on, \
+otherwise 0.\n\
+\n\
+$incremental_search_line -- Has a value of 1 if the preference is \
+selected to always show the incremental search line, otherwise 0.\n\
+\n\
 $language_mode -- Name of language mode set in the current window.\n\
 \n\
 $line -- Line number of the cursor position in the current window.\n\
 \n\
+$locked -- True if the file has been locked by the user.\n\
+\n\
+$make_backup_copy -- Has a value of 1 if original file is kept in a \
+backup file on save, otherwise 0.\n\
+\n\
 $modified -- True if the file in the current window has been modified \
 and the modifications have not yet been saved.\n\
+\n\
+$overtype_mode -- True if in Overtype mode.\n\
+\n\
+$read_only -- True if the file is read only.\n\
 \n\
 $selection_start, $selection_end -- Beginning and ending positions of \
 the primary selection in the current window, or -1 if there is no \
@@ -3020,6 +3051,14 @@ text selected in the current window.\n\
 $selection_left, $selection_right -- Left and right character offsets of \
 the rectangular (primary) selection in the current window, or -1 if \
 there is no selection or it is not rectangular.\n\
+\n\
+$show_line_numbers -- Whether line numbers are shown next to the text.\n\
+\n\
+$show_matching -- Contains 1 if matching items are highlighted, such as \
+\"[]\" and \"{}\" pairs, otherwise 0.\n\
+\n\
+$statistics_line -- Has a value of 1 if the statistics line is shown, \
+otherwise 0.\n\
 \n\
 $tab_dist -- The distance between tab stops for a hardware tab \
 character, as set in the Tabs... dialog of the Preferences menu.\n\
@@ -3034,6 +3073,9 @@ Preferences menu.)\n\
 \n\
 $wrap_margin -- The right margin in the current window for text \
 wrapping and filling.\n\
+\n\
+$wrap_text -- The current wrap text mode. Values are \"none\", \
+\"auto\" or \"continuous\".\n\
 \n\
 \n\
 Built-in Subroutines\n\
