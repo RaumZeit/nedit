@@ -1,5 +1,3 @@
-*.bck
-*.o
 nc
 nedit
 parse.c
