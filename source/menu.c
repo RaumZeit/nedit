@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.48 2002/01/08 14:33:11 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.49 2002/01/13 16:01:10 yooden Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -571,7 +571,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    SHORT);
     window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
     	    doActionCB, "open_selected", FULL);
-    XtSetSensitive(window->openSelItem, window->wasSelected);
     if (GetPrefMaxPrevOpenFiles() != 0) {
 	window->prevOpenMenuPane = createMenu(menuPane, "openPrevious",
     		"Open Previous", 'v', &window->prevOpenMenuItem, SHORT);
@@ -676,7 +675,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "findAgainShift", findSameCB, window);
     window->findSelItem=createMenuItem(menuPane, "findSelection", "Find Selection", 'S',
     	    findSelCB, window, SHORT);
-    XtSetSensitive(window->findSelItem, window->wasSelected);
     createFakeMenuItem(menuPane, "findSelectionShift", findSelCB, window);
     createMenuItem(menuPane, "findIncremental", "Find Incremental", 'n',
 	    findIncrCB, window, SHORT);

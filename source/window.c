@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.40 2002/01/08 14:33:11 amai Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.41 2002/01/13 16:01:10 yooden Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -1531,25 +1531,26 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     
     /* Check and dim/undim selection related menu items */
     if ((window->wasSelected && !selected) ||
-        (!window->wasSelected && selected)) {
-    	window->wasSelected = selected;
-	XtSetSensitive(window->openSelItem, selected);
-    	XtSetSensitive(window->printSelItem, selected);
-    	XtSetSensitive(window->cutItem, selected);
-    	XtSetSensitive(window->copyItem, selected);
-	XtSetSensitive(window->findSelItem, selected);
-	XtSetSensitive(window->gotoSelItem, selected);
-	XtSetSensitive(window->delItem, selected);
-	XtSetSensitive(window->lowerItem, selected);
-	XtSetSensitive(window->upperItem, selected);
-        XtSetSensitive(window->findDefItem, (TagsFileList != NULL)&&window->wasSelected);
+        (!window->wasSelected && selected))
+    {
+        window->wasSelected = selected;
+        XtSetSensitive(window->printSelItem, selected);
+        XtSetSensitive(window->cutItem, selected);
+        XtSetSensitive(window->copyItem, selected);
+        XtSetSensitive(window->gotoSelItem, selected);
+        XtSetSensitive(window->delItem, selected);
+        XtSetSensitive(window->lowerItem, selected);
+        XtSetSensitive(window->upperItem, selected);
+        XtSetSensitive(window->findDefItem, (TagsFileList != NULL)
+                && window->wasSelected);
 #ifndef VMS
-    	XtSetSensitive(window->filterItem, selected);
+        XtSetSensitive(window->filterItem, selected);
 #endif
 
-	DimSelectionDepUserMenuItems(window, selected);
-	if (window->replaceDlog != NULL) {
-    	    UpdateReplaceActionButtons(window);
+        DimSelectionDepUserMenuItems(window, selected);
+        if (window->replaceDlog != NULL)
+        {
+            UpdateReplaceActionButtons(window);
         }
     }
     
