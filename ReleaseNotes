@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.4beta, May 2003
 
 
-$Id: ReleaseNotes,v 1.19 2003/05/12 11:16:05 edg Exp $
+$Id: ReleaseNotes,v 1.20 2003/05/23 10:58:33 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -113,6 +113,7 @@ Bugs Fixed in 5.4
   - Newline macro inserting a string caused a recursive loop when triggered
     through smart indent
 
+  - Close pane resize bug (SF bug #715767)
 
 New Features in 5.3
 
