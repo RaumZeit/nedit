@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.29 2002/10/31 16:08:22 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.30 2002/12/09 17:18:11 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -154,6 +154,7 @@ static XrmOptionDescRec OpTable[] = {
 typedef struct _FileListEntry {
     Atom                  waitForFileOpenAtom;
     Atom                  waitForFileClosedAtom;
+    char*                 path;
     struct _FileListEntry *next;
 } FileListEntry;
 
@@ -172,38 +173,48 @@ static void setPropertyValue(Atom atom) {
 	            (unsigned char *)"True", 4);
 }
 
-/* Create the properties for path and initialize its status structure. */
-static void addToFileList(const char *path, int waitForClose)
+/* Add another entry to the file entry list, if it doesn't exist yet. */
+static void addToFileList(const char *path)
 {
-    Atom atom = CreateServerFileOpenAtom(Preferences.serverName, path);
     FileListEntry *item;
-
-    /* see if the atom already exists in the list */
+    
+    /* see if the file already exists in the list */
     for (item = fileListHead.fileList; item; item = item->next) {
-        if (item->waitForFileOpenAtom == atom) {
+        if (!strcmp(item->path, path))
            break;
-        }
     }
 
     /* Add the atom to the head of the file list if it wasn't found. */
     if (item == 0) {
         item = malloc(sizeof(item[0]));
+        item->waitForFileOpenAtom = None;
+        item->waitForFileClosedAtom = None;
+        item->path = (char*)malloc(strlen(path)+1);
+        strcpy(item->path, path);
+        item->next = fileListHead.fileList;
+        fileListHead.fileList = item;
+    }
+}
+
+/* Creates the properties for the various paths */
+static void createWaitProperties()
+{
+    FileListEntry *item;
+
+    for (item = fileListHead.fileList; item; item = item->next) {
         fileListHead.waitForOpenCount++;
-        item->waitForFileOpenAtom = atom;
+        item->waitForFileOpenAtom = 
+            CreateServerFileOpenAtom(Preferences.serverName, item->path);
         setPropertyValue(item->waitForFileOpenAtom);
 
-        if (waitForClose == True) {
+        if (Preferences.waitForClose == True) {
             fileListHead.waitForCloseCount++;
             item->waitForFileClosedAtom =
                       CreateServerFileClosedAtom(Preferences.serverName,
-                                                 path,
+                                                 item->path,
                                                  False);
             setPropertyValue(item->waitForFileClosedAtom);
-        } else {
-            item->waitForFileClosedAtom = None;
         }
-        item->next            = fileListHead.fileList;
-        fileListHead.fileList = item;
     }
 }
 
@@ -234,6 +245,8 @@ int main(int argc, char **argv)
     prefDB = CreatePreferencesDatabase(".nc", APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
     
+    commandLine = processCommandLine(argc, argv);
+        
     /* Open the display and find the root window */
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
     	    0, &argc, argv);
@@ -268,7 +281,8 @@ int main(int argc, char **argv)
     }
 #endif /* VMS */
     
-    commandLine = processCommandLine(argc, argv);
+    /* Create the wait properties for the various files. */
+    createWaitProperties();
         
     /* Monitor the properties on the root window */
     XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
@@ -396,16 +410,17 @@ static void startNewServer(XtAppContext context,
                            Atom serverExistsAtom)
 {
     Boolean timeOut = False;
-    char *outPtr;
     XtIntervalId timerId;
 
-    /* Reconstruct the -svrname part of the command line if necessary*/
-    outPtr = commandLine;
+    /* Add back the server name resource from the command line or resource
+       database to the command line for starting the server.  If -svrcmd
+       appeared on the original command line, it was removed by
+       CreatePreferencesDatabase before the command line was recorded
+       in commandLine.org. Moreover, if no server name was specified, it
+       may have defaulted to the ClearCase view tag. */
     if (Preferences.serverName[0] != '\0') {
-        sprintf(outPtr, "-svrname %s", Preferences.serverName);
-    }
-    else  {
-        strcpy(outPtr, "");
+        strcat(commandLine, " -svrname ");
+        strcat(commandLine, Preferences.serverName);
     }
     if (startServer("No servers available, start one? (y|n)[y]: ", commandLine) != 0) {
         XtCloseDisplay(TheDisplay);
@@ -592,18 +607,7 @@ static CommandLine processCommandLine(int argc, char** argv)
         fprintf(stderr, "nc: Invalid commandline argument\n");
 	exit(EXIT_FAILURE);
     }
-    
-    /* Add back the server name resource from the command line or resource
-       database to the command line for starting the server.  If -svrcmd
-       appeared on the original command line, it was removed by
-       CreatePreferencesDatabase before the command line was recorded
-       in commandLine.org */
-    if (Preferences.serverName[0] != '\0') {
-    	sprintf(outPtr, "-svrname %s", Preferences.serverName);
-    	outPtr += 9+strlen(Preferences.serverName);
-    }
-    *outPtr = '\0';
-    
+
     return(commandLine);
 } 
 
@@ -711,7 +715,7 @@ static char *parseCommandLine(int argc, char **argv)
 		free(nameList[j]);
 
                 /* Create the file open atoms for the paths supplied */
-                addToFileList(path, Preferences.waitForClose);
+                addToFileList(path);
 	    }
 	    if (nameList != NULL)
 	    	free(nameList);
@@ -748,7 +752,7 @@ static char *parseCommandLine(int argc, char **argv)
 	    toDoCommand = "";
 
             /* Create the file open atoms for the paths supplied */
-            addToFileList(path, Preferences.waitForClose);
+            addToFileList(path);
 #endif /* VMS */
     	}
     }
