@@ -1,4 +1,4 @@
-# $Id: nc.pod,v 1.4 2004/05/11 19:56:00 edg Exp $
+# $Id: nc.pod,v 1.5 2004/06/08 15:36:15 edg Exp $
 =pod
 
 =head1 NAME
@@ -12,9 +12,9 @@ nc [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>]
    [B<-lm> I<languagemode>] 
    [B<-geometry> I<geometry> | B<-g> I<geometry>] [B<-icon> | B<-iconic>] 
    [B<-display> I<[host]:server[.screen]>] 
-   [B<-timeout> I<seconds>] [B<-wait>] 
-   [B<-xrm> I<resourcestring>] [B<-V> | B<-version>]
-   [B<-->] [file...]
+   [B<-timeout> I<seconds>] [B<-wait>] [B<-xrm> I<resourcestring>] 
+   [B<-tabbed>] [B<-untabbed>] [B<-group>] 
+   [B<-V> | B<-version>] [B<-->] [file...]
 
 =head1 DESCRIPTION
 
@@ -117,10 +117,22 @@ Note that this option affects all files, not only the ones
 following this option in the command line.
 
 
-
 =item  B<-xrm> I<resourcestring> 
 
 Set the value of an X resource to override a default value.
+
+=item  B<-tabbed>
+
+Open all subsequent files in new tabs. Resets B<-group> option.
+
+=item  B<-untabbed>
+
+Open all subsequent files in new windows. Resets B<-group> option.
+
+=item  B<-group>
+
+Open all subsequent files as tabs in a new window.
+
 
 =item  B<-V>, B<-version> 
 

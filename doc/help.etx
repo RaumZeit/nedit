@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.66 2004/05/11 19:56:00 edg Exp $
+.. $Id: help.etx,v 1.67 2004/06/08 15:36:15 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -35,7 +35,8 @@ Table of Contents
       Using_the_Mouse_                     Macro_Subroutines_
       Keyboard_Shortcuts_                  Highlighting_Information_
       Shifting_and_Filling_                Range_Sets_
-      File_Format_                         Action_Routines_
+      Tabbed_Interface_                    Action_Routines_
+      File_Format_                         
                                         Customizing
     Features for Programming              Customizing_NEdit_
       Programming_with_NEdit_              Preferences_
@@ -112,19 +113,21 @@ Getting Started
 
   To open an existing file, choose Open... from the file menu. Select the file
   that you want to open in the pop-up dialog that appears and click on OK.  You
-  may open any number of files at the same time.  Each file will appear in its
-  own editor window.  Using Open... rather than re-typing the NEdit command and
-  running additional copies of NEdit, will give you quick access to all of the
-  files you have open via the Windows menu, and ensure that you don't
-  accidentally open the same file twice.  NEdit has no "main" window.  It
-  remains running as long as at least one editor window is open.
+  may open any number of files at the same time.  Depending on your settings
+  (cf. "Tabbed_Interface_") each file can appear in its own editor window, or it
+  can appear under a tab in the same editor window.  Using Open... rather than
+  re-typing the NEdit command and running additional copies of NEdit, will give
+  you quick access to all of the files you have open via the Windows menu, and
+  ensure that you don't accidentally open the same file twice.  NEdit has no
+  "main" window.  It remains running as long as at least one editor window is
+  open.
 
 3>Creating a New File
 
   If you already have an empty (Untitled) window displayed, just begin typing
-  in the window.  To create a new Untitled window, choose New from the File
-  menu.  To give the file a name and save its contents to the disk, choose Save
-  or Save As... from the File menu.
+  in the window.  To create a new Untitled window, choose New Window or New Tab
+  from the File menu.   To give the file a name and save its contents to the
+  disk, choose Save or Save As... from the File menu.
 
 3>Backup Files
 
@@ -249,11 +252,16 @@ Finding and Replacing Text
   mouse across it, switch to your NEdit window and choose Find Selection from
   the Search menu.
 
-  Find Incremental is yet another variation on searching, where every character
-  typed triggers a new search.  Incremental searching is generally the quickest
-  way to find something in a file, because it gives you the immediate feedback
-  of seeing how your search is progressing, so you never need to type more than
-  the minimally sufficient search string to reach your target.
+  Find Incremental, which opens the interactive search bar, is yet another variation
+  on searching, where every character typed triggers a new search.  After you've
+  completed the search string, the next occurrence in the buffer is found by hitting
+  the Return key, or by clicking on the icon to the left (magnifying glass). Holding
+  a Shift key down finds the previous occurrences.  To the right there is a clear
+  button with an icon resembling "|<". Clicking on it empties the search text widget
+  without disturbing selections.  A middle click on the clear button copies the
+  content of any existing selection into the search text widget and triggers a new
+  search.
+  
 
 3>Searching Backwards
 
@@ -660,17 +668,19 @@ Keyboard Shortcuts
 
     PageUp        Scroll and move the cursor up by one page.
 
-    Ctrl+PageUp   Scroll and move the cursor left by one
-                  page.
     PageDown      Scroll and move the cursor down by one
-                  page.
-
-    Ctrl+PageDown Scroll and move the cursor right by one
                   page.
 
     F10           Make the menu bar active for keyboard
                   input (Arrow Keys, Return, Escape,
                   and the Space Bar)
+
+    Alt+Home      Switch to the previously active document.
+
+    Ctrl+PageUp   Switch to the previous document.
+
+    Ctrl+PageDown Switch to the next document.
+
 
 3>Specialty Keyboards  
 
@@ -768,6 +778,25 @@ Shifting and Filling
   right margin, without going back and forth to the wrap-margin dialog, as well
   as to exclude text to the left of the selection such as comment bars or other
   text columns.
+   ----------------------------------------------------------------------
+
+Tabbed Interface
+----------------
+
+  NEdit is able to display files in distinct editor windows, or to display files
+  under tabs in the same editor window.  The Options for controlling the tabbed
+  interface are found under Preferences -> Default Settings -> Tabbed Interface 
+  (cf. "Preferences_", also "NEdit_Command_Line_"). 
+  
+  Notice that you can re-group tabs at any time by detaching and attaching them,
+  or moving them, to other windows. Tabs are detached using the Windows menu, or
+  by right clicking on a tab (which opens a context menu).
+
+  You can switch to a tab by simply clicking on it, or you can use the keyboard.
+  The default keybindings to switch tabs (which are Ctrl+PageUp/-Down and Alt+Home,
+  see "Keyboard_Shortcuts_") can be changed using the actions previous_document(),
+  next_document() and last_document().
+  
    ----------------------------------------------------------------------
 
 File Format
@@ -2945,11 +2974,7 @@ Action Routines
                               close_pane()
                               detach_document()
                               move_document_dialog()
-                              next_document()
-                              previous_document()
-                              last_document()
-                              
-                              
+
 
   An action representing a menu command is usually named the same as its
   corresponding menu item except that all punctuation is removed, all letters
@@ -3540,7 +3565,7 @@ Preferences
   may, be wrapped at the right margin of the window, or the margin can be set
   at a specific column.
 
-**Tabs**
+**Tab Stops**
   Set the tab distance (number of characters between tab stops) for tab
   characters, and control tab emulation and use of tab characters in padding
   and emulated tabs.
@@ -3549,18 +3574,6 @@ Preferences
   Change the font(s) used to display text (fonts for menus and dialogs must be
   set using X resources for the text area of the window). See below for more
   information.
-
-**Colors...**
-
-  Change the colors used to display text.  The "Matching (..)" fields change
-  the colors that matching parens, brackets and braces are flashed when the
-  "Show Matching (..)" option is enabled.  Note that the foreground colors for
-  plain text, selected text, and matching paren flashing only apply when syntax
-  highlighting is disabled.  When syntax highlighting is enabled, text (even
-  text that appears plain) will always be colored according to its
-  highlighting style. (For information on changing syntax highlighting styles
-  and matching patterns use see  Help -> Features for Programming ->
-  Syntax_Highlighting_.)
 
 **Highlight Syntax**
   If NEdit recognizes the language being edited, and highlighting patterns are
@@ -3614,6 +3627,16 @@ Preferences
   of the matching tags is in the current window, that tag is chosen, without
   displaying the dialog.
 
+**Colors...**
+  Change the colors used to display text.  The "Matching (..)" fields change the
+  colors that matching parens, brackets and braces are flashed when the "Show
+  Matching (..)" option is enabled.  Note that the foreground colors for plain
+  text, selected text, and matching paren flashing only apply when syntax
+  highlighting is disabled.  When syntax highlighting is enabled, text (even
+  text that appears plain) will always be colored according to its highlighting
+  style. (For information on changing syntax highlighting styles and matching
+  patterns use see  Help -> Features for Programming -> Syntax_Highlighting_.)
+
 **Customize Menus**
   Add/remove items from the Shell, Macro, and window background menus (see
   below).
@@ -3656,6 +3679,25 @@ Preferences
 **Syntax Highlighting**
   Program and configure enhanced text display for new or supported languages
   (See Features for Programming -> Syntax_Highlighting_).
+
+**Tabbed Editing**
+  Options for controlling the tabbed interface:
+  
+  ~Open File in New Tab~ - 
+  Open files in new tabs, else open files in new windows.
+  
+  ~Show Tab Bar~ - 
+  Show/Hide the tab bar.
+  
+  ~Hide Tab Bar when only one Document is open~
+  
+  ~Next/Prev Tabs Across Windows~ - 
+  Suppose there are two windows with three tabs in the first window and two tabs in
+  the second window.  Enabling this option, if you are on the third tab in the
+  first window, hitting Ctrl+PageDown would switch to the first tab in the second
+  window (instead of switching to the first tab in the first window).
+  
+  ~Sort Tabs Alphabetically~
 
 **Terminate with Line Break on Save**
   Some UNIX tools expect that files end with a line feed. If this option is
@@ -3898,10 +3940,6 @@ X Resources
   options not settable via the Preferences menu (for preference resource names,
   see your NEdit preference file):
 
-**nedit.openInTab**: True
-
-  When set to True, open files in new tabs, else open files in new windows.
-
 **nedit.tagFile**: (not defined) 
 
   This can be the name of a file, or multiple files separated by a colon (:)
@@ -4112,8 +4150,8 @@ X Resources
   blinking.
 
 **nedit@*text.Translations**:
-  
-  Modifies key bindings (see below).
+
+  Modifies key bindings (see "Key_Binding_").
 
 **nedit@*foreground**: black
   
@@ -4130,6 +4168,10 @@ X Resources
 **nedit@*calltipBackground**: LemonChiffon1
 
   Background color for calltips
+
+**nedit@*XmLFolder.inactiveForeground**: #666
+  
+  Foreground color for inactive tabs.
 
 **nedit@*fontList**: helvetica medium 12 points
   
@@ -5524,6 +5566,7 @@ Problems/Defects
 .. Menu:   Using the Mouse                  # mouse
 .. Menu:   Keyboard Shortcuts               # keyboard
 .. Menu:   S_h_ifting and Filling           # fill
+.. Menu:   Tabbed Interface                 # interface
 .. Menu:   F_i_le Format                    # format
 
 .. Menu: Features for Programming           # features

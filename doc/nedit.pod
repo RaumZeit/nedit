@@ -1,4 +1,4 @@
-# $Id: nedit.pod,v 1.5 2004/05/11 19:56:00 edg Exp $
+# $Id: nedit.pod,v 1.6 2004/06/08 15:36:15 edg Exp $
 =pod
 
 =head1 NAME
@@ -18,7 +18,8 @@ nedit [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-server>]
       [B<-display> I<[host]:server[.screen]>] 
       [B<-xrm> I<resourcestring>]
       [B<-svrname> I<name>] [B<-import> I<file>] 
-      [B<-background>|B<-bg> I<color>] [B<-foreground>|B<-fg> I<color>] 
+      [B<-background>|B<-bg> I<color>] [B<-foreground>|B<-fg> I<color>]
+      [B<-tabbed>] [B<-untabbed>] [B<-group>] 
       [B<-V|-version>] [B<-->] [file...]
 
 =head1 DESCRIPTION
@@ -156,6 +157,18 @@ your I<.nedit> file.  To incorporate macros, language modes, and highlight
 patterns and styles written by other users, run nedit with B<-import>
 I<<file>>, then re-save your I<.nedit> file with
 Preferences->Save Defaults.
+
+=item  B<-tabbed>
+
+Open all subsequent files in new tabs. Resets B<-group> option.
+
+=item  B<-untabbed>
+
+Open all subsequent files in new windows. Resets B<-group> option.
+
+=item  B<-group>
+
+Open all subsequent files as tabs in a new window.
 
 =item  B<-V>, B<-version> 
 

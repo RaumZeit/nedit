@@ -2,7 +2,7 @@
 *                                                                              *
 * help_topic.h --  Nirvana Editor help display                                 *
 *                                                                              *
-                 Generated on May 11, 2004 (Do NOT edit!)
+                 Generated on Jun 8, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -45,6 +45,7 @@ enum HelpTopic {
     HELP_MOUSE,
     HELP_KEYBOARD,
     HELP_FILL,
+    HELP_INTERFACE,
     HELP_FORMAT,
     HELP_PROGRAMMER,
     HELP_TABS,
