@@ -1,10 +1,10 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.12 2001/11/18 19:02:57 arnef Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.13 2001/12/10 04:57:59 edel Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h ../util/utils.h textBuf.h \
  text.h nedit.h window.h preferences.h undo.h menu.h file.h tags.h
 help.o: help.c ../util/misc.h ../util/DialogF.h ../util/system.h \
  textBuf.h text.h textSel.h nedit.h search.h window.h preferences.h \
- help.h file.h
+ help.h file.h help_data.h
 highlight.o: highlight.c ../util/misc.h ../util/DialogF.h textBuf.h \
  textDisp.h text.h textP.h nedit.h regularExp.h highlight.h \
  highlightData.h preferences.h window.h

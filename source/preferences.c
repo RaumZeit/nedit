@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.40 2001/11/22 21:01:05 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.41 2001/12/10 04:58:00 edel Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -240,6 +240,8 @@ static struct prefData {
     int findReplaceUsesSelection; /* whether the find replace dialog is automatically
                                      loaded with the primary selection */
     char titleFormat[MAX_TITLE_FORMAT_LEN];
+    char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN];/* fonts for help system */
+    char helpLinkColor[30];    	/* Color for hyperlinks in the help system */
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -719,6 +721,69 @@ static PrefDescripRec PrefDescrip[] = {
     	"-adobe-courier-bold-o-normal--*-120-*-*-*-*-*",
     	PrefData.boldItalicFontString,
     	(void *)sizeof(PrefData.boldItalicFontString), True},
+    {"helpFont", "helpFont", PREF_STRING,
+    	"-adobe-times-medium-r-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[HELP_FONT]), False},
+    {"boldHelpFont", "BoldHelpFont", PREF_STRING,
+    	"-adobe-times-bold-r-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[BOLD_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), False},
+    {"italicHelpFont", "ItalicHelpFont", PREF_STRING,
+    	"-adobe-times-medium-i-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[ITALIC_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), False},
+    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING,
+    	"-adobe-times-bold-i-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), False},
+    {"fixedHelpFont", "fixedHelpFont", PREF_STRING,
+    	"-adobe-courier-medium-r-normal--12-*-*-*-*-*-*",
+	PrefData.helpFontNames[FIXED_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), False},
+    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING,
+    	"-adobe-courier-bold-r-normal--12-*-*-*-*-*-*",
+	PrefData.helpFontNames[BOLD_FIXED_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), False},
+    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING,
+    	"-adobe-courier-medium-o-normal--12-*-*-*-*-*-*",
+	PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), False},
+    {"boldItalicFixedHelpFont", "BoldItalicFixedHelpFont", PREF_STRING,
+    	"-adobe-courier-bold-o-normal--12-*-*-*-*-*-*",
+	PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), False},
+    {"helpLinkFont", "helpLinkFont", PREF_STRING,
+    	"-adobe-times-medium-r-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[HELP_LINK_FONT],
+	(void *)sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), False},
+    {"h1HelpFont", "H1HelpFont", PREF_STRING,
+    	"-adobe-times-bold-r-normal--17-*-*-*-*-*-*",
+	PrefData.helpFontNames[H1_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[H1_HELP_FONT]), False},
+    {"h2HelpFont", "H2HelpFont", PREF_STRING,
+    	"-adobe-times-bold-r-normal--17-*-*-*-*-*-*",
+	PrefData.helpFontNames[H2_HELP_FONT], 
+	(void *)sizeof(PrefData.helpFontNames[H2_HELP_FONT]), False},
+    {"h3HelpFont", "H3HelpFont", PREF_STRING,
+    	"-adobe-times-bold-r-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[H3_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[H3_HELP_FONT]), False},
+    {"h4HelpFont", "H4HelpFont", PREF_STRING,
+    	"-adobe-times-medium-i-normal--14-*-*-*-*-*-*",
+	PrefData.helpFontNames[H4_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[H4_HELP_FONT]), False},
+    {"h5HelpFont", "H5HelpFont", PREF_STRING,
+    	"-adobe-courier-bold-r-normal--*-120-*-*-*-*-*",
+	PrefData.helpFontNames[H5_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[H5_HELP_FONT]), False},
+    {"h6HelpFont", "H6HelpFont", PREF_STRING,
+    	"-adobe-courier-medium-o-normal--12-*-*-*-*-*-*",
+	PrefData.helpFontNames[H6_HELP_FONT],
+	(void *)sizeof(PrefData.helpFontNames[H6_HELP_FONT]), False},
+    {"helpLinkColor", "helpLinkColor", PREF_STRING, "#00000000EEEE",
+	PrefData.helpLinkColor,
+	(void *)sizeof(PrefData.helpLinkColor), False},
     {"shell", "Shell", PREF_STRING,
 #if defined(__MVS__) || defined(__EMX__)
     	"/bin/sh",
@@ -1513,9 +1578,20 @@ XFontStruct *GetPrefItalicFont(void)
 {
     return PrefData.italicFontStruct;
 }
+
 XFontStruct *GetPrefBoldItalicFont(void)
 {
     return PrefData.boldItalicFontStruct;
+}
+
+char *GetPrefHelpFontName(int index)
+{
+    return PrefData.helpFontNames[index];
+}
+
+char *GetPrefHelpLinkColor(void)
+{
+    return PrefData.helpLinkColor;
 }
 
 void SetPrefShell(const char *shell)

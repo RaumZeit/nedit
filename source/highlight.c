@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.20 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.21 2001/12/10 04:58:00 edel Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -145,7 +145,6 @@ static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
-static Pixel allocColor(Widget w, const char *colorName);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 static char getPrevChar(textBuffer *buf, int pos);
@@ -683,25 +682,25 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
     /* Set up table for mapping colors and fonts to syntax */
     styleTablePtr = styleTable = (styleTableEntry *)XtMalloc(
     	    sizeof(styleTableEntry) * (nPass1Patterns + nPass2Patterns + 1));
-    styleTablePtr->color = allocColor(window->textArea, ColorOfNamedStyle(
+    styleTablePtr->color = AllocColor(window->textArea, ColorOfNamedStyle(
     	    noPass1 ? pass2PatternSrc[0].style : pass1PatternSrc[0].style));
     styleTablePtr->underline = FALSE;
     styleTablePtr++->font = FontOfNamedStyle(window,
     	    noPass1 ? pass2PatternSrc[0].style : pass1PatternSrc[0].style);
-    styleTablePtr->color = allocColor(window->textArea, ColorOfNamedStyle(
+    styleTablePtr->color = AllocColor(window->textArea, ColorOfNamedStyle(
     	    noPass2 ? pass1PatternSrc[0].style : pass2PatternSrc[0].style));
     styleTablePtr->underline = FALSE;
     styleTablePtr++->font = FontOfNamedStyle(window,
 	    noPass2 ? pass1PatternSrc[0].style : pass2PatternSrc[0].style);
     for (i=1; i<nPass1Patterns; i++) {
-	styleTablePtr->color = allocColor(window->textArea,
+	styleTablePtr->color = AllocColor(window->textArea,
 	    	ColorOfNamedStyle(pass1PatternSrc[i].style));
     	styleTablePtr->underline = FALSE;
 	styleTablePtr++->font = FontOfNamedStyle(window,
 	    	pass1PatternSrc[i].style);
     }
     for (i=1; i<nPass2Patterns; i++) {
-	styleTablePtr->color = allocColor(window->textArea,
+	styleTablePtr->color = AllocColor(window->textArea,
 	    	ColorOfNamedStyle(pass2PatternSrc[i].style));
     	styleTablePtr->underline = FALSE;
 	styleTablePtr++->font = FontOfNamedStyle(window,
@@ -1551,7 +1550,7 @@ static double colorDistance(const XColor *c1, const XColor *c2)
 ** stderr, and return the widget's foreground color as a backup.
 */
 
-static Pixel allocColor(Widget w, const char *colorName)
+Pixel AllocColor(Widget w, const char *colorName)
 {
     XColor       colorDef;
     XColor      *allColorDefs;

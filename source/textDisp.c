@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.11 2001/11/16 10:06:34 amai Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.12 2001/12/10 04:58:00 edel Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -318,10 +318,11 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     /* If there is a (syntax highlighting) style table in use, find the new
        maximum font height for this text display */
     for (i=0; i<textD->nStyles; i++) {
-    	if (textD->styleTable[i].font->ascent > maxAscent)
-    	    maxAscent = textD->styleTable[i].font->ascent;
-    	if (textD->styleTable[i].font->descent > maxDescent)
-    	    maxDescent = textD->styleTable[i].font->descent;
+    	styleFont = textD->styleTable[i].font;
+	if (styleFont != NULL && styleFont->ascent > maxAscent)
+    	    maxAscent = styleFont->ascent;
+    	if (styleFont != NULL && styleFont->descent > maxDescent)
+    	    maxDescent = styleFont->descent;
     }
     textD->ascent = maxAscent;
     textD->descent = maxDescent;
@@ -333,8 +334,8 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     else {
 	for (i=0; i<textD->nStyles; i++) {
     	    styleFont = textD->styleTable[i].font;
-	    if (styleFont->max_bounds.width != fontWidth ||
-		    styleFont->max_bounds.width != styleFont->min_bounds.width)
+	    if (styleFont != NULL && (styleFont->max_bounds.width != fontWidth ||
+		    styleFont->max_bounds.width != styleFont->min_bounds.width))
 		fontWidth = -1;
 	}
     }

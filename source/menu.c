@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.43 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.44 2001/12/10 04:58:00 edel Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -175,42 +175,6 @@ static void learnCB(Widget w, WindowInfo *window, caddr_t callData);
 static void finishLearnCB(Widget w, WindowInfo *window, caddr_t callData);
 static void cancelLearnCB(Widget w, WindowInfo *window, caddr_t callData);
 static void replayCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpStartCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpSearchCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpSelectCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpClipCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpProgCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpMouseCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpKbdCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpFillCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpFormatCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpTabsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpIndentCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpSyntaxCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpCtagsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRecoveryCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpPrefCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpCmdLineCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpServerCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpCustCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpLearnCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpMacroLangCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpMacroSubrsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpResourcesCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpBindingCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpActionsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpPatternsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpSmartIndentCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpVerCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpDistCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpMailingCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpBugsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpShellCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexBasicsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexEscapeCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexParenCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexAdvCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexExamplesCB(Widget w, WindowInfo *window, caddr_t callData);
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData);
 static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData);
 static void unloadTagsFileMenuCB(Widget w, WindowInfo *window,
@@ -396,6 +360,9 @@ static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
 static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName);
 #endif
+
+static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu, 
+	WindowInfo * window);
 
 /* Application action table */
 static XtActionsRec Actions[] = {
@@ -1090,94 +1057,126 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     */
     menuPane = createMenu(menuBar, "helpMenu", "Help", 0, &cascade, SHORT);
     XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, NULL);
-    createMenuItem(menuPane, "gettingStarted", "Getting Started", 'G',
-    	    helpStartCB, window, SHORT);
-    subPane = createMenu(menuPane, "basicOperation", "Basic Operation",
-	    'B', NULL, FULL);
-    createMenuItem(subPane, "selectingText", "Selecting Text", 'S',
-    	    helpSelectCB, window, SHORT);
-    createMenuItem(subPane, "findingReplacingText",
-    	    "Finding and Replacing Text", 'F', helpSearchCB, window, SHORT);
-    createMenuItem(subPane, "cutPaste", "Cut and Paste", 'C',
-    	    helpClipCB, window, SHORT);
-    createMenuItem(subPane, "usingTheMouse",
-    	    "Using the Mouse", 'U', helpMouseCB, window, SHORT);
-    createMenuItem(subPane, "keyboardShortcuts",
-    	    "Keyboard Shortcuts", 'K', helpKbdCB, window, SHORT);
-    createMenuItem(subPane, "shiftingAndFilling",
-    	    "Shifting and Filling", 'h', helpFillCB, window, SHORT);
-    createMenuItem(subPane, "fileFormat",
-    	    "File Format", 'i', helpFormatCB, window, SHORT);
-    subPane = createMenu(menuPane, "featuresForProgramming",
-	    "Features for Programming", 'F', NULL, FULL);
-    createMenuItem(subPane, "programmingWithNEdit",
-    	    "Programming with NEdit", 'a', helpProgCB, window, SHORT);
-    createMenuItem(subPane, "tabsEmulatedTabs",
-    	    "Tabs", 'T', helpTabsCB, window, SHORT);
-    createMenuItem(subPane, "automaticIndent",
-    	    "Automatic Indent", 'A', helpIndentCB, window, SHORT);
-    createMenuItem(subPane, "syntaxHighlighting",
-    	    "Syntax Highlighting", 'S', helpSyntaxCB, window, SHORT);
-    createMenuItem(subPane, "FindingDeclarationsCtags",
-    	    "Finding Declarations (ctags)", 'F', helpCtagsCB, window, SHORT);
-    subPane = createMenu(menuPane, "regularExpressions",
-	    "Regular Expressions", 'R', NULL, SHORT);
-    createMenuItem(subPane, "basicSyntax", "Basic Syntax", 'B',
-    	    helpRegexBasicsCB, window, SHORT);
-    createMenuItem(subPane, "escapeSequences", "Escape Sequences", 'E',
-    	    helpRegexEscapeCB, window, SHORT);
-    createMenuItem(subPane, "parentheticalConstructs",
-	    "Parenthetical Constructs", 'P', helpRegexParenCB, window, SHORT);
-    createMenuItem(subPane, "advancedTopics", "Advanced Topics", 'A',
-    	    helpRegexAdvCB, window, SHORT);
-    createMenuItem(subPane, "examples", "Examples", 'x',
-    	    helpRegexExamplesCB, window, SHORT);
-    subPane = createMenu(menuPane, "macroShellExtensions",
-	    "Macro / Shell Extensions", 'M', NULL, FULL);
-#ifndef VMS
-    createMenuItem(subPane, "shellCommandsAndFilters",
-    	    "Shell Commands and Filters", 'S', helpShellCB, window, SHORT);
-#endif
-    createMenuItem(subPane, "learnReplay", "Learn / Replay", 'L',
-    	    helpLearnCB, window, SHORT);
-    createMenuItem(subPane, "macroLanguage", "Macro Language", 'M',
-    	    helpMacroLangCB, window, SHORT);
-    createMenuItem(subPane, "macro Subroutines", "Macro Subroutines", 'a',
-    	    helpMacroSubrsCB, window, SHORT);
-    createMenuItem(subPane, "action routines", "Action Routines", 'A',
-    	    helpActionsCB, window, SHORT);
-    subPane = createMenu(menuPane, "customizing",
-	    "Customizing", 'C', NULL, FULL);
-    createMenuItem(subPane, "customizingNEdit", "Customizing NEdit", 'z',
-    	    helpCustCB, window, SHORT);
-    createMenuItem(subPane, "preferences", "Preferences", 'P',
-    	    helpPrefCB, window, SHORT);
-    createMenuItem(subPane, "xResources", "X Resources", 'X',
-    	    helpResourcesCB, window, SHORT);
-    createMenuItem(subPane, "keyBinding", "Key Binding", 'K',
-    	    helpBindingCB, window, SHORT);
-    createMenuItem(subPane, "highlightingPatterns",
-    	    "Highlighting Patterns", 'H', helpPatternsCB, window, SHORT);
-    createMenuItem(subPane, "smartIndentMacros",
-    	    "Smart Indent Macros", 'S', helpSmartIndentCB, window, SHORT);
-    createMenuItem(menuPane, "neditCommandLine", "NEdit Command Line", 'N',
-    	    helpCmdLineCB, window, SHORT);
-    createMenuItem(menuPane, "serverModeAndNc", "Server Mode and nc", 'S',
-    	    helpServerCB, window, SHORT);
-    createMenuItem(menuPane, "crashRecovery", "Crash Recovery", 'a',
-    	    helpRecoveryCB, window, SHORT);
-    createMenuSeparator(menuPane, "sep1", SHORT);
-    createMenuItem(menuPane, "version", "Version", 'V',
-    	    helpVerCB, window, SHORT);
-    createMenuItem(menuPane, "distributionPolicy", "Distribution Policy", 'D',
-    	    helpDistCB, window, SHORT);
-    createMenuItem(menuPane, "mailingLists", "Mailing Lists", 'L',
-    	    helpMailingCB, window, SHORT);
-    createMenuItem(menuPane, "problemsBugs", "Problems/Bugs", 'P',
-    	    helpBugsCB, window, SHORT);
+    buildHelpMenu( menuPane, &H_M[0], window );
 
     return menuBar;
 }
+
+/*----------------------------------------------------------------------------*/
+
+static Widget makeHelpMenuItem(
+
+    Widget           parent,
+    char            *name,      /* to be assigned to the child widget */
+    char            *label,     /* text to be displayed in menu       */
+    char             mnemonic,  /* letter in label to be underlined   */
+    menuCallbackProc callback,  /* activated when menu item selected  */
+    void            *cbArg,     /* passed to activated call back      */
+    int              mode,      /* SGI_CUSTOM menu option             */
+    enum HelpTopic   topic      /* associated with this menu item     */
+)
+{
+    Widget menuItem = 
+        createMenuItem( parent, name, label, mnemonic, callback, cbArg, mode );
+    
+    XtVaSetValues( menuItem, XmNuserData, topic, 0 );
+    return menuItem;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void helpCB( Widget menuItem, XtPointer clientData, XtPointer callData )
+{
+    WindowInfo *window = (WindowInfo*) clientData;
+    enum HelpTopic topic;
+    
+    XtVaGetValues( menuItem, XmNuserData, &topic, 0 );
+    
+    Help( window->shell, topic );
+}
+
+/*----------------------------------------------------------------------------*/
+
+#define NON_MENU_HELP 9
+
+static HelpMenu * buildHelpMenu( 
+
+    Widget       pane,  /* Menu pane on which to place new menu items */
+    HelpMenu   * menu,  /* Data to drive building the help menu       */
+    WindowInfo * window /* Main NEdit window information              */
+)
+{
+#ifdef VMS
+    int hideIt = 1;  /* All menu items matching this will be inaccessible */
+#else
+    int hideIt = -1; /* This value should make all menu items accessible  */
+#endif
+
+    if( menu != NULL )
+    {
+        int crntLevel = menu->level;
+
+        /*-------------------------
+        * For each menu element ...
+        *-------------------------*/
+        while( menu != NULL && menu->level == crntLevel )
+        {
+            /*----------------------------------------------
+            * ... see if dealing with a separator or submenu
+            *----------------------------------------------*/
+            if( menu->topic == HELP_none )
+            {
+                if( menu->mnemonic == '-' )
+                {
+                    createMenuSeparator(pane, menu->wgtName, SHORT);
+                    menu = menu->next;
+                }
+                else
+                {
+                    /*-------------------------------------------------------
+                    * Do not show any of the submenu when it is to be hidden.
+                    *-------------------------------------------------------*/
+                    if( menu->hideIt == hideIt || menu->hideIt == NON_MENU_HELP )
+                    {
+                        do {     menu = menu->next;
+                        } while( menu != NULL && menu->level > crntLevel );
+                        
+                    }
+                    else
+                    {
+                        Widget subPane = 
+                            createMenu( pane, menu->wgtName, menu->subTitle, 
+                               menu->mnemonic, NULL, FULL);
+
+                        menu = buildHelpMenu( subPane, menu->next, window );
+                    }
+                }
+            }
+
+            else
+            {
+                /*---------------------------------------
+                * Show menu item if not going to hide it.
+                * This is the easy way out of hiding
+                * menu items. When entire submenus want
+                * to be hidden, either the entire branch
+                * will have to be marked, or this algorithm
+                * will have to become a lot smarter.
+                *---------------------------------------*/
+                if( menu->hideIt != hideIt && menu->hideIt != NON_MENU_HELP )
+                    makeHelpMenuItem( 
+                        pane, menu->wgtName, HelpTitles[menu->topic], 
+                        menu->mnemonic, helpCB, window, SHORT, menu->topic );
+
+                menu = menu->next;
+            }
+        }
+    }
+    
+    return menu;
+}
+
+/*----------------------------------------------------------------------------*/
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -2123,188 +2122,6 @@ static void cancelLearnCB(Widget w, WindowInfo *window, caddr_t callData)
 static void replayCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Replay(window);
-}
-
-static void helpStartCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_START);
-}
-
-static void helpSearchCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SEARCH);
-}
-
-static void helpSelectCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SELECT);
-}
-
-static void helpClipCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_CLIPBOARD);
-}
-
-static void helpProgCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_PROGRAMMER);
-}
-
-static void helpMouseCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_MOUSE);
-}
-
-static void helpKbdCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_KEYBOARD);
-}
-
-static void helpFillCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_FILL);
-}
-
-static void helpFormatCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_FORMAT);
-}
-
-static void helpTabsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_TABS);
-}
-
-static void helpIndentCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_INDENT);
-}
-
-static void helpSyntaxCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SYNTAX);
-}
-
-static void helpCtagsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_TAGS);
-}
-
-static void helpRecoveryCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_RECOVERY);
-}
-
-static void helpPrefCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_PREFERENCES);
-}
-
-static void helpShellCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SHELL);
-}
-
-static void helpRegexBasicsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_REGEX_BASICS);
-}
-
-static void helpRegexEscapeCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_REGEX_ESC_SEQ);
-}
-
-static void helpRegexParenCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_REGEX_PAREN);
-}
-
-static void helpRegexAdvCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_REGEX_ADV);
-}
-
-static void helpRegexExamplesCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_REGEX_EXAMPLE);
-}
-
-static void helpCmdLineCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_COMMAND_LINE);
-}
-
-static void helpServerCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SERVER);
-}
-
-static void helpCustCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_CUSTOMIZE);
-}
-
-static void helpLearnCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_LEARN);
-}
-
-
-static void helpMacroLangCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_MACRO_LANG);
-}
-
-
-static void helpMacroSubrsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_MACRO_SUBRS);
-}
-
-static void helpResourcesCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_RESOURCES);
-}
-
-static void helpBindingCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_BINDING);
-}
-
-static void helpPatternsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_PATTERNS);
-}
-
-static void helpSmartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_SMART_INDENT);
-}
-
-static void helpActionsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_ACTIONS);
-}
-
-static void helpVerCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_VERSION);
-}
-
-static void helpDistCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_DISTRIBUTION);
-}
-
-static void helpMailingCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_MAILING_LIST);
-}
-
-static void helpBugsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    Help(window->shell, HELP_BUGS);
 }
 
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
