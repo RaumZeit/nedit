@@ -1,6 +1,6 @@
-          Release Notes for NEdit Version 5.2 Beta, February 2001
+          Release Notes for NEdit Version 5.2 Beta, May 2001
 
-$Id: ReleaseNotes,v 1.5 2001/04/13 17:50:50 tringali Exp $
+$Id: ReleaseNotes,v 1.6 2001/05/12 00:48:47 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -41,6 +41,8 @@ New Features in 5.2
 
  - Undo and Redo highlights the text that has changed, when visible.
  
+ - Support for wheel mouse scrolling on servers that support it (XFree86). 
+
 
 Bug Fixes in 5.2
 
@@ -54,14 +56,15 @@ Bug Fixes in 5.2
 
  - Fix potential crashes if some system calls fail
  
- - When no colors are left, attempt to reuse a closest-matching color.  This
+ - When no colors are left, attempt to reuse the closest matching color.  This
    allows NEdit's syntax highlighting to better coexist with Netscape, which
    unfortuntely takes all available colors.
 
  - "Overtype" mode is now bound to the Insert key, to be consistent with
    Motif text fields.
 
- - Accelerators now available in confirmation dialogs.
+ - Accelerators now available in confirmation dialogs, and may be invoked
+   without the Alt key.
 
   
 New Features in 5.1
