@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.94 2004/03/03 07:06:01 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.95 2004/03/04 09:44:21 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -198,8 +198,6 @@ static void finishLearnCB(Widget w, WindowInfo *window, caddr_t callData);
 static void cancelLearnCB(Widget w, WindowInfo *window, caddr_t callData);
 static void replayCB(Widget w, WindowInfo *window, caddr_t callData);
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData);
-static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData);
-static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData);
 static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData);
 static void unloadTagsFileMenuCB(Widget w, WindowInfo *window,
 	caddr_t callData);
@@ -614,6 +612,12 @@ XtActionsRec *GetMenuActions(int *nActions)
 Widget CreateMenuBar(Widget parent, WindowInfo *window)
 {
     Widget menuBar, menuPane, btn, subPane, subSubPane, subSubSubPane, cascade;
+
+    /*
+    ** cache user menus:
+    ** allocate user menu cache
+    */
+    window->userMenuCache = CreateUserMenuCache();
 
     /*
     ** Create the menu bar (row column) widget
@@ -1120,8 +1124,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     */
     menuPane = window->shellMenuPane =
     	    createMenu(menuBar, "shellMenu", "Shell", 0, &cascade, FULL);
-    XtAddCallback(cascade, XmNcascadingCallback, (XtCallbackProc)shellMenuCB,
-    	    window);
     btn = createMenuItem(menuPane, "executeCommand", "Execute Command...",
     	    'E', doActionCB, "execute_command_dialog", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
@@ -1139,7 +1141,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    XmNsensitive, False, NULL);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-    /* UpdateShellMenu(window) now done in DetermineLanguageMode */
 #endif
 
     /*
@@ -1147,8 +1148,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     */
     menuPane = window->macroMenuPane =
     	    createMenu(menuBar, "macroMenu", "Macro", 0, &cascade, FULL);
-    XtAddCallback(cascade, XmNcascadingCallback, (XtCallbackProc)macroMenuCB,
-    	    window);
     window->learnItem = createMenuItem(menuPane, "learnKeystrokes",
     	    "Learn Keystrokes", 'L', learnCB, window, SHORT);
     XtVaSetValues(window->learnItem , XmNuserData, PERMANENT_MENU_ITEM, NULL);
@@ -1167,10 +1166,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->repeatItem = createMenuItem(menuPane, "repeat",
     	    "Repeat...", 'R', doActionCB, "repeat_dialog", SHORT);
     XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-    /* UpdateMacroMenu(window) now done in DetermineLanguageMode */
 
     /*
     ** Create the Windows menu
@@ -2624,26 +2621,6 @@ static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
     if (!window->windowMenuValid) {
     	updateWindowMenu(window);
     	window->windowMenuValid = True;
-    }
-}
-
-static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    window = WidgetToWindow(MENU_WIDGET(w));
-    
-    if (!window->macroMenuValid) {
-    	UpdateMacroMenu(window);
-    	window->macroMenuValid = True;
-    }
-}
-
-static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    window = WidgetToWindow(MENU_WIDGET(w));
-    
-    if (!window->shellMenuValid) {
-    	UpdateShellMenu(window);
-    	window->shellMenuValid = True;
     }
 }
 
@@ -4383,28 +4360,6 @@ void InvalidateWindowMenus(void)
     	else
     	    w->windowMenuValid = False;
     }
-}
-
-void InvalidateMacroMenus(WindowInfo *window)
-{
-    /* Mark the macro menus invalid (to be updated when the user pulls one
-       down), unless the menu is torn off, meaning it is visible to the user
-       and should be updated immediately */
-    if (!XmIsMenuShell(XtParent(window->macroMenuPane)) && IsTopDocument(window))
-    	UpdateMacroMenu(window);
-    else
-    	window->macroMenuValid = False;
-}
-
-void InvalidateShellMenus(WindowInfo *window)
-{
-    /* Mark the shell menus invalid (to be updated when the user pulls one
-       down), unless the menu is torn off, meaning it is visible to the user
-       and should be updated immediately */
-    if (!XmIsMenuShell(XtParent(window->shellMenuPane)) && IsTopDocument(window))
-    	UpdateShellMenu(window);
-    else
-    	window->shellMenuValid = False;
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.41 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.42 2004/03/04 09:44:21 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -60,6 +60,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.41 2004/02/21 05:45:45 tksoh Ex
 
 #include <Xm/Xm.h>
 #include <X11/keysym.h>
+#include <X11/IntrinsicP.h>
 #include <Xm/Text.h>
 #include <Xm/Form.h>
 #include <Xm/List.h>
@@ -81,8 +82,10 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.41 2004/02/21 05:45:45 tksoh Ex
 #define MENU_WIDGET(w) (w)
 #endif
 
-/* max number of user programmable menu commands allowed per each of the
-   macro, shell, and bacground menus */
+extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
+
+/* max. number of user programmable menu commands allowed per each of the
+   macro, shell, and background menus */
 #define MAX_ITEMS_PER_MENU 400
 
 /* major divisions (in position units) in User Commands dialogs */
@@ -95,7 +98,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.41 2004/02/21 05:45:45 tksoh Ex
 /* types of current dialog and/or menu */
 enum dialogTypes {SHELL_CMDS, MACRO_CMDS, BG_MENU_CMDS};
 
-/* Structure representing a menu item for both the shell and macro menus */
+/* Structure representing a menu item for shell, macro and BG menus*/
 typedef struct {
     char *name;
     unsigned int modifiers;
@@ -109,8 +112,8 @@ typedef struct {
     char *cmd;
 } menuItemRec;
 
-/* Structure for widgets and flags associated with both shell command
-   and macro command editing dialogs */
+/* Structure for widgets and flags associated with shell command,
+   macro command and BG command editing dialogs */
 typedef struct {
     int dialogType;
     WindowInfo *window;
@@ -122,20 +125,102 @@ typedef struct {
     int nMenuItems;
 } userCmdDialog;
 
-/* Structure for keeping track of hierarchical sub-menus durring user-menu
+/* Structure for keeping track of hierarchical sub-menus during user-menu
    creation */
 typedef struct {
     char *name;
     Widget menuPane;
 } menuTreeItem;
 
+/* Structure holding hierarchical info about one sub-menu.
+
+   Suppose following user menu items:
+   a.) "menuItem1"
+   b.) "subMenuA>menuItemA1"
+   c.) "subMenuA>menuItemA2"
+   d.) "subMenuA>subMenuB>menuItemB1"
+   e.) "subMenuA>subMenuB>menuItemB2"
+
+   Structure of this user menu is:
+   
+   Main Menu    Name       Sub-Menu A   Name       Sub-Menu B   Name
+   element nbr.            element nbr.            element nbr.
+        0       menuItem1
+        1       subMenuA --+->    0     menuItemA1
+                           +->    1     menuItemA2
+                           +->    2     subMenuB --+->    0     menuItemB1
+                                                   +->    1     menuItemB2
+
+   Above example holds 2 sub-menus:
+   1.) "subMenuA" (hierarchical ID = {1} means: element nbr. "1" of main menu)
+   2.) "subMenuA>subMenuB" (hierarchical ID = {1, 2} means: el. nbr. "2" of
+       "subMenuA", which itself is el. nbr. "0" of main menu) */
+typedef struct {
+    char *usmiName;  /* hierarchical name of sub-menu */
+    int  *usmiId;    /* hierarchical ID of sub-menu   */
+    int   usmiIdLen; /* length of hierarchical ID     */
+} userSubMenuInfo;
+
+/* Holds info about sub-menu structure of an user menu */
+typedef struct {
+    int              usmcNbrOfMainMenuItems; /* number of main menu items */
+    int              usmcNbrOfSubMenus;      /* number of sub-menus */
+    userSubMenuInfo *usmcInfo;               /* list of sub-menu info */
+} userSubMenuCache;
+
+/* Structure holding info about a single menu item.
+   According to above example there exist 5 user menu items:
+   a.) "menuItem1"  (hierarchical ID = {0} means: element nbr. "0" of main menu)
+   b.) "menuItemA1" (hierarchical ID = {1, 0} means: el. nbr. "0" of
+                     "subMenuA", which itself is el. nbr. "1" of main menu)
+   c.) "menuItemA2" (hierarchical ID = {1, 1})
+   d.) "menuItemB1" (hierarchical ID = {1, 2, 0})
+   e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
+ */
+typedef struct {
+    char    *umiName;               /* hierarchical name of menu item
+                                       (w.o. language mode info) */
+    int     *umiId;                 /* hierarchical ID of menu item */
+    int      umiIdLen;              /* length of hierarchical ID */
+    Boolean  umiIsDefault;          /* menu item is default one ("@*") */
+    int      umiNbrOfLanguageModes; /* number of language modes
+                                       applicable for this menu item */
+    int     *umiLanguageMode;       /* list of applicable lang. modes */
+    int      umiDefaultIndex;       /* array index of menu item to be
+                                       used as default, if no lang. mode
+                                       matches */
+    Boolean  umiToBeManaged;        /* indicates, that menu item needs
+                                       to be managed */
+} userMenuInfo;
+
+/* Structure holding info about a selected user menu (shell, macro or
+   background) */
+typedef struct {
+    int                sumType;            /* type of menu (shell, macro or
+                                              background */
+    Widget             sumMenuPane;        /* pane of main menu */
+    int                sumNbrOfListItems;  /* number of menu items */
+    menuItemRec      **sumItemList;        /* list of menu items */ 
+    userMenuInfo     **sumInfoList;        /* list of infos about menu items */
+    userSubMenuCache  *sumSubMenus;        /* info about sub-menu structure */
+    UserMenuList      *sumMainMenuList;    /* cached info about main menu */
+    Boolean           *sumMenuCreated;     /* pointer to "menu created"
+                                              indicator */
+} selectedUserMenu;
+
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
 static menuItemRec *ShellMenuItems[MAX_ITEMS_PER_MENU];
+static userMenuInfo     *ShellMenuInfo[MAX_ITEMS_PER_MENU];
+static userSubMenuCache  ShellSubMenus;
 static int NShellMenuItems = 0;
 static menuItemRec *MacroMenuItems[MAX_ITEMS_PER_MENU];
+static userMenuInfo     *MacroMenuInfo[MAX_ITEMS_PER_MENU];
+static userSubMenuCache  MacroSubMenus;
 static int NMacroMenuItems = 0;
 static menuItemRec *BGMenuItems[MAX_ITEMS_PER_MENU];
+static userMenuInfo     *BGMenuInfo[MAX_ITEMS_PER_MENU];
+static userSubMenuCache  BGSubMenus;
 static int NBGMenuItems = 0;
 
 /* Top level shells of the user-defined menu editing dialogs */
@@ -151,17 +236,26 @@ static Widget BGMenuPasteReplayBtn = NULL;
 static void editMacroOrBGMenu(WindowInfo *window, int dialogType);
 static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 	int nMenuItems, int sensitive);
-static void updateMenus(int menuType);
+static void rebuildMenuOfAllWindows(int menuType);
+static void rebuildMenu(WindowInfo *window, int menuType);
 static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
                              const char *hierName);
 static char *copySubstring(const char *string, int length);
-static char *findStripLanguageMode(const char *menuItemName, int languageMode,
-	int *isDefaultLM);
 static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
 	int index, XtCallbackProc cbRtn, XtPointer cbArg);
-static Widget createUserSubMenu(Widget parent, char *label);
-static void removeMenuItems(Widget menuPane);
+static Widget createUserSubMenu(Widget parent, char *label, Widget *menuItem);
+static void deleteMenuItems(Widget menuPane);
+static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *menu);
 static void updateMenu(WindowInfo *window, int menuType);
+static void manageTearOffMenu(Widget menuPane);
+static void resetManageMode(UserMenuList *list);
+static void tearOffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event);
+static void showTearOff(Widget menuPane);
+static void manageAllSubMenuWidgets(UserMenuListElement *subMenu);
+static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu);
+static void manageMenuWidgets(UserMenuList *list);
+static void manageUserMenu(selectedUserMenu *menu);
+static void createMenuItems(WindowInfo *window, selectedUserMenu *menu);
 static void okCB(Widget w, XtPointer clientData, XtPointer callData);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -202,6 +296,30 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 static int parseError(const char *message);
 static char *copyMacroToEnd(char **inPtr);
 static void addTerminatingNewline(char **string);
+static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems,
+        userMenuInfo **infoList, userSubMenuCache *subMenus);
+static int getSubMenuDepth(const char *menuName);
+static userMenuInfo *parseMenuItemRec(menuItemRec *item);
+static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
+static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus);
+static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus,
+        const char *hierName);
+static char *stripLanguageMode(const char *menuItemName);
+static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems,
+        int defaultIdx);
+static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems,
+        int languageMode);
+static int doesLanguageModeMatch(userMenuInfo *info, int languageMode);
+static void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems);
+static void freeUserMenuInfo(userMenuInfo *info);
+static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
+static void freeSubMenuCache(userSubMenuCache *subMenus);
+static void allocUserMenuList(UserMenuList *list, int nbrOfItems);
+static void freeUserMenuList(UserMenuList *list);
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem);
+static void freeUserMenuListElement(UserMenuListElement *element);
+static UserMenuList *allocUserSubMenuList(int nbrOfItems);
+static void freeUserSubMenuList(UserMenuList *list);
 
 /*
 ** Present a dialog for editing the user specified commands in the shell menu
@@ -910,20 +1028,34 @@ Select \"New\" to add a new command to the menu."),
 }
 
 /*
-** Update the Shell, Macro, and window background menus menu of window "window"
-** from the currently loaded command descriptions.
+** Update the Shell, Macro, and Window Background menus of window
+** "window" from the currently loaded command descriptions.
 */
-void UpdateShellMenu(WindowInfo *window)
+void UpdateUserMenus(WindowInfo *window)
 {
-    updateMenu(window, SHELL_CMDS);
-}
-void UpdateMacroMenu(WindowInfo *window)
-{
-    updateMenu(window, MACRO_CMDS);
-}
-void UpdateBGMenu(WindowInfo *window)
-{
-    updateMenu(window, BG_MENU_CMDS);
+    if (!IsTopDocument(window))
+        return;
+
+    /* update user menus, which are shared over all documents, only
+       if language mode was changed */
+    if (window->userMenuCache->umcLanguageMode != window->languageMode) {
+#ifndef VMS
+        updateMenu(window, SHELL_CMDS);
+#endif
+        updateMenu(window, MACRO_CMDS);
+
+        /* remember language mode assigned to shared user menus */
+        window->userMenuCache->umcLanguageMode = window->languageMode;
+    }
+
+    /* update background menu, which is owned by a single document, only
+       if language mode was changed */
+    if (window->userBGMenuCache.ubmcLanguageMode != window->languageMode) {
+        updateMenu(window, BG_MENU_CMDS);
+
+        /* remember language mode assigned to background menu */
+        window->userBGMenuCache.ubmcLanguageMode = window->languageMode;
+    }
 }
 
 /*
@@ -1055,6 +1187,19 @@ int LoadBGMenuCmdsString(char *inString)
 }
 
 /*
+** Cache user menus:
+** Setup user menu info after read of macro, shell and background menu
+** string (reason: language mode info from preference string is read *after*
+** user menu preference string was read).
+*/
+void SetupUserMenuInfo()
+{
+    parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
+    parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
+    parseMenuItemList(BGMenuItems   , NBGMenuItems   , BGMenuInfo   , &BGSubMenus);
+}
+
+/*
 ** Search through the shell menu and execute the first command with menu item
 ** name "itemName".  Returns True on successs and False on failure.
 */
@@ -1111,59 +1256,523 @@ int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName)
 }
 
 /*
-** Update all of the Shell or Macro menus of all editor windows.
+** Cache user menus:
+** Rebuild all of the Shell, Macro, Background menus of given editor window.
 */
-static void updateMenus(int menuType)
+void RebuildAllMenus(WindowInfo *window)
+{
+     rebuildMenu(window, SHELL_CMDS);
+     rebuildMenu(window, MACRO_CMDS);
+     rebuildMenu(window, BG_MENU_CMDS);
+}
+
+/*
+** Cache user menus:
+** Rebuild either Shell, Macro or Background menus of all editor windows.
+*/
+static void rebuildMenuOfAllWindows(int menuType)
 {
     WindowInfo *w;
 
     for (w=WindowList; w!=NULL; w=w->next)
-	updateMenu(w, menuType);
+        rebuildMenu(w, menuType);
 }
 
 /*
-** Updates either the Shell menu or the Macro menu of "window", depending on
-** value of "menuType"
+** Rebuild either the Shell, Macro or Background menu of "window", depending
+** on value of "menuType". Rebuild is realized by following main steps:
+** - dismiss user (sub) menu tearoff.
+** - delete all user defined menu widgets.
+** - update user menu including (re)creation of menu widgets.
+*/
+static void rebuildMenu(WindowInfo *window, int menuType)
+{
+    selectedUserMenu  menu;
+
+    /* Background menu is always rebuild (exists once per document).
+       Shell, macro (user) menu cache is rebuild only, if given window is
+       currently displayed on top. */
+    if (menuType != BG_MENU_CMDS && !IsTopDocument(window))
+    	return;
+	
+    /* Fetch the appropriate menu data */
+    selectUserMenu(window, menuType, &menu);
+
+    /* dismiss user menu tearoff, to workaround the quick
+       but noticeable shrink-expand bug, most probably
+       triggered by the rebuild of the user menus. In any
+       case, the submenu tearoffs will later be dismissed
+       too in order to prevent dangling tearoffs, so doing
+       this also for the main user menu tearoffs shouldn't
+       be so bad */
+    if (!XmIsMenuShell(XtParent(menu.sumMenuPane)))
+        _XmDismissTearOff(XtParent(menu.sumMenuPane), NULL, NULL);
+
+    /* destroy all widgets related to menu pane */
+    deleteMenuItems(menu.sumMenuPane);
+
+    /* remove cached user menu info */
+    freeUserMenuList(menu.sumMainMenuList);
+    *menu.sumMenuCreated = False;
+
+    /* re-create & cache user menu items */
+    updateMenu(window, menuType);
+}
+
+/*
+** Fetch the appropriate menu info for given menu type
+*/
+static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *menu)
+{
+    if (menuType == SHELL_CMDS) {
+        menu->sumMenuPane       = window->shellMenuPane;
+        menu->sumNbrOfListItems = NShellMenuItems;
+        menu->sumItemList       = ShellMenuItems;
+        menu->sumInfoList       = ShellMenuInfo;
+        menu->sumSubMenus       = &ShellSubMenus;
+        menu->sumMainMenuList   = &window->userMenuCache->umcShellMenuList;
+        menu->sumMenuCreated    = &window->userMenuCache->umcShellMenuCreated;
+    } else if (menuType == MACRO_CMDS) {
+        menu->sumMenuPane       = window->macroMenuPane;
+        menu->sumNbrOfListItems = NMacroMenuItems;
+        menu->sumItemList       = MacroMenuItems;
+        menu->sumInfoList       = MacroMenuInfo;
+        menu->sumSubMenus       = &MacroSubMenus;
+        menu->sumMainMenuList   = &window->userMenuCache->umcMacroMenuList;
+        menu->sumMenuCreated    = &window->userMenuCache->umcMacroMenuCreated;
+    } else { /* BG_MENU_CMDS */
+        menu->sumMenuPane       = window->bgMenuPane;
+        menu->sumNbrOfListItems = NBGMenuItems;
+        menu->sumItemList       = BGMenuItems;
+        menu->sumInfoList       = BGMenuInfo;
+        menu->sumSubMenus       = &BGSubMenus;
+        menu->sumMainMenuList   = &window->userBGMenuCache.ubmcMenuList;
+        menu->sumMenuCreated    = &window->userBGMenuCache.ubmcMenuCreated;
+    }
+    menu->sumType = menuType;
+}
+
+/*
+** Updates either the Shell, Macro or Background menu of "window", depending
+** on value of "menuType". Update is realized by following main steps:
+** - set / reset "to be managed" flag of user menu info list items
+**   according to current selected language mode.
+** - create *all* user menu items (widgets etc). related to given
+**   window & menu type, if not done before.
+** - manage / unmanage user menu widgets according to "to be managed"
+**   indication of user menu info list items.
 */
 static void updateMenu(WindowInfo *window, int menuType)
 {
-    Widget btn, menuPane, subPane, newSubPane;
-    int nListItems, n;
-    menuItemRec *f, **itemList;
-    menuTreeItem *menuTree;
-    int i, nTreeEntries, isDefaultLM;
-    char *hierName, *namePtr, *subMenuName, *subSep, *strippedName, *name;
-    
-    if (!IsTopDocument(window))
-    	return;
-	
-    /* Fetch the appropriate menu pane and item list for this menu type */
-    if (menuType == SHELL_CMDS) {
-    	menuPane = window->shellMenuPane;
-    	itemList = ShellMenuItems;
-    	nListItems = NShellMenuItems;
-    } else if (menuType == MACRO_CMDS) {
-    	menuPane = window->macroMenuPane;
-    	itemList = MacroMenuItems;
-    	nListItems = NMacroMenuItems;
-    } else { /* BG_MENU_CMDS */
-    	menuPane = window->bgMenuPane;
-    	itemList = BGMenuItems;
-    	nListItems = NBGMenuItems;
+    selectedUserMenu menu;
+
+    /* Fetch the appropriate menu data */
+    selectUserMenu(window, menuType, &menu);
+
+    /* Set / reset "to be managed" flag of all info list items */
+    applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems,
+            window->languageMode);
+
+    /* create user menu items, if not done before */
+    if (!*menu.sumMenuCreated)
+        createMenuItems(window, &menu);
+
+    /* manage user menu items depending on current language mode */
+    manageUserMenu(&menu);
+
+    /* Set the proper sensitivity of items which may be dimmed */
+    SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
+    SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
+
+    DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
+}
+
+/*
+** Manually adjust the dimension of the menuShell _before_
+** re-managing the menu pane, to either expose hidden menu
+** entries or remove empty space.
+*/
+static void manageTearOffMenu(Widget menuPane)
+{
+    Dimension width, height, border;
+
+    /* somehow OM went into a long CPU cycling when we
+       attempt to change the shell window dimension by
+       setting the XmNwidth & XmNheight directly. Using
+       XtResizeWidget() seem to fix it */
+    XtVaGetValues(XtParent(menuPane), XmNborderWidth, &border, NULL);
+    XtVaGetValues(menuPane, XmNwidth, &width, XmNheight, &height, NULL);
+    XtResizeWidget(XtParent(menuPane), width, height, border);
+
+    XtManageChild(menuPane);
+}
+
+/*
+** Cache user menus:
+** Reset manage mode of user menu items in window cache.
+*/
+static void resetManageMode(UserMenuList *list)
+{
+    int i;
+    UserMenuListElement *element;
+
+    for (i=0; i<list->umlNbrItems; i ++) {
+        element = list->umlItems[i];
+
+        /* remember current manage mode before reset it to
+           "unmanaged" */
+        element->umlePrevManageMode = element->umleManageMode;
+        element->umleManageMode     = UMMM_UNMANAGE;
+
+        /* recursively reset manage mode of sub-menus */
+        if (element->umleSubMenuList != NULL)
+            resetManageMode(element->umleSubMenuList);
     }
-    
+}
+
+/*
+** Event handler for restoring the input hint of (sub) menu tearoffs
+** previously disabled in showTearOff()
+*/
+static void tearOffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event)
+{
+    Widget shell = (Widget)clientData;
+    XWMHints *wmHints;
+
+    if (event->type != MapNotify)
+        return;
+
+    /* restore the input hint previously disabled in showTearOff() */
+    wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
+    wmHints->input = True;
+    wmHints->flags |= InputHint;
+    XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
+    XFree(wmHints);
+
+    /* we only need to do this only */
+    XtRemoveEventHandler(shell, StructureNotifyMask, False,
+            (XtEventHandler)tearOffMappedCB, shell);
+}
+
+/*
+** Redisplay the hidden (sub) menu tearoffs
+*/
+static void showTearOff(Widget menuPane)
+{
+    Widget shell;
+
+    if (!menuPane)
+        return;
+
+    shell = XtParent(menuPane);
+    if (!XmIsMenuShell(shell)) {
+        /* (sub) menu was torn-off -> redisplay it: */
+        XWMHints *wmHints;
+
+        /* to workaround a problem where the remapped tearoffs
+           always receive the input focus insteads of the text
+           editing window, we disable the input hint of the
+           tearoff shell temporarily. */
+        wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
+        wmHints->input = False;
+        wmHints->flags |= InputHint;
+        XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
+        XFree(wmHints);
+
+        /* show the tearoff */
+        XtMapWidget(shell);
+
+        /* the input hint will be restored when the tearoff
+           is mapped */
+        XtAddEventHandler(shell, StructureNotifyMask, False,
+                (XtEventHandler)tearOffMappedCB, shell);
+    }
+}
+
+/*
+** Cache user menus:
+** Manage all menu widgets of given user sub-menu list.
+*/
+static void manageAllSubMenuWidgets(UserMenuListElement *subMenu)
+{
+    int i;
+    UserMenuList *subMenuList;
+    UserMenuListElement *element;
+    WidgetList widgetList;
+    Cardinal nWidgetListItems;
+
+    /* if the sub-menu is torn off, unmanage the menu pane
+       before updating it to prevent the tear-off menu
+       from shrinking and expanding as the menu entries
+       are (un)managed */
+    if (!XmIsMenuShell(XtParent(subMenu->umleSubMenuPane))) {
+        XtUnmanageChild(subMenu->umleSubMenuPane);
+    }
+
+    /* manage all children of sub-menu pane */
+    XtVaGetValues(subMenu->umleSubMenuPane,
+          XmNchildren, &widgetList,
+          XmNnumChildren, &nWidgetListItems,
+          NULL);
+    XtManageChildren(widgetList, nWidgetListItems);
+
+    /* scan, if an menu item of given sub-menu holds a nested
+       sub-menu */
+    subMenuList = subMenu->umleSubMenuList;
+
+    for (i=0; i<subMenuList->umlNbrItems; i ++) {
+        element = subMenuList->umlItems[i];
+
+        if (element->umleSubMenuList != NULL) {
+            /* if element is a sub-menu, then continue managing
+               all items of that sub-menu recursively */
+            manageAllSubMenuWidgets(element);
+        }
+    }
+
+    /* manage sub-menu pane widget itself */
+    XtManageChild(subMenu->umleMenuItem);
+
+    /* if the sub-menu is torn off, then adjust & manage the menu */
+    if (!XmIsMenuShell(XtParent(subMenu->umleSubMenuPane))) {
+        manageTearOffMenu(subMenu->umleSubMenuPane);
+    }
+
+    /* redisplay sub-menu tearoff window, if the sub-menu
+       was torn off before */
+    showTearOff(subMenu->umleSubMenuPane);
+}
+
+/*
+** Cache user menus:
+** Unmanage all menu widgets of given user sub-menu list.
+*/
+static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu)
+{
+    int i;
+    Widget shell;
+    UserMenuList *subMenuList;
+    UserMenuListElement *element;
+    WidgetList widgetList;
+    Cardinal nWidgetListItems;
+
+    /* if sub-menu is torn-off, then unmap its shell
+       (so tearoff window isn't displayed anymore) */
+    shell = XtParent(subMenu->umleSubMenuPane);
+    if (!XmIsMenuShell(shell)) {
+        XtUnmapWidget(shell);
+    }
+
+    /* unmanage all children of sub-menu pane */
+    XtVaGetValues(subMenu->umleSubMenuPane,
+          XmNchildren, &widgetList,
+          XmNnumChildren, &nWidgetListItems,
+          NULL);
+    XtUnmanageChildren(widgetList, nWidgetListItems);
+
+    /* scan, if an menu item of given sub-menu holds a nested
+       sub-menu */
+    subMenuList = subMenu->umleSubMenuList;
+
+    for (i=0; i<subMenuList->umlNbrItems; i ++) {
+        element = subMenuList->umlItems[i];
+
+        if (element->umleSubMenuList != NULL) {
+            /* if element is a sub-menu, then continue unmanaging
+               all items of that sub-menu recursively */
+            unmanageAllSubMenuWidgets(element);
+        }
+    }
+
+    /* unmanage sub-menu pane widget itself */
+    XtUnmanageChild(subMenu->umleMenuItem);
+}
+
+/*
+** Cache user menus:
+** Manage / unmanage menu widgets according to given user menu list.
+*/
+static void manageMenuWidgets(UserMenuList *list)
+{
+    int i;
+    UserMenuListElement *element;
+
+    /* (un)manage all elements of given user menu list */
+    for (i=0; i<list->umlNbrItems; i ++) {
+        element = list->umlItems[i];
+
+        if (element->umlePrevManageMode != element->umleManageMode ||
+            element->umleManageMode == UMMM_MANAGE) {
+            /* previous and current manage mode differ OR
+               current manage mode indicates: element needs to be
+               (un)managed individually */
+            if (element->umleManageMode == UMMM_MANAGE_ALL) {
+                /* menu item represented by "element" is a sub-menu and
+                   needs to be completely managed */
+                manageAllSubMenuWidgets(element);
+            } else if (element->umleManageMode == UMMM_MANAGE) {
+                if (element->umlePrevManageMode == UMMM_UNMANAGE ||
+                    element->umlePrevManageMode == UMMM_UNMANAGE_ALL) {
+                    /* menu item represented by "element" was unmanaged
+                       before and needs to be managed now */
+                    XtManageChild(element->umleMenuItem);
+                }
+
+                /* if element is a sub-menu, then continue (un)managing
+                   single elements of that sub-menu one by one */
+                if (element->umleSubMenuList != NULL) {
+                    /* if the sub-menu is torn off, unmanage the menu pane
+                       before updating it to prevent the tear-off menu
+                       from shrinking and expanding as the menu entries
+                       are (un)managed */
+                    if (!XmIsMenuShell(XtParent(element->umleSubMenuPane))) {
+                        XtUnmanageChild(element->umleSubMenuPane);
+                    }
+
+                    /* (un)manage menu entries of sub-menu */
+                    manageMenuWidgets(element->umleSubMenuList);
+
+                    /* if the sub-menu is torn off, then adjust & manage the menu */
+                    if (!XmIsMenuShell(XtParent(element->umleSubMenuPane))) {
+                        manageTearOffMenu(element->umleSubMenuPane);
+                    }
+
+                    /* if the sub-menu was torn off then redisplay it */
+                    showTearOff(element->umleSubMenuPane);
+                }
+            } else if (element->umleManageMode == UMMM_UNMANAGE_ALL){
+                /* menu item represented by "element" is a sub-menu and
+                   needs to be completely unmanaged */
+                 unmanageAllSubMenuWidgets(element);
+            } else {
+                /* current mode is UMMM_UNMANAGE -> menu item represented
+                   by "element" is a single menu item and needs to be
+                   unmanaged */
+                XtUnmanageChild(element->umleMenuItem);
+            }
+        }
+    }
+}
+
+/*
+** Cache user menus:
+** (Un)Manage all items of selected user menu.
+*/
+static void manageUserMenu(selectedUserMenu *menu)
+{
+    int n, i;
+    int *id;
+    Boolean currentLEisSubMenu;
+    userMenuInfo *info;
+    UserMenuList *menuList;
+    UserMenuListElement *currentLE;
+    UserMenuManageMode *mode;
+
+    /* reset manage mode of all items of selected user menu in window cache */
+    resetManageMode(menu->sumMainMenuList);
+
+    /* set manage mode of all items of selected user menu in window cache
+       according to the "to be managed" indication of the info list */
+    for (n=0; n<menu->sumNbrOfListItems; n++) {
+        info = menu->sumInfoList[n];
+
+        menuList = menu->sumMainMenuList;
+        id = info->umiId;
+
+        /* select all menu list items belonging to menu record "info" using
+           hierarchical ID of current menu info (e.g. id = {3} means:
+           4th element of main menu; {0} = 1st element etc.)*/
+        for (i=0; i<info->umiIdLen; i ++) {
+            currentLE = menuList->umlItems[*id];
+            mode = &currentLE->umleManageMode;
+            currentLEisSubMenu = (currentLE->umleSubMenuList != NULL);
+
+            if (info->umiToBeManaged) {
+                /* menu record needs to be managed: */
+                if (*mode == UMMM_UNMANAGE) {
+                    /* "mode" was not touched after reset ("init. state"):
+                       if current list element represents a sub-menu, then
+                       probably the complete sub-menu needs to be managed
+                       too. If current list element indicates single menu
+                       item, then just this item needs to be managed */
+                    if (currentLEisSubMenu) {
+                        *mode = UMMM_MANAGE_ALL;
+                    } else {
+                        *mode = UMMM_MANAGE;
+                    }
+                } else if (*mode == UMMM_UNMANAGE_ALL) {
+                    /* "mode" was touched after reset:
+                       current list element represents a sub-menu and min.
+                       one element of the sub-menu needs to be unmanaged ->
+                       the sub-menu needs to be (un)managed element by
+                       element */
+                    *mode = UMMM_MANAGE;
+                }
+            } else {
+                /* menu record needs to be unmanaged: */
+                if (*mode == UMMM_UNMANAGE) {
+                    /* "mode" was not touched after reset ("init. state"):
+                       if current list element represents a sub-menu, then
+                       probably the complete sub-menu needs to be unmanaged
+                       too. */
+                    if (currentLEisSubMenu) {
+                        *mode = UMMM_UNMANAGE_ALL;
+                    }
+                } else if (*mode == UMMM_MANAGE_ALL) {
+                    /* "mode" was touched after reset:
+                       current list element represents a sub-menu and min.
+                       one element of the sub-menu needs to be managed ->
+                       the sub-menu needs to be (un)managed element by
+                       element */
+                    *mode = UMMM_MANAGE;
+                }
+            }
+
+            menuList = currentLE->umleSubMenuList;
+
+            id ++;
+        }
+    }
+
     /* if the menu is torn off, unmanage the menu pane
        before updating it to prevent the tear-off menu
        from shrinking and expanding as the menu entries
-       are added */
-    if (!XmIsMenuShell(XtParent(menuPane)))
-    	XtUnmanageChild(menuPane);
-    
-    /* Remove all of the existing user commands from the menu */
-    removeMenuItems(menuPane);
-    
-    /* Allocate storage for structures to help find sub-menus */
-    menuTree = (menuTreeItem *)XtMalloc(sizeof(menuTreeItem) * nListItems);
+       are managed */
+    if (!XmIsMenuShell(XtParent(menu->sumMenuPane)))
+        XtUnmanageChild(menu->sumMenuPane);
+
+    /* manage menu widgets according to current / previous manage mode of
+       user menu window cache */
+    manageMenuWidgets(menu->sumMainMenuList);
+
+    /* if the menu is torn off, then adjust & manage the menu */
+    if (!XmIsMenuShell(XtParent(menu->sumMenuPane)))
+        manageTearOffMenu(menu->sumMenuPane);
+}
+
+/*
+** Create either the variable Shell menu, Macro menu or Background menu
+** items of "window" (driven by value of "menuType")
+*/
+static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
+{
+    Widget btn, subPane, newSubPane;
+    int n;
+    menuItemRec *item;
+    menuTreeItem *menuTree;
+    int i, nTreeEntries, size;
+    char *hierName, *namePtr, *subMenuName, *subSep, *fullName;
+    int menuType = menu->sumType;
+    userMenuInfo *info;
+    userSubMenuCache *subMenus = menu->sumSubMenus;
+    userSubMenuInfo *subMenuInfo;
+    UserMenuList *menuList;
+    UserMenuListElement *currentLE;
+    int subMenuDepth;
+
+    /* Allocate storage for structures to help find panes of sub-menus */
+    size = sizeof(menuTreeItem) * menu->sumNbrOfListItems;
+    menuTree = (menuTreeItem *)XtMalloc(size);
     nTreeEntries = 0;
     
     /* Harmless kludge: undo and redo items are marked specially if found
@@ -1172,96 +1781,70 @@ static void updateMenu(WindowInfo *window, int menuType)
     window->bgMenuRedoItem = NULL;
     
     /*
-    ** Add items to the list, creating hierarchical sub-menus as necessary,
-    ** and skipping items not intended for this language mode
+    ** Add items to the menu pane, creating hierarchical sub-menus as
+    ** necessary
     */
-    for (n=0; n<nListItems; n++) {
-    	f = itemList[n];
+    allocUserMenuList(menu->sumMainMenuList, subMenus->usmcNbrOfMainMenuItems);
+    for (n=0; n<menu->sumNbrOfListItems; n++) {
+        item = menu->sumItemList[n];
+        info = menu->sumInfoList[n];
+        menuList = menu->sumMainMenuList;
+        subMenuDepth = 0;
 	
-	/* Eliminate items meant for other language modes, strip @ sign parts.
-	   If the language mode is "*", scan the list for an item with the
-	   same name and a language mode specified.  If one is found, skip
-	   the item in favor of the exact match. */
-	strippedName = findStripLanguageMode(f->name, window->languageMode,
-		&isDefaultLM);
-    	if (strippedName == NULL)
-	    continue;		/* not a valid entry for the language */
-	if (isDefaultLM) {
-	    for (i=0; i<nListItems; i++) {
-		name = findStripLanguageMode(itemList[i]->name,
-			window->languageMode, &isDefaultLM);
-		if (name!=NULL && !isDefaultLM && !strcmp(name, strippedName)) {
-		    XtFree(name); /* item with matching language overrides */
-		    break;
-		}
-		XtFree(name);
-	    }
-	    if (i != nListItems) {
-		XtFree(strippedName);
-		continue;
-	    }
-	}
+        fullName = info->umiName;
 	
 	/* create/find sub-menus, stripping off '>' until item name is
 	   reached, then create the menu item */
-	namePtr = strippedName;
-	subPane = menuPane;
+        namePtr = fullName;
+        subPane = menu->sumMenuPane;
 	for (;;) {
 	    subSep = strchr(namePtr, '>');
 	    if (subSep == NULL) {
-		btn = createUserMenuItem(subPane, namePtr, f, n,
+		btn = createUserMenuItem(subPane, namePtr, item, n,
 			(XtCallbackProc)(menuType == SHELL_CMDS ? shellMenuCB :
 			(menuType == MACRO_CMDS ? macroMenuCB : bgMenuCB)),
 			(XtPointer)window);
-		if (menuType == BG_MENU_CMDS && !strcmp(f->cmd, "undo()\n"))
+		if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n"))
 		    window->bgMenuUndoItem = btn;
-		else if (menuType == BG_MENU_CMDS && !strcmp(f->cmd,"redo()\n"))
+		else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd,"redo()\n"))
 		    window->bgMenuRedoItem = btn;
 		UpdateAccelLockPatch(window->splitPane, btn);
+                /* create corresponding menu list item */
+                menuList->umlItems[menuList->umlNbrItems ++] = allocUserMenuListElement(btn);
 		break;
 	    }
-	    hierName = copySubstring(strippedName, subSep - strippedName);
+	    hierName = copySubstring(fullName, subSep - fullName);
+            subMenuInfo = findSubMenuInfo(subMenus, hierName);
 	    newSubPane = findInMenuTree(menuTree, nTreeEntries, hierName);
 	    if (newSubPane == NULL) {
 		subMenuName = copySubstring(namePtr, subSep - namePtr);
-	    	newSubPane = createUserSubMenu(subPane, subMenuName);
+	    	newSubPane = createUserSubMenu(subPane, subMenuName, &btn);
 		XtFree(subMenuName);
 		menuTree[nTreeEntries].name = hierName;
 		menuTree[nTreeEntries++].menuPane = newSubPane;
-	    } else
+
+                currentLE = allocUserMenuListElement(btn);
+                menuList->umlItems[menuList->umlNbrItems ++] = currentLE;
+                currentLE->umleSubMenuPane = newSubPane;
+                currentLE->umleSubMenuList =
+                        allocUserSubMenuList(subMenuInfo->usmiId[subMenuInfo->usmiIdLen]);
+	    } else {
+                currentLE = menuList->umlItems[subMenuInfo->usmiId[subMenuDepth]];
 		XtFree(hierName);
+            }
 	    subPane = newSubPane;
+            menuList = currentLE->umleSubMenuList;
+            subMenuDepth ++;
 	    namePtr = subSep + 1;
 	}
-	XtFree(strippedName);
     }
     
+    *menu->sumMenuCreated = True;
+
     /* Free the structure used to keep track of sub-menus durring creation */
     for (i=0; i<nTreeEntries; i++)
 	XtFree(menuTree[i].name);
     XtFree((char *)menuTree);
-    
-    /* Set the proper sensitivity of items which may be dimmed */
-    SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
-    SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
-    DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
-
-    /* if the menu is torn off, we need to manually adjust the
-       dimension of the menuShell _before_ re-managing the menu
-       pane, to either expose the hidden menu entries or remove
-       the empty space */
-    if (!XmIsMenuShell(XtParent(menuPane))) {
-    	Dimension width, height;
-	
-	XtVaGetValues(menuPane, XmNwidth, &width,
-	        XmNheight, &height, NULL);
-	XtVaSetValues(XtParent(menuPane), XmNwidth, width,
-	        XmNheight, height, NULL);
-        XtManageChild(menuPane);
-    }
-
-    XtVaSetValues(menuPane, XmNuserData, 
-	    (void *)window->languageMode, NULL);
 }
 
 /*
@@ -1287,47 +1870,6 @@ static char *copySubstring(const char *string, int length)
     return retStr;
 }
 
-/*
-** Look for at signs (@) in the string menuItemName, and match them
-** against the current language mode.  If there are no @ signs, just
-** return an allocated copy of menuItemName.  If there are @ signs, match
-** the following text against languageMode, and return NULL if none match,
-** or an allocated copy of menuItemName stripped of @ parts.  If the
-** language name is "*", sets isDefaultLM to true.
-*/
-static char *findStripLanguageMode(const char *menuItemName, int languageMode,
-	int *isDefaultLM)
-{
-    char *atPtr, *firstAtPtr, *endPtr;
-    int lmNameLen;
-    
-    atPtr = firstAtPtr = strchr(menuItemName, '@');
-    *isDefaultLM = False;
-    if (atPtr == NULL)
-    {
-        return XtNewString(menuItemName);
-    }
-    if (!strcmp(atPtr+1, "*")) {
-	/* only language is "*": this is for all but language specific macros */
-	*isDefaultLM = True;
-	return copySubstring(menuItemName, firstAtPtr-menuItemName);
-    }
-    if (languageMode == PLAIN_LANGUAGE_MODE)
-	return NULL;
-    for (;;) {
-	for(endPtr=atPtr+1; isalnum((unsigned char)*endPtr) || *endPtr=='_' || 
-	      	*endPtr=='-' || *endPtr==' ' || *endPtr=='+' || *endPtr=='$' || 
-	      	*endPtr=='#'; endPtr++);
-	lmNameLen = endPtr-atPtr-1;
-	if (!strncmp(LanguageModeName(languageMode), atPtr+1, lmNameLen) &&
-		LanguageModeName(languageMode)[lmNameLen] == '\0')
-	    return copySubstring(menuItemName, firstAtPtr-menuItemName);
-	atPtr = strchr(atPtr+1, '@');
-	if (atPtr == NULL)
-	    return NULL;
-    }
-}    	
-	
 static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
 	int index, XtCallbackProc cbRtn, XtPointer cbArg)
 {
@@ -1339,7 +1881,7 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     genAccelEventName(accKeys, f->modifiers, f->keysym);
     st1=XmStringCreateSimple(name);
     st2=XmStringCreateSimple(accText);
-    btn = XtVaCreateManagedWidget("cmd", xmPushButtonWidgetClass, menuPane, 
+    btn = XtVaCreateWidget("cmd", xmPushButtonWidgetClass, menuPane,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
     	    XmNaccelerator, accKeys,
@@ -1355,45 +1897,57 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
 ** Add a user-defined sub-menu to an established pull-down menu, marking
 ** it's userData field with TEMPORARY_MENU_ITEM so it can be found and
 ** removed later if the menu is redefined.  Returns the menu pane of the
-** new sub menu.
+** new sub-menu.
 */
-static Widget createUserSubMenu(Widget parent, char *label)
+static Widget createUserSubMenu(Widget parent, char *label, Widget *menuItem)
 {
-    Widget menu;
+    Widget menuPane;
     XmString st1;
     static Arg args[1] = {{XmNuserData, (XtArgVal)TEMPORARY_MENU_ITEM}};
    
-    menu = CreatePulldownMenu(parent, "userPulldown", args, 1);
-    XtVaCreateManagedWidget("userCascade", xmCascadeButtonWidgetClass, parent, 
-    	    XmNlabelString, st1=XmStringCreateSimple(label),
-    	    XmNsubMenuId, menu, XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+    menuPane  = CreatePulldownMenu(parent, "userPulldown", args, 1);
+    *menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent,
+    	                XmNlabelString, st1=XmStringCreateSimple(label),
+    	                XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM,
+                        NULL);
     XmStringFree(st1);
-    return menu;
+    return menuPane;
 }
 
-static void removeMenuItems(Widget menuPane)
+/*
+** Cache user menus:
+** Delete all variable menu items of given menu pane
+*/
+static void deleteMenuItems(Widget menuPane)
 {
-    WidgetList items, itemList;
+    WidgetList itemList, items;
+    Cardinal nItems;
     Widget subMenuID;
     XtPointer userData;
     int n;
-    Cardinal nItems;
     
-    /* Fetch the list of children from the menu pane, and make a copy
-       (because the widget alters this list as you delete widgets) */
-    XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems,
-	    NULL);
+    /* Fetch the list of children from the menu pane to delete */
+    XtVaGetValues(menuPane, XmNchildren, &itemList,
+            XmNnumChildren, &nItems, NULL);
+
+    /* make a copy because the widget alters the list as you delete widgets */
     items = (WidgetList)XtMalloc(sizeof(Widget) * nItems);
     memcpy(items, itemList, sizeof(Widget) * nItems);
     
-    /* Delete all of the widgets not marked as PERMANENT_MENU_ITEM */
+    /* delete all of the widgets not marked as PERMANENT_MENU_ITEM */
     for (n=0; n<(int)nItems; n++) {
 	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
 		XtVaGetValues(items[n], XmNsubMenuId, &subMenuID, NULL);
-		removeMenuItems(subMenuID);
-#if XmVersion < 2000  /* Skipping this creates a memory and server resource
+
+                /* prevent dangling submenu tearoffs */
+                if (!XmIsMenuShell(XtParent(subMenuID)))
+                    _XmDismissTearOff(XtParent(subMenuID), NULL, NULL);
+
+                deleteMenuItems(subMenuID);
+#if XmVersion < 2000
+                /* Skipping this creates a memory and server resource
 		   leak (though both are reclaimed on window closing).  In
 		   Motif 2.0 (and beyond?) there is a potential crash during
 		   phase 2 widget destruction in "SetCascadeField", and in
@@ -1401,10 +1955,10 @@ static void removeMenuItems(Widget menuPane)
 		   to be able to destroy this. */
 		XtDestroyWidget(subMenuID);
 #endif
-	    } else /* remove accel. before destroy or lose it forever */
+            } else {
+                /* remove accel. before destroy or lose it forever */
     		XtVaSetValues(items[n], XmNaccelerator, NULL, NULL);
-    	    /* unmanaging before destroying stops parent from displaying */
-    	    XtUnmanageChild(items[n]);
+            }
     	    XtDestroyWidget(items[n]);
     	}
     }
@@ -1522,25 +2076,34 @@ static int applyDialogChanges(userCmdDialog *ucd)
     if (ucd->dialogType == SHELL_CMDS) {
     	for (i=0; i<NShellMenuItems; i++)
     	    freeMenuItemRec(ShellMenuItems[i]);
+        freeUserMenuInfoList(ShellMenuInfo, NShellMenuItems);
+        freeSubMenuCache(&ShellSubMenus);
     	for (i=0; i<ucd->nMenuItems; i++)
     	    ShellMenuItems[i] = copyMenuItemRec(ucd->menuItemsList[i]);
     	NShellMenuItems = ucd->nMenuItems;
+        parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
     } else if (ucd->dialogType == MACRO_CMDS) {
     	for (i=0; i<NMacroMenuItems; i++)
     	    freeMenuItemRec(MacroMenuItems[i]);
+        freeUserMenuInfoList(MacroMenuInfo, NMacroMenuItems);
+        freeSubMenuCache(&MacroSubMenus);
     	for (i=0; i<ucd->nMenuItems; i++)
     	    MacroMenuItems[i] = copyMenuItemRec(ucd->menuItemsList[i]);
     	NMacroMenuItems = ucd->nMenuItems;
+        parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
     } else { /* BG_MENU_CMDS */
     	for (i=0; i<NBGMenuItems; i++)
     	    freeMenuItemRec(BGMenuItems[i]);
+        freeUserMenuInfoList(BGMenuInfo, NBGMenuItems);
+        freeSubMenuCache(&BGSubMenus);
     	for (i=0; i<ucd->nMenuItems; i++)
     	    BGMenuItems[i] = copyMenuItemRec(ucd->menuItemsList[i]);
     	NBGMenuItems = ucd->nMenuItems;
+        parseMenuItemList(BGMenuItems, NBGMenuItems, BGMenuInfo, &BGSubMenus);
     }
     
     /* Update the menus themselves in all of the NEdit windows */
-    updateMenus(ucd->dialogType);
+    rebuildMenuOfAllWindows(ucd->dialogType);
     
     /* Note that preferences have been changed */
     MarkPrefsChanged();
@@ -2467,4 +3030,462 @@ static void addTerminatingNewline(char **string)
     	XtFree(*string);
     	*string = newString;
     }
+}
+
+/*
+** Cache user menus:
+** allocate an empty user (shell, macro) menu cache structure
+*/
+UserMenuCache *CreateUserMenuCache()
+{
+    /* allocate some memory for the new data structure */
+    UserMenuCache *cache = (UserMenuCache *)XtMalloc(sizeof(UserMenuCache));
+
+    cache->umcLanguageMode              = -2;
+    cache->umcShellMenuCreated          =  False;
+    cache->umcMacroMenuCreated          =  False;
+    cache->umcShellMenuList.umlNbrItems =  0;
+    cache->umcShellMenuList.umlItems    =  NULL;
+    cache->umcMacroMenuList.umlNbrItems =  0;
+    cache->umcMacroMenuList.umlItems    =  NULL;
+
+    return cache;
+}
+
+void FreeUserMenuCache(UserMenuCache *cache)
+{
+    freeUserMenuList(&cache->umcShellMenuList);
+    freeUserMenuList(&cache->umcMacroMenuList);
+
+    XtFree((char *)cache);
+}
+
+/*
+** Cache user menus:
+** init. a user background menu cache structure
+*/
+void InitUserBGMenuCache(UserBGMenuCache *cache)
+{
+    cache->ubmcLanguageMode         = -2;
+    cache->ubmcMenuCreated          =  False;
+    cache->ubmcMenuList.umlNbrItems =  0;
+    cache->ubmcMenuList.umlItems    =  NULL;
+}
+
+void FreeUserBGMenuCache(UserBGMenuCache *cache)
+{
+    freeUserMenuList(&cache->ubmcMenuList);
+}
+
+/*
+** Cache user menus:
+** Parse given menu item list and setup a user menu info list for
+** management of user menu.
+*/
+static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems,
+        userMenuInfo **infoList, userSubMenuCache *subMenus)
+{
+    int i;
+    userMenuInfo *info;
+
+    /* Allocate storage for structures to keep track of sub-menus */
+    allocSubMenuCache(subMenus, nbrOfItems);
+
+    /* 1st pass: setup user menu info: extract language modes, menu name &
+       default indication; build user menu ID */
+    for (i=0; i<nbrOfItems; i++) {
+        infoList[i] = parseMenuItemRec(itemList[i]);
+        generateUserMenuId(infoList[i], subMenus);
+    }
+
+    /* 2nd pass: solve "default" dependencies */
+    for (i=0; i<nbrOfItems; i++) {
+        info = infoList[i];
+
+        /* If the user menu item is a default one, then scan the list for
+           items with the same name and a language mode specified.
+           If one is found, then set the default index to the index of the
+           current default item. */
+        if (info->umiIsDefault) {
+            setDefaultIndex(infoList, nbrOfItems, i);
+        }
+    }
+}
+
+/*
+** Returns the sub-menu depth (i.e. nesting level) of given
+** menu name.
+*/
+static int getSubMenuDepth(const char *menuName)
+{
+    const char *subSep;
+    int depth = 0;
+
+    /* determine sub-menu depth by counting '>' of given "menuName" */
+    subSep = menuName;
+    while ((subSep = strchr(subSep, '>')) != NULL ) {
+        depth ++;
+        subSep ++;
+    }
+
+    return depth;
+}
+
+/*
+** Cache user menus:
+** Parse a singe menu item. Allocate & setup a user menu info element
+** holding extracted info.
+*/
+static userMenuInfo *parseMenuItemRec(menuItemRec *item)
+{
+    userMenuInfo *newInfo;
+    int subMenuDepth;
+    int idSize;
+
+    /* allocate a new user menu info element */
+    newInfo = (userMenuInfo *)XtMalloc(sizeof(userMenuInfo));
+
+    /* determine sub-menu depth and allocate some memory
+       for hierarchical ID; init. ID with {0,.., 0} */
+    newInfo->umiName = stripLanguageMode(item->name);
+
+    subMenuDepth = getSubMenuDepth(newInfo->umiName);
+    idSize       = sizeof(int)*(subMenuDepth+1);
+
+    newInfo->umiId = (int *)XtMalloc(idSize);
+    memset(newInfo->umiId,0,idSize);
+
+    /* init. remaining parts of user menu info element */
+    newInfo->umiIdLen              = 0;
+    newInfo->umiIsDefault          = False;
+    newInfo->umiNbrOfLanguageModes = 0;
+    newInfo->umiLanguageMode       = NULL;
+    newInfo->umiDefaultIndex       = -1;
+    newInfo->umiToBeManaged        = False;
+
+    /* assign language mode info to new user menu info element */
+    parseMenuItemName(item->name, newInfo);
+
+    return newInfo;
+}
+
+/*
+** Cache user menus:
+** Extract language mode related info out of given menu item name string.
+** Store this info in given user menu info structure.
+*/
+static void parseMenuItemName(char *menuItemName, userMenuInfo *info)
+{
+    char *atPtr, *firstAtPtr, *endPtr;
+    char c;
+    int languageMode;
+    int langModes[MAX_LANGUAGE_MODES];
+    int nbrLM = 0;
+    int size;
+
+    atPtr = firstAtPtr = strchr(menuItemName, '@');
+    if (atPtr != NULL) {
+        if (!strcmp(atPtr+1, "*")) {
+            /* only language is "*": this is for all but language specific
+               macros */
+            info->umiIsDefault = True;
+            return;
+        }
+
+        /* setup a list of all language modes related to given menu item */
+        while (atPtr != NULL) {
+            /* extract language mode name after "@" sign */
+            for(endPtr=atPtr+1; isalnum((unsigned char)*endPtr) || *endPtr=='_' ||
+                    *endPtr=='-' || *endPtr==' ' || *endPtr=='+' || *endPtr=='$' ||
+                    *endPtr=='#'; endPtr++);
+
+            /* lookup corresponding language mode index */
+            c = *endPtr;
+            *endPtr = '\0';
+            languageMode = FindLanguageMode(atPtr+1);
+            if (languageMode != PLAIN_LANGUAGE_MODE) {
+                langModes[nbrLM] = languageMode;
+                nbrLM ++;
+            }
+            *endPtr = c;
+
+            /* look for next "@" */
+            atPtr = strchr(endPtr, '@');
+        }
+
+        if (nbrLM != 0) {
+            info->umiNbrOfLanguageModes = nbrLM;
+            size = sizeof(int)*nbrLM;
+            info->umiLanguageMode = (int *)XtMalloc(size);
+            memcpy(info->umiLanguageMode, langModes, size);
+        }
+    }
+}
+
+/*
+** Cache user menus:
+** generates an ID (= array of integers) of given user menu info, which
+** allows to find the user menu  item within the menu tree later on: 1st
+** integer of ID indicates position within main menu; 2nd integer indicates
+** position within 1st sub-menu etc.
+*/
+static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus)
+{
+    int idSize;
+    char *hierName, *subSep;
+    int subMenuDepth = 0;
+    int *menuIdx = &subMenus->usmcNbrOfMainMenuItems;
+    userSubMenuInfo *curSubMenu;
+
+    /* find sub-menus, stripping off '>' until item name is
+       reached */
+    subSep = info->umiName;
+    while ((subSep = strchr(subSep, '>')) != NULL) {
+        hierName = copySubstring(info->umiName, subSep - info->umiName);
+        curSubMenu = findSubMenuInfo(subMenus, hierName);
+        if (curSubMenu == NULL) {
+            /* sub-menu info not stored before: new sub-menu;
+               remember its hierarchical position */
+            info->umiId[subMenuDepth] = *menuIdx;
+            (*menuIdx) ++;
+
+            /* store sub-menu info in list of subMenus; allocate
+               some memory for hierarchical ID of sub-menu & take over
+               current hierarchical ID of current user menu info */
+            curSubMenu = &subMenus->usmcInfo[subMenus->usmcNbrOfSubMenus];
+            subMenus->usmcNbrOfSubMenus ++;
+            curSubMenu->usmiName  = hierName;
+            idSize = sizeof(int)*(subMenuDepth+2);
+            curSubMenu->usmiId = (int *)XtMalloc(idSize);
+            memcpy(curSubMenu->usmiId, info->umiId, idSize);
+            curSubMenu->usmiIdLen = subMenuDepth+1;
+        } else {
+            /* sub-menu info already stored before: takeover its
+               hierarchical position */
+            XtFree(hierName);
+            info->umiId[subMenuDepth] = curSubMenu->usmiId[subMenuDepth];
+        }
+
+        subMenuDepth ++;
+        menuIdx = &curSubMenu->usmiId[subMenuDepth];
+
+        subSep ++;
+    }
+
+    /* remember position of menu item within final (sub) menu */
+    info->umiId[subMenuDepth] = *menuIdx;
+    info->umiIdLen = subMenuDepth + 1;
+    (*menuIdx) ++;
+}
+
+/*
+** Cache user menus:
+** Find info corresponding to a hierarchical menu name (a>b>c...)
+*/
+static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus,
+        const char *hierName)
+{
+    int i;
+
+    for (i=0; i<subMenus->usmcNbrOfSubMenus; i++)
+        if (!strcmp(hierName, subMenus->usmcInfo[i].usmiName))
+            return &subMenus->usmcInfo[i];
+    return NULL;
+}
+
+/*
+** Cache user menus:
+** Returns an allocated copy of menuItemName stripped of language mode
+** parts (i.e. parts starting with "@").
+*/
+static char *stripLanguageMode(const char *menuItemName)
+{
+    char *firstAtPtr;
+
+    firstAtPtr = strchr(menuItemName, '@');
+    if (firstAtPtr == NULL)
+        return XtNewString(menuItemName);
+    else
+        return copySubstring(menuItemName, firstAtPtr-menuItemName);
+}
+
+static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems,
+        int defaultIdx)
+{
+    char *defaultMenuName = infoList[defaultIdx]->umiName;
+    int i;
+    userMenuInfo *info;
+
+    /* Scan the list for items with the same name and a language mode 
+       specified. If one is found, then set the default index to the
+       index of the current default item. */
+    for (i=0; i<nbrOfItems; i++) {
+        info = infoList[i];
+
+        if (!info->umiIsDefault && strcmp(info->umiName, defaultMenuName)==0) {
+            info->umiDefaultIndex = defaultIdx;
+        }
+    }
+}
+
+/*
+** Determine the info list menu items, which need to be managed
+** for given language mode. Set / reset "to be managed" indication
+** of info list items accordingly.
+*/
+static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems,
+        int languageMode)
+{
+    int i;
+    userMenuInfo *info;
+
+    /* 1st pass: mark all items as "to be managed", which are applicable
+       for all language modes or which are indicated as "default" items */
+    for (i=0; i<nbrOfItems; i++) {
+        info = infoList[i];
+
+        info->umiToBeManaged =
+            (info->umiNbrOfLanguageModes == 0 || info->umiIsDefault);
+    }
+
+    /* 2nd pass: mark language mode specific items matching given language
+       mode as "to be managed". Reset "to be managed" indications of
+       "default" items, if applicable */
+    for (i=0; i<nbrOfItems; i++) {
+        info = infoList[i];
+
+        if (info->umiNbrOfLanguageModes != 0) {
+            if (doesLanguageModeMatch(info, languageMode)) {
+                info->umiToBeManaged = True;
+
+                if (info->umiDefaultIndex != -1)
+                    infoList[info->umiDefaultIndex]->umiToBeManaged = False;
+            }
+        }
+    }
+}
+
+/*
+** Returns true, if given user menu info is applicable for given language mode
+*/
+static int doesLanguageModeMatch(userMenuInfo *info, int languageMode)
+{
+    int i;
+
+    for (i=0; i<info->umiNbrOfLanguageModes; i++) {
+        if (info->umiLanguageMode[i] == languageMode)
+            return True;
+    }
+
+    return False;
+}
+
+static void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems)
+{
+    int i;
+
+    for (i=0; i<nbrOfItems; i++) {
+        freeUserMenuInfo(infoList[i]);
+    }
+}
+
+static void freeUserMenuInfo(userMenuInfo *info)
+{
+    XtFree(info->umiName);
+
+    XtFree((char *)info->umiId);
+
+    if (info->umiNbrOfLanguageModes != 0)
+        XtFree((char *)info->umiLanguageMode);
+
+    XtFree((char *)info);
+}
+
+/*
+** Cache user menus:
+** Allocate & init. storage for structures to manage sub-menus
+*/
+static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems)
+{
+    int size = sizeof(userSubMenuInfo) * nbrOfItems;
+
+    subMenus->usmcNbrOfMainMenuItems = 0;
+    subMenus->usmcNbrOfSubMenus = 0;
+    subMenus->usmcInfo = (userSubMenuInfo *)XtMalloc(size);
+}
+
+static void freeSubMenuCache(userSubMenuCache *subMenus)
+{
+    int i;
+
+    for (i=0; i<subMenus->usmcNbrOfSubMenus; i++) {
+        XtFree(subMenus->usmcInfo[i].usmiName);
+        XtFree((char *)subMenus->usmcInfo[i].usmiId);
+    }
+
+    XtFree((char *)subMenus->usmcInfo);
+}
+
+static void allocUserMenuList(UserMenuList *list, int nbrOfItems)
+{
+    int size = sizeof(UserMenuListElement *) * nbrOfItems;
+
+    list->umlNbrItems = 0;
+    list->umlItems = (UserMenuListElement **)XtMalloc(size);
+}
+
+static void freeUserMenuList(UserMenuList *list)
+{
+    int i;
+
+    for (i=0; i<list->umlNbrItems; i++)
+        freeUserMenuListElement(list->umlItems[i]);
+
+    list->umlNbrItems = 0;
+
+    if (list->umlItems != NULL) {
+        XtFree((char *)list->umlItems);
+        list->umlItems = NULL;
+    }
+}
+
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem)
+{
+    UserMenuListElement *element;
+
+    element = (UserMenuListElement *)XtMalloc(sizeof(UserMenuListElement));
+
+    element->umleManageMode     = UMMM_UNMANAGE;
+    element->umlePrevManageMode = UMMM_UNMANAGE;
+    element->umleMenuItem       = menuItem;
+    element->umleSubMenuPane    = NULL;
+    element->umleSubMenuList    = NULL;
+
+    return element;
+}
+
+static void freeUserMenuListElement(UserMenuListElement *element)
+{
+    if (element->umleSubMenuList != NULL)
+        freeUserSubMenuList(element->umleSubMenuList);
+
+    XtFree((char *)element);
+}
+
+static UserMenuList *allocUserSubMenuList(int nbrOfItems)
+{
+    UserMenuList *list;
+
+    list = (UserMenuList *)XtMalloc(sizeof(UserMenuList));
+
+    allocUserMenuList(list, nbrOfItems);
+
+    return list;
+}
+
+static void freeUserSubMenuList(UserMenuList *list)
+{
+    freeUserMenuList(list);
+
+    XtFree((char *)list);
 }

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.48 2004/03/02 08:15:12 tksoh Exp $ */
+/* $Id: nedit.h,v 1.49 2004/03/04 09:44:21 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -172,6 +172,64 @@ enum colorTypes {
     CURSOR_FG_COLOR,
     NUM_COLORS
 };
+
+/* cache user menus (start):
+   manage mode of user menu list element */
+typedef enum {
+    UMMM_UNMANAGE,     /* user menu item is unmanaged */
+    UMMM_UNMANAGE_ALL, /* user menu item is a sub menu and is
+                          completely unmanaged (including nested
+                          sub menus) */
+    UMMM_MANAGE,       /* user menu item is managed; menu items
+                          of potential sub menu are (un)managed
+                          individually */
+    UMMM_MANAGE_ALL    /* user menu item is a sub menu and is
+                          completely managed */
+} UserMenuManageMode;
+
+/* structure representing one user menu item */
+typedef struct _UserMenuListElement {
+    UserMenuManageMode    umleManageMode;     /* current manage mode */
+    UserMenuManageMode    umlePrevManageMode; /* previous manage mode */
+    Widget                umleMenuItem;       /* menu item represented by
+                                                 this element */
+    Widget                umleSubMenuPane;    /* holds menu pane, if item
+                                                 represents a sub menu */
+    struct _UserMenuList *umleSubMenuList;    /* elements of sub menu, if
+                                                 item represents a sub menu */
+} UserMenuListElement;
+
+/* structure holding a list of user menu items */
+typedef struct _UserMenuList {
+    int                   umlNbrItems;
+    UserMenuListElement **umlItems;
+} UserMenuList;
+
+/* structure holding cache info about Shell and Macro menus, which are
+   shared over all "tabbed" documents (needed to manage/unmanage this
+   user definable menus when language mode changes) */
+typedef struct _UserMenuCache {
+    int          umcLanguageMode;     /* language mode applied for shared
+                                         user menus */
+    Boolean      umcShellMenuCreated; /* indicating, if all shell menu items
+                                         were created */
+    Boolean      umcMacroMenuCreated; /* indicating, if all macro menu items
+                                         were created */
+    UserMenuList umcShellMenuList;    /* list of all shell menu items */
+    UserMenuList umcMacroMenuList;    /* list of all macro menu items */
+} UserMenuCache;
+
+/* structure holding cache info about Background menu, which is
+   owned by each document individually (needed to manage/unmanage this
+   user definable menu when language mode changes) */
+typedef struct _UserBGMenuCache {
+    int          ubmcLanguageMode;    /* language mode applied for background
+                                         user menu */
+    Boolean      ubmcMenuCreated;     /* indicating, if all background menu
+                                         items were created */
+    UserMenuList ubmcMenuList;        /* list of all background menu items */
+} UserBGMenuCache;
+/* cache user menus (end) */
 
 typedef struct _WindowInfo {
     struct _WindowInfo *next;
@@ -407,8 +465,6 @@ typedef struct _WindowInfo {
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */
     Boolean	windowMenuValid;	/* is window menu up to date? */
-    Boolean	macroMenuValid;		/* is macro menu up to date? */
-    Boolean	shellMenuValid;		/* is shell menu up to date? */
     Boolean	prevOpenMenuValid;	/* Prev. Opened Files menu up to date?*/
     int		rHistIndex, fHistIndex;	/* history placeholders for */
     int     	iSearchHistIndex;	/*   find and replace dialogs */
@@ -449,6 +505,10 @@ typedef struct _WindowInfo {
     Widget	replaceScopeSelToggle;	/* Scope for replace = selection */
     Widget	replaceScopeMultiToggle;/* Scope for replace = multiple files */
 #endif
+    UserMenuCache   *userMenuCache;     /* cache user menus: */
+    UserBGMenuCache  userBGMenuCache;   /* shell & macro menu are shared over all
+                                           "tabbed" documents, while each document
+                                           has its own background menu. */
 } WindowInfo;
 
 extern WindowInfo *WindowList;

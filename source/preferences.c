@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.114 2004/03/04 00:49:45 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.115 2004/03/04 09:44:21 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1286,6 +1286,11 @@ static void translatePrefFormats(int convertOld, int fileVer)
     if (PrefData.wrapStyle == 4) PrefData.wrapStyle = NO_WRAP;
     if (PrefData.autoIndent == 3) PrefData.autoIndent = AUTO_INDENT;
     if (PrefData.autoIndent == 4) PrefData.autoIndent = NO_AUTO_INDENT;
+
+    /* setup language mode dependent info of user menus (to increase
+       performance when switching between documents of different
+       language modes) */
+    SetupUserMenuInfo();
 }
 
 void SaveNEditPrefs(Widget parent, int quietly)
@@ -3183,6 +3188,8 @@ static int updateLMList(void)
         if (window->languageMode != PLAIN_LANGUAGE_MODE &&
                 LanguageModes[window->languageMode]->defTipsFile != NULL)
             AddTagsFile(LanguageModes[window->languageMode]->defTipsFile, TIP);
+        /* cache user menus: Rebuild all user menus of this window */
+        RebuildAllMenus(window);
     }
     
     /* If a syntax highlighting dialog is up, update its menu */
@@ -4271,11 +4278,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     SetEmTabDist(window, emTabDist);
     
     /* Add/remove language specific menu items */
-#ifndef VMS
-    UpdateShellMenu(window);
-#endif
-    UpdateMacroMenu(window);
-    UpdateBGMenu(window);
+    UpdateUserMenus(window);
 }
 
 /*

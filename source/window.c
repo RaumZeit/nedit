@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.126 2004/03/04 00:49:46 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.127 2004/03/04 09:44:21 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -283,8 +283,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->modeMessage = NULL;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
-    window->macroMenuValid = FALSE;
-    window->shellMenuValid = FALSE;
     window->prevOpenMenuValid = FALSE;
     window->flashTimeoutID = 0;
     window->fileClosedAtom = None;
@@ -692,6 +690,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        finicky about the kinds of widgets they are attached to)) */
     window->bgMenuPane = CreateBGMenu(window);
     
+    /* cache user menus: init. user background menu cache */
+    InitUserBGMenuCache(&window->userBGMenuCache);
+
     /* Create the text buffer rather than using the one created automatically
        with the text area widget.  This is done so the syntax highlighting
        modify callback can be called to synchronize the style buffer BEFORE
@@ -1063,11 +1064,16 @@ void CloseWindow(WindowInfo *window)
 	}
     }
 
-    /* destroy the buffer pane, or window */
+    /* destroy the buffer pane, or window:
+       free window related background menu cache */
+    FreeUserBGMenuCache(&window->userBGMenuCache);
     if (nextBuf || topBuf) {
         DeleteDocument(window);
     }
     else {
+        /* cache user menus: no more buffer panes -> free user menu cache */
+        FreeUserMenuCache(window->userMenuCache);
+
 	/* remove and deallocate all of the widgets associated with window */
     	XtFree(window->backlightCharTypes); /* we made a copy earlier on */
 	CloseAllPopupsFor(window->shell);
@@ -3397,6 +3403,9 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
        finicky about the kinds of widgets they are attached to)) */
     window->bgMenuPane = CreateBGMenu(window);
     
+    /* cache user menus: init. user background menu cache */
+    InitUserBGMenuCache(&window->userBGMenuCache);
+
     /* Create the text buffer rather than using the one created automatically
        with the text area widget.  This is done so the syntax highlighting
        modify callback can be called to synchronize the style buffer BEFORE
@@ -3781,21 +3790,10 @@ void RefreshMenuToggleStates(WindowInfo *window)
 */
 static void refreshMenuBar(WindowInfo *window)
 {
-    void *mode;
-
     RefreshMenuToggleStates(window);
     
     /* Add/remove language specific menu items */
-    XtVaGetValues(window->macroMenuPane, XmNuserData, &mode, NULL);
-    if (window->languageMode != (int)mode) {
-#ifndef VMS
-    	UpdateShellMenu(window);
-#endif
-    	UpdateMacroMenu(window);
-    }
-    
-    /* BG menu belongs to text pane, so always update */
-    UpdateBGMenu(window);
+    UpdateUserMenus(window);
     
     /* refresh selection-sensitive menus */
     DimSelectionDepUserMenuItems(window, window->wasSelected);
