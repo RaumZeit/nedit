@@ -1,6 +1,6 @@
-          Release Notes for NEdit Version 5.2 Beta, July 2001
+          Release Notes for NEdit Version 5.2 Beta, August 2001
 
-$Id: ReleaseNotes,v 1.7 2001/07/04 09:29:28 uid30962 Exp $
+$Id: ReleaseNotes,v 1.8 2001/08/03 12:16:45 amai Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -42,6 +42,9 @@ New Features in 5.2
  - Undo and Redo highlights the text that has changed, when visible.
  
  - Support for wheel mouse scrolling on servers that support it (XFree86). 
+ 
+ - Insert Control Code dialog accepts value in any valid C notation
+
 
 
 Bug Fixes in 5.2
@@ -67,6 +70,8 @@ Bug Fixes in 5.2
    without the Alt key.
 
  - Don't even try to open a directory for editing
+ 
+ - Fix a couple of memory corruption problems
 
   
 New Features in 5.1
