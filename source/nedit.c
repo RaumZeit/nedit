@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.58 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.59 2004/02/07 02:20:34 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -145,6 +145,7 @@ static char *fallbackResources[] = {
     "*XmLFolder.shadowThickness:    1",
     "*XmLFolder.maxTabWidth:        150",
     "*XmLFolder.traversalOn:        False",
+    "*XmLFolder.inactiveForeground: #666" ,
 
     /* Prevent the file selection box from acting stupid. */
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
@@ -307,12 +308,12 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
-    "*windowsMenu.nextDocument.accelerator: Ctrl Alt<Key>N",
-    "*windowsMenu.nextDocument.acceleratorText: Ctrl+Alt+N",
-    "*windowsMenu.prevDocument.accelerator: Ctrl Alt<Key>P",
-    "*windowsMenu.prevDocument.acceleratorText: Ctrl+Alt+P",
-    "*windowsMenu.lastDocument.accelerator: Ctrl Alt<Key>O",
-    "*windowsMenu.lastDocument.acceleratorText: Ctrl+Alt+O",
+    "*windowsMenu.nextDocument.accelerator: Alt<Key>osfRight",
+    "*windowsMenu.nextDocument.acceleratorText: Alt+Right",
+    "*windowsMenu.prevDocument.accelerator: Alt<Key>osfLeft",
+    "*windowsMenu.prevDocument.acceleratorText: Alt+Left",
+    "*windowsMenu.lastDocument.accelerator: Alt<Key>osfBeginLine",
+    "*windowsMenu.lastDocument.acceleratorText: Alt+Home",
     "*helpMenu.mnemonic: H",
     "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\
