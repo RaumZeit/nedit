@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.73 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.74 2004/01/16 11:49:54 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1079,6 +1079,10 @@ void RemoveBackupFile(WindowInfo *window)
 {
     char name[MAXPATHLEN];
     
+    /* Don't delete backup files when backups aren't activated. */
+    if (window->autoSave == FALSE)
+        return;
+      
     backupFileName(window, name, sizeof(name));
     remove(name);
 }
