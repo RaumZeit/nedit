@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.25 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.26 2003/04/10 17:37:24 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * DialogF -- modal dialog printf routine                                       *
@@ -56,6 +56,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.25 2003/04/07 22:51:41 yooden Ex
 #define NUM_DIALOGS_SUPPORTED 6
 #define NUM_BUTTONS_SUPPORTED 3		/* except prompt dialog */
 #define NUM_BUTTONS_MAXPROMPT 4
+#define MAX_TITLE_LEN 256
 
 enum dialogBtnIndecies {OK_BTN, APPLY_BTN, CANCEL_BTN, HELP_BTN};
 
@@ -155,6 +156,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
     char *but_lbl, *input_string = NULL, *input_string_ptr;
     int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
     Arg args[256];
+    char titleCopy[MAX_TITLE_LEN];
     
     struct dfcallbackstruct df;
 
@@ -220,9 +222,12 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
     */
     vsprintf (msgstr_vsp, msgstr, var);
     va_end(var);
+    
+    strncpy(&titleCopy[0], title, MAX_TITLE_LEN);
+    titleCopy[MAX_TITLE_LEN-1] = '\0';
 
     msgstr_xms = XmStringCreateLtoR(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
-    titstr_xms = XmStringCreateLtoR(title, XmSTRING_DEFAULT_CHARSET);
+    titstr_xms = XmStringCreateLtoR(titleCopy, XmSTRING_DEFAULT_CHARSET);
 
     if (prompt) {				/* Prompt dialog */
 	XtSetArg (args[argcount], XmNselectionLabelString, msgstr_xms);
