@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.48 2002/08/15 19:03:38 n8gray Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.49 2002/08/16 14:43:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1318,10 +1318,11 @@ void CheckForChangesToFile(WindowInfo *window)
     Time timestamp;
     FILE *fp;
     int resp;
+    XWindowAttributes winAttr;
     
     if(!window->filenameSet)
         return;
-    
+
     /* If last check was very recent, don't impact performance */
     timestamp = XtLastTimestampProcessed(XtDisplay(window->shell));
     if (window == lastCheckWindow &&
@@ -1359,6 +1360,20 @@ void CheckForChangesToFile(WindowInfo *window)
 	    }
 	}
     }
+
+    /* Update the status, but don't pop up a dialog if we're called
+       from a place where the window might be iconic (e.g., from the
+       replace dialog) or on another desktop.
+       
+       This works, but I bet it costs a round-trip to the server.
+       Might be better to capture MapNotify/Unmap events instead. */
+
+    XGetWindowAttributes(XtDisplay(window->shell),
+                         XtWindow(window->shell),
+                         &winAttr);
+
+    if (winAttr.map_state != IsViewable)
+        return;
 
     /* Warn the user if the file has been modified, unless checking is
        turned off or the user has already been warned.  Popping up a dialog
