@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.11 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.12 2001/04/14 09:51:30 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -946,7 +946,7 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
     XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
     for (n=0; n<nItems; n++) {
 	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
-    	if (userData != PERMANENT_MENU_ITEM) {
+    	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
 	    	XtVaGetValues(items[n], XmNsubMenuId, &subMenu, NULL);
 		dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
@@ -1333,7 +1333,7 @@ static void removeMenuItems(Widget menuPane)
     /* Delete all of the widgets not marked as PERMANENT_MENU_ITEM */
     for (n=0; n<nItems; n++) {
 	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
-    	if (userData != PERMANENT_MENU_ITEM) {
+    	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
 		XtVaGetValues(items[n], XmNsubMenuId, &subMenuID, NULL);
 		removeMenuItems(subMenuID);
@@ -1582,7 +1582,7 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData)
 
     /* get the index of the shell command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
-    index = userData - 10;
+    index = (int)userData - 10;
     if (index <0 || index >= NShellMenuItems)
     	return;
     
@@ -1610,7 +1610,7 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     
     /* get the index of the macro command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
-    index = userData - 10;
+    index = (int)userData - 10;
     if (index <0 || index >= NMacroMenuItems)
     	return;
     
@@ -1627,7 +1627,7 @@ static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData)
 
     /* get the index of the macro command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
-    index = userData - 10;
+    index = (int)userData - 10;
     if (index <0 || index >= NBGMenuItems)
     	return;
     

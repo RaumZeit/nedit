@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.24 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.25 2001/04/14 09:51:30 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -4099,7 +4099,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
     int i;
     XmString s1;
     Widget menu, btn;
-    Arg args[1] = {{XmNradioBehavior, True}};
+    Arg args[1] = {{XmNradioBehavior, (XtArgVal)True}};
     
     /* Destroy and re-create the menu pane */
     XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, NULL);

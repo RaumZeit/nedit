@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.12 2001/03/19 16:30:07 slobasso Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.13 2001/04/14 09:51:30 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -48,6 +48,10 @@ static const char CVSID[] = "$Id: text.c,v 1.12 2001/03/19 16:30:07 slobasso Exp
 #include "textP.h"
 #include "textSel.h"
 #include "textDrag.h"
+
+#ifdef UNICOS
+#define XtOffset(p_type,field) ((size_t)__INTADDR__(&(((p_type)0)->field)))
+#endif
 
 /* Number of pixels of motion from the initial (grab-focus) button press
    required to begin recognizing a mouse drag for the purpose of making a
