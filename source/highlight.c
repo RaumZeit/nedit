@@ -27,6 +27,7 @@
 *******************************************************************************/
 #include <stdio.h>
 #include <limits.h>
+#include <assert.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -1263,7 +1264,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     stringPtr = *string;
     stylePtr = *styleString;
     
-            if (pattern->subPatternRE == NULL) i = i / 0;
+    assert(pattern->subPatternRE != NULL);
     
     while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
 	    *string+length+1, False, *prevChar, '\0', delimiters)) {
