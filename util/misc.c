@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.32 2001/08/29 08:27:21 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.33 2001/11/12 14:04:27 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1048,7 +1048,8 @@ int GetIntText(Widget text, int *value)
     return retVal;
 }
 
-int GetFloatTextWarn(Widget text, double *value, char *fieldName, int warnBlank)
+int GetFloatTextWarn(Widget text, double *value, const char *fieldName,
+                     int warnBlank)
 {
     int result;
     char *valueStr;
@@ -1068,7 +1069,7 @@ int GetFloatTextWarn(Widget text, double *value, char *fieldName, int warnBlank)
     return result;
 }
 
-int GetIntTextWarn(Widget text, int *value, char *fieldName, int warnBlank)
+int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank)
 {
     int result;
     char *valueStr;

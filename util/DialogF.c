@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.18 2001/08/25 11:55:35 amai Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.19 2001/11/12 14:04:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -130,7 +130,7 @@ static void createMnemonics(Widget w);
 */
 
 unsigned DialogF (int dialog_type, Widget parent, unsigned n,
-		char *msgstr, ...)		/* variable # arguments */
+		  const char *msgstr, ...)		/* variable # arguments */
 {
     va_list var;
 

@@ -1,4 +1,4 @@
-/* $Id: DialogF.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: DialogF.h,v 1.5 2001/11/12 14:04:27 amai Exp $ */
 /*
  *  To use DialogF, #include <stdarg.h>
  */
@@ -13,6 +13,6 @@
 #define DF_MAX_MSG_LENGTH 2047		/* longest message length supported */
 #define DF_MAX_PROMPT_LENGTH 255	/* longest prompt string supported */
 
-unsigned DialogF(int, Widget, unsigned, char*, ...);
+unsigned DialogF(int, Widget, unsigned, const char *, ...);
 				/* variable # arguments */
 void SetDialogFPromptHistory(char **historyList, int nItems);

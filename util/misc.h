@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.10 2001/08/29 08:27:21 amai Exp $ */
+/* $Id: misc.h,v 1.11 2001/11/12 14:04:27 amai Exp $ */
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2
@@ -43,8 +43,8 @@ void SetIntText(Widget text, int value);
 void SetFloatText(Widget text, double value);
 int GetFloatText(Widget text, double *value);
 int GetIntText(Widget text, int *value);
-int GetFloatTextWarn(Widget text, double *value, char *fieldName, int warnBlank);
-int GetIntTextWarn(Widget text, int *value, char *fieldName, int warnBlank);
+int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warnBlank);
+int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank);
 int TextWidgetIsBlank(Widget textW);
 void MakeSingleLineTextW(Widget textW);
 void BeginWait(Widget topCursorWidget);
