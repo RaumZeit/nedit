@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.67 2004/04/14 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.68 2004/04/14 09:44:00 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -606,6 +606,8 @@ int main(int argc, char **argv)
 			    toDoCommand = NULL;
 			    if (!IsValidWindow(window))
 		    		window = NULL; /* window closed by macro */
+			    if (lastFile && !IsValidWindow(lastFile))
+		    		lastFile = NULL; /* window closed by macro */
 			}
 		    }
 		    
@@ -661,6 +663,8 @@ int main(int argc, char **argv)
 	    	    	toDoCommand = NULL;
 			if (!IsValidWindow(window))
 		    	    window = NULL; /* window closed by macro */
+			if (lastFile && !IsValidWindow(lastFile))
+		    	    lastFile = NULL; /* window closed by macro */
 		    }
 		}
 		

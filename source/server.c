@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.27 2004/04/14 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.28 2004/04/14 09:44:00 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -451,6 +451,8 @@ static void processServerCommandString(char *string)
 		       such as close() or detach_document() */
 		    if (!IsValidWindow(window))
 		    	window = NULL;
+		    if (lastFile && !IsValidWindow(lastFile))
+		    	lastFile = NULL;
 		}
 	    }
 	    
