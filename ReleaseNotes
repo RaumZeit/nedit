@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.3RC1, March 2002
 
 
-$Id: ReleaseNotes,v 1.16 2002/06/08 13:56:49 tringali Exp $
+$Id: ReleaseNotes,v 1.17 2003/05/06 22:14:38 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -12,6 +12,93 @@ version.
 If you are upgrading NEdit from a version prior to 5.0, please see the notes in
 the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
+
+New Features in 5.4
+
+  - Calltips
+
+  - Rangesets
+
+  - Backlighting
+
+  - Highlighting information macros
+
+  - Full mouse wheel support
+
+  - Look-behind matching for Regular Expressions
+
+  - Regular Expression speed-up
+
+  - Flexible resource file location
+
+  - Color dialog
+
+  - Option to auto-hide mouse pointer while typing
+
+  - Option to keep cursor away from top and bottom of the screen
+
+  - Several smaller improvements on usability and speed
+
+  - Several smaller improvements to the macro language
+
+Bugs Fixed in 5.4
+
+  - Removed regex search bugs (SF #429110, #515120)
+
+  - Smart-indent macros were unaffected by language mode renames (SF #439867)
+
+  - All dialogs have titles now (SF #480960)
+
+  - Giving long filenames at startup caused buffer overflows (SF #488412)
+
+  - Made sure that dialogs don't get wider than screen
+    (SF #488593, #489614, #713999)
+
+  - Dragging a rectangular selection could delete characters (SF #557225)
+
+  - Keyboard-based rectangular selections were forgotten if the selection ever
+    became zero-width.
+
+  - Paths were still shown in current's window Windows menu after global option
+    was changed (SF #564782)
+
+  - Scrolling to searched or undone/redone section stopped short (SF #578551)
+
+  - Removed flicker in stats line due to bug prevention (SF #594838)
+
+  - NEdit coredumped while dismissing a resized help window (SF #600175)
+
+  - Macro functions were evaluated in a wrong order (SF #602336, #628552)
+
+  - Syntax highlighting failures in LaTeX (SF #607072)
+
+  - NEdit coredumped with wrong values for -tabs option (SF #608693)
+
+  - Macro shortcuts were sensitive to Lock and NumLock? (SF #612558)
+
+  - Appendending the terminating line break was not reflected in the buffer
+    (SF #617840)
+
+  - A new nc(1) hanged after a server was killed or crashed (SF #619231)
+
+  - Adds (short) list of deprecated macro functions (SF #619236)
+
+  - Removed hazardous command shortcut (SF #649442)
+
+  - Typo in SCO makefile (SF #689808)
+
+  - Syntax highlighting routines assumed ASCII encoding (SF #700823)
+
+  - Fixes various bugs about LANG settings (SF #703246, ...)
+
+  - Crash while manipulating highlighting pattern (SF #705495)
+
+  - Removed flicker in stats line during macro execution (SF #713780)
+
+  - Macro function goto_line_number() only accepted one argument (SF #726325)
+
+  - Newline macro inserting a string caused a recursive loop when triggered
+    through smart indent
 
 
 New Features in 5.3
