@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.81 2004/04/27 01:35:28 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.82 2004/07/14 13:31:28 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -868,9 +868,15 @@ static int doSave(WindowInfo *window)
     FILE *fp;
     int fileLen, result;
 
+    /* Get the full name of the file */
+    strcpy(fullname, window->path);
+    strcat(fullname, window->filename);
+
     /*  Check for root and warn him if he wants to write to a file with
         none of the write bits set.  */
-    if ((0 == getuid()) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH)))
+    if ((0 == getuid())
+            && (0 == stat(fullname, &statbuf))
+            && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH)))
     {
         result = DialogF(DF_WARN, window->shell, 2, "Writing Read-only File",
                 "File '%s' is marked as read-only.\n"
@@ -881,10 +887,6 @@ static int doSave(WindowInfo *window)
             return True;
         }
     }
-
-    /* Get the full name of the file */
-    strcpy(fullname, window->path);
-    strcat(fullname, window->filename);
 
 #ifdef VMS
     /* strip the version number from the file so VMS will begin a new one */
