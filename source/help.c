@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.94 2003/05/09 17:43:44 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.95 2003/05/15 19:42:31 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -220,11 +220,26 @@ static const char *getBuildInfo(void)
         "%s\n"
         "     Built on: %s, %s, %s\n"
         "     Built at: %s, %s\n"
-        "   With Motif: %d.%d.%d [%s]\n"
+        "   With Motif: %d.%d.%d [%s]"
+#ifdef BUILD_BROKEN_NEDIT
+            " (KNOWN-BAD)\n"
+#elif defined BUILD_UNTESTED_NEDIT
+            " (UNTESTED)\n"
+#else 
+            "\n"
+#endif
         "Running Motif: %d.%d [%s]\n"
         "       Server: %s %d\n"
         "       Visual: %s\n"
         "       Locale: %s\n"
+#ifdef BUILD_BROKEN_NEDIT
+        "\nThis NEdit was built with a known-bad version of Motif.  Please\n"
+        "do not report any bugs you encounter unless you can reproduce\n"
+        "them with a known-good binary from the www.nedit.org website.\n"
+        "If this binary was supplied with your Linux distribution please\n"
+        "file a bug report with them asking them to build NEdit with a\n"
+        "known-good version of Motif.\n"
+#endif
        ;
     const char * visualClass[] = {"StaticGray",  "GrayScale",
                                   "StaticColor", "PseudoColor",

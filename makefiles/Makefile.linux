@@ -1,4 +1,4 @@
-# $Id: Makefile.linux,v 1.9 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.linux,v 1.10 2003/05/15 19:42:30 n8gray Exp $
 CC=cc
 AR=ar
 
@@ -18,7 +18,9 @@ AR=ar
 # add -DHAVE__XMVERSIONSTRING to CFLAGS
 #
 CFLAGS=-O -I/usr/X11R6/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD
+
 ARFLAGS=-urs
+
 LIBS= -L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXp -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
 
 include Makefile.common

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2002/12/02 15:59:07 tringali Exp $
+# $Id: Makefile,v 1.10 2003/05/15 19:42:30 n8gray Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor
@@ -23,6 +23,16 @@ all:
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
 	@- (cd source; if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
+	(cd util;   $(MAKE) -f Makefile.$@ libNUtil.a)
+	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
+
+# I'm sure there's a better way to do this but I'm no makefile wizard.
+linux:
+	@- (cd util;   if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
+	   then ln -s ../makefiles/Makefile.$@ .; fi)
+	@- (cd source; if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
+	   then ln -s ../makefiles/Makefile.$@ .; fi)
+	(cd util;   $(MAKE) -f Makefile.$@ check_linux_tif)
 	(cd util;   $(MAKE) -f Makefile.$@ libNUtil.a)
 	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
 
