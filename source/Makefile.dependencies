@@ -1,4 +1,4 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.9 2001/08/15 09:16:50 amai Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.10 2001/08/18 12:35:52 amai Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h textBuf.h text.h nedit.h \
  window.h preferences.h undo.h menu.h file.h ../util/utils.h
@@ -22,10 +22,10 @@ menu.o: menu.c ../util/getfiles.h ../util/DialogF.h ../util/misc.h \
  userCmds.h shell.h macro.h highlight.h highlightData.h rbTree.h \
  interpret.h smartIndent.h ../util/utils.h
 nc.o: nc.c ../util/fileUtils.h ../util/prefFile.h
-nedit.o: nedit.c ../util/misc.h ../util/printUtils.h \
- ../util/fileUtils.h ../util/getfiles.h textBuf.h nedit.h file.h \
- preferences.h regularExp.h selection.h tags.h menu.h macro.h server.h \
- rbTree.h interpret.h parse.h
+nedit.o: nedit.c textBuf.h nedit.h file.h preferences.h regularExp.h \
+ selection.h tags.h menu.h macro.h server.h rbTree.h interpret.h \
+ parse.h help.h ../util/misc.h ../util/printUtils.h \
+ ../util/fileUtils.h ../util/getfiles.h
 parse.o: parse.c textBuf.h nedit.h rbTree.h interpret.h parse.h
 preferences.o: preferences.c ../util/prefFile.h ../util/misc.h \
  ../util/DialogF.h ../util/managedList.h ../util/fontsel.h textBuf.h \
