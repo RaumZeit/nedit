@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.44 2003/03/21 18:51:01 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.45 2003/03/25 01:33:24 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -488,7 +488,7 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     XGetGCValues(display, textD->highlightGC,GCForeground|GCBackground,&values);
     highlightFGPixel = values.foreground;
     highlightBGPixel = values.background;
-    XGetGCValues(display, textD->highlightGC,GCForeground,&values);
+    XGetGCValues(display, textD->lineNumGC, GCForeground, &values);
     lineNumFGPixel = values.foreground;
     releaseGC(textD->w, textD->gc);
     releaseGC(textD->w, textD->selectGC);
