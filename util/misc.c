@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.22 2001/07/24 19:27:07 slobasso Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.23 2001/07/25 13:03:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -419,6 +419,10 @@ void FindBestVisual(Display *display, const char *appName, char *appClass,
     /* printf("Chose visual with depth %d, class %d, colormap %ld, id 0x%x\n",
 	    visList[bestVisual].depth, visList[bestVisual].class,
 	    *colormap, cachedVisual->visualid); */
+    /* Fix memory leak */
+    if (visList != NULL) {
+       XFree(visList);
+    }
 }
 
 /*
