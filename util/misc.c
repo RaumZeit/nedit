@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.63 2004/05/03 08:53:14 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.64 2004/06/08 15:30:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -150,6 +150,7 @@ static void pageDownAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void pageUpAP(Widget w, XEvent *event, String *args, 
 	Cardinal *nArgs);
+static long queryDesktop(Display *display, Window window, Atom deskTopAtom);
 
 /*
 ** Set up closeCB to be called when the user selects close from the
@@ -2196,4 +2197,67 @@ void CloseAllPopupsFor(Widget shell)
             _XmDismissTearOff(pop, NULL, NULL);
     }
 #endif
+}
+
+static long queryDesktop(Display *display, Window window, Atom deskTopAtom)
+{
+    long deskTopNumber = 0;
+    Atom actualType;
+    int actualFormat;
+    unsigned long nItems, bytesAfter;
+    unsigned char *prop;
+
+    if (XGetWindowProperty(display, window, deskTopAtom, 0, 1,
+           False, AnyPropertyType, &actualType, &actualFormat, &nItems,
+           &bytesAfter, &prop) != Success) {
+        return -1; /* Property not found */
+    }
+
+    if (actualType == None) {
+        return -1; /* Property does not exist */
+    }
+
+    if (actualFormat != 32 || nItems != 1) {
+        XFree((char*)prop);
+        return -1; /* Wrong format */
+    }
+
+    deskTopNumber = *(long*)prop;
+    XFree((char*)prop);
+    return deskTopNumber;
+}
+
+/*
+** Returns the current desktop number, or -1 if no desktop information
+** is available.
+*/
+long QueryCurrentDesktop(Display *display, Window rootWindow)
+{
+    static Atom currentDesktopAtom = -1;
+
+    if (currentDesktopAtom == -1)
+        currentDesktopAtom = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+
+    if (currentDesktopAtom != None)
+        return queryDesktop(display, rootWindow, currentDesktopAtom);
+
+    return -1; /* No desktop information */
+}
+
+/*
+** Returns the number of the desktop the given shell window is currently on,
+** or -1 if no desktop information is available (or if the window is sticky, 
+** ie., it is on all desktops).
+*/
+long QueryDesktop(Display *display, Widget shell)
+{
+    static Atom wmDesktopAtom = -1;
+
+    if (wmDesktopAtom == -1)
+        wmDesktopAtom = XInternAtom(display, "_NET_WM_DESKTOP", True);
+
+    if (wmDesktopAtom != None)
+        return queryDesktop(display, XtWindow(shell), wmDesktopAtom);
+
+    return -1;  /* No desktop information */
 }

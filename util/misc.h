@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.22 2004/01/29 10:53:36 tksoh Exp $ */
+/* $Id: misc.h,v 1.23 2004/06/08 15:30:02 edg Exp $ */
 
 #ifndef NEDIT_MISC_H_INCLUDED
 #define NEDIT_MISC_H_INCLUDED
@@ -95,5 +95,7 @@ void InstallMouseWheelActions(XtAppContext context);
 void AddMouseWheelSupport(Widget w);
 void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify);
 void CloseAllPopupsFor(Widget shell);
+long QueryCurrentDesktop(Display *display, Window rootWindow);
+long QueryDesktop(Display *display, Widget shell);
 
 #endif /* NEDIT_MISC_H_INCLUDED */

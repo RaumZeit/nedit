@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.28 2004/04/14 09:44:00 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.29 2004/06/08 15:30:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -76,6 +76,8 @@ static void processServerCommand(void);
 static void cleanUpServerCommunication(void);
 static void processServerCommandString(char *string);
 static void getFileClosedProperty(WindowInfo *window);
+static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop);
+static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop);
 
 static Atom ServerRequestAtom = 0;
 static Atom ServerExistsAtom = 0;
@@ -283,6 +285,51 @@ static void deleteFileClosedProperty2(const char* filename,
     deleteProperty(&atom);
 }
 
+static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop)
+{
+    long windowDesktop;
+    if (currentDesktop == -1)
+        return True; /* No desktop information available */
+    
+    windowDesktop = QueryDesktop(TheDisplay, window->shell);
+    /* Sticky windows have desktop 0xFFFFFFFF by convention */
+    if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL) 
+        return True; /* Desktop matches, or window is sticky */
+    
+    return False;
+}
+
+static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
+{
+   WindowInfo *window;
+   
+   if (currentDesktop == -1) /* No desktop information available */
+      return WindowList; 
+   
+   if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
+       /* A new window is requested, unless we find an untitled unmodified
+          document on the current desktop */
+       for (window=WindowList; window!=NULL; window=window->next) {
+           if (window->filenameSet || window->fileChanged ||
+	       window->macroCmdData != NULL) 
+               continue;
+           /* No check for top document here! */
+           if (isLocatedOnDesktop(window, currentDesktop))
+               return window;
+      }
+   }
+   else {
+       /* Find a window on the current desktop to hold the new document */
+       for (window=WindowList; window!=NULL; window=window->next) {
+           /* Avoid unnecessary property access (server round-trip) */
+           if (!IsTopDocument(window)) 
+               continue;
+           if (isLocatedOnDesktop(window, currentDesktop))
+               return window;
+       }
+   }
+   return NULL; /* No window found on current desktop -> create new window */
+}
 
 static void processServerCommandString(char *string)
 {
@@ -292,15 +339,19 @@ static void processServerCommandString(char *string)
     int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window, *lastFile = NULL;
+    long currentDesktop = QueryCurrentDesktop(TheDisplay, 
+       RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
 
     /* If the command string is empty, put up an empty, Untitled window
        (or just pop one up if it already exists) */
     if (string[0] == '\0') {
     	for (window=WindowList; window!=NULL; window=window->next)
-    	    if (!window->filenameSet && !window->fileChanged)
+    	    if (!window->filenameSet && !window->fileChanged &&
+                isLocatedOnDesktop(window, currentDesktop))
     	    	break;
     	if (window == NULL) {
-    	    EditNewFile(WindowList, NULL, False, NULL, NULL);
+            EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), NULL, 
+                        False, NULL, NULL);
     	    CheckCloseDim();
     	} 
 	else {
@@ -357,13 +408,14 @@ static void processServerCommandString(char *string)
 	 */
 	if (fileLen <= 0) {
     	    for (window=WindowList; window!=NULL; window=window->next)
-    		if (!window->filenameSet && !window->fileChanged)
+    		if (!window->filenameSet && !window->fileChanged &&
+                    isLocatedOnDesktop(window, currentDesktop))
     	    	    break;
 
     	    if (*doCommand == '\0') {
                 if (window == NULL) {
-    		    EditNewFile(tabbed? WindowList : NULL, NULL, iconicFlag, 
-			    lmLen==0?NULL:langMode, NULL);
+    		    EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), 
+                                NULL, iconicFlag, lmLen==0?NULL:langMode, NULL);
     	        } else {
 	            if (iconicFlag)
 		    	RaiseDocument(window);
@@ -411,7 +463,7 @@ static void processServerCommandString(char *string)
 	       last file opened will be raised to restore those deferred
 	       items. The current file may also be raised if there're
 	       macros to execute on. */
-	    window = EditExistingFile(WindowList,
+	    window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop),
 		    filename, pathname, editFlags, geometry, iconicFlag, 
 		    lmLen == 0 ? NULL : langMode, 
 		    tabbed == -1? GetPrefOpenInTab() : tabbed, True);
