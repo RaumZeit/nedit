@@ -1,4 +1,4 @@
-.\" $Id: nedit.man,v 1.3 2001/02/26 23:38:02 edg Exp $
+.\" $Id: nedit.man,v 1.1 2001/07/07 09:48:03 amai Exp $
 .TH NEDIT 1
 .SH NAME
 NEdit \- Text Editor
