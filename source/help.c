@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.74 2002/01/23 16:54:19 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.75 2002/01/28 10:43:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -29,6 +29,7 @@ static const char CVSID[] = "$Id: help.c,v 1.74 2002/01/23 16:54:19 tringali Exp
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else

@@ -1,3 +1,61 @@
+2002-01-23 16:54  tringali
+
+	* source/help.c (1.74): Change parenthesis style to match the rest
+	of nedit source code.
+
+2002-01-23 16:53  tringali
+
+	* source/textSel.c (1.7): Accept COMPOUND_TEXT selection requests
+	for compatability with recent versions of gnome-terminal.
+
+2002-01-17 01:34  amai
+
+	* makefiles/Makefile.os2 (1.11): Some small fixes/enhancements
+
+2002-01-15 17:05  tringali
+
+	* source/: menu.c (1.50), window.c (1.42): Lower case, Upper case,
+	and Find Def do not require an NEdit selection.  LC/UC can operate
+	on the cursor, and Find Def can use an external selection.
+
+2002-01-13 16:01  yooden
+
+	* source/: menu.c (1.49), window.c (1.41): Removed four
+	XtSetSensitive calls that prevent use of 'Open Selected' and 'Find
+	Selection' on selections that are not NEdit's.
+
+2002-01-12 00:59  amai
+
+	* makefiles/Makefile.os2 (1.10), source/nc.c (1.20): Makefile.os2:
+	update/correct some linker options nc.c: I think I previously
+	messed up the commandline for EMX&VMS case.  Perhaps not a good
+	idea to mess around in code which I can't test...
+
+2002-01-11 18:21  amai
+
+	* source/nc.c (1.19): Fix for server startup command line on OS/2:
+	missing flag for START command and fix memory leak.
+
+2002-01-11 13:10  amai
+
+	* doc/setext (1.4), source/help_data.h (1.4): Patch from Steven
+	Haehn to add some static/const to setext output
+
+2002-01-10 12:49  amai
+
+	* source/help.c (1.73): Make some funcs/vars static
+
+2002-01-08 16:06  amai
+
+	* README (1.21): New timestamp ...  (a test whether the commit
+	messages get a different subject now)
+
+2002-01-08 14:33  amai
+
+	* ChangeLog (1.19), source/menu.c (1.48), source/nedit.h (1.20),
+	source/window.c (1.40): Make more menu Items sensitive WRT an
+	existing selection: Cut, Upper, Lower
+
 2002-01-07 10:15  amai
 
 	* source/tags.c (1.29): Jump to tags only referenced by line

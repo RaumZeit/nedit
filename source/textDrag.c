@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDrag.c,v 1.4 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: textDrag.c,v 1.5 2002/01/28 10:43:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * textDrag.c - Text Dragging routines for NEdit text widget		       *
@@ -25,7 +25,6 @@ static const char CVSID[] = "$Id: textDrag.c,v 1.4 2001/08/14 08:37:16 jlous Exp
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
-#include <stdio.h>
 #include <limits.h>
 #include <X11/Intrinsic.h>
 #include <X11/IntrinsicP.h>

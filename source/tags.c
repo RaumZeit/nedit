@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.29 2002/01/07 10:15:15 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.30 2002/01/28 10:43:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.29 2002/01/07 10:15:15 amai Exp $";
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
