@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.113 2004/09/01 18:42:47 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.114 2004/09/07 04:19:18 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1064,7 +1064,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuSeparator(menuPane, "sep1", SHORT);
     window->statsLineItem = createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
     	    statsCB, window, GetPrefStatsLine(), SHORT);
-    window->iSearchLineItem = createMenuToggle(menuPane, "incremntalSearchLine","Incremental Search Line",
+    window->iSearchLineItem = createMenuToggle(menuPane, "incrementalSearchLine","Incremental Search Line",
 	    'I', doActionCB, "set_incremental_search_line", GetPrefISearchLine(), FULL);
     window->lineNumsItem = createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'N',
     	    doActionCB, "set_show_line_numbers", GetPrefLineNums(), SHORT);
