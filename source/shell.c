@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.30 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.31 2004/06/08 15:08:46 tringali Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -974,6 +974,12 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
  	dupFD = dup2(childStderrFD, fileno(stderr));
 	if (dupFD == -1)
 	    perror("dup of stderr failed");
+
+        /* now close the original child end of the pipes
+           (we now have the 0, 1 and 2 descriptors in their place) */
+        close(childStdinFD);
+        close(childStdoutFD);
+        close(childStderrFD);
 	
 	/* make this process the leader of a new process group, so the sub
 	   processes can be killed, if necessary, with a killpg call */
