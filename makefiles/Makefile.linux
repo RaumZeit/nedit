@@ -1,4 +1,4 @@
-# $Id: Makefile.linux,v 1.6 2001/10/21 15:09:42 tringali Exp $
+# $Id: Makefile.linux,v 1.7 2002/03/06 14:42:28 tringali Exp $
 CC=cc
 AR=ar
 
@@ -16,6 +16,6 @@ AR=ar
 #
 CFLAGS=-O -I/usr/X11R6/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD
 ARFLAGS=-urs
-LIBS= -L/usr/X11R6/lib -lXm -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
+LIBS= -L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
 
 include Makefile.common
