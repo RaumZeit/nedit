@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.52 2001/08/28 23:18:57 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.53 2001/08/29 15:56:27 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -344,7 +344,7 @@ dragging non-rectangular selections, overlay mode also converts the \
 selection to rectangular form, allowing it to be dragged outside of \
 the bounds of the existing text.\n\
 \n\
-The section \"Using the Mouse\" sumarizes the mouse commands for making \
+The section \"Using the Mouse\" summarizes the mouse commands for making \
 primary and secondary selections.  Primary selections can also be made \
 via keyboard commands, see \"Keyboard Shortcuts\".",
 
@@ -889,7 +889,7 @@ All Keyboards\n\
   Shift+Return	Return without automatic indent,\n\
   		regardless of the setting of Auto Indent.\n\
 \n\
-  Ctrl+Tab	Insert an ascii tab character, without\n\
+  Ctrl+Tab	Insert an ASCII tab character, without\n\
   		processing emulated tabs.\n\
 \n\
   Alt+Ctrl+<c>	Insert the control-code equivalent of\n\
@@ -1040,7 +1040,7 @@ selection will be filled.  Again, continuous text between blank lines is \
 interpreted as paragraphs and filled individually, respecting leading \
 indents and blank lines.\n\
 \n\
-The third, and most versitile, way to use Fill Paragraph is with a \
+The third, and most versatile, way to use Fill Paragraph is with a \
 rectangular selection.  Fill Paragraph treats rectangular selections \
 differently from other commands.  Instead of simply filling the text \
 inside the rectangular selection, NEdit interprets the right edge of \
@@ -1224,7 +1224,7 @@ Preferences Menu\n\
 	boundary with a newline character.  Continuous Wrap\n\
 	wraps long lines which extend past the right margin.\n\
 	Continuous Wrap mode is typically used to produce\n\
-	files where newlines are ommitted within paragraphs,\n\
+	files where newlines are omitted within paragraphs,\n\
 	to make text filling automatic (a kind of poor-man's\n\
 	word processor).  Text of this style is common on\n\
 	Macs and PCs but is not necessarily supported very\n\
@@ -1276,7 +1276,7 @@ Preferences Menu\n\
     Read Only -- Lock the file against accidental\n\
         modification.  This temporarily prevents the\n\
         file from being modified in this NEdit session.\n\
-        Note that this is diferent from setting the file\n\
+        Note that this is different from setting the file\n\
         protection.\n\
 \n\
 Preferences -> Default Settings Menu\n\
@@ -2233,7 +2233,7 @@ The following qualifiers are accepted:\n\
 \n\
     /svrname=name -- When starting nedit in server mode,\n\
         name the server, such that it responds to requests\n\
-        only when nc is given a correspoding -svrname\n\
+        only when nc is given a corresponding -svrname\n\
         argument.  By naming servers, you can run several\n\
         simultaneously, and direct files and commands\n\
         specifically to any one.\n\
@@ -2836,7 +2836,7 @@ Strings may also include C-language style escape sequences:\n\
    \\n Newline	     \\r Carriage return   \\v Vertical tab\n\
 \n\
 For example, to send output to the terminal \
-from which nedit was started, a newline character is neccessary \
+from which nedit was started, a newline character is necessary \
 because, like printf, t_print requires explicit newlines, and \
 also buffers its output on a per-line basis:\n\
 \n\
@@ -2973,7 +2973,7 @@ below:\n\
 \n\
 Increment (++) and decrement (--) operators can also be appended or \
 prepended to variables within an expression.  Prepended increment/decrement \
-operators act before the variable is evaulated.  Appended increment/decrement \
+operators act before the variable is evaluated.  Appended increment/decrement \
 operators act after the variable is evaluated.\n\
 \n\
 Logical and Comparison Operators\n\
@@ -3405,7 +3405,7 @@ string_compare(string1, string2 [, consider-case]) -- Compare two \
 strings and return 0 if they are equal, -1 if string1 is less than \
 string2 or 1 if string1 is greater than string2. The default is to \
 do a case sensitive comparison. Optionally a \"nocase\" argument \
-can be supplied to force the comparison to ingore case differences.\n\
+can be supplied to force the comparison to ignore case differences.\n\
 \n\
 string_to_clipboard(string) -- Copy the contents of a macro string \
 to the clipboard.\n\
@@ -3835,7 +3835,7 @@ the setting of Auto Indent.\n\
 \n\
 next_page([\"stutter\"] [\"column\"] [\"scrollbar\"] [\"nobell\"])\n\
 Moves the cursor and scroll forward one page.\
-The paramater \"stutter\" moves the cursor to the bottom of the display,\
+The parameter \"stutter\" moves the cursor to the bottom of the display,\
 unless it is already there, otherwise it will page down.\
 The parameter \"column\" will maintain the preferred column while\
 moving the cursor.\n\
@@ -3852,7 +3852,7 @@ is on, replace the primary selection with the contents of the clipboard.\n\
 \n\
 previous_page([\"stutter\"] [\"column\"] [\"scrollbar\"] [\"nobell\"])\n\
 Moves the cursor and scroll backward one page.\
-The paramater \"stutter\" moves the cursor to the top of the display,\
+The parameter \"stutter\" moves the cursor to the top of the display,\
 unless it is already there, otherwise it will page up.\
 The parameter \"column\" will maintain the preferred column while\
 moving the cursor.\n\
@@ -4241,7 +4241,7 @@ S: On many SunOS systems, you have to set up an nls directory before \
 various inter-client communication features of Motif will function \
 properly.  There are instructions in README.sun in \
 /pub/v5_0_2/individual/README.sun on \
-ftp.nedit.org, as well as a tar file containg a complete nls \
+ftp.nedit.org, as well as a tar file containing a complete nls \
 directory: ftp://ftp.nedit.org/pub/v5_0_2/nls.tar. \
 README.sun contains directions for setting up an nls directory, which is \
 required by Motif for handling copy and paste to Motif text fields. \
