@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.8 2001/06/06 10:00:23 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.9 2001/07/31 07:40:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -1238,7 +1238,7 @@ static void 	setFocus(Widget w, xfselControlBlkType *ctrlBlk, XEvent *event,
 
 static void	FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont)
 {
-	int 	i, maxSize, index = -1, size;
+	int 	i, maxSize, ind = -1, size;
 	char	sizeStr[10];
 
 	for (i = 0, maxSize = 0; i < ctrlBlk->numFonts; i++)
@@ -1247,12 +1247,12 @@ static void	FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont)
 		size = atoi(sizeStr);
 		if ((size > maxSize) && (size < MAX_DISPLAY_SIZE))
 		{
-			index   = i;
+			ind   = i;
 			maxSize = size;
 		}
 	}
-    if (index >= 0) {
-	    strcpy(bigFont, ctrlBlk->fontData[index]);
+    if (ind >= 0) {
+	    strcpy(bigFont, ctrlBlk->fontData[ind]);
     }
     else {
         bigFont[0] = 0;
