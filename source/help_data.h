@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Apr 28, 2004 (Do NOT edit!)
+                 Generated on May 4, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -4753,7 +4753,7 @@ static char * htxt_version [] = {
 "Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max ",
 "Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve ",
 "LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn, ",
-"Andrew Hood, and Nathaniel Gray. ",
+"Andrew Hood, Nathaniel Gray, and TK Soh. ",
 "\n\n",
 "The regular expression matching routines used in NEdit are adapted (with ",
 "permission) from original code written by Henry Spencer at the ",
@@ -5420,4 +5420,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Apr 28, 2004\n";
+static const char * NEditVersion = "NEdit release of May  4, 2004\n";
