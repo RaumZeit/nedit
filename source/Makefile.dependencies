@@ -1,6 +1,6 @@
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h textBuf.h text.h nedit.h \
- window.h preferences.h undo.h menu.h file.h
+ window.h preferences.h undo.h menu.h file.h ../util/utils.h
 help.o: help.c ../util/misc.h ../util/DialogF.h textBuf.h text.h \
  textSel.h nedit.h search.h window.h preferences.h help.h file.h
 highlight.o: highlight.c ../util/misc.h ../util/DialogF.h textBuf.h \
@@ -12,12 +12,12 @@ highlightData.o: highlightData.c ../util/misc.h ../util/DialogF.h \
 interpret.o: interpret.c textBuf.h nedit.h menu.h text.h interpret.h
 macro.o: macro.c ../util/DialogF.h ../util/misc.h textBuf.h text.h \
  nedit.h window.h macro.h preferences.h interpret.h parse.h search.h \
- shell.h userCmds.h selection.h
+ shell.h userCmds.h selection.h ../util/utils.h
 menu.o: menu.c ../util/getfiles.h ../util/DialogF.h ../util/misc.h \
  ../util/fileUtils.h textBuf.h text.h nedit.h file.h menu.h window.h \
  search.h selection.h undo.h shift.h help.h preferences.h tags.h \
  userCmds.h shell.h macro.h highlight.h highlightData.h interpret.h \
- smartIndent.h
+ smartIndent.h ../util/utils.h
 nc.o: nc.c ../util/fileUtils.h ../util/prefFile.h
 nedit.o: nedit.c ../util/misc.h ../util/printUtils.h \
  ../util/fileUtils.h ../util/getfiles.h textBuf.h nedit.h file.h \
@@ -44,7 +44,7 @@ smartIndent.o: smartIndent.c ../util/DialogF.h ../util/misc.h \
  parse.h shift.h help.h smartIndent.h
 tags.o: tags.c ../util/DialogF.h ../util/fileUtils.h ../util/misc.h \
  textBuf.h text.h nedit.h window.h file.h preferences.h search.h \
- selection.h tags.h
+ selection.h tags.h ../util/utils.h
 text.o: text.c textBuf.h textDisp.h textP.h text.h textSel.h \
  textDrag.h
 textBuf.o: textBuf.c textBuf.h
