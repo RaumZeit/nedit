@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.48 2003/05/23 14:27:05 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.49 2003/06/06 17:07:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -764,11 +764,12 @@ static void patchResourcesForKDEbug(void)
         const char* buggyValue = buggyResources[i][1];
         const char* defaultValue = buggyResources[i][2];
         char name[128] = APP_NAME;
-        char class[] = "dummy"; /* Is this ok ? */
+        char class[128] = APP_CLASS;
         char* type;
         XrmValue resValue;
         
         strcat(name, resource);
+        strcat(class, resource); /* Is this ok ? */
         
         if (XrmGetResource(db, name, class, &type, &resValue) &&
             !strcmp(type, XmRString))
