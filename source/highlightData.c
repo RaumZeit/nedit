@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.60 2004/01/16 09:18:27 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.61 2004/01/29 10:53:36 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -2956,6 +2956,7 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
     
     /* pop down and destroy the dialog */
+    CloseAllPopupsFor(HighlightDialog.shell);
     XtDestroyWidget(HighlightDialog.shell);
 }
 
@@ -3062,6 +3063,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
+    CloseAllPopupsFor(HighlightDialog.shell);
     XtDestroyWidget(HighlightDialog.shell);
 }
 

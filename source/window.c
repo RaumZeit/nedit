@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.105 2004/01/27 18:02:32 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.106 2004/01/29 10:53:36 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -113,11 +113,6 @@ static const char CVSID[] = "$Id: window.c,v 1.105 2004/01/27 18:02:32 tksoh Exp
 #include "../debug.h"
 #endif
 
-/* Workaround for OSF Motif tear-off bug; see CloseWindow */
-#ifndef LESSTIF_VERSION
-extern _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
-#endif
-
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */
 #define PANE_MIN_HEIGHT 39
@@ -181,7 +176,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin);
 static UndoInfo *cloneUndoItems(UndoInfo *orgList);
 static Widget containingPane(Widget w);
-static void closeAllPopupsFor(Widget shell);
+void CloseAllPopupsFor(Widget shell);
 
 static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
 static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
@@ -991,7 +986,7 @@ void CloseWindow(WindowInfo *window)
     else {
 	/* remove and deallocate all of the widgets associated with window */
     	XtFree(window->backlightCharTypes); /* we made a copy earlier on */
-	closeAllPopupsFor(window->shell);
+	CloseAllPopupsFor(window->shell);
     	XtDestroyWidget(window->shell);
     }
 
@@ -4305,32 +4300,4 @@ static Widget containingPane(Widget w)
     /* The containing pane used to simply be the first parent, but with
        the introduction of an XmFrame, it's the grandparent. */
     return XtParent(XtParent(w));
-}
-
-/* Workaround for bug in OpenMotif 2.1 and 2.2.  If you have an active tear-off
-** menu from a TopLevelShell that is a child of an ApplicationShell, and then 
-** close the parent window, Motif crashes.  The problem doesn't
-** happen if you close the tear-offs first, so, we programatically close them
-** before destroying the shell widget. 
-*/
-static void closeAllPopupsFor(Widget shell)
-{
-#ifndef LESSTIF_VERSION
-    /* Doesn't happen in LessTif.  The tear-off menus are popup-children of
-     * of the TopLevelShell there, which just works.  Motif wants to make
-     * them popup-children of the ApplicationShell, where it seems to get
-     * into trouble. */
-
-    Widget app = XtParent(shell);
-    int i;
-
-    for (i = 0; i < app->core.num_popups; i++) {
-        Widget pop = app->core.popup_list[i];
-        Widget shellFor;
-
-        XtVaGetValues(pop, XtNtransientFor, &shellFor, NULL);
-        if (shell == shellFor)
-            _XmDismissTearOff(pop, NULL, NULL);
-    }
-#endif
 }

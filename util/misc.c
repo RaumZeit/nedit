@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.61 2004/01/16 09:18:28 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.62 2004/01/29 10:53:36 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -75,6 +75,10 @@ static const char CVSID[] = "$Id: misc.c,v 1.61 2004/01/16 09:18:28 edg Exp $";
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
+#endif
+
+#ifndef LESSTIF_VERSION
+extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
 #endif
 
 /* structure for passing history-recall data to callbacks */
@@ -2164,4 +2168,32 @@ void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
     
     /* This is sufficient on non-OM platforms */
     XmToggleButtonSetState(widget, state, notify);
+}
+
+/* Workaround for bug in OpenMotif 2.1 and 2.2.  If you have an active tear-off
+** menu from a TopLevelShell that is a child of an ApplicationShell, and then 
+** close the parent window, Motif crashes.  The problem doesn't
+** happen if you close the tear-offs first, so, we programatically close them
+** before destroying the shell widget. 
+*/
+void CloseAllPopupsFor(Widget shell)
+{
+#ifndef LESSTIF_VERSION
+    /* Doesn't happen in LessTif.  The tear-off menus are popup-children of
+     * of the TopLevelShell there, which just works.  Motif wants to make
+     * them popup-children of the ApplicationShell, where it seems to get
+     * into trouble. */
+
+    Widget app = XtParent(shell);
+    int i;
+
+    for (i = 0; i < app->core.num_popups; i++) {
+        Widget pop = app->core.popup_list[i];
+        Widget shellFor;
+
+        XtVaGetValues(pop, XtNtransientFor, &shellFor, NULL);
+        if (shell == shellFor)
+            _XmDismissTearOff(pop, NULL, NULL);
+    }
+#endif
 }

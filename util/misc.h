@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.21 2004/01/16 09:18:28 edg Exp $ */
+/* $Id: misc.h,v 1.22 2004/01/29 10:53:36 tksoh Exp $ */
 
 #ifndef NEDIT_MISC_H_INCLUDED
 #define NEDIT_MISC_H_INCLUDED
@@ -94,5 +94,6 @@ Modifiers GetNumLockModMask(Display *display);
 void InstallMouseWheelActions(XtAppContext context);
 void AddMouseWheelSupport(Widget w);
 void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify);
+void CloseAllPopupsFor(Widget shell);
 
 #endif /* NEDIT_MISC_H_INCLUDED */
