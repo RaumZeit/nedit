@@ -2,21 +2,23 @@
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retaFins a paid-up,     *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warranty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * April, 1997								       *
 *									       *
 * Written by Mark Edel							       *
@@ -58,7 +60,7 @@
 
 /* max number of user programmable menu commands allowed per each of the
    macro, shell, and bacground menus */
-#define MAX_ITEMS_PER_MENU 200
+#define MAX_ITEMS_PER_MENU 400
 
 /* major divisions (in position units) in User Commands dialogs */
 #define LEFT_MARGIN_POS 1
@@ -130,7 +132,8 @@ static void updateMenus(int menuType);
 static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
 	char *hierName);
 static char *copySubstring(char *string, int length);
-static char *findStripLanguageMode(char *menuItemName, int languageMode);
+static char *findStripLanguageMode(char *menuItemName, int languageMode,
+	int *isDefaultLM);
 static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
 	int index, XtCallbackProc cbRtn, XtPointer cbArg);
 static Widget createUserSubMenu(Widget parent, char *label);
@@ -567,7 +570,7 @@ Select \"New\" to add a new command to the menu."),
     AddDialogMnemonicHandler(form);
     
     /* realize all of the widgets in the new window */
-    XtRealizeWidget(ucd->dlogShell);
+    RealizeWithoutForcingPosition(ucd->dlogShell);
 }
 
 /*
@@ -880,7 +883,7 @@ Select \"New\" to add a new command to the menu."),
     }
     
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(ucd->dlogShell);
+    RealizeWithoutForcingPosition(ucd->dlogShell);
 }
 
 /*
@@ -932,7 +935,8 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 {
     WidgetList items;
     Widget subMenu;
-    int n, nItems, userData, index;
+    XtArgVal userData;
+    int n, nItems, index;
     
     XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems,0);
     for (n=0; n<nItems; n++) {
@@ -957,12 +961,12 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 ** sensitive (even though they're programmable) along with real undo item
 ** in the Edit menu
 */
-void SetBackgroundMenuUndoSensitivity(WindowInfo *window, int sensitive)
+void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive)
 {
     if (window->bgMenuUndoItem != NULL)
     	XtSetSensitive(window->bgMenuUndoItem, sensitive);
 }
-void SetBackgroundMenuRedoSensitivity(WindowInfo *window, int sensitive)
+void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive)
 {
     if (window->bgMenuRedoItem != NULL)
 	XtSetSensitive(window->bgMenuRedoItem, sensitive);
@@ -1097,8 +1101,8 @@ static void updateMenu(WindowInfo *window, int menuType)
     int nListItems, n;
     menuItemRec *f, **itemList;
     menuTreeItem *menuTree;
-    int i, nTreeEntries;
-    char *hierName, *namePtr, *subMenuName, *subSep, *strippedName;
+    int i, nTreeEntries, isDefaultLM;
+    char *hierName, *namePtr, *subMenuName, *subSep, *strippedName, *name;
     
     /* Fetch the appropriate menu pane and item list for this menu type */
     if (menuType == SHELL_CMDS) {
@@ -1134,10 +1138,29 @@ static void updateMenu(WindowInfo *window, int menuType)
     for (n=0; n<nListItems; n++) {
     	f = itemList[n];
 	
-	/* Eliminate items meant for other language modes, strip @ sign parts */
-	strippedName = findStripLanguageMode(f->name, window->languageMode);
+	/* Eliminate items meant for other language modes, strip @ sign parts.
+	   If the language mode is "*", scan the list for an item with the
+	   same name and a language mode specified.  If one is found, skip
+	   the item in favor of the exact match. */
+	strippedName = findStripLanguageMode(f->name, window->languageMode,
+		&isDefaultLM);
     	if (strippedName == NULL)
-	    continue;
+	    continue;		/* not a valid entry for the language */
+	if (isDefaultLM) {
+	    for (i=0; i<nListItems; i++) {
+		name = findStripLanguageMode(itemList[i]->name,
+			window->languageMode, &isDefaultLM);
+		if (name!=NULL && !isDefaultLM && !strcmp(name, strippedName)) {
+		    XtFree(name); /* item with matching language overrides */
+		    break;
+		}
+		XtFree(name);
+	    }
+	    if (i != nListItems) {
+		XtFree(strippedName);
+		continue;
+	    }
+	}
 	
 	/* create/find sub-menus, stripping off '>' until item name is
 	   reached, then create the menu item */
@@ -1178,8 +1201,8 @@ static void updateMenu(WindowInfo *window, int menuType)
     XtFree((char *)menuTree);
     
     /* Set the proper sensitivity of items which may be dimmed */
-    SetBackgroundMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
-    SetBackgroundMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
+    SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
+    SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
     DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
 }
 
@@ -1211,16 +1234,24 @@ static char *copySubstring(char *string, int length)
 ** against the current language mode.  If there are no @ signs, just
 ** return an allocated copy of menuItemName.  If there are @ signs, match
 ** the following text against languageMode, and return NULL if none match,
-** or an allocated copy of menuItemName stripped of @ parts
+** or an allocated copy of menuItemName stripped of @ parts.  If the
+** language name is "*", sets isDefaultLM to true.
 */
-static char *findStripLanguageMode(char *menuItemName, int languageMode)
+static char *findStripLanguageMode(char *menuItemName, int languageMode,
+	int *isDefaultLM)
 {
     char *atPtr, *firstAtPtr, *endPtr;
     int lmNameLen;
     
     atPtr = firstAtPtr = strchr(menuItemName, '@');
+    *isDefaultLM = False;
     if (atPtr == NULL)
 	return CopyAllocatedString(menuItemName);
+    if (!strcmp(atPtr+1, "*")) {
+	/* only language is "*": this is for all but language specific macros */
+	*isDefaultLM = True;
+	return copySubstring(menuItemName, firstAtPtr-menuItemName);
+    }
     if (languageMode == PLAIN_LANGUAGE_MODE)
 	return NULL;
     for (;;) {
@@ -1282,7 +1313,8 @@ static void removeMenuItems(Widget menuPane)
 {
     WidgetList items, itemList;
     Widget subMenuID;
-    int n, nItems, userData;
+    XtArgVal userData;
+    int n, nItems;
     
     /* Fetch the list of children from the menu pane, and make a copy
        (because the widget alters this list as you delete widgets) */
@@ -1500,7 +1532,8 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event)
     	return;
     
     /* Beep and return if the modifiers are buttons or ones we don't support */
-    if (event->state & ~(ShiftMask | LockMask | ControlMask | Mod1Mask)) {
+    if (event->state & ~(ShiftMask | LockMask | ControlMask | Mod1Mask |
+    		Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask)) {
 	XBell(TheDisplay, 0);
 	return;
     }
@@ -1535,7 +1568,8 @@ static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
-    int userData, index;
+    XtArgVal userData;
+    int index;
     char *params[1];
 
     /* get the index of the shell command and verify that it's in range */
@@ -1551,7 +1585,8 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData)
 
 static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
-    int userData, index;
+    XtArgVal userData;
+    int index;
     char *params[1];
 
     /* Don't allow users to execute a macro command from the menu (or accel)
@@ -1578,7 +1613,8 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
 
 static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
-    int userData, index;
+    XtArgVal userData;
+    int index;
     char *params[1];
 
     /* get the index of the macro command and verify that it's in range */
@@ -2106,6 +2142,7 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
 	KeySym keysym)
 {
     char *shiftStr = "", *lockStr = "", *ctrlStr = "", *altStr = "";
+    char *mod2Str  = "", *mod3Str = "", *mod4Str = "", *mod5Str = "";
     char keyName[20];
 
     /* if there's no accelerator, generate an empty string */
@@ -2123,6 +2160,14 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
     	ctrlStr = "Ctrl+";
     if (modifiers & Mod1Mask)
     	altStr = "Alt+";
+    if (modifiers & Mod2Mask)
+        mod2Str = "Mod2+";
+    if (modifiers & Mod3Mask)
+        mod3Str = "Mod3+";
+    if (modifiers & Mod4Mask)
+        mod4Str = "Mod4+";
+    if (modifiers & Mod5Mask)
+        mod5Str = "Mod5+";
     
     /* for a consistent look to the accelerator names in the menus,
        capitalize the first letter of the keysym */
@@ -2130,7 +2175,8 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
     *keyName = toupper(*keyName);
     
     /* concatenate the strings together */
-    sprintf(text, "%s%s%s%s%s", shiftStr, lockStr, ctrlStr, altStr, keyName);
+    sprintf(text, "%s%s%s%s%s%s%s%s%s", shiftStr, lockStr, ctrlStr, altStr, 
+            mod2Str, mod3Str, mod4Str, mod5Str, keyName);
 }
 
 /*
@@ -2140,7 +2186,8 @@ static void generateAcceleratorString(char *text, unsigned int modifiers,
 static void genAccelEventName(char *text, unsigned int modifiers,
 	KeySym keysym)
 {
-    char *shiftStr = "", *lockStr = "", *ctrlStr = "", *altStr = "";
+    char *shiftStr = "", *lockStr = "", *ctrlStr = "", *altStr  = "";
+    char *mod2Str  = "", *mod3Str = "", *mod4Str = "", *mod5Str = "";
 
     /* if there's no accelerator, generate an empty string */
     if (keysym == NoSymbol) {
@@ -2157,10 +2204,20 @@ static void genAccelEventName(char *text, unsigned int modifiers,
     	ctrlStr = "Ctrl ";
     if (modifiers & Mod1Mask)
     	altStr = "Alt ";
+    if (modifiers & Mod2Mask)
+    	mod2Str = "Mod2 ";
+    if (modifiers & Mod3Mask)
+    	mod3Str = "Mod3 ";
+    if (modifiers & Mod4Mask)
+    	mod4Str = "Mod4 ";
+    if (modifiers & Mod5Mask)
+    	mod5Str = "Mod5 ";
     
     /* put the modifiers together with the key name */
-    sprintf(text, "%s%s%s%s<Key>%s", shiftStr, lockStr, ctrlStr, altStr,
-    	    XKeysymToString(keysym));
+    sprintf(text, "%s%s%s%s%s%s%s%s<Key>%s", 
+            shiftStr, lockStr, ctrlStr, altStr, 
+            mod2Str,  mod3Str, mod4Str, mod5Str,
+            XKeysymToString(keysym));
 }
 
 /*
@@ -2172,7 +2229,7 @@ static int parseAcceleratorString(char *string, unsigned int *modifiers,
 	KeySym *keysym)
 {
     int i, nFields, inputLength = strlen(string);
-    char fields[6][MAX_ACCEL_LEN];
+    char fields[10][MAX_ACCEL_LEN];
     
     /* a blank field means no accelerator */
     if (inputLength == 0) {
@@ -2186,8 +2243,9 @@ static int parseAcceleratorString(char *string, unsigned int *modifiers,
     	return False;
     
     /* divide the input into '+' separated fields */
-    nFields = sscanf(string, "%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]",
-    	    fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]);
+    nFields = sscanf(string, "%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]",
+    	    fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
+    	    fields[6], fields[7], fields[8], fields[9]);
     if (nFields == 0)
     	return False;
     
@@ -2211,8 +2269,17 @@ static int parseAcceleratorString(char *string, unsigned int *modifiers,
     	    *modifiers |= LockMask;
     	else if (!strcmp(fields[i], "Ctrl"))
     	    *modifiers |= ControlMask;
+    	/* comparision with "Alt" for compatibility with old .nedit files*/
     	else if (!strcmp(fields[i], "Alt"))
     	    *modifiers |= Mod1Mask;
+    	else if (!strcmp(fields[i], "Mod2"))
+    	    *modifiers |= Mod2Mask;
+    	else if (!strcmp(fields[i], "Mod3"))
+    	    *modifiers |= Mod3Mask;
+    	else if (!strcmp(fields[i], "Mod4"))
+    	    *modifiers |= Mod4Mask;
+    	else if (!strcmp(fields[i], "Mod5"))
+    	    *modifiers |= Mod5Mask;
     	else
     	    return False;
     }

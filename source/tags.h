@@ -1,4 +1,23 @@
-int LoadTagsFile(char *filename);
-int LookupTag(char *name, char **file, char **searchString);
-void FindDefinition(WindowInfo *window, Time time);
-int TagsFileLoaded(void);
+typedef struct _tag {
+    struct _tag *next;
+    char *path;
+    char *name;
+    char *file;
+    char *searchString;
+    short index;
+} tag;
+
+typedef struct _tagFile {
+    struct _tagFile *next;
+    char *filename;
+    time_t  date;
+    Boolean loaded;
+    short index;
+} tagFile;
+
+extern tagFile *TagsFileList;         /* list of loaded tags files */
+
+int AddTagsFile(char *tagSpec);
+int DeleteTagsFile(char *filename);
+int LookupTag(char *name, char **file, char **searchString,char **tagPath);
+void FindDefinition(WindowInfo *window, Time time, char *arg);

@@ -2,21 +2,23 @@
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 10, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -28,7 +30,7 @@
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef USE_XMIM
+#ifndef NO_XMIM
 #include <X11/Xlocale.h>
 #else
 #include <locale.h>
@@ -64,22 +66,32 @@
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(char *macro);
+void maskArgvKeywords(int argc, char **argv, char **maskArgs);
+void unmaskArgvKeywords(int argc, char **argv, char **maskArgs);
 
 WindowInfo *WindowList = NULL;
 Display *TheDisplay;
+char *ArgV0;
 
 static char *fallbackResources[] = {
-    "*menuBar.marginHeight: 1",
+    "*menuBar.marginHeight: 0",
+    "*menuBar.shadowThickness: 1",
     "*pane.sashHeight: 11",
     "*pane.sashWidth: 11",
     "*text.selectionArrayCount: 3",
-    "*fontList:-adobe-helvetica-bold-r-normal-*-14-*-*-*-*-*-*-*",
-    "*XmList.fontList:-adobe-courier-medium-r-normal-*-14-*-*-*-*-*-*-*",
-    "*XmText.fontList:-adobe-courier-medium-r-normal-*-14-*-*-*-*-*-*-*",
-    "*XmTextField.fontList:-adobe-courier-medium-r-normal-*-14-*-*-*-*-*-*-*",
+    "*fontList:-adobe-helvetica-medium-r-normal-*-12-*-*-*-*-*-*",
+    "*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    /* This should not be necessary, but some default in lesstif is
+       overriding the resource above, and specifying the app-name fixes it */
+    "nedit*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    /* Same with this, both Solaris Motif and Lesstif seem to have some
+       very specific defaults for file selection box fonts */
+    "nedit*FileSelect*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "*XmTextField.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
     "*background: #b3b3b3",
     "*foreground: black",
-    "*statsLine.background: #b3b3b3",
+    "*text.lineNumForeground: #777777",
     "*text.background: #e5e5e5",
     "*text.foreground: black",
     "*text.highlightBackground: red",
@@ -89,15 +101,22 @@ static char *fallbackResources[] = {
     "*helpText.background: #cccccc",
     "*helpText.foreground: black",
     "*helpText.selectBackground: #b3b3b3",
-    "*helpText.font: -adobe-courier-medium-r-normal-*-14-*-*-*-*-*-*-*",
+    "*helpText.font: -adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
     "*XmText.translations: #override \
-Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\n\
-Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\n\
-Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
+Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
+    "*XmTextField.translations: #override \
+Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n\
+Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*XmList*foreground: black",
     "*XmList*background: #cccccc",
     "*XmTextField*background: #cccccc",
     "*XmTextField*foreground: black",
+    "*iSearchForm*highlightThickness: 1",
     "*fileMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*editMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*searchMenu.tearOffModel: XmTEAR_OFF_ENABLED",
@@ -117,8 +136,8 @@ Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
     "*fileMenu.close.acceleratorText: Ctrl+W",
     "*fileMenu.save.accelerator: Ctrl<Key>s",
     "*fileMenu.save.acceleratorText: Ctrl+S",
-    "*fileMenu.includeFile.accelerator: Ctrl<Key>i",
-    "*fileMenu.includeFile.acceleratorText: Ctrl+I",
+    "*fileMenu.includeFile.accelerator: Alt<Key>i",
+    "*fileMenu.includeFile.acceleratorText: Alt+I",
     "*fileMenu.print.accelerator: Ctrl<Key>p",
     "*fileMenu.print.acceleratorText: Ctrl+P",
     "*fileMenu.exit.accelerator: Ctrl<Key>q",
@@ -153,8 +172,8 @@ Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
     "*editMenu.fillParagraph.acceleratorText: Ctrl+J",
     "*editMenu.insertFormFeed.accelerator: Alt Ctrl<Key>l",
     "*editMenu.insertFormFeed.acceleratorText: Alt+Ctrl+L",
-    "*editMenu.insControlCode.accelerator: Alt<Key>i",
-    "*editMenu.insControlCode.acceleratorText: Alt+I",
+    "*editMenu.insertCtrlCode.accelerator: Alt Ctrl<Key>i",
+    "*editMenu.insertCtrlCode.acceleratorText: Alt+Ctrl+I",
     "*searchMenu.mnemonic: S",
     "*searchMenu.find.accelerator: Ctrl<Key>f",
     "*searchMenu.find.acceleratorText: [Shift]Ctrl+F",
@@ -165,6 +184,9 @@ Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
     "*searchMenu.findSelection.accelerator: Ctrl<Key>h",
     "*searchMenu.findSelection.acceleratorText: [Shift]Ctrl+H",
     "*searchMenu.findSelectionShift.accelerator: Shift Ctrl<Key>h",
+    "*searchMenu.findIncremental.accelerator: Ctrl<Key>i",
+    "*searchMenu.findIncrementalShift.accelerator: Shift Ctrl<Key>i",
+    "*searchMenu.findIncremental.acceleratorText: [Shift]Ctrl+I",
     "*searchMenu.replace.accelerator: Ctrl<Key>r",
     "*searchMenu.replace.acceleratorText: [Shift]Ctrl+R",
     "*searchMenu.replaceShift.accelerator: Shift Ctrl<Key>r",
@@ -180,8 +202,9 @@ Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
     "*searchMenu.gotoMark.accelerator: Alt<Key>g",
     "*searchMenu.gotoMark.acceleratorText: [Shift]Alt+G a-z",
     "*searchMenu.gotoMarkShift.accelerator: Shift Alt<Key>g",
-    "*searchMenu.match.accelerator: Ctrl<Key>m",
-    "*searchMenu.match.acceleratorText: Ctrl+M",
+    "*searchMenu.gotoMatching.accelerator: Ctrl<Key>m",
+    "*searchMenu.gotoMatching.acceleratorText: [Shift]Ctrl+M",
+    "*searchMenu.gotoMatchingShift.accelerator: Shift Ctrl<Key>m",
     "*searchMenu.findDefinition.accelerator: Ctrl<Key>d",
     "*searchMenu.findDefinition.acceleratorText: Ctrl+D",
     "*preferencesMenu.mnemonic: P",
@@ -221,11 +244,13 @@ Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\n"
 static char cmdLineHelp[] =
 #ifndef VMS
 "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
-	       [-tags file] [-tabs n] [-wrap] [-nowrap] [-autoindent]\n\
-	       [-noautoindent] [-autosave] [-noautosave] [-rows n]\n\
-	       [-columns n] [-font font] [-display [host]:server[.screen]\n\
-	       [-geometry geometry] [-xrm resourcestring] [-svrname name]\n\
-	       [-import file] [file...]\n";
+	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
+	      [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n\
+	      [-lm languagemode] [-rows n] [-columns n] [-font font]\n\
+	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
+	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
+	      [-import file] [-background color] [-foreground color]\n\
+	      [file...]\n";
 #else
 "";
 #endif /*VMS*/
@@ -234,14 +259,19 @@ int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int isServer = FALSE, gotoLine = False, macroFileRead = False;
-    char *stoppedAt, *errMsg, *toDoCommand = NULL;
+    int iconic = False;
+    char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-    Program *prog;
     XtAppContext context;
     XrmDatabase prefDB;
-
+    static char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g",
+	    "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw",
+	    "-title", NULL};
     
-#ifdef USE_XMIM
+    /* Save the command which was used to invoke nedit for restart command */
+    ArgV0 = argv[0];
+    
+#ifndef NO_XMIM
     /* Set local for C library and X, and Motif input functions */
     if (setlocale(LC_CTYPE, "") == NULL) {
 	fprintf(stderr, "NEdit: Locale not supported by C library.\n");
@@ -264,7 +294,7 @@ int main(int argc, char **argv)
     setlocale(LC_CTYPE, "");
 #endif
     
-    /* Initialize toolkit and open display. */
+    /* Initialize X toolkit (does not open display yet) */
     XtToolkitInitialize();
     context = XtCreateApplicationContext();
     
@@ -287,9 +317,15 @@ int main(int argc, char **argv)
     /* Read the preferences file and command line into a database */
     prefDB = CreateNEditPrefDB(&argc, argv);
 
-    /* Open the display and read X database and remaining command line args */
-    TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
-    	    0, &argc, argv);
+    /* Open the display and read X database and remaining command line args.
+       XtOpenDisplay must be allowed to process some of the resource arguments
+       with its inaccessible internal option table, but others, like -geometry
+       and -iconic are per-window and it should not be allowed to consume them,
+       so we temporarily masked them out. */
+    maskArgvKeywords(argc, argv, protectedKeywords);
+    TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS,
+	    NULL, 0, &argc, argv);
+    unmaskArgvKeywords(argc, argv, protectedKeywords);
     if (!TheDisplay) {
 	XtWarning ("NEdit: Can't open display\n");
 	exit(0);
@@ -305,7 +341,7 @@ int main(int argc, char **argv)
     LoadPrintPreferences(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, True);
     SetDeleteRemap(GetPrefMapDelete());
     SetPointerCenteredDialogs(GetPrefRepositionDialogs());
-    SetGetExistingFilenameTextFieldRemoval(!GetPrefStdOpenDialog());
+    SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
     
     /* Set up action procedures for menu item commands */
     InstallMenuActions(context);
@@ -323,9 +359,18 @@ int main(int argc, char **argv)
     for (i=1; i<argc; i++) {
     	if (!strcmp(argv[i], "-import")) {
     	    nextArg(argc, argv, &i);
-    	    ImportPrefFile(argv[i]);
+    	    ImportPrefFile(argv[i], False);
+	}else if (!strcmp(argv[i], "-importold")) {
+    	    nextArg(argc, argv, &i);
+    	    ImportPrefFile(argv[i], True);
 	}
     }
+    
+    /* Load the default tags file. Don't complain if it doesn't load, the tag
+       file resource is intended to be set and forgotten.  Running nedit in a
+       directory without a tags should not cause it to spew out errors. */
+    if (*GetPrefTagFile() != '\0')
+    	AddTagsFile(GetPrefTagFile());
 
     /* Process any command line arguments (-tags, -do, -read, -create,
        +<line_number>, -line, -server, and files to edit) not already
@@ -334,7 +379,7 @@ int main(int argc, char **argv)
     for (i=1; i<argc; i++) {
     	if (!strcmp(argv[i], "-tags")) {
     	    nextArg(argc, argv, &i);
-    	    if (!LoadTagsFile(argv[i]))
+    	    if (!AddTagsFile(argv[i]))
     	    	fprintf(stderr, "NEdit: Unable to load tags file\n");
     	} else if (!strcmp(argv[i], "-do")) {
     	    nextArg(argc, argv, &i);
@@ -359,6 +404,16 @@ int main(int argc, char **argv)
     	    	gotoLine = True;
     	} else if (!strcmp(argv[i], "-server")) {
     	    isServer = True;
+	} else if (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon")) {
+    	    iconic = True;
+	} else if (!strcmp(argv[i], "-noiconic")) {
+    	    iconic = False;
+	} else if (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g")) {
+	    nextArg(argc, argv, &i);
+    	    geometry = argv[i];
+	} else if (!strcmp(argv[i], "-lm")) {
+	    nextArg(argc, argv, &i);
+    	    langMode = argv[i];
 	} else if (!strcmp(argv[i], "-import")) {
 	    nextArg(argc, argv, &i); /* already processed, skip */
     	} else if (*argv[i] == '-') {
@@ -378,7 +433,8 @@ int main(int argc, char **argv)
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
 	    	ParseFilename(nameList[j], filename, pathname);
-		EditExistingFile(WindowList, filename, pathname, editFlags);
+		EditExistingFile(WindowList, filename, pathname, editFlags,
+			geometry, iconic, langMode);
 		if (!macroFileRead) {
 		    ReadMacroInitFile(WindowList);
 		    macroFileRead = True;
@@ -394,7 +450,8 @@ int main(int argc, char **argv)
 	    	free(nameList);
 #else
 	    ParseFilename(argv[i], filename, pathname);
-	    EditExistingFile(WindowList, filename, pathname, editFlags);
+	    EditExistingFile(WindowList, filename, pathname, editFlags,
+		    geometry, iconic, langMode);
 	    fileSpecified = TRUE;
 	    if (!macroFileRead) {
 		ReadMacroInitFile(WindowList);
@@ -412,16 +469,9 @@ int main(int argc, char **argv)
     VMSFileScanDone();
 #endif /*VMS*/
     
-    /* Load the default tags file (as long as -tags was not specified).
-       Don't complain if it doesn't load, the tag file resource is
-       intended to be set and forgotten.  Running nedit in a directory
-       without a tags should not cause it to spew out errors. */
-    if (!TagsFileLoaded() && *GetPrefTagFile() != '\0')
-    	LoadTagsFile(GetPrefTagFile());
-    
     /* If no file to edit was specified, open a window to edit "Untitled" */
     if (!fileSpecified) {
-    	EditNewFile();
+    	EditNewFile(geometry, iconic, langMode);
 	ReadMacroInitFile(WindowList);
 	if (toDoCommand != NULL)
 	    DoMacro(WindowList, toDoCommand, "-do macro");
@@ -469,7 +519,7 @@ static int checkDoMacroArg(char *macro)
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
     macroLen = strlen(macro);
-    tMacro = XtMalloc(strlen(macro+2));
+    tMacro = XtMalloc(strlen(macro)+2);
     strncpy(tMacro, macro, macroLen);
     tMacro[macroLen] = '\n';
     tMacro[macroLen+1] = '\0';
@@ -482,4 +532,30 @@ static int checkDoMacroArg(char *macro)
     }
     FreeProgram(prog);
     return True;
+}
+
+/*
+** maskArgvKeywords and unmaskArgvKeywords mangle selected keywords by
+** replacing the '-' with a space, for the purpose of hiding them from
+** XtOpenDisplay's option processing.  Why this silly scheme?  XtOpenDisplay
+** really needs to see command line arguments, particularly -display, but
+** there's no way to change the option processing table it uses, to keep
+** it from consuming arguments which are meant to apply per-window, like
+** -geometry and -iconic.
+*/
+void maskArgvKeywords(int argc, char **argv, char **maskArgs)
+{
+    int i, k;
+    for (i=1; i<argc; i++)
+	for (k=0; maskArgs[k]!=NULL; k++)
+	    if (!strcmp(argv[i], maskArgs[k]))
+    		argv[i][0] = ' ';
+}
+void unmaskArgvKeywords(int argc, char **argv, char **maskArgs)
+{
+    int i, k;
+    for (i=1; i<argc; i++)
+	for (k=0; maskArgs[k]!=NULL; k++)
+	    if (argv[i][0]==' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
+    		argv[i][0] = '-';
 }

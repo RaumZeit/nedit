@@ -2,21 +2,23 @@
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * November, 1995							       *
 *									       *
 * Written by Mark Edel							       *
@@ -25,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 #ifdef VMS
 #include <lib$routines.h>
 #include descrip
@@ -39,6 +42,9 @@
 #include <unistd.h>
 #include <pwd.h>
 #endif
+#ifdef __EMX__
+#include <process.h>
+#endif
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include "../util/fileUtils.h"
@@ -48,16 +54,16 @@
    independent way), please change this (L_cuserid is apparently not ANSI) */
 #define MAXUSERNAMELEN 32
 
+/* Ditto for the maximum length for a node name.  SYS_NMLN is not available
+   on most systems, and I don't know what the portable alternative is. */
+#ifdef SYS_NMLN
+#define MAXNODENAMELEN SYS_NMLN
+#else
+#define MAXNODENAMELEN (MAXPATHLEN+2)
+#endif
+
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
-
-#if defined(VMS) || defined(linux)
-#define MAXNODENAMELEN (MAXPATHLEN+2)
-#elif defined(SUNOS)
-#define MAXNODENAMELEN 9
-#else
-#define MAXNODENAMELEN SYS_NMLN
-#endif
 
 static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id);
 static void startServer(char *message, char *commandLine);
@@ -70,8 +76,9 @@ Display *TheDisplay;
 
 static char cmdLineHelp[] =
 #ifndef VMS
-"Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-[no]ask] \n\
-           [-svrname name] [file...]\n";
+"Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
+           [-svrname name] [-svrcmd command] [-lm languagemode]\n\
+           [-geometry geometry] [-iconic] [file...]\n";
 #else
 "";
 #endif /*VMS*/
@@ -98,13 +105,14 @@ static XrmOptionDescRec OpTable[] = {
     {"-ask", ".autoStart", XrmoptionNoArg, (caddr_t)"False"},
     {"-noask", ".autoStart", XrmoptionNoArg, (caddr_t)"True"},
     {"-svrname", ".serverName", XrmoptionSepArg, (caddr_t)NULL},
+    {"-svrcmd", ".serverCommand", XrmoptionSepArg, (caddr_t)NULL},
 };
 
 int main(int argc, char **argv)
 {
     XtAppContext context;
     Window rootWindow;
-    int i, length = 0, commandLineLen, getFmt;
+    int i, length = 0, getFmt;
     char *commandString, *commandLine, *outPtr, *c;
     unsigned char *propValue;
     Atom dummyAtom;
@@ -130,6 +138,28 @@ int main(int argc, char **argv)
        into a database */
     prefDB = CreatePreferencesDatabase(".nc", APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
+    
+    /* Reconstruct the command line in string commandLine in case we have to
+       start a server (nc command line args parallel nedit's).  Include
+       -svrname if nc wants a named server, so nedit will match. Special
+       characters are protected from the shell by escaping EVERYTHING with \ */
+    for (i=1; i<argc; i++)
+    	length += 1 + strlen(argv[i])*2;
+    commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
+    outPtr = commandLine;
+    for (i=1; i<argc; i++) {
+    	for (c=argv[i]; *c!='\0'; c++) {
+#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
+    	    *outPtr++ = '\\';
+#endif
+    	    *outPtr++ = *c;
+    	}
+    	*outPtr++ = ' ';
+    }
+    *outPtr = '\0';
+    	    
+    /* Convert command line arguments into a command string for the server */
+    commandString = parseCommandLine(argc, argv);
 
     /* Open the display and find the root window */
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
@@ -143,33 +173,31 @@ int main(int argc, char **argv)
     /* Read the application resources into the Preferences data structure */
     RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME,
     	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-    	    
-    /* Convert command line arguments into a command string for the server */
-    commandString = parseCommandLine(argc, argv);
     
-    /* Reconstruct the command line in string commandLine in case we have to
-       start a server (nc command line args parallel nedit's).  Include
-       -svrname if nc wants a named server, so nedit will match. Special
-       characters are protected from the shell by escaping EVERYTHING with \ */
-    for (i=1; i<argc; i++)
-    	length += 1 + strlen(argv[i])*2;
-    commandLine = XtMalloc(length+1 + 9+strlen(Preferences.serverName));
-    outPtr = commandLine;
-    for (i=1; i<argc; i++) {
-    	for (c=argv[i]; *c!='\0'; c++) {
-#ifndef VMS
-    	    *outPtr++ = '\\';
-#endif
-    	    *outPtr++ = *c;
-    	}
-    	*outPtr++ = ' ';
+    /* For Clearcase users who have not set a server name, use the clearcase
+       view name.  Clearcase views make files with the same absolute path names
+       but different contents (and therefore can't be edited in the same nedit
+       session). This should have no bad side-effects for non-clearcase users */
+    if (Preferences.serverName[0] == '\0') {
+	char *envPtr, *tagPtr;
+	envPtr = getenv("CLEARCASE_ROOT");
+	if (envPtr != NULL) {
+	    tagPtr = strrchr(envPtr, '/');
+	    if (tagPtr != NULL && strlen(tagPtr+1) < MAXPATHLEN)
+		strcpy(Preferences.serverName, tagPtr+1);
+	}
     }
+    
+    /* Add back the server name resource from the command line or resource
+       database to the command line for starting the server.  If -svrcmd
+       appeared on the original command line, it was removed by
+       CreatePreferencesDatabase before the command line was recorded
+       in commandLine */
     if (Preferences.serverName[0] != '\0') {
     	sprintf(outPtr, "-svrname %s", Preferences.serverName);
     	outPtr += 9+strlen(Preferences.serverName);
     }
     *outPtr = '\0';
-    commandLineLen = outPtr - commandLine;
         
     /* Create server property atoms.  Atom names are generated by
        concatenating NEDIT_SERVER_REQUEST_, and NEDIT_SERVER_EXITS_
@@ -258,9 +286,9 @@ static void startServer(char *message, char *commandLineArgs)
     }
     
     /* start the server */
+#ifdef VMS
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
     	    strlen(commandLineArgs) + 3);
-#ifdef VMS
     sprintf(commandLine, "%s %s", Preferences.serverCmd, commandLineArgs);
     cmdDesc = NulStrToDesc(commandLine);	/* build command descriptor */
     nulDevDesc = NulStrToDesc(nulDev);		/* build "NL:" descriptor */
@@ -271,7 +299,29 @@ static void startServer(char *message, char *commandLineArgs)
 	return;
     }
     FreeStrDesc(cmdDesc);
-#else
+#elif defined(__EMX__)  /* OS/2 */
+    /* Unfortunately system() calls a shell determined by the environment
+       variables COMSPEC and EMXSHELL. We have to figure out which one */
+    {
+    char *sh, *base;
+    commandLine = XtMalloc(strlen(Preferences.serverCmd) +
+	   strlen(commandLineArgs) + 12);
+    sh = getenv ("EMXSHELL");
+    if (sh == NULL)
+      sh = getenv ("COMSPEC");
+    if (sh == NULL)
+      sh = strdup("cmd.exe");
+    base=_getname(strdup(sh));
+    _remext(base);
+    if (stricmp (base, "cmd") == 0 || stricmp (base, "4os2") == 0)
+       sprintf(commandLine, "start /MIN %s %s", Preferences.serverCmd, commandLineArgs);
+    else
+       sprintf(commandLine, "%s %s &", Preferences.serverCmd, commandLineArgs);
+    system(commandLine);
+    }
+#else /* Unix */
+    commandLine = XtMalloc(strlen(Preferences.serverCmd) +
+    	    strlen(commandLineArgs) + 3);
     sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
     system(commandLine);
 #endif
@@ -285,9 +335,9 @@ static void startServer(char *message, char *commandLineArgs)
 static char *parseCommandLine(int argc, char **argv)
 {
     char name[MAXPATHLEN], path[MAXPATHLEN];
-    char *toDoCommand = "";
+    char *toDoCommand = "", *langMode = "", *geometry = "";
     char *commandString, *outPtr;
-    int lineNum = 0, read = 0, create = 0, length = 0;
+    int lineNum = 0, read = 0, create = 0, iconic = 0, length = 0;
     int i, lineArg, nRead, charsWritten;
     
     /* Allocate a string for output, for the maximum possible length.  The
@@ -300,13 +350,21 @@ static char *parseCommandLine(int argc, char **argv)
     /* Parse the arguments and write the output string */
     outPtr = commandString;
     for (i=1; i<argc; i++) {
-    	if (!strcmp(argv[i], "-do")) {
+	if (!strcmp(argv[i], "-do")) {
     	    nextArg(argc, argv, &i);
     	    toDoCommand = argv[i];
+    	} else if (!strcmp(argv[i], "-lm")) {
+    	    nextArg(argc, argv, &i);
+    	    langMode = argv[i];
+    	} else if (!strcmp(argv[i], "-g") || !strcmp(argv[i], "-geometry")) {
+    	    nextArg(argc, argv, &i);
+    	    geometry = argv[i];
     	} else if (!strcmp(argv[i], "-read")) {
     	    read = 1;
     	} else if (!strcmp(argv[i], "-create")) {
     	    create = 1;
+    	} else if (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon")) {
+    	    iconic = 1;
     	} else if (!strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineArg);
@@ -320,6 +378,11 @@ static char *parseCommandLine(int argc, char **argv)
     		fprintf(stderr, "nc: argument to + should be a number\n");
     	    else
     	    	lineNum = lineArg;
+    	} else if (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noAsk")) {
+    	    ; /* Ignore resource-based arguments which are processed later */
+    	} else if (!strcmp(argv[i], "-svrname") || !strcmp(argv[i], "-xrm") ||
+		!strcmp(argv[i], "-svrcmd") || !strcmp(argv[i], "-display")) {
+    	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
     	} else if (*argv[i] == '-') {
 #ifdef VMS
 	    *argv[i] = '/';
@@ -344,9 +407,10 @@ static char *parseCommandLine(int argc, char **argv)
 	    	outPtr = newCommandString + oldLength;
 	    	ParseFilename(nameList[j], name, path);
     		strcat(path, name);
-    		sprintf(outPtr, "%d %d %d %d %d\n%s\n%s\n%n", lineNum, read,
-    			create, strlen(path), strlen(toDoCommand), path,
-    			toDoCommand, &charsWritten);
+    		sprintf(outPtr, "%d %d %d %d %d %d %d %d\n%s\n%s\n%s\n%s\n%n",
+			lineNum, read, create, iconic, strlen(path),
+			strlen(toDoCommand), strlen(langMode), strlen(geometry),
+			path, toDoCommand, langMode, geometry, &charsWritten);
 		outPtr += charsWritten;
 		free(nameList[j]);
 	    }
@@ -355,17 +419,24 @@ static char *parseCommandLine(int argc, char **argv)
 #else
     	    ParseFilename(argv[i], name, path);
     	    strcat(path, name);
-    	    /* SunOS acc or acc and/or its runtime library has a bug
+    	    /* SunOS 4 acc or acc and/or its runtime library has a bug
     	       such that %n fails (segv) if it follows a string in a
     	       printf or sprintf.  The silly code below avoids this */
-    	    sprintf(outPtr, "%d %d %d %d %d\n%n", lineNum, read, create,
-    	    	    strlen(path), strlen(toDoCommand), &charsWritten);
+    	    sprintf(outPtr, "%d %d %d %d %d %d %d %d\n%n", lineNum, read,
+		    create, iconic, strlen(path), strlen(toDoCommand),
+		    strlen(langMode), strlen(geometry), &charsWritten);
     	    outPtr += charsWritten;
     	    strcpy(outPtr, path);
     	    outPtr += strlen(path);
     	    *outPtr++ = '\n';
     	    strcpy(outPtr, toDoCommand);
     	    outPtr += strlen(toDoCommand);
+    	    *outPtr++ = '\n';
+    	    strcpy(outPtr, langMode);
+    	    outPtr += strlen(langMode);
+    	    *outPtr++ = '\n';
+    	    strcpy(outPtr, geometry);
+    	    outPtr += strlen(geometry);
     	    *outPtr++ = '\n';
 	    toDoCommand = "";
 #endif
@@ -377,10 +448,13 @@ static char *parseCommandLine(int argc, char **argv)
     
     /* If ther's an un-written -do command, write it with an empty file name */
     if (toDoCommand[0] != '\0') {
-	sprintf(outPtr, "0 0 0 0 %d\n\n%n", strlen(toDoCommand), &charsWritten);
+	sprintf(outPtr, "0 0 0 0 0 %d 0 0\n\n%n", strlen(toDoCommand),
+		&charsWritten);
 	outPtr += charsWritten;
 	strcpy(outPtr, toDoCommand);
 	outPtr += strlen(toDoCommand);
+	*outPtr++ = '\n';
+	*outPtr++ = '\n';
 	*outPtr++ = '\n';
     }
     
@@ -397,22 +471,15 @@ static char *getUserName(void)
 #ifdef VMS
     return cuserid(NULL);
 #else
-    /* This should be simple, but cuserid has apparently been dropped from
-       the ansi C standard, and if strict ansi compliance is turned on (on
-       Sun anyhow, maybe others), calls to cuserid fail to compile.
-       Unfortunately the alternative is this weird sequence of getlogin
-       followed by getpwuid.  Getlogin only works if a terminal is attached &
-       there can be more than one name associated with a uid (really?).  Both
-       calls return a pointer to a static area. */
-    char *name;
+    /* cuserid has apparently been dropped from the ansi C standard, and if
+       strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
+       to cuserid fail to compile.  Older versions of nedit try to use the
+       getlogin call first, then if that fails, use getpwuid and getuid.  This
+       results in the user-name of the original terminal being used, which is
+       not correct when the user uses the su command.  Now, getpwuid only: */
     struct passwd *passwdEntry;
-    
-    name = getlogin();
-    if (name == NULL || name[0] == '\0') {
-    	passwdEntry = getpwuid(getuid());
-    	name = passwdEntry->pw_name;
-    }
-    return name;
+    passwdEntry = getpwuid(getuid());
+    return passwdEntry->pw_name;
 #endif
 }
 
@@ -455,7 +522,7 @@ static void nextArg(int argc, char **argv, int *argIndex)
 #ifdef VMS
 	    *argv[*argIndex] = '/';
 #endif /*VMS*/
-    	fprintf(stderr, "NEdit: %s requires an argument\n%s", argv[*argIndex],
+    	fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex],
     	        cmdLineHelp);
     	exit(1);
     }

@@ -2,21 +2,23 @@
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * April 20, 1993							       *
 *									       *
 * Written by Mark Edel							       *
@@ -152,6 +154,10 @@ static struct prefData {
     int searchDlogs;		/* whether to show explanatory search dialogs */
     int keepSearchDlogs;	/* whether to retain find and replace dialogs */
     int statsLine;		/* whether to show the statistics line */
+    int iSearchLine;	    	/* whether to show the incremental search line*/
+    int lineNums;   	    	/* whether to show line numbers */
+    int warnFileMods;	    	/* " warn user if files externally modified */
+    int warnExit;	    	/* whether to warn on exit */
     int searchMethod;		/* initial search method as a text string */
     int textRows;		/* initial window height in characters */
     int textCols;		/* initial window width in characters */
@@ -160,6 +166,8 @@ static struct prefData {
     int insertTabs;		/* whether to use tabs for padding */
     int showMatching;		/* whether to flash matching parenthesis */
     int highlightSyntax;    	/* whether to highlight syntax by default */
+    int smartTags;  	    	/* look for tag in current window first */
+    int prefFileRead;	    	/* detects whether a .nedit existed */
 #ifdef SGI_CUSTOM
     int shortMenus; 	    	/* short menu mode */
 #endif
@@ -172,15 +180,20 @@ static struct prefData {
     XFontStruct *italicFontStruct;
     XFontStruct *boldItalicFontStruct;
     int repositionDialogs;	/* w. to reposition dialogs under the pointer */
+    int sortOpenPrevMenu;   	/* whether to sort the "Open Previous" menu */
     int mapDelete;		/* whether to map delete to backspace */
     int stdOpenDialog;		/* w. to retain redundant text field in Open */
     char tagFile[MAXPATHLEN];	/* name of tags file to look for at startup */
     int maxPrevOpenFiles;   	/* limit to size of Open Previous menu */
     char delimiters[MAX_WORD_DELIMITERS]; /* punctuation characters */
     char shell[MAXPATHLEN];	/* shell to use for executing commands */
+    char geometry[MAX_GEOM_STRING_LEN];	/* per-application geometry string,
+    	    	    	    	    	   only for the clueless */
     char serverName[MAXPATHLEN];/* server name for multiple servers per disp. */
     char bgMenuBtn[MAX_ACCEL_LEN]; /* X event description for triggering
     	    	    	    	      posting of background menu */
+    char fileVersion[4]; 	/* Version of nedit which wrote the .nedit
+    				   file we're reading */
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -198,6 +211,8 @@ static struct {
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
 static PrefDescripRec PrefDescrip[] = {
+    {"fileVersion", "FileVersion" , PREF_STRING, "", PrefData.fileVersion,
+      (void *)sizeof(PrefData.fileVersion), True},
 #ifndef VMS
 #ifdef linux
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
@@ -274,7 +289,7 @@ static PrefDescripRec PrefDescrip[] = {
 		\n\
 		# Ask the user what character to fill with\n\
 		fillChar = string_dialog(\"Fill selection with what character?\", \"OK\", \"Cancel\")\n\
-		if ($string_dialog_button == 2)\n\
+		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
 		    return\n\
 		\n\
 		# Count the number of lines in the selection\n\
@@ -395,7 +410,7 @@ static PrefDescripRec PrefDescrip[] = {
 		staticPrototypes = \"\"\n\
 		for (;;) {\n\
 		    headerStart = search_string(string, \\\n\
-			    \"^[a-zA-Z]([^;#\\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*{\", \\\n\
+			    \"^[a-zA-Z]([^;#\\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*\\\\{\", \\\n\
 			    searchPos, \"regex\")\n\
 		    if (headerStart == -1)\n\
 			break\n\
@@ -432,6 +447,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Ada:Default\n\
 	Fortran:Default\n\
 	Pascal:Default\n\
+	Lex:Default\n\
 	Yacc:Default\n\
 	Perl:Default\n\
 	Python:Default\n\
@@ -440,8 +456,11 @@ static PrefDescripRec PrefDescrip[] = {
 	Sh Ksh Bash:Default\n\
 	Csh:Default\n\
 	Makefile:Default\n\
-	HTML:Default\n\
+	SGML HTML:Default\n\
 	LaTeX:Default\n\
+	PostScript:Default\n\
+	SQL:Default\n\
+	Matlab:Default\n\
 	VHDL:Default\n\
 	X Resources:Default\n\
 	Verilog:Default\n\
@@ -456,6 +475,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Ada:Default\n\
 	Fortran:Default\n\
 	Pascal:Default\n\
+	Lex:Default\n\
 	Yacc:Default\n\
 	Perl:Default\n\
 	Python:Default\n\
@@ -464,8 +484,11 @@ static PrefDescripRec PrefDescrip[] = {
 	Sh Ksh Bash:Default\n\
 	Csh:Default\n\
 	Makefile:Default\n\
-	HTML:Default\n\
+	SGML HTML:Default\n\
 	LaTeX:Default\n\
+	PostScript:Default\n\
+	SQL:Default\n\
+	Matlab:Default\n\
 	VHDL:Default\n\
 	Verilog:Default\n\
 	X Resources:Default\n\
@@ -479,26 +502,31 @@ static PrefDescripRec PrefDescrip[] = {
 	Ada:.ADA .AD .ADS .ADB .A::::::\n\
 	Fortran:.F .F77 .FOR::::::\n\
 	Pascal:.PAS .P .INT::::::\n\
+	Lex:.lex::::::\n\
         Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":::::\n\
 	Python:.PY:\"^#!.*python\":Auto:None:::\n\
 	Awk:.AWK::::::\n\
 	Tcl:.TCL::::::\n\
 	Makefile:MAKEFILE::::::\n\
-	HTML:.HTML .HTM::::::\n\
+	SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
 	LaTeX:.TEX .STY .CLS .DTX .INS::::::\n\
+	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\:::::\"/%(){}[]<>\"\n\
+	SQL:.sql::::::\n\
+	Matlab:.m .oct .sci::::::\n\
 	VHDL:.VHD .VHDL .VDL::::::\n\
 	Verilog:.V::::::\n\
 	X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
 	NEdit Macro:.NM .NEDITMACRO::::::",
 #else
        "C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.cc .hh .C .H .i::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+	C++:.cc .hh .C .H .i .cxx .hxx::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Java:.java::::::\n\
 	JavaScript:.js::::::\n\
 	Ada:.ada .ad .ads .adb .a::::::\n\
 	Fortran:.f .f77 .for::::::\n\
 	Pascal:.pas .p .int::::::\n\
+	Lex:.lex::::::\n\
         Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Perl:.pl .pm .p5:\"^[ \\t]*#[ \\t]*!.*perl\":::::\n\
 	Python:.py:\"^#!.*python\":Auto:None:::\n\
@@ -506,9 +534,12 @@ static PrefDescripRec PrefDescrip[] = {
 	Awk:.awk::::::\n\
 	Sh Ksh Bash:.sh .bash .ksh .profile:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/(sh|ksh|bash)\":::::\n\
 	Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
-	Makefile:Makefile makefile::::::\n\
-	HTML:.html .htm::::::\n\
+	Makefile:Makefile makefile .gmk:::None:8:8:\n\
+	SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
 	LaTeX:.tex .sty .cls .dtx .ins::::::\n\
+	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
+	SQL:.sql::::::\n\
+	Matlab:.m .oct .sci::::::\n\
 	VHDL:.vhd .vhdl .vdl::::::\n\
 	Verilog:.v::::::\n\
 	X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
@@ -519,6 +550,7 @@ static PrefDescripRec PrefDescrip[] = {
     	Comment:gray20:Italic\n\
     	Keyword:black:Bold\n\
     	Storage Type:brown:Bold\n\
+    	Storage Type1:saddle brown:Bold\n\
     	String:darkGreen:Plain\n\
     	String1:SeaGreen:Plain\n\
     	String2:darkGreen:Bold\n\
@@ -531,7 +563,8 @@ static PrefDescripRec PrefDescrip[] = {
  	Subroutine:brown:Plain\n\
 	Subroutine1:chocolate:Plain\n\
    	Ada Attributes:plum:Bold\n\
-    	Flag:red:Bold\n\
+	Label:red:Italic\n\
+	Flag:red:Bold\n\
     	Text Comment:SteelBlue4:Italic\n\
     	Text Key:VioletRed4:Bold\n\
 	Text Key1:VioletRed4:Plain\n\
@@ -543,7 +576,8 @@ static PrefDescripRec PrefDescrip[] = {
     {"smartIndentInit", "SmartIndentInit", PREF_ALLOC_STRING,
         "C:Default\n\
 	C++:Default\n\
-	Python:Default", &TempStringPrefs.smartIndent, NULL, True},
+	Python:Default\n\
+	Matlab:Default", &TempStringPrefs.smartIndent, NULL, True},
     {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_ALLOC_STRING,
         "Default", &TempStringPrefs.smartIndentCommon, NULL, True},
     {"autoWrap", "AutoWrap", PREF_ENUM, "Newline",
@@ -571,8 +605,18 @@ static PrefDescripRec PrefDescrip[] = {
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True",
     	&PrefData.repositionDialogs, NULL, True},
 #endif
+    {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True",
+    	&PrefData.sortOpenPrevMenu, NULL, True},
     {"statisticsLine", "StatisticsLine", PREF_BOOLEAN, "False",
     	&PrefData.statsLine, NULL, True},
+    {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False",
+    	&PrefData.iSearchLine, NULL, True},
+    {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False",
+    	&PrefData.lineNums, NULL, True},
+    {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True",
+    	&PrefData.warnFileMods, NULL, True},
+    {"warnExit", "WarnExit", PREF_BOOLEAN, "True",
+    	&PrefData.warnExit, NULL, True},
     {"searchMethod", "SearchMethod", PREF_ENUM, "Literal",
     	&PrefData.searchMethod, SearchMethodStrings, True},
     {"textRows", "TextRows", PREF_INT, "24",
@@ -586,22 +630,24 @@ static PrefDescripRec PrefDescrip[] = {
     {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True",
     	&PrefData.insertTabs, NULL, True},
     {"textFont", "TextFont", PREF_STRING,
-    	"-adobe-courier-medium-r-normal--14-*-*-*-*-*-*-*",
+    	"-adobe-courier-medium-r-normal--12-*-*-*-*-*-*",
     	PrefData.fontString, (void *)sizeof(PrefData.fontString), True},
     {"boldHighlightFont", "BoldHighlightFont", PREF_STRING,
-    	"-adobe-courier-bold-r-normal--14-*-*-*-*-*-*-*",
+    	"-adobe-courier-bold-r-normal--12-*-*-*-*-*-*",
     	PrefData.boldFontString, (void *)sizeof(PrefData.boldFontString), True},
     {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING,
-    	"-adobe-courier-medium-o-normal--14-*-*-*-*-*-*-*",
+    	"-adobe-courier-medium-o-normal--12-*-*-*-*-*-*",
     	PrefData.italicFontString,
     	(void *)sizeof(PrefData.italicFontString), True},
     {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING,
-    	"-adobe-courier-bold-o-normal--14-*-*-*-*-*-*-*",
+    	"-adobe-courier-bold-o-normal--12-*-*-*-*-*-*",
     	PrefData.boldItalicFontString,
     	(void *)sizeof(PrefData.boldItalicFontString), True},
     {"shell", "Shell", PREF_STRING, "/bin/csh",
     	PrefData.shell, (void *)sizeof(PrefData.shell), False},
-    {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "True",
+    {"geometry", "Geometry", PREF_STRING, "",
+    	PrefData.geometry, (void *)sizeof(PrefData.geometry), False},
+    {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False",
     	&PrefData.mapDelete, NULL, False},
     {"stdOpenDialog", "StdOpenDialog", PREF_BOOLEAN, "False",
     	&PrefData.stdOpenDialog, NULL, False},
@@ -617,6 +663,10 @@ static PrefDescripRec PrefDescrip[] = {
     {"bgMenuButton", "BGMenuButton" , PREF_STRING,
 	"~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn,
       (void *)sizeof(PrefData.bgMenuBtn), False},
+    {"smartTags", "SmartTags", PREF_BOOLEAN, "True",
+    	&PrefData.smartTags, NULL, True},
+    {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False",
+    	&PrefData.prefFileRead, NULL, True},
 #ifdef SGI_CUSTOM
     {"shortMenus", "ShortMenus", PREF_BOOLEAN, "False", &PrefData.shortMenus,
       NULL, True},
@@ -644,7 +694,7 @@ static char HeaderText[] = "\
 ! Preferences file for NEdit\n\
 !\n\
 ! This file is overwritten by the \"Save Defaults...\" command in NEdit \n\
-! and serves only the interactively setable options presented in the NEdit\n\
+! and serves only the interactively settable options presented in the NEdit\n\
 ! \"Preferences\" menu.  To modify other options, such as background colors\n\
 ! and key bindings, use the .Xdefaults file in your home directory (or\n\
 ! the X resource specification method appropriate to your system).  The\n\
@@ -675,7 +725,7 @@ static int DoneWithWrapDialog;
 static WindowInfo *WrapDialogForWindow;
 static Widget WrapText, WrapTextLabel, WrapWindowToggle;
 
-static void translatePrefFormats(void);
+static void translatePrefFormats(int convertOld);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -736,6 +786,10 @@ static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
 static void setTabDist(WindowInfo *window, int tabDist);
 static void setEmTabDist(WindowInfo *window, int emTabDist);
+static void updatePatternsTo5dot1(void);
+static void spliceString(char **intoString, char *insertString, char *atExpr);
+static int regexFind(char *inString, char *expr);
+static int regexReplace(char **inString, char *expr, char *replaceWith);
 
 #ifdef SGI_CUSTOM
 static int shortPrefToDefault(Widget parent, char *settingName,int *setDefault);
@@ -749,11 +803,28 @@ XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
     
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 {
+    int requiresConversion;
+    
     /* Load preferences */
     RestorePreferences(prefDB, appDB, APP_NAME,
     	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-
-    translatePrefFormats();
+    
+    /* If the preferences file was written by an older version of NEdit,
+       warn the user that it will be converted. */
+    requiresConversion = PrefData.prefFileRead &&
+    	    PrefData.fileVersion[0] == '\0';
+    if (requiresConversion) {
+	fprintf(stderr, "NEdit: Converting .nedit file from old version.\n"
+		"    To update, use Preferences -> Save Defaults\n");
+	updatePatternsTo5dot1();
+    }
+     
+    /* Do further parsing on resource types which RestorePreferences does
+       not understand and reads as strings, to put them in the final form
+       in which nedit stores and uses.  If the preferences file was
+       written by an older version of NEdit, update regular expressions in
+       highlight patterns to quote braces and use & instead of \0 */
+    translatePrefFormats(requiresConversion);
 }
 
 /*
@@ -761,8 +832,14 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 ** integers or strings.  These are read as strings, but must be parsed and
 ** translated into something meaningful.  This routine does the translation,
 ** and, in most cases, frees the original string, which is no longer useful.
+**
+** The argument convertOld attempts a conversion from pre 5.1 format .nedit
+** files (which means patterns and macros may contain regular expressions
+** which are of the older syntax where braces were not quoted, and \0 was a
+** legal substitution character).  Macros, so far can not be automatically
+** converted, unfortunately.
 */
-static void translatePrefFormats(void)
+static void translatePrefFormats(int convertOld)
 {
     XFontStruct *font;
 
@@ -786,7 +863,7 @@ static void translatePrefFormats(void)
 	TempStringPrefs.bgMenuCmds = NULL;
     }
     if (TempStringPrefs.highlight != NULL) {
-	LoadHighlightString(TempStringPrefs.highlight);
+	LoadHighlightString(TempStringPrefs.highlight, convertOld);
     	XtFree(TempStringPrefs.highlight);
 	TempStringPrefs.highlight = NULL;
     }
@@ -854,6 +931,7 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
     TempStringPrefs.styles = WriteStylesString();
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
+    strcpy(PrefData.fileVersion, "5.1");
     if (!SavePreferences(XtDisplay(parent), PREF_FILE_NAME, HeaderText,
     	    PrefDescrip, XtNumber(PrefDescrip)))
     	DialogF(DF_WARN, parent, 1,
@@ -881,14 +959,14 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
 ** Load an additional preferences file on top of the existing preferences
 ** derived from defaults, the .nedit file, and X resources.
 */
-void ImportPrefFile(char *filename)
+void ImportPrefFile(char *filename, int convertOld)
 {
     XrmDatabase db;
     
     db = XrmGetFileDatabase(filename);
     OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
 	    XtNumber(PrefDescrip));
-    translatePrefFormats();
+    translatePrefFormats(convertOld);
     ImportedFile = XtNewString(filename);
 }
 
@@ -986,6 +1064,46 @@ void SetPrefStatsLine(int state)
 int GetPrefStatsLine(void)
 {
     return PrefData.statsLine;
+}
+
+void SetPrefISearchLine(int state)
+{
+    setIntPref(&PrefData.iSearchLine, state);
+}
+
+int GetPrefISearchLine(void)
+{
+    return PrefData.iSearchLine;
+}
+
+void SetPrefLineNums(int state)
+{
+    setIntPref(&PrefData.lineNums, state);
+}
+
+int GetPrefLineNums(void)
+{
+    return PrefData.lineNums;
+}
+
+void SetPrefWarnFileMods(int state)
+{
+    setIntPref(&PrefData.warnFileMods, state);
+}
+
+int GetPrefWarnFileMods(void)
+{
+    return PrefData.warnFileMods;
+}
+
+void SetPrefWarnExit(int state)
+{
+    setIntPref(&PrefData.warnExit, state);
+}
+
+int GetPrefWarnExit(void)
+{
+    return PrefData.warnExit;
 }
 
 void SetPrefMapDelete(int state)
@@ -1094,6 +1212,16 @@ int GetPrefRepositionDialogs(void)
     return PrefData.repositionDialogs;
 }
 
+void SetPrefSortOpenPrevMenu(int state)
+{
+    setIntPref(&PrefData.sortOpenPrevMenu, state);
+}
+
+int GetPrefSortOpenPrevMenu(void)
+{
+    return PrefData.sortOpenPrevMenu;
+}
+
 void SetPrefTagFile(char *tagFileName)
 {
     setStringPref(PrefData.tagFile, tagFileName);
@@ -1102,6 +1230,16 @@ void SetPrefTagFile(char *tagFileName)
 char *GetPrefTagFile(void)
 {
     return PrefData.tagFile;
+}
+
+void SetPrefSmartTags(int state)
+{
+    setIntPref(&PrefData.smartTags, state);
+}
+
+int GetPrefSmartTags(void)
+{
+    return PrefData.smartTags;
 }
 
 char *GetPrefDelimiters(void)
@@ -1184,6 +1322,16 @@ char *GetPrefShell(void)
     return PrefData.shell;
 }
 
+void SetPrefGeometry(char *geometry)
+{
+    setStringPref(PrefData.geometry, geometry);
+}
+
+char *GetPrefGeometry(void)
+{
+    return PrefData.geometry;
+}
+
 char *GetPrefServerName(void)
 {
     return PrefData.serverName;
@@ -1262,6 +1410,49 @@ static void setStringPref(char *prefDataField, char *newValue)
     strcpy(prefDataField, newValue);
 }
 
+
+/*
+** Set the language mode for the window, update the menu and trigger language
+** mode specific actions (turn on/off highlighting).  If forceNewDefaults is
+** true, re-establish default settings for language-specific preferences
+** regardless of whether they were previously set by the user.
+*/
+void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
+{
+    Widget menu;
+    WidgetList items;
+    int n, nItems;
+    void *userData;
+    
+    /* Do mode-specific actions */
+    reapplyLanguageMode(window, mode, forceNewDefaults);
+    
+    /* Select the correct language mode in the sub-menu */
+    XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, 0);
+    XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems,0);
+    for (n=0; n<nItems; n++) {
+    	XtVaGetValues(items[n], XmNuserData, &userData, 0);
+    	XmToggleButtonSetState(items[n], (int)userData == mode, False);
+    }
+}
+
+/*
+** Lookup a language mode by name, returning the index of the language
+** mode or PLAIN_LANGUAGE_MODE if the name is not found
+*/
+int FindLanguageMode(char *languageName)
+{
+    int i;
+ 
+    /* Compare each language mode to the one we were presented */
+    for (i=0; i<NLanguageModes; i++)
+	if (!strcmp(languageName, LanguageModes[i]->name))
+	    return i;
+
+    return PLAIN_LANGUAGE_MODE;
+}
+
+
 /*
 ** Apply language mode matching criteria and set window->languageMode to
 ** the appropriate mode for the current file, trigger language mode
@@ -1272,22 +1463,7 @@ static void setStringPref(char *prefDataField, char *newValue)
 */
 void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults)
 {
-    Widget menu;
-    WidgetList items;
-    int n, mode, nItems;
-    void *userData;
-    
-    /* Set the new language mode and do mode-specific actions */
-    mode = matchLanguageMode(window);
-    reapplyLanguageMode(window, mode, forceNewDefaults);
-    
-    /* Select the correct language mode in the sub-menu */
-    XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, 0);
-    XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems,0);
-    for (n=0; n<nItems; n++) {
-    	XtVaGetValues(items[n], XmNuserData, &userData, 0);
-    	XmToggleButtonSetState(items[n], (int)userData == mode, False);
-    }
+    SetLanguageMode(window, matchLanguageMode(window), forceNewDefaults);
 }
 
 /*
@@ -1764,9 +1940,9 @@ void EditLanguageModes(Widget parent)
 #define RIGHT_MARGIN_POS 99
 #define H_MARGIN 5
     Widget form, nameLbl, topLbl, extLbl, recogLbl, delimitLbl;
-    Widget okBtn, applyBtn, dismissBtn, stretchForm;
-    Widget overrideLbl, overrideFrame, overrideForm, delimitForm;
-    Widget tabForm, tabLbl, emTabLbl, indentBox, wrapBox;
+    Widget okBtn, applyBtn, dismissBtn;
+    Widget overrideFrame, overrideForm, delimitForm;
+    Widget tabForm, tabLbl, indentBox, wrapBox;
     XmString s1;
     int i, ac;
     Arg args[20];
@@ -1922,14 +2098,13 @@ characters of file to determine type from content)"),
 	    XmNbottomOffset, H_MARGIN, 0);
     overrideForm = XtVaCreateManagedWidget("overrideForm", xmFormWidgetClass,
 	    overrideFrame, 0);
-    overrideLbl = XtVaCreateManagedWidget("overrideLbl", xmLabelGadgetClass,
-    	    overrideFrame,
+    XtVaCreateManagedWidget("overrideLbl", xmLabelGadgetClass, overrideFrame,
     	    XmNlabelString, s1=XmStringCreateSimple("Override Defaults"),
 	    XmNchildType, XmFRAME_TITLE_CHILD,
 	    XmNchildHorizontalAlignment, XmALIGNMENT_CENTER, 0);
     XmStringFree(s1);
  
-    delimitForm = XtVaCreateManagedWidget("overrideForm", xmFormWidgetClass,
+    delimitForm = XtVaCreateManagedWidget("delimitForm", xmFormWidgetClass,
 	    overrideForm,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, LEFT_MARGIN_POS,
@@ -1988,7 +2163,7 @@ characters of file to determine type from content)"),
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_FORM, 0);
     RemapDeleteKey(LMDialog.emTabW);
-    emTabLbl = XtVaCreateManagedWidget("emTabLbl", xmLabelGadgetClass, tabForm,
+    XtVaCreateManagedWidget("emTabLbl", xmLabelGadgetClass, tabForm,
     	    XmNlabelString,
     	    s1=XmStringCreateSimple("Alternative emulated tab spacing"),
     	    XmNalignment, XmALIGNMENT_END, 
@@ -2076,8 +2251,7 @@ characters of file to determine type from content)"),
     	    XmNmnemonic, 'C', 0);
     XmStringFree(s1);
 
-    stretchForm = XtVaCreateManagedWidget("stretchForm", xmFormWidgetClass,
-	    form,
+    XtVaCreateManagedWidget("stretchForm", xmFormWidgetClass, form,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, LMDialog.recogW,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2097,7 +2271,7 @@ characters of file to determine type from content)"),
     XtSetArg(args[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
     XtSetArg(args[ac], XmNrightPosition, LIST_RIGHT-1); ac++;
     XtSetArg(args[ac], XmNbottomAttachment, XmATTACH_WIDGET); ac++;
-    XtSetArg(args[ac], XmNbottomWidget, overrideForm); ac++;
+    XtSetArg(args[ac], XmNbottomWidget, overrideFrame); ac++;
     XtSetArg(args[ac], XmNbottomOffset, H_MARGIN*2); ac++;
     LMDialog.managedListW = CreateManagedList(form, "list", args, ac,
     	    (void **)LMDialog.languageModeList, &LMDialog.nLanguageModes,
@@ -2114,7 +2288,7 @@ characters of file to determine type from content)"),
     AddDialogMnemonicHandler(form);
 
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(LMDialog.shell);
+    RealizeWithoutForcingPosition(LMDialog.shell);
 }
 
 static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2557,7 +2731,8 @@ static int lmDialogEmpty(void)
 void ChooseFonts(WindowInfo *window, int forWindow)
 {
 #define MARGIN_SPACING 10
-    Widget form, primaryLbl, primaryBtn, highlightLbl, italicLbl, italicBtn;
+#define BTN_TEXT_OFFSET 3
+    Widget form, primaryLbl, primaryBtn, italicLbl, italicBtn;
     Widget boldLbl, boldBtn, boldItalicLbl, boldItalicBtn;
     Widget primaryFrame, primaryForm, highlightFrame, highlightForm;
     Widget okBtn, applyBtn, dismissBtn;
@@ -2590,7 +2765,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtAddCallback(form, XmNdestroyCallback, fontDestroyCB, fd);
 
     primaryFrame = XtVaCreateManagedWidget("primaryFrame", xmFrameWidgetClass,
-    	    form,
+    	    form, XmNmarginHeight, 3,
 	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 2,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2613,6 +2788,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     	    XmNmnemonic, 'r',
 	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 2,
+	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, 0);
     XtAddCallback(primaryBtn, XmNactivateCallback, primaryBrowseCB, fd);
@@ -2634,6 +2810,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     highlightFrame = XtVaCreateManagedWidget("highlightFrame",
     	    xmFrameWidgetClass, form,
+	    XmNmarginHeight, 3,
 	    XmNnavigationType, XmTAB_GROUP,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, primaryFrame,
@@ -2644,7 +2821,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    XmNrightPosition, 99, 0);
     highlightForm = XtVaCreateManagedWidget("highlightForm", xmFormWidgetClass,
     	    highlightFrame, 0);
-    highlightLbl = XtVaCreateManagedWidget("highlightFonts", xmLabelGadgetClass,
+    XtVaCreateManagedWidget("highlightFonts", xmLabelGadgetClass,
     	    highlightFrame,
     	    XmNlabelString,
     	    	s1=XmStringCreateSimple("Fonts for Syntax Highlighting"),
@@ -2659,6 +2836,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     	    XmNmnemonic, 'F',
     	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 2,
+	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, 0);
     XtAddCallback(fd->fillW, XmNactivateCallback, fillFromPrimaryCB, fd);
@@ -2695,6 +2873,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     	    XmNmnemonic, 'o',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, italicLbl,
+	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, 0);
     XtAddCallback(italicBtn, XmNactivateCallback, italicBrowseCB, fd);
@@ -2744,6 +2923,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     	    XmNmnemonic, 'w',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, boldLbl,
+	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, 0);
     XtAddCallback(boldBtn, XmNactivateCallback, boldBrowseCB, fd);
@@ -2793,6 +2973,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     	    XmNmnemonic, 's',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, boldItalicLbl,
+	    XmNtopOffset, BTN_TEXT_OFFSET,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 1, 0);
     XtAddCallback(boldItalicBtn, XmNactivateCallback, boldItalicBrowseCB, fd);
@@ -2889,7 +3070,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
        doesn't match, we can't generate highlight font names, so return */
     compiledRE = CompileRE(searchString, &errMsg);
     primaryName = XmTextGetString(fd->primaryW);
-    if (!ExecRE(compiledRE, primaryName, NULL, False, True, True, NULL)) {
+    if (!ExecRE(compiledRE, NULL, primaryName, NULL, False, '\0', '\0', NULL)) {
     	XBell(XtDisplay(fd->shell), 0);
     	free(compiledRE);
     	XtFree(primaryName);
@@ -3232,7 +3413,7 @@ static int matchLanguageMode(WindowInfo *window)
     	if (LanguageModes[i]->recognitionExpr != NULL) {
     	    if (SearchString(first200, LanguageModes[i]->recognitionExpr,
     	    	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos,
-    	    	    &endPos, NULL))
+    	    	    &endPos, NULL, NULL))
     	    	return i;
     	}
     }
@@ -3249,23 +3430,8 @@ static int matchLanguageMode(WindowInfo *window)
     	    ext = LanguageModes[i]->extensions[j];
     	    extLen = strlen(ext);
     	    start = fileNameLen - extLen;
-#ifdef VMS
-    	    /* VMS filenames are not case sensative.  So LanguageMode
-    	       extensions for VMS are therefore all listed in upper case. */
-    	    if (start >= 0) {
-    	        char *outPtr, *inPtr;
-    	    	char lcFilename[MAXPATHLEN];
-    	    	for (outPtr=&lcFilename[0], inPtr=&window->filename[start]; 
-    	    		*inPtr != 0;  inPtr++, outPtr++)
-    	    	    *outPtr = toupper(*inPtr);
-    	    	*outPtr = 0;
-    	        if (!strncmp(&lcFilename[0], ext, extLen))
-    	    	    return i;
-    	    }
-#else
     	    if (start >= 0 && !strncmp(&window->filename[start], ext, extLen))
     	    	return i;
-#endif /*VMS*/
     	}
     }
 
@@ -3938,6 +4104,132 @@ int AllocatedStringsDiffer(char *s1, char *s2)
     if (s1 == NULL || s2 == NULL)
     	return True;
     return strcmp(s1, s2);
+}
+
+static void updatePatternsTo5dot1(void)
+{
+    char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
+    char *vhdlAnchorExpr = "^[ \t]*VHDL:";
+    
+    /* Add new patterns if there aren't already existing patterns with
+       the same name.  If possible, insert before VHDL in language mode
+       list.  If not, just add to end */
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*PostScript:"))
+	spliceString(&TempStringPrefs.highlight, "PostScript:Default",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*PostScript:"))
+	spliceString(&TempStringPrefs.language,
+		"PostScript:.ps .PS .eps .EPS .epsf .epsi::::::",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Lex:"))
+	spliceString(&TempStringPrefs.highlight, "Lex:Default",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*Lex:"))
+	spliceString(&TempStringPrefs.language, "Lex:.lex::::::",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*SQL:"))
+	spliceString(&TempStringPrefs.highlight, "SQL:Default",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*SQL:"))
+	spliceString(&TempStringPrefs.language, "SQL:.sql::::::",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Matlab:"))
+	spliceString(&TempStringPrefs.highlight, "Matlab:Default",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*Matlab:"))
+	spliceString(&TempStringPrefs.language, "Matlab:..m .oct .sci::::::",
+		vhdlAnchorExpr);
+    if (!regexFind(TempStringPrefs.smartIndent, "^[ \t]*Matlab:"))
+	spliceString(&TempStringPrefs.smartIndent, "Matlab:Default", NULL);
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Label:"))
+	spliceString(&TempStringPrefs.styles, "Label:red:Italic",
+		"^[ \t]*Flag:");
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Storage Type1:"))
+	spliceString(&TempStringPrefs.styles, "Storage Type1:saddle brown:Bold",
+		"^[ \t]*String:");
+
+    /* Replace html pattern with sgml html pattern, as long as there
+       isn't an existing html pattern which will be overwritten */
+    if (regexFind(TempStringPrefs.highlight, htmlDefaultExpr)) {
+	regexReplace(&TempStringPrefs.highlight, htmlDefaultExpr,
+	    	"SGML HTML:Default");
+    	if (!regexReplace(&TempStringPrefs.language, "^[ \t]*HTML:.*$",
+	    	"SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n")) {
+	    spliceString(&TempStringPrefs.language,
+		    "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n",
+		    vhdlAnchorExpr);
+	}
+    }
+}
+
+/*
+** Inserts a string into intoString, reallocating it with XtMalloc.  If
+** regular expression atExpr is found, inserts the string before atExpr
+** followed by a newline.  If atExpr is not found, inserts insertString
+** at the end, PRECEDED by a newline.
+*/
+static void spliceString(char **intoString, char *insertString, char *atExpr)
+{
+    int beginPos, endPos;
+    int intoLen = strlen(*intoString);
+    int insertLen = strlen(insertString);
+    char *newString = XtMalloc(intoLen + insertLen + 2);
+    
+    if (atExpr != NULL && SearchString(*intoString, atExpr,
+	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos,
+	    NULL, NULL)) {
+	strncpy(newString, *intoString, beginPos);
+    	strncpy(&newString[beginPos], insertString, insertLen);
+	newString[beginPos+insertLen] = '\n';
+	strncpy(&newString[beginPos+insertLen+1],
+		&((*intoString)[beginPos]), intoLen - beginPos);
+    } else {
+	strncpy(newString, *intoString, intoLen);
+	newString[intoLen] = '\n';
+	strncpy(&newString[intoLen+1], insertString, insertLen);
+    }
+    newString[intoLen + insertLen + 1] = '\0';
+    XtFree(*intoString);
+    *intoString = newString;
+}
+
+/*
+** Simplified regular expression search routine which just returns true
+** or false depending on whether inString matches expr
+*/
+static int regexFind(char *inString, char *expr)
+{
+    int beginPos, endPos;
+    return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
+	    0, &beginPos, &endPos, NULL, NULL);
+}
+
+/*
+** Simplified regular expression replacement routine which replaces the
+** first occurence of expr in inString with replaceWith, reallocating
+** inString with XtMalloc.  If expr is not found, does nothing and
+** returns false.
+*/
+static int regexReplace(char **inString, char *expr, char *replaceWith)
+{
+    int beginPos, endPos, newLen;
+    char *newString;
+    int replaceLen = strlen(replaceWith);
+    int inLen = strlen(*inString);
+    
+    if (!SearchString(*inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
+	    0, &beginPos, &endPos, NULL, NULL))
+	return FALSE;
+    newLen = inLen + replaceLen - (endPos-beginPos);
+    newString = XtMalloc(newLen + 1);
+    strncpy(newString, *inString, beginPos);
+    strncpy(&newString[beginPos], replaceWith, replaceLen);
+    strncpy(&newString[beginPos+replaceLen],
+	    &((*inString)[endPos]), inLen - endPos);
+    newString[newLen] = '\0';
+    XtFree(*inString);
+    *inString = newString;
+    return TRUE;
 }
 
 #ifdef SGI_CUSTOM

@@ -2,21 +2,23 @@
 *									       *
 * menu.c -- Nirvana Editor menus					       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 10, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -85,6 +87,7 @@ static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findSelCB(Widget w, XtPointer clientData, XtPointer callData);
+static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -104,6 +107,8 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData);
+static void iSearchCB(Widget w, WindowInfo *window, caddr_t callData);
+static void lineNumsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -114,11 +119,15 @@ static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
+static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static void languageDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightingDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartMacrosDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -129,7 +138,10 @@ static void bgMenuDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
+static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -153,6 +165,7 @@ static void helpProgCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpMouseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpKbdCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpFillCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpFormatCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpTabsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpIndentCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpSyntaxCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -175,9 +188,15 @@ static void helpDistCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpMailingCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpBugsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void helpShellCB(Widget w, WindowInfo *window, caddr_t callData);
-static void helpRegexCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpRegexBasicsCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpRegexEscapeCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpRegexParenCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpRegexAdvCB(Widget w, WindowInfo *window, caddr_t callData);
+static void helpRegexExamplesCB(Widget w, WindowInfo *window, caddr_t callData);
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData);
 static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData);
+static void unloadTagsFileMenuCB(Widget w, WindowInfo *window,
+	caddr_t callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void openDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs); 
@@ -201,6 +220,8 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs); 
 static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
+static void unloadTagsAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs); 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
@@ -220,6 +241,9 @@ static void findDialogAP(Widget w, XEvent *event, String *args,
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+static void startIncrFindAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs);
 static void replaceDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -244,7 +268,9 @@ static void markDialogAP(Widget w, XEvent *event, String *args,
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoMarkDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void findMatchingAP(Widget w, XEvent *event, String *args,
+static void selectToMatchingAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs);
+static void gotoMatchingAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void splitWindowAP(Widget w, XEvent *event, String *args,
@@ -289,11 +315,13 @@ static Widget createMenuSeparator(Widget parent, char *name, int mode);
 static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(WindowInfo *window);
 static void updatePrevOpenMenu(WindowInfo *window);
+static void updateTagsFileMenu(WindowInfo *window);
 static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void openPrevCB(Widget w, char *name, caddr_t callData);
+static void unloadTagsFileCB(Widget w, char *name, caddr_t callData);
 static int cmpStrPtr(const void *strA, const void *strB);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
@@ -337,6 +365,7 @@ static XtActionsRec Actions[] = {
     {"load_tags_file", loadTagsAP},
     {"load-tags-file-dialog", loadTagsDialogAP},
     {"load_tags_file_dialog", loadTagsDialogAP},
+    {"unload_tags_file", unloadTagsAP},
     {"print", printAP},
     {"print-selection", printSelAP},
     {"print_selection", printSelAP},
@@ -361,6 +390,8 @@ static XtActionsRec Actions[] = {
     {"find_again", findSameAP},
     {"find-selection", findSelAP},
     {"find_selection", findSelAP},
+    {"find_incremental", findIncrAP},
+    {"start_incremental_find", startIncrFindAP},
     {"replace", replaceAP},
     {"replace-dialog", replaceDialogAP},
     {"replace_dialog", replaceDialogAP},
@@ -383,7 +414,9 @@ static XtActionsRec Actions[] = {
     {"goto_mark", gotoMarkAP},
     {"goto-mark-dialog", gotoMarkDialogAP},
     {"goto_mark_dialog", gotoMarkDialogAP},
-    {"match", findMatchingAP},
+    {"match", selectToMatchingAP},
+    {"select_to_matching", selectToMatchingAP},
+    {"goto_matching", gotoMatchingAP},
     {"find-definition", findDefAP},
     {"find_definition", findDefAP},
     {"split-window", splitWindowAP},
@@ -508,11 +541,16 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    doActionCB, "load_macro_file_dialog", FULL);
     createMenuItem(menuPane, "loadTagsFile", "Load Tags File...", 'T',
     	    doActionCB, "load_tags_file_dialog", FULL);
+    window->unloadTagsMenuPane = createMenu(menuPane, "unloadTagsFiles",
+	    "Unload Tags File", 'U', &window->unloadTagsMenuItem, FULL);
+    XtSetSensitive(window->unloadTagsMenuItem, TagsFileList != NULL);
+    XtAddCallback(window->unloadTagsMenuItem, XmNcascadingCallback,
+	    (XtCallbackProc)unloadTagsFileMenuCB, window);
     createMenuSeparator(menuPane, "sep3", SHORT);
     createMenuItem(menuPane, "print", "Print...", 'P', doActionCB, "print",
     	    SHORT);
     window->printSelItem = createMenuItem(menuPane, "printSelection",
-    	    "Print Selection...", 't', doActionCB, "print_selection",
+    	    "Print Selection...", 'l', doActionCB, "print_selection",
     	    SHORT);
     XtSetSensitive(window->printSelItem, window->wasSelected);
     createMenuSeparator(menuPane, "sep4", SHORT);
@@ -582,6 +620,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "findSelection", "Find Selection", 'S',
     	    findSelCB, window, SHORT);
     createFakeMenuItem(menuPane, "findSelectionShift", findSelCB, window);
+    createMenuItem(menuPane, "findIncremental", "Find Incremental", 'n',
+	    findIncrCB, window, SHORT);
+    createFakeMenuItem(menuPane, "findIncrementalShift", findIncrCB, window);
     createMenuItem(menuPane, "replace", "Replace...", 'R', replaceCB, window,
     	    SHORT);
     createFakeMenuItem(menuPane, "replaceShift", replaceCB, window);
@@ -599,11 +640,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    FULL);
     createFakeMenuItem(menuPane, "gotoMarkShift", gotoMarkCB, window);
     createMenuSeparator(menuPane, "sep3", FULL);
-    createMenuItem(menuPane, "match", "Match (..)", 'M',
-    	    doActionCB, "match", FULL);
+    createMenuItem(menuPane, "gotoMatching", "Goto Matching (..)", 'M',
+    	    doActionCB, "goto_matching", FULL);
+    createFakeMenuItem(menuPane, "gotoMatchingShift",
+	    doActionCB, "select_to_matching");
     window->findDefItem = createMenuItem(menuPane, "findDefinition",
     	    "Find Definition", 'D', doActionCB, "find_definition", FULL);
-    XtSetSensitive(window->findDefItem, TagsFileLoaded());
+    XtSetSensitive(window->findDefItem, TagsFileList != NULL);
     
     /*
     ** Preferences menu, Default Settings sub menu
@@ -645,6 +688,16 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuSeparator(subSubPane, "sep1", SHORT);
     createMenuItem(subSubPane, "wrapMargin", "Wrap Margin...", 'W',
     	    wrapMarginDefCB, window, SHORT);
+    
+    /* Smart Tags sub menu */
+    subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'T',
+	    NULL, FULL);
+    window->allTagsDefItem = createMenuRadioToggle(subSubPane, "showall",
+	    "Show All", 'A', showAllTagsDefCB, window, !GetPrefSmartTags(),
+	    FULL);
+    window->smartTagsDefItem = createMenuRadioToggle(subSubPane, "smart",
+	    "Smart", 'S', smartTagsDefCB, window, GetPrefSmartTags(), FULL);
+
     createMenuItem(subPane, "tabDistance", "Tabs...", 'T', tabsDefCB, window,
     	    SHORT);
     createMenuItem(subPane, "textFont", "Text Font...", 'F', fontDefCB, window,
@@ -700,6 +753,12 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->statsLineDefItem = createMenuToggle(subPane, "statisticsLine",
     	    "Statistics Line", 'S', statsLineDefCB, window, GetPrefStatsLine(),
     	    SHORT);
+    window->iSearchLineDefItem = createMenuToggle(subPane,
+	    "incrementalSearchLine", "Incremental Search Line", 'S',
+	    iSearchLineDefCB, window, GetPrefISearchLine(), FULL);
+    window->lineNumsDefItem = createMenuToggle(subPane, "showLineNumbers",
+    	    "Show Line Numbers", 'n', lineNumsDefCB, window, GetPrefLineNums(),
+    	    SHORT);
     window->saveLastDefItem = createMenuToggle(subPane, "preserveLastVersion",
     	    "Make Backup Copy (*.bck)", 'e', preserveDefCB, window,
     	    GetPrefSaveOldVersion(), SHORT);
@@ -709,9 +768,18 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->showMatchingDefItem = createMenuToggle(subPane, "showMatching",
     	    "Show Matching (..)", 'M', showMatchingDefCB, window,
     	    GetPrefShowMatching(), FULL);
+    window->sortOpenPrevDefItem = createMenuToggle(subPane, "sortOpenPrevMenu",
+    	    "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window,
+    	    GetPrefSortOpenPrevMenu(), FULL);
     window->reposDlogsDefItem = createMenuToggle(subPane, "popupsUnderPointer",
     	    "Popups Under Pointer", 'P', reposDlogsDefCB, window,
     	    GetPrefRepositionDialogs(), FULL);
+    subSubPane = createMenu(subPane, "warnings", "Warnings", 'r', NULL, FULL);
+    window->modWarnDefItem = createMenuToggle(subSubPane,
+	    "filesModifiedExternally", "Files Modified Externally", 'F',
+	    modWarnDefCB, window, GetPrefWarnFileMods(), FULL);
+    window->exitWarnDefItem = createMenuToggle(subSubPane, "onExit", "On Exit", 'O',
+	    exitWarnDefCB, window, GetPrefWarnExit(), FULL);
     
     /* Initial Window Size sub menu (simulates radioBehavior) */
     subSubPane = AddSubMenu(subPane, "initialwindowSize",
@@ -747,6 +815,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuSeparator(menuPane, "sep1", SHORT);
     createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
     	    statsCB, window, GetPrefStatsLine(), SHORT);
+    createMenuToggle(menuPane, "incremntalSearchLine","Incremental Search Line",
+	    'S', iSearchCB, window, GetPrefISearchLine(), FULL);
+    createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'i',
+    	    lineNumsCB, window, GetPrefLineNums(), SHORT);
     CreateLanguageModeSubMenu(window, menuPane, "languageMode",
     	    "Language Mode", 'L');
     subPane = createMenu(menuPane, "autoIndent", "Auto Indent",
@@ -774,10 +846,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(subPane, "wrapMargin", "Wrap Margin...", 'W',
     	    wrapMarginCB, window, SHORT);
     createMenuItem(menuPane, "tabs", "Tabs...", 'T', tabsCB, window, SHORT);
-#ifndef IBM_DESTROY_BUG
     createMenuItem(menuPane, "textFont", "Text Font...", 'F', fontCB, window,
     	    FULL);
-#endif /*IBM_DESTROY_BUG*/
     window->highlightItem = createMenuToggle(menuPane, "highlightSyntax",
 	    "Highlight Syntax", 'H', highlightCB, window,
 	    GetPrefHighlightSyntax(), SHORT);
@@ -891,6 +961,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Keyboard Shortcuts", 'K', helpKbdCB, window, SHORT);
     createMenuItem(subPane, "shiftingAndFilling",
     	    "Shifting and Filling", 'h', helpFillCB, window, SHORT);
+    createMenuItem(subPane, "fileFormat",
+    	    "File Format", 'i', helpFormatCB, window, SHORT);
     subPane = createMenu(menuPane, "featuresForProgramming",
 	    "Features for Programming", 'F', NULL, FULL);
     createMenuItem(subPane, "programmingWithNEdit",
@@ -903,8 +975,18 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Syntax Highlighting", 'S', helpSyntaxCB, window, SHORT);
     createMenuItem(subPane, "FindingDeclarationsCtags",
     	    "Finding Declarations (ctags)", 'F', helpCtagsCB, window, SHORT);
-    createMenuItem(menuPane, "regularExpressions", "Regular Expressions", 'R',
-    	    helpRegexCB, window, SHORT);
+    subPane = createMenu(menuPane, "regularExpressions",
+	    "Regular Expressions", 'R', NULL, SHORT);
+    createMenuItem(subPane, "basicSyntax", "Basic Syntax", 'B',
+    	    helpRegexBasicsCB, window, SHORT);
+    createMenuItem(subPane, "escapeSequences", "Escape Sequences", 'E',
+    	    helpRegexEscapeCB, window, SHORT);
+    createMenuItem(subPane, "parentheticalConstructs",
+	    "Parenthetical Constructs", 'P', helpRegexParenCB, window, SHORT);
+    createMenuItem(subPane, "advancedTopics", "Advanced Topics", 'A',
+    	    helpRegexAdvCB, window, SHORT);
+    createMenuItem(subPane, "examples", "Examples", 'x',
+    	    helpRegexExamplesCB, window, SHORT);
     subPane = createMenu(menuPane, "macroShellExtensions",
 	    "Macro / Shell Extensions", 'M', NULL, FULL);
 #ifndef VMS
@@ -1015,6 +1097,13 @@ static void findSelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "find_selection",
     	    ((XmAnyCallbackStruct *)callData)->event, 
+    	    shiftKeyToDir(callData), 1);
+}
+
+static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
+	    "start_incremental_find", ((XmAnyCallbackStruct *)callData)->event, 
     	    shiftKeyToDir(callData), 1);
 }
 
@@ -1187,8 +1276,17 @@ static void statsCB(Widget w, WindowInfo *window, caddr_t callData)
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    window->showStats = XmToggleButtonGetState(w);
     ShowStatsLine(window, XmToggleButtonGetState(w));
+}
+
+static void iSearchCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    ShowISearchLine(window, XmToggleButtonGetState(w));
+}
+
+static void lineNumsCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    ShowLineNumbers(window, XmToggleButtonGetState(w));
 }
 
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1301,6 +1399,28 @@ static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WrapMarginDialog(window->shell, NULL);
 }
 
+static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data)
+{
+    WindowInfo *win;
+	
+    SetPrefSmartTags(True);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->smartTagsDefItem, True, False);
+	XmToggleButtonSetState(win->allTagsDefItem, False, False);
+    }
+}
+
+static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data)
+{
+    WindowInfo *win;
+	
+    SetPrefSmartTags(False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
+	XmToggleButtonSetState(win->allTagsDefItem, True, False);
+    }
+}
+
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     TabsPrefDialog(window->shell, NULL);
@@ -1400,6 +1520,20 @@ static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     	XmToggleButtonSetState(win->keepSearchDlogsDefItem, state, False);
 }
 
+static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference, make the other windows' menus agree,
+       and invalidate their Open Previous menus */
+    SetPrefSortOpenPrevMenu(state);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	window->prevOpenMenuValid = False;
+    	XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
+    }
+}
+
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
@@ -1412,6 +1546,28 @@ static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     	XmToggleButtonSetState(win->reposDlogsDefItem, state, False);
 }
 
+static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefWarnFileMods(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->modWarnDefItem, state, False);
+}
+
+static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefWarnExit(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->exitWarnDefItem, state, False);
+}
+
 static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
@@ -1421,6 +1577,28 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefStatsLine(state);
     for (win=WindowList; win!=NULL; win=win->next)
     	XmToggleButtonSetState(win->statsLineDefItem, state, False);
+}
+
+static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefISearchLine(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->iSearchLineDefItem, state, False);
+}
+
+static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefLineNums(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->lineNumsDefItem, state, False);
 }
 
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1574,6 +1752,11 @@ static void helpFillCB(Widget w, WindowInfo *window, caddr_t callData)
     Help(window->shell, HELP_FILL);
 }
 
+static void helpFormatCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    Help(window->shell, HELP_FORMAT);
+}
+
 static void helpTabsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Help(window->shell, HELP_TABS);
@@ -1609,9 +1792,29 @@ static void helpShellCB(Widget w, WindowInfo *window, caddr_t callData)
     Help(window->shell, HELP_SHELL);
 }
 
-static void helpRegexCB(Widget w, WindowInfo *window, caddr_t callData)
+static void helpRegexBasicsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    Help(window->shell, HELP_REGEX);
+    Help(window->shell, HELP_REGEX_BASICS);
+}
+
+static void helpRegexEscapeCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    Help(window->shell, HELP_REGEX_ESC_SEQ);
+}
+
+static void helpRegexParenCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    Help(window->shell, HELP_REGEX_PAREN);
+}
+
+static void helpRegexAdvCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    Help(window->shell, HELP_REGEX_ADV);
+}
+
+static void helpRegexExamplesCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    Help(window->shell, HELP_REGEX_EXAMPLE);
 }
 
 static void helpCmdLineCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1707,12 +1910,17 @@ static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
     }
 }
 
+static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    updateTagsFileMenu(window);
+}
+
 /*
 ** Action Procedures for menu item commands
 */
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
-    EditNewFile();
+    EditNewFile(NULL, False, NULL);
     CheckCloseDim();
 }
 
@@ -1740,7 +1948,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     }
     ParseFilename(args[0], filename, pathname);
-    EditExistingFile(window, filename, pathname, False);
+    EditExistingFile(window, filename, pathname, False, NULL, False, NULL);
     CheckCloseDim();
 }
 
@@ -1770,12 +1978,14 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
-    int response, addWrap;
+    int response, addWrap, fileFormat;
     char fullname[MAXPATHLEN], *params[2];
     
-    response = PromptForNewFile(window, "Save File As:", fullname, &addWrap);
+    response = PromptForNewFile(window, "Save File As:", fullname,
+	    &fileFormat, &addWrap);
     if (response != GFN_OK)
     	return;
+    window->fileFormat = fileFormat;
     params[0] = fullname;
     params[1] = "wrapped";
     XtCallActionProc(window->lastFocus, "save_as", event, params, addWrap?2:1);
@@ -1883,13 +2093,41 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args,
 
 static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
+    WindowInfo *win;
+    
     if (*nArgs == 0) {
     	fprintf(stderr,"NEdit: load_tags_file action requires file argument\n");
     	return;
     }
-    if (!LoadTagsFile(args[0]))
+    if (!AddTagsFile(args[0])) {
     	DialogF(DF_WARN, WidgetToWindow(w)->shell, 1,
-    		"Error reading ctags file,\ntags not loaded", "Dismiss");
+    		"Error reading ctags file:\n'%s'\ntags not loaded", "Dismiss",
+		args[0]);
+    }
+    if (TagsFileList != NULL) {
+	for (win=WindowList; win; win=win->next) {
+	    XtSetSensitive(win->unloadTagsMenuItem, True);
+	    XtSetSensitive(win->findDefItem, True);
+	}
+    }
+}
+
+static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+{
+    WindowInfo *win;
+    
+    if (*nArgs == 0) {
+	fprintf(stderr,
+		"NEdit: unload_tags_file action requires file argument\n");
+	return;
+    }
+    DeleteTagsFile(args[0]);
+    if (TagsFileList == NULL) {
+	for (win=WindowList; win!=NULL; win=win->next) {
+	    XtSetSensitive(win->unloadTagsMenuItem, False);
+	    XtSetSensitive(win->findDefItem, False);
+	}
+    }
 }
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
@@ -1905,46 +2143,52 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
-#ifdef EXIT_WARNING
-    int resp, titleLen;
-    char exitMsg[DF_MAX_MSG_LENGTH], *ptr, *title;
-    WindowInfo *win;
-#endif
 
     if (!CheckPrefsChangesSaved(window->shell))
-    	return;
+        return;
     
-#ifdef EXIT_WARNING
-    /* If this is the last window, don't ask, just try to close and exit */
-    if (window == WindowList && window->next == NULL) {
-	if (CloseAllFilesAndWindows())
-    	    exit(0);
-    	else
-    	    return;
+    /* If this is not the last window (more than one window is open),
+       confirm with the user before exiting. */
+    if (GetPrefWarnExit() && !(window == WindowList && window->next == NULL)) {
+        int resp, titleLen, lineLen;
+        char exitMsg[DF_MAX_MSG_LENGTH], *ptr, *title;
+        WindowInfo *win;
+
+        /* List the windows being edited and make sure the
+           user really wants to exit */
+        ptr = exitMsg;
+	lineLen = 0;
+        strcpy(ptr, "Editing: "); ptr += 9; lineLen += 9;
+        for (win=WindowList; win!=NULL; win=win->next) {
+            XtVaGetValues(win->shell, XmNiconName, &title, 0);
+            titleLen = strlen(title);
+            if (ptr - exitMsg + titleLen + 30 >= DF_MAX_MSG_LENGTH) {
+        	strcpy(ptr, "..."); ptr += 3;
+        	break;
+            }
+	    if (lineLen + titleLen + (win->next==NULL?5:2) > 50) {
+		*ptr++ = '\n';
+		lineLen = 0;
+	    }
+	    if (win->next == NULL) {
+		sprintf(ptr, "and %s.", title);
+		ptr += 5 + titleLen;
+		lineLen += 5 + titleLen;
+	    } else {
+		sprintf(ptr, "%s, ", title);
+		ptr += 2 + titleLen;
+		lineLen += 2 + titleLen;
+	    }
+        }
+        sprintf(ptr, "\n\nExit NEdit?");
+        resp = DialogF(DF_QUES, window->shell, 2, "%s", "Exit", "Cancel", exitMsg);
+        if (resp == 2)
+                return;
     }
-    
-    /* List the windows being edited and make sure the
-       user really wants to exit */
-    ptr = exitMsg;
-    strcpy(ptr, "Editing:\n"); ptr += 9;
-    for (win=WindowList; win!=NULL; win=win->next) {
-    	XtVaGetValues(win->shell, XmNtitle, &title, 0);
-    	titleLen = strlen(title);
-    	if (titleLen > DF_MAX_MSG_LENGTH - 30) {
-    	    sprintf(ptr, "   ...\n"); ptr += 7;
-    	    break;
-    	}
-    	sprintf(ptr, "   %s\n", title); ptr += titleLen + 4;
-    }
-    sprintf(ptr, " \nExit NEdit?");
-    resp = DialogF(DF_QUES, window->shell, 2, "%s", "Exit", "Cancel", exitMsg);
-    if (resp == 2)
-    	return;
-#endif /* EXIT_WARNING */
 
     /* Close all files and exit when the last one is closed */
     if (CloseAllFilesAndWindows())
-    	exit(0);
+        exit(0);
 }
 
 static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
@@ -2043,6 +2287,27 @@ static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     SearchForSelected(WidgetToWindow(w), searchDirection(0, args, nArgs),
     	    event->xbutton.time);
+}
+
+static void startIncrFindAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs)
+{
+    BeginISearch(WidgetToWindow(w), searchDirection(0, args, nArgs));
+}
+
+static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    int i, continued = FALSE;
+    if (*nArgs == 0) {
+    	fprintf(stderr, "NEdit: find action requires search string argument\n");
+    	return;
+    }
+    for (i=1; i<*nArgs; i++)
+    	if (!strCaseCmp(args[i], "continued"))
+    	    continued = TRUE;
+    SearchAndSelectIncremental(WidgetToWindow(w),
+	    searchDirection(1, args, nArgs), args[0],
+	    searchType(1, args, nArgs), continued); 
 }
 
 static void replaceDialogAP(Widget w, XEvent *event, String *args,
@@ -2192,15 +2457,22 @@ static void gotoMarkDialogAP(Widget w, XEvent *event, String *args,
     GotoMarkDialog(WidgetToWindow(w), *nArgs!=0 && !strcmp(args[0], "extend"));
 }
 
-static void findMatchingAP(Widget w, XEvent *event, String *args,
+static void selectToMatchingAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
-    MatchSelectedCharacter(WidgetToWindow(w));
+    SelectToMatchingCharacter(WidgetToWindow(w));
+}
+
+static void gotoMatchingAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs)
+{
+    GotoMatchingCharacter(WidgetToWindow(w));
 }
 
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
-    FindDefinition(WidgetToWindow(w), event->xbutton.time);
+    FindDefinition(WidgetToWindow(w), event->xbutton.time,
+	    *nArgs == 0 ? NULL : args[0]);
 }
 
 static void splitWindowAP(Widget w, XEvent *event, String *args,
@@ -2632,7 +2904,7 @@ static void invalidatePrevOpenMenus(void)
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
     for (w=WindowList; w!=NULL; w=w->next) {
-    	if (XmIsMenuShell(XtParent(w->windowMenuPane)))
+    	if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane)))
     	    updatePrevOpenMenu(w);
     	else
     	    w->prevOpenMenuValid = False;
@@ -2660,6 +2932,7 @@ void AddToPrevOpenMenu(char *filename)
     	    memmove(&PrevOpen[1], &PrevOpen[0], sizeof(char *) * i);
     	    PrevOpen[0] = nameCopy;
     	    invalidatePrevOpenMenus();
+	    WriteNEditDB();
     	    return;
     	}
     }
@@ -2729,7 +3002,8 @@ static void updateWindowMenu(WindowInfo *window)
     		XtUnmanageChild(items[n]);
     		XtDestroyWidget(items[n]);	    	
 	    } else {
-		XtVaGetValues(windows[windowIndex]->shell, XmNtitle, &title, 0);
+		XtVaGetValues(windows[windowIndex]->shell, XmNiconName,
+			&title, 0);
 #ifdef SGI_CUSTOM
                 title = title + SGI_WINDOW_TITLE_LEN;
 #endif
@@ -2746,7 +3020,7 @@ static void updateWindowMenu(WindowInfo *window)
     
     /* Add new items for the titles of the remaining windows to the menu */
     for (; windowIndex<nWindows; windowIndex++) {
-    	XtVaGetValues(windows[windowIndex]->shell, XmNtitle, &title, 0);
+    	XtVaGetValues(windows[windowIndex]->shell, XmNiconName, &title, 0);
 #ifdef SGI_CUSTOM
         title = title + SGI_WINDOW_TITLE_LEN;
 #endif
@@ -2774,10 +3048,11 @@ static void updatePrevOpenMenu(WindowInfo *window)
     XmString st1;
     char **prevOpenSorted;
                 
-    /* Sort the previously opened file list */
+    /* Sort the previously opened file list if requested */
     prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char*));
     memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char*));
-    qsort(prevOpenSorted, NPrevOpen, sizeof(char*), cmpStrPtr);
+    if (GetPrefSortOpenPrevMenu())
+    	qsort(prevOpenSorted, NPrevOpen, sizeof(char*), cmpStrPtr);
 
     /* Go thru all of the items in the menu and rename them to match the file
        list.  In older Motifs (particularly ibm), it was dangerous to replace
@@ -2816,6 +3091,55 @@ static void updatePrevOpenMenu(WindowInfo *window)
     }
                 
     XtFree((char*)prevOpenSorted);
+}
+
+/*
+** This function manages the display of the Tags File Menu, which is displayed
+** when the user selects Un-load Tags File.
+*/
+static void updateTagsFileMenu(WindowInfo *window)
+{
+    tagFile *tf;
+    Widget btn;
+    WidgetList items;
+    int nItems, n;
+    XmString st1;
+		
+    /* Go thru all of the items in the menu and rename them to match the file
+       list.  In older Motifs (particularly ibm), it was dangerous to replace
+       a whole menu pane, which would be much simpler.  However, since the
+       code was already written for the Windows menu and is well tested, I'll
+       stick with this weird method of re-naming the items */
+    XtVaGetValues(window->unloadTagsMenuPane, XmNchildren, &items,
+	    XmNnumChildren, &nItems,0);
+    tf = TagsFileList;
+    for (n=0; n<nItems; n++) {
+	if (!tf) {
+	    /* unmanaging before destroying stops parent from displaying */
+	    XtUnmanageChild(items[n]);
+	    XtDestroyWidget(items[n]);          
+	} else {
+	    XtVaSetValues(items[n], XmNlabelString,
+		    st1=XmStringCreateSimple(tf->filename),0);
+	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
+	    XtAddCallback(items[n], XmNactivateCallback,
+		    (XtCallbackProc)unloadTagsFileCB, tf->filename);
+	    XmStringFree(st1);
+	    tf = tf->next;
+	}
+    }
+    
+    /* Add new items for the remaining file names to the menu */
+    while (tf) {
+	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
+		window->unloadTagsMenuPane, XmNlabelString,
+		st1=XmStringCreateSimple(tf->filename),XmNmarginHeight, 0,
+		XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+	XtAddCallback(btn, XmNactivateCallback,
+		(XtCallbackProc)unloadTagsFileCB, tf->filename);
+	XmStringFree(st1);
+	tf = tf->next;
+    }
 }
 
 /*
@@ -3052,6 +3376,20 @@ static void openPrevCB(Widget w, char *name, caddr_t callData)
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "open",
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
     CheckCloseDim();
+}
+
+static void unloadTagsFileCB(Widget w, char *name, caddr_t callData)
+{
+    char *params[1];
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */
+#else
+    Widget menu = w;
+#endif
+    
+    params[0] = name;
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tags_file",
+	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 /*

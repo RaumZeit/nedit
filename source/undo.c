@@ -2,21 +2,23 @@
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 10, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -261,7 +263,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo)
     /* Make the undo menu item sensitive now that there's something to undo */
     if (window->undo == NULL) {
     	XtSetSensitive(window->undoItem, True);
-	SetBackgroundMenuUndoSensitivity(window, True);
+	SetBGMenuUndoSensitivity(window, True);
     }
 
     /* Add the item to the beginning of the list */
@@ -289,7 +291,7 @@ static void addRedoItem(WindowInfo *window, UndoInfo *redo)
     /* Make the redo menu item sensitive now that there's something to redo */
     if (window->redo == NULL) {
     	XtSetSensitive(window->redoItem, True);
-	SetBackgroundMenuRedoSensitivity(window, True);
+	SetBGMenuRedoSensitivity(window, True);
     }
     
     /* Add the item to the beginning of the list */
@@ -318,7 +320,7 @@ static void removeUndoItem(WindowInfo *window)
     /* if there are no more undo records left, dim the Undo menu item */
     if (window->undo == NULL) {
     	XtSetSensitive(window->undoItem, False);
-	SetBackgroundMenuUndoSensitivity(window, False);
+	SetBGMenuUndoSensitivity(window, False);
     }
 }
 
@@ -336,7 +338,7 @@ static void removeRedoItem(WindowInfo *window)
     /* if there are no more redo records left, dim the Redo menu item */
     if (window->redo == NULL) {
     	XtSetSensitive(window->redoItem, False);
-	SetBackgroundMenuRedoSensitivity(window, False);
+	SetBGMenuRedoSensitivity(window, False);
     }
 }
 

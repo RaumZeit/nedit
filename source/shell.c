@@ -2,21 +2,23 @@
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
 *									       *
-* Copyright (c) 1991-1997 Universities Research Association, Inc.	       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retaFins a paid-up,     *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warranty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * December, 1993							       *
 *									       *
 * Written by Mark Edel							       *
@@ -24,9 +26,10 @@
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/wait.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <ctype.h>
@@ -37,8 +40,10 @@
 #endif
 #include <time.h>
 #endif
+#ifdef __EMX__
+#include <process.h>
+#endif
 #include <errno.h>
-#include <signal.h>
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
 #include <Xm/Text.h>
@@ -305,7 +310,7 @@ void DoShellMenuCmd(WindowInfo *window, char *command, int input, int output,
 	flags |= OUTPUT_TO_DIALOG;
     	left = right = 0;
     } else if (output == TO_NEW_WINDOW) {
-    	EditNewFile();
+    	EditNewFile(NULL, False, NULL);
     	outWidget = WindowList->textArea;
 	inWindow = WindowList;
     	left = right = 0;
@@ -583,7 +588,14 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 
     nWritten = write(cmdData->stdinFD, cmdData->inPtr, cmdData->inLength);
     if (nWritten == -1) {
-    	if (errno != EWOULDBLOCK && errno != EAGAIN) {
+	if (errno == EPIPE) {
+	    /* Just shut off input to broken pipes.  User is likely feeding
+	       it to a command which does not take input */
+	    XtRemoveInput(cmdData->stdinInputID);
+	    cmdData->stdinInputID = 0;
+    	    close(cmdData->stdinFD);
+    	    cmdData->inPtr = NULL;
+    	} else if (errno != EWOULDBLOCK && errno != EAGAIN) {
     	    perror("NEdit: Write to shell command failed");
     	    finishCmdExecution(window, True);
     	}
@@ -700,6 +712,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     if (terminatedOnError) {
 	freeBufList(&cmdData->outBufs);
 	freeBufList(&cmdData->errBufs);
+    	waitpid(cmdData->childPid, &status, 0);
 	goto cmdDone;
     }
 
@@ -799,6 +812,10 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
     int dupFD;
     pid_t childPid;
     
+    /* Ignore SIGPIPE signals generated when user attempts to provide
+       input for commands which don't take input */
+    signal(SIGPIPE, SIG_IGN);
+    
     /* Create pipes to communicate with the sub process.  One end of each is
        returned to the caller, the other half is spliced to stdin, stdout
        and stderr in the child process */
@@ -860,7 +877,9 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
 	
 	/* make this process the leader of a new process group, so the sub
 	   processes can be killed, if necessary, with a killpg call */
+#ifndef __EMX__  /* OS/2 doesn't have this */
 	setsid();
+#endif
       
        /* change the current working directory to the directory of the current
 	  file. */ 

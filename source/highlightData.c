@@ -3,21 +3,23 @@
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
 *		     used for syntax highlighting			       *
 *									       *
-* Copyright (c) 1997 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * April, 1997								       *
 *									       *
 * Written by Mark Edel							       *
@@ -49,6 +51,7 @@
 #include "preferences.h"
 #include "help.h"
 #include "window.h"
+#include "regexConvert.h"
 #include "highlightData.h"
 
 /* Maximum allowed number of styles (also limited by representation of
@@ -58,9 +61,6 @@
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
 #define MAX_PATTERNS 127
-
-/* maximum number of pattern sets allowed (we wish) */
-#define MAX_PATTERN_SETS 50
 
 /* Names for the fonts that can be used for syntax highlighting */
 #define N_FONT_TYPES 4
@@ -81,7 +81,7 @@ static int readHighlightPattern(char **inPtr, char **errMsg,
     	highlightPattern *pattern);
 static patternSet *readDefaultPatternSet(char *langModeName);
 static int isDefaultPatternSet(patternSet *patSet);
-static patternSet *readPatternSet(char **inPtr);
+static patternSet *readPatternSet(char **inPtr, int convertOld);
 static patternSet *highlightError(char *stringStart, char *stoppedAt,
     	char *message);
 static char *intToStr(int i);
@@ -101,6 +101,9 @@ static void freeHighlightStyleRec(highlightStyleRec *hs);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
+static void convertOldPatternSet(patternSet *patSet);
+static void convertPatternExpr(char **patternRE, char *patSetName,
+	char *patName, int isSubsExpr);
 static Widget createHighlightStylesMenu(Widget parent);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -182,19 +185,19 @@ static struct {
 
 /* Pattern sources loaded from the .nedit file or set by the user */
 static int NPatternSets = 0;
-static patternSet *PatternSets[MAX_PATTERN_SETS];
+static patternSet *PatternSets[MAX_LANGUAGE_MODES];
 
 #ifdef VMS
-#define N_DEFAULT_PATTERN_SETS 20
+#define N_DEFAULT_PATTERN_SETS 24
 #else
-#define N_DEFAULT_PATTERN_SETS 21
+#define N_DEFAULT_PATTERN_SETS 25
 #endif /*VMS*/
 
 static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
     "C:1:0 {\n\
     	comment:\"/\\*\":\"\\*/\"::Comment::\n\
     	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
-    	preprocessor line:\"^[ \t]*#\":\"$\"::Preprocessor::\n\
+    	preprocessor line:\"^[ \\t]*#\":\"$\"::Preprocessor::\n\
     	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
     	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
     	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
@@ -207,37 +210,111 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
     	comment:\"/\\*\":\"\\*/\"::Comment::\n\
     	cplus comment:\"//\":\"$\"::Comment::\n\
     	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
-    	preprocessor line:\"^[ \t]*#\":\"$\"::Preprocessor::\n\
+    	preprocessor line:\"^[ \\t]*#\":\"$\"::Preprocessor::\n\
     	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
     	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
     	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
     	preproc cplus comment:\"//\":\"$\"::Comment:preprocessor line:\n\
     	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
-    	storage keyword:\"<(class|typename|typeid|template|friend|virtual|inline|explicit|operator|overload|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
-    	keyword:\"<(new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast)>\":::Keyword::D\n\
+    	storage keyword:\"<(class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>\":::Storage Type::D\n\
+    	keyword:\"<(new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>\":::Keyword::D\n\
     	braces:\"[{}]\":::Keyword::D}",
-    "HTML:1:0 {\n\
-	special chars:\"\\&[-.a-zA-Z0-9#]*;?\":::Text Escape::\n\
-	comment:\"\\<!--\":\"--\\>\"::Text Comment::\n\
-	element:\"(\\<)(/|!)?[-.a-zA-Z0-9]*\":\"\\>\":\"[^-.a-zA-Z0-9 \\t\\n=\"\"'%]\":Text Key::\n\
-	double quote string:\"\"\"\":\"\"\"\":\"[<>]\":Text Arg1:element:\n\
-	single quote string:\"'\":\"'\":\"[<>]\":Text Arg1:element:\n\
-	attribute:\"[^'\"\"]|\\n\":::Text Arg:element:\n\
-	brackets:\"\\1\":\"\\0\"::Text Arg:element:C}",
-     "Java:1:0 {\n\
-	comment:\"/\\*\":\"\\*/\"::Comment::\n\
-	cplus comment:\"//\":\"$\"::Comment::\n\
-	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
-	single quoted:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
-	numeric const:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::\n\
-	include:\"<(import|package)>\":\"$\"::Preprocessor::\n\
-	storage keyword:\"<(abstract|boolean|byte|char|class|double|extends|final|float|int|interface|long|native|private|protected|public|short|static|transient|synchronized|void|volatile|implements)>\":::Storage Type::\n\
-	keyword:\"<(break|case|catch|continue|default|do|else|false|finally|for|if|instanceof|new|null|return|super|switch|this|throw|throws|true|try|while)>\":::Keyword::\n\
-	braces and parens:\"[{()}]\":::Keyword::\n\
-	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
-	include esc chars:\"\\\\(.|\\n)\":::Preprocessor1:include:\n\
-	include comment:\"/\\*\":\"\\*/\"::Comment:include:}",
+     "SGML HTML:6:0{\n\
+	markup declaration:\"\\<!\":\"\\>\"::Plain::\n\
+	mdo-mdc:\"&\":\"&\"::Storage Type:markup declaration:C\n\
+	markup declaration dq string:\"\"\"\":\"\"\"\"::String1:markup declaration:\n\
+	markup declaration sq string:\"'\":\"'\"::String1:markup declaration:\n\
+	entity declaration:\"((?ientity))[ \\t\\n][ \\t]*\\n?[ \\t]*(%[ \\t\\n][ \\t]*\\n?[ \\t]*)?(\\l[\\l\\d\\-\\.]*|#((?idefault)))[ \\t\\n][ \\t]*\\n?[ \\t]*((?i[cs]data|pi|starttag|endtag|m[ds]))?\":::Preprocessor:markup declaration:\n\
+	ed name:\"\\3\":\"\"::String2:entity declaration:C\n\
+	ed type:\"\\4\":\"\"::Storage Type:entity declaration:C\n\
+	doctype declaration:\"((?idoctype))[ \\t\\n][ \\t]*\\n?[ \\t]*(\\l[\\l\\d\\-\\.]*)\":::Preprocessor:markup declaration:\n\
+	dt name:\"\\2\":\"\"::String2:doctype declaration:C\n\
+	element declaration:\"((?ielement))[ \\t\\n][ \\t]*\\n?[ \\t]*(\\l[\\l\\d\\-\\.]*)\":::Preprocessor:markup declaration:\n\
+	ed name:\"\\2\":\"\"::String2:element declaration:C\n\
+	attribute declaration:\"((?iattlist))[ \\t\\n][ \\t]*\\n?[ \\t]*(\\l[\\l\\d\\-\\.]*)\":::Preprocessor:markup declaration:\n\
+	ad name:\"\\2\":\"\"::String2:attribute declaration:C\n\
+	notation declaration:\"((?inotation))[ \\t\\n][ \\t]*\\n?[ \\t]*(\\l[\\l\\d\\-\\.]*)\":::Preprocessor:markup declaration:\n\
+	nd name:\"\\2\":\"\"::String2:notation declaration:C\n\
+	shortref declaration:\"((?ishortref))[ \\t\\n][ \\t]*\\n?[ \\t]*(\\l[\\l\\d\\-\\.]*)\":::Preprocessor:markup declaration:\n\
+	sd name:\"\\2\":\"\"::String2:shortref declaration:C\n\
+	comment:\"\\-\\-\":\"\\-\\-\"::Comment:markup declaration:\n\
+	pi:\"\\<\\?[^\\>]*\\??\\>\":::Flag::\n\
+	stag:\"(\\<)(\\(\\l[\\w\\-\\.:]*\\))?\\l[\\w\\-\\.:]*\":\"/?\\>\"::Text Key1::\n\
+	stago-tagc:\"\\1\":\"&\"::Text Arg:stag:C\n\
+        Attribute:\"([\\l\\-]+)[ \\t\\v]*\\n?[ \\t\\v]*=[ \\t\\v]*\\n?[ \\t\\v]*(\"\"([^\"\"]*\\n){,4}[^\"\"]*\"\"|'([^']*\\n){,4}[^']*'|\\&([^;]*\\n){,4}[^;]*;|[\\w\\-\\.:]+)\":::Plain:stag:\n\
+	Attribute name:\"\\1\":\"\"::Text Arg2:Attribute:C\n\
+	Attribute value:\"\\2\":\"\"::String:Attribute:C\n\
+	Boolean Attribute:\"([\\l\\-]+)\":::Text Arg1:stag:\n\
+	etag:\"(\\</)(\\(\\l[\\w\\-\\.:]*\\))?(\\l[\\w\\-\\.:]*[ \\t\\v]*\\n?[ \\t\\v]*)?(\\>)\":::Text Key1::\n\
+	etago-tagc:\"\\1\\4\":\"\"::Text Arg:etag:C\n\
+	Character reference:\"\\&((\\(\\l[\\l\\d\\-\\.]*\\))?\\l[\\l\\d]*|#\\d+|#[xX][a-fA-F\\d]+);?\":::Text Escape::\n\
+	parameter entity:\"%(\\(\\l[\\l\\d\\-\\.]*\\))?\\l[\\l\\d\\-\\.]*;?\":::Text Escape::\n\
+	md parameter entity:\"%(\\(\\l[\\l\\d\\-\\.]*\\))?\\l[\\l\\d\\-\\.]*;?\":::Text Escape:markup declaration:\n\
+	system-public id:\"<(?isystem|public|cdata)>\":::Storage Type:markup declaration:}",
+     "Java:3:0{\n\
+        doccomment:\"/\\*\\*\":\"\\*/\"::Text Comment::\n\
+        doccomment tag:\"@\\l*\":::Text Key1:doccomment:\n\
+        comment:\"/\\*\":\"\\*/\"::Comment::\n\
+        cplus comment:\"//\":\"$\"::Comment::\n\
+        string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+        string escape:\"(?:\\\\u[\\dA-Faf]{4}|\\\\[0-7]{1,3}|\\\\[btnfr'\"\"\\\\])\":::String1:string:\n\
+        single quoted:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
+        numeric const:\"<(?i0[X][\\dA-F]+|\\d+(\\.\\d*)?(?:E[+-]?[\\d]+)?F?|\\.\\d+(?:E[+-]?[\\d]+)?F?|[\\d]+[LF]?)>\":::Numeric Const::\n\
+        include:\"<(?:import|package)>\":\"$\"::Preprocessor::\n\
+        classdef:\"<(?:class|interface)>\\s*\\n?\\s*([\\l_]\\w*)\":::Keyword::\n\
+        classdef name:\"\\1\":\"\"::Storage Type:classdef:C\n\
+        extends:\"<extends>\\s*\\n?\\s*([\\l][\\w\\.]*)\":::Keyword::\n\
+        extends class:\"\\1\":\"\"::Storage Type:extends:C\n\
+        implements:\"<(?:implements)>\":\"(?=\\{)\"::Keyword::\n\
+        implements error1:\"[\\w.]+\\s+[\\w.]+\":::Flag:implements:\n\
+        implements interface:\"<[\\l_][\\w\\.]*>\":::Storage Type:implements:\n\
+        implements comma:\",\":::Plain:implements:\n\
+        implements comment:\"/\\*\":\"\\*/\"::Comment:implements:\n\
+        implements cpluscomment:\"//\":\"$\"::Comment:implements:\n\
+        implements error2:\".\":::Flag:implements:\n\
+        throws:\"<(throws)>\":\"(?=[{;])\"::Keyword::\n\
+        throws error1:\"[\\w.]+\\s+[\\w.]+\":::Flag:throws:\n\
+        throws class:\"<[\\l_][\\w\\.]*>\":::Storage Type:throws:\n\
+        throws comma:\",\":::Plain:throws:\n\
+        throws comment:\"/\\*\":\"\\*/\"::Comment:throws:\n\
+        throws cpluscomment:\"//\":\"$\"::Comment:throws:\n\
+        throws error2:\".\":::Flag:throws:\n\
+        case:\"<case>\":\":\"::Label::\n\
+        case single quoted:\"'\\\\?[^']'\":::Character Const:case:\n\
+        case numeric const:\"<(?i0[X][\\dA-F]+|\\d+(\\.\\d*)?(?:E[+-]?[\\d]+)?F?|\\.\\d+(?:E[+-]?[\\d]+)?F?|[\\d]+[LF]?)>\":::Numeric Const:case:\n\
+        case cast:\"\\(\\s*([\\l_][\\w.]*)\\s*\\)\":::Keyword:case:\n\
+        case cast type:\"\\1\":\"\"::Storage Type:case cast:C\n\
+        case variable:\"[\\l_][\\w.]*\":::Identifier:case:\n\
+        case signs:\"[-+*/<>%()]\":::Keyword:case:\n\
+        case error:\".\":::Flag:case:\n\
+        label:\"([;{])\\s*\\n?\\s*\\n?\\s*\\n?\\s*[\\l_]\\w*\\s*:\":::Label::\n\
+        label qualifier:\"\\1\":\"\"::Keyword:label:C\n\
+        labelref:\"<(?:break|continue)>\\s*\\n?\\s*([\\l_]\\w*)?(?=\\s*\\n?\\s*;)\":::Keyword::\n\
+        labelref name:\"\\1\":\"\"::Label:labelref:C\n\
+        instanceof:\"<instanceof>\\s*\\n?\\s*([\\l_][\\w.]*)\":::Keyword::\n\
+        instanceof class:\"\\1\":\"\"::Storage Type:instanceof:C\n\
+        not cast:\"<(?:if|synchronized)\\s*\\n?\\s*\\(\\s*([\\l_][\\w\\.]*)\\s*\\)(?# Just to prevent these from being interpreted as casts)\":::Keyword::\n\
+        not cast variable:\"\\1\":\"\"::Identifier:not cast:C\n\
+        newarray:\"new\\s*\\n?\\s*([\\l_][\\w\\.]*)\\s*\\n?\\s*(?=\\[)\":::Keyword::\n\
+        newarray type:\"\\1\":\"\"::Storage Type:newarray:C\n\
+        keyword - storage type:\"<(?:void)>\":::Storage Type::\n\
+        keyword - control flow:\"<(?:catch|do|else|finally|for|if|return|switch|throw|try|while)>\":::Keyword::\n\
+        keyword - modifiers:\"<(?:abstract|final|native|private|protected|public|static|transient|synchronized|volatile)>\":::Keyword::\n\
+        keyword - calc value:\"<(?:new|super|this)>\":::Keyword::\n\
+        keyword - literal value:\"<(?:false|null|true)>\":::Numeric Const::\n\
+        function def:\"<([\\l_][\\w\\.]*)>\\s*\\n?\\s*<[\\l_]\\w*>\\s*\\n?\\s*(?=\\()\":::Subroutine::\n\
+        function def type:\"\\1\":\"\"::Storage Type:function def:C\n\
+        function call:\"<[\\l_]\\w*>\\s*\\n?\\s*(?=\\()\":::Subroutine::\n\
+        cast:\"\\(\\s*([\\l_][\\w\\.]*)\\s*\\)(?=\\s*\\n?\\s*[\\w'\"\"])\":::Keyword::\n\
+        cast type:\"\\1\":\"\"::Storage Type:cast:C\n\
+        declaration:\"<([\\l_][\\w\\.]*)((\\s*\\[\\s*\\]\\s*)*)>\\s*\\n?\\s*(?!instanceof)[\\l_]\\w*\":::Identifier::\n\
+        declaration type:\"\\1\":\"\"::Storage Type:declaration:C\n\
+        declaration brackets:\"\\2\":\"\"::Keyword:declaration:C\n\
+        variable:\"<[\\l_]\\w*>\":::Identifier::D\n\
+        braces and parens:\"[(){}[\\]]\":::Keyword::D\n\
+        signs:\"[-+*/=,.;:<>!|&?]\":::Keyword::D\n\
+        error:\".\":::Flag::D}",
 #ifndef VMS
 /* The VAX C compiler cannot compile this definition */
      "JavaScript:1:0{\n\
@@ -261,71 +338,166 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	Properties:\"<(action|alinkColor|anchors|appCodeName|appName|appVersion|bgColor|border|checked|complete|cookie|defaultChecked|defaultSelected|defaultStatus|defaultValue|description|E|elements|enabledPlugin|encoding|fgColor|filename|forms|frames|hash|height|host|hostname|href|hspace|index|lastModified|length|linkColor|links|LN2|LN10|LOG2E|LOG10E|lowsrc|method|name|opener|options|parent|pathname|PI|port|protocol|prototype|referrer|search|selected|selectedIndex|self|SQRT1_2|SQRT2|src|status|target|text|title|top|type|URL|userAgent|value|vlinkColor|vspace|width|window)>\":::Storage Type::\n\
         Operators:\"[= ; ->]|[/]|&|\\|\":::Preprocessor::}",
 #endif /*VMS*/
-     "Perl:1:0 {\n\
-	comments:\"#\":\"$\"::Comment::\n\
-	double quote strings:\"\"\"\":\"\"\"\"::String::\n\
-	dq string esc chars:\"\\\\(.|\\n)\":::String1:double quote strings:\n\
-	single quote strings:\"'\":\"'\"::String::\n\
-	sq string esc chars:\"\\\\(.|\\n)\":::String1:single quote strings:\n\
-	subroutine header:\"sub[\\t ]+([a-zA-Z0-9_]+)[\\t ]+{\":::Keyword::\n\
-	subr header coloring:\"\\1\":::Flag:subroutine header:C\n\
-	ignore escaped chars:\"\\\\[#\"\"'\\$msytq]\":::Plain::\n\
-	re matching:\"<((m|q|qq)?/)(\\\\/|[^/])*(/[gimsox]?)>\":::String::\n\
-	re match coloring:\"\\1\\4\":::String2:re matching:C\n\
-	re substitution:\"<((s|y|tr)/)(\\\\/|[^/])*(/)[^/]*(/[gimsox]?)\":::String::\n\
-	re subs coloring:\"\\1\\4\\5\":::String2:re substitution:C\n\
-	keywords:\"<(my|local|new|if|until|while|elsif|else|eval|unless|for|foreach|continue|exit|die|last|goto|next|redo|return|local|exec|do|use|require|package|eval|BEGIN|END|eq|ne|not|\\|\\||\\&\\&|and|or)>\":::Keyword::D\n\
-	library fns:\"<(abs|accept|alarm|atan2|bind|binmode|bless|caller|chdir|chmod|chomp|chop|chr|chroot|chown|closedir|close|connect|cos|crypt|dbmclose|dbmopen|defined|delete|die|dump|each|endgrent|endhostent|endnetent|endprotoent|endpwent|endservent|eof|exec|exists|exp|fctnl|fileno|flock|fork|format|formline|getc|getgrent|getgrgid|getgrnam|gethostbyaddr|gethostbyname|gethostent|getlogin|getnetbyaddr|getnetbyname|getnetent|getpeername|getpgrp|getppid|getpriority|getprotobyname|getprotobynumber|getprotoent|getpwent|getpwnam|getpwuid|getservbyname|getservbyport|getservent|getsockname|getsockopt|glob|gmtime|grep|hex|import|index|int|ioctl|join|keys|kill|lcfirst|lc|length|link|listen|log|localtime|lstat|map|mkdir|msgctl|msgget|msgrcv|no|oct|opendir|open|ord|pack|pipe|pop|pos|printf|print|push|quotemeta|rand|readdir|read|readlink|recv|ref|rename|reset|reverse|rewinddir|rindex|rmdir|scalar|seekdir|seek|select|semctl|semget|semop|send|setgrent|sethostent|setnetent|setpgrp|setpriority|setprotoent|setpwent|setsockopt|shift|shmctl|shmget|shmread|shmwrite|shutdown|sin|sleep|socket|socketpair|sort|splice|split|sprintf|sqrt|srand|stat|study|substr|symlink|syscall|sysopen|sysread|system|syswrite|telldir|tell|tie|tied|time|times|truncate|uc|ucfirst|umask|undef|unlink|unpack|unshift|untie|utime|values|vec|wait|waitpid|wantarray|warn|write|qw|-[rwxoRWXOezsfdlpSbctugkTBMAC])>\":::Subroutine::D\n\
-	variables:\"[$@%]({[^}]*}|[^a-zA-Z0-9_ /\\t\\n\\.,\\\\[\\\\{\\\\(]|[0-9]+|[a-zA-Z_][a-zA-Z0-9_]*)?\":::Identifier1::\n\
-	variables in strings:\"[$@%&]({[^}]*}|[^a-zA-Z0-9_ /\\t\\n\\.,\\\\[\\\\{\\\\(]|[0-9]+|[a-zA-Z_][a-zA-Z0-9_]*)?\":::Identifier1:double quote strings:\n\
-	subroutine call:\"&[a-zA-Z0-9_]+\":::Subroutine::\n\
-	braces and parens:\"[\\[\\]{}\\(\\)]\":::Keyword::}",
+     "Perl:2:0{\n\
+	comment:\"#\":\"$\"::Comment::\n\
+	dq here doc:\"(\\<\\<(\"\"?))EOF(\\2.*)$\":\"^EOF>\"::Label::\n\
+	dq here doc delims:\"\\1\\3\":\"\"::Plain:dq here doc:C\n\
+	dq here doc esc chars:\"\\\\([nrtfbaeulULQE\\\\]|0[0-7]+|x[0-9a-fA-F]+|cC)\":::String2:dq here doc:\n\
+	dq here doc variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:dq here doc:\n\
+	dq here doc content:\".\":::String:dq here doc:\n\
+	dq string:\"\"\"\":\"\"\"\"::String::\n\
+	dq string delims:\"&\":\"&\"::Keyword:dq string:C\n\
+	dq string esc chars:\"\\\\([nrtfbaeulULQE\"\"\\\\]|0[0-7]+|x[0-9a-fA-F]+|cC)\":::String2:dq string:\n\
+	dq string variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:dq string:\n\
+	gen dq string:\"<qq/\":\"(?!\\\\)/\"::String::\n\
+	gen dq string delims:\"&\":\"&\"::Keyword:gen dq string:C\n\
+	gen dq string esc chars:\"\\\\([nrtfbaeulULQE\\\\]|0[0-7]+|x[0-9a-fA-F]+|cC)\":::String2:gen dq string:\n\
+	gen dq string variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:gen dq string:\n\
+	sq here doc:\"(\\<\\<')EOF('.*)$\":\"^EOF>\"::Label::\n\
+	sq here doc delims:\"\\1\\2\":\"\"::Label:sq here doc:C\n\
+	sq here doc esc chars:\"\\\\\\\\\":::String2:sq here doc:\n\
+	sq here doc content:\".\":::String:sq here doc:\n\
+	sq string:\"'\":\"'\"::String::\n\
+	sq string delims:\"&\":\"&\"::Keyword:sq string:C\n\
+	sq string esc chars:\"\\\\(\\\\|')\":::String2:sq string:\n\
+	gen sq string:\"<q/\":\"(?!\\\\)/\"::String::\n\
+	gen sq string delims:\"&\":\"&\"::Keyword:gen sq string:C\n\
+	gen sq string esc chars:\"\\\\(\\\\|/)\":::String2:gen sq string:\n\
+	bq here doc:\"(\\<\\<`)EOF(`.*)$\":\"^EOF>\"::Label::\n\
+	bq here doc delims:\"\\1\\2\":\"\"::Plain:bq here doc:C\n\
+	bq here doc comment:\"#\":\"$\"::Comment:bq here doc:\n\
+	bq here doc variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:bq here doc:\n\
+	bq here doc content:\".\":::String1:bq here doc:\n\
+	bq string:\"`\":\"`\"::String1::\n\
+	bq string delims:\"&\":\"&\"::Keyword:bq string:C\n\
+	bq string variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:bq string:\n\
+	gen bq string:\"<qx/\":\"(?!\\\\)/\"::String1::\n\
+	gen bq string delims:\"&\":\"&\"::Keyword:gen bq string:C\n\
+	gen bq string variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1:gen bq string:\n\
+	gen bq string esc chars:\"\\\\/\":::String2:gen bq string:\n\
+	re matching:\"<(m?/)(\\\\/|[^/])*(/[cgimsox]*)>\":::String::\n\
+	re match coloring:\"\\1\\3\":\"\"::Keyword:re matching:C\n\
+	re substitution:\"<((s|y|tr)/)(\\\\/|[^/])*(/)(\\\\/|[^/])*(/[egimsox]*)\":::String::\n\
+	re subs coloring:\"\\1\\4\\6\":\"\"::Keyword:re substitution:C\n\
+	label:\"((?:^|;)\\s*<([A-Z_]+)>\\s*:(?=(?:[^:]|\\n)))|(goto|last|next|redo)\\s+(<((if|unless)|[A-Z_]+)>|)\":::Plain::\n\
+	label identifier:\"\\2\\5\":\"\"::Label:label:C\n\
+	label keyword:\"\\3\\6\":\"\"::Keyword:label:C\n\
+	filehandle:\"(\\<)[A-Z_]+(\\>)|(binmode|close|eof|fcntl|fileno|flock|getc|ioctl|open|read|seek|sysopen|sysread|sysseek|syswrite|tell|write)\\s*(\\(?)\\s*[A-Z_]+>|<(pipe)\\s*(\\(?)\\s*[A-Z_]+\\s*(,)\\s*[A-Z_]+>|(print|printf|select)\\s*(\\(?)\\s*[A-Z_]+>(?!\\s*,)\":::Label::\n\
+	filehandle delims:\"\\1\\2\\4\\6\\7\\9\":\"\"::Keyword:filehandle:C\n\
+	filehandle functions:\"\\3\\5\\8\":\"\"::Subroutine:filehandle:C\n\
+	variables:\"\\$([-_./,\"\"\\\\#*?\\][;!@:$<>()%=~^|&`'+]|\\^[ADEFHILMOPSTWX]|ARGV|\\d{1,2})>|(@|\\$#)(ARGV|EXPORT|EXPORT_OK|F|INC|ISA|_)>|%(ENV|EXPORT_TAGS|INC|SIG)>|(\\$|@|%)(?=\\{)|(\\$#?|@|%)[\\l_](\\w|::)*\":::Identifier1::\n\
+	statements:\"<(if|until|while|elsif|else|unless|for(each)?|continue|last|goto|next|redo|do(?=\\s*\\{)|BEGIN|END)>\":::Keyword::D\n\
+	packages and modules:\"<(bless|caller|import|no|package|prototype|require|return|INIT|BEGIN|END|use)>\":::Keyword::D\n\
+	pragm modules:\"<(attrs|autouse|base|blib|constant|diagnostics|fields|integer|less|lib|locale|ops|overload|re|sigtrap|strict|subs|vars|vmsish)>\":::Subroutine::D\n\
+	standard methods:\"<(can|isa|VERSION)>\":::Keyword::D\n\
+	file tests:\"-[rwxRWXoOezsfdlSpbcugktTBMAC]>\":::Subroutine::D\n\
+	library functions:\"<((?# arithmetic functions)abs|atan2|cos|exp|int|log|rand|sin|sqrt|srand|time|(?# conversion functions)chr|gmtime|hex|localtime|oct|ord|vec|(?# structure conversion)pack|unpack|(?# string functions)chomp|chop|crypt|eval(?=\\s*[^{])|index|lc|lcfirst|length|quotemeta|rindex|substr|uc|ucfirst|(?# array and hash functions)delete|each|exists|grep|join|keys|map|pop|push|reverse|scalar|shift|sort|splice|split|unshift|values|(?# search and replace functions)pos|study|(?# file operations)chmod|chown|link|lstat|mkdir|readlink|rename|rmdir|stat|symlink|truncate|unlink|utime|(?# input/output)binmode|close|eof|fcntl|fileno|flock|getc|ioctl|open|pipe|print|printf|read|readline|readpipe|seek|select|sprintf|sysopen|sysread|sysseek|syswrite|tell|(?# formats)formline|write|(?# tying variables)tie|tied|untie|(?# directory reading routines)closedir|opendir|readdir|rewinddir|seekdir|telldir|(?# system interaction)alarm|chdir|chroot|die|exec|exit|fork|getlogin|getpgrp|getppid|getpriority|glob|kill|setpgrp|setpriority|sleep|syscall|system|times|umask|wait|waitpid|warn|(?# networking)accept|bind|connect|getpeername|getsockname|getsockopt|listen|recv|send|setsockopt|shutdown|socket|socketpair|(?# system V ipc)msgctl|msgget|msgrcv|msgsnd|semctl|semget|semop|shmctl|shmget|shmread|shmwrite|(?# miscellaneous)defined|do|dump|eval(?=\\s*\\{)|local|my|qw|ref|reset|undef|(?# informations from system databases)endpwent|getpwent|getpwnam|getpwuid|setpwent|endgrent|getgrent|getgrgid|getgrnam|setgrent|endnetent|getnetbyaddr|getnetbyname|getnetent|setnetent|endhostend|gethostbyaddr|gethostbyname|gethostent|sethostent|endservent|getservbyname|getservbyport|getservent|setservent|endprotoent|getprotobyname|getprotobynumber|getprotoent|setprotoent)>\":::Subroutine::D\n\
+	subr header:\"(?:sub)\\s+(\\w+)\\s*\\{\":::Keyword::D\n\
+	subr header coloring:\"\\1\":\"\"::Subroutine1:subr header:DC\n\
+	subroutine call:\"&\\w(\\w|::)*>|<\\w(\\w|::)*(?=\\s*\\()\":::Subroutine1::D\n\
+	braces and parens:\"[\\[\\]{}\\(\\)]\":::Keyword::D\n\
+	operators:\"<([-<>+.*/\\\\?!~=%^&x:]|lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|sub)>\":::Keyword::D\n\
+	numerics:\"((?i0x[\\da-f]+)|0[0-7]+|(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?)\":::Numeric Const::D\n\
+	tokens:\"__(FILE|PACKAGE|LINE|DATA)__\":::Preprocessor::D\n\
+	end token:\"__END__\":\"never_match_this_pattern\"::Plain::\n\
+	end token delim:\"&\":\"\"::Preprocessor:end token:C\n\
+	pod:\"(?=^=)\":\"^\\n=cut$\"::Text Key::\n\
+	pod verbatim:\"^\\n\\s\":\"^$\"::Plain:pod:\n\
+	pod markup:\"[IBSCLFXZE]\\<\":\"\\>\"::Text Key:pod:\n\
+	pod markup content:\".\":::Text Arg1:pod markup:\n\
+	pod command:\"=(pod|head[12]|item|over|back|for|begin|end)\":\"^$\"::Text Key:pod:\n\
+	pod command markup:\"([IBSCLFXZE])\\<\":\"\\>\"::Text Key:pod command:\n\
+	pod command markup content:\".\":::Text Arg1:pod command markup:\n\
+	pod command content:\".\":::Text Arg:pod command:\n\
+	pod content:\".\":::Text Arg2:pod:}",
      "Ada:1:0{\n\
-        Comments:\"--\":\"$\"::Comment::\n\
-        String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
-        Character Literals:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
-        Ada Attributes:\"'[a-zA-Z][a-zA-Z_]+\":::Ada Attributes::\n\
-        Numeric Literals:\"<(((2|8|10|16)#[_0-9a-fA-F]*#)|[0-9.]+)>\":::Numeric Const::\n\
-        Withs Pragmas Use:\"(([wW]ith|WITH|[pP]ragma|PRAGMA|[uU]se|USE)[ \\t\\n\\f\\r]+[a-zA-Z0-9_.]+;)+\":::Preprocessor::\n\
-        Predefined Types:\"<([bB]oolean|BOOLEAN|[cC]haracter|CHARACTER|[cC]ount|COUNT|[dD]uration|DURATION|[fF]loat|FLOAT|[iI]nteger|INTEGER|[lL]ong_[fF]loat|LONG_FLOAT|[lL]ong_[iI]nteger|LONG_INTEGER|[pP]riority|PRIORITY|[sS]hort_[fF]loat|SHORT_FLOAT|[sS]hort_[iI]nteger|SHORT_INTEGER|[sS]tring|STRING)>\":::Storage Type::D\n\
-        Predefined Subtypes:\"<([fF]ield|FIELD|[nN]atural|NATURAL|[nN]umber_[bB]ase|NUMBER_BASE|[pP]ositive|POSITIVE|[pP]riority|PRIORITY)>\":::Storage Type::D\n\
-        Reserved Words:\"<([aA]bort|ABORT|[aA]bs|ABS|[aA]ccept|ACCEPT|[aA]ccess|ACCESS|[aA]nd|AND|[aA]rray|ARRAY|[aA][tT]|[bB]egin|BEGIN|[bB]ody|BODY|[cC]ase|CASE|[cC]onstant|CONSTANT|[dD]eclare|DECLARE|[dD]elay|DELAY|[dD]elta|DELTA|[dD]igits|DIGITS|[dD][oO]|[eE]lse|ELSE|[eE]lsif|ELSIF|[eE]nd|END|[eE]ntry|ENTRY|[eE]xception|EXCEPTION|[eE]xit|EXIT|[fF]or|FOR|[fF]unction|FUNCTION|[gG]eneric|GENERIC|[gG]oto|GOTO|[iI][fF]|[iI][nN]|[iI][sS]|[lL]imited|LIMITED|[lL]oop|LOOP|[mM]od|MOD|[nN]ew|NEW|[nN]ot|NOT|[nN]ull|NULL|[oO][fF]|[oO][rR]|[oO]thers|OTHERS|[oO]ut|OUT|[pP]ackage|PACKAGE|[pP]ragma|PRAGMA|[pP]rivate|PRIVATE|[pP]rocedure|PROCEDURE|[rR]aise|RAISE|[rR]ange|RANGE|[rR]ecord|RECORD|[rR]em|REM|[rR]enames|RENAMES|[rR]eturn|RETURN|[rR]everse|REVERSE|[sS]elect|SELECT|[sS]eparate|SEPARATE|[sS]ubtype|SUBTYPE|[tT]ask|TASK|[tT]erminate|TERMINATE|[tT]hen|THEN|[tT]ype|TYPE|[uU]se|USE|[wW]hen|WHEN|[wW]hile|WHILE|[wW]ith|WITH|[xX]or|XOR)>\":::Keyword::D\n\
-        Ada 95 Only:\"<([aA]bstract|ABSTRACT|[tT]agged|TAGGED|[aA]ll|ALL|[pP]rotected|PROTECTED|[aA]liased|ALIASED|[rR]equeue|REQUEUE|[uU]ntil|UNTIL)>\":::Keyword::\n\
-        Identifiers:\"<([a-zA-Z][a-zA-Z0-9_]*)>\":::Identifier::D\n\
-        Dot All:\"\\\\.[aA][lL][lL]>\":::Storage Type::D}",
+	Comments:\"--\":\"$\"::Comment::\n\
+	String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	Ada Attributes:\"'\\l[\\l\\d]*(?:_[\\l\\d]+)*\":::Ada Attributes::\n\
+	Character Literals:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
+	Based Numeric Literals:\"<(?:\\d+(?:_\\d+)*)#(?:[\\da-fA-F]+(?:_[\\da-fA-F]+)*)(?:\\.[\\da-fA-F]+(?:_[\\da-fA-F]+)*)?#(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?>\":::Numeric Const::\n\
+	Numeric Literals:\"<(?:\\d+(?:_\\d+)*)(?:\\.\\d+(?:_\\d+)*)?(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?>\":::Numeric Const::\n\
+	Pragma:\"(?n(?ipragma)\\s+\\l[\\l\\d]*(?:_\\l[\\l\\d]*)*\\s+\\([^)]*\\)\\s*;)\":::Preprocessor::\n\
+	Withs Use:\"(?n(?:(?iwith|use)\\s+(?:\\l[\\l\\d]*(?:(?:_|.\\l)[\\l\\d]*)*)(?:\\s*,\\s*(?:\\l[\\l\\d]*(?:(?:_|.\\l)][\\l\\d]*)*))*\\s*;))+\":::Preprocessor::\n\
+	Predefined Types:\"<(?iboolean|character|count|duration|float|integer|long_float|long_integer|priority|short_float|short_integer|string)>\":::Storage Type::D\n\
+	Predefined Subtypes:\"<(?ifield|natural|number_base|positive|priority)>\":::Storage Type::D\n\
+	Reserved Words:\"<(?iabort|abs|accept|access|and|array|at|begin|body|case|constant|declare|delay|delta|digits|do|else|elsif|end|entry|exception|exit|for|function|generic|goto|if|in|is|limited|loop|mod|new|not|null|of|or|others|out|package|pragma|private|procedure|raise|range|record|rem|renames|return|reverse|select|separate|subtype|task|terminate|then|type|use|when|while|with|xor)>\":::Keyword::D\n\
+	Dot All:\"\\.(?iall)>\":::Storage Type::\n\
+	Ada 95 Only:\"<(?iabstract|tagged|all|protected|aliased|requeue|until)>\":::Keyword::\n\
+	Labels Parent:\"<(\\l[\\l\\d]*(?:_[\\l\\d]+)*)(?n\\s*:\\s*)(?ifor|while|loop|declare|begin)>\":::Keyword::D\n\
+	Labels subpattern:\"\\1\":\"\"::Label:Labels Parent:DC\n\
+	Endloop labels:\"<(?nend\\s+loop\\s+(\\l[\\l\\d]*(?:_[\\l\\d]+)*\\s*));\":::Keyword::\n\
+	Endloop labels subpattern:\"\\1\":\"\"::Label:Endloop labels:C\n\
+	Goto labels:\"\\<\\<\\l[\\l\\d]*(?:_[\\l\\d]+)*\\>\\>\":::Flag::\n\
+	Identifiers:\"<(?:\\l[\\l\\d]*(?:_[\\l\\d]+)*)>\":::Identifier::D}",
      "Fortran:2:0 {\n\
         Comment:\"^[Cc*!]\":\"$\"::Comment::\n\
 	Bang Comment:\"!\":\"$\"::Comment::\n\
 	Debug Line:\"^D\":\"$\"::Preprocessor::\n\
 	String:\"'\":\"'\":\"\\n([^ \\t]| [^ \\t]|  [^ \\t]|   [^ \\t]|    [^ \\t]|     [ \\t0]| *\\t[^1-9])\":String::\n\
-        Keywords:\"<(ACCEPT|[Aa]ccept|AUTOMATIC|[Aa]utomatic|BACKSPACE|[Bb]ackspace|BLOCK|[Bb]lock|CALL|[Cc]all|CLOSE|[Cc]lose|COMMON|[Cc]ommon|CONTINUE|[Cc]ontinue|DATA|[Dd]ata|DECODE|[Dd]ecode|DELETE|[Dd]elete|DIMENSION|[Dd]imension|DO|[Dd]o|ELSE|[Ee]lse|ELSEIF|[Ee]lseif|ENCODE|[Ee]ncode|ENDDO|[Ee]nd[Dd]o|END ?FILE|[Ee]nd *[fF]ile|ENDIF|[Ee]nd[iI]f|END|[Ee]nd|ENTRY|[Ee]ntry|EQUIVALENCE|[Ee]quivalence|EXIT|[Ee]xit|EXTERNAL|[Ee]xternal|FORMAT|[Ff]ormat|FUNCTION|[Ff]unction|GO *TO|[Gg]o *[tT]o|IF|[Ii]f|IMPLICIT|[Ii]mplicit|INCLUDE|[Ii]nclude|INQUIRE|[Ii]nquire|INTRINSIC|[Ii]ntrinsic|LOGICAL|[Ll]ogical|MAP|[Mm]ap|NONE|[Nn]one|ON|[Oo]n|OPEN|[Oo]pen|PARAMETER|[Pp]arameter|PAUSE|[Pp]ause|POINTER|[Pp]ointer|PRINT|[Pp]rint|PROGRAM|[Pp]rogram|READ|[Rr]ead|RECORD|[Rr]ecord|RETURN|[Rr]eturn|REWIND|[Rr]ewind|SAVE|[Ss]ave|STATIC|[Ss]tatic|STOP|[Ss]top|STRUCTURE|[Ss]tructure|SUBROUTINE|[Ss]ubroutine|SYSTEM|[Ss]ystem|THEN|[Tt]hen|TYPE|[Tt]ype|UNION|[Uu]nion|UNLOCK|[Uu]nlock|VIRTUAL|[Vv]irtual|VOLATILE|[Vv]olatile|WHILE|[Ww]hile|WRITE|[Ww]rite)>\":::Keyword::D\n\
-      	Data Types:\"<(BYTE|[Bb]yte|CHARACTER|[Cc]haracter|COMPLEX|[Cc]omplex|DOUBLE *COMPLEX|[Dd]ouble *[Cc]omplex|DOUBLE *PRECISION|[Dd]ouble *[Pp]recision|DOUBLE|[Dd]ouble|INTEGER|[Ii]nteger|REAL|[Rr]eal)(\\*[0-9]+)?>\":::Keyword::D\n\
-      	F90 Keywords:\"<(ALLOCATABLE|[Aa]llocatable|ALLOCATE|[Aa]llocate|CASE|[Cc]ase|CASE|[Cc]ase|CYCLE|[Cc]ycle|DEALLOCATE|[Dd]eallocate|ELSEWHERE|[Ee]lsewhere|NAMELIST|[Nn]amelist|REWRITE|[Rr]ewrite|SELECT|[Ss]elect|WHERE|[Ww]here|INTENT|[Ii]ntent|OPTIONAL|[Oo]ptional)>\":::Keyword::D\n\
+        Keywords:\"<(?iaccept|automatic|backspace|block|call|close|common|continue|data|decode|delete|dimension|do|else|elseif|encode|enddo|end *file|endif|end|entry|equivalence|exit|external|format|function|go *to|if|implicit|include|inquire|intrinsic|logical|map|none|on|open|parameter|pause|pointer|print|program|read|record|return|rewind|save|static|stop|structure|subroutine|system|then|type|union|unlock|virtual|volatile|while|write)>\":::Keyword::D\n\
+      	Data Types:\"<(?ibyte|character|complex|double *complex|double *precision|double|integer|real)(\\*[0-9]+)?>\":::Keyword::D\n\
+      	F90 Keywords:\"<(?iallocatable|allocate|case|case|cycle|deallocate|elsewhere|namelist|recursive|rewrite|select|where|intent|optional)>\":::Keyword::D\n\
       	Continuation:\"^(     [^ \\t0]|( |  |   |    )?\\t[1-9])\":::Flag::\n\
       	Continuation in String:\"\\n(     [^ \\t0]|( |  |   |    )?\\t[1-9])\":::Flag:String:}",
      "Tcl:1:0 {\n\
-	Comment:\"#\":\"$\"::Comment::\n\
-	Double Quote String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
-	Single Quote String:\"'\":\"'\":\"[^\\\\][^']\":String::\n\
-	Ignore Escaped Chars:\"\\\\(.|\\n)\":::Plain::\n\
-	Keywords:\"<(if|else|elseif|set|unset|incr|append|global|glob|upvar|uplevel|proc|catch|error|while|eof|foreach|for|return|break|continue|eval|source|switch|list|lindex|regexp|regsub|pwd|gets|puts|eof|pid|exit|open|close|expr|exec|concat|join|lappend|linsert|llength|lrange|lreplace|lsearch|lsort|split|format|scan|trace|cd|flush|read|seek|tell|string *(compare|first|index|last|length|match|range|tolower|toupper|trim|trimleft|trimright)|file[ \\t]+(atime|dirname|executable|exists|extension|isdirectory|isfile|lstat|mtime|owned|readable|readlink|rootname|size|stat|tail|type|writable)|array[ \\t]+(anymore|donesearch|names|nextelement|size|startsearch)|auto_mkindex|info[ \\t]+(args|body|cmdcount|commands|default|exists|globals|level|library|locals|procs|script|tclversion|vars)|rename|time|trace[ \\t]+(variable|vdelete|vinfo)|unknown|history|history[ \\t]+(keep|nextid|redo|substitute))>\":::Keyword::D\n\
-	Variable Ref:\"\\$[0-9a-zA-Z_]+|\\${[^}]*}|\\$\":::Identifier1::\n\
-	Braces and Brackets:\"[\\[\\]{}]\":::Keyword::D\n\
-	DQ String Esc Chars:\"\\\\(.|\\n)\":::String1:Double Quote String:\n\
-	SQ String Esc Chars:\"\\\\(.|\\n)\":::String1:Single Quote String:\n\
-	Variable in String:\"\\$[0-9a-zA-Z_]+|\\${[^}]*}|\\$\":::Identifier1:Double Quote String:}",
+        Comment:\"^[\n\t ]*#\":\"$\"::Comment::\n\
+        Double Quote String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+        Ignore Escaped Chars:\"\\\\(.|\\n)\":::Plain::\n\
+        Keywords:\"<(after[ \\t\\n]+(cancel|idle|info)?|bgerror|binary[ \\t]+(format|scan)|clock[ \\t]+(clicks|format|scan|seconds)|fblocked|fconfigure|fcopy|fileevent|filename|interp[ \\t]+(alias|aliases|create|delete|eval|exists|expose|hide|hidden|invokehidden|issafe|marktrusted|share|slaves|target|transfer)|load|namespace[ \\t]+(children|code|current|delete|eval|export|forget|import|inscope|origin|parent|qualifiers|tail|which)|package[ \\t]+(forget|ifneeded|names|provide|require|unknown|vcompare|versions|vsatisfies)|socket|subst|update[ \\t\\n]+(idletasks)?|update|vwait|if|else|elseif|set|unset|incr|append|global|glob|upvar|uplevel|catch|error|while|eof|foreach|for|return|break|continue|eval|source|switch|list|lindex|regexp|regsub|pwd|gets|puts|eof|pid|exit|open|close|expr|exec|concat|join|lappend|linsert|llength|lrange|lreplace|lsearch|lsort|split|format|scan|trace|cd|flush|read|seek|tell|string[ \\t]+(compare|first|index|last|length|match|range|tolower|toupper|trim|trimleft|trimright|wordend|wordstart)|file[ \\t]+(atime|attributes|copy|delete|dirname|executable|exists|extension|isdirectory|isfile|join|lstat|mkdir|mtime|nativename|owned|pathtype|readable|readlink|rename|rootname|size|split|stat|tail|type|volume|writable)|array[ \\t]+(anymore|donesearch|exists|get|names|nextelement|set|size|startsearch)|auto_mkindex|info[ \\t]+(args|body|cmdcount|commands|complete|default|exists|globals|hostname|level|library|loaded|locals|nameofexecutable|patchlevel|procs|script|sharedlibextension|tclversion|vars)|rename|time|trace[ \\t]+(variable|vdelete|vinfo)|unknown|history[ \\t\\n]+(add|change|clear|event|info|keep|nextid|redo)?)>\":::Keyword::D\n\
+        Variable Ref:\"\\$[0-9a-zA-Z_]+|\\$\\{[^}]*}|\\$\":::Identifier1::\n\
+        Braces and Brackets:\"[\\[\\]{}]\":::Keyword::D\n\
+        DQ String Esc Chars:\"\\\\(.|\\n)\":::String1:Double Quote String:\n\
+        Variable in String:\"\\$[0-9a-zA-Z_]+|\\$\\{[^}]*}|\\$\":::Identifier1:Double Quote String:\n\
+        Procedure declaration:\"proc[ \\t]+([^ \\t]+)\":::Keyword::\n\
+        Procedure name:\"\\1\":\"\"::Subroutine:Procedure declaration:C\n\
+        }",
      "Pascal:1:0 {\n\
-	Comment 1:\"<(/\\*|\\(\\*)>\":\"<(\\*/|\\*\\))>\"::Comment::\n\
-	Comment 2:\"{\":\"}\"::Comment::\n\
-	String:\"'\":\"'\":\"\\n\":String::\n\
-	Preprocessor Line:\"^[ \\t]*#\":\"$\"::Preprocessor::\n\
-	String Esc Char:\"\\\\(.|\\n)\":::String1:String:\n\
-	Preprocessor Esc Char:\"\\\\(.|\\n)\":::Preprocessor1:Preprocessor Line:\n\
-	Preprocessor Comment 1:\"<(/\\*|\\(\\*)>\":\"<(\\*/|\\*\\))>\"::Comment:Preprocessor Line:\n\
-	Preprocessor Comment 2:\"{\":\"}\"::Comment:Preprocessor Line:\n\
-	Numeric Const:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
-	Storage and Ops:\"<(and|AND|array|const|div|export|file|function|import|in|IN|label|mod|module|nil|not|NOT|only|or|OR|packed|pow|pragma|procedure|program|protected|qualified|record|restricted|set|type|var)>\":::Storage Type::D\n\
-	Keywords:\"<(begin|case|do|downto|else|end|for|goto|if|of|otherwise|then|to|until|while|with)>\":::Keyword::D}",
+	TP Directives:\"\\{\\$\":\"\\}\"::Comment::\n\
+	Comment:\"\\(\\*|\\{\":\"\\*\\)|\\}\"::Comment::\n\
+	String:\"'\":\"'\":\"\\n\":String::D\n\
+	Array delimitors:\"\\(\\.|\\.\\)|\\[|\\]\":::Character Const::D\n\
+	Parentheses:\"\\(|\\)\":::Keyword::D\n\
+	X Numeric Values:\"<([2-9]|[12]\\d|3[0-6])#[\\d\\l]+>\":::Text Key::D\n\
+	TP Numeric Values:\"<(#\\d+|\\$[\\da-fA-F]+)>\":::Text Key1::D\n\
+	Numeric Values:\"<\\d+(\\.\\d+)?((e|E)(\\+|-)?\\d+)?>\":::Numeric Const::D\n\
+	Reserved Words 1:\"<(?iBegin|Const|End|Program|Record|Type|Var)>\":::Keyword::D\n\
+	Reserved Words 2:\"<(?iForward|Goto|Label|Of|Packed|With)>\":::Identifier::D\n\
+	X Reserved Words:\"<(?iBindable|Export|Implementation|Import|Interface|Module|Only|Otherwise|Protected|Qualified|Restricted|Value)>\":::Identifier1::D\n\
+	TP Reserved Words:\"<(?iAbsolute|Assembler|Exit|External|Far|Inline|Interrupt|Near|Private|Unit|Uses)>\":::Text Comment::D\n\
+	Data Types:\"<(?iArray|Boolean|Char|File|Integer|Real|Set|Text)>\":::Storage Type::D\n\
+	X Data Types:\"<(?iBindingType|Complex|String|TimeStamp)>\":::Text Arg1::D\n\
+	TP Data Types:\"<(?iByte|Comp|Double|Extended|LongInt|ShortInt|Single|Word)>\":::Text Arg2::D\n\
+	Predefined Consts:\"<(?iFalse|Input|MaxInt|Nil|Output|True)>\":::String1::D\n\
+	X Predefined Consts:\"<(?iEpsReal|MaxChar|MaxReal|MinReal|StandardInput|StandardOutput)>\":::String2::D\n\
+	Conditionals:\"<(?iCase|Do|DownTo|Else|For|If|Repeat|Then|To|Until|While)>\":::Ada Attributes::D\n\
+	Proc declaration:\"<(?iProcedure)>\":::Character Const::D\n\
+	Predefined Proc:\"<(?iDispose|Get|New|Pack|Page|Put|Read|ReadLn|Reset|Rewrite|Unpack|Write|WriteLn)>\":::Subroutine::D\n\
+	X Predefined Proc:\"<(?iBind|Extend|GetTimeStamp|Halt|ReadStr|SeekRead|SeekUpdate|SeekWrite|Unbind|Update|WriteStr)>\":::Subroutine1::D\n\
+	Func declaration:\"<(?iFunction)>\":::Identifier::D\n\
+	Predefined Func:\"<(?iAbs|Arctan|Chr|Cos|Eof|Eoln|Exp|Ln|Odd|Ord|Pred|Round|Sin|Sqr|Sqrt|Succ|Trunc)>\":::Preprocessor::D\n\
+	X Predefined Func:\"<(?iArg|Binding|Card|Cmplx|Date|Empty|Eq|Ge|Gt|Im|Index|LastPosition|Le|Length|Lt|Ne|Polar|Position|Re|SubStr|Time|Trim)>\":::Preprocessor1::D\n\
+	X Operators:\"(\\>\\<|\\*\\*)|<(?iAnd_Then|Or_Else|Pow)>\":::Text Arg1::D\n\
+	Assignment:\":=\":::Plain::D\n\
+	Operators:\"(\\<|\\>|=|\\^|@)|<(?iAnd|Div|In|Mod|Not|Or)>\":::Text Arg::D\n\
+	TP Operators:\"<(?iShl|Shr|Xor)>\":::Text Arg2::D}",
+     "Lex:1:0{\n\
+	comment:\"/\\*\":\"\\*/\"::Comment::\n\
+	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	meta string:\"\\\\\"\".*\\\\\"\"\":::String::\n\
+	preprocessor line:\"^[ t]*#\":\"$\"::Preprocessor::\n\
+	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
+	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
+	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
+	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
+	numeric constant:\"<((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
+	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
+	keyword:\"<(return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
+	lex keyword:\"<(yylval|yytext|input|unput|output|lex_input|lex_output|yylex|yymore|yyless|yyin|yyout|yyleng|yywtext|yywleng|yyterminate|REJECT|ECHO|BEGIN|YY_NEW_FILE|yy_create_buffer|yy_switch_to_buffer|yy_delete_buffer|YY_CURRENT_BUFFER|YY_BUFFER_STATE|YY_DECL|YY_INPUT|yywrap|YY_USER_ACTION|YY_USER_INIT|YY_BREAK)>\":::Text Arg::D\n\
+	stdlib:\"<(BUFSIZ|CHAR_BIT|CHAR_MAX|CHAR_MIN|CLOCKS_PER_SEC|DBL_DIG|DBL_EPSILON|DBL_MANT_DIG|DBL_MAX|DBL_MAX_10_EXP|DBL_MAX_EXP|DBL_MIN|DBL_MIN_10_EXP|DBL_MIN_EXP|EDOM|EOF|ERANGE|EXIT_FAILURE|EXIT_SUCCESS|FILE|FILENAME_MAX|FLT_DIG|FLT_EPSILON|FLT_MANT_DIG|FLT_MAX|FLT_MAX_10_EXP|FLT_MAX_EXP|FLT_MIN|FLT_MIN_10_EXP|FLT_MIN_EXP|FLT_RADIX|FLT_ROUNDS|FOPEN_MAX|HUGE_VAL|INT_MAX|INT_MIN|LC_ALL|LC_COLLATE|LC_CTYPE|LC_MONETARY|LC_NUMERIC|LC_TIME|LDBL_DIG|LDBL_EPSILON|LDBL_MANT_DIG|LDBL_MAX|LDBL_MAX_10_EXP|LDBL_MAX_EXP|LDBL_MIN|LDBL_MIN_10_EXP|LDBL_MIN_EXP|LONG_MAX|LONG_MIN|L_tmpnam|MB_CUR_MAX|MB_LEN_MAX|NULL|RAND_MAX|SCHAR_MAX|SCHAR_MIN|SEEK_CUR|SEEK_END|SEEK_SET|SHRT_MAX|SHRT_MIN|SIGABRT|SIGFPE|SIGILL|SIGINT|SIGSEGV|SIGTERM|SIG_DFL|SIG_ERR|SIG_IGN|TMP_MAX|UCHAR_MAX|UINT_MAX|ULONG_MAX|USHRT_MAX|WCHAR_MAX|WCHAR_MIN|WEOF|_IOFBF|_IOLBF|_IONBF|abort|abs|acos|asctime|asin|assert|atan|atan2|atexit|atof|atoi|atol|bsearch|btowc|calloc|ceil|clearerr|clock|clock_t|cos|cosh|ctime|difftime|div|div_t|errno|exit|exp|fabs|fclose|feof|ferror|fflush|fgetc|fgetpos|fgets|fgetwc|fgetws|floor|fmod|fopen|fpos_t|fprintf|fputc|fputs|fputwc|fputws|fread|free|freopen|frexp|fscanf|fseek|fsetpos|ftell|fwide|fwprintf|fwrite|fwscanf|getc|getchar|getenv|gets|getwc|getwchar|gmtime|isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|iswalnum|iswalpha|iswcntrl|iswctype|iswdigit|iswgraph|iswlower|iswprint|iswpunct|iswspace|iswupper|iswxdigit|isxdigit|jmp_buf|labs|lconv|ldexp|ldiv|ldiv_t|localeconv|localtime|log|log10|longjmp|malloc|mblen|mbrlen|mbrtowc|mbsinit|mbsrtowcs|mbstate_t|mbstowcs|mbtowc|memchr|memcmp|memcpy|memmove|memset|mktime|modf|offsetof|perror|pow|printf|ptrdiff_t|putc|puts|putwc|putwchar|qsort|raise|rand|realloc|remove|rename|rewind|scanf|setbuf|setjmp|setlocale|setvbuf|sig_atomic_t|signal|sin|sinh|size_t|sprintf|sqrt|srand|sscanf|stderr|stdin|stdout|strcat|strchr|strcmp|strcoll|strcpy|strcspn|strerror|strftime|strlen|strncat|strncmp|strncpy|stroul|strpbrk|strrchr|strspn|strstr|strtod|strtok|strtol|strxfrm|swprintf|swscanf|system|tan|tanh|time|time_t|tm|tmpfile|tmpnam|tolower|toupper|towctrans|towlower|towupper|ungetc|ungetwc|va_arg|va_end|va_list|va_start|vfwprintf|vprintf|vsprintf|vswprintf|vwprintf|wint_t|wmemchr|wmemcmp|wmemcpy|wmemmove|wmemset|wprintf|wscanf)>\":::Subroutine::D\n\
+	label:\"<goto>|(^[ \\t]*[A-Za-z_][A-Za-z0-9_]*[ \\t]*:)\":::Flag::D\n\
+	braces:\"[{}]\":::Keyword::D\n\
+	markers:\"<(%\\{|%}|%%)>\":::Flag::D}",
      "Yacc:1:0{\n\
     	comment:\"/\\*\":\"\\*/\"::Comment::\n\
     	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
@@ -341,22 +513,36 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	yacc keyword:\"<(error|YYABORT|YYACCEPT|YYBACKUP|YYERROR|YYINITDEPTH|YYLTYPE|YYMAXDEPTH|YYRECOVERING|YYSTYPE|yychar|yyclearin|yydebug|yyerrok|yyerror|yylex|yylval|yylloc|yynerrs|yyparse)>\":::Text Arg::D\n\
 	percent keyword:\"<(%left|%nonassoc|%prec|%right|%start|%token|%type|%union)>([ \\t]*\\<.*\\>)?\":::Text Arg::D\n\
     	braces:\"[{}]\":::Keyword::D\n\
-	markers:\"<(%{|%}|%%)>\":::Flag::D\n\
+	markers:\"<(%\\{|%}|%%)>\":::Flag::D\n\
 	percent sub-expr:\"\\2\":""::Text Arg2:percent keyword:DC}",
      "Makefile:8:0{\n\
-	Comment:\"#\":\"$\"::Comment::\n\
-	Assignment:\"^( *| [ \\t]*)[A-Za-z0-9_+]*[ \\t]*(\\+|:)?=\":::Preprocessor::\n\
-	Dependency Line:\"^ *([A-Za-z0-9./$(){} _%+-]*)::?\":\"$|;\"::Text Key1::\n\
-	Dep Target:\"\\1\":\"\"::Text Key:Dependency Line:C\n\
-	Dep Continuation:\"\\\\\\n\":::Keyword:Dependency Line:\n\
-	Dep Comment:\"#\":\"$\"::Comment:Dependency Line:\n\
-	Dep Macro:\"\\$([A-Za-z0-9_]|\\([^)]*\\)|{[^}]*})\":::Preprocessor:Dependency Line:\n\
-	Dep Internal Macro:\"\\$([<@*?%]|\\$@)\":::Preprocessor1:Dependency Line:\n\
-	Continuation:\"\\\\$\":::Keyword::\n\
-	Macro:\"\\$([A-Za-z0-9_]|\\([^)]*\\)|{[^}]*})\":::Preprocessor::\n\
-	Internal Macro:\"\\$([<@*?%]|\\$@)\":::Preprocessor1::\n\
-	Escaped Dollar:\"\\$\\$\":::Comment::\n\
-	Include:\"^include[ \\t]\":::Keyword::}",
+        Comment:\"#\":\"$\"::Comment::\n\
+        Comment Continuation:\"\\\\\\n\":::Keyword:Comment:\n\
+        Assignment:\"^( *| [ \\t]*)[A-Za-z0-9_+][^ \\t]*[ \\t]*(\\+|:)?=\":\"$\"::Preprocessor::\n\
+        Assignment Continuation:\"\\\\\\n\":::Keyword:Assignment:\n\
+        Assignment Comment:\"#\":\"$\"::Comment:Assignment:\n\
+        Dependency Line:\"^( *| [ \\t]*)(.DEFAULT|.DELETE_ON_ERROR|.EXPORT_ALL_VARIABLES.IGNORE|.INTERMEDIATE|.PHONY|.POSIX|.PRECIOUS|.SECONDARY|.SILENT|.SUFFIXES)*(([A-Za-z0-9./$(){} _@^<*?%+-]*(\\\\\\n)){,8}[A-Za-z0-9./$(){} _@^<*?%+-]*)::?\":\"$|;\"::Text Key1::\n\
+        Dep Target Special:\"\\2\":\"\"::Text Key1:Dependency Line:C\n\
+        Dep Target:\"\\3\":\"\"::Text Key:Dependency Line:C\n\
+        Dep Continuation:\"\\\\\\n\":::Keyword:Dependency Line:\n\
+        Dep Comment:\"#\":\"$\"::Comment:Dependency Line:\n\
+        Dep Internal Macro:\"\\$([<@*?%]|\\$@)\":::Preprocessor1:Dependency Line:\n\
+        Dep Macro:\"\\$([A-Za-z0-9_]|\\([^)]*\\)|\\{[^}]*})\":::Preprocessor:Dependency Line:\n\
+        Continuation:\"\\\\$\":::Keyword::\n\
+        Macro:\"\\$([A-Za-z0-9_]|\\([^)]*\\)|\\{[^}]*})\":::Preprocessor::\n\
+        Internal Macro:\"\\$([<@*?%]|\\$@)\":::Preprocessor1::\n\
+        Escaped Dollar:\"\\$\\$\":::Comment::\n\
+        Include:\"^( *| [ \\t]*)include[ \\t]\":::Keyword::\n\
+        Exports:\"^( *| [ \\t]*)<export|unexport>[ \\t]\":\"$\"::Keyword::\n\
+        Exports var:\".[A-Za-z0-9_+]*\":\"$\"::Keyword:Exports:\n\
+        Conditionals:\"^( *| [ \\t]*)<ifeq|ifneq>[ \\t]\":::Keyword::D\n\
+        Conditionals ifdefs:\"^( *| [ \\t]*)<ifdef|ifndef>[ \\t]\":\"$\"::Keyword::D\n\
+        Conditionals ifdefs var:\".[A-Za-z0-9_+]*\":\"$\"::Preprocessor:Conditionals ifdefs:D\n\
+        Conditional Ends:\"^( *| [ \\t]*)<else|endif>\":::Keyword::D\n\
+        vpath:\"^( *| [ \\t]*)<vpath>[ \\t]\":::Keyword::D\n\
+        define:\"^( *| [ \\t]*)<define>[ \\t]\":\"$\"::Keyword::D\n\
+        define var:\".[A-Za-z0-9_+]*\":\"$\"::Preprocessor:define:D\n\
+        define Ends:\"^( *| [ \\t]*)<endef>\":::Keyword::D}",
      "Sh Ksh Bash:1:0{\n\
         escaped special characters:\"\\\\[\\\\\"\"$`']\":::Keyword::\n\
         single quoted string:\"'\":\"'\"::String1::\n\
@@ -366,7 +552,7 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
         dq arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\":\"\"\"\":String:double quoted string:\n\
         dq new command sub:\"\\$\\(\":\"\\)\":\"\"\"\":Subroutine:double quoted string:\n\
         dq variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:double quoted string:\n\
-        dq variables2:\"\\${\":\"}\":\"\\n\":Identifier1:double quoted string:\n\
+        dq variables2:\"\\$\\{\":\"}\":\"\\n\":Identifier1:double quoted string:\n\
         arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String::\n\
         ae escapes:\"\\\\[\\\\$`\"\"']\":::String2:arithmetic expansion:\n\
         ae single quoted string:\"'\":\"'\":\"\\)\\)\":String1:arithmetic expansion:\n\
@@ -374,21 +560,21 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
         ae arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String:arithmetic expansion:\n\
         ae new command sub:\"\\$\\(\":\"\\)\":\"\\)\\)\":Subroutine:arithmetic expansion:\n\
         ae variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:arithmetic expansion:\n\
-        ae variables2:\"\\${\":\"}\":\"\\)\\)\":Identifier1:arithmetic expansion:\n\
+        ae variables2:\"\\$\\{\":\"}\":\"\\)\\)\":Identifier1:arithmetic expansion:\n\
         comments:\"^[ \\t]*#\":\"$\"::Comment::\n\
         command substitution:\"`\":\"`\"::Subroutine::\n\
         cs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:command substitution:\n\
         cs single quoted string:\"'\":\"'\":\"`\":String1:command substitution:\n\
         cs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:command substitution:\n\
-        cs variables2:\"\\${\":\"}\":\"`\":Identifier1:command substitution:\n\
+        cs variables2:\"\\$\\{\":\"}\":\"`\":Identifier1:command substitution:\n\
         new command substitution:\"\\$\\(\":\"\\)\"::Subroutine::\n\
         ncs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:new command substitution:\n\
         ncs single quoted string:\"'\":\"'\"::String1:new command substitution:\n\
         ncs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:new command substitution:\n\
-        ncs variables2:\"\\${\":\"}\":\"\\)\":Identifier1:new command substitution:\n\
+        ncs variables2:\"\\$\\{\":\"}\":\"\\)\":Identifier1:new command substitution:\n\
         assignment:\"[a-zA-Z_][0-9a-zA-Z_]*[ \\t]*=\":::Identifier1::\n\
         variables:\"\\$([-*@#?$!0-9_]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1::\n\
-        variables2:\"\\${\":\"}\"::Identifier1::\n\
+        variables2:\"\\$\\{\":\"}\"::Identifier1::\n\
         comments in line:\"#\":\"$\"::Comment::\n\
         numbers:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?>\":::Numeric Const::D\n\
         keywords:\"<(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|until|function|continue|break|return|exit)>\":::Keyword::D\n\
@@ -402,25 +588,32 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	Double Quote String:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
 	DQ String Esc Char:\"\\\\([bcfnrt\\n\\\\]|[0-9][0-9]?[0-9]?)\":::String1:Double Quote String:\n\
 	Keywords:\"(^|[`;()])[ \t]*(return|if|endif|then|else|switch|endsw|while|end|foreach|do|done)>\":::Keyword::D\n\
-	Variable Ref:\"\\$([<$0-9\\*]|[#a-zA-Z_?][0-9a-zA-Z_[\\]]*(:([ehqrtx]|gh|gt|gr))?|{[#0-9a-zA-Z_?][a-zA-Z0-9_[\\]]*(:([ehqrtx]|gh|gt|gr))?})\":::Identifier1::\n\
-	Variable in String:\"\\$([<$0-9\\*]|[#a-zA-Z_?][0-9a-zA-Z_[\\]]*(:([ehqrtx]|gh|gt|gr))?|{[#0-9a-zA-Z_?][a-zA-Z0-9_[\\]]*(:([ehqrtx]|gh|gt|gr))?})\":::Identifier1:Double Quote String:\n\
+	Variable Ref:\"\\$([<$0-9\\*]|[#a-zA-Z_?][0-9a-zA-Z_[\\]]*(:([ehqrtx]|gh|gt|gr))?|\\{[#0-9a-zA-Z_?][a-zA-Z0-9_[\\]]*(:([ehqrtx]|gh|gt|gr))?})\":::Identifier1::\n\
+	Variable in String:\"\\$([<$0-9\\*]|[#a-zA-Z_?][0-9a-zA-Z_[\\]]*(:([ehqrtx]|gh|gt|gr))?|\\{[#0-9a-zA-Z_?][a-zA-Z0-9_[\\]]*(:([ehqrtx]|gh|gt|gr))?})\":::Identifier1:Double Quote String:\n\
 	Naked Variable Cmds:\"<(unset|set|setenv|shift)[ \\t]+[0-9a-zA-Z_]*(\\[.+\\])?\":::Identifier1::\n\
 	Recolor Naked Cmd:\"\\1\":::Keyword:Naked Variable Cmds:C\n\
 	Built In Cmds:\"(^|\\|&|[\\|`;()])[ \t]*(alias|bg|break|breaksw|case|cd|chdir|continue|default|echo|eval|exec|exit|fg|goto|glob|hashstat|history|jobs|kill|limit|login|logout|nohup|notify|nice|onintr|popd|pushd|printenv|read|rehash|repeat|set|setenv|shift|source|suspend|time|umask|unalias|unhash|unlimit|unset|unsetenv|wait)>\":::Keyword::D\n\
         Tcsh Built In Cmds:\"(^|\\|&|[\\|`;()])[ \t]*(alloc|bindkey|builtins|complete|echotc|filetest|hup|log|sched|settc|setty|stop|telltc|uncomplete|where|which|dirs|ls-F)>\":::Keyword::D\n\
 	Special Chars:\"([-{};.,<>&~=!|^%[\\]\\+\\*\\|()])\":::Keyword::D}",
      "Python:1:0{\n\
-        Comment:\"#\":\"$\"::Comment::\n\
-        String3:\"\"\"\"\"\"\"\":\"\"\"\"\"\"\"\"::String1::\n\
-        String:\"\"\"\":\"\"\"\":\"\\n\":String1::\n\
-        String2:\"'\":\"'\":\"\\n\":String1::\n\
-        Numeric const:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)>\":::Numeric Const::\n\
-        include:\"<(import|from)>\":\"$\"::Preprocessor::\n\
-        Storage keyword:\"<(class|global|lambda)>\":::Storage Type::\n\
-        Keyword:\"<(access|del|return|and|elif|not|try|break|else|if|or|while|except|pass|continue|finally|in|print|def|for|is|raise)>\":::Keyword::\n\
-        Braces and parens:\"[{()}]\":::Keyword::\n\
-        String escape chars:\"\\\\(.|\\n|\\r|\\b)\":::String1::}",
-     "Awk:2:0{\n\
+	Comment:\"#\":\"$\"::Comment::\n\
+	String3:\"\"\"\"\"\"\"\":\"\"\"\"\"\"\"\"::String::\n\
+	String2:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	String1:\"'\":\"'\":\"\\n\":String::\n\
+	Numeric const:\"<((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\\+|-)?)?[0-9]*)>\":::Numeric Const::\n\
+	Include:\"<(import|from)>\":\"$\"::Preprocessor::\n\
+	Storage keyword:\"<(class|global|lambda)>\":::Storage Type::\n\
+	Member definition:\"<(def)\\s+\\w+\\s*(?=\\(\\s*self)>\":::Plain::\n\
+	Member definition color:\"\\1\":\"\"::Keyword:Member definition:C\n\
+	Member reference:\"\\.\\s*\\w+\":::Plain::\n\
+	Keyword:\"<(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|if|in|is|not|or|pass|print|raise|return|try|while)>\":::Keyword::\n\
+	Built-in function:\"<(__import__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|delattr|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|intern|int|isinstance|issubclass|len|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|setattr|slice|str|tuple|type|vars|xrange)>\":::Subroutine::\n\
+	Built-in name:\"<(None|Ellipsis|self)>\":::Identifier1::\n\
+	Braces and parens:\"[[{()}\\]]\":::Keyword::\n\
+	String escape chars:\"\\\\(.|\\n|\\r|\\b)\":::String1:String1:\n\
+	String escape chars 2:\"\\\\(.|\\n|\\r|\\b)\":::String1:String2:\n\
+	String escape chars 3:\"\\\\(.|\\n|\\r|\\b)\":::String1:String3:}",
+      "Awk:2:0{\n\
         Comment:\"#\":\"$\"::Comment::\n\
         Pattern:\"/(\\\\.|([[][]]?[^]]+[]])|[^/])+/\":::Preprocessor::\n\
         Keyword:\"<(return|print|printf|if|else|while|for|in|do|break|continue|next|exit|close|system|getline)>\":::Keyword::D\n\
@@ -443,61 +636,119 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	Special Chars:\"[{}&]\":::Keyword::\n\
 	Escape Chars:\"\\\\[$&%#_{}]\":::Text Escape::\n\
 	Super Sub 1 Char:\"(\\^|_)[^{]\":::Text Arg2::\n\
-	Verbatim Begin End:\"\\\\begin{verbatim\\*?}\":\"\\\\end{verbatim\\*?}\"::Plain::\n\
-	Verbatim Color:\"\\0\":\"\\0\"::Keyword:Verbatim Begin End:C\n\
+	Verbatim Begin End:\"\\\\begin\\{verbatim\\*?}\":\"\\\\end\\{verbatim\\*?}\"::Plain::\n\
+	Verbatim Color:\"&\":\"&\"::Keyword:Verbatim Begin End:C\n\
 	Verbatim 1:\"\\\\verb\\*?`\":\"`\"::Plain::\n\
-	Verbatim 1 Color:\"\\0\":\"\\0\"::Keyword:Verbatim 1:C\n\
+	Verbatim 1 Color:\"&\":\"&\"::Keyword:Verbatim 1:C\n\
 	Verbatim 2:\"\\\\verb\\*?#\":\"#\"::Plain::\n\
-	Verbatim 2 Color:\"\\0\":\"\\0\"::Keyword:Verbatim 2:C\n\
-	Verbatim 3 Color:\"\\0\":\"\\0\"::Keyword:Verbatim 3:C\n\
+	Verbatim 2 Color:\"&\":\"&\"::Keyword:Verbatim 2:C\n\
+	Verbatim 3 Color:\"&\":\"&\"::Keyword:Verbatim 3:C\n\
 	Verbatim 3:\"\\\\verb\\*?/\":\"/\"::Plain::\n\
 	Inline Math:\"\\$\":\"\\$\":\"\\n\\n\":LaTeX Math::\n\
-	Math Color:\"\\0\":\"\\0\"::Keyword:Inline Math:C\n\
+	Math Color:\"&\":\"&\"::Keyword:Inline Math:C\n\
 	Inline Math1:\"\\\\\\(\":\"\\\\\\)\"::LaTeX Math::\n\
-	Math1 Color:\"\\0\":\"\\0\"::Keyword:Inline Math1:C\n\
+	Math1 Color:\"&\":\"&\"::Keyword:Inline Math1:C\n\
 	Math Escape Chars:\"\\\\\\$\":::Text Escape:Inline Math:\n\
 	No Arg Command:\"\\\\(left|right)[\\[\\]{}()]\":::Text Key::\n\
 	Command:\"[_^]|[\\\\@](a'|a`|a=|[A-Za-z]+\\*?|\\\\\\*|[-@_='`^\"\"|\\[\\]*:!+<>/~.,\\\\ ])\":\"nevermatch\":\"[^{[(]\":Text Key::\n\
-	Cmd Brace Args:\"{\":\"}\"::Text Arg2:Command:\n\
-	Brace Color:\"\\0\":\"\\0\"::Text Arg:Cmd Brace Args:C\n\
+	Cmd Brace Args:\"\\{\":\"}\"::Text Arg2:Command:\n\
+	Brace Color:\"&\":\"&\"::Text Arg:Cmd Brace Args:C\n\
 	Cmd Paren Args:\"\\(\":\"\\)\":\"$\":Text Arg2:Command:\n\
-	Paren Color:\"\\0\":\"\\0\"::Text Arg:Cmd Paren Args:C\n\
+	Paren Color:\"&\":\"&\"::Text Arg:Cmd Paren Args:C\n\
 	Cmd Bracket Args:\"\\[\":\"\\]\":\"$\":Text Arg2:Command:\n\
-	Bracket Color:\"\\0\":\"\\0\"::Text Arg:Cmd Bracket Args:C\n\
+	Bracket Color:\"&\":\"&\"::Text Arg:Cmd Bracket Args:C\n\
 	Sub Command:\"([_^]|([\\\\@]([A-Za-z]+\\*?|[^A-Za-z$&%#{}~\\\\ \\t])))\":::Text Key1:Cmd Brace Args:\n\
-	Sub Brace:\"{\":\"}\"::Text Arg2:Cmd Brace Args:\n\
-	Sub Sub Brace:\"{\":\"}\"::Text Arg2:Sub Brace:\n\
-	Sub Sub Sub Brace:\"{\":\"}\"::Text Arg2:Sub Sub Brace:\n\
-	Sub Sub Sub Sub Brace:\"{\":\"}\"::Text Arg2:Sub Sub Sub Brace:\n\
+	Sub Brace:\"\\{\":\"}\"::Text Arg2:Cmd Brace Args:\n\
+	Sub Sub Brace:\"\\{\":\"}\"::Text Arg2:Sub Brace:\n\
+	Sub Sub Sub Brace:\"\\{\":\"}\"::Text Arg2:Sub Sub Brace:\n\
+	Sub Sub Sub Sub Brace:\"\\{\":\"}\"::Text Arg2:Sub Sub Sub Brace:\n\
 	Sub Paren:\"\\(\":\"\\)\":\"$\":Text Arg2:Cmd Paren Args:\n\
 	Sub Sub Paren:\"\\(\":\"\\)\":\"$\":Text Arg2:Sub Paren:\n\
 	Sub Sub Sub Paren:\"\\(\":\"\\)\":\"$\":Text Arg2:Sub Sub Paren:\n\
 	Sub Parameter:\"#[0-9]*\":::Text Arg:Cmd Brace Args:\n\
 	Sub Spec Chars:\"[{}$&]\":::Text Arg:Cmd Brace Args:\n\
 	Sub Esc Chars:\"\\\\[$&%#_{}~^\\\\]\":::Text Arg1:Cmd Brace Args:}",
+     "PostScript:1:0{\n\
+        DSCcomment:\"^%[%|!]\":\"$\"::Preprocessor::\n\
+        Comment:\"%\":\"$\"::Comment::\n\
+        string:\"\\(\":\"\\)\"::String::\n\
+        string esc chars:\"\\\\(n|r|t|b|f|\\\\|\\(|\\)|[0-9][0-9]?[0-9]?)?\":::String2:string:\n\
+        string2:\"\\(\":\"\\)\"::String:string:\n\
+        string2 esc chars:\"\\\\(n|r|t|b|f|\\\\|\\(|\\)|[0-9][0-9]?[0-9]?)?\":::String2:string2:\n\
+        string3:\"\\(\":\"\\)\"::String:string2:\n\
+        string3 esc chars:\"\\\\(n|r|t|b|f|\\\\|\\(|\\)|[0-9][0-9]?[0-9]?)?\":::String2:string3:\n\
+        ASCII 85 string:\"\\<~\":\"~\\>\":\"[^!-uz]\":String1::\n\
+        Dictionary:\"(\\<\\<|\\>\\>)\":::Storage Type::\n\
+        hex string:\"\\<\":\"\\>\":\"[^0-9a-fA-F> \\t]\":String1::\n\
+        Literal:\"/[^/%{}\\(\\)\\<\\>\\[\\]\\f\\n\\r\\t ]*\":::Text Key::\n\
+        Number:\"<((([2-9]|[1-2][0-9]|3[0-6])#[0-9a-zA-Z]*)|(((\\+|-)?[0-9]+\\.?[0-9]*)|((\\+|-)?\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)>\":::Numeric Const::D\n\
+        Array:\"[\\[\\]]\":::Storage Type::D\n\
+        Procedure:\"[{}]\":::Subroutine::D\n\
+        Operator1:\"<(=|==|abs|add|aload|anchorsearch|and|arc|arcn|arcto|array|ashow|astore|atan|awidthshow|begin|bind|bitshift|bytesavailable|cachestatus|ceiling|charpath|clear|cleardictstack|cleartomark|clip|clippath|closefile|closepath|concat|concatmatrix|copy|copypage|cos|count|countdictstack|countexecstack|counttomark|currentdash|currentdict|currentfile|currentflat|currentfont|currentgray|currenthsbcolor|currentlinecap|currentlinejoin|currentlinewidth|currentmatrix|currentmiterlimit|currentpoint|currentrgbcolor|currentscreen|currenttransfer|curveto|cvi|cvlit|cvn|cvr|cvrs|cvs|cvx|def|defaultmatrix|definefont|dict|dictstack|div|dtransform|dup|echo|eexec|end|eoclip|eofill|eq|erasepage|errordict|exch|exec|execstack|executeonly|executive|exit|exitserver|exp|false|file|fill|findfont|flattenpath|floor|flush|flushfile|FontDirectory|for|forall|ge|get|getinterval|grestore|grestoreall|gsave|gt|handleerror|identmatrix|idiv|idtransform|if|ifelse|image|imagemask|index|initclip|initgraphics|initmatrix|internaldict|invertmatrix|itransform|known|kshow|le|length|lineto|ln|load|log|loop|lt|makefont|mark|matrix|maxlength|mod|moveto|mul|ne|neg|newpath|noaccess|not|null|nulldevice|or|pathbbox|pathforall|pop|print|prompt|pstack|put|putinterval|quit|rand|rcheck|rcurveto|read|readhexstring|readline|readonly|readstring|repeat|resetfile|restore|reversepath|rlineto|rmoveto|roll|rotate|round|rrand|run|save|scale|scalefont|search|serverdict|setcachedevice|setcachelimit|setcharwidth|setdash|setflat|setfont|setgray|sethsbcolor|setlinecap|setlinejoin|setlinewidth|setmatrix|setmiterlimit|setrgbcolor|setscreen|settransfer|show|showpage|sin|sqrt|srand|stack|StandardEncoding|start|status|statusdict|stop|stopped|store|string|stringwidth|stroke|strokepath|sub|systemdict|token|transform|translate|true|truncate|type|userdict|usertime|version|vmstatus|wcheck|where|widthshow|write|writehexstring|writestring|xcheck|xor)>\":::Keyword::D\n\
+        Operator2:\"<(arct|colorimage|cshow|currentblackgeneration|currentcacheparams|currentcmykcolor|currentcolor|currentcolorrendering|currentcolorscreen|currentcolorspace|currentcolortransfer|currentdevparams|currentglobal|currentgstate|currenthalftone|currentobjectformat|currentoverprint|currentpacking|currentpagedevice|currentshared|currentstrokeadjust|currentsystemparams|currentundercolorremoval|currentuserparams|defineresource|defineuserobject|deletefile|execform|execuserobject|filenameforall|fileposition|filter|findencoding|findresource|gcheck|globaldict|GlobalFontDirectory|glyphshow|gstate|ineofill|infill|instroke|inueofill|inufill|inustroke|ISOLatin1Encoding|languagelevel|makepattern|packedarray|printobject|product|realtime|rectclip|rectfill|rectstroke|renamefile|resourceforall|resourcestatus|revision|rootfont|scheck|selectfont|serialnumber|setbbox|setblackgeneration|setcachedevice2|setcacheparams|setcmykcolor|setcolor|setcolorrendering|setcolorscreen|setcolorspace|setcolortransfer|setdevparams|setfileposition|setglobal|setgstate|sethalftone|setobjectformat|setoverprint|setpacking|setpagedevice|setpattern|setshared|setstrokeadjust|setsystemparams|setucacheparams|setundercolorremoval|setuserparams|setvmthreshold|shareddict|SharedFontDirectory|startjob|uappend|ucache|ucachestatus|ueofill|ufill|undef|undefinefont|undefineresource|undefineuserobject|upath|UserObjects|ustroke|ustrokepath|vmreclaim|writeobject|xshow|xyshow|yshow)>\":::Keyword::D\n\
+        Operator3:\"<(GetHalftoneName|GetPageDeviceName|GetSubstituteCRD|StartData|addglyph|beginbfchar|beginbfrange|begincidchar|begincidrange|begincmap|begincodespacerange|beginnotdefchar|beginnotdefrange|beginrearrangedfont|beginusematrix|cliprestore|clipsave|composefont|currentsmoothness|currenttrapparams|endbfchar|endbfrange|endcidchar|endcidrange|endcmap|endcodespacerange|endnotdefchar|endnotdefrange|endrearrangedfont|endusematrix|findcolorrendering|removeall|removeglyphs|setsmoothness|settrapparams|settrapzone|shfill|usecmap|usefont)>\":::Keyword::D\n\
+        Old operator:\"<(condition|currentcontext|currenthalftonephase|defineusername|detach|deviceinfo|eoviewclip|fork|initviewclip|join|lock|monitor|notify|rectviewclip|sethalftonephase|viewclip|viewclippath|wait|wtranslation|yield)>\":::Keyword::D}",
+     "SQL:1:0{\n\
+	keywords:\",|%|\\<|\\>|:=|=|<(SELECT|ON|FROM|ORDER BY|DESC|WHERE|AND|OR|NOT|NULL|TRUE|FALSE)>\":::Keyword::\n\
+	comment:\"--\":\"$\"::Comment::\n\
+	data types:\"<(CHAR|VARCHAR2\\([0-9]*\\)|INT[0-9]*|POINT|BOX|TEXT|BOOLEAN|VARCHAR2|VARCHAR|NUMBER\\([0-9]*\\)|NUMBER)>\":::Storage Type::\n\
+	string:\"'\":\"'\"::String::\n\
+	keywords2:\"END IF;|<(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>\":::Preprocessor1::\n\
+	comment2:\"/\\*\":\"\\*/\"::Comment::}",
+     "Matlab:1:0{\n\
+	Comment:\"%\":\"$\"::Comment::\n\
+	Comment in Octave:\"#\":\"$\"::Plain::\n\
+	Keyword:\"<(break|clear|else|elseif|end|for|function|global|if|return|then|while)>\":::Keyword::\n\
+	Transpose:\"[\\w.]('+)\":::Plain::\n\
+	Paren transposed:\"\\)('+)\":::Keyword::\n\
+	Paren transp close:\"\\1\":\"\"::Plain:Paren transposed:C\n\
+	Parentheses:\"[\\(\\)]\":::Keyword::\n\
+	Brackets transposed:\"\\]('+)\":::Text Key1::\n\
+	Brack transp close:\"\\1\":\"\"::Plain:Brackets transposed:C\n\
+	Brackets:\"[\\[\\]]\":::Text Key1::\n\
+	Braces transposed:\"\\}('+)\":::Text Arg::\n\
+	Braces transp close:\"\\1\":\"\"::Plain:Braces transposed:C\n\
+	Braces:\"[\\{\\}]\":::Text Arg::\n\
+	String:\"'\":\"'\"::String::\n\
+	Numeric const:\"<(((\\d+\\.?\\d*)|(\\.\\d+))([eE][\\+-]?\\d+)?)>\":::Numeric Const::\n\
+	Three periods to end:\"(\\.\\.\\.)\":\"$\"::Comment::\n\
+	Three periods:\"\\1\":\"\"::Keyword:Three periods to end:C\n\
+	Shell command:\"!\":\"$\"::String1::\n\
+	Comment in shell cmd:\"%\":\"$\"::Comment:Shell command:\n\
+	Relational operators:\"==|~=|\\<=|\\>=|\\<|\\>\":::Text Arg1::\n\
+	Wrong logical ops:\"&&|\\|\\|\":::Plain::\n\
+	Logical operators:\"~|&|\\|\":::Text Arg2::}",
      "VHDL:1:0{\n\
         Comments:\"--\":\"$\"::Comment::\n\
         String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
         Vhdl Attributes:\"'[a-zA-Z][a-zA-Z_]+\":::Ada Attributes::\n\
         Character Literals:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
         Numeric Literals:\"<(((2#|8#|10#|16#)[_0-9a-fA-F]*#)|[0-9.]+)>\":::Numeric Const::\n\
-	Predefined Types:\"<([aA]lias|ALIAS|[cC]onstant|CONSTANT|[sS]ignal|SIGNAL|[vV]ariable|VARIABLE|[sS]ubtype|SUBTYPE|[tT]ype|TYPE|[rR]esolved|RESOLVED|[bB]oolean|BOOLEAN|[sS]tring|STRING|[iI]nteger|INTEGER|[nN]atural|NATURAL|[tT]ime|TIME)>\":::Storage Type::D\n\
-	Predefined SubTypes:\"<([sS]td_[lL]ogic|STD_LOGIC|[sS]td_[lL]ogic_[vV]ector|STD_LOGIC_VECTOR|[sS]td_[uU][lL]ogic|STD_ULOGIC|[sS]td_[uU][lL]ogic_[vV]ector|STD_ULOGIC_VECTOR|[bB]it|BIT|[bB]it_[vV]ector|BIT_VECTOR)>\":::Storage Type::D\n\
-        Reserved WordsA:\"<([aA]bs|[aA]ccess|[aA]fter|[aA]ll|[aA]nd|[aA]rchitecture|[aA]rray|[aA]ssert|[aA]ttribute|[bB]egin|[bB]lock|[bB]ody|[bB]uffer|[bB]us|[cC]ase|[cC]omponent|[cC]onfiguration|[dD]isconnect|[dD]ownto|[eE]lse|[eE]lsif|[eE]nd|[eE]ntity|[eE]rror|[eE]xit|[fF]ailure|[fF]ile|[fF]or|[fF]unction|[gG]enerate|[gG]eneric|[gG]uarded|[iI]f|[iI]n|[iI]nout|[iI]s|[lL]abel|[lL]ibrary|[lL]inkage|[lL]oop|[mM]ap|[mM]od|[nN]and|[nN]ew|[nN]ext|[nN]or|[nN]ot|[nN]ote|[nN]ull|[oO]f|[oO]n|[oO]pen|[oO]r|[oO]thers|[oO]ut|[pP]ackage|[pP]ort|[pP]rocedure|[pP]rocess|[rR]ange|[rR]ecord|[rR]egister|[rR]em|[rR]eport|[rR]eturn|[sS]elect|[sS]everity|[tT]hen|[tT]o|[tT]ransport|[uU]nits|[uU]ntil|[uU]se|[wW]ait|[wW]arning|[wW]hen|[wW]hile|[wW]ith|[xX]or|[gG]roup|[iI]mpure|[iI]nertial|[lL]iteral|[pP]ostponed|[pP]ure|[rR]eject|[rR]ol|[rR]or|[sS]hared|[sS]la|[sS]ll|[sS]ra|[sS]rl|[uU]naffected|[xX]nor)>\":::Keyword::D\n\
-        Reserved WordsB:\"<(ABS|ACCESS|AFTER|ALL|AND|ARCHITECTURE|ARRAY|ASSERT|ATTRIBUTE|BEGIN|BLOCK|BODY|BUFFER|BUS|CASE|COMPONENT|CONFIGURATION|DISCONNECT|DOWNTO|ELSE|ELSIF|END|ENTITY|ERROR|EXIT|FAILURE|FILE|FOR|FUNCTION|GENERATE|GENERIC|GUARDED|IF|IN|INOUT|IS|LABEL|LIBRARY|LINKAGE|LOOP|MAP|MOD|NAND|NEW|NEXT|NOR|NOT|NOTE|NULL|OF|ON|OPEN|OR|OTHERS|OUT|PACKAGE|PORT|PROCEDURE|PROCESS|RANGE|RECORD|REGISTER|REM|REPORT|RETURN|SELECT|SEVERITY|THEN|TO|TRANSPORT|UNITS|UNTIL|USE|WAIT|WARNING|WHEN|WHILE|WITH|XOR|GROUP|IMPURE|INERTIAL|LITERAL|POSTPONED|PURE|REJECT|ROL|ROR|SHARED|SLA|SLL|SRA|SRL|UNAFFECTED|XNOR)>\":::Keyword::D\n\
-        Identifiers:\"<([a-zA-Z][a-zA-Z0-9_]*)>\":::Identifier::D\n\
-        Flag Special Comments:\"--\\<[^a-zA-Z0-9]+\\>\":::Flag:Comments:}",
+	Predefined Types:\"<(?ialias|constant|signal|variable|subtype|type|resolved|boolean|string|integer|natural|time)>\":::Storage Type::D\n\
+	Predefined SubTypes:\"<(?istd_logic|std_sogic_vector|std_ulogic|std_ulogic_vector|bit|bit_vector)>\":::Storage Type::D\n\
+        Reserved Words:\"<(?iabs|access|after|all|and|architecture|array|assert|attribute|begin|block|body|buffer|bus|case|component|configuration|disconnect|downto|else|elsif|end|entity|error|exit|failure|file|for|function|generate|generic|guarded|if|in|inout|is|label|library|linkage|loop|map|mod|nand|new|next|nor|not|note|null|of|on|open|or|others|out|package|port|procedure|process|range|record|register|rem|report|return|select|severity|then|to|transport|units|until|use|wait|warning|when|while|with|xor|group|impure|inertial|literal|postponed|pure|reject|rol|ror|shared|sla|sll|sra|srl|unaffected|xnor)>\":::Keyword::D\n\
+	Identifiers:\"<([a-zA-Z][a-zA-Z0-9_]*)>\":::Plain::D\n\
+	Flag Special Comments:\"--\\<[^a-zA-Z0-9]+\\>\":::Flag:Comments:\n\
+	Instantiation:\"([a-zA-Z][a-zA-Z0-9_]*)([ \\t]+):([ \\t]+)([a-zA-Z][a-zA-Z0-9_]*)([ \\t]+)(port|generic|map)\":::Keyword::\n\
+	Instance Name:\"\\1\":\"\"::Identifier1:Instantiation:C\n\
+	Component Name:\"\\4\":\"\"::Identifier:Instantiation:C\n\
+	Syntax Character:\"(\\<=|=\\>|:|=|:=|;|,|\\(|\\))\":::Keyword::}",
      "Verilog:1:0{\n\
-        Comment: \"/\\*\":\"\\*/\"::Comment::\n\
-        cplus comment: \"//\":\"$\"::Comment::\n\
-        String Literals: \"\"\"\":\"\"\"\":\"\\n\":String::\n\
-        preprocessor line: \"^[  ]*`\":\"$\"::Preprocessor::\n\
-        Reserved WordsA: \"<(module|endmodule|parameter|specify|endspecify|begin|end|initial|always|if|else|task|endtask|force|release|attribute|case|case[xz]|default|endattribute|endcase|endfunction|endprimitive|endtable|for|forever|function|primitive|table|while)>\":::Keyword::D\n\
-        Predefined Types: \"<(and|assign|buf|bufif[01]|cmos|deassign|defparam|disable|edge|event|force|fork|highz[01]|initial|inout|input|integer|join|large|macromodule|medium|nand|negedge|nmos|nor|not|notif[01]|or|output|parameter|pmos|posedge|pullup|rcmos|real|realtime|reg|release|repeat|rnmos|rpmos|rtran|rtranif[01]|scalered|signed|small|specparam|strength|strong[01]|supply[01]|time|tran|tranif[01]|tri[01]?|triand|trior|trireg|unsigned|vectored|wait|wand|weak[01]|wire|wor|xnor|xor)>\":::Storage Type::D\n\
-        System Functions:\"<(\\$[a-z_]+)>\":::Subroutine::D\n\
-        Numeric Literals: \"<([0-9]*'[dD][0-9xz\\\\?_]+|[0-9]*'[hH][0-9a-fxz\\\\?_]+|[0-9]*'[oO][0-7xz\\\\?_]+|[0-9]*'[bB][01xz\\\\?_]+|[0-9.]+((e|E)(\\\\+|-)?)?[0-9]*|[0-9]+)>\":::Numeric Const::\n\
-        Delay word: \"<((#\\(.*\\))|(#[0-9]*))>\":::Ada Attributes::D\n\
-        Identifiers: \"<([a-zA-Z][a-zA-Z0-9_]*)>\":::Identifier::D}",
+        Comment:\"/\\*\":\"\\*/\"::Comment::\n\
+        cplus comment:\"//\":\"$\"::Comment::\n\
+        String Literals:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+        preprocessor line:\"^[ ]*`\":\"$\"::Preprocessor::\n\
+        Reserved WordsA:\"<(module|endmodule|parameter|specify|endspecify|begin|end|initial|always|if|else|task|endtask|force|release|attribute|case|case[xz]|default|endattribute|endcase|endfunction|endprimitive|endtable|for|forever|function|primitive|table|while|;)>\":::Keyword::\n\
+        Predefined Types:\"<(and|assign|buf|bufif[01]|cmos|deassign|defparam|disable|edge|event|force|fork|highz[01]|initial|inout|input|integer|join|large|macromodule|medium|nand|negedge|nmos|nor|not|notif[01]|or|output|parameter|pmos|posedge|pullup|rcmos|real|realtime|reg|release|repeat|rnmos|rpmos|rtran|rtranif[01]|scalered|signed|small|specparam|strength|strong[01]|supply[01]|time|tran|tranif[01]|tri[01]?|triand|trior|trireg|unsigned|vectored|wait|wand|weak[01]|wire|wor|xnor|xor)>\":::Storage Type::D\n\
+        System Functions:\"\\$[a-z_]+\":::Subroutine::D\n\
+        Numeric Literals:\"<([0-9]*'[dD][0-9xz\\\\?_]+|[0-9]*'[hH][0-9a-fxz\\\\?_]+|[0-9]*'[oO][0-7xz\\\\?_]+|[0-9]*'[bB][01xz\\\\?_]+|[0-9.]+((e|E)(\\\\+|-)?)?[0-9]*|[0-9]+)>\":::Numeric Const::\n\
+        Delay Word:\"<((#\\(.*\\))|(#[0-9]*))>\":::Ada Attributes::D\n\
+        Simple Word:\"([a-zA-Z][a-zA-Z0-9]*)\":::Plain::D\n\
+        Instance Declaration:\"([a-zA-Z][a-zA-Z0-9_]*)([ \\t]+)([a-zA-Z][a-zA-Z0-9_$]*)([ \\t]*)\\(\":::Plain::\n\
+        Module name:\"\\1\":\"\"::Identifier:Instance Declaration:C\n\
+        Instance Name:\"\\3\":\"\"::Identifier1:Instance Declaration:C\n\
+        Pins Declaration:\"<(\\.([a-zA-Z0-9_]+))>\":::Storage Type1::\n\
+        Special Chars:\"(\\{|\\}|,|;|=|\\.)\":::Keyword::}",
      "X Resources:1:0{\n\
 	Preprocessor:\"^[ \\t]*#\":\"$\"::Preprocessor::\n\
 	Preprocessor Wrap:\"\\\\\\n\":::Preprocessor1:Preprocessor:\n\
@@ -506,7 +757,7 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	Resource:\"^[ \\t]*[^: \t]+[ \\t]*:\":\"$\"::Plain::\n\
 	Resource Esc Chars:\"\\\\.\":::Text Arg2:Resource:\n\
 	Resource Space Warning:\"[^ \\t]+[ \\t]+$\":::Flag:Resource:\n\
-	Resource Name:\"\\0\":\"\"::Storage Type:Resource:C\n\
+	Resource Name:\"&\":\"\"::Storage Type:Resource:C\n\
 	Resource Wrap:\"\\\\\\n\":::Text Arg1:Resource:\n\
 	Free Text:\"^.*$\":::Flag::}",
      "NEdit Macro:1:0{\n\
@@ -635,8 +886,12 @@ char *WriteStylesString(void)
 ** Read a string representing highlight pattern sets and add them
 ** to the PatternSets list of loaded highlight patterns.  Note that the
 ** patterns themselves are not parsed until they are actually used.
+**
+** The argument convertOld, reads patterns in pre 5.1 format (which means
+** that they may contain regular expressions are of the older syntax where
+** braces were not quoted, and \0 was a legal substitution character).
 */
-int LoadHighlightString(char *inString)
+int LoadHighlightString(char *inString, int convertOld)
 {
     char *inPtr = inString;
     patternSet *patSet;
@@ -645,7 +900,7 @@ int LoadHighlightString(char *inString)
     for (;;) {
    	
    	/* Read each pattern set, abort on error */
-   	patSet = readPatternSet(&inPtr);
+   	patSet = readPatternSet(&inPtr, convertOld);
    	if (patSet == NULL)
    	    return False;
    	
@@ -659,7 +914,7 @@ int LoadHighlightString(char *inString)
 	}
 	if (i == NPatternSets) {
 	    PatternSets[NPatternSets++] = patSet;
-   	    if (NPatternSets > MAX_PATTERN_SETS)
+   	    if (NPatternSets > MAX_LANGUAGE_MODES)
    		return False;
 	}
 	
@@ -713,6 +968,58 @@ char *WriteHighlightString(void)
     escapedStr = EscapeSensitiveChars(outStr);
     XtFree(outStr);
     return escapedStr;
+}
+
+/*
+** Update regular expressions in stored pattern sets to version 5.1 regular
+** expression syntax, in which braces and \0 have different meanings
+*/
+static void convertOldPatternSet(patternSet *patSet)
+{
+    int p;
+    highlightPattern *pattern;
+    
+    for (p=0; p<patSet->nPatterns; p++) {
+	pattern = &patSet->patterns[p];
+	convertPatternExpr(&pattern->startRE, patSet->languageMode,
+		pattern->name, pattern->flags & COLOR_ONLY);
+	convertPatternExpr(&pattern->endRE, patSet->languageMode,
+		pattern->name, pattern->flags & COLOR_ONLY);
+	convertPatternExpr(&pattern->errorRE, patSet->languageMode,
+		pattern->name, pattern->flags & COLOR_ONLY);
+    }
+}
+
+/*
+** Convert a single regular expression, patternRE, to version 5.1 regular
+** expression syntax.  It will convert either a match expression or a
+** substitution expression, which must be specified by the setting of
+** isSubsExpr.  Error messages are directed to stderr, and include the
+** pattern set name and pattern name as passed in patSetName and patName.
+*/
+static void convertPatternExpr(char **patternRE, char *patSetName,
+	char *patName, int isSubsExpr)
+{
+    char *newRE, *errorText;
+    
+    if (*patternRE == NULL)
+	return;
+    if (isSubsExpr) {
+	newRE = XtMalloc(strlen(*patternRE) + 5000);
+	ConvertSubstituteRE(*patternRE, newRE, strlen(*patternRE) + 5000);
+	XtFree(*patternRE);
+	*patternRE = XtNewString(newRE);
+	XtFree(newRE);
+    } else{
+	newRE = ConvertRE(*patternRE, &errorText, NULL);
+	if (newRE == NULL) {
+	    fprintf(stderr, "NEdit error converting old format regular "
+		    "expression in pattern set %s, pattern %s: %s\n",
+		    patSetName, patName, errorText);
+	} 
+	XtFree(*patternRE);
+	*patternRE = newRE;
+    }
 }
 
 /*
@@ -881,7 +1188,7 @@ static char *createPatternsString(patternSet *patSet, char *indentStr)
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns NULL and outputs an error to stderr on failure.
 */
-static patternSet *readPatternSet(char **inPtr)
+static patternSet *readPatternSet(char **inPtr, int convertOld)
 {
     char *errMsg, *stringStart = *inPtr;
     patternSet patSet, *retPatSet;
@@ -927,9 +1234,15 @@ static patternSet *readPatternSet(char **inPtr)
     if (patSet.patterns == NULL)
 	return highlightError(stringStart, *inPtr, errMsg);
 
-    /* pattern set was read correctly, make an allocated copy and return */
+    /* pattern set was read correctly, make an allocated copy to return */
     retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
     memcpy(retPatSet, &patSet, sizeof(patternSet));
+    
+    /* Convert pre-5.1 pattern sets which use old regular expression
+       syntax to quote braces and use & rather than \0 */
+    if (convertOld)
+    	convertOldPatternSet(retPatSet);
+    
     return retPatSet;
 }
 
@@ -1068,7 +1381,7 @@ static patternSet *readDefaultPatternSet(char *langModeName)
     	if (!strncmp(langModeName, DefaultPatternSets[i], modeNameLen) &&
     	    	DefaultPatternSets[i][modeNameLen] == ':') {
     	    strPtr = DefaultPatternSets[i];
-    	    return readPatternSet(&strPtr);
+    	    return readPatternSet(&strPtr, False);
     	}
     }
     return NULL;
@@ -1319,7 +1632,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     AddDialogMnemonicHandler(form);
     
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(HSDialog.shell);
+    RealizeWithoutForcingPosition(HSDialog.shell);
 }
 
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1588,8 +1901,8 @@ void EditHighlightPatterns(WindowInfo *window)
 {
 #define BORDER 4
 #define LIST_RIGHT 41
-    Widget form, lmOptMenu, lmLbl, patternsForm, patternsFrame, patternsLbl;
-    Widget lmForm, contextFrame, contextForm, contextLbl, styleLbl, styleBtn;
+    Widget form, lmOptMenu, patternsForm, patternsFrame, patternsLbl;
+    Widget lmForm, contextFrame, contextForm, styleLbl, styleBtn;
     Widget okBtn, applyBtn, checkBtn, deleteBtn, dismissBtn, helpBtn;
     Widget restoreBtn, nameLbl, typeLbl, typeBox, lmBtn, matchBox;
     patternSet *patSet;
@@ -1663,7 +1976,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     XtManageChild(lmOptMenu);
     HighlightDialog.lmOptMenu = lmOptMenu;
     
-    lmLbl = XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
+    XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
     	    XmNlabelString, s1=XmStringCreateSimple("Language Mode:"),
     	    XmNmnemonic, 'M',
     	    XmNuserData, XtParent(HighlightDialog.lmOptMenu),
@@ -1778,8 +2091,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     	    XmNbottomOffset, BORDER, 0);
     contextForm = XtVaCreateManagedWidget("contextForm", xmFormWidgetClass,
 	    contextFrame, 0);
-    contextLbl = XtVaCreateManagedWidget("contextLbl",
-    	    xmLabelGadgetClass, contextFrame,
+    XtVaCreateManagedWidget("contextLbl", xmLabelGadgetClass, contextFrame,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	      "Context requirements for incremental re-parsing after changes"),
 	    XmNchildType, XmFRAME_TITLE_CHILD, 0);
@@ -2143,7 +2455,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     updateLabels();
     
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(HighlightDialog.shell);
+    RealizeWithoutForcingPosition(HighlightDialog.shell);
 }
 
 /*
@@ -2521,7 +2833,7 @@ static void updateLabels(void)
     
     if (XmToggleButtonGetState(HighlightDialog.colorPatW)) {
 	startLbl =  "Sub-expressions to Highlight in Parent's Starting \
-Regular Expression (\\1 \\2 etc.)";
+Regular Expression (\\1, &, etc.)";
 	endLbl = "Sub-expressions to Highlight in Parent Pattern's Ending \
 Regular Expression";
     	endSense = True;
@@ -2654,13 +2966,14 @@ static highlightPattern *readDialogFields(int silent)
     	    if (*inPtr!=' ' && *inPtr!='\t')
     		*outPtr++ = *inPtr;
 	*outPtr = '\0';
-    	if (strspn(pat->startRE, "\\0123456789 \t") != strlen(pat->startRE) ||
-    	    	*pat->startRE != '\\' || strstr(pat->startRE, "\\\\") != NULL) {
+    	if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE) ||
+    	    	(*pat->startRE != '\\' && *pat->startRE != '&') ||
+		strstr(pat->startRE, "\\\\") != NULL) {
     	    if (!silent) {
     		DialogF(DF_WARN, HighlightDialog.shell, 1,
 "The expression field in patterns which specify highlighting for\n\
 a parent, must contain only sub-expression references in regular\n\
-expression replacement form (\\1\\2 etc.).  See Help -> Regular\n\
+expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n\
 Expressions and Help -> Syntax Highlighting for more information", "Dismiss");
     		XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
     	    }

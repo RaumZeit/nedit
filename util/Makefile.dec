@@ -1,8 +1,0 @@
-CC=cc
-AR=ar
-CFLAGS=-O -DUSE_DIRENT
-ARFLAGS=-urs
-BIGGER_STRINGS= -Wf,-XNl8192
-LIBS=-lm -lXm -lXt -lX11
-
-include Makefile.common

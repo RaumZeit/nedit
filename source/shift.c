@@ -2,21 +2,23 @@
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 18, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -211,7 +213,7 @@ void FillSelection(WindowInfo *window)
     textBuffer *buf = window->buffer;
     char *c, *text, *filledText;
     int left, right, nCols, len, isRect, rectStart, rectEnd;
-    int rightMargin, wrapMargin, nLines;
+    int rightMargin, wrapMargin;
     int insertPos = TextGetCursorPos(window->lastFocus);
     int hasSelection = window->buffer->primary.selected;
     
@@ -230,7 +232,6 @@ void FillSelection(WindowInfo *window)
     } else if (isRect) {
     	left = BufStartOfLine(buf, left);
     	right = BufEndOfLine(buf, right);
-    	nLines = BufCountLines(buf, left, right) + 1;
     	text = BufGetTextInRect(buf, left, right, rectStart, INT_MAX);
     } else {
 	left = BufStartOfLine(buf, left);

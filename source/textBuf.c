@@ -2,21 +2,23 @@
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
 *                                                                              *
-* Copyright (c) 1991 Universities Research Association, Inc.                   *
-* All rights reserved.                                                         *
-*                                                                              *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warranty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                                                              *
-* Fermilab Nirvana GUI Library                                                 *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
+* 									       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 15, 1995                                                                *
 *                                                                              *
 * Written by Mark Edel                                                         *
@@ -1312,7 +1314,7 @@ static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
     		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
     	XtFree(line);
     	XtFree(insLine);
-    	for (c=outPtr+len-1; c>outPtr && isspace(*c); c--)
+    	for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
     	    len--;
 	outPtr += len;
 	*outPtr++ = '\n';
@@ -1435,7 +1437,7 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
 		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
     	XtFree(line);
     	XtFree(insLine);
-    	for (c=outPtr+len-1; c>outPtr && isspace(*c); c--)
+    	for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
     	    len--;
 	outPtr += len;
 	*outPtr++ = '\n';

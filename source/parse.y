@@ -400,7 +400,8 @@ static Symbol *matchesActionRoutine(char **inPtr)
 ** parsing, so this message is immediately reported to the caller
 ** of ParseExpr)
 */
-yyerror(char *s)
+int yyerror(char *s)
 {
     ErrMsg = s;
+    return 0;
 }

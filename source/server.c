@@ -2,21 +2,23 @@
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * November, 1995							       *
 *									       *
 * Written by Mark Edel							       *
@@ -54,12 +56,12 @@
    independent way), please change this (L_cuserid is apparently not ANSI) */
 #define MAXUSERNAMELEN 32
 
-#if defined(VMS) || defined(linux)
-#define MAXNODENAMELEN (MAXPATHLEN+2)
-#elif defined(SUNOS)
-#define MAXNODENAMELEN 9
-#else
+/* Ditto for the maximum length for a node name.  SYS_NMLN is not available
+   on most systems, and I don't know what the portable alternative is. */
+#ifdef SYS_NMLN
 #define MAXNODENAMELEN SYS_NMLN
+#else
+#define MAXNODENAMELEN (MAXPATHLEN+2)
 #endif
 
 static void processServerCommand(void);
@@ -182,22 +184,15 @@ static char *getUserName(void)
 #ifdef VMS
     return cuserid(NULL);
 #else
-    /* This should be simple, but cuserid has apparently been dropped from
-       the ansi C standard, and if strict ansi compliance is turned on (on
-       Sun anyhow, maybe others), calls to cuserid fail to compile.
-       Unfortunately the alternative is this weird sequence of getlogin
-       followed by getpwuid.  Getlogin only works if a terminal is attached &
-       there can be more than one name associated with a uid (really?).  Both
-       calls return a pointer to a static area. */
-    char *name;
+    /* cuserid has apparently been dropped from the ansi C standard, and if
+       strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
+       to cuserid fail to compile.  Older versions of nedit try to use the
+       getlogin call first, then if that fails, use getpwuid and getuid.  This
+       results in the user-name of the original terminal being used, which is
+       not correct when the user uses the su command.  Now, getpwuid only: */
     struct passwd *passwdEntry;
-    
-    name = getlogin();
-    if (name == NULL || name[0] == '\0') {
-    	passwdEntry = getpwuid(getuid());
-    	name = passwdEntry->pw_name;
-    }
-    return name;
+    passwdEntry = getpwuid(getuid());
+    return passwdEntry->pw_name;
 #endif
 }
 
@@ -237,9 +232,10 @@ static void getHostName(char *hostname)
 static void processServerCommandString(char *string)
 {
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
-    char *doCommand, *inPtr;
+    char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, fileLen, doLen, charsRead, itemsRead;
+    int lineNum, createFlag, readFlag, iconicFlag;
+    int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window;
 
     /* If the command string is empty, put up an empty, Untitled window
@@ -249,7 +245,7 @@ static void processServerCommandString(char *string)
     	    if (!window->filenameSet && !window->fileChanged)
     	    	break;
     	if (window == NULL) {
-    	    EditNewFile();
+    	    EditNewFile(NULL, False, NULL);
     	    CheckCloseDim();
     	} else
     	    XMapRaised(TheDisplay, XtWindow(window->shell));
@@ -270,9 +266,10 @@ static void processServerCommandString(char *string)
 	   command both followed by newlines.  This bit of code reads the
 	   header, and converts the newlines following the filename and do
 	   command to nulls to terminate the filename and doCommand strings */
-	itemsRead = sscanf(inPtr, "%d %d %d %d %d%n", &lineNum, &readFlag,
-    		&createFlag, &fileLen, &doLen, &charsRead);
-	if (itemsRead != 5)
+	itemsRead = sscanf(inPtr, "%d %d %d %d %d %d %d %d%n", &lineNum,
+		&readFlag, &createFlag, &iconicFlag, &fileLen, &doLen,
+		&lmLen, &geomLen, &charsRead);
+	if (itemsRead != 8)
     	    goto readError;
 	inPtr += charsRead + 1;
 	if (inPtr - string + fileLen > stringLen)
@@ -284,6 +281,16 @@ static void processServerCommandString(char *string)
 	    goto readError;
 	doCommand = inPtr;
 	inPtr += doLen;
+	*inPtr++ = '\0';
+	if (inPtr - string + lmLen > stringLen)
+	    goto readError;
+	langMode = inPtr;
+	inPtr += lmLen;
+	*inPtr++ = '\0';
+	if (inPtr - string + geomLen > stringLen)
+	    goto readError;
+	geometry = inPtr;
+	inPtr += geomLen;
 	*inPtr++ = '\0';
 	
 	/* An empty file name means: choose a random window for
@@ -302,12 +309,14 @@ static void processServerCommandString(char *string)
 	ParseFilename(fullname, filename, pathname);
     	window = FindWindowWithFile(filename, pathname);
     	if (window == NULL)
-	    window = EditExistingFile(WindowList, filename, pathname,editFlags);
+	    window = EditExistingFile(WindowList, filename, pathname,
+		    editFlags, geometry, iconicFlag, lmLen==0?NULL:langMode);
 	
 	/* Do the actions requested (note DoMacro is last, since the do
 	   command can do anything, including closing the window!) */
 	if (window != NULL) {
-	    XMapRaised(TheDisplay, XtWindow(window->shell));
+	    if (!iconicFlag)
+	    	XMapRaised(TheDisplay, XtWindow(window->shell));
 	    if (lineNum > 0)
 		SelectNumberedLine(window, lineNum);
 	    if (*doCommand != '\0')

@@ -1,3 +1,30 @@
+/*******************************************************************************
+*									       *
+* macro.c -- Macro file processing, learn/replay, and built-in macro	       *
+*            subroutines			    	    	    	       *
+*									       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
+* 									       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
+* April, 1997								       *
+*									       *
+* Written by Mark Edel							       *
+*									       *
+*******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -19,6 +46,7 @@
 #include <Xm/Form.h>
 #include <Xm/RowColumn.h>
 #include <Xm/LabelG.h>
+#include <Xm/List.h>
 #include <Xm/ToggleB.h>
 #include <Xm/DialogS.h>
 #include <Xm/MessageB.h>
@@ -148,6 +176,8 @@ static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg);
 static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -160,6 +190,16 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     	XtPointer callData);
 static void stringDialogCloseCB(Widget w, XtPointer clientData,
     	XtPointer callData);
+/* T Balinski */
+static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
+	DataValue *result, char **errMsg);
+static void listDialogBtnCB(Widget w, XtPointer clientData,
+	XtPointer callData);
+static void listDialogCloseCB(Widget w, XtPointer clientData,
+	XtPointer callData);
+/* T Balinski End */
+static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg);
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -201,7 +241,7 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
-#define N_MACRO_SUBRS 29
+#define N_MACRO_SUBRS 32
 static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	dialogMS, stringDialogMS, replaceRangeMS, replaceSelectionMS,
     	setCursorPosMS, getCharacterMS, minMS, maxMS, searchMS,
@@ -209,7 +249,7 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	writeFileMS, appendFileMS, beepMS, getSelectionMS,
 	replaceInStringMS, selectMS, selectRectangleMS, focusWindowMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
-	tolowerMS};
+	tolowerMS, listDialogMS, getenvMS, setLanguageModeMS};
 static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
     	"set_cursor_pos", "get_character", "min", "max", "search",
@@ -217,7 +257,7 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
         "write_file", "append_file", "beep", "get_selection",
 	"replace_in_string", "select", "select_rectangle", "focus_window",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
-	"toupper", "tolower"};
+	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode"};
 #define N_SPECIAL_VARS 16
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
@@ -230,11 +270,12 @@ static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$language_mode", "$modified"};
 
 /* Global symbols for returning values from built-in functions */
-#define N_RETURN_GLOBALS 4
+#define N_RETURN_GLOBALS 5
 enum retGlobalSyms {STRING_DIALOG_BUTTON, SEARCH_END, READ_STATUS,
-	SHELL_CMD_STATUS};
+	SHELL_CMD_STATUS, LIST_DIALOG_BUTTON};
 static char *ReturnGlobalNames[N_RETURN_GLOBALS] = {"$string_dialog_button",
-    	"$search_end", "$read_status", "$shell_cmd_status"};
+    	"$search_end", "$read_status", "$shell_cmd_status",
+	"$list_dialog_button"};
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
 /* List of actions not useful when learning a macro sequence (also see below) */
@@ -254,7 +295,7 @@ static char* RedundantActions[] = {"open_dialog", "save_as_dialog",
 	"include_file_dialog", "load_tags_file_dialog", "find_dialog",
 	"replace_dialog", "goto_line_number_dialog", "control_code_dialog",
 	"filter_selection_dialog", "execute_command_dialog", "repeat_dialog",
-	"revert_to_saved_dialog"};
+	"revert_to_saved_dialog", "start_incremental_find"};
 
 /* The last command executed (used by the Repeat command) */
 static char *LastCommand = NULL;
@@ -577,6 +618,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 		sym = LookupSymbol(subrName);
 		if (sym == NULL) {
 		    subrPtr.val.ptr = prog;
+		    subrPtr.tag = NO_TAG;
 		    sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
 		} else {
 	    	    if (sym->type == MACRO_FUNCTION_SYM)
@@ -780,6 +822,7 @@ static void finishMacroCmdExecution(WindowInfo *window)
     macroCmdInfo *cmdData = window->macroCmdData;
     int closeOnCompletion = cmdData->closeOnCompletion;
     XmString s;
+    XClientMessageEvent event;
 
     /* Cancel pending timeout and work proc */
     if (cmdData->bannerTimeoutID != 0)
@@ -808,11 +851,24 @@ static void finishMacroCmdExecution(WindowInfo *window)
     /* If macro closed its own window, window was made empty and untitled,
        but close was deferred until completion.  This is completion, so if
        the window is still empty, do the close */
-    if (closeOnCompletion && !window->filenameSet && !window->fileChanged)
+    if (closeOnCompletion && !window->filenameSet && !window->fileChanged) {
     	CloseWindow(window);
+	window = NULL;
+    }
 
     /* If no other macros are executing, do garbage collection */
     SafeGC();
+    
+    /* In processing the .neditmacro file (and possibly elsewhere), there
+       is an event loop which waits for macro completion.  Send an event
+       to wake up that loop, otherwise execution will stall until the user
+       does something to the window. */
+    if (!closeOnCompletion) {
+	event.format = 8;
+	event.type = ClientMessage;
+	XSendEvent(XtDisplay(window->shell), XtWindow(window->shell), False,
+		NoEventMask, (XEvent *)&event);
+    }
 }
 
 /*
@@ -1615,6 +1671,13 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return wrongNArgsErr(errMsg);
     if (!readStringArg(argList[0], &string, stringStorage, errMsg))
     	return False;
+    
+    /* Don't allow modifications if the window is read-only */
+    if (window->readOnly || window->lockWrite) {
+	XBell(XtDisplay(window->shell), 0);
+	result->tag = NO_TAG;
+	return True;
+    }
      
     /* There are no null characters in the string (because macro strings
        still have null termination), but if the string contains the
@@ -1642,7 +1705,6 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     char *selText;
-    XEvent nextEvent;	 
 
     /* Read argument list to check for "any" keyword, and get the appropriate
        selection */
@@ -2010,8 +2072,8 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     
     /* Do the search */
-    found = SearchString(string, searchStr, direction, type, wrap,
-    	    beginPos, &foundStart, &foundEnd, GetWindowDelimiters(window));
+    found = SearchString(string, searchStr, direction, type, wrap, beginPos,
+	    &foundStart, &foundEnd, NULL, GetWindowDelimiters(window));
     
     /* Return the results */
     ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2136,7 +2198,7 @@ static int setCursorPosMS(WindowInfo *window, DataValue *argList, int nArgs,
 static int selectMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
-    int start, end;
+    int start, end, startTmp;
 
     /* Get arguments and convert to int */
     if (nArgs != 2)
@@ -2145,6 +2207,17 @@ static int selectMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     if (!readIntArg(argList[1], &end, errMsg))
     	return False;
+    
+    /* Verify integrity of arguments */
+    if (start > end) {
+    	startTmp = start;
+	start = end;
+	end = startTmp;
+    }
+    if (start < 0) start = 0;
+    if (start > window->buffer->length) start = window->buffer->length;
+    if (end < 0) end = 0;
+    if (end > window->buffer->length) end = window->buffer->length;
     
     /* Make the selection */
     BufSelect(window->buffer, start, end);
@@ -2205,6 +2278,32 @@ static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
+/*
+** Built-in macro subroutine for getting the value of an environment variable
+*/
+static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg)
+{
+    char *value;
+
+    /* Get name of variable to get */
+    if (nArgs != 1)
+      	return wrongNArgsErr(errMsg);
+    if (argList[0].tag != STRING_TAG) {
+	*errMsg = "argument to %s must be a string";
+	return False;
+    }
+    value = getenv(argList[0].val.str);
+    if (value == NULL)
+	value = "";
+	
+    /* Return the text as an allocated string */
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(value) + 1);
+    strcpy(result->val.str, value);
+    return True;
+}
+
 static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
@@ -2216,6 +2315,13 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     if (!readStringArg(argList[1], &inputString, stringStorage[1], errMsg))
     	return False;
+    
+    /* Shell command execution requires that the macro be suspended, so
+       this subroutine can't be run if macro execution can't be interrupted */
+    if (MacroRunWindow()->macroCmdData == NULL) {
+      *errMsg = "%s can't be called from non-suspendable context";
+       return False;
+    }
 	
 #ifdef VMS
     *errMsg = "Shell commands not supported under VMS";
@@ -2264,6 +2370,13 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     window = MacroRunWindow();
     cmdData = window->macroCmdData;
     
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+      *errMsg = "%s can't be called from non-suspendable context";
+       return False;
+    }
+
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (nArgs == 0) {
@@ -2284,7 +2397,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Create the message box dialog widget and its dialog shell parent */
     shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
-    	    window->shell, XmNtitle, "", 0);
+    	    window->shell, XmNtitle, " ", 0);
     AddMotifCloseCallback(shell, dialogCloseCB, window);
     dialog = XtVaCreateWidget("macroDialog", xmMessageBoxWidgetClass,
     	    shell, XmNmessageString, s1=MKSTRING(message),
@@ -2299,6 +2412,11 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Unmanage default buttons, except for "OK" */
     XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+    
+    /* Make callback for the unmanaged cancel button (which can
+       still get executed via the esc key) activate close box action */
+    XtAddCallback(XmMessageBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON),
+	    XmNactivateCallback, dialogCloseCB, window);
 
     /* Add user specified buttons (1st is already done) */
     for (i=1; i<nBtns; i++) {
@@ -2381,6 +2499,13 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
        the dialog up over the window which is executing the macro */
     window = MacroRunWindow();
     cmdData = window->macroCmdData;
+    
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+      *errMsg = "%s can't be called from non-suspendable context";
+       return False;
+    }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
@@ -2402,7 +2527,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Create the selection box dialog widget and its dialog shell parent */
     shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
-    	    window->shell, XmNtitle, "", 0);
+    	    window->shell, XmNtitle, " ", 0);
     AddMotifCloseCallback(shell, stringDialogCloseCB, window);
     dialog = XtVaCreateWidget("macroStringDialog", xmSelectionBoxWidgetClass,
     	    shell, XmNselectionLabelString, s1=MKSTRING(message),
@@ -2418,6 +2543,11 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Unmanage unneded widgets */
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+    
+    /* Make callback for the unmanaged cancel button (which can
+       still get executed via the esc key) activate close box action */
+    XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON),
+	    XmNactivateCallback, stringDialogCloseCB, window);
 
     /* Add user specified buttons (1st is already done).  Selection box
        requires a place-holder widget to be added before buttons can be
@@ -2516,6 +2646,320 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
     ResumeMacroExecution(window);
 }
 
+/* T Balinski */
+static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    macroCmdInfo *cmdData;
+    char stringStorage[9][25], *btnLabels[8], *message, *text;
+    Widget shell, dialog, btn;
+    int i, nBtns;
+    XmString s1, s2;
+    long nlines = 0;
+    char *p, *old_p, **text_lines, *tmp;
+    int tmp_len;
+    int n, is_last;
+    XmString *test_strings;
+    int tabDist;
+  
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
+    window = MacroRunWindow();
+    cmdData = window->macroCmdData;
+    
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+      *errMsg = "%s can't be called from non-suspendable context";
+       return False;
+    }
+
+    /* Read and check the arguments.  The first being the dialog message,
+       and the rest being the button labels */
+    if (nArgs < 2) {
+      *errMsg = "%s subroutine called with no message, string or arguments";
+      return False;
+    }
+
+    if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
+      return False;
+
+    if (!readStringArg(argList[1], &text, stringStorage[0], errMsg))
+      return False;
+
+    if (!text || text[0] == '\0') {
+      *errMsg = "%s subroutine called with empty list data";
+      return False;
+    }
+
+    for (i=2; i<nArgs; i++)
+      if (!readStringArg(argList[i], &btnLabels[i-2], stringStorage[i],
+              errMsg))
+          return False;
+    if (nArgs == 2) {
+      btnLabels[0] = "Dismiss";
+      nBtns = 1;
+    } else
+      nBtns = nArgs - 2;
+
+    /* count the lines in the text - add one for unterminated last line */
+    nlines = 1;
+    for (p = text; *p; p++)
+      if (*p == '\n')
+          nlines++;
+
+    /* now set up arrays of pointers to lines */
+    /*   test_strings to hold the display strings (tab expanded) */
+    /*   text_lines to hold the original text lines (without the '\n's) */
+    test_strings = (XmString *) XtMalloc(sizeof(XmString) * nlines);
+    text_lines = (char **)XtMalloc(sizeof(char *) * (nlines + 1));
+    for (n = 0; n < nlines; n++) {
+      test_strings[n] = (XmString)0;
+      text_lines[n] = (char *)0;
+    }
+    text_lines[n] = (char *)0;        /* make sure this is a null-terminated table */
+
+    /* pick up the tabDist value */
+    tabDist = window->buffer->tabDist;
+
+    /* load the table */
+    n = 0;
+    is_last = 0;
+    p = old_p = text;
+    tmp_len = 0;      /* current allocated size of temporary buffer tmp */
+    tmp = malloc(1);  /* temporary buffer into which to expand tabs */
+    do {
+      is_last = (*p == '\0');
+      if (*p == '\n' || is_last) {
+          *p = '\0';
+          if (strlen(old_p) > 0) {    /* only include non-empty lines */
+              char *s, *t;
+              int l;
+
+              /* save the actual text line in text_lines[n] */
+              text_lines[n] = (char *)XtMalloc(strlen(old_p) + 1);
+              strcpy(text_lines[n], old_p);
+
+              /* work out the tabs expanded length */
+              for (s = old_p, l = 0; *s; s++)
+                  l += (*s == '\t') ? tabDist - (l % tabDist) : 1;
+
+              /* verify tmp is big enough then tab-expand old_p into tmp */
+              if (l > tmp_len)
+                  tmp = realloc(tmp, (tmp_len = l) + 1);
+              for (s = old_p, t = tmp, l = 0; *s; s++) {
+                  if (*s == '\t') {
+                      for (i = tabDist - (l % tabDist); i--; l++)
+                          *t++ = ' ';
+                  }
+                  else {
+                    *t++ = *s;
+                    l++;
+                  }
+              }
+              *t = '\0';
+              /* that's it: tmp is the tab-expanded version of old_p */
+              test_strings[n] = MKSTRING(tmp);
+              n++;
+          }
+          old_p = p + 1;
+          if (!is_last)
+              *p = '\n';              /* put back our newline */
+      }
+      p++;
+    } while (!is_last);
+
+    free(tmp);                /* don't need this anymore */
+    nlines = n;
+    if (nlines == 0) {
+      test_strings[0] = MKSTRING("");
+      nlines = 1;
+    }
+
+    /* Create the selection box dialog widget and its dialog shell parent */
+    shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
+          window->shell, XmNtitle, " ", 0);
+    AddMotifCloseCallback(shell, listDialogCloseCB, window);
+    dialog = XtVaCreateWidget("macroListDialog", xmSelectionBoxWidgetClass,
+          shell, XmNlistLabelString, s1=MKSTRING(message),
+          XmNlistItems, test_strings,
+          XmNlistItemCount, nlines,
+          XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines,
+          XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]),
+          XmNdialogType, XmDIALOG_SELECTION, 0);
+    XtAddCallback(dialog, XmNokCallback, listDialogBtnCB, window);
+    XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
+          XmNuserData, (XtPointer)1, 0);
+    XmStringFree(s1);
+    XmStringFree(s2);
+    cmdData->dialog = dialog;
+
+    /* forget lines stored in list */
+    while (n--)
+      XmStringFree(test_strings[n]);
+    XtFree((char *)test_strings);
+
+    /* modify the list */
+    XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST),
+                XmNselectionPolicy, XmSINGLE_SELECT,
+                XmNuserData, (XtPointer)text_lines, 0);
+
+    /* Unmanage unneeded widgets */
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
+    
+    /* Make callback for the unmanaged cancel button (which can
+       still get executed via the esc key) activate close box action */
+    XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON),
+	    XmNactivateCallback, listDialogCloseCB, window);
+
+    /* Add user specified buttons (1st is already done).  Selection box
+       requires a place-holder widget to be added before buttons can be
+       added, that's what the separator below is for */
+    XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, 0);
+    for (i=1; i<nBtns; i++) {
+      btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
+              XmNlabelString, s1=XmStringCreateSimple(btnLabels[i]),
+              XmNuserData, (XtPointer)(i+1), 0);
+      XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
+      XmStringFree(s1);
+    }
+    
+    /* Put up the dialog */
+    ManageDialogCenteredOnPointer(dialog);
+    
+    /* Stop macro execution until the dialog is complete */
+    PreemptMacro();
+    
+    /* Return placeholder result.  Value will be changed by button callback */
+    result->tag = INT_TAG;
+    result->val.n = 0;
+    return True;
+}
+
+static void listDialogBtnCB(Widget w, XtPointer clientData,
+      XtPointer callData)
+{
+    WindowInfo *window = (WindowInfo *)clientData;
+    macroCmdInfo *cmdData = window->macroCmdData;
+    XtPointer userData;
+    DataValue retVal;
+    char *text;
+    char **text_lines;
+    int btnNum;
+    int n_sel, *seltable, sel_index;
+    Widget theList;
+
+    /* shouldn't happen, but would crash if it did */
+    if (cmdData == NULL)
+      return; 
+
+    theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
+    /* Return the string selected in the selection list area */
+    XtVaGetValues(theList, XmNuserData, &text_lines, 0);
+    if (!XmListGetSelectedPos(theList, &seltable, &n_sel)) {
+      n_sel = 0;
+    }
+    else {
+      sel_index = seltable[0] - 1;
+      XtFree((XtPointer)seltable);
+    }
+
+    if (!n_sel) {
+      text = AllocString(1);
+      text[0] = '\0';
+    }
+    else {
+      text = AllocString(strlen((char *)text_lines[sel_index]) + 1);
+      strcpy(text, text_lines[sel_index]);
+    }
+
+    /* don't need text_lines anymore: free it */
+    for (sel_index = 0; text_lines[sel_index]; sel_index++)
+      XtFree((XtPointer)text_lines[sel_index]);
+    XtFree((XtPointer)text_lines);
+
+    retVal.tag = STRING_TAG;
+    retVal.val.str = text;
+    ModifyReturnedValue(cmdData->context, retVal);
+    
+    /* Find the index of the button which was pressed (stored in the userData
+       field of the button widget).  The 1st button, being a gadget, is not
+       returned in w. */
+    if (XtClass(w) == xmPushButtonWidgetClass) {
+      XtVaGetValues(w, XmNuserData, &userData, 0);
+      btnNum = (int)userData;
+    } else
+      btnNum = 1;
+    
+    /* Return the button number in the global variable $list_dialog_button */
+    ReturnGlobals[LIST_DIALOG_BUTTON]->value.tag = INT_TAG;
+    ReturnGlobals[LIST_DIALOG_BUTTON]->value.val.n = btnNum;
+
+    /* Pop down the dialog */
+    XtDestroyWidget(XtParent(cmdData->dialog));
+    cmdData->dialog = NULL;
+
+    /* Continue preempted macro execution */
+    ResumeMacroExecution(window);
+}
+
+static void listDialogCloseCB(Widget w, XtPointer clientData,
+      XtPointer callData)
+{
+    WindowInfo *window = (WindowInfo *)clientData;
+    macroCmdInfo *cmdData = window->macroCmdData;
+    DataValue retVal;
+    char **text_lines;
+    int sel_index;
+    Widget theList;
+
+    /* shouldn't happen, but would crash if it did */
+    if (cmdData == NULL)
+      return; 
+
+    /* don't need text_lines anymore: retrieve it then free it */
+    theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
+    XtVaGetValues(theList, XmNuserData, &text_lines, 0);
+    for (sel_index = 0; text_lines[sel_index]; sel_index++)
+      XtFree((XtPointer)text_lines[sel_index]);
+    XtFree((XtPointer)text_lines);
+
+    /* Return an empty string */
+    retVal.tag = STRING_TAG;
+    retVal.val.str = AllocString(1);
+    retVal.val.str[0] = '\0';
+    ModifyReturnedValue(cmdData->context, retVal);
+    
+    /* Return button number 0 in the global variable $list_dialog_button */
+    ReturnGlobals[LIST_DIALOG_BUTTON]->value.tag = INT_TAG;
+    ReturnGlobals[LIST_DIALOG_BUTTON]->value.val.n = 0;
+
+    /* Pop down the dialog */
+    XtDestroyWidget(XtParent(cmdData->dialog));
+    cmdData->dialog = NULL;
+
+    /* Continue preempted macro execution */
+    ResumeMacroExecution(window);
+}
+/* T Balinski End */
+
+static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg)
+{
+    char stringStorage[25], *langString;
+
+    if (nArgs != 1)
+	return wrongNArgsErr(errMsg);
+    if (!readStringArg(argList[0], &langString, stringStorage, errMsg))
+	return False;
+    SetLanguageMode(window, FindLanguageMode(langString), FALSE);
+    return True;
+}
+
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
@@ -2527,7 +2971,6 @@ static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg)
 {
-    textBuffer *buf = window->buffer;
     int line, cursorPos, colNum;
 
     result->tag = INT_TAG;
@@ -2702,7 +3145,7 @@ static int readIntArg(DataValue dv, int *result, char **errMsg)
     	return True;
     } else if (dv.tag == STRING_TAG) {
 	for (c=dv.val.str; *c != '\0'; c++) {
-    	    if (!(isdigit(*c) || *c != ' ' || *c != '\t')) {
+    	    if (!(isdigit(*c) || *c == ' ' || *c == '\t')) {
     		goto typeError;
     	    }
     	}

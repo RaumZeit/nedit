@@ -2,21 +2,23 @@
 *									       *
 * text.c - Text Editing Widget						       *
 *									       *
-* Copyright (c) 1995 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warranty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 15, 1995								       *
 *									       *
 * Written by Mark Edel							       *
@@ -544,6 +546,8 @@ static XtResource resources[] = {
       XtOffset(TextWidget, text.highlightBGPixel), XmRString, "red"},
     {textNcursorForeground, textCCursorForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.cursorFGPixel), XmRString, "black"},
+    {textNlineNumForeground, textCLineNumForeground, XmRPixel,sizeof(Pixel),
+      XtOffset(TextWidget, text.lineNumFGPixel), XmRString, "black"},
     {textNrows, textCRows, XmRInt,sizeof(int),
       XtOffset(TextWidget, text.rows), XmRString, "24"},
     {textNcolumns, textCColumns, XmRInt, sizeof(int),
@@ -574,6 +578,8 @@ static XtResource resources[] = {
       XtOffset(TextWidget, text.hScrollBar), XmRString, ""},
     {textNvScrollBar, textCVScrollBar, XmRWidget, sizeof(Widget),
       XtOffset(TextWidget, text.vScrollBar), XmRString, ""},
+    {textNlineNumCols, textCLineNumCols, XmRInt, sizeof(int),
+      XtOffset(TextWidget, text.lineNumCols), XmRString, "0"},
     {textNautoShowInsertPos, textCAutoShowInsertPos, XmRBoolean,
       sizeof(Boolean), XtOffset(TextWidget, text.autoShowInsertPos),
       XmRString, "True"},
@@ -666,11 +672,15 @@ static void initialize(TextWidget request, TextWidget new)
     char *delimiters;
     textBuffer *buf;
     Pixel white, black;
+    int textLeft;
+    int charWidth = fs->max_bounds.width;
+    int marginWidth = new->text.marginWidth;
+    int lineNumCols = new->text.lineNumCols;
    
     /* Set the initial window size based on the rows and columns resources */
     if (request->core.width == 0)
-    	new->core.width = fs->max_bounds.width * new->text.columns +
-    		new->text.marginWidth * 2;
+    	new->core.width = charWidth * new->text.columns + marginWidth*2 +
+	       (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
     if (request->core.height == 0)
    	new->core.height = (fs->ascent + fs->descent) * new->text.rows +
    		new->text.marginHeight * 2;
@@ -695,14 +705,19 @@ static void initialize(TextWidget request, TextWidget new)
     buf = BufCreate();
     
     /* Create and initialize the text-display part of the widget */
+    textLeft = new->text.marginWidth +
+	    (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
     new->text.textD = TextDCreate((Widget)new, new->text.hScrollBar,
-	    new->text.vScrollBar, new->text.marginWidth, new->text.marginHeight,
-	    new->core.width - new->text.marginWidth * 2,
+	    new->text.vScrollBar, textLeft, new->text.marginHeight,
+	    new->core.width - marginWidth - textLeft,
 	    new->core.height - new->text.marginHeight * 2,
+	    lineNumCols == 0 ? 0 : marginWidth,
+	    lineNumCols == 0 ? 0 : lineNumCols * charWidth,
 	    buf, new->text.fontStruct, new->core.background_pixel,
 	    new->primitive.foreground, new->text.selectFGPixel,
 	    new->text.selectBGPixel, new->text.highlightFGPixel,
 	    new->text.highlightBGPixel, new->text.cursorFGPixel,
+	    new->text.lineNumFGPixel,
 	    new->text.continuousWrap, new->text.wrapMargin);
 
     /* Add mandatory delimiters blank, tab, and newline to the list of
@@ -727,7 +742,7 @@ static void initialize(TextWidget request, TextWidget new)
     new->text.motifDestOwner = False;
     new->text.emTabsBeforeCursor = 0;
 
-#ifdef USE_XMIM
+#ifndef NO_XMIM
     /* Register the widget to the input manager */
     XmImRegister((Widget)new, 0);
     /* In case some Resources for the IC need to be set, add them below */
@@ -761,7 +776,7 @@ static void destroy(TextWidget w)
     XtRemoveAllCallbacks((Widget)w, textNdragStartCallback);
     XtRemoveAllCallbacks((Widget)w, textNdragEndCallback);
 
-#ifdef USE_XMIM
+#ifndef NO_XMIM
     /* Unregister the widget from the input manager */
     XmImUnregister((Widget)w);
 #endif
@@ -775,6 +790,8 @@ static void resize(TextWidget w)
     XFontStruct *fs = w->text.fontStruct;
     int height = w->core.height, width = w->core.width;
     int marginWidth = w->text.marginWidth, marginHeight = w->text.marginHeight;
+    int lineNumAreaWidth = w->text.lineNumCols == 0 ? 0 : w->text.marginWidth +
+		fs->max_bounds.width * w->text.lineNumCols;
 
     w->text.columns = (width - marginWidth*2) / fs->max_bounds.width;
     w->text.rows = (height - marginHeight*2) / (fs->ascent + fs->descent);
@@ -788,7 +805,8 @@ static void resize(TextWidget w)
        Fixing it here is 100x easier than re-designing textDisp.c */
     if (w->text.columns < 1) {
     	w->text.columns = 1;
-    	w->core.width = width = fs->max_bounds.width + marginWidth*2;
+    	w->core.width = width = fs->max_bounds.width + marginWidth*2 +
+		lineNumAreaWidth;
     }
     if (w->text.rows < 1) {
     	w->text.rows = 1;
@@ -796,15 +814,16 @@ static void resize(TextWidget w)
     }
     
     /* Resize the text display that the widget uses to render text */
-    TextDResize(w->text.textD, width - marginWidth*2, height - marginHeight*2);
+    TextDResize(w->text.textD, width - marginWidth*2 - lineNumAreaWidth,
+	    height - marginHeight*2);
     
     /* if the window became shorter or narrower, there may be text left
        in the bottom or right margin area, which must be cleaned up */
     if (XtIsRealized((Widget)w)) {
 	XClearArea(XtDisplay(w), XtWindow(w), 0, height-marginHeight,
     		width, marginHeight, False);
-	XClearArea(XtDisplay(w), XtWindow(w), width-marginWidth, 0,
-    		marginWidth, height, False);
+	XClearArea(XtDisplay(w), XtWindow(w),width-marginWidth,
+		0, marginWidth, height, False);
     }
 }
 
@@ -824,7 +843,7 @@ static void redisplay(TextWidget w, XEvent *event, Region region)
 static Boolean setValues(TextWidget current, TextWidget request,
 	TextWidget new)
 {
-    Boolean redraw = False;
+    Boolean redraw = False, reconfigure = False;
     
     if (new->text.overstrike != current->text.overstrike) {
     	if (current->text.textD->cursorStyle == BLOCK_CURSOR)
@@ -835,8 +854,11 @@ static Boolean setValues(TextWidget current, TextWidget request,
     	    TextDSetCursorStyle(current->text.textD, BLOCK_CURSOR);
     }
     
-    if (new->text.fontStruct != current->text.fontStruct)
+    if (new->text.fontStruct != current->text.fontStruct) {
+	if (new->text.lineNumCols != 0)
+	    reconfigure = True;
     	TextDSetFont(current->text.textD, new->text.fontStruct);
+    }
     
     if (new->text.wrapMargin != current->text.wrapMargin ||
     	    new->text.continuousWrap != current->text.continuousWrap)
@@ -851,6 +873,22 @@ static Boolean setValues(TextWidget current, TextWidget request,
     	XtFree(current->text.delimiters);
 	sprintf(delimiters, "%s%s", " \t\n", new->text.delimiters);
 	new->text.delimiters = delimiters;
+    }
+    
+    /* Setting the lineNumCols resource tells the text widget to hide or
+       show, or change the number of columns of the line number display,
+       which requires re-organizing the x coordinates of both the line
+       number display and the main text display */
+    if (new->text.lineNumCols != current->text.lineNumCols || reconfigure) {
+	int marginWidth = new->text.marginWidth;
+	int charWidth = new->text.fontStruct->max_bounds.width;
+	if (new->text.lineNumCols == 0)
+	    TextDSetLineNumberArea(new->text.textD, 0, 0, marginWidth);
+	else
+	    TextDSetLineNumberArea(new->text.textD, marginWidth,
+		    charWidth * new->text.lineNumCols,
+		    2*marginWidth + charWidth * new->text.lineNumCols);
+	/* redraw = True; */
     }
     
     return redraw;
@@ -1097,7 +1135,7 @@ void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
        character typed). (Of course, it may not be significantly more efficient
        than the more general code below it, so it may be a waste of time!) */
     wrapMargin = tw->text.wrapMargin != 0 ? tw->text.wrapMargin :
-            (tw->core.width - tw->text.marginWidth) / fontWidth;
+            textD->width / fontWidth;
     lineStartPos = BufStartOfLine(buf, cursorPos);
     colNum = BufCountDispChars(buf, lineStartPos, cursorPos);
     for (c=chars; *c!='\0' && *c!='\n'; c++)
@@ -1668,7 +1706,8 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     selection *sec = &buf->secondary, *primary = &buf->primary;
     char *primaryText, *secText;
     int newPrimaryStart, newPrimaryEnd, secWasRect;
-
+    int dragState = ((TextWidget)w)->text.dragState; /* save before endDrag */
+    
     endDrag(w);
     if (checkReadOnly(w))
 	return;
@@ -1680,6 +1719,11 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	     (sec->start <= primary->start && sec->end > primary->start)))) {
     	BufSecondaryUnselect(buf);
     	XBell(XtDisplay(w), 0);
+	/* If there's no secondary selection, but the primary selection is 
+	   being dragged, we must not forget to finish the dragging.
+	   Otherwise, modifications aren't recorded. */
+	if (dragState == PRIMARY_BLOCK_DRAG)
+	    FinishBlockDrag((TextWidget)w);
     	return;
     }
     
@@ -1862,26 +1906,27 @@ static void insertStringAP(Widget w, XEvent *event, String *args,
 
 static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {   
-#ifdef USE_XMIM
+#ifdef NO_XMIM
+    static XComposeStatus compose = {NULL, 0};
+#else
     Status status;
 #endif
     XKeyEvent *e = (XKeyEvent *)event;
     char chars[20];
     KeySym keysym;
     int nChars;
-    static XComposeStatus compose = {NULL, 0};
     smartIndentCBStruct smartIndent;
     textDisp *textD = ((TextWidget)w)->text.textD;
     
-#ifdef USE_XMIM
+#ifdef NO_XMIM
+    nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, &compose);
+    if (nChars == 0)
+    	return;
+#else
     nChars = XmImMbLookupString(w, (XKeyEvent *)event, chars, 19, &keysym,
      	   &status);
     if (nChars == 0 || status == XLookupNone ||
      	   status == XLookupKeySym || status == XBufferOverflow)
-    	return;
-#else
-    nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, &compose);
-    if (nChars == 0)
     	return;
 #endif
     cancelDrag(w);
@@ -2651,7 +2696,7 @@ static void focusInAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     		HEAVY_CURSOR : NORMAL_CURSOR);
     TextDUnblankCursor(textD);
 
-#ifdef USE_XMIM
+#ifndef NO_XMIM
     /* Notify Motif input manager that widget has focus */
     XmImVaSetFocusValues(w,NULL);
 #endif
@@ -3064,7 +3109,7 @@ static void checkAutoScroll(TextWidget w, int x, int y)
     int inWindow;
     
     /* Is the pointer in or out of the window? */
-    inWindow = x >= w->text.marginWidth &&
+    inWindow = x >= w->text.textD->left &&
     	    x < w->core.width - w->text.marginWidth &&
     	    y >= w->text.marginHeight &&
     	    y < w->core.height - w->text.marginHeight;
@@ -3235,7 +3280,7 @@ static char *wrapText(TextWidget tw, char *startLine, char *text, int bufOffset,
     	    if (colNum > wrapMargin) {
     		if (!wrapLine(tw, wrapBuf, bufOffset, lineStartPos, pos,
     		    	limitPos, &breakAt, &charsAdded)) {
-    	    	    limitPos = pos;
+    	    	    limitPos = max(pos, limitPos);
     		} else {
     	    	    lineStartPos = limitPos = breakAt+1;
     	    	    pos += charsAdded;
@@ -3412,7 +3457,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id)
     TextDGetScroll(textD, &topLineNum, &horizOffset);
     if (cursorX >= (int)w->core.width - w->text.marginWidth)
     	horizOffset += fontWidth;
-    else if (w->text.mouseX < w->text.marginWidth)
+    else if (w->text.mouseX < textD->left)
     	horizOffset -= fontWidth;
     if (w->text.mouseY >= (int)w->core.height - w->text.marginHeight)
     	topLineNum += 1 + ((w->text.mouseY - (int)w->core.height -

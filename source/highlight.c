@@ -3,21 +3,23 @@
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
 *   	    	 selected by file content				       *
 *									       *
-* Copyright (c) 1996 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 24, 1996								       *
 *									       *
 * Written by Mark Edel							       *
@@ -125,22 +127,20 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
         reparseContext *contextRequirements, int beginParse, int endParse,
         char *delimiters);
 static int parseString(highlightDataRec *pattern, char **string,
-    	char **styleString, int length, int *isBOL, int *isBOW, int anchored,
+    	char **styleString, int length, char *prevChar, int anchored,
     	char *delimiters);
 static void passTwoParseString(highlightDataRec *pattern, char *string,
-    	char *styleString, int length, int *isBOL, int *isBOW, int anchored,
+    	char *styleString, int length, char *prevChar, int anchored,
     	char *delimiters);
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *delimiters, int *isBOL, int *isBOW);
+    	char style, char *delimiters, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
 static Pixel allocColor(Widget w, char *colorName);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
-static int isDelim(char c, char *delimiters);
-static void posBeginsLineOrWord(textBuffer *buf, int pos, char *delimiters,
-	int *bol, int *bow);
+static char getPrevChar(textBuffer *buf, int pos);
 regexp *compileREAndWarn(Widget parent, char *re);
 static int startOfMajorStyle(char *majorStyles, textBuffer *styleBuf, int pos,
     	int limit);
@@ -234,7 +234,7 @@ void StartHighlighting(WindowInfo *window, int warn)
     patternSet *patterns;
     windowHighlightData *highlightData;
     char *stylePtr, *styleString, *stringPtr, *bufString;
-    int isBOL = True, isBOW = True;
+    char prevChar = '\0';
     int i, oldFontHeight;
     
     /* Find the pattern set matching the window's current
@@ -262,7 +262,7 @@ void StartHighlighting(WindowInfo *window, int warn)
     } else {
 	stringPtr = bufString = BufGetAll(window->buffer);
 	parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr,
-    		window->buffer->length, &isBOL, &isBOW, False,
+    		window->buffer->length, &prevChar, False,
     		GetWindowDelimiters(window));
 	XtFree(bufString);
     }
@@ -288,6 +288,12 @@ void StartHighlighting(WindowInfo *window, int warn)
     updateWindowHeight(window, oldFontHeight);
     UpdateWMSizeHints(window);
     UpdateMinPaneHeights(window);
+
+    /* Make sure that if the window has grown, the additional area gets
+       repainted. Otherwise, it is possible that the area gets moved before a
+       repaint event is received and the area doesn't get repainted at all
+       (eg. because of a -line command line argument that moves the text). */
+    XmUpdateDisplay(window->shell);
     EndWait(window->shell);
 }
 
@@ -657,21 +663,25 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
     	    sizeof(styleTableEntry) * (nPass1Patterns + nPass2Patterns + 1));
     styleTablePtr->color = allocColor(window->textArea, ColorOfNamedStyle(
     	    noPass1 ? pass2PatternSrc[0].style : pass1PatternSrc[0].style));
+    styleTablePtr->underline = FALSE;
     styleTablePtr++->font = FontOfNamedStyle(window,
     	    noPass1 ? pass2PatternSrc[0].style : pass1PatternSrc[0].style);
     styleTablePtr->color = allocColor(window->textArea, ColorOfNamedStyle(
     	    noPass2 ? pass1PatternSrc[0].style : pass2PatternSrc[0].style));
+    styleTablePtr->underline = FALSE;
     styleTablePtr++->font = FontOfNamedStyle(window,
 	    noPass2 ? pass1PatternSrc[0].style : pass2PatternSrc[0].style);
     for (i=1; i<nPass1Patterns; i++) {
 	styleTablePtr->color = allocColor(window->textArea,
 	    	ColorOfNamedStyle(pass1PatternSrc[i].style));
+    	styleTablePtr->underline = FALSE;
 	styleTablePtr++->font = FontOfNamedStyle(window,
 	    	pass1PatternSrc[i].style);
     }
     for (i=1; i<nPass2Patterns; i++) {
 	styleTablePtr->color = allocColor(window->textArea,
 	    	ColorOfNamedStyle(pass2PatternSrc[i].style));
+    	styleTablePtr->underline = FALSE;
 	styleTablePtr++->font = FontOfNamedStyle(window,
 	    	pass2PatternSrc[i].style);
     }
@@ -750,18 +760,30 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
         nSubExprs = 0;
         if (patternSrc[i].startRE != NULL) {
             ptr = patternSrc[i].startRE;
-            while(sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-        	compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
-        	ptr += charsRead;
+            while(TRUE) {
+		if (*ptr == '&') {
+		    compiledPats[i].startSubexprs[nSubExprs++] = 0;
+		    ptr++;
+		} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead)==1) {
+        	    compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
+        	    ptr += charsRead;
+		} else
+		    break;
             }
         }
         compiledPats[i].startSubexprs[nSubExprs] = -1;
         nSubExprs = 0;
         if (patternSrc[i].endRE != NULL) {
             ptr = patternSrc[i].endRE;
-            while(sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-        	compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
-        	ptr += charsRead;
+            while(TRUE) {
+		if (*ptr == '&') {
+		    compiledPats[i].endSubexprs[nSubExprs++] = 0;
+		    ptr++;
+		} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead)==1) {
+        	    compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
+        	    ptr += charsRead;
+		} else
+		    break;
             }
         }
         compiledPats[i].endSubexprs[nSubExprs] = -1;
@@ -804,13 +826,13 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	}
 	length = (compiledPats[patternNum].colorOnly ||
 	    	patternSrc[patternNum].endRE == NULL) ? 0 :
-	    	strlen(patternSrc[patternNum].endRE) + 3;
+	    	strlen(patternSrc[patternNum].endRE) + 5;
 	length += patternSrc[patternNum].errorRE == NULL ? 0 :
-	    	strlen(patternSrc[patternNum].errorRE) + 3;
+	    	strlen(patternSrc[patternNum].errorRE) + 5;
 	for (i=0; i<compiledPats[patternNum].nSubPatterns; i++) {
     	    subPatIndex = compiledPats[patternNum].subPatterns[i]-compiledPats;
     	    length += compiledPats[subPatIndex].colorOnly ? 0 :
-    	    	    strlen(patternSrc[subPatIndex].startRE) + 3;
+    	    	    strlen(patternSrc[subPatIndex].startRE) + 5;
 	}
 	if (length == 0) {
 	    compiledPats[patternNum].subPatternRE = NULL;
@@ -819,14 +841,14 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	bigPattern = XtMalloc(sizeof(char) * (length+1));
 	ptr=bigPattern;
 	if (patternSrc[patternNum].endRE != NULL) {
-	    *ptr++ = '(';
+	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
     	    strcpy(ptr, patternSrc[patternNum].endRE);
     	    ptr += strlen(patternSrc[patternNum].endRE);
     	    *ptr++ = ')';
     	    *ptr++ = '|';
 	}
 	if (patternSrc[patternNum].errorRE != NULL) {
-	    *ptr++ = '(';
+	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
     	    strcpy(ptr, patternSrc[patternNum].errorRE);
     	    ptr += strlen(patternSrc[patternNum].errorRE);
     	    *ptr++ = ')';
@@ -836,7 +858,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    subPatIndex = compiledPats[patternNum].subPatterns[i]-compiledPats;
     	    if (compiledPats[subPatIndex].colorOnly)
     	    	continue;
-     	    *ptr++ = '(';
+	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
     	    strcpy(ptr, patternSrc[subPatIndex].startRE);
     	    ptr += strlen(patternSrc[subPatIndex].startRE);
     	    *ptr++ = ')';
@@ -897,12 +919,12 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     WindowInfo *window = (WindowInfo *)cbArg;
     textBuffer *buf = window->buffer;
     textBuffer *styleBuf = textD->styleBuffer;
-    int beginParse, endParse, beginSafety, endSafety, bol, bow, p;
+    int beginParse, endParse, beginSafety, endSafety, p;
     windowHighlightData *highlightData =
     	    (windowHighlightData *)window->highlightData;
     reparseContext *context = &highlightData->contextRequirements;
     highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
-    char *string, *styleString, *stringPtr, *stylePtr, c;
+    char *string, *styleString, *stringPtr, *stylePtr, c, prevChar;
     int firstPass2Style = pass2Patterns[1].style;
     
     /* If there are no pass 2 patterns to process, do nothing (but this
@@ -952,10 +974,9 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     styleString = stylePtr = BufGetRange(styleBuf, beginSafety, endSafety);
     
     /* Parse it with pass 2 patterns */
-    posBeginsLineOrWord(buf, beginSafety, GetWindowDelimiters(window),
-	    &bol, &bow);
+    prevChar = getPrevChar(buf, beginSafety);
     parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety,
-    	    &bol, &bow, False, GetWindowDelimiters(window));
+    	    &prevChar, False, GetWindowDelimiters(window));
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
@@ -1079,8 +1100,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
         reparseContext *contextRequirements, int beginParse, int endParse,
         char *delimiters)
 {
-    char *string, *styleString, *stringPtr, *stylePtr, *temp;
-    int bol, bow, endSafety, endPass2Safety, startPass2Safety, tempLen;
+    char *string, *styleString, *stringPtr, *stylePtr, *temp, prevChar;
+    int endSafety, endPass2Safety, startPass2Safety, tempLen;
     int modStart, modEnd, beginSafety, beginStyle, p, style;
     int firstPass2Style = pass2Patterns==NULL?INT_MAX:pass2Patterns[1].style;
     
@@ -1125,11 +1146,11 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     
     /* Parse it with pass 1 patterns */
     /* printf("parsing from %d thru %d\n", beginSafety, endSafety); */
-    posBeginsLineOrWord(buf, beginParse, delimiters, &bol, &bow);
+    prevChar = getPrevChar(buf, beginParse);
     stringPtr = &string[beginParse-beginSafety];
     stylePtr = &styleString[beginParse-beginSafety];
     parseString(pass1Patterns, &stringPtr, &stylePtr, endParse-beginParse,
-    	    &bol, &bow, False, delimiters);
+    	    &prevChar, False, delimiters);
 
     /* On non top-level patterns, parsing can end early */
     endParse = min(endParse, stringPtr-string + beginSafety);
@@ -1163,17 +1184,17 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	    	endPass2Safety = endSafety;
     	} else
     	    endPass2Safety = endSafety;
-	posBeginsLineOrWord(buf, beginSafety, delimiters, &bol, &bow);
+	prevChar = getPrevChar(buf, beginSafety);
 	if (endPass2Safety == endSafety) {
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	endParse - beginSafety, &bol, &bow, False, delimiters);
+	    	endParse - beginSafety, &prevChar, False, delimiters);
 	    goto parseDone;
 	} else {
 	    tempLen = endPass2Safety - modStart;
 	    temp = XtMalloc(tempLen);
 	    strncpy(temp, &styleString[modStart-beginSafety], tempLen);
 	    passTwoParseString(pass2Patterns, string, styleString,
-		    modStart - beginSafety, &bol, &bow, False, delimiters);
+		    modStart - beginSafety, &prevChar, False, delimiters);
 	    strncpy(&styleString[modStart-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1184,20 +1205,20 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
        to ensure that parsing at modEnd is correct. */
     if (endParse > modEnd) {
 	if (beginSafety > modEnd) {
-	    posBeginsLineOrWord(buf, beginSafety, delimiters, &bol, &bow);
+	    prevChar = getPrevChar(buf, beginSafety);
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	    endParse - beginSafety, &bol, &bow, False, delimiters);
+	    	    endParse - beginSafety, &prevChar, False, delimiters);
 	} else {
 	    startPass2Safety = max(beginSafety,
 	    	    backwardOneContext(buf, contextRequirements, modEnd));
 	    tempLen = modEnd - startPass2Safety;
 	    temp = XtMalloc(tempLen);
 	    strncpy(temp, &styleString[startPass2Safety-beginSafety], tempLen);
-	    posBeginsLineOrWord(buf, startPass2Safety, delimiters, &bol, &bow);
+	    prevChar = getPrevChar(buf, startPass2Safety);
 	    passTwoParseString(pass2Patterns,
 	    	    &string[startPass2Safety-beginSafety],
 	    	    &styleString[startPass2Safety-beginSafety],
-	    	    endParse-startPass2Safety, &bol, &bow, False, delimiters);
+	    	    endParse-startPass2Safety, &prevChar, False, delimiters);
 	    strncpy(&styleString[startPass2Safety-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1220,8 +1241,8 @@ parseDone:
 ** Parses "string" according to compiled regular expressions in "pattern"
 ** until endRE is or errorRE are matched, or end of string is reached.
 ** Advances "string", "styleString" pointers to the next character past
-** the end of the parsed section, and updates "isBOL" and "isBOW" to reflect
-** whether "string" now points to a beginning of line or beginning of word.
+** the end of the parsed section, and updates "prevChar" to reflect
+** the new character before "string".
 ** If "anchored" is true, just scan the sub-pattern starting at the beginning
 ** of the string.  "length" is how much of the string must be parsed, but
 ** "string" must still be null terminated, the termination indicating how
@@ -1233,10 +1254,10 @@ parseDone:
 ** matching the end expression, or in the unlikely event of an internal error.
 */
 static int parseString(highlightDataRec *pattern, char **string,
-    	char **styleString, int length, int *isBOL, int *isBOW, int anchored,
+    	char **styleString, int length, char *prevChar, int anchored,
     	char *delimiters)
 {
-    int i, endExprValid;
+    int i;
     char *stringPtr, *stylePtr, *startingStringPtr;
     signed char *subExpr;
     highlightDataRec *subPat, *subSubPat;
@@ -1246,8 +1267,8 @@ static int parseString(highlightDataRec *pattern, char **string,
     
     stringPtr = *string;
     stylePtr = *styleString;
-    while(ExecRE(pattern->subPatternRE, stringPtr, anchored ? *string+1 :
-    	    *string+length+1, False, *isBOL,  *isBOW, delimiters)) {
+    while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
+	    *string+length+1, False, *prevChar, '\0', delimiters)) {
     	
     	/* Combination of all sub-patterns and end pattern matched */
     	/* printf("combined patterns RE matched at %d\n",
@@ -1257,14 +1278,23 @@ static int parseString(highlightDataRec *pattern, char **string,
 	/* Fill in the pattern style for the text that was skipped over before
 	   the match, and advance the pointers to the start of the pattern */
 	fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0],
-	    	pattern->style, delimiters, isBOL, isBOW);
+	    	pattern->style, delimiters, prevChar);
     	
     	/* If the combined pattern matched this pattern's end pattern, we're
-    	   done.  Fill in the style string, update the pointers, and return */
-    	if (pattern->endRE != NULL && ExecRE(pattern->endRE, stringPtr,
-    	    	stringPtr+1, False, *isBOL, *isBOW, delimiters)) {
+    	   done.  Fill in the style string, update the pointers, color the
+	   end expression if there were coloring sub-patterns, and return */
+    	if (pattern->endRE != NULL && ExecRE(pattern->endRE, NULL, stringPtr,
+		stringPtr+1, False, *prevChar, '\0', delimiters)) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->endRE->endp[0],
-    	    	    pattern->style, delimiters, isBOL, isBOW);
+    	    	    pattern->style, delimiters, prevChar);
+	    for (i=0;i<pattern->nSubPatterns; i++) {
+		subPat = pattern->subPatterns[i];
+		if (subPat->colorOnly) {
+		    for (subExpr=subPat->endSubexprs; *subExpr!=-1;  subExpr++)
+		    	recolorSubexpr(pattern->endRE, *subExpr, subPat->style,
+				*string, *styleString);
+    	    	}
+	    }
     	    *string = stringPtr;
 	    *styleString = stylePtr;
 	    return True;
@@ -1272,10 +1302,10 @@ static int parseString(highlightDataRec *pattern, char **string,
     	
     	/* If the combined pattern matched this pattern's error pattern, we're
     	   done.  Fill in the style string, update the pointers, and return */
-    	if (pattern->errorRE != NULL && ExecRE(pattern->errorRE, stringPtr,
-    	    	stringPtr+1, False, *isBOL, *isBOW, delimiters)) {
+    	if (pattern->errorRE != NULL && ExecRE(pattern->errorRE, NULL,
+		stringPtr, stringPtr+1, False, *prevChar, '\0', delimiters)) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->errorRE->startp[0],
-    	    	    pattern->style, delimiters, isBOL, isBOW);
+    	    	    pattern->style, delimiters, prevChar);
     	    *string = stringPtr;
 	    *styleString = stylePtr;
 	    return False;
@@ -1284,8 +1314,8 @@ static int parseString(highlightDataRec *pattern, char **string,
     	/* Figure out which sub-pattern matched */
     	for (i=0; i<pattern->nSubPatterns; i++) {
 	    subPat = pattern->subPatterns[i];
-	    if (!subPat->colorOnly && ExecRE(subPat->startRE, stringPtr,
-	    	    stringPtr+1, False, *isBOL, *isBOW, delimiters))
+	    if (!subPat->colorOnly && ExecRE(subPat->startRE, NULL, stringPtr,
+	    	    stringPtr+1, False, *prevChar, '\0', delimiters))
 	    	break;
 	}
     	if (i == pattern->nSubPatterns) {
@@ -1296,8 +1326,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	/* the sub-pattern is a simple match, just color it */
     	if (subPat->subPatternRE == NULL) {
     	    fillStyleString(&stringPtr, &stylePtr, subPat->startRE->endp[0],
-    	    	    subPat->style, delimiters, isBOL, isBOW);
-    	    endExprValid = False;
+    	    	    subPat->style, delimiters, prevChar);
     	
     	/* Parse the remainder of the sub-pattern */	    
     	} else {
@@ -1306,26 +1335,21 @@ static int parseString(highlightDataRec *pattern, char **string,
     	       to that point */
     	    if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
     		fillStyleString(&stringPtr, &stylePtr, subPat->startRE->endp[0],
-			subPat->style, delimiters, isBOL, isBOW);
+			subPat->style, delimiters, prevChar);
 
    	    /* Parse to the end of the subPattern */
-   	    endExprValid = parseString(subPat, &stringPtr, &stylePtr, length -
-   	    	    (stringPtr - *string), isBOL, isBOW, False, delimiters);
+   	    parseString(subPat, &stringPtr, &stylePtr, length -
+   	    	    (stringPtr - *string), prevChar, False, delimiters);
     	}
     	
-    	/* Process color-only sub-patterns of sub-pattern */
+    	/* If the sub-pattern has color-only sub-sub-patterns, add color
+	   based on the coloring sub-expression references */
     	for (i=0; i<subPat->nSubPatterns; i++) {
 	    subSubPat = subPat->subPatterns[i];
 	    if (subSubPat->colorOnly) {
 	    	for (subExpr=subSubPat->startSubexprs; *subExpr!=-1; subExpr++)
 	    	    recolorSubexpr(subPat->startRE, *subExpr, subSubPat->style,
 	    	    	    *string, *styleString);
-	    	if (subPat->endRE != NULL && endExprValid) {
-	    	    for (subExpr=subSubPat->endSubexprs; *subExpr!=-1;
-	    	    	    subExpr++)
-	    		recolorSubexpr(subPat->endRE, *subExpr,
-	    		    	subSubPat->style, *string, *styleString);
-	    	}
 	    }
 	}
 	
@@ -1333,7 +1357,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 	   they can get stuck and hang the process */
 	if (stringPtr == startingStringPtr)
 	    fillStyleString(&stringPtr, &stylePtr, stringPtr+1,
-			pattern->style, delimiters, isBOL, isBOW);;
+			pattern->style, delimiters, prevChar);
     }
     
     /* If this is an anchored match (must match on first character), and
@@ -1345,7 +1369,7 @@ static int parseString(highlightDataRec *pattern, char **string,
        (unless this was an anchored match) */
     if (!anchored)
 	fillStyleString(&stringPtr, &stylePtr, *string+length, pattern->style,
-    		delimiters, isBOL, isBOW);
+    		delimiters, prevChar);
     
     /* Advance the string and style pointers to the end of the parsed text */
     *string = stringPtr;
@@ -1360,7 +1384,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 ** indirect and string pointers are not updated.
 */
 static void passTwoParseString(highlightDataRec *pattern, char *string,
-    	char *styleString, int length, int *isBOL, int *isBOW, int anchored,
+    	char *styleString, int length, char *prevChar, int anchored,
     	char *delimiters)
 {
     int inParseRegion = False;
@@ -1376,10 +1400,8 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE ||
     	    	*s == PLAIN_STYLE || *s >= firstPass2Style))) {
     	    parseEnd = c;
-	    if (parseStart != string) {
-	    	*isBOL = *(parseStart-1) == '\n';
-	    	*isBOW = isDelim(*(parseStart-1), delimiters);
-	    }
+	    if (parseStart != string)
+	    	*prevChar = *(parseStart-1);
 	    stringPtr = parseStart;
 	    stylePtr = &styleString[parseStart - string];
     	    temp = *parseEnd;
@@ -1387,7 +1409,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	    /* printf("pass2 parsing %d chars\n", strlen(stringPtr)); */
     	    parseString(pattern, &stringPtr, &stylePtr,
     	    	    min(parseEnd - parseStart, length - (parseStart - string)),
-    	    	    isBOL, isBOW, False, delimiters);
+    	    	    prevChar, False, delimiters);
     	    *parseEnd = temp;
     	    inParseRegion = False;
     	}
@@ -1398,12 +1420,12 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
 
 /*
 ** Advance "stringPtr" and "stylePtr" until "stringPtr" == "toPtr", filling
-** "stylePtr" with style "style".  Can also optionally update the beginning
-** of line and beginning of word markers for "stringPtr" (if these are passed
-** as non-NULL): "isBOL" and "isBOW".
+** "stylePtr" with style "style".  Can also optionally update the pre-string
+** character, prevChar, which is fed to regular the expression matching
+** routines for determining word and line boundaries at the start of the string.
 */
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *delimiters, int *isBOL, int *isBOW)
+    	char style, char *delimiters, char *prevChar)
 {
     int i;
     
@@ -1412,8 +1434,7 @@ static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
     	
     for (i=0; i<toPtr-*stringPtr; i++)
     	*(*stylePtr)++ = style;
-    if (isBOL != NULL) *isBOL = (*(toPtr-1) == '\n');
-    if (isBOW != NULL) *isBOW = isDelim(*(toPtr-1), delimiters);
+    if (prevChar != NULL) *prevChar = *(toPtr-1);
     *stringPtr = toPtr;
 }
 
@@ -1510,28 +1531,11 @@ static Pixel allocColor(Widget w, char *colorName)
 }
 
 /*
-** return TRUE if character "c" is a word delimiter
+** Get the character before position "pos" in buffer "buf"
 */
-static int isDelim(char c, char *delimiters)
+static char getPrevChar(textBuffer *buf, int pos)
 {
-    char *d;
-    
-    if (c == ' ' || c == '\t' || c == '\n')
-    	return TRUE;
-    for (d=delimiters==NULL?GetPrefDelimiters():delimiters; *d!='\0'; d++)
-	if (c == *d)
-	    return TRUE;
-    return FALSE;
-}
-
-/*
-** Find beginning of line/word status for position "pos" in buffer "buf"
-*/
-static void posBeginsLineOrWord(textBuffer *buf, int pos, char *delimiters,
-	int *bol, int *bow)
-{
-    *bol = pos == 0 ? True : (BufGetCharacter(buf, pos-1) == '\n');
-    *bow = pos == 0 ? True : isDelim(BufGetCharacter(buf, pos-1), delimiters);
+    return pos == 0 ? '\0' : BufGetCharacter(buf, pos-1);
 }
 
 /*
@@ -1724,7 +1728,7 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
     stringPtr = re->startp[subexpr];
     stylePtr = &styleString[stringPtr - string];
     fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, NULL,
-	    NULL, NULL);
+	    NULL);
 }
 
 /*
@@ -1804,7 +1808,7 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
     newWindowHeight = (textHeight*getFontHeight(window)) / oldFontHeight +
     	    borderHeight;
     
-    /* Many window managers enforce window size increments even client resize
+    /* Many window managers enforce window size increments even on client resize
        requests.  Our height increment is probably wrong because it is still
        set for the previous font.  Set the new height in advance, before
        attempting to resize. */

@@ -1,18 +1,3 @@
-/************************************************************************
- *									*
- * DialogF.h -- interface for modal error dialog routine		*
- *									*
- * Copyright (c) 1991 Universities Research Association, Inc.           *
- * All rights reserved.                                                 *
- *                                                                      *
- * Fermilab Nirvana Project	                                   	*
- * April 26, 1991                                                       *
- *									*
- * Written by Joy Kyriakopulos						*
- *									*
- ************************************************************************/
-/* SCCS ID: DialogF.h 1.4 12/16/93 */
-
 /*
  *  To use DialogF, #include <stdarg.h>
  */

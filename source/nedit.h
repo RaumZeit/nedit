@@ -2,25 +2,6 @@
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
-* 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
-* May 10, 1991								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
 *******************************************************************************/
 
 /* Tuning parameters */
@@ -38,6 +19,7 @@
 				   can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100	/* maximum length for a font name */
 #define MAX_MARKS 36	    	/* max. # of bookmarks (one per letter & #) */
+#define MIN_LINE_NUM_COLS 4 	/* Min. # of columns in line number display */
 #define APP_NAME "nedit"	/* application name for loading resources */
 #define APP_CLASS "NEdit"	/* application class for loading resources */
 #ifdef SGI_CUSTOM
@@ -69,6 +51,7 @@
 
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
+enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT};
 
 #define CHARSET (XmStringCharSet)XmSTRING_DEFAULT_CHARSET
 
@@ -122,9 +105,15 @@ typedef struct _WindowInfo {
     Widget	textPanes[MAX_PANES];	/* additional ones created on demand */
     Widget	lastFocus;		/* the last pane to have kbd. focus */
     Widget	statsLine;		/* file stats information display */
-    Widget	menuBar;
+    Widget  	iSearchForm;	    	/* incremental search line widgets */
+    Widget  	iSearchText;
+    Widget  	iSearchREToggle;
+    Widget  	iSearchCaseToggle;
+    Widget  	iSearchLiteralToggle;
+    Widget  	iSearchRevToggle;
+    Widget	menuBar;    	    	/* the main menu bar */
     Widget	replaceDlog;		/* replace dialog */
-    Widget	replaceText;		/* replace dialog setable widgets... */
+    Widget	replaceText;		/* replace dialog settable widgets... */
     Widget	replaceWithText;
     Widget	replaceLiteralBtn;
     Widget	replaceCaseBtn;
@@ -137,7 +126,7 @@ typedef struct _WindowInfo {
     Widget	replaceInSelBtn;
     Widget	replaceSearchTypeBox;
     Widget	findDlog;		/* find dialog */
-    Widget	findText;		/* find dialog setable widgets... */
+    Widget	findText;		/* find dialog settable widgets... */
     Widget	findLiteralBtn;
     Widget	findCaseBtn;
     Widget	findRegExpBtn;
@@ -148,7 +137,7 @@ typedef struct _WindowInfo {
     Widget	findBtn;
     Widget	findSearchTypeBox;
     Widget	fontDialog;		/* NULL, unless font dialog is up */
-    Widget	readOnlyItem;		/* menu bar setable widgets... */
+    Widget	readOnlyItem;		/* menu bar settable widgets... */
     Widget	autoSaveItem;
     Widget	saveLastItem;
     Widget	closeItem;
@@ -172,6 +161,8 @@ typedef struct _WindowInfo {
     Widget  	bgMenuPane;
     Widget  	prevOpenMenuPane;
     Widget  	prevOpenMenuItem;
+    Widget  	unloadTagsMenuPane;
+    Widget  	unloadTagsMenuItem;
     Widget	filterItem;
     Widget	autoIndentOffDefItem;
     Widget	autoIndentDefItem;
@@ -186,8 +177,15 @@ typedef struct _WindowInfo {
     Widget	highlightDefItem;
     Widget	searchDlogsDefItem;
     Widget	keepSearchDlogsDefItem;
+    Widget	sortOpenPrevDefItem;
+    Widget	allTagsDefItem;
+    Widget	smartTagsDefItem;
     Widget	reposDlogsDefItem;
     Widget	statsLineDefItem;
+    Widget	iSearchLineDefItem;
+    Widget	lineNumsDefItem;
+    Widget  	modWarnDefItem;
+    Widget  	exitWarnDefItem;
     Widget	searchLiteralDefItem;
     Widget	searchCaseSenseDefItem;
     Widget	searchRegexDefItem;
@@ -216,6 +214,10 @@ typedef struct _WindowInfo {
     char	filename[MAXPATHLEN];	/* name component of file being edited*/
     char	path[MAXPATHLEN];	/* path component of file being edited*/
     int		fileMode;		/* permissions of file being edited */
+    int     	fileFormat; 	    	/* whether to save the file straight
+    	    	    	    	    	   (Unix format), or convert it to
+					   MS DOS style with \r\n line breaks */
+    time_t    	lastModTime; 	    	/* time of last modification to file */
     UndoInfo	*undo;			/* info for undoing last operation */
     UndoInfo	*redo;			/* info for redoing last undone op */
     textBuffer	*buffer;		/* holds the text being edited */
@@ -254,14 +256,17 @@ typedef struct _WindowInfo {
     Boolean	overstrike;		/* is overstrike mode turned on ? */
     Boolean	showMatching;		/* is paren matching mode on? */
     Boolean	showStats;		/* is stats line supposed to be shown */
+    Boolean 	showISearchLine;    	/* is incr. search line to be shown */
+    Boolean 	showLineNumbers;    	/* is the line number display shown */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
     Boolean	modeMessageDisplayed;	/* special stats line banner for learn
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */
     Boolean	windowMenuValid;	/* is window menu is up to date? */
     Boolean	prevOpenMenuValid;	/* Prev. Opened Files menu up to date?*/
-    int		rHistIndex, fHistIndex;	/* stupid globals for find and replace
-    					   dialogs */
+    int		rHistIndex, fHistIndex;	/* history placeholders for */
+    int     	iSearchHistIndex;	/*   find and replace dialogs */
+    int     	iSearchStartPos;    	/* start pos. of current incr. search */
     int     	nMarks;     	    	/* number of active bookmarks */
     XtIntervalId markTimeoutID;	    	/* backup timer for mark event handler*/
     Bookmark	markTable[MAX_MARKS];	/* marked locations in window */
@@ -276,3 +281,4 @@ typedef struct _WindowInfo {
 
 extern WindowInfo *WindowList;
 extern Display *TheDisplay;
+extern char *ArgV0;

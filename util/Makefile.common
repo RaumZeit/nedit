@@ -14,3 +14,6 @@ libNUtil.a: $(OBJS)
 
 printUtils.o: printUtils.c
 	$(CC) -c $(CFLAGS) $(PRINTFLAGS) printUtils.c
+
+clean:
+	rm -f $(OBJS) libNUtil.a

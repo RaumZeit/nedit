@@ -1,25 +1,6 @@
 /*******************************************************************************
 *									       *
-* textP.h - Text Editing Widget						       *
-*									       *
-* Copyright (c) 1995 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
-* 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
-* June 15, 1995								       *
-*									       *
-* Written by Mark Edel							       *
+* textP.h - Text Editing Widget	private include file			       *
 *									       *
 *******************************************************************************/
 #ifndef TEXTP_H
@@ -48,7 +29,7 @@ extern TextClassRec nTextClassRec;
 typedef struct _TextPart {
     /* resources */
     Pixel selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel;
-    Pixel cursorFGPixel;
+    Pixel cursorFGPixel, lineNumFGPixel;
     XFontStruct *fontStruct;
     Boolean pendingDelete;
     Boolean autoShowInsertPos;
@@ -65,6 +46,7 @@ typedef struct _TextPart {
     int cursorBlinkRate;
     int wrapMargin;
     int emulateTabs;
+    int lineNumCols;
     char *delimiters;
     Widget hScrollBar, vScrollBar;
     XtCallbackList focusInCB;

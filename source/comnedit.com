@@ -4,7 +4,7 @@ $ !
 $ SET NOVERIFY
 $ ON ERROR THEN EXIT
 $ ! COMPILE := CC/DEBUG/NOOPTIMIZE
-$ COMPILE := CC
+$ COMPILE := CC/DEFINE=(NO_FCHMOD)
 $ ! For some systems: COMPILE := CC /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 $ DEFINE SYS DECC$LIBRARY_INCLUDE
 $ DEFINE XM DECW$INCLUDE
@@ -35,6 +35,7 @@ $ COMPILE highlight.c
 $ COMPILE highlightData.c
 $ COMPILE interpret.c
 $ COMPILE smartIndent.c
+$ COMPILE regexconvert.c
 $ !
 $ COPY parse.c_noyacc parse.c
 $ COMPILE parse.c

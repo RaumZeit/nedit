@@ -2,21 +2,23 @@
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
 *									       *
-* Copyright (c) 1997 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * July, 1997								       *
 *									       *
 * Written by Mark Edel							       *
@@ -123,7 +125,7 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is);
 void freeIndentSpec(smartIndentRec *is);
 int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
 
-#define N_DEFAULT_INDENT_SPECS 3
+#define N_DEFAULT_INDENT_SPECS 4
 static smartIndentRec DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 {"C",
 "# C Macros and tuning parameters are shared with C++, and are declared\n\
@@ -143,7 +145,85 @@ static smartIndentRec DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 $pyIndentDist = \"default\"\n",
 "if (get_range($1-1, $1) != \":\")\n\
     return -1\n\
-return measureIndent($1) + defaultIndent($pyIndentDist)\n", NULL}
+return measureIndent($1) + defaultIndent($pyIndentDist)\n", NULL},
+{"Matlab",
+"# Number of spaces to indent \"case\" statements\n\
+$caseDepth = 2\n\
+define matlabNewlineMacro\n\
+{\n\
+   if ($em_tab_dist == -1)\n\
+        tabsize = $tab_dist\n\
+   else\n\
+        tabsize = $em_tab_dist\n\
+   startLine = startOfLine($1)\n\
+   indentLevel = measureIndent($1)\n\
+\n\
+   # If this line is continued on next, return default:\n\
+   lastLine = get_range(startLine, $1)\n\
+   if (search_string(lastLine, \"...\", 0) != -1) {\n\
+      if ($n_args == 2)\n\
+         return matlabNewlineMacro(startLine - 1, 1)\n\
+      else {\n\
+         return -1\n\
+      }\n\
+   }\n\
+\n\
+   # Correct the indentLevel if this was a continued line.\n\
+   while (startLine > 1)\n\
+   {\n\
+      endLine = startLine - 1\n\
+      startLine = startOfLine(endLine)\n\
+      lastLine = get_range(startLine, endLine)\n\
+      # No \"...\" means we've found the root\n\
+      if (search_string(lastLine, \"...\", 0) == -1) {\n\
+         startLine = endLine + 1\n\
+         break\n\
+      }\n\
+   }\n\
+   indentLevel = measureIndent(startLine)\n\
+\n\
+   # Get the first word of the indentLevel line\n\
+   FWend = search(\">|\\n\", startLine + indentLevel, \"regex\")\n\
+   # This search fails on EOF\n\
+   if (FWend == -1)\n\
+      FWend = $1\n\
+\n\
+   firstWord = get_range(startLine + indentLevel, FWend)\n\
+\n\
+   # How shall we change the indent level based on the first word?\n\
+   if (search_string(firstWord, \\\n\
+         \"<for>|<function>|<if>|<switch>|<try>|<while>\", 0, \"regex\") == 0) {\n\
+      return indentLevel + tabsize\n\
+   }\n\
+   else if ((firstWord == \"end\") || (search_string(firstWord, \\\n\
+            \"<case>|<catch>|<else>|<elseif>|<otherwise>\", 0, \"regex\") == 0)) {\n\
+      # Get the last indent level \n\
+      if (startLine > 0) # avoid infinite loop\n\
+	 last_indent = matlabNewlineMacro(startLine - 1, 1)\n\
+      else\n\
+         last_indent = indentLevel\n\
+\n\
+      # Re-indent this line\n\
+      if ($n_args == 1) {\n\
+         if (firstWord == \"case\" || firstWord == \"otherwise\")\n\
+            replace_range(startLine, startLine + indentLevel, \\\n\
+                          makeIndentString(last_indent - tabsize + $caseDepth))\n\
+         else\n\
+            replace_range(startLine, startLine + indentLevel, \\\n\
+                          makeIndentString(last_indent - tabsize))\n\
+      }\n\
+\n\
+      if (firstWord == \"end\") {\n\
+         return max(last_indent - tabsize, 0)\n\
+      }\n\
+      else {\n\
+         return last_indent\n\
+      }\n\
+   } \n\
+   else {\n\
+      return indentLevel\n\
+   }\n\
+}", "return matlabNewlineMacro($1)\n", NULL}
 };
 
 static char DefaultCommonMacros[] = "#\n\
@@ -792,7 +872,7 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
 void EditSmartIndentMacros(WindowInfo *window)
 {
 #define BORDER 4
-    Widget form, lmOptMenu, lmLbl, lmForm, lmBtn;
+    Widget form, lmOptMenu, lmForm, lmBtn;
     Widget okBtn, applyBtn, checkBtn, deleteBtn, commonBtn;
     Widget dismissBtn, helpBtn, restoreBtn, pane;
     Widget initForm, newlineForm, modifyForm;
@@ -855,7 +935,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtManageChild(lmOptMenu);
     SmartIndentDialog.lmOptMenu = lmOptMenu;
     
-    lmLbl = XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
+    XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
     	    XmNlabelString, s1=XmStringCreateSimple("Language Mode:"),
     	    XmNmnemonic, 'L',
     	    XmNuserData, XtParent(SmartIndentDialog.lmOptMenu),
@@ -1069,7 +1149,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     SetLangModeMenu(SmartIndentDialog.lmOptMenu,SmartIndentDialog.langModeName);
     
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(SmartIndentDialog.shell);
+    RealizeWithoutForcingPosition(SmartIndentDialog.shell);
 }
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1456,7 +1536,7 @@ void EditCommonSmartIndentMacro(void)
     AddDialogMnemonicHandler(form);
     
     /* Realize all of the widgets in the new dialog */
-    XtRealizeWidget(CommonDialog.shell);
+    RealizeWithoutForcingPosition(CommonDialog.shell);
 }
 
 static void comDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1635,7 +1715,7 @@ static int loadDefaultIndentSpec(char *lmName)
 
 int LoadSmartIndentString(char *inString)
 {
-   char *errMsg, *macroStart, *inPtr = inString;
+   char *errMsg, *inPtr = inString;
    smartIndentRec is, *isCopy;
    int i;
 
@@ -1689,7 +1769,7 @@ int LoadSmartIndentString(char *inString)
 	}
 	
 	/* read the modify macro */
-	macroStart = inPtr + strspn(inPtr, " \t\n");
+	inPtr + strspn(inPtr, " \t\n");
 	is.modMacro = readSIMacro(&inPtr);
 	if (is.modMacro == NULL) {
     	    XtFree(is.lmName);

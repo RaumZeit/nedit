@@ -2,21 +2,23 @@
 *									       *
 * help.c -- Nirvana Editor help display					       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warranty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * September 10, 1991							       *
 *									       *
 * Written by Mark Edel							       *
@@ -57,11 +59,16 @@ static char *HelpTitles[NUM_TOPICS] = {
 "Using the Mouse",
 "Keyboard Shortcuts",
 "Shifting and Filling",
+"File Format",
 "Syntax Highlighting",
 "Crash Recovery",
 "Preferences",
 "Shell Commands/Filters",
-"Regular Expressions",
+"Regular Expressions: Basic Syntax",
+"Regular Expressions: Escape Sequences",
+"Regular Expressions: Parenthetical Constructs",
+"Regular Expressions: Advanced Topics",
+"Regular Expressions: Examples",
 "NEdit Command Line",
 "Server Mode and nc",
 "Customizing NEdit",
@@ -70,7 +77,7 @@ static char *HelpTitles[NUM_TOPICS] = {
 "Learn/Replay",
 "Macro Language",
 "Macro Subroutines",
-"Actions Routines",
+"Action Routines",
 "Highlighting Patterns",
 "Smart Indent Macros",
 "Problems/Bugs",
@@ -79,41 +86,38 @@ static char *HelpTitles[NUM_TOPICS] = {
 "Tabs Dialog"};
 
 static char *HelpText[NUM_TOPICS] = {
-"NEdit Version 5.0.2\n\
-March 11, 1998\n\
+"NEdit Version 5.1.1\n\
+March 17, 2000\n\
 \n\
-Copyright (c) 1992, 1993, 1994, 1996, 1997, 1998\n\
-Universities Research Association, Inc.\n\
-All rights reserved.\n\
-\n\
-NEdit was written by Mark Edel, Joy Kyriakopulos, Arnulfo Zepeda-Navratil, \
-Suresh Ravoor, Donna Reid, and Jeff Kallenbach, \
-at Fermi National Accelerator Laboratory*.\n\
+NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
+Jim Clark, Arnulfo Zepeda-Navratil, \
+Suresh Ravoor, Tony Balinski, Max Vohlken, Yunliang Yu, and Donna Reid.\n\
 \n\
 The regular expression matching routines used in NEdit are adapted (with \
 permission) from original code written by Henry Spencer at the \
 University of Toronto.\n\
 \n\
-Syntax highlighting patterns were contributed by: \
+Syntax highlighting patterns and smart indent macros were contributed by: \
 Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk, \
 Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr, \
 Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, \
-Max Vohlken, and Markus Schwarzenberg.\n\
+Max Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, \
+Michael Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, \
+Mike Duigou, and Seak, Teng-Fong.\n\
 \n\
 NEdit sources, executables, additional documentation, and contributed \
-software are available from ftp.fnal.gov in the /pub/nedit directory.\n\
+software are available from the nedit web site at http://nedit.org.\n\
 \n\
-Send questions or comments to: nedit_support@fnal.gov.\n\
+This program is free software; you can redistribute it and/or \
+modify it under the terms of the GNU General Public License \
+as published by the Free Software Foundation; either version 2 \
+of the License, or (at your option) any later version.\n\
 \n\
-Mark Edel\n\
-edel@fnal.gov\n\
-Fermi National Accelerator Laboratory\n\
-P.O. Box 500\n\
-Batavia, IL 60148\n\
-\n\
-* Fermi National Accelerator Laboratory is \
-operated by Universities Research Association, Inc., under \
-contract DE-AC02-76CHO3000 with the U.S. Department of Energy.",
+This program is distributed in the hope that it will be useful, \
+but WITHOUT ANY WARRANTY; without even the implied warranty of \
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \
+GNU General Public License in the Help section \"Distribution \
+Policy\" for more details.",
 
 "Welcome to NEdit!\n\
 \n\
@@ -185,7 +189,7 @@ Dialogs are also streamlined so you can enter information quickly and \
 without using the mouse*.  To move the keyboard focus around a dialog, \
 use the tab and arrow keys.  One of the buttons in a dialog is usually \
 drawn with a thick, indented, outline.  This button can be activated by \
-pressing return or enter.  The Cancel or Dismiss button can be activated \
+pressing Return or Enter.  The Cancel or Dismiss button can be activated \
 by pressing escape.  For example, to replace the string \"thing\" with \
 \"things\" type:\n\
 \n\
@@ -224,6 +228,13 @@ example, if the word dog appears somewhere in a window on your screen, and \
 you want to find it in the file you are editing, select the \
 word dog by dragging the mouse across it, switch to your NEdit window and \
 choose Find Selection from the Search menu.\n\
+\n\
+Find Incremental is yet another variation on searching, where every \
+character typed triggers a new search.  Incremental searching is \
+generally the quickest way to find something in a file, because it \
+gives you the immediate feedback of seeing how your search is \
+progressing, so you never need to type more than the minimally \
+sufficient search string to reach your target.\n\
 \n\
 Searching Backwards\n\
 \n\
@@ -371,7 +382,7 @@ With Indent set to Auto (the default), NEdit keeps a running indent.  \
 When you press the Return or Enter key, \
 spaces and tabs are inserted to line up the insert point under the start of \
 the previous line.  Ctrl+Return in auto-indent mode acts like a normal \
-return, With auto-indent turned off, Ctrl+Return does indentation.\n\
+Return, With auto-indent turned off, Ctrl+Return does indentation.\n\
 \n\
 Block Indentation Adjustment\n\
 \n\
@@ -477,14 +488,16 @@ Matching Parentheses\n\
 \n\
 To help you inspect nested parentheses, brackets, braces, quotes, and other \
 characters, NEdit has both an automatic parenthesis matching mode, and a \
-Find Matching command.  Automatic parenthesis matching is activated when \
+Goto Matching command.  Automatic parenthesis matching is activated when \
 you type, or move the insertion cursor after a parenthesis, bracket, or \
 brace.  It momentarily highlights the matching character if that character \
 is visible in the window.  To find a matching character anywhere in \
-the file, select it or position the cursor after it, and choose Find \
+the file, select it or position the cursor after it, and choose Goto \
 Matching from the Search menu.  If \
 the character matches itself, such as a quote or slash, select the first \
-character of the pair.  NEdit will match {, (, [, <, \", \', `, /, and \\.\n\
+character of the pair.  NEdit will match {, (, [, <, \", \', `, /, and \\. \
+Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by \
+default),will select all of the text between the matching characters.\n\
 \n\
 Opening Included Files\n\
 \n\
@@ -503,17 +516,22 @@ tools allow you to click directly on compiler and runtime error messages \
 and request NEdit to open files, and select lines of interest.  \
 The easiest method is usually to use \
 the tool's interface for character-based editors like vi, to invoke nc, \
-but programatic interfaces can also be derived using the source code \
+but programmatic interfaces can also be derived using the source code \
 for nc.\n\
 \n\
 There are also some simple compile/review, grep, ctree, and ctags browsers \
-available in the NEdit contrib directory on ftp.fnal.gov.",
+available in the NEdit contrib directory on ftp.nedit.org.",
 
-"NEdit can process tags files generated using the Unix ctags command.  \
+"NEdit can process tags files generated using the Unix ctags command or \
+the Exuberant Ctags program.  \
 Ctags creates index files correlating names of functions and declarations \
 with their locations in C, Fortran, or Pascal source code files. (See the \
 ctags manual page for more information).  Ctags produces a file called \
-\"tags\" which can be loaded by NEdit.  Once loaded, the information in \
+\"tags\" which can be loaded by NEdit.  NEdit can manage any number of \
+tags files simultaneously.  Tag collisions are handled with a popup menu \
+to let the user decide which tag to use.  In 'Smart' mode NEdit will \
+automatically choose the desired tag based on the scope of the file or \
+module. Once loaded, the information in \
 the tags file enables NEdit to go directly to the declaration of a \
 highlighted function or data structure name with a single command.  To \
 load a tags file, select \"Load Tags File\" from the File menu and choose \
@@ -532,6 +550,11 @@ second option allows you to have different tags files for different \
 projects, each automatically loaded depending on the directory you're in \
 when you start NEdit.  Setting the name to \"tags\" is an obvious choice \
 since this is the name that ctags uses.\n\
+\n\
+To unload a tags file, select \"Un-load Tags File\" from the File menu \
+and choose from the list of tags files.  NEdit will keep track of tags \
+file updates by checking the timestamp on the files, and automatically \
+update the tags cache. \n\
 \n\
 To find the definition of a function or data structure once a tags file is \
 loaded, select the name anywhere it appears in your program (see Selecting \
@@ -729,7 +752,7 @@ Pressing the Alt key in combination with one of the underlined characters \
 in the menu bar pulls down that menu.  Once the menu is pulled down, \
 typing the underlined characters in a menu item (without the Alt key) \
 activates that item.  With a menu pulled down, you can also use the arrow \
-keys to select menu items, and the space or enter keys to activate them.\n\
+keys to select menu items, and the Space or Enter keys to activate them.\n\
 \n\
 \n\
 Keyboard Shortcuts within Dialogs\n\
@@ -787,8 +810,8 @@ Modifier Keys (in general)\n\
 \n\
   Ctrl	 Extends the scope of the action that the key\n\
  	 would otherwise perform.  For example, Home\n\
- 	 normally moves the insert cursor the beginning of\n\
- 	 a line. Ctrl+Home moves it to the beginning of\n\
+ 	 normally moves the insert cursor to the beginning\n\
+ 	 of a line. Ctrl+Home moves it to the beginning of\n\
  	 the file.  Backspace deletes one character, Ctrl+\n\
  	 Backspace deletes one word.\n\
 \n\
@@ -1002,6 +1025,49 @@ to fill text to an arbitrary right margin, without going back and forth \
 to the wrap-margin dialog, as well as to exclude text to the left of \
 the selection such as comment bars or other text columns.",
 
+"While plain-text is probably the simplest and most interchangeable \
+file format in the computer world, there is still variation in what \
+plain-text means from system to system.  Plain-text files can differ \
+in character set, line termination, and wrapping.\n\
+\n\
+While character set differences are the most obvious and pose the \
+most challenge to portability, they affect nedit only indirectly via \
+the same font and localization mechanisms common to all X \
+applications.  If your system is set up properly, you will probably \
+never see character-set related problems in nedit.  NEdit can not \
+display Unicode text files, or any multi-byte character set.\n\
+\n\
+The primary difference between an MS DOS format file and a Unix \
+format file, is how the lines are terminated.  Unix uses a single \
+newline character.  MS DOS uses a carriage-return and a newline.  \
+NEdit can read and write both file formats, but internally, it uses \
+the single character Unix standard.  NEdit auto-detects MS DOS format \
+files based on the line termination at the start of the file.  Files \
+are judged to be DOS format if all of the first five line terminators, \
+within a maximum range, are DOS-style.  To change the format in which \
+nedit writes a file from DOS to Unix or visa versa, use the Save \
+As... command and check or un-check the MS DOS Format button.\n\
+\n\
+Wrapping within text files can vary among individual users, as \
+well as from system to system.  Both Windows and MacOS make \
+frequent use of plain \
+text files with no implicit right margin.  In these files, wrapping \
+is determined by the tool which displays them.  Files of this style \
+also exist on Unix systems, despite the fact that they are not \
+supported by all Unix utilities.  To display this kind of file \
+properly in NEdit, you have to select the wrap style called \
+Continuous.  Wrapping modes are discussed in the sections: \
+Customizing -> Preferences, and Basic Operation -> Shifting and \
+Filling.\n\
+\n\
+The last and most minute of format differences is the terminating \
+newline.  NEdit, like vi and approximately half of Unix editors, \
+enforces a final terminating newline on all of the files that it \
+writes.  NEdit does this because some Unix compilers and utilities \
+require it, and fail in various ways on files which do not have it.  \
+Emacs does not enforce this rule.  Users are divided on which \
+is best.",
+
 "Syntax Highlighting means using colors and fonts to help distinguish \
 language elements in programming languages and other types of \
 structured files.  Programmers use syntax highlighting to understand \
@@ -1033,7 +1099,7 @@ styles so that colorings defined for one language will be similar \
 across others, and patterns within the same language which are meant to \
 appear identical can be changed in the same place.  To understand which \
 styles are used to highlight the language you are interested in, you \
-may need to look at \"Patterns for Highlighting\" section, as well.\n\
+may need to look at \"Highlighting Patterns\" section, as well.\n\
 \n\
 Syntax highlighting is CPU intensive, and under some circumstances can \
 affect NEdit's responsiveness.  If you have a particularly slow system, \
@@ -1065,9 +1131,11 @@ Example, to recover the file called \"help.c\" on Unix type the command:\n\
 \n\
     mv \\~help.c help.c\n\
 \n\
-On VMS, type:\n\
-\n\
-    RENAME _HELP.C HELP.C",
+A minor caveat, is that if the file you were editing was in MS DOS \
+format, the backup file will be in Unix format, and you will need to \
+open the backup file in NEdit and change the file format back \
+to MS DOS via the Save As... dialog (or use the Unix \
+unix2dos command outside of NEdit).",
 
 "The Preferences menu allows you to set options for both the current \
 editing window, and default values for newly created windows and future \
@@ -1097,6 +1165,13 @@ Preferences Menu\n\
     Statistics Line -- Show the full file name, line\n\
         number, and length of the file being edited.\n\
 \n\
+    Incremental Search Line -- Keep the incremental search\n\
+        bar (Search -> Find Incremental) permanently\n\
+	displayed at the top of the window.\n\
+\n\
+    Show Line Numbers -- Display line numbers to the right\n\
+        of the text.\n\
+\n\
     Language Mode -- Tells NEdit what language (if any) to\n\
         assume, for selecting language-specific features\n\
 	such as highlight patterns and smart indent macros,\n\
@@ -1106,7 +1181,7 @@ Preferences Menu\n\
 	for more information.\n\
 \n\
     Auto Indent -- Setting Auto Indent \"on\" maintains a\n\
-        running indent (pressing the return key will line\n\
+        running indent (pressing the Return key will line\n\
 	up the cursor with the indent level of the previous\n\
 	line).  If smart indent macros are available for\n\
 	the current language mode, smart indent can be\n\
@@ -1187,6 +1262,14 @@ this menu are:\n\
 	file name or content) and set language specific\n\
 	preferences.\n\
 \n\
+    Tag Collisions -- How to react to multiple tags for\n\
+        the same name.  Tags are described in the section:\n\
+	Features for Programmers -> Finding Declarations\n\
+	(ctags).  In Show All mode, all matching tags are\n\
+	displayed in a dialog.  In Smart mode, if one of\n\
+	the matching tags is in the current window, that\n\
+	tag is chosen, without displaying the dialog.\n\
+\n\
     Customize Menus -- Add/remove items from the Shell,\n\
         Macro, and window background menus (see below).\n\
 \n\
@@ -1206,6 +1289,23 @@ this menu are:\n\
     Syntax Highlighting -- Program and configure enhanced\n\
         text display for new or supported languages (See\n\
 	Features for Programming -> Syntax Highlighting).\n\
+\n\
+    Sort Open Prev. Menu -- Option to order the File ->\n\
+        Open Previous menu alphabetically, versus in order\n\
+	of last access.\n\
+\n\
+    Popups Under Pointer -- Display pop-up dialogs\n\
+        centered on the current mouse position, as opposed\n\
+	to centered on the parent window.  This generally\n\
+	speeds interaction, and is essential for users who\n\
+	users who set their window managers so keyboard\n\
+	focus follows the mouse.\n\
+\n\
+    Modification Warnings -- Pop up a warning dialog when\n\
+        files get changed external to nedit.\n\
+\n\
+    Exit Warnings -- Ask before exiting when two or more\n\
+        files are open in an nedit session.\n\
 \n\
     Initial Window Size -- Default size for new windows.\n\
 \n\
@@ -1301,6 +1401,23 @@ would appear only in C++ mode.\n\
 \n\
 Menu items with no qualification appear in all language modes.\n\
 \n\
+If a menu item is followed by the single language qualification \"@*\", \
+that item will appear only if there are no applicable language-specific items \
+of the same name in the same submenu.  For example, if you have the following \
+three entries in the same menu:\n\
+\n\
+  Make Prototypes@C@C++\n\
+  Make Prototypes@Java\n\
+  Make Prototypes@*\n\
+\n\
+The first will be available when the language mode is C or C++, the second \
+when the language mode is Java, and for all other language modes (including \
+the \"Plain\" non-language mode).  If the entry:\n\
+\n\
+  Make Prototypes\n\
+\n\
+also exists, this will always appear, meaning that the menu will always \
+have two \"Make Prototypes\" entries, whatever the language mode.\n\
 \n\
 Sharing Customizations with Other NEdit Users\n\
 \n\
@@ -1377,114 +1494,493 @@ The X resource called nedit.shell (See Customizing NEdit) determines \
 which Unix shell is used to execute commands.  The default value for \
 this resource is /bin/csh.",
 
-"Regular expressions are available in the Find... and Replace... \
-dialogs as a way to match inexact sequences of characters.  \
-Regular expression substitution can also be used to program \
-automatic editing operations.  For example, the following are \
-search and replace strings to find occurrences of the \
-subroutine get_x, reverse the first and second parameters, add a \
-third parameter of NULL, and change the name to new_get_x\":\n\
+"REGEX BASICS\n\
 \n\
-	Search string:  get_x\\(([^ ,]*), ([^\\)]*)\\)\n\
-	Replace string: new_get_x(\\2, \\1, NULL)\n\
+Regular expressions (regex's) are useful as a way to match inexact \
+sequences of characters.  They can be used in the `Find...' and \
+`Replace...' search dialogs and are at the core of Color Syntax \
+Highlighting patterns.  To specify a regular expression in a search \
+dialog, simply click on the `Regular Expression' radio button in the \
+dialog.\n\
 \n\
-To use regular expressions, click on the Regular Expression button \
-in the Find... or Replace... dialogs before doing a search or \
-replacement.\n\
+A regex is a specification of a pattern to be matched in the searched \
+text.  This pattern consists of a sequence of tokens, each being able \
+to match a single character or a sequence of characters in the text, \
+or assert that a specific position within the text has been reached \
+(the latter is called an anchor.)  Tokens (also called atoms) can be \
+modified by adding one of a number of special quantifier tokens \
+immediately after the token.  A quantifier token specifies how many \
+times the previous token must be matched (see below.)\n\
 \n\
-Regular Expression Syntax\n\
+Tokens can be grouped together using one of a number of grouping \
+constructs, the most common being plain parentheses.  Tokens that are \
+grouped in this way are also collectively considered to be a regex \
+atom, since this new larger atom may also be modified by a quantifier.\n\
 \n\
-The components of a regular expression are: branches, \
-pieces, atoms, and ranges. A regular expression consists of zero or \
-more branches, separated by `|'.  It matches anything that matches one \
-of the branches.\n\
+A regex can also be organized into a list of alternatives by \
+separating each alternative with pipe characters, `|'.  This is called \
+alternation.  A match will be attempted for each alternative listed, \
+in the order specified, until a match results or the list of \
+alternatives is exhausted (see \"Alternation\" below.)\n\
 \n\
-A branch is zero or more pieces, concatenated.  It matches a match for \
-the first, followed by a match for the second, etc.\n\
+The Dot Meta Character\n\
 \n\
-A piece is an atom possibly followed by `*', `+', or `?'.  An atom \
-followed by `*' matches a sequence of 0 or more matches of the atom.  An \
-atom followed by `+' matches a sequence of 1 or more matches of the \
-atom.  An atom followed by `?' matches a match of the atom, or the null \
-string.\n\
+If an un-escaped dot (`.') appears in a regex, it means to match any \
+character exactly once.  By default dot will not match a newline \
+character, but this behavior can be changed (see help topic \
+\"Grouping\", item \"Matching Newlines\".)\n\
 \n\
-An atom is a regular expression in parentheses (matching a match for the \
-regular expression), a range (see below), `.' (matching any single \
-character), `^' (matching the null string at the beginning of a line \
-string), `$' (matching the null string at the end of a line), `<' or `>' \
-(matching the null string at a word boundary), \
-a `\\' followed by a single character (matching that character), or a \
-single character with no other significance (matching that character).  \
-\\t, \\n, \\b, \\r, and \\f represent the characters tab newline, backspace, \
-carriage return, and form feed.\n\
+Character Classes\n\
 \n\
-A range is a sequence of characters enclosed in `[]'.  It normally \
-matches any single character from the sequence.  If the sequence begins \
-with `^', it matches any single character not from the rest of the \
-sequence.  If two characters in the sequence are separated by `-', this \
-is shorthand for the full list of ASCII characters between them (e.g. \
-`[0-9]' matches any decimal digit).  To include a literal `]' in the \
-sequence, make it the first character (following a possible `^').  To \
-include a literal `-', make it the first or last character.  A backslash \
-`\\' followed by a single character includes that character, however \
-backslashes are not necessary for most special characters, since inside \
-a range, only the `]', `-', and '\\' characters are treated specially.\n\
+A character class, or range, matches exactly one character of text, \
+but the candidates for matching are limited to those specified by the \
+class.  Classes come in two flavors as described below:\n\
+\n\
+   [...]   Regular class, match only characters listed.\n\
+   [^...]  Negated class, match only characters NOT listed.\n\
+\n\
+As with the dot token, by default negated character classes do not \
+match newline, but can be made to do so.\n\
+\n\
+The characters that are considered special within a class \
+specification are different than the rest of regex syntax as follows. \
+If the first character in a class is the `]' character (second \
+character if the first character is `^') it is a literal character and \
+part of the class character set.  This also applies if the first or \
+last character is `-'.  Outside of these rules, two characters \
+separated by `-' form a character range which includes all the \
+characters between the two characters as well.  For example, `[^f-j]' \
+is the same as `[^fghij]' and means to match any character that is not \
+`f', `g', `h', `i', or `j'.\n\
+\n\
+Anchors\n\
+\n\
+Anchors are assertions that you are at a very specific position within \
+the search text.  NEdit regular expressions support the following \
+anchor tokens:\n\
+\n\
+   ^    Beginning of line\n\
+   $    End of line\n\
+   <    Left word boundary\n\
+   >    Right word boundary\n\
+   \\B   Not a word boundary\n\
+\n\
+Note that the \\B token ensures that the left and right characters are \
+both delimiter characters, or that both left and right characters are \
+non-delimiter characters.  Currently word anchors check only one \
+character, e.g. the left word anchor `<' only asserts that the left \
+character is a word delimiter character.  Similarly the right word \
+anchor checks the right character.\n\
+\n\
+Quantifiers\n\
+\n\
+Quantifiers specify how many times the previous regular expression atom \
+may be matched in the search text.  Some quantifiers can produce a \
+large performance penalty, and can in some instances completely lock up \
+NEdit.  To prevent this, avoid nested quantifiers, especially those of \
+the maximal matching type (see below.)\n\
+\n\
+The following quantifiers are maximal matching, or \"greedy\", in that \
+they match as much text as possible.\n\
+\n\
+   *   Match zero or more\n\
+   +   Match one  or more\n\
+   ?   Match zero or one\n\
+\n\
+The following quantifiers are minimal matching, or \"lazy\", in that they \
+match as little text as possible.\n\
+\n\
+   *?   Match zero or more\n\
+   +?   Match one  or more\n\
+   ??   Match zero or one\n\
+\n\
+One final quantifier is the counting quantifier, or brace quantifier. \
+It takes the following basic form:\n\
+\n\
+   {min,max}  Match from `min' to `max' times the\n\
+              previous regular expression atom.\n\
+\n\
+If `min' is omitted, it is assumed to be zero.  If `max' is omitted, \
+it is assumed to be infinity.  Whether specified or assumed, `min' \
+must be less than or equal to `max'.  Note that both `min' and `max' \
+are limited to 65535.  If both are omitted, then the construct is the \
+same as `*'.   Note that `{,}' and `{}' are both valid brace \
+constructs.  A single number appearing without a comma, e.g. `{3}' is \
+short for the `{min,min}' construct, or to match exactly `min' number \
+of times.\n\
+\n\
+The quantifiers `{1}' and `{1,1}' are accepted by the syntax, but are \
+optimized away since they mean to match exactly once, which is \
+redundant information.  Also, for efficiency, certain combinations of \
+`min' and `max' are converted to either `*', `+', or `?' as follows:\n\
+\n\
+   {} {,} {0,}    *\n\
+   {1,}           +\n\
+   {,1} {0,1}     ?\n\
+\n\
+Note that {0} and {0,0} are meaningless and will generate an error \
+message at regular expression compile time.\n\
+\n\
+Brace quantifiers can also be \"lazy\".  For example {2,5}? would try to \
+match 2 times if possible, and will only match 3, 4, or 5 times if that \
+is what is necessary to achieve an overall match.\n\
+\n\
+Alternation\n\
+\n\
+A series of alternative patterns to match can be specified by \
+separating them with vertical pipes, `|'.  An example of alternation \
+would be `a|be|sea'.  This will match `a', or `be', or `sea'.  Each \
+alternative can be an arbitrarily complex regular expression.  The \
+alternatives are attempted in the order specified.  An empty \
+alternative can be specified if desired, e.g. `a|b|'.  Since an empty \
+alternative can match nothingness (the empty string), this guarantees \
+that the expression will match.\n\
+\n\
+Comments\n\
+\n\
+Comments are of the form `(?#<comment text>)' and can be inserted \
+anywhere and have no effect on the execution of the regular \
+expression.  They can be handy for documenting very complex regular \
+expressions.  Note that a comment begins with `(?#' and ends at the \
+first occurrence of an ending parenthesis, or the end of the regular \
+expression... period.  Comments do not recognize any escape sequences.",
+
+"ESCAPE SEQUENCES\n\
+\n\
+Special Control Characters\n\
+\n\
+In a regex, most ordinary characters match themselves.  For example, `ab%' \
+would match anywhere `a' followed by `b' followed by `%' appeared in the \
+text.  However, there are some special characters that are difficult or \
+impossible to type.  Many of these characters have escape sequences \
+(simple characters preceded by `\\') assigned to represent them.  NEdit \
+recognizes the following special character escape sequences:\n\
+\n\
+   \\a  alert (bell)\n\
+   \\b  backspace\n\
+   \\e  ASCII escape character (***)\n\
+   \\f  form feed (new page)\n\
+   \\n  newline\n\
+   \\r  carriage return\n\
+   \\t  horizontal tab\n\
+   \\v  vertical tab\n\
+\n\
+   *** For environments that use the EBCDIC character set,\n\
+       when compiling NEdit set the EBCDIC_CHARSET compiler\n\
+       symbol to get the EBCDIC equivalent escape\n\
+       character.)\n\
+\n\
+Escaped Meta Characters\n\
+\n\
+Characters that have special meaning to the regex syntax are called meta \
+characters.  NEdit provides the following escape sequences so that \
+characters that are used by the regex syntax can be specified as ordinary \
+characters and not interpreted as meta characters.\n\
+\n\
+   \\(  \\)  \\-  \\[  \\]  \\<  \\>  \\{  \\}\n\
+   \\.  \\|  \\^  \\$  \\*  \\+  \\?  \\&  \\\\\n\
+\n\
+Octal and Hex Escape Sequences\n\
+\n\
+Any ASCII (or EBCDIC) character, except null, can be specified by using \
+either an octal escape or a hexadecimal escape, each beginning with \\0 or \
+\\x (or \\X) respectively.  For example, \\052 and \\X2A both specify the `*' \
+character.  Escapes for null (\\00 or \\x0) are not valid and will generate \
+an error message.  Also, any escape that exceeds \\0377 or \\xFF will either \
+cause an error or have any additional character(s) interpreted literally. \
+For example, \\0777 will be interpreted as \\077 (a `?' character) followed \
+by `7' since \\0777 is greater than \\0377.\n\
+\n\
+An invalid digit will also end an octal or hexadecimal escape.  For \
+example, \\091 will cause an error since `9' is not within an octal \
+escape's range of allowable digits (0-7) and truncation before the `9' \
+yields \\0 which is invalid.\n\
+\n\
+Shortcut Escapes\n\
+\n\
+NEdit defines some escape sequences that are handy shortcuts for commonly \
+used character classes.\n\
+\n\
+   \\d  digits            0-9\n\
+   \\l  letters           a-z and A-Z\n\
+   \\s  whitespace        \\t, \\r, \\v, \\f, and space\n\
+   \\w  word characters   a-z, A-Z, 0-9, and underscore, `_'\n\
+\n\
+\\D, \\L, \\S, and \\W are the same as the lowercase versions except that the \
+resulting character class is negated.  For example, \\d is equivalent to \
+`[0-9]', while \\D is equivalent to `[^0-9]'.\n\
+\n\
+These escape sequences can also be used within a character class.  For \
+example, `[\\l_]' is the same as `[a-zA-Z_]'.  The escape sequences for \
+special characters, and octal and hexadecimal escapes are also valid \
+within a class.\n\
+\n\
+Word Delimiter Tokens\n\
+\n\
+Although not strictly a character class, the following escape sequences \
+behave similarly to character classes:\n\
+\n\
+   \\y   Word delimiter character\n\
+   \\Y   Not a word delimiter character\n\
+\n\
+The `\\y' token matches any single character that is one of the characters \
+that NEdit recognizes as a word delimiter character, while the `\\Y' token \
+matches any character that is NOT a word delimiter character.  Word \
+delimiter characters are dynamic in nature, meaning that the user can \
+change them through preference settings.  For this reason, they must be \
+handled differently by the regular expression engine.  As a consequence of \
+this, `\\y' and `\\Y' can not be used within a character class \
+specification.",
+
+"PARENTHETICAL CONSTRUCTS\n\
+\n\
+Capturing Parentheses\n\
+\n\
+Capturing Parentheses are of the form `(<regex>)' and can be used to group \
+arbitrarily complex regular expressions.  Parentheses can be nested, but \
+the total number of parentheses, nested or otherwise, is limited to 50 \
+pairs.  The text that is matched by the regular expression between a \
+matched set of parentheses is captured and available for text \
+substitutions and backreferences (see below.)  Capturing parentheses carry \
+a fairly high overhead both in terms of memory used and execution speed, \
+especially if quantified by `*' or `+'.\n\
+\n\
+Non-Capturing Parentheses\n\
+\n\
+Non-Capturing Parentheses are of the form `(?:<regex>)' and facilitate \
+grouping only and do not incur the overhead of normal capturing \
+parentheses.  They should not be counted when determining numbers for \
+capturing parentheses which are used with backreferences and \
+substitutions.  Because of the limit on the number of capturing \
+parentheses allowed in a regex, it is advisable to use non-capturing \
+parentheses when possible.\n\
+\n\
+Positive Look-Ahead\n\
+\n\
+Positive look-ahead constructs are of the form `(?=<regex>)' and implement \
+a zero width assertion of the enclosed regular expression.  In other \
+words, a match of the regular expression contained in the positive \
+look-ahead construct is attempted.  If it succeeds, control is passed to \
+the next regular expression atom, but the text that was consumed by the \
+positive look-ahead is first unmatched (backtracked) to the place in the \
+text where the positive look-ahead was first encountered.\n\
+\n\
+One application of positive look-ahead is the manual implementation of a \
+first character discrimination optimization.  You can include a positive \
+look-ahead that contains a character class which lists every character \
+that the following (potentially complex) regular expression could possibly \
+start with.  This will quickly filter out match attempts that can not \
+possibly succeed.\n\
+\n\
+Negative Look-Ahead\n\
+\n\
+Negative look-ahead takes the form `(?!<regex>)' and is exactly the same \
+as positive look-ahead except that the enclosed regular expression must \
+NOT match.  This can be particularly useful when you have an expression \
+that is general, and you want to exclude some special cases.  Simply \
+precede the general expression with a negative look-ahead that covers the \
+special cases that need to be filtered out.\n\
+\n\
+Case Sensitivity\n\
+\n\
+There are two parenthetical constructs that control case sensitivity:\n\
+\n\
+   (?i<regex>)   Case insensitive; `AbcD' and `aBCd' are\n\
+                 equivalent.\n\
+\n\
+   (?I<regex>)   Case sensitive;   `AbcD' and `aBCd' are\n\
+                 different.\n\
+\n\
+Regular expressions are case sensitive by default, i.e `(?I<regex>)' is \
+assumed.  All regular expression token types respond appropriately to case \
+insensitivity including character classes and backreferences.  There is \
+some extra overhead involved when case insensitivity is in effect, but \
+only to the extent of converting each character compared to lower case.\n\
+\n\
+Matching Newlines\n\
+\n\
+NEdit regular expressions by default handle the matching of newlines in a \
+way that should seem natural for most editing tasks.  There are \
+situations, however, that require finer control over how newlines are \
+matched by some regular expression tokens.\n\
+\n\
+By default, NEdit regular expressions will NOT match a newline character \
+for the following regex tokens: dot (`.'); a negated character class \
+(`[^...]'); and the following shortcuts for character classes:\n\
+\n\
+   `\\d', `\\D', `\\l', `\\L', `\\s', `\\S', `\\w', `\\W', `\\Y'\n\
+\n\
+The matching of newlines can be controlled for the `.' token, negated \
+character classes, and the `\\s' and `\\S' shortcuts by using one of the \
+following parenthetical constructs:\n\
+\n\
+   (?n<regex>)  `.', `[^...]', `\\s', `\\S' match newlines\n\
+\n\
+   (?N<regex>)  `.', `[^...]', `\\s', `\\S' don't match\n\
+                                          newlines\n\
+\n\
+`(?N<regex>)' is the default behavior.\n\
+\n\
+Notes on New Parenthetical Constructs\n\
+\n\
+Except for plain parentheses, none of the parenthetical constructs capture \
+text.  If that is desired, the construct must be wrapped with capturing \
+parentheses, e.g. `((?i<regex))'.\n\
+\n\
+All parenthetical constructs can be nested as deeply as desired, except \
+for capturing parentheses which have a limit of 50 sets of parentheses, \
+regardless of nesting level.\n\
+\n\
+Back References\n\
+\n\
+Backreferences allow you to match text captured by a set of capturing \
+parenthesis at some latter position in your regular expression.  A \
+backreference is specified using a single backslash followed by a single \
+digit from 1 to 9 (example: \\3).  Backreferences have similar syntax to \
+substitutions (see below), but are different from substitutions in that \
+they appear within the regular expression, not the substitution string. \
+The number specified with a backreference identifies which set of text \
+capturing parentheses the backreference is associated with. The text that \
+was most recently captured by these parentheses is used by the \
+backreference to attempt a match.  As with substitutions, open parentheses \
+are counted from left to right beginning with 1.  So the backreference \
+`\\3' will try to match another occurrence of the text most recently \
+matched by the third set of capturing parentheses.  As an example, the \
+regular expression `(\\d)\\1' could match `22', `33', or `00', but wouldn't \
+match `19' or `01'.\n\
+\n\
+A backreference must be associated with a parenthetical expression that is \
+complete.  The expression `(\\w(\\1))' contains an invalid backreference \
+since the first set of parentheses are not complete at the point where the \
+backreference appears.\n\
 \n\
 Substitution\n\
 \n\
-Wherever the substitution string contains the character `&', NEdit will \
-substitute the the entire string that was matched in the Find operation.  \
-Up to nine sub-expressions of the match string can also be inserted into \
-the replacement string, using `\\' followed by a digit. \\1 through \\9 \
-represent the strings that matched parenthesized expressions within the \
-regular expression, numbered left-to-right in order of their opening \
-parentheses.  Preceding & or \\1-9 with \\U, \\u, \\L, or \\l adjusts the \
-case \
-of the inserted text.  \\u and \\l change only the first character, while \
-\\U and \\L change the entire string to upper or lower case.  \\t, \\n, \
-\\b, \\r, and \\f represent the characters tab newline, backspace, \
-carriage return, and form feed in a substitution string represent the tab and \
-newline characters as they do in match strings.\n\
+Substitution strings are used to replace text matched by a set of \
+capturing parentheses.  The substitution string is mostly interpreted as \
+ordinary text except as follows.\n\
+\n\
+The escape sequences described above for special characters, and octal and \
+hexadecimal escapes are treated the same way by a substitution string. \
+When the substitution string contains the `&' character, NEdit will \
+substitute the entire string that was matched by the `Find...' operation. \
+Any of the first nine sub-expressions of the match string can also be \
+inserted into the replacement string.  This is done by inserting a `\\' \
+followed by a digit from 1 to 9 that represents the string matched by a \
+parenthesized expression within the regular expression.  These expressions \
+are numbered left-to-right in order of their opening parentheses.\n\
+\n\
+The capitalization of text inserted by `&' or `\\1', `\\2', ... `\\9' can be \
+altered by preceding them with `\\U', `\\u', `\\L', or `\\l'.  `\\u' and `\\l' \
+change only the first character of the inserted entity, while `\\U' and \
+`\\L' change the entire entity to upper or lower case, respectively.",
+
+"ADVANCED REGEX TOPICS\n\
+\n\
+Substitutions\n\
+\n\
+Regular expression substitution can be used to program automatic editing \
+operations.  For example, the following are search and replace strings to \
+find occurrences of the `C' language subroutine `get_x', reverse the first \
+and second parameters, add a third parameter of NULL, and change the name \
+to `new_get_x':\n\
+\n\
+   Search string:   `get_x *\\( *([^ ,]*), *([^\\)]*)\\)'\n\
+   Replace string:  `new_get_x(\\2, \\1, NULL)'\n\
 \n\
 Ambiguity\n\
 \n\
-If a regular expression could match two different parts of the text, \
-it will match the one which begins earliest.  If both begin in \
-the same place but match different lengths, or match the same length \
-in different ways, life gets messier, as follows.\n\
+If a regular expression could match two different parts of the text, it \
+will match the one which begins earliest.  If both begin in the same place \
+but match different lengths, or match the same length in different ways, \
+life gets messier, as follows.\n\
 \n\
-In general, the possibilities in a list of branches are considered in \
-left-to-right order, the possibilities for `*', `+', and `?' are \
+In general, the possibilities in a list of alternatives are considered in \
+left-to-right order.  The possibilities for `*', `+', and `?' are \
 considered longest-first, nested constructs are considered from the \
-outermost in, and concatenated constructs are considered leftmost-first.  The \
-match that will be chosen is the one that uses the earliest possibility \
-in the first choice that has to be made.  If there is more than one \
-choice, the next will be made in the same manner (earliest possibility) \
-subject to the decision on the first choice.  And so forth.\n\
+outermost in, and concatenated constructs are considered leftmost-first. \
+The match that will be chosen is the one that uses the earliest \
+possibility in the first choice that has to be made.  If there is more \
+than one choice, the next will be made in the same manner (earliest \
+possibility) subject to the decision on the first choice.  And so forth.\n\
 \n\
-For example, `(ab|a)b*c' could match `abc' in one of two ways.  The \
-first choice is between `ab' and `a'; since `ab' is earlier, and does \
-lead to a successful overall match, it is chosen.  Since the `b' is \
-already spoken for, the `b*' must match its last possibility-the empty \
-string-since it must respect the earlier choice.\n\
+For example, `(ab|a)b*c' could match `abc' in one of two ways.  The first \
+choice is between `ab' and `a'; since `ab' is earlier, and does lead to a \
+successful overall match, it is chosen.  Since the `b' is already spoken \
+for, the `b*' must match its last possibility, the empty string, since it \
+must respect the earlier choice.\n\
 \n\
 In the particular case where no `|'s are present and there is only one \
 `*', `+', or `?', the net effect is that the longest possible match will \
-be chosen.  So `ab*', presented with `xabbbby', will match `abbbb'.  \
-Note that if `ab*' is tried against `xabyabbbz', it will match `ab' just \
-after `x', due to the begins-earliest rule.  (In effect, the decision on \
-where to start the match is the first choice to be made, hence subsequent \
+be chosen.  So `ab*', presented with `xabbbby', will match `abbbb'.  Note \
+that if `ab*' is tried against `xabyabbbz', it will match `ab' just after \
+`x', due to the begins-earliest rule.  (In effect, the decision on where \
+to start the match is the first choice to be made, hence subsequent \
 choices must respect it even if this leads them to less-preferred \
-alternatives.)",
+alternatives.)\n\
+\n\
+References\n\
+\n\
+An excellent book on the care and feeding of regular expressions is\n\
+\n\
+	\"Mastering Regular Expressions\"\n\
+	Jeffrey E. F. Friedl\n\
+	(c) 1997, O'Reilly & Associates\n\
+	ISBN 1-56592-257-3",
+
+"EXAMPLES\n\
+\n\
+o  Entire line.\n\
+\n\
+  ^.*$\n\
+\n\
+o  Blank lines.\n\
+\n\
+  ^$\n\
+\n\
+o  Whitespace on a line.\n\
+\n\
+  \\s+\n\
+\n\
+o  Whitespace across lines.\n\
+\n\
+  (?n\\s+)\n\
+\n\
+o  Whitespace that spans at least two lines.  Note minimal\n\
+   matching `*?' quantifier.\n\
+\n\
+  (?n\\s*?\\n\\s*)\n\
+\n\
+o  IP address (not robust.)\n\
+\n\
+  (?:\\d{1,3}(?:\\.\\d{1,3}){3})\n\
+\n\
+o  Two character US Postal state abbreviations (includes\n\
+   territories.)\n\
+\n\
+  [ACDF-IK-PR-W][A-Z]\n\
+\n\
+o  Web addresses\n\
+\n\
+  (?:http://)?www\\.\\S+\n\
+\n\
+o  Case insensitive double words across line breaks.\n\
+\n\
+  (?i(?n<(\\S+)\\s+\\1>))\n\
+\n\
+o  Upper case words with possible punctuation.\n\
+\n\
+  <[A-Z][^a-z\\s]*>",
 
 #ifndef VMS
 "nedit [-read] [-create] [-line n | +n] [-server]\n\
     [-do command] [-tags file] [-tabs n] [-wrap]\n\
-    [-nowrap] [-autoindent] [-noautoindent] [-autosave]\n\
-    [-noautosave] [-rows n] [-columns n] [-font font]\n\
-    [-geometry geometry] [-display [host]:server[.screen]\n\
+    [-nowrap] [-autowrap] [-autoindent] [-noautoindent]\n\
+    [-autosave] [-noautosave] [-rows n] [-columns n]\n\
+    [-font font] [-lm languagemode] [-geometry geometry]\n\
+    [-iconic] [-noiconic] [-display [host]:server[.screen]\n\
     [-xrm resourcestring] [-svrname name] [-import file]\n\
-    [file...]\n\
+    [-background color] [-foreground color] [file...]\n\
 \n\
     -read -- Open the file Read Only regardless of\n\
     	the actual file protection.\n\
@@ -1511,7 +2007,8 @@ alternatives.)",
     -tags file -- Load a file of directions for finding\n\
         definitions of program subroutines and data\n\
         objects.  The file must be of the format gen-\n\
-        erated by the Unix ctags command.\n\
+        erated by Exuberant Ctags, or the standard Unix\n\
+        ctags command.\n\
 \n\
     -tabs n -- Set tab stops every n characters.\n\
 \n\
@@ -1524,12 +2021,15 @@ alternatives.)",
         inserting newlines at word boundaries.  (Auto\n\
         Newline Wrap mode)\n\
 \n\
-    -autoindent, noautoindent -- Maintain a running\n\
+    -autoindent, -noautoindent -- Maintain a running\n\
         indent.\n\
 \n\
     -autosave, -noautosave -- Maintain a backup copy of\n\
         the file being edited under the name ~filename \n\
         (on Unix) or _filename (on VMS).\n\
+\n\
+    -lm languagemode -- Initial language mode used for\n\
+        editing succeeding files.\n\
 \n\
     -rows n -- Default height in characters for an editing\n\
         window.\n\
@@ -1541,13 +2041,6 @@ alternatives.)",
         edited (Font for menus and dialogs can be set\n\
         with -xrm \"*fontList:font\").\n\
 \n\
-    -display [host]:server[.screen] -- The name of the\n\
-        X server to use.  host specifies the machine,\n\
-        server specifies the display server number, and\n\
-        screen specifies the screen number.  host or\n\
-        screen can be omitted and default to the local\n\
-        machine, and screen 0.\n\
-\n\
     -geometry geometry (or -g geometry) -- The initial\n\
         size and/or location of editor windows.  The\n\
         argument geometry has the form:\n\
@@ -1558,7 +2051,18 @@ alternatives.)",
         and height of the window, and <xoffset> and\n\
         <yoffset> are the distance from the edge of the\n\
         screen to the window, + for top or left, - for\n\
-        bottom or right.\n\
+        bottom or right.  -geometry can be specified\n\
+	for individual files on the command line.\n\
+\n\
+    -iconic, -noiconic -- Initial window state for\n\
+        succeeding files.\n\
+\n\
+    -display [host]:server[.screen] -- The name of the\n\
+        X server to use.  host specifies the machine,\n\
+        server specifies the display server number, and\n\
+        screen specifies the screen number.  host or\n\
+        screen can be omitted and default to the local\n\
+        machine, and screen 0.\n\
 \n\
     -background color (or -bg color) -- Background color.\n\
         (background color for text can be set separately\n\
@@ -1578,8 +2082,8 @@ alternatives.)",
         simultaneously, and direct files and commands\n\
         specifically to any one.\n\
 \n\
-    -import filename -- loads an additional preferences\n\
-        file on top of the existing defaults saved in your\n\
+    -import file -- loads an additional preferences file\n\
+        on top of the existing defaults saved in your\n\
 	.nedit file.  To incorporate macros, language\n\
 	modes, and highlight patterns and styles written\n\
 	by other users, run nedit with -import <file>, then\n\
@@ -1627,7 +2131,7 @@ The following qualifiers are accepted:\n\
         inserting newlines at word boundaries.  (Auto\n\
         Newline Wrap mode)\n\
 \n\
-    /autoindent, noautoindent -- Maintain a running\n\
+    /autoindent, /noautoindent -- Maintain a running\n\
         indent.\n\
 \n\
     /autosave, /noautosave -- Maintain a backup copy of\n\
@@ -1740,14 +2244,14 @@ available.  This is also settable via the X resource, nc.autoStart \
 (See X Resources).\n\
 \n\
 Sometimes it is useful to have more than one NEdit server running, for \
-example to keep mail and programming work separate, or more importantly \
-for working with tools like ClearCase which provide different views of \
-the file system from different shells.  The option, -svrname, to both nedit \
-and nc, allow you to start, and communicate with, separate named servers.  \
-A named server responds only to requests with the corresponding -svrname \
-argument.\n\
+example to keep mail and programming work separate.  The option, -svrname, \
+to both nedit and nc, allows you to start, and communicate with, separate \
+named servers.  A named server responds only to requests with the \
+corresponding -svrname argument.  If you use ClearCase and are within \
+a ClearCase view, the server name will default to the name of the view (based \
+on the value of the CLEARCASE_ROOT environment variable).\n\
 \n\
-Communication between nc and nedit is through the X display.  So as long as X \
+Communication between nc and nedit is through the X display. So as long as X \
 windows is set up and working properly, nc will will work \
 properly as well.  nc uses the DISPLAY environment variable, the machine name \
 and your user name to find the appropriate server, meaning, if you have several \
@@ -1830,12 +2334,12 @@ for NEdit options not settable via the Preferences menu (for preference \
 resource names, see your .nedit file):\n\
 \n\
     nedit.tagFile: (not defined) -- The name of a file\n\
-        of the type produced by the Unix ctags command\n\
-        which NEdit will load at startup time (see\n\
-        Features for Programmers).  The tag file provides\n\
-        a database from which NEdit can automatically\n\
-        open files containing the definition of a\n\
-        particular subroutine or data type.\n\
+        of the type produced by Exuberant Ctags or the\n\
+	Unix ctags command, which NEdit will load at\n\
+	startup time (see Features for Programmers).  The\n\
+	tag file provides a database from which NEdit can\n\
+	automatically open files containing the definition\n\
+	of a particular subroutine or data type.\n\
 \n\
     nedit.shell: /bin/csh -- (Unix systems only) The Unix\n\
         shell (command interpreter) to use for executing\n\
@@ -1849,16 +2353,19 @@ resource names, see your .nedit file):\n\
 	be overridden by the setting in Preferences ->\n\
 	Default Settings -> Language Modes....\n\
 \n\
-    nedit.remapDeleteKey: True -- Setting this resource\n\
-        to False restores the original Motif binding of\n\
-        the delete key to forward-delete.  This binding\n\
-        causes problems when X servers with one delete/\n\
-        backspace configuration are connected with X\n\
-        clients of the other.  Users with a backspace\n\
-        key in the backspace/delete position and who use\n\
-        only machines with that style of keyboard can\n\
-        set this resource to False to get back the\n\
-        forward-delete function of the delete key.\n\
+    nedit.remapDeleteKey: False -- Setting this resource\n\
+        to True forcibly maps the delete key to backspace.\n\
+	This can be helpful on systems where the bindings\n\
+	have become tangled, and in environments which mix\n\
+	systems with PC style keyboards and systems with\n\
+	DEC and Macintosh keyboards.  Theoretically, these\n\
+	bindings should be made using the standard X/Motif\n\
+	mechanisms, outside of nedit.  In practice, some\n\
+	environments where users access several different\n\
+	systems remotely, can be very hard to configure.\n\
+	If you've given up and are using a backspace key\n\
+	halfway off the keyboard because you can't figure\n\
+	out the bindings, set this to True.\n\
 \n\
     nedit.stdOpenDialog: False -- Setting this resource\n\
         to True restores the standard Motif style of\n\
@@ -1972,6 +2479,9 @@ resource names, see your .nedit file):\n\
     	text cursor in the text editing area of the\n\
     	NEdit window.\n\
 \n\
+    nedit*text.lineNumForeground: gray47 -- Color for\n\
+    	displaying line numbers in the NEdit window.\n\
+\n\
     nedit*text.blinkRate: 600 -- Blink rate of the text\n\
         insertion cursor in milliseconds.  Set to zero\n\
         to stop blinking.\n\
@@ -1999,7 +2509,13 @@ resource names, see your .nedit file):\n\
 Selected widget names (to which you may append .background .foreground, \
 .fontList, etc., to change colors, fonts and other characteristics):\n\
 \n\
-    nedit*statsLine -- Statistics line\n\
+    nedit*statsForm -- Statistics line and incremental\n\
+        search bar.  Use this to set statistics line\n\
+	background color.  To set attributes affecting\n\
+	both the statistics line and the incremental\n\
+	search bar, use '*' rather than '.' to separate\n\
+	the resource name.  For example, to set the\n\
+	foreground color: nedit*statsForm*foreground.\n\
 \n\
     nedit*menuBar -- Top-of-window menu-bar\n\
 \n\
@@ -2310,6 +2826,11 @@ The arguments with which a user-defined subroutine or function was \
 invoked, are presented as $1, $2, ... , $9.  The number of arguments \
 can be read from $n_args.\n\
 \n\
+To return a value from a subroutine, and/or to exit from the subroutine \
+before the end of the subroutine body, use the return statement:\n\
+\n\
+   return <value to return>\n\
+\n\
 \n\
 OPERATORS AND EXPRESSIONS\n\
 \n\
@@ -2494,7 +3015,7 @@ as a macro string.  Returns empty string on error.\n\
 dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog \
 for querying and presenting information to the user.  First \
 argument is a string to show in the message area of the dialog.  Up \
-to nine additional optional arguments represent labels for buttons \
+to eight additional optional arguments represent labels for buttons \
 to appear along the bottom of the dialog.  Returns the number of \
 the button pressed (the first button is number 1), or 0 if the \
 user closed the dialog via the window close box.\n\
@@ -2518,7 +3039,23 @@ get_selection() -- Returns a string containing the text currently \
 selected by the primary selection either from the current window (no \
 keyword), or from anywhere on the screen (keyword \"any\").\n\
 \n\
+getenv(name) -- Gets the value of an environment variable.\n\
+\n\
 length(string) -- Returns the length of a string\n\
+\n\
+list_dialog(message, text, btn_1_label, btn_2_label, ...) -- Pop up a \
+dialog for prompting the user to choose a line from the given text \
+string.  The first argument is a message string to be used as a title \
+for the fixed text describing the list.  The second string provides \
+the list data: this is a text string in which list entries are \
+separated by newline characters.  Up to seven additional optional \
+arguments represent labels for buttons to appear along the bottom of \
+the dialog.  Returns the line of text selected by the user as the \
+function value (without any newline separator) or the empty string if \
+none was selected, and number of the button pressed (the first button \
+is number 1), in $list_dialog_button.  If the user closes the dialog \
+via the window close box, the function returns the empty string, and \
+$list_dialog_button returns 0.\n\
 \n\
 max(n1, n2, ...) -- Returns the maximum value of all of its \
 arguments\n\
@@ -2581,13 +3118,16 @@ horizontally to characters displayed between positions \"left\", and \
 \n\
 set_cursor_pos(pos) -- Set the cursor position for the current window.\n\
 \n\
+set_language_mode(mode) -- Change language mode for the current \
+window.\n\
+\n\
 shell_command(command, input_string) -- executes a shell command, feeding \
 it input from input_string.  On completion, output from the command \
 is returned as the function value, and the command's exit status is \
 returned in the global variable $shell_cmd_status.\n\
 \n\
 string_dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a \
-dialog for prompting the user to enter information.  The first \
+dialog prompting the user to enter information.  The first \
 argument is a string to show in the message area of the dialog.  Up \
 to nine additional optional arguments represent labels for buttons \
 to appear along the bottom of the dialog.  Returns the string \
@@ -2633,15 +3173,16 @@ Actions Representing Menu Commands:\n\
     save_as_dialog()	      replace_in_selection()\n\
     revert_to_saved()	      replace_again()\n\
     include_file()	      goto_line_number()\n\
-    include_file_dialog ()    goto_line_number_dialog()\n\
+    include_file_dialog()     goto_line_number_dialog()\n\
     load_tags_file()	      goto_selected()\n\
     load_tags_file_dialog()   mark()\n\
     load_macro_file()         mark_dialog()\n\
     load_macro_file_dialog()  goto_mark()\n\
     print()		      goto_mark_dialog()\n\
-    print_selection()	      match()\n\
-    exit()	     	      find_definition()\n\
-    			      split_window()\n\
+    print_selection()	      goto_matching()\n\
+    unload_tags_file()        select_to_matching()\n\
+    exit()		      find_definition()\n\
+ 			      split_window()\n\
     			      close_pane()\n\
     Edit Menu		      \n\
     ---------------------     Shell Menu\n\
@@ -2657,7 +3198,7 @@ Actions Representing Menu Commands:\n\
     lowercase() 	      -----------------------\n\
     fill_paragraph()	      macro_menu_command()\n\
     control_code_dialog()     repeat_macro()\n\
-    			      repeat_dialog()\n\
+   			      repeat_dialog()\n\
 \n\
 The actions representing menu commands are named the same as the menu item \
 with punctuation removed, all lower case, and underscores \
@@ -2670,7 +3211,7 @@ arguments, use the actions with the _dialog suffix.\n\
 Menu Action Routine Arguments:\n\
 \n\
 Arguments are text strings enclosed in quotes.  Below are the menu action \
-routines which take arguments.  Optional arguments are inclosed in [].\n\
+routines which take arguments.  Optional arguments are enclosed in [].\n\
 \n\
   open(filename)\n\
 \n\
@@ -2679,6 +3220,8 @@ routines which take arguments.  Optional arguments are inclosed in [].\n\
   include(filename)\n\
 \n\
   load_tags_file(filename)\n\
+\n\
+  unload_tags_file(filename)\n\
 \n\
   find_dialog([search_direction])\n\
 \n\
@@ -2703,6 +3246,8 @@ routines which take arguments.  Optional arguments are inclosed in [].\n\
   mark(mark-letter)\n\
 \n\
   goto_mark(mark-letter)\n\
+\n\
+  find_definition([tag-name])\n\
 \n\
   filter_selection(shell-command)\n\
 \n\
@@ -3005,7 +3550,7 @@ Highlighting under the heading of Features for Programming) \
 is programmed in NEdit, that is, how it decides what to highlight in a given \
 language.  \
 To create syntax highlighting patterns for a new language, or to \
-modify existing patterns, select \"Patterns for Highlighting\" from \
+modify existing patterns, select \"Recognition Patterns\" from \
 \"Syntax Highlighting\" sub-section of the \"Default Settings\" sub-menu \
 of the \"Preferences\" menu.\n\
 \n\
@@ -3078,7 +3623,7 @@ Regular Expressions).  Sub-expressions of both the starting and ending \
 patterns may be colored.  For example, if the parent pattern has a \
 starting expression \"\\<\", and end expression \"\\>\", (for highlighting \
 all of the text contained within angle brackets), a sub-pattern using \
-\"\\0\" in both the starting and ending expression fields could color the \
+\"&\" in both the starting and ending expression fields could color the \
 brackets differently from the intervening text.  A quick shortcut to \
 typing in pattern names in the Parent Pattern field is to use the \
 middle mouse button to drag them from the Patterns list.\n\
@@ -3223,6 +3768,12 @@ keystroke typed, so if you try to get too fancy, you may degrade performance.",
 
 "SOLUTIONS TO COMMON PROBLEMS\n\
 \n\
+For a much more comprehensive list of common problems and solutions, \
+see the NEdit FAQ.  The latest \
+version of the FAQ can always be found on the nedit web site at:\n\
+\n\
+    http://nedit.org.\n\
+\n\
 P: No files are shown in the \"Files\" list in the Open... dialog.\n\
 S: When you use the \"Filter\" field, include the file specification or a \
 complete directory specification, including the trailing \"/\" on Unix.  \
@@ -3276,17 +3827,24 @@ instead of \"explicit\", again, unless you have set it that way to correct \
 specific problems, this is the appropriate setting for most \
 explicit focus users.\n\
 \n\
-P: The Delete key doesn't forward-delete.\n\
-S: See the X Resources section on nedit.remapDeleteKey.\n\
+P: The Backspace key doesn't work, or deletes forward rather than backward.\n\
+S: While this is an X/Motif binding problem, and should be solved outside \
+of NEdit in the Motif virtual binding layer (or possibly xmodmap or \
+translations), nedit provides an out.  If you set the resource: \
+nedit.remapDeleteKey to True, nedit will forcibly map the delete key \
+to backspace.  The default setting of this resource recently changed, so \
+users who have been depending on this remapping will now have to set \
+it explicitly (or fix their bindings).\n\
 \n\
 P: NEdit crashes when I try to paste text in to a text field in a dialog \
 (like Find or Replace) on my SunOS system.\n\
 S: On many SunOS systems, you have to set up an nls directory before \
 various inter-client communication features of Motif will function \
-properly.  There are instructions in README.sun in /pub/nedit/v4_0_1 on \
-ftp.fnal.gov, as well as a tar file containg a complete nls \
-directory: ftp://ftp.fnal.gov/pub/nedit/v4_0_2/individual/README.sun. \
-This contains directions for setting up an nls directory, which is \
+properly.  There are instructions in README.sun in \
+/pub/v5_0_2/individual/README.sun on \
+ftp.nedit.org, as well as a tar file containg a complete nls \
+directory: ftp://ftp.nedit.org/pub/v5_0_2/nls.tar. \
+README.sun contains directions for setting up an nls directory, which is \
 required by Motif for handling copy and paste to Motif text fields. \
 \n\
 \n\
@@ -3312,249 +3870,327 @@ WORKAROUND: Use selection copy (middle mouse button click) for transferring \
 larger quantities of data.  Cut and Paste save the copied text in server \
 memory, which is usually limited.\n\
 \n\
-Motif 1.1 Versions\n\
 \n\
-BUG: The shortcut method for entering control characters (Alt+Ctrl+char) is \
-not available.\n\
-WORKAROUND: Use the Ins. Control Char command.\n\
+REPORTING BUGS\n\
 \n\
-BUG: Pop-up dialogs \"jump\" (appear briefly in a different location) when \
-they are first invoked.\n\
-WORKAROUND: Turn off \"Popups Under Pointer\" if this gives you a headache.\n\
-\n\
-IBM Versions built with Motif 1.1\n\
-\n\
-BUG: The Command to set the font for the current window is not \
-available.\n\
-WORKAROUND: Use the Default Settings sub-menu to set the default \
-font and then create a new window.\n\
-\n\
-BUG: NEdit can occasionally crash on window closing.\n\
-WORKAROUND: Save files frequently, see Crash Recovery.\n\
-\n\
-VMS Versions\n\
-\n\
-BUGS: 1. Abbreviation of command line qualifiers is not allowed.  2. \
-Error messages for mistakes on the command line don't make sense.\n\
-WORKAROUND: NEdit does not parse its command line with the standard DCL \
-command parser, instead, it superficially converts the command line to \
-a Unix-style command line before processing it.  Because information \
-is lost, NEdit may not always be able to \
-distinguish between items that are supposed to be qualifiers and those \
-which are supposed to be files and arguments to the qualifiers.  \
-However, correct VMS command lines are always processed correctly, and only \
-certain types of errors will appear to give strange results.\n\
-\n\
-BUG: Protection settings for new versions of files produced by NEdit over \
-DECNET connections may revert to defaults.\n\
-WORKAROUND: Check and reset protections when accessing files via DECNET.\n\
-\n\
-\n\
-Send questions and comments to: nedit_support@fnal.gov.",
+The nedit developers subscribe to both discuss@nedit.org and \
+develop@nedit.org, either of which may be used for reporting bugs.  If \
+you're not sure, or you think the report might be of interest to the \
+general nedit user community, send the report to discuss@nedit.org.  If \
+it's something obvious and boring, like we misspelled \"anemometer\" in \
+the on-line help, send it to develop.  If you don't want to subscribe to \
+these lists, please add a note to your mail about cc'ing you on \
+responses.",
 
-"There are two separate mailing lists for NEdit users.  \
-nedit_discuss, as the name implies, is for open discussion \
-among NEdit users.  nedit_announces intended to be \
-a very low volume mailing list for announcement of new versions, new \
-executables, and significant contributed software.\n\
+"There are two separate mailing lists for nedit users, and one for developers. \
+Users may post to the developer mailing list to report bugs and communicate \
+with the nedit developers.  Remember that nedit is entirely a volunteer effort, \
+so please ask questions first to the discussion list, and do your share to \
+answer other users questions as well.\n\
 \n\
-To subscribe to nedit_discuss, send a message containing the following \
-line in the body of the message (not the subject) to mailserv@fnal.gov:\n\
+  discuss@nedit.org  -- General discussion, questions and\n\
+    	    	    	answers among nedit users and\n\
+			developers.\n\
 \n\
-    subscribe nedit_discuss\n\
+  announce@nedit.org -- A lov-volume mailing list for\n\
+                        annoumcing new versions.\n\
 \n\
-To subscribe to nedit_announce, send a separate message to \
-mailserv@fnal.gov containing the line:\n\
+  develop@nedit.org  -- Communication among and with nedit\n\
+                        developers.  Developers should also\n\
+			subscribe to the discuss list.\n\
 \n\
-    subscribe nedit_announce\n\
+To subscribe, send mail to <majordomo@nedit.org> with one or more of the \
+following in the body of the message:\n\
 \n\
-To unsubscribe, send:\n\
-\n\
-    unsubscribe nedit_discuss (or nedit_announce)\n\
-\n\
-After subscribing, you will receive copies of all of the email submitted \
-to the list.  You may submit mail to the discussion list by sending it to:\n\
-\n\
-    nedit_discuss@fnal.gov\n\
-\n\
-Users are allowed to post to nedit_announce as well (just make sure that \
-the content is appropriate).",
+    subscribe announce\n\
+    subscribe discuss\n\
+    subscribe develop",
 
-"INFORMATION/LICENSE AGREEMENT FOR NEDIT.\n\
+"GNU GENERAL PUBLIC LICENSE\n\
 \n\
-FermiTools Software Legal Information - November 1, 1996\n\
+Version 2, June 1991\n\
 \n\
-COPYRIGHT STATUS:  Fermi National Accelerator Laboratory \
-(FNAL) documents are sponsored by the U.S. Department of \
-Energy under Contract No. DE-AC02-76CH03000.  Therefore, the \
-U.S. Government retains a non-exclusive, royalty-free license \
-to publish or reproduce these documents or software for U.S. \
-Government purposes.  All documents and software available \
-from FNAL are protected under the U.S. and Foreign Copyright \
-Laws, and FNAL reserves all rights.\n\
+Copyright (C) 1989, 1991 Free Software Foundation, Inc. 675 Mass Ave, \
+Cambridge, MA 02139, USA. Everyone is permitted to copy and distribute \
+verbatim copies of this license document, but changing it is not \
+allowed.\n\
 \n\
-Terms and Conditions\n\
+Preamble\n\
 \n\
-When a User distributes or otherwise obtains a software \
-package included in the Fermilab Software Tools Program, the \
-user agrees to abide by the Terms and Conditions of the \
-Program below:\n\
+The licenses for most software are designed to take away your freedom \
+to share and change it. By contrast, the GNU General Public License is \
+intended to guarantee your freedom to share and change free \
+software--to make sure the software is free for all its users. This \
+General Public License applies to most of the Free Software \
+Foundation's software and to any other program whose authors commit to \
+using it. (Some other Free Software Foundation software is covered by \
+the GNU Library General Public License instead.) You can apply it to \
+your programs, too.\n\
 \n\
-€       Any redistribution of the software shall be accompanied \
-by this INFORMATION/LICENSE AGREEMENT and the product's \
-ORIGIN STATEMENT (below).\n\
+When we speak of free software, we are referring to freedom, not \
+price. Our General Public Licenses are designed to make sure that you \
+have the freedom to distribute copies of free software (and charge for \
+this service if you wish), that you receive source code or can get it \
+if you want it, that you can change the software or use pieces of it \
+in new free programs; and that you know you can do these things.\n\
 \n\
-€       The User shall acknowledge the origin of the software as \
-set forth below:\n\
+To protect your rights, we need to make restrictions that forbid \
+anyone to deny you these rights or to ask you to surrender the rights. \
+These restrictions translate to certain responsibilities for you if \
+you distribute copies of the software, or if you modify it.\n\
 \n\
-        \"This work was performed at Fermi National Accelerator \
-Laboratory, operated by Universities Research Association, \
-Inc., under contract DE-AC02-76CH03000 with the U.S. \
-Department of Energy.\"\n\
+For example, if you distribute copies of such a program, whether \
+gratis or for a fee, you must give the recipients all the rights that \
+you have. You must make sure that they, too, receive or can get the \
+source code. And you must show them these terms so they know their \
+rights.\n\
 \n\
-€       The user is asked to feed back problems, benefits, \
-and/or suggestions about the software to the Fermilab \
-Software Providers and/or FermiTools management.\n\
+We protect your rights with two steps: (1) copyright the software, and \
+(2) offer you this license which gives you legal permission to copy, \
+distribute and/or modify the software.\n\
 \n\
-€       Any distribution of this software shall be at no charge. \
-To obtain a license to commercialize any of the software \
-programs available from Fermilab including this software, \
-contact FNAL's Office of Research and Technology \
-Applications, P.O. Box 500, MS-200, Batavia, IL 60510-0500.\n\
+Also, for each author's protection and ours, we want to make certain \
+that everyone understands that there is no warranty for this free \
+software. If the software is modified by someone else and passed on, \
+we want its recipients to know that what they have is not the \
+original, so that any problems introduced by others will not reflect \
+on the original authors' reputations.\n\
 \n\
+Finally, any free program is threatened constantly by software \
+patents. We wish to avoid the danger that redistributors of a free \
+program will individually obtain patent licenses, in effect making the \
+program proprietary. To prevent this, we have made it clear that any \
+patent must be licensed for everyone's free use or not licensed at \
+all.\n\
 \n\
-INDEMNIFICATION BY USER OF THIRD PARTY CLAIMS AND \
-DISCLOSURE OF LIABILITY\n\
+The precise terms and conditions for copying, distribution and \
+modification follow.\n\
 \n\
-The User, his/her directors, officers, employees, and \
-agents hereby release and waive all claims against \
-Universities Research Association, Inc. (URA) operator \
-of Fermi National Accelerator Laboratory, its \
-trustees, overseers, directors, officers, employees, \
-agents, subcontractors, successors and assigns, for \
-any and all liability and damages arising from the \
-reproduction, use or other disposition of the \
-software.  The User shall indemnify URA and the U.S. \
-Government for all damages, costs or expenses, \
-including attorney's fees, arising from the \
-utilization of the software, including, but not \
-limited to, the making, using, selling or exporting of \
-products, processes or services derived from the \
-Software.  The User agrees to indemnify, hold harmless \
-and defend URA, its trustees, overseers, directors, \
-officers, employees, agents, subcontractors, \
-successors and assigns, against any and all liability, \
-damage, loss, cost, charge, claim, demand, fee or \
-expense of every nature and kind which may at any time \
-hereafter, be sustained by URA by reason of claims of \
-third parties arising out of alleged acts or omissions \
-of the User in the reproduction, use or other \
-disposition of the Software.\n\
+GNU GENERAL PUBLIC LICENSE TERMS AND CONDITIONS FOR COPYING, \
+DISTRIBUTION AND MODIFICATION\n\
 \n\
-The User agrees that URA, its trustees, overseers, \
-directors, officers, employees, agents, \
-subcontractors, successors and assigns shall not be \
-liable under any claim, charge, or demand, whether in \
-contract, tort, criminal law, or otherwise, for any \
-and all loss, cost, charge, claim, demand, fee, \
-expense, or damage of every nature and kind arising \
-out of, connected with, resulting from or sustained as \
-a result of the use of this software program.  In no \
-event shall URA be liable for special, direct, \
-indirect or consequential damages, losses, costs, \
-charges, claims, demands, fees or expenses of any \
-nature or kind.\n\
+0. This License applies to any program or other work which contains a \
+notice placed by the copyright holder saying it may be distributed \
+under the terms of this General Public License. The \"Program\", below, \
+refers to any such program or work, and a \"work based on the Program\" \
+means either the Program or any derivative work under copyright law: \
+that is to say, a work containing the Program or a portion of it, \
+either verbatim or with modifications and/or translated into another \
+language. (Hereinafter, translation is included without limitation in \
+the term \"modification\".) Each licensee is addressed as \"you\".\n\
 \n\
-DISCLAIMER OF WARRANTIES\n\
+Activities other than copying, distribution and modification are not \
+covered by this License; they are outside its scope. The act of \
+running the Program is not restricted, and the output from the Program \
+is covered only if its contents constitute a work based on the Program \
+(independent of having been made by running the Program). Whether that \
+is true depends on what the Program does.\n\
 \n\
-The software is provided on an \"as is\" basis only. \
-URA makes no representations, express or implied.  URA \
-MAKES NO REPRESENTATIONS OR WARRANTIES OF \
-MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE, \
-or assumes any legal liability or responsibility for \
-the accuracy, completeness, or usefulness of any \
-information, apparatus, product or process disclosed, \
-or represents that the Software will not infringe any \
-privately held patent, copyright, or trademark.  The \
-entire risk as to the results and the performance of \
-this software is assumed by the User.\n\
+1. You may copy and distribute verbatim copies of the Program's source \
+code as you receive it, in any medium, provided that you conspicuously \
+and appropriately publish on each copy an appropriate copyright notice \
+and disclaimer of warranty; keep intact all the notices that refer to \
+this License and to the absence of any warranty; and give any other \
+recipients of the Program a copy of this License along with the \
+Program.\n\
 \n\
-DISCLAIMER OF ENDORSEMENT\n\
+You may charge a fee for the physical act of transferring a copy, and \
+you may at your option offer warranty protection in exchange for a \
+fee.\n\
 \n\
-Reference herein to any specific commercial products, \
-process, or service by tradename, trademark, \
-manufacturer or otherwise, does not constitute or \
-imply its endorsement, recommendation, or favoring by \
-the United States Government, U.S. Department of \
-Energy or URA.  The views and opinions of individuals \
-expressed herein do not necessarily state or reflect \
-those of the United States Government, U.S. Department \
-of Energy or URA and shall not be used for advertising \
-or product endorsement purposes.\n\
+2. You may modify your copy or copies of the Program or any portion of \
+it, thus forming a work based on the Program, and copy and distribute \
+such modifications or work under the terms of Section 1 above, \
+provided that you also meet all of these conditions:\n\
 \n\
-LIABILITIES OF THE GOVERNMENT\n\
+a) You must cause the modified files to carry prominent notices \
+stating that you changed the files and the date of any change.\n\
 \n\
-This software is provided by URA, independent from its \
-Prime Contract with the U.S. Department of Energy. \
-URA is acting independently from the Government and in \
-its own private capacity and is not acting on behalf \
-of the U.S. Government, nor as its contractor nor its \
-agent.  Correspondingly, it is understood and agreed \
-that the U.S. Government has no connection to this \
-software and in no manner whatsoever shall be liable \
-for nor assume any responsibility or obligation for \
-any claim, cost, or damages arising out of or \
-resulting from the use of this software.\n\
+b) You must cause any work that you distribute or publish, that in \
+whole or in part contains or is derived from the Program or any part \
+thereof, to be licensed as a whole at no charge to all third parties \
+under the terms of this License.\n\
 \n\
+c) If the modified program normally reads commands interactively when \
+run, you must cause it, when started running for such interactive use \
+in the most ordinary way, to print or display an announcement \
+including an appropriate copyright notice and a notice that there is \
+no warranty (or else, saying that you provide a warranty) and that \
+users may redistribute the program under these conditions, and telling \
+the user how to view a copy of this License. (Exception: if the \
+Program itself is interactive but does not normally print such an \
+announcement, your work based on the Program is not required to print \
+an announcement.)\n\
 \n\
-ORIGIN STATEMENT\n\
+These requirements apply to the modified work as a whole. If \
+identifiable sections of that work are not derived from the Program, \
+and can be reasonably considered independent and separate works in \
+themselves, then this License, and its terms, do not apply to those \
+sections when you distribute them as separate works. But when you \
+distribute the same sections as part of a whole which is a work based \
+on the Program, the distribution of the whole must be on the terms of \
+this License, whose permissions for other licensees extend to the \
+entire whole, and thus to each and every part regardless of who wrote \
+it.\n\
 \n\
-Authors\n\
+Thus, it is not the intent of this section to claim rights or contest \
+your rights to work written entirely by you; rather, the intent is to \
+exercise the right to control the distribution of derivative or \
+collective works based on the Program.\n\
 \n\
-Mark Edel, Joy Kyriakopulos, Arnulfo Zepeda-Navratil, \
-Suresh Ravoor, Donna Reid, Jeff Kallenbach\n\
+In addition, mere aggregation of another work not based on the Program \
+with the Program (or with a work based on the Program) on a volume of \
+a storage or distribution medium does not bring the other work under \
+the scope of this License.\n\
 \n\
-Fermi National Accelerator Laboratory\n\
-MS 234\n\
-P.O.Box 500\n\
-Batavia, IL 60510\n\
+3. You may copy and distribute the Program (or a work based on it, \
+under Section 2) in object code or executable form under the terms of \
+Sections 1 and 2 above provided that you also do one of the following:\n\
 \n\
-EMAIL: edel@fnal.gov\n\
+a) Accompany it with the complete corresponding machine-readable \
+source code, which must be distributed under the terms of Sections 1 \
+and 2 above on a medium customarily used for software interchange; or,\n\
 \n\
-Acknowledgements:\n\
+b) Accompany it with a written offer, valid for at least three years, \
+to give any third party, for a charge no more than your cost of \
+physically performing source distribution, a complete machine-readable \
+copy of the corresponding source code, to be distributed under the \
+terms of Sections 1 and 2 above on a medium customarily used for \
+software interchange; or,\n\
 \n\
-Syntax highlighting patterns were contributed by: \
-Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk, \
-Alain Fargues, Christopher Conrad, Scott Markinson, and Konrad Bernloehr.\n\
+c) Accompany it with the information you received as to the offer to \
+distribute corresponding source code. (This alternative is allowed \
+only for noncommercial distribution and only if you received the \
+program in object code or executable form with such an offer, in \
+accord with Subsection b above.)\n\
 \n\
-Regular expression code by Henry Spencer\n\
+The source code for a work means the preferred form of the work for \
+making modifications to it. For an executable work, complete source \
+code means all the source code for all modules it contains, plus any \
+associated interface definition files, plus the scripts used to \
+control compilation and installation of the executable. However, as a \
+special exception, the source code distributed need not include \
+anything that is normally distributed (in either source or binary \
+form) with the major components (compiler, kernel, and so on) of the \
+operating system on which the executable runs, unless that component \
+itself accompanies the executable.\n\
 \n\
-Nedit incorporates an altered version of Henry \
-Spencer's regcomp and regexec code adapted for NEdit. \
-Original copyright notice:\n\
+If distribution of executable or object code is made by offering \
+access to copy from a designated place, then offering equivalent \
+access to copy the source code from the same place counts as \
+distribution of the source code, even though third parties are not \
+compelled to copy the source along with the object code.\n\
 \n\
-Copyright (c) 1986 by University of Toronto.  \
-Written by Henry Spencer.  Not derived from licensed \
-software.\n\
+4. You may not copy, modify, sublicense, or distribute the Program \
+except as expressly provided under this License. Any attempt otherwise \
+to copy, modify, sublicense or distribute the Program is void, and \
+will automatically terminate your rights under this License. However, \
+parties who have received copies, or rights, from you under this \
+License will not have their licenses terminated so long as such \
+parties remain in full compliance.\n\
 \n\
-Permission is granted to anyone to use this software \
-for any purpose on any computer system, and to \
-redistribute it freely, subject to the following \
-restrictions:\n\
+5. You are not required to accept this License, since you have not \
+signed it. However, nothing else grants you permission to modify or \
+distribute the Program or its derivative works. These actions are \
+prohibited by law if you do not accept this License. Therefore, by \
+modifying or distributing the Program (or any work based on the \
+Program), you indicate your acceptance of this License to do so, and \
+all its terms and conditions for copying, distributing or modifying \
+the Program or works based on it.\n\
 \n\
-1. The author is not responsible for the consequences \
-of use of this software, no matter how awful, even if \
-they arise from defects in it.\n\
+6. Each time you redistribute the Program (or any work based on the \
+Program), the recipient automatically receives a license from the \
+original licensor to copy, distribute or modify the Program subject to \
+these terms and conditions. You may not impose any further \
+restrictions on the recipients' exercise of the rights granted herein. \
+You are not responsible for enforcing compliance by third parties to \
+this License.\n\
 \n\
-2. The origin of this software must not be \
-misrepresented, either by explicit claim or by \
-omission.\n\
+7. If, as a consequence of a court judgment or allegation of patent \
+infringement or for any other reason (not limited to patent issues), \
+conditions are imposed on you (whether by court order, agreement or \
+otherwise) that contradict the conditions of this License, they do not \
+excuse you from the conditions of this License. If you cannot \
+distribute so as to satisfy simultaneously your obligations under this \
+License and any other pertinent obligations, then as a consequence you \
+may not distribute the Program at all. For example, if a patent \
+license would not permit royalty-free redistribution of the Program by \
+all those who receive copies directly or indirectly through you, then \
+the only way you could satisfy both it and this License would be to \
+refrain entirely from distribution of the Program.\n\
 \n\
-3. Altered versions must be plainly marked as such, \
-and must not be misrepresented as being the original \
-software.\n\
+If any portion of this section is held invalid or unenforceable under \
+any particular circumstance, the balance of the section is intended to \
+apply and the section as a whole is intended to apply in other \
+circumstances.\n\
 \n\
-End of INFORMATION/LICENSE AGREEMENT FOR NEDIT.",
+It is not the purpose of this section to induce you to infringe any \
+patents or other property right claims or to contest validity of any \
+such claims; this section has the sole purpose of protecting the \
+integrity of the free software distribution system, which is \
+implemented by public license practices. Many people have made \
+generous contributions to the wide range of software distributed \
+through that system in reliance on consistent application of that \
+system; it is up to the author/donor to decide if he or she is willing \
+to distribute software through any other system and a licensee cannot \
+impose that choice.\n\
+\n\
+This section is intended to make thoroughly clear what is believed to \
+be a consequence of the rest of this License.\n\
+\n\
+8. If the distribution and/or use of the Program is restricted in \
+certain countries either by patents or by copyrighted interfaces, the \
+original copyright holder who places the Program under this License \
+may add an explicit geographical distribution limitation excluding \
+those countries, so that distribution is permitted only in or among \
+countries not thus excluded. In such case, this License incorporates \
+the limitation as if written in the body of this License.\n\
+\n\
+9. The Free Software Foundation may publish revised and/or new \
+versions of the General Public License from time to time. Such new \
+versions will be similar in spirit to the present version, but may \
+differ in detail to address new problems or concerns.\n\
+\n\
+Each version is given a distinguishing version number. If the Program \
+specifies a version number of this License which applies to it and \
+\"any later version\", you have the option of following the terms and \
+conditions either of that version or of any later version published by \
+the Free Software Foundation. If the Program does not specify a \
+version number of this License, you may choose any version ever \
+published by the Free Software Foundation.\n\
+\n\
+10. If you wish to incorporate parts of the Program into other free \
+programs whose distribution conditions are different, write to the \
+author to ask for permission. For software which is copyrighted by the \
+Free Software Foundation, write to the Free Software Foundation; we \
+sometimes make exceptions for this. Our decision will be guided by the \
+two goals of preserving the free status of all derivatives of our free \
+software and of promoting the sharing and reuse of software generally.\n\
+\n\
+NO WARRANTY\n\
+\n\
+11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO \
+WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. \
+EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR \
+OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY OF ANY \
+KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE \
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR \
+PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE \
+PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME \
+THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.\n\
+\n\
+12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN \
+WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY \
+AND/OR REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU \
+FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR \
+CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE \
+PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING \
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A \
+FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF \
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH \
+DAMAGES.\n\
+\n\
+END OF TERMS AND CONDITIONS",
 
 "The Tabs dialog controls both the operation of the Tab \
 key, and the interpretation of tab characters \
@@ -3726,7 +4362,7 @@ static Widget createHelpPanel(Widget parent, int topic)
     XtVaSetValues(form, XmNcancelButton, dismissBtn, 0);
     
     /* realize all of the widgets in the new window */
-    XtRealizeWidget(appShell);
+    RealizeWithoutForcingPosition(appShell);
 
     /* Make close command in window menu gracefully prompt for close */
     AddMotifCloseCallback(appShell, (XtCallbackProc)dismissCB, appShell);
@@ -3802,7 +4438,7 @@ static void searchHelpText(Widget parent, int parentTopic, char *searchFor,
 	    continue;
 	if (SearchString(HelpText[topic], searchFor, SEARCH_FORWARD,
 		SEARCH_LITERAL, False, topic == startTopic ? startPos : 0,
-		&beginMatch, &endMatch, GetPrefDelimiters())) {
+		&beginMatch, &endMatch, NULL, GetPrefDelimiters())) {
 	    found = True;
 	    break;
 	}

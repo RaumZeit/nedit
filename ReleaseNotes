@@ -1,0 +1,425 @@
+          Release Notes for NEdit Version 5.1.1, March 17, 1999
+
+This file contains last minute notes to users about the release, which are not
+included in the documentation or README files included with the distribution
+kits.  It also contains change information, for users who are interested in what
+bugs have been fixed, and what features have been added in the current version.
+
+If you are upgrading NEdit from a version prior to 5.0, please see the notes in
+the README file which came with the (source or executable) distribution kit,
+about updating macros and font settings in your .nedit file.
+
+
+New Features in 5.1
+
+ - Significant extensions to the regular expression syntax.  See details
+   below.
+
+ - Incremental search, and optional search bar.
+
+ - New ctags code with full support for Exuberant Ctags, better
+   handling of tag collisions, multiple tag file support, on-demand
+   loading of tag files, and automatic reload of modified tag files.
+
+ - Optional display of line numbers along the left side of the text.
+
+ - NEdit can now read and write MS DOS format files.
+
+ - New built-in syntax highlighting patterns for Lex, PostScript, SQL,
+   Many syntax highlighting pattern improvements.
+
+ - Improved international character set input
+
+ - New macro subroutines: list_dialog, getenv, set_language_mode.
+
+ - Optional warnings about external modifications to files
+
+ - Clearcase awareness
+
+ - Session manager restart capability
+
+ - Default language mode "*" for user-defined menu items, allows
+   per-language variations on a common base
+
+ - Allow additional modifiers like Sun diamond key in user defined
+   accelerators
+
+ - Option to sort open previous menu.
+
+ - -geometry and -iconic command line arguments act per-window, and
+   can be specified via nc
+
+ - -geometry now specified in characters, rather than pixels
+
+ - -lm (language mode) command line option
+
+ - Save As dialog defaults to same file name
+
+ - Better default fonts for Linux systems
+
+ - .nedit file version mechanism to make future upgrades easier
+
+
+Bug Fixes in 5.1
+
+ - Crash on large amounts of data fed to shell command which does not
+   take input
+
+ - Delayed secondary windows when executable statements specified in
+   users .neditmacro file
+
+ - Many corrections to online help
+
+ - Many highlight patterns corrections
+
+ - Using window close box in file open/save dialogs leaves nedit server
+   unresponsive
+
+ - escape in macro dialogs can cause macro hang
+
+ - Lesstif-specific fixes: attachment warnings in font selector,
+   Work around replace dialog focus bug.
+
+ - NEdit no longer maintains original protection settings on files.  It
+   allows them to be changed externally.
+
+
+Details of Regular Expression Changes in 5.1
+
+  Bug Fixes
+
+    o Fixed bug that caused character classes with a character range not to
+      work properly if one of the range characters was an escaped character.
+
+  Improvements In Existing Features
+
+    o Increased maximum number of capturing parentheses from 40 to 50.
+
+    o Removed optimization that uses `must match' strings (it didn't work and
+      caused more problems than it solved.)
+
+    o Improved error messages.
+
+    o Improved Start-Of-Line and End-Of-Line detection by the `^', `$', and the
+      new `\B' (see below) anchors.  The Start-Of-Word and End-Of-Word anchors
+      `<' and `>' where not enhanced due to syntax color highlighting pattern
+      compatibility issues.
+
+    o Changed code to use "unsigned char" in most cases instead of "signed
+      char". Also, use of ANSI character functions (e.g. isdigit(), isspace())
+      were added wherever possible.  These changes should improve support for
+      locales other than "C", for example character sets with accented
+      characters.
+
+    o Added character escapes for:
+      -  \e   ASCII escape character (for environments that use the EBCDIC
+              character set, set the EBCDIC_CHARSET compiler symbol to get the
+              EBCDIC equivalent escape character.)
+
+      -  \-   minus sign
+      -  \{   left brace
+      -  \}   right brace
+
+    o Removed the `\"' escape since `"' is not a meta character.
+
+    o In order to support numeric escapes, use of `\0' as a synonym for `&'
+      in replacement strings was removed.  `\0' now signals the start of a
+      numeric (octal) escape sequence (see below.)
+
+    o Minor tweaks for improved performance.
+
+  Enhancements
+
+    o Octal and Hexadecimal Escapes
+
+      Octal and hexadecimal escapes begin with \0 and \x (or \X) respectively.
+      For example, \052 and \X2A both specify the `*' character.  Escapes for
+      null (\00 or \x0) are not valid and will generate an error message.
+
+    o Shortcut Escapes for Common Character Classes
+
+      \d  digits            0-9
+      \l  letters           a-z and A-Z
+      \s  whitespace        \t, \r, \v, \f, and space
+      \w  word characters   a-z, A-Z, 0-9, and underscore, `_'
+
+      `\D', `\L', `\S', and `\W' are the same as the lowercase versions except
+      that the resulting character class is negated.
+
+    o Anchors
+
+      The `\B' non-word boundary anchor has been added as the logical opposite
+      of `<' and `>' collectively.  This anchor ensures that the left and
+      right characters are either both delimiter characters or both
+      non-delimiter characters.
+
+    o Word Delimiter Escape Sequences
+
+      \y   Word delimiter character
+      \Y   Not a word delimiter character
+
+      The `\y' token matches any single character that is one of the characters
+      that NEdit recognizes as a word delimiter character, while the `\Y' token
+      matches any character that is NOT a word delimiter character.  Note:
+      these are not anchors and DO consume one character of input.
+ 
+
+    o Quantifiers
+
+      +  Minimal (lazy) Matching Quantifiers
+
+	 *?   Match zero or more
+	 +?   Match one at least one
+	 ??   Match zero or one
+
+	 These quantifiers match only what is absolutely necessary to achieve
+	 a match.
+
+      +  Counting (or Brace) Quantifier
+
+	 {min,max}  Match from `min' to `max' times the previous regular
+                    expression atom.
+
+	 If `min' is omitted, it is assumed to be zero.  If `max' is omitted,
+	 it is assumed to be infinity.  Whether specified or assumed, `min'
+	 must be less than or equal to `max'.  If both are omitted, then the
+	 construct is the same as `*'.   Note that `{,}' and `{}' are both
+	 valid brace constructs.  A single number appearing without a comma,
+	 e.g. `{3}' is short for the `{min,min}' construct, or to match
+	 exactly `min' number of times.
+
+    o Non-Capturing Parentheses
+
+      Non-Capturing Parentheses are of the form `(?:<regex>)' and facilitate
+      grouping only and do not incur the overhead of normal capturing
+      parentheses.
+
+    o Positive Look-Ahead
+
+      Positive look-ahead constructs are of the form `(?=<regex>)' and
+      implement a zero width assertion of the enclosed regular expression. In
+      other words, a match of the regular expression contained in the positive
+      look-ahead construct is attempted.  If it succeeds, control is passed to
+      the next regular expression atom, but the text that was consumed by the
+      positive look-ahead is first unmatched (backtracked) to the place in the
+      text where the positive look-ahead was first encountered.
+ 
+    o Negative Look-Ahead
+
+      Negative look-ahead takes the form `(?!<regex>)' and is exactly the same
+      as positive look-ahead except that the enclosed regular expression must
+      NOT match.
+
+    o Case Sensitivity
+
+      (?i<regex>)   Case insensitive; `AbcD' and `aBCd' are equivalent.
+      (?I<regex>)   Case sensitive;   `AbcD' and `aBCd' are different.
+
+      Regular expressions are case sensitive by default, i.e `(?I<regex>)' is
+      assumed.  All regular expression meta characters respond appropriately to
+      case insensitivity including character classes and back-references.
+
+    o Matching Newlines
+
+      (?n<regex>)   `.', `[^...]', `\s', `\S' will match newlines
+      (?N<regex>)   `.', `[^...]', `\s', `\S' do not match newlines
+
+      `(?N<regex>)' is the default behavior.
+
+    o Comments
+
+      Comments are of the form `(?#<comment text>)' and can be inserted
+      anywhere and have no effect on the execution of the regular expression.
+
+    o Notes on New Parenthetical Constructs
+
+      Except for plain parentheses, none of the parenthetical constructs
+      capture text.  If that is desired, the construct must be wrapped with
+      capturing parentheses, e.g. `((?i<regex))'.
+
+      All parenthetical constructs can be nested as deeply as desired, except
+      for capturing parentheses which have a limit of 50 sets of parentheses,
+      regardless of nesting level.
+
+
+New Features in 5.0.2:
+
+ - Word-selection (double click) can be used to select ranges of delimiters
+ 
+ - New built-in macro variables: $line, $column, and $modified
+ 
+ - Smart-indent mode available for Python language
+   
+ - Minor improvements in default pattern sets for NEdit Macros, X Resources,
+   and Sh/Ksh/Bash
+ 
+ 
+Bug Fixes in 5.0.2:
+
+ - -import did not work as advertised in 5.0.1.  When used, it re-set a
+   number of preferences back to default values.  Could also potentially
+   cause a crash.
+
+ - Macro -> Repeat crashes on some systems.
+ 
+ - Mouse state can get "stuck" on Alpha-based systems.
+ 
+ - Combination of auto-wrap, auto-indent, and unbreakable lines extending the
+   width of the window, caused nedit to unnecessarily insert blank lines.
+
+ - Incorrect case-insensitive comparison in character sets > 128 bits.
+ 
+ - in by-word drag-selection (double click then drag) when begun in the middle
+   of a whitespace selection, anchor would revert to original cursor position
+   rather than maintaining the entire whitespace block.
+   
+ - Language mode names containing spaces could not be used in language
+   sensitive user-defined menu items.
+   
+ - New windows did not always see existing learn/replay sequence, recorded
+   before the window was created.
+   
+ - Possible crash in search_string and search_window macros, when used with
+   long search strings.
+ 
+ - Possible crash in get_selection("any") macro.
+ 
+ - Under Solaris, crashes on window opening, file dialog, and language mode
+   selection, when user-defined sub-menus were used.
+   
+ - Filenames containing spaces could cause the .neditdb file to become
+   unreadable.
+   
+ - Escape key could not be used to cancel file-selection dialogs when the
+   file list had keyboard focus (which it almost always does).
+   
+       
+New Features in 5.0.1:
+   
+ - Repeat-over-range, and repeat-to-end capability for repeating last
+   command and learn/replay sequence.
+   
+ - Import capability for loading macro/shell menu commands, highlight
+   patterns, and style sets created by other users.
+
+ - New macro language routines: string_to_clipboard, clipboard_to_string,
+   toupper, tolower, variables: $em_tab_dist.
+   
+ - Additional default highlight patterns for sh and X resources.
+ 
+ - Sorted Open Previous menu.
+   
+ - Numerous improvements to default highlighting patterns and smart indent
+   macros.
+
+
+Bug Fixes in 5.0.1:
+
+ - Various crashes on Motif 2.0 (Linux and FreeBSD) systems, usually
+   associated with opening files and changing language modes.  Usually,
+   but not necessarily, following changes to user-defined menu items.
+ 
+ - Background menu activation during drag operation could leave drag
+   unfinished, cause undo to malfunction, and eventually lead to a crash (which
+   was easy to trigger accidentally when the middle button is emulated with
+   mouse-chords on a two button mouse).
+
+ - X11R6 clients talking to X11R5 servers could crash on font dialog.
+
+ - Rapid repetition of long macros (such as binding to key and using keyboard
+   repeat) could cause crash.
+   
+ - Several commands which put up dialogs were vulnerable to timing windows
+   where repeating the command could cause a crash.
+ 
+ - Calling macro close() routine could cause crash if used to close the window
+   in which the macro was executing.
+   
+ - Using load_macro_file() as an "include" statement in macro files could
+   cause hang.
+ 
+ - Artifacts when using non-matching highlight fonts, and making certain types
+   of changes which change the fonts used to display other (not the line being
+   modified) lines in the file.
+ 
+ - Auto-newline wrap in overtype mode could duplicate part of wrapped text.
+ 
+ - Lower panes in split window mode allowed modification to read-only windows.
+ 
+ - Several minor dialog and window focus related problems for explicit (click
+   to focus) users.
+ 
+ - Paste Column ignored existing selection.
+
+ - After copying and re-naming language mode information, highlight patterns
+   and smart indent macros remained attached to the re-named pattern instead of
+   the original.
+
+ - Trailing newlines should not have been prohibited in Open Selected.
+
+ - Help for creating smart indent macros was missing.
+
+
+New Features in 5.0
+
+ - Completed macro extension language (Simple C/awk-like syntax, safe,
+   fully interruptable)
+
+ - Syntax highlighting.  Built-in patterns for C, C++, Java, Fortran, Pascal,
+   Ada, Perl, Python, Tcl, Awk, Csh, HTML, LaTeX, VHDL, Verilog, and more.
+
+ - Programmable Smart indent.  (Experimentally, at least.  There are only
+   macros for C and C++, and they may not fit everyone's programming style.)
+
+ - Language-sensitive preferences
+
+ - Continuous wrap mode (long line wrapping), in addition to existing
+   automatic-newline wrapping
+
+ - User-defined menus can be hierarchical and language-sensitive.
+
+ - Configurable right-button pop up menu
+
+ - Pan-scrolling
+
+ - Searchable on-line help
+
+ - Word boundary matching (<>) in regular expressions
+
+ - Repeat command
+
+ - More dialogs have up-arrow recall
+
+ - White-space selection via double-click
+
+
+Bug Fixes and Enhancements to Existing Features in 5.0
+
+ - No more limits on editing files containing ascii nul characters
+
+ - Fill Paragraph command handles leading indents
+
+ - Select to mark
+
+ - Better directory defaulting in Open Selected and shell commands
+
+ - Open Selected processes tilde (~) and wildcards
+
+ - Goto Mark centers scroll position better
+
+ - Multiple shell commands can be run simultaneously
+
+ - Shell command execution doesn't block server command processing
+
+ - Emulated-tab deletion treats auto-indent as emulated tabs
+
+ - Auto-wrapping of pasted text is optional (off by default)
+
+ - Notice that default preferences have changed and ask about saving
+   on exit
+
+ - Selections remain selected after shell command and filter execution
+
+ - Wrap margin and emulated tab distance preferences are properly
+   transferred to new panes in split window mode
+

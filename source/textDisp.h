@@ -1,27 +1,3 @@
-/*******************************************************************************
-*									       *
-* textDisp.h - Display text from a text buffer				       *
-*									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
-* 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
-* June 15, 1995								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
-*******************************************************************************/
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -29,6 +5,7 @@ enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 
 typedef struct {
     Pixel color;
+    Boolean underline;
     XFontStruct *font;
 } styleTableEntry;
 
@@ -36,7 +13,7 @@ typedef void (*unfinishedStyleCBProc)();
 
 typedef struct _textDisp {
     Widget w;
-    int top, left, width, height;
+    int top, left, width, height, lineNumLeft, lineNumWidth;
     int cursorPos;
     int cursorOn;
     int cursorX, cursorY;		/* X, Y pos. of cursor for blanking */
@@ -60,6 +37,13 @@ typedef struct _textDisp {
     int *lineStarts;
     int topLineNum;			/* Line number of top displayed line
     					   of file (first line of file is 1) */
+    int absTopLineNum;			/* In continuous wrap mode, the line
+    					   number of the top line if the text
+					   were not wrapped (note that this is
+					   only maintained as needed). */
+    int needAbsTopLineNum;		/* Externally settable flag to continue
+    					   maintaining absTopLineNum even if
+					   it isn't needed for line # display */
     int horizOffset;			/* Horizontal scroll pos. in pixels */
     int visibility;			/* Window visibility (see XVisibility
     					   event) */
@@ -77,6 +61,7 @@ typedef struct _textDisp {
     int fixedFontWidth;			/* Font width if all current fonts are
     					   fixed and match in width, else -1 */
     Widget hScrollBar, vScrollBar;
+    Pixel lineNumFGPixel;   	    	/* Color for drawing line numbers */
     Pixel bgPixel, selectBGPixel;   	/* Background colors */
     Pixel highlightBGPixel;
     GC gc, selectGC, highlightGC;	/* GCs for drawing text */
@@ -84,13 +69,15 @@ typedef struct _textDisp {
     GC cursorFGGC;			/* GC for drawing the cursor */
     GC styleGC;     	    	    	/* GC with color and font unspecified
     	    	    	    	    	   for drawing colored/styled text */
+    GC lineNumGC;   	    	    	/* GC for drawing line numbers */
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
-	textBuffer *buffer, XFontStruct *fontStruct, Pixel bgPixel,
-	Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-	Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel cursorFGPixel,
+	Position lineNumLeft, Position lineNumWidth, textBuffer *buffer,
+	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
+	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
+	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
 	int continuousWrap, int wrapMargin);
 void TextDFree(textDisp *textD);
 void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
@@ -110,6 +97,7 @@ void TextDOverstrike(textDisp *textD, char *text);
 void TextDSetInsertPosition(textDisp *textD, int newPos);
 int TextDGetInsertPosition(textDisp *textD);
 int TextDXYToPosition(textDisp *textD, int x, int y);
+int TextDXYToCharPos(textDisp *textD, int x, int y);
 void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row,
 	int *column);
 int TextDOffsetWrappedColumn(textDisp *textD, int row, int column);
@@ -133,3 +121,6 @@ int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,
 int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
 int TextDCountLines(textDisp *textD, int startPos, int endPos,
     	int startPosIsLineStart);
+void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
+	int textLeft);
+void TextDMaintainAbsLineNum(textDisp *textD, int state);

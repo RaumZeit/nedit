@@ -1,32 +1,7 @@
-/*******************************************************************************
-*									       *
-* preferences.h -- Nirvana Editor preferences processing		       *
-*									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
-* 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
-* April 20, 1993							       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
-*******************************************************************************/
-
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
-#define MAX_LANGUAGE_MODES 40
+#define MAX_LANGUAGE_MODES 127
 
 /* max length of an accelerator string */
 #define MAX_ACCEL_LEN 50
@@ -34,7 +9,7 @@
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
 void SaveNEditPrefs(Widget parent, int quietly);
-void ImportPrefFile(char *filename);
+void ImportPrefFile(char *filename, int convertOld);
 void MarkPrefsChanged(void);
 int CheckPrefsChangesSaved(Widget dialogParent);
 void SetPrefWrap(int state);
@@ -47,6 +22,14 @@ void SetPrefKeepSearchDlogs(int state);
 int GetPrefKeepSearchDlogs(void);
 void SetPrefStatsLine(int state);
 int GetPrefStatsLine(void);
+void SetPrefISearchLine(int state);
+int GetPrefISearchLine(void);
+void SetPrefLineNums(int state);
+int GetPrefLineNums(void);
+void SetPrefWarnFileMods(int state);
+int GetPrefWarnFileMods(void);
+void SetPrefWarnExit(int state);
+int GetPrefWarnExit(void);
 void SetPrefSearch(int searchType);
 int GetPrefSearch(void);
 void SetPrefAutoIndent(int state);
@@ -71,8 +54,12 @@ void SetPrefHighlightSyntax(int state);
 int GetPrefHighlightSyntax(void);
 void SetPrefRepositionDialogs(int state);
 int GetPrefRepositionDialogs(void);
+void SetPrefSortOpenPrevMenu(int state);
+int GetPrefSortOpenPrevMenu(void);
 void SetPrefTagFile(char *tagFileName);
 char *GetPrefTagFile(void);
+int GetPrefSmartTags(void);
+void SetPrefSmartTags(int state);
 void SetPrefFont(char *fontName);
 void SetPrefBoldFont(char *fontName);
 void SetPrefItalicFont(char *fontName);
@@ -87,6 +74,8 @@ XFontStruct *GetPrefItalicFont(void);
 XFontStruct *GetPrefBoldItalicFont(void);
 void SetPrefShell(char *shell);
 char *GetPrefShell(void);
+void SetPrefGeometry(char *geometry);
+char *GetPrefGeometry(void);
 char *GetPrefServerName(void);
 char *GetPrefBGMenuBtn(void);
 void RowColumnPrefDialog(Widget parent);
@@ -117,6 +106,8 @@ int ParseError(Widget toDialog, char *stringStart, char *stoppedAt,
 	char *errorIn, char *message);
 char *CopyAllocatedString(char *string);
 int AllocatedStringsDiffer(char *s1, char *s2);
+void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults);
+int FindLanguageMode(char *languageName);
 void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults);
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 	void *cbArg);

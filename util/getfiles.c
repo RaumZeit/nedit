@@ -2,21 +2,23 @@
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
 *                                                                             *
-* Copyright (c) 1993 Universities Research Association, Inc.                  *
-* All Rights Reserved.                                                        *
-*                                                                             *
-* This material resulted from work developed under a Government Contract and  *
-* is subject to the following license:  The Government retains a paid-up,     *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative*
-* works, perform publicly and display publicly by or for the Government,      *
-* including the right to distribute to other Government contractors.  Neither *
-* the United States nor the United States Department of Energy, nor any of    *
-* their employees, makes any warranty, express or implied, or assumes any     *
-* legal liability or responsibility for the accuracy, completeness, or        *
-* usefulness of any information, apparatus, product, or process disclosed, or *
-* represents that its use would not infringe privately owned rights.          *
-*                                                                             *
-* Fermilab Nirvana GUI Library                                                *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
+* 									       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 23, 1991                                                                *
 *                                                                             *
 * Written by Donna Reid                                                       *
@@ -42,11 +44,11 @@
 *                      find a place for a new file.                           *
 *                                                                             *
 ******************************************************************************/
-static char SCCSID[] = "@(#)getfiles.c	1.42	2/26/97";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/types.h>
 #ifdef VMS
 #include <unixio.h>
 #include <file.h>
@@ -57,7 +59,6 @@ static char SCCSID[] = "@(#)getfiles.c	1.42	2/26/97";
 #include <dirent.h>
 #include <sys/param.h>
 #endif /*VMS*/
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <X11/keysym.h>
@@ -352,11 +353,15 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
     XmString  cDir;	              /* compound directory selected	   */
     XmString  cPattern;               /* compound filter pattern	   */
     Widget    help;		      /* help window form dialog	   */
+#if XmVersion < 1002
     int       i;
+#endif
 
     XtAddCallback(existFileSB, XmNokCallback, (XtCallbackProc)existOkCB,
     	    &done_with_dialog);
     XtAddCallback(existFileSB, XmNcancelCallback, (XtCallbackProc)existCancelCB,
+	    &done_with_dialog);
+    AddMotifCloseCallback(XtParent(existFileSB), (XtCallbackProc)existCancelCB,
 	    &done_with_dialog);
     help = createPanelHelp(existFileSB, HelpExist, "Selecting Files to Open");
     createErrorDialog(existFileSB);
@@ -489,7 +494,7 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
     AddDialogMnemonicHandler(newFileSB);
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT));
-    return HandleCustomNewFileSB(newFileSB, filename);
+    return HandleCustomNewFileSB(newFileSB, filename, NULL);
 }
 
 /*
@@ -507,12 +512,14 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
 **	char *  filename      - a string to receive the selected filename
 **				(this string will not be altered if the
 **				user pressed the cancel button)	
+**  	char*	defaultName   - default name to be pre-entered in filename
+**  	    	    	    	text field.
 **
 **  Returns:	GFN_OK	      - file was selected and OK button pressed	
 **		GFN_CANCEL    - Cancel button pressed and no returned file
 **
 */
-int HandleCustomNewFileSB(Widget newFileSB, char *filename)
+int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 {
     Boolean   done_with_dialog=False; /* ok to destroy dialog flag	   */
     Widget    help;		      /* help window form dialog	   */
@@ -520,7 +527,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename)
     XmString  cDir;	              /* compound directory selected	   */
     XmString  cPattern;               /* compound filter pattern	   */
     char      *fileString;            /* C string for file selected        */
-    int i;
+#if XmVersion < 1002
+    int       i;
+#endif
 
     XtAddCallback(newFileSB, XmNokCallback, (XtCallbackProc)newFileOKCB,
     	    &done_with_dialog);
@@ -539,6 +548,10 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename)
     createErrorDialog(newFileSB);
     XtAddCallback(newFileSB, XmNhelpCallback, (XtCallbackProc)newHelpCB, 
     	    (char *)help);
+    if (defaultName != NULL) {
+	Widget nameField = XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT);
+	XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
+    }
 #if XmVersion >= 1002
 #ifndef SGI_CUSTOM
     XtVaSetValues(newFileSB, XmNinitialFocus, 
@@ -655,7 +668,14 @@ void SetFileDialogDefaultPattern(char *pattern)
     DefaultPattern = pattern==NULL ? NULL : XmStringCreateSimple(pattern);
 }
 
-void SetGetExistingFilenameTextFieldRemoval(int state)
+/*
+** Turn on or off the text fiend in the GetExistingFilename file selection
+** box, where users can enter the filename by typing.  This is redundant
+** with typing in the list, and leads users who are new to nedit to miss
+** the more powerful feature in favor of changing the focus and typing
+** in the text field.
+*/
+void SetGetEFTextFieldRemoval(int state)
 {
     RemoveRedundantTextField = state;
 }
@@ -1037,6 +1057,8 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     	XmListSetPos(w, selectPos-2 > 1 ? selectPos-2 : 1);
     else if (selectPos > topPos+nVisible-1)
     	XmListSetBottomPos(w, selectPos+2 <= nItems ? selectPos+2 : 0);
+    /* For Lesstif .89.9 */
+    XmListSelectPos(w, selectPos, True);
 }
 
 /*

@@ -2,27 +2,28 @@
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * July 28, 1992								       *
 *									       *
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
-static char SCCSID[] = "@(#)misc.c	1.39	2/1/96";
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
@@ -168,6 +169,54 @@ void RemapDeleteKey(Widget w)
 void SetDeleteRemap(int state)
 {
     RemapDeleteEnabled = state;
+}
+
+/*
+** This routine resolves a window manager protocol incompatibility between
+** the X toolkit and several popular window managers.  Using this in place
+** of XtRealizeWidget will realize the window in a way which allows the
+** affected window managers to apply their own placement strategy to the
+** window, as opposed to forcing the window to a specific location.
+**
+** One of the hints in the WM_NORMAL_HINTS protocol, PPlacement, gets set by
+** the X toolkit (probably part of the Core or Shell widget) when a shell
+** widget is realized to the value stored in the XmNx and XmNy resources of the
+** Core widget.  While callers can set these values, there is no "unset" value
+** for these resources.  On systems which are more Motif aware, a PPosition
+** hint of 0,0, which is the default for XmNx and XmNy, is interpreted as,
+** "place this as if no hints were specified".  Unfortunately the fvwm family
+** of window managers, which are now some of the most popular, interpret this
+** as "place this window at (0,0)".  This routine intervenes between the
+** realizing and the mapping of the window to remove the inappropriate
+** PPlacement hint.
+*/ 
+void RealizeWithoutForcingPosition(Widget shell)
+{
+    XSizeHints *hints = XAllocSizeHints();
+    long suppliedHints;
+    Boolean mappedWhenManaged;
+    
+    /* Temporarily set value of XmNmappedWhenManaged
+       to stop the window from popping up right away */
+    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, 0);
+    XtVaSetValues(shell, XmNmappedWhenManaged, False, 0);
+    
+    /* Realize the widget in unmapped state */
+    XtRealizeWidget(shell);
+    
+    /* Get rid of the incorrect WMNormal hint */
+    if (XGetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints,
+    	    &suppliedHints)) {
+	hints->flags &= ~PPosition;
+	XSetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints);
+    }
+    XFree(hints);
+    
+    /* Map the widget */
+    XtMapWidget(shell);
+    
+    /* Restore the value of XmNmappedWhenManaged */
+    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, 0);
 }
 
 /*
@@ -813,12 +862,52 @@ void EndWait(Widget topCursorWidget)
     XUndefineCursor(XtDisplay(topCursorWidget), XtWindow(topCursorWidget));
 }
 
+/*
+** Create an X window geometry string from width, height, x, and y values.
+** This is a complement to the X routine XParseGeometry, and uses the same
+** bitmask values (XValue, YValue, WidthValue, HeightValue, XNegative, and
+** YNegative) as defined in <X11/Xutil.h> and documented under XParseGeometry.
+** It expects a string of at least MAX_GEOMETRY_STRING_LEN in which to write
+** result.  Note that in a geometry string, it is not possible to supply a y
+** position without an x position.  Also note that the X/YNegative flags
+** mean "add a '-' and negate the value" which is kind of odd.
+*/
+void CreateGeometryString(char *string, short x, short y,
+	short width, short height, int bitmask)
+{
+    char *ptr = string;
+    int nChars;
+    
+    if (bitmask & WidthValue) {
+    	sprintf(ptr, "%d%n", width, &nChars);
+	ptr += nChars;
+    }
+    if (bitmask & HeightValue) {
+	sprintf(ptr, "x%d%n", height, &nChars);
+	ptr += nChars;
+    }
+    if (bitmask & XValue) {
+	if (bitmask & XNegative)
+    	    sprintf(ptr, "-%d%n", -x, &nChars);
+	else
+    	    sprintf(ptr, "+%d%n", x, &nChars);
+	ptr += nChars;
+    }
+    if (bitmask & YValue) {
+	if (bitmask & YNegative)
+    	    sprintf(ptr, "-%d%n", -y, &nChars);
+	else
+    	    sprintf(ptr, "+%d%n", y, &nChars);
+	ptr += nChars;
+    }
+    *ptr = '\0';
+}
+
 /*									     */
 /* passwdCB: callback routine added by PasswordText routine.  This routine   */
 /* 	     echoes each character typed as an asterisk (*) and a few other  */
 /* 	     necessary things so that the password typed in is not visible   */
 /*									     */
-
 static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
 	*txtVerStr)
 

@@ -2,21 +2,23 @@
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 10, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -30,8 +32,10 @@
 #include <sys/param.h>
 #endif /*VMS*/
 #include <limits.h>
+#include <math.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
+#include <X11/Xatom.h>
 #include <Xm/Xm.h>
 #include <Xm/MainW.h>
 #include <Xm/PanedW.h>
@@ -39,7 +43,9 @@
 #include <Xm/RowColumnP.h>
 #include <Xm/Text.h>
 #include <Xm/ToggleB.h>
+#include <Xm/Form.h>
 #include <Xm/Label.h>
+#include <Xm/Protocols.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
 #include <Xm/PrimitiveP.h>
@@ -74,8 +80,16 @@ extern void _XEditResCheckMessages();
    (which may break in a future release) is not available */
 #define PANE_MIN_HEIGHT 39
 
+/* Thickness of 3D border around statistics and/or incremental search areas
+   below the main menu bar */
+#define STAT_SHADOW_THICKNESS 1
+
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
-	int cols, int emTabDist, char *delimiters, int wrapMargin);
+	int cols, int emTabDist, char *delimiters, int wrapMargin,
+	int lineNumCols);
+static void showStats(WindowInfo *window, int state);
+static void showISearch(WindowInfo *window, int state);
+static void showStatsForm(WindowInfo *window, int state);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
@@ -85,10 +99,16 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData);
+static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData);
+static void focusToISearchTextCB(Widget w, WindowInfo *window,
+	XtPointer callData);
+static int isIconic(WindowInfo *window);
 static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
+static void getGeometryString(WindowInfo *window, char *geomString);
+static char *getClearCaseViewTag(void);
 #ifdef ROWCOLPATCH
 static void patchRowCol(Widget w);
 static void patchedRemoveChild(Widget child);
@@ -97,15 +117,22 @@ static void patchedRemoveChild(Widget child);
 /*
 ** Create a new editor window
 */
-WindowInfo *CreateWindow(char *name)
+WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 {
-    Widget appShell, main, menuBar, pane, text, stats;
+    Widget appShell, mainWin, menuBar, pane, text, stats, statsForm;
+    Widget iSearchRadioBox, iSearchLabel;
     WindowInfo *window;
     Arg al[20];
     int ac;
+    XmString s1;
+    Pixel statsBG;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
 #endif
+    char newGeometry[MAX_GEOM_STRING_LEN];
+    unsigned int rows, cols;
+    int x, y, bitmask;
+    static Atom wmpAtom, syAtom = 0;
 
     /* Allocate some memory for the new window data structure */
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
@@ -125,6 +152,8 @@ WindowInfo *CreateWindow(char *name)
     window->fileChanged = FALSE;
     window->fileMode = 0;
     window->filenameSet = FALSE;
+    window->fileFormat = UNIX_FILE_FORMAT;
+    window->lastModTime = 0;
     strcpy(window->filename, name);
     window->undo = NULL;
     window->redo = NULL;
@@ -142,6 +171,8 @@ WindowInfo *CreateWindow(char *name)
     window->overstrike = False;
     window->showMatching = GetPrefShowMatching();
     window->showStats = GetPrefStatsLine();
+    window->showISearchLine = GetPrefISearchLine();
+    window->showLineNumbers = GetPrefLineNums();
     window->highlightSyntax = GetPrefHighlightSyntax();
     window->modeMessageDisplayed = FALSE;
     window->ignoreModify = FALSE;
@@ -165,6 +196,37 @@ WindowInfo *CreateWindow(char *name)
     window->macroCmdData = NULL;
     window->smartIndentData = NULL;
     window->languageMode = PLAIN_LANGUAGE_MODE;
+    window->iSearchHistIndex = 0;
+    window->iSearchStartPos = -1;
+    
+    /* If window geometry was specified, split it apart into a window position
+       component and a window size component.  Create a new geometry string
+       containing the position component only.  Rows and cols are stripped off
+       because we can't easily calculate the size in pixels from them until the
+       whole window is put together.  Note that the preference resource is only
+       for clueless users who decide to specify the standard X geometry
+       application resource, which is pretty useless because width and height
+       are the same as the rows and cols preferences, and specifying a window
+       location will force all the windows to pile on top of one another */
+    if (geometry == NULL || geometry[0] == '\0')
+	geometry = GetPrefGeometry();
+    if (geometry == NULL || geometry[0] == '\0') {
+	rows = GetPrefRows();
+	cols = GetPrefCols();
+	newGeometry[0] = '\0';
+    } else {
+	bitmask = XParseGeometry(geometry, &x, &y, &cols, &rows);
+	if (bitmask == 0)
+	    fprintf(stderr, "Bad window geometry specified: %s\n", geometry);
+	else {
+	    if (!(bitmask & WidthValue))
+	    	cols = GetPrefCols();
+	    if (!(bitmask & HeightValue))
+	    	rows = GetPrefRows();
+	}
+	CreateGeometryString(newGeometry, x, y, 0, 0,
+		bitmask & ~(WidthValue | HeightValue));
+    }
     
     /* Create a new toplevel shell to hold the window */
     ac = 0;
@@ -182,7 +244,10 @@ WindowInfo *CreateWindow(char *name)
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(al[ac], XmNiconName, name); ac++;
 #endif
-    appShell = XtAppCreateShell("nedit", "NEdit",
+    XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
+    XtSetArg(al[ac], XmNinitialState,
+	    iconic ? IconicState : NormalState); ac++;
+    appShell = XtAppCreateShell(APP_NAME, APP_CLASS,
 		applicationShellWidgetClass, TheDisplay, al, ac);
     window->shell = appShell;
 
@@ -199,14 +264,109 @@ WindowInfo *CreateWindow(char *name)
        userData resource to be used by WidgetToWindow to recover the
        window pointer from the widget id of any of the window's widgets */
     XtSetArg(al[ac], XmNuserData, window); ac++;
-    main = XmCreateMainWindow(appShell, "main", al, ac);
-    XtManageChild(main);
+    mainWin = XmCreateMainWindow(appShell, "main", al, ac);
+    XtManageChild(mainWin);
+    
+    statsForm = XtVaCreateWidget("statsForm", 
+       	    xmFormWidgetClass, mainWin,
+	    XmNshadowThickness, STAT_SHADOW_THICKNESS, 0);
+    if(window->showISearchLine || window->showStats)
+	XtManageChild(statsForm);
+       	    
+    window->iSearchForm = XtVaCreateWidget("iSearchForm", 
+       	    xmFormWidgetClass, statsForm,
+	    XmNleftAttachment, XmATTACH_FORM,
+	    XmNleftOffset, STAT_SHADOW_THICKNESS,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNtopOffset, STAT_SHADOW_THICKNESS,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNrightOffset, STAT_SHADOW_THICKNESS,
+	    XmNbottomAttachment, window->showStats ?
+	    	XmATTACH_NONE : XmATTACH_FORM,
+	    XmNbottomOffset, STAT_SHADOW_THICKNESS, 0);
+    if(window->showISearchLine)
+	XtManageChild(window->iSearchForm);
+    iSearchLabel = XtVaCreateManagedWidget("iSearchLabel",
+      	    xmLabelWidgetClass, window->iSearchForm,
+	    XmNlabelString, s1=XmStringCreateSimple("Find:"),
+	    XmNmarginHeight, 0,
+	    XmNleftAttachment, XmATTACH_FORM,
+	    XmNleftOffset, 5,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM, 0);
+    XmStringFree(s1);
+    iSearchRadioBox = XtVaCreateManagedWidget("iSearchRadioBox",
+    	    xmRowColumnWidgetClass, window->iSearchForm,
+    	    XmNorientation, XmHORIZONTAL,
+    	    XmNpacking, XmPACK_TIGHT,
+	    XmNradioBehavior, True,
+	    XmNmarginHeight, 0,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNrightOffset, 5,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM, 0);
+    window->iSearchLiteralToggle=XtVaCreateManagedWidget("iSearchLiteralToggle",
+      	    xmToggleButtonWidgetClass, iSearchRadioBox,
+	    XmNlabelString, s1=XmStringCreateSimple("Literal"),
+	    XmNset, GetPrefSearch() == SEARCH_LITERAL,
+	    XmNmarginHeight, 0, 0);
+    XmStringFree(s1);
+    XtAddCallback(window->iSearchLiteralToggle, XmNvalueChangedCallback,
+	    (XtCallbackProc)focusToISearchTextCB, window);
+    window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
+      	    xmToggleButtonWidgetClass, iSearchRadioBox,
+	    XmNlabelString, s1=XmStringCreateSimple("Case"),
+	    XmNset, GetPrefSearch() == SEARCH_CASE_SENSE,
+	    XmNmarginHeight, 0, 0);
+    XmStringFree(s1);
+    XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback,
+	    (XtCallbackProc)focusToISearchTextCB, window);
+    window->iSearchREToggle = XtVaCreateManagedWidget("iSearchREToggle",
+      	    xmToggleButtonWidgetClass, iSearchRadioBox,
+	    XmNlabelString, s1=XmStringCreateSimple("RegExp"),
+	    XmNset, GetPrefSearch() == SEARCH_REGEX,
+	    XmNmarginHeight, 0, 0);
+    XmStringFree(s1);
+    XtAddCallback(window->iSearchREToggle, XmNvalueChangedCallback,
+	    (XtCallbackProc)focusToISearchTextCB, window);
+    window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
+      	    xmToggleButtonWidgetClass, window->iSearchForm,
+	    XmNlabelString, s1=XmStringCreateSimple("Rev"),
+	    XmNset, False,
+	    XmNmarginHeight, 0,
+	    XmNrightAttachment, XmATTACH_WIDGET,
+	    XmNrightWidget, iSearchRadioBox,
+	    XmNrightOffset, 5,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM, 0);
+    XmStringFree(s1);
+    XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback,
+	    (XtCallbackProc)focusToISearchTextCB, window);
+    window->iSearchText = XtVaCreateManagedWidget("iSearchText",
+      	    xmTextWidgetClass, window->iSearchForm,
+	    XmNmarginHeight, 1,
+    	    XmNnavigationType, XmEXCLUSIVE_TAB_GROUP,
+	    XmNleftAttachment, XmATTACH_WIDGET,
+	    XmNleftWidget, iSearchLabel,
+	    XmNrightAttachment, XmATTACH_WIDGET,
+	    XmNrightWidget, window->iSearchRevToggle,
+	    XmNrightOffset, 5,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNtopOffset, 0,
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNbottomOffset, 0, 0);
+
+    SetISearchTextCallbacks(window);
     
     /* Create file statistics display area.  Using a text widget rather than
        a label solves a layout problem with the main window, which messes up
        if the label is too long (we would need a resize callback to control
-       the length when the window changed size).*/
-    stats = XtVaCreateWidget("statsLine", xmTextWidgetClass,  main,
+       the length when the window changed size), and allows users to select
+       file names and line numbers.  Background color is copied from parent
+       widget, because many users and some system defaults color text
+       backgrounds differently from other widgets. */
+    XtVaGetValues(statsForm, XmNbackground, &statsBG, 0);
+    stats = XtVaCreateWidget("statsLine", xmTextWidgetClass,  statsForm,
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
     	    XmNscrollHorizontal, False,
@@ -214,10 +374,21 @@ WindowInfo *CreateWindow(char *name)
     	    XmNeditable, False,
     	    XmNtraversalOn, False,
     	    XmNcursorPositionVisible, False,
-    	    XmNfontList, window->fontList, 0);
+	    XmNbackground, statsBG,
+    	    XmNfontList, window->fontList,
+	    XmNleftAttachment, XmATTACH_FORM,
+	    XmNleftOffset, STAT_SHADOW_THICKNESS,
+	    XmNtopAttachment, window->showISearchLine ?
+	    	XmATTACH_WIDGET : XmATTACH_FORM,
+	    XmNtopWidget, window->iSearchForm,
+	    XmNtopOffset, STAT_SHADOW_THICKNESS,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNrightOffset, STAT_SHADOW_THICKNESS,
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNbottomOffset, STAT_SHADOW_THICKNESS, 0);
     window->statsLine = stats;
-    if (GetPrefStatsLine())
-    	XtManageChild(stats);
+    if(window->showStats)
+	XtManageChild(stats);
     	
     /* If the fontList was NULL, use the magical default provided by Motif,
        since it must have worked if we've gotten this far */
@@ -225,22 +396,22 @@ WindowInfo *CreateWindow(char *name)
     	XtVaGetValues(stats, XmNfontList, &window->fontList, 0);
 
     /* Create the menu bar */
-    menuBar = CreateMenuBar(main, window);
+    menuBar = CreateMenuBar(mainWin, window);
     window->menuBar = menuBar;
     XtManageChild(menuBar);
         
     /* Create paned window to manage split window behavior */
-    pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  main,
+    pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2, 0);
     window->splitPane = pane;
-    XmMainWindowSetAreas(main, menuBar, stats, NULL, NULL, pane);
+    XmMainWindowSetAreas(mainWin, menuBar, statsForm, NULL, NULL, pane);
 
     /* Create the first, and most permanent text area (other panes may
        be added & removed, but this one will never be removed */
-    text = createTextArea(pane, window, GetPrefRows(), GetPrefCols(),
+    text = createTextArea(pane, window, rows,cols,
     	    GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(),
-	    GetPrefWrapMargin());
+	    GetPrefWrapMargin(), window->showLineNumbers?MIN_LINE_NUM_COLS:0);
     XtManageChild(text);
     window->textArea = text;
     window->lastFocus = text;
@@ -275,11 +446,23 @@ WindowInfo *CreateWindow(char *name)
     InvalidateWindowMenus();
     
     /* realize all of the widgets in the new window */
-    XtRealizeWidget(appShell);
+    RealizeWithoutForcingPosition(appShell);
+    XmProcessTraversal(text, XmTRAVERSE_CURRENT);
 
     /* Make close command in window menu gracefully prompt for close */
     AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, window);
     
+#ifndef NO_SESSION_RESTART
+    /* Add wm protocol callback for making nedit restartable by session
+       managers.  Doesn't yet handle multiple-desktops or iconifying right. */
+    if (syAtom == 0) {
+    	wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", TRUE);
+    	syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", TRUE);
+    }
+    XmAddProtocolCallback(appShell, wmpAtom, syAtom,
+	    (XtCallbackProc)saveYourselfCB, window);
+#endif
+        
     /* Make window resizing work in nice character heights */
     UpdateWMSizeHints(window);
     
@@ -325,6 +508,8 @@ void CloseWindow(WindowInfo *window)
 	window->ignoreModify = FALSE;
 	window->filenameSet = FALSE;
 	window->fileChanged = FALSE;
+	window->fileFormat = UNIX_FILE_FORMAT;
+	window->lastModTime = 0;
 	StopHighlighting(window);
 	EndSmartIndent(window);
 	UpdateWindowTitle(window);
@@ -392,7 +577,7 @@ void SplitWindow(WindowInfo *window)
     short paneHeights[MAX_PANES+1];
     int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
     int horizOffsets[MAX_PANES+1];
-    int i, focusPane, emTabDist, wrapMargin, totalHeight=0;
+    int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
     char *delimiters;
     Widget text;
     
@@ -419,9 +604,10 @@ void SplitWindow(WindowInfo *window)
     /* Create a text widget to add to the pane and set its buffer and
        highlight data to be the same as the other panes in the window */
     XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist,
-    	    textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, 0);
+    	    textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
+	    textNlineNumCols, &lineNumCols, 0);
     text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
-    	    delimiters, wrapMargin);
+    	    delimiters, wrapMargin, lineNumCols);
     TextSetBuffer(text, window->buffer);
     if (window->highlightData != NULL)
     	AttachHighlightToWidget(text, window);
@@ -538,28 +724,163 @@ void ClosePane(WindowInfo *window)
 }
 
 /*
+** Turn on and off the display of line numbers
+*/
+void ShowLineNumbers(WindowInfo *window, int state)
+{
+    Widget text;
+    int i, marginWidth;
+    Dimension windowWidth;
+    textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+    
+    if (window->showLineNumbers == state)
+	return;
+    window->showLineNumbers = state;
+    
+    /* Just setting window->showLineNumbers is sufficient to tell
+       UpdataLineNumDisp to expand the line number areas and the window
+       size for the number of lines required.  To hide the line number
+       display, set the width to zero, and contract the window width. */
+    if (state) {
+	UpdateLineNumDisp(window);
+    } else {
+	XtVaGetValues(window->shell, XmNwidth, &windowWidth, 0);
+	XtVaGetValues(window->textArea, textNmarginWidth, &marginWidth, 0);
+	XtVaSetValues(window->shell, XmNwidthInc, 1, 0);
+	XtVaSetValues(window->shell, XmNwidth,
+		windowWidth - textD->left + marginWidth, 0);
+	for (i=0; i<=window->nPanes; i++) {
+    	    text = i==0 ? window->textArea : window->textPanes[i-1];
+	    XtVaSetValues(text, textNlineNumCols, 0, 0);
+	}
+    }
+	    
+    /* Tell WM that the non-expandable part of the window has changed size */
+    UpdateWMSizeHints(window);
+}
+
+/*
 ** Turn on and off the display of the statistics line
 */
 void ShowStatsLine(WindowInfo *window, int state)
 {
-    Widget mainW = XtParent(window->statsLine);
+    Widget text;
+    int i;
     
+    /* In continuous wrap mode, text widgets must be told to keep track of
+       the top line number in absolute (non-wrapped) lines, because it can
+       be a costly calculation, and is only needed for displaying line
+       numbers, either in the stats line, or along the left margin */
+    for (i=0; i<=window->nPanes; i++) {
+    	text = i==0 ? window->textArea : window->textPanes[i-1];
+	TextDMaintainAbsLineNum(((TextWidget)text)->text.textD, state);
+    }
+    window->showStats = state;
+    showStats(window, state);
+}
+
+/*
+** Displays and undisplays the statistics line (regardless of settings of
+** window->showStats or window->modeMessageDisplayed)
+*/
+static void showStats(WindowInfo *window, int state)
+{
+    if (state) {
+	XtVaSetValues(window->iSearchForm,
+		XmNbottomAttachment, XmATTACH_NONE, 0);
+	XtManageChild(window->statsLine);
+	showStatsForm(window, True);
+    } else {
+	XtUnmanageChild(window->statsLine);
+	XtVaSetValues(window->iSearchForm,
+		XmNbottomAttachment, XmATTACH_FORM,
+		XmNbottomOffset, STAT_SHADOW_THICKNESS, 0);
+	showStatsForm(window, window->showISearchLine);
+    }
+      
+    /* Tell WM that the non-expandable part of the window has changed size */
+    UpdateWMSizeHints(window);
+}
+
+/*
+** Turn on and off the continuing display of the incremental search line
+** (when off, it is popped up and down as needed via TempShowISearch)
+*/
+void ShowISearchLine(WindowInfo *window, int state)
+{
+    if (window->showISearchLine == state)
+	return;
+    window->showISearchLine = state;
+    showISearch(window, state);
+}
+
+/*
+** Temporarily show and hide the incremental search line if the line is not
+** already up.
+*/
+void TempShowISearch(WindowInfo *window, int state)
+{
+    if (window->showISearchLine)
+	return;
+    if (XtIsManaged(window->iSearchForm) != state)
+    	showISearch(window, state);
+}
+
+/*
+** Put up or pop-down the incremental search line regardless of settings
+** of showISearchLine or TempShowISearch
+*/
+static void showISearch(WindowInfo *window, int state)
+{
+    if (state) {
+	XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_WIDGET,
+		XmNtopWidget, window->iSearchForm, 0);
+	XtManageChild(window->iSearchForm);
+	showStatsForm(window, True);
+    } else {
+	XtUnmanageChild(window->iSearchForm);
+	XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_FORM, 0);
+	showStatsForm(window, window->showStats || window->modeMessageDisplayed);
+    }
+      
+    /* Tell WM that the non-expandable part of the window has changed size */
+    UpdateWMSizeHints(window);
+}
+
+/*
+** Show or hide the extra display area under the main menu bar which
+** optionally contains the status line and the incremental search bar
+*/
+static void showStatsForm(WindowInfo *window, int state)
+{
+    Widget statsForm = XtParent(window->statsLine);
+    Widget mainW = XtParent(statsForm);
+
     /* The very silly use of XmNcommandWindowLocation and XmNshowSeparator
        below are to kick the main window widget to position and remove the
-       status line when it is managed and unmanaged */
+       status line when it is managed and unmanaged.  At some Motif version
+       level, the showSeparator trick backfires and leaves the separator
+       shown, but fortunately the dynamic behavior is fixed, too so the
+       workaround is no longer necessary, either.  (... the version where
+       this occurs may be earlier than 2.1.  If the stats line shows
+       double thickness shadows in earlier Motif versions, the #if XmVersion
+       directive should be moved back to that earlier version) */
     if (state) {
-    	XtVaSetValues(mainW, XmNcommandWindowLocation,
+    	XtUnmanageChild(statsForm);    /*... will this fix Solaris 7??? */
+	XtVaSetValues(mainW, XmNcommandWindowLocation,
     		XmCOMMAND_ABOVE_WORKSPACE, 0);
+#if XmVersion < 2001
     	XtVaSetValues(mainW, XmNshowSeparator, True, 0);
-    	XtManageChild(window->statsLine);
+#endif
+    	XtManageChild(statsForm);
     	XtVaSetValues(mainW, XmNshowSeparator, False, 0);
    	UpdateStatsLine(window);
     } else {
-     	XtUnmanageChild(window->statsLine);
+     	XtUnmanageChild(statsForm);
    	XtVaSetValues(mainW, XmNcommandWindowLocation,
    		XmCOMMAND_BELOW_WORKSPACE, 0);
     }
-    
+      
     /* Tell WM that the non-expandable part of the window has changed size */
     UpdateWMSizeHints(window);
 }
@@ -572,7 +893,7 @@ void SetModeMessage(WindowInfo *window, char *message)
 {
     window->modeMessageDisplayed = True;
     XmTextSetString(window->statsLine, message);
-    ShowStatsLine(window, True);
+    showStats(window, True);
 }
 
 /*
@@ -582,7 +903,7 @@ void SetModeMessage(WindowInfo *window, char *message)
 void ClearModeMessage(WindowInfo *window)
 {
     window->modeMessageDisplayed = False;
-    ShowStatsLine(window, window->showStats);
+    showStats(window, window->showStats);
     UpdateStatsLine(window);
 }
 
@@ -643,7 +964,7 @@ void SetFonts(WindowInfo *window, char *fontName, char *italicName,
     int borderWidth, borderHeight, marginWidth, marginHeight;
     int primaryChanged, highlightChanged = False;
     Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
-    Dimension textWidth, textHeight, newWindowWidth, newWindowHeight;
+    Dimension textHeight, newWindowWidth, newWindowHeight;
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
     
     /* Check which fonts have changed */
@@ -659,10 +980,10 @@ void SetFonts(WindowInfo *window, char *fontName, char *italicName,
        determine the correct window size after the font is changed */
     XtVaGetValues(window->shell, XmNwidth, &oldWindowWidth, XmNheight,
     	    &oldWindowHeight, 0);
-    XtVaGetValues(window->textArea, XmNheight, &textHeight, XmNwidth,
-    	    &textWidth, textNmarginHeight, &marginHeight, textNmarginWidth,
+    XtVaGetValues(window->textArea, XmNheight, &textHeight,
+    	    textNmarginHeight, &marginHeight, textNmarginWidth,
     	    &marginWidth, textNfont, &oldFont, 0);
-    oldTextWidth = textWidth - 2*marginWidth;
+    oldTextWidth = textD->width + textD->lineNumWidth;
     oldTextHeight = textHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
     	XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, 0);
@@ -811,17 +1132,30 @@ void SetWindowModified(WindowInfo *window, int modified)
 */
 void UpdateWindowTitle(WindowInfo *window)
 {
-    char title[MAXPATHLEN + 14]; 	/* 11: strlen("Replace (in )") */
+    char *title, *iconTitle;
+    
+    title = XtMalloc(strlen(window->filename) + strlen(getClearCaseViewTag()) +
+    	    23);  /* strlen(" (read only, modified)")+1 */
+    iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
-    /* Set the window title, adding annotations for "modified" or "read-only" */
-    strcpy(title, window->filename);
-    if (window->readOnly)
+    /* Set the window title, adding annotations for "modified" or "read-only",
+       and possibly a ClearCase view tag. */
+    strcpy(title, getClearCaseViewTag());
+    strcat(title, window->filename);
+    if (window->readOnly && window->fileChanged)
+    	strcat(title, " (read only, modified)");
+    else if (window->readOnly)
     	strcat(title, " (read only)");
+    else if (window->lockWrite && window->fileChanged)
+    	strcat(title, " (locked, modified)");
     else if (window->lockWrite)
     	strcat(title, " (locked)");
     else if (window->fileChanged)
     	strcat(title, " (modified)");
-    SetWindowTitle(window, title);
+    strcpy(iconTitle, window->filename);
+    if (window->fileChanged)
+    	strcat(iconTitle, "*");
+    XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, iconTitle, 0);
     
     /* If there's a find or replace dialog up in "Keep Up" mode, with a
        file name in the title, update it too */
@@ -833,6 +1167,11 @@ void UpdateWindowTitle(WindowInfo *window)
     	sprintf(title, "Replace (in %s)", window->filename);
     	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, 0);
     }
+    XtFree(title);
+    XtFree(iconTitle);
+
+    /* Update the Windows menus with the new name */
+    InvalidateWindowMenus();
 }
 
 /*
@@ -850,24 +1189,6 @@ void UpdateWindowReadOnly(WindowInfo *window)
     	XtVaSetValues(window->textPanes[i], textNreadOnly, state, 0);
     XmToggleButtonSetState(window->readOnlyItem, state, FALSE);
     XtSetSensitive(window->readOnlyItem, !window->readOnly);
-}
-
-void SetWindowTitle(WindowInfo *window, char *title)
-{
-#ifdef SGI_CUSTOM
-    char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
-    strcat(sgi_title, title);
-#endif
-
-    /* Set both the window title and the icon title */
-#ifdef SGI_CUSTOM
-    XtVaSetValues(window->shell, XmNtitle, sgi_title, XmNiconName, title, 0);
-#else
-    XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, title, 0);
-#endif
-
-    /* Update the Windows menus with the new name */
-    InvalidateWindowMenus();
 }
 
 /*
@@ -999,7 +1320,8 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
 }
 
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
-	int cols, int emTabDist, char *delimiters, int wrapMargin)
+	int cols, int emTabDist, char *delimiters, int wrapMargin,
+	int lineNumCols)
 {
     Widget text, sw, hScrollBar, vScrollBar;
     Pixel troughColor;
@@ -1016,6 +1338,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
     	    XmNrepeatDelay, 10, 0);
     text = XtVaCreateManagedWidget("text", textWidgetClass, sw,
     	    textNrows, rows, textNcolumns, cols,
+	    textNlineNumCols, lineNumCols,
     	    textNemulateTabs, emTabDist,
     	    textNfont, GetDefaultFontStruct(window->fontList),
     	    textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar,
@@ -1054,6 +1377,11 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
 
     /* Augment translation table for right button popup menu */
     AddBGMenuAction(text);
+    
+    /* If absolute line numbers will be needed for display in the statistics
+       line, tell the widget to maintain them (otherwise, it's a costly
+       operation and performance will be better without it) */
+    TextDMaintainAbsLineNum(((TextWidget)text)->text.textD, window->showStats);
    
     return text;
 }
@@ -1068,6 +1396,9 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData)
     
     /* Check the character before the cursor for matchable characters */
     FlashMatching(window, w);
+    
+    /* Check for changes to read-only status and/or file modifications */
+    CheckForChangesToFile(window);
 }
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
@@ -1094,6 +1425,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     	    XtSetSensitive(window->replaceInSelBtn, selected);
     }
     
+    /* Make sure line number display is sufficient for new data */
+    UpdateLineNumDisp(window);
+    
     /* When the program needs to make a change to a text area without without
        recording it for undo or marking file as changed it sets ignoreModify */
     if (window->ignoreModify || (nDeleted == 0 && nInserted == 0))
@@ -1117,6 +1451,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 
     /* Update # of bytes, and line and col statistics */
     UpdateStatsLine(window);
+    
+    /* Check if external changes have been made to file and warn user */
+    CheckForChangesToFile(window);
 }
 
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData) 
@@ -1126,6 +1463,12 @@ static void focusCB(Widget w, WindowInfo *window, XtPointer callData)
     
     /* update line number statistic to reflect current focus pane */
     UpdateStatsLine(window);
+    
+    /* finish off the current incremental search */
+    EndISearch(window);
+    
+    /* Check for changes to read-only status and/or file modifications */
+    CheckForChangesToFile(window);
 }
 
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData) 
@@ -1160,7 +1503,110 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData)
      	    exit(0);
     } else
     	CloseFileAndWindow(window);
-    	
+}
+
+static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData) 
+{
+    WindowInfo *win, **revWindowList;
+    char geometry[MAX_GEOM_STRING_LEN];
+    int argc = 0, maxArgc, nWindows, i;
+    char **argv;
+    int wasIconic = False;
+    
+    /* Only post a restart command on the first window in the window list so
+       session manager can restart the whole set of windows in one executable,
+       rather than one nedit per file.  Even if the restart command is not on
+       this window, the protocol demands that we set the window's WM_COMMAND
+       property in response to the "save yourself" message */
+    if (window != WindowList) {
+    	XSetCommand(TheDisplay, XtWindow(window->shell), NULL, 0);
+    	return;
+    }
+   
+    /* Allocate memory for an argument list and for a reversed list of
+       windows.  The window list is reversed for IRIX 4DWM and any other
+       window/session manager combination which uses window creation
+       order for re-associating stored geometry information with
+       new windows created by a restored application */
+    maxArgc = 1;
+    nWindows = 0;
+    for (win=WindowList; win!=NULL; win=win->next) {
+	maxArgc += 4;
+	nWindows++;
+    }
+    argv = (char **)XtMalloc(maxArgc*sizeof(char *));
+    revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *)*nWindows);
+    for (win=WindowList, i=nWindows-1; win!=NULL; win=win->next, i--)
+	revWindowList[i] = win;
+	
+    /* Create command line arguments for restoring each window in the list */
+    argv[argc++] = XtNewString(ArgV0);
+    for (i=0; i<nWindows; i++) {
+	win = revWindowList[i];
+	getGeometryString(win, geometry);
+	argv[argc++] = XtNewString("-geometry");
+	argv[argc++] = XtNewString(geometry);
+	if (isIconic(win)) {
+	    argv[argc++] = XtNewString("-iconic");
+	    wasIconic = True;
+	} else if (wasIconic) {
+	    argv[argc++] = XtNewString("-noiconic");
+	    wasIconic = False;
+	}
+	if (win->filenameSet) {
+	    argv[argc] = XtMalloc(strlen(win->path) +
+		    strlen(win->filename) + 1);
+	    sprintf(argv[argc++], "%s%s", win->path, win->filename);
+	}
+    }
+    XtFree((char *)revWindowList);
+    
+    /* Set the window's WM_COMMAND property to the created command line */
+    XSetCommand(TheDisplay, XtWindow(window->shell), argv, argc);
+    for (i=0; i<argc; i++)
+    	XtFree(argv[i]);
+    XtFree((char *)argv);
+}
+
+/*
+** Return the focus to the incremental search text field.  This reduces the
+** number of mouse presses the user needs to do to use the toggle buttons in
+** the incremental search bar.  Admittedly, if the user traverses through with
+** the intent of setting both direction and search type via the keyboard, it
+** actually increases the number of keystrokes, but on the whole it appears to
+** be a big winner.
+*/
+static void focusToISearchTextCB(Widget w, WindowInfo *window,
+	XtPointer callData) 
+{
+    XmProcessTraversal(window->iSearchText, XmTRAVERSE_CURRENT);
+}
+
+/*
+** Returns true if window is iconic (as determined by the WM_STATE property
+** on the shell window.  I think this is the most reliable way to tell,
+** but if someone has a better idea please send me a note).
+*/
+static int isIconic(WindowInfo *window)
+{
+    unsigned long *property = NULL;
+    unsigned long nItems;
+    unsigned long leftover;
+    static Atom wmStateAtom = 0;
+    Atom actualType;
+    int actualFormat;
+    int result;
+  
+    if (wmStateAtom == 0)
+    	wmStateAtom = XInternAtom (XtDisplay(window->shell), "WM_STATE", False); 
+    if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell),
+	    wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat,
+	    &nItems, &leftover, (unsigned char **)&property) != Success ||
+	    nItems != 1 || property == NULL)
+	return FALSE;
+    result = *property == IconicState;
+    XtFree((char *)property);
+    return result;
 }
 
 /*
@@ -1195,12 +1641,54 @@ static void removeFromWindowList(WindowInfo *window)
 }
 
 /*
+** If necessary, enlarges the window and line number display area
+** to make room for numbers.
+*/
+void UpdateLineNumDisp(WindowInfo *window)
+{
+    Dimension windowWidth;
+    int i, fontWidth, reqCols, lineNumCols;
+    int oldWidth, newWidth, marginWidth;
+    Widget text;
+    textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+    
+    if (!window->showLineNumbers)
+	return;
+    
+    /* Decide how wide the line number field has to be to display all
+       possible line numbers */
+    reqCols = textD->nBufferLines<1 ? 1 : log10((double)textD->nBufferLines)+1;
+    if (reqCols < MIN_LINE_NUM_COLS)
+	reqCols = MIN_LINE_NUM_COLS;
+     
+    /* Is the width of the line number area sufficient to display all the
+       line numbers in the file?  If not, expand line number field, and the
+       window width */
+    XtVaGetValues(window->textArea, textNlineNumCols, &lineNumCols,
+	    textNmarginWidth, &marginWidth, 0);
+    if (lineNumCols < reqCols) {
+	fontWidth = textD->fontStruct->max_bounds.width;
+	oldWidth = textD->left - marginWidth;
+	newWidth = reqCols * fontWidth + marginWidth;
+	XtVaGetValues(window->shell, XmNwidth, &windowWidth, 0);
+	XtVaSetValues(window->shell, XmNwidthInc, 1, 0);
+	XtVaSetValues(window->shell, XmNwidth,
+		windowWidth + newWidth-oldWidth, 0);
+	UpdateWMSizeHints(window);
+	for (i=0; i<=window->nPanes; i++) {
+    	    text = i==0 ? window->textArea : window->textPanes[i-1];
+	    XtVaSetValues(text, textNlineNumCols, reqCols, 0);
+	}		
+    }
+}
+
+/*
 ** Update the optional statistics line.  
 */
 void UpdateStatsLine(WindowInfo *window)
 {
     int line, pos, colNum;
-    char *string;
+    char *string, *dos;
     Widget statW = window->statsLine;
 #ifdef SGI_CUSTOM
     char *sleft, *smid, *sright;
@@ -1215,12 +1703,16 @@ void UpdateStatsLine(WindowInfo *window)
     /* Compose the string to display. If line # isn't available, leave it off */
     pos = TextGetCursorPos(window->lastFocus);
     string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
+    dos = window->fileFormat == DOS_FILE_FORMAT ? " DOS" : "";
     if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum))
-    	sprintf(string, "%s%s %d bytes", window->path, window->filename,
-    	    	window->buffer->length);
+    	sprintf(string, "%s%s%s %d bytes", window->path, window->filename,
+		dos, window->buffer->length);
+    else if (window->showLineNumbers)
+	sprintf(string, "%s%s%s byte %d, col %d, %d bytes", window->path,
+    	    	window->filename, dos, pos, colNum, window->buffer->length);
     else
-    	sprintf(string, "%s%s line %d, col %d, %d bytes", window->path,
-    	    	window->filename, line, colNum, window->buffer->length);
+    	sprintf(string, "%s%s%s line %d, col %d, %d bytes", window->path,
+    	    	window->filename, dos, line, colNum, window->buffer->length);
     
     /* Change the text in the stats line */
 #ifdef SGI_CUSTOM
@@ -1268,7 +1760,7 @@ static void setPaneMinHeight(Widget w, int min)
 */
 void UpdateWMSizeHints(WindowInfo *window)
 {
-    Dimension shellWidth, shellHeight, textHeight, textWidth, hScrollBarHeight;
+    Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
     int marginHeight, marginWidth, totalHeight;
     XFontStruct *fs;
     int i, baseWidth, baseHeight, fontHeight, fontWidth;
@@ -1276,9 +1768,8 @@ void UpdateWMSizeHints(WindowInfo *window)
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
     /* Find the base (non-expandable) width and height of the editor window */
-    XtVaGetValues(window->textArea, XmNheight, &textHeight, XmNwidth,
-    	    &textWidth, textNmarginHeight, &marginHeight, textNmarginWidth,
-    	    &marginWidth, 0);
+    XtVaGetValues(window->textArea, XmNheight, &textHeight,
+    	    textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth,0);
     totalHeight = textHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
     	XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, 
@@ -1291,7 +1782,7 @@ void UpdateWMSizeHints(WindowInfo *window)
     }
     XtVaGetValues(window->shell, XmNwidth, &shellWidth,
     	    XmNheight, &shellHeight, 0);
-    baseWidth = shellWidth - (textWidth - 2*marginWidth);
+    baseWidth = shellWidth - textD->width;
     baseHeight = shellHeight - totalHeight;
     
     /* Find the dimensions of a single character of the text font */
@@ -1320,8 +1811,8 @@ void UpdateMinPaneHeights(WindowInfo *window)
 
     /* find the minimum allowable size for a pane */
     XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, 0);
-    XtVaGetValues(XtParent(window->textArea), XmNscrolledWindowMarginHeight,
-    	    &swMarginHeight, 0);
+    XtVaGetValues(XtParent(window->textArea),
+	    XmNscrolledWindowMarginHeight, &swMarginHeight, 0);
     XtVaGetValues(window->textArea, textNmarginHeight, &marginHeight, 0);
     XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, 0);
     minPaneHeight = textD->ascent + textD->descent + marginHeight*2 +
@@ -1371,6 +1862,49 @@ void AddSmallIcon(Widget shell)
 }
 
 /*
+** Save the position and size of a window as an X standard geometry string.
+** A string of at least MAX_GEOMETRY_STRING_LEN characters should be
+** provided in the argument "geomString" to receive the result.
+*/
+static void getGeometryString(WindowInfo *window, char *geomString)
+{
+    int x, y, fontWidth, fontHeight, baseWidth, baseHeight;
+    unsigned int width, height, dummyW, dummyH, bw, depth, nChild;
+    Window parent, root, *child, w = XtWindow(window->shell);
+    Display *dpy = XtDisplay(window->shell);
+    
+    /* Find the width and height from the window of the shell */
+    XGetGeometry(dpy, w, &root, &x, &y, &width, &height, &bw, &depth);
+    
+    /* Find the top left corner (x and y) of the window decorations.  (This
+       is what's required in the geometry string to restore the window to it's
+       original position, since the window manager re-parents the window to
+       add it's title bar and menus, and moves the requested window down and
+       to the left.)  The position is found by traversing the window hier-
+       archy back to the window to the last parent before the root window */
+    for(;;) {
+        XQueryTree(dpy, w, &root, &parent,  &child, &nChild);
+        XFree((char*)child);
+        if (parent == root)
+            break;
+        w = parent;
+    }
+    XGetGeometry(dpy, w, &root, &x, &y, &dummyW, &dummyH, &bw, &depth);
+    
+    /* Use window manager size hints (set by UpdateWMSizeHints) to
+       translate the width and height into characters, as opposed to pixels */
+    XtVaGetValues(window->shell, XmNwidthInc, &fontWidth,
+    	    XmNheightInc, &fontHeight, XmNbaseWidth, &baseWidth,
+	    XmNbaseHeight, &baseHeight, 0);
+    width = (width-baseWidth) / fontWidth;
+    height = (height-baseHeight) / fontHeight;
+
+    /* Write the string */
+    CreateGeometryString(geomString, x, y, width, height,
+		XValue | YValue | WidthValue | HeightValue);
+}
+
+/*
 ** Xt timer procedure for updating size hints.  The new sizes of objects in
 ** the window are not ready immediately after adding or removing panes.  This
 ** is a timer routine to be invoked with a timeout of 0 to give the event
@@ -1380,6 +1914,38 @@ void AddSmallIcon(Widget shell)
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id)
 {
     UpdateWMSizeHints((WindowInfo *)clientData);
+}
+
+/*
+** If user has ClearCase and is in a view, CLEARCASE_ROOT will be set
+** and the view name can be extracted.  This check is safe and efficient
+** enough that it doesn't impact non-clearcase users, so it is not
+** conditionally compiled.  (Thanks to Max Vohlken)
+*/
+static char *getClearCaseViewTag(void)
+{
+    static char *viewTag = NULL;
+    char *envPtr;
+    char *tagPtr;
+
+    if (viewTag != NULL)
+        return viewTag;
+
+    envPtr = getenv("CLEARCASE_ROOT");
+    if (envPtr == NULL) {
+	viewTag = "";
+	return viewTag;
+    }
+    
+    tagPtr = strrchr(envPtr, '/');
+    if (tagPtr == NULL) {
+	viewTag = "";
+	return viewTag;
+    }
+    
+    viewTag = XtMalloc(strlen(tagPtr+1) + 4);
+    sprintf(viewTag, "{%s} ", tagPtr+1);
+    return viewTag;
 }
 
 #ifdef ROWCOLPATCH

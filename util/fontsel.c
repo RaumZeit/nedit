@@ -1,29 +1,29 @@
 /*******************************************************************************
 *									       *
-* fontsel.c -- Nirvana Font Selector main program			       *
+* fontsel.c -- Nirvana Font Selector			       *
 *									       *
-* Copyright (c) 1993 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 2, 1993								       *
 *									       *
 * Written by Suresh Ravoor (assisted by Mark Edel)			       *
 *									       *
 *******************************************************************************/
-static char SCCSID[] = "@(#)fontsel.c	1.12	10/3/96";
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -336,8 +336,8 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
 	XtSetArg(args[n], XmNtopWidget, nameLabel); n++;
 	XtSetArg(args[n], XmNleftOffset, 5); n++;
-	XtSetArg(args[n], XmNleftWidget, fontList); n++;
-	XtSetArg(args[n], XmNbottomWidget, fontList); n++;
+	XtSetArg(args[n], XmNleftWidget, XtParent(fontList)); n++;
+	XtSetArg(args[n], XmNbottomWidget, XtParent(fontList)); n++;
 	XtSetArg(args[n], XmNrightPosition, 85); n++;
 	styleList = XmCreateScrolledList(form, "stylelist", args, n);
 	XtManageChild(styleList);
@@ -349,8 +349,8 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	XtSetArg(args[n], XmNlabelString, tempStr); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET); n++;
-	XtSetArg(args[n], XmNbottomWidget, styleList); n++;
-	XtSetArg(args[n], XmNleftWidget, styleList); n++;
+	XtSetArg(args[n], XmNbottomWidget, XtParent(styleList)); n++;
+	XtSetArg(args[n], XmNleftWidget, XtParent(styleList)); n++;
 	XtCreateManagedWidget("Style:", xmLabelWidgetClass, form, args, n);
 	XmStringFree(tempStr);
 
@@ -362,8 +362,8 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET); n++;
 	XtSetArg(args[n], XmNtopWidget, nameLabel); n++;
-	XtSetArg(args[n], XmNleftWidget, styleList); n++;
-	XtSetArg(args[n], XmNbottomWidget, fontList); n++;
+	XtSetArg(args[n], XmNleftWidget, XtParent(styleList)); n++;
+	XtSetArg(args[n], XmNbottomWidget, XtParent(fontList)); n++;
 	XtSetArg(args[n], XmNleftOffset, 5); n++;
 	XtSetArg(args[n], XmNrightPosition, 99); n++;
 	sizeList = XmCreateScrolledList(form, "sizelist", args, n);
@@ -376,8 +376,8 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 	XtSetArg(args[n], XmNuserData, sizeList); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET); n++;
-	XtSetArg(args[n], XmNbottomWidget, sizeList); n++;
-	XtSetArg(args[n], XmNleftWidget, sizeList); n++;
+	XtSetArg(args[n], XmNbottomWidget, XtParent(sizeList)); n++;
+	XtSetArg(args[n], XmNleftWidget, XtParent(sizeList)); n++;
 	XtCreateManagedWidget("Size:", xmLabelWidgetClass, form, args, n);
 	XmStringFree(tempStr);
 

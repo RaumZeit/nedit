@@ -2,21 +2,23 @@
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * July 28, 1992								       *
 *									       *
 * Written by Mark Edel							       *
@@ -24,15 +26,18 @@
 * Modified by:	DMR - Ported to VMS (1st stage for Histo-Scope)		       *
 *									       *
 *******************************************************************************/
-static char SCCSID[] = "@(#)fileUtils.c	1.5     1/10/96";
+#include <stdio.h>
 #include <string.h>
 #ifdef VAXC
 #define NULL (void *) 0
 #endif /*VAXC*/
 #ifdef VMS
 #include "vmsparam.h"
+#include <stat.h>
 #else
+#include <sys/types.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
 #endif /*VMS*/
@@ -108,7 +113,6 @@ int ExpandTilde(char *pathname)
     if (passwdEntry == NULL)
 	return FALSE;
     sprintf(temp, "%s/%s", passwdEntry->pw_dir, nameEnd);
-    printf("expanded path name to \"%s\"\n", temp);
     strcpy(pathname, temp);
     return TRUE;
 }
@@ -135,20 +139,36 @@ static int normalizePathname(char *pathname)
 
 static int compressPathname(char *pathname)
 {
+    char buf[MAXPATHLEN+1];
     char *inPtr, *outPtr;
+    struct stat statbuf;
 
     /* compress out . and .. */
-    inPtr = &pathname[1];		/* start after initial / */
-    outPtr = &pathname[1];
-    while (TRUE) {
+    inPtr = pathname;
+    outPtr = buf;
+    /* copy initial / */
+    copyThruSlash(&outPtr, &inPtr);
+    while (inPtr != NULL) {
 	/* if the next component is "../", remove previous component */
 	if (compareThruSlash(inPtr, "../")) {
-	    /* error if already at beginning of string */
-	    if (outPtr == &pathname[1])
-	        return FALSE;
-	    /* back up outPtr to remove last path name component */
-	    outPtr = prevSlash(outPtr);
-	    inPtr = nextSlash(inPtr);
+		*outPtr = 0;
+	    /* If the ../ is at the beginning, or if the previous component
+	       is a symbolic link, preserve the ../.  It is not valid to
+	       compress ../ when the previous component is a symbolic link
+	       because ../ is relative to where the link points.  If there's
+	       no S_ISLNK macro, assume system does not do symbolic links
+	       (currently OS/2) */
+#ifdef S_ISLNK
+	    if(outPtr-1 == buf || (lstat(buf, &statbuf) == 0 &&
+		    S_ISLNK(statbuf.st_mode))) {
+		copyThruSlash(&outPtr, &inPtr);
+	    } else
+#endif	    
+	    {
+		/* back up outPtr to remove last path name component */
+		outPtr = prevSlash(outPtr);
+		inPtr = nextSlash(inPtr);
+	    }
 	} else if (compareThruSlash(inPtr, "./")) {
 	    /* don't copy the component if it's the redundant "./" */
 	    inPtr = nextSlash(inPtr);
@@ -156,10 +176,10 @@ static int compressPathname(char *pathname)
 	    /* copy the component to outPtr */
 	    copyThruSlash(&outPtr, &inPtr);
 	}
-	if (inPtr == NULL) {
-	    return TRUE;
-	}
     }
+    /* updated pathname with the new value */
+    strcpy(pathname, buf);
+    return TRUE;
 }
 
 static char *nextSlash(char *ptr)

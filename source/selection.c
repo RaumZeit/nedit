@@ -1,22 +1,22 @@
 /*******************************************************************************
 *									       *
-* selection.c - (some) Nirvana Editor commands operating the primary selection *
+* Copyright (C) 1999 Mark Edel						       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * May 10, 1991								       *
 *									       *
 * Written by Mark Edel							       *
@@ -215,13 +215,9 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 
 #ifdef VMS
     /* If path name is relative, make it refer to current window's directory */
-    if (strchr(nameText, '/') != NULL) {
-    	/* filename is in Unix format */
-	;
-    } else if ((strchr(nameText, ':') == NULL) && (strlen(nameText) > 1) &&
+    if ((strchr(nameText, ':') == NULL) && (strlen(nameText) > 1) &&
       	    !((nameText[0] == '[') && (nameText[1] != '-') &&
 	      (nameText[1] != '.'))) {
-	/* path name is relative*/
 	sprintf(filename, "%s%s", window->path, nameText);
 	strcpy(nameText, filename);
     }
@@ -244,7 +240,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 #if defined(DONT_HAVE_GLOB) || defined(VMS)
     /* Open the file */
     ParseFilename(nameText, filename, pathname);
-    EditExistingFile(WindowList, filename, pathname, False);
+    EditExistingFile(WindowList, filename, pathname, False, NULL, False, NULL);
 #elif defined(USE_MOTIF_GLOB)
     { char **nameList = NULL; int i, nFiles = 0, maxFiles = 30;
       ParseFilename(nameText, filename, pathname);
@@ -252,7 +248,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	      &nameList, &nFiles, &maxFiles);
       for (i=0; i<nFiles; i++) {
 	  ParseFilename(nameList[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, False);
+    	  EditExistingFile(WindowList, filename, pathname, False, NULL, False,
+		  NULL);
       }
       for (i=0; i<nFiles; i++)
 	  XtFree(nameList[i]);
@@ -263,7 +260,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
       glob(nameText, GLOB_NOCHECK, NULL, &globbuf);
       for (i=0; i<globbuf.gl_pathc; i++) {
 	  ParseFilename(globbuf.gl_pathv[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, False);
+    	  EditExistingFile(WindowList, filename, pathname, False, NULL, False,
+		  NULL);
       }
       globfree(&globbuf);
     }

@@ -2,21 +2,23 @@
 *									       *
 * textDisp.c - Display text from a text buffer				       *
 *									       *
-* Copyright (c) 1991 Universities Research Association, Inc.		       *
-* All rights reserved.							       *
+* Copyright (C) 1999 Mark Edel						       *
+*									       *
+* This is free software; you can redistribute it and/or modify it under the    *
+* terms of the GNU General Public License as published by the Free Software    *
+* Foundation; either version 2 of the License, or (at your option) any later   *
+* version.							               *
 * 									       *
-* This material resulted from work developed under a Government Contract and   *
-* is subject to the following license:  The Government retains a paid-up,      *
-* nonexclusive, irrevocable worldwide license to reproduce, prepare derivative *
-* works, perform publicly and display publicly by or for the Government,       *
-* including the right to distribute to other Government contractors.  Neither  *
-* the United States nor the United States Department of Energy, nor any of     *
-* their employees, makes any warrenty, express or implied, or assumes any      *
-* legal liability or responsibility for the accuracy, completeness, or         *
-* usefulness of any information, apparatus, product, or process disclosed, or  *
-* represents that its use would not infringe privately owned rights.           *
-*                                        				       *
-* Fermilab Nirvana GUI Library						       *
+* This software is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* for more details.							       *
+* 									       *
+* You should have received a copy of the GNU General Public License along with *
+* software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
+* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
+*									       *
+* Nirvana Text Editor	    						       *
 * June 15, 1995								       *
 *									       *
 * Written by Mark Edel							       *
@@ -78,6 +80,7 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
+static void redrawLineNumbers(textDisp *textD, int clearAll);
 static void visibilityEH(Widget w, XtPointer data, XEvent *event,
 	Boolean *continueDispatch);
 static void updateVScrollBarRange(textDisp *textD);
@@ -109,12 +112,17 @@ static int wrapUsesCharacter(textDisp *textD, int lineEndPos);
 static void hideOrShowHScrollBar(textDisp *textD);
 static int rangeTouchesRectSel(selection *sel, int rangeStart, int rangeEnd);
 static void extendRangeForStyleMods(textDisp *textD, int *start, int *end);
+static int getAbsTopLineNum(textDisp *textD);
+static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
+static int maintainingAbsTopLineNum(textDisp *textD);
+static void resetAbsLineNum(textDisp *textD);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
-	textBuffer *buffer, XFontStruct *fontStruct, Pixel bgPixel,
-	Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-	Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel cursorFGPixel,
+	Position lineNumLeft, Position lineNumWidth, textBuffer *buffer,
+	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
+	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
+	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
 	int continuousWrap, int wrapMargin)
 {
     textDisp *textD;
@@ -139,6 +147,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->lastChar = 0;
     textD->nBufferLines = 0;
     textD->topLineNum = 1;
+    textD->absTopLineNum = 1;
+    textD->needAbsTopLineNum = False;
     textD->horizOffset = 0;
     textD->visibility = VisibilityUnobscured;
     textD->hScrollBar = hScrollBar;
@@ -154,14 +164,17 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->bgPixel = bgPixel;
     textD->selectBGPixel = selectBGPixel;
     textD->highlightBGPixel = highlightBGPixel;
+    textD->lineNumFGPixel = lineNumFGPixel;
     textD->wrapMargin = wrapMargin;
     textD->continuousWrap = continuousWrap;
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
 	    selectBGPixel, highlightFGPixel, highlightBGPixel);
     textD->styleGC = allocateGC(textD->w, 0, 0, 0, fontStruct->fid,
     	    GCClipMask|GCForeground|GCBackground, GCArcMode);
-    textD->nVisibleLines =
-    	    (height - 1) / (textD->ascent + textD->descent) + 1;
+    textD->lineNumGC = NULL;
+    textD->lineNumLeft = lineNumLeft;
+    textD->lineNumWidth = lineNumWidth;
+    textD->nVisibleLines = (height - 1) / (textD->ascent + textD->descent) + 1;
     gcValues.foreground = cursorFGPixel;
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
     textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
@@ -220,6 +233,8 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->selectBGGC);
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->styleGC);
+    if (textD->lineNumGC != NULL)
+	XtReleaseGC(textD->w, textD->lineNumGC);
     XtFree((char *)textD->lineStarts);
     XtFree((char *)textD);
 }
@@ -346,6 +361,9 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     releaseGC(textD->w, textD->highlightGC);
     releaseGC(textD->w, textD->selectBGGC);
     releaseGC(textD->w, textD->highlightBGGC);
+    if (textD->lineNumGC != NULL)
+	releaseGC(textD->w, textD->lineNumGC);
+    textD->lineNumGC = NULL;
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
 	    selectBGPixel, highlightFGPixel, highlightBGPixel);
     XSetFont(display, textD->styleGC, fontStruct->fid);
@@ -359,6 +377,9 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     /* Redisplay */
     TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
     	    textD->height);
+    
+    /* Clean up line number area in case spacing has changed */
+    redrawLineNumbers(textD, True);
 }
 
 /*
@@ -380,13 +401,15 @@ void TextDResize(textDisp *textD, int width, int height)
        lines in the buffer, and can leave the top line number incorrect, and
        the top character no longer pointing at a valid line start */
     if (textD->continuousWrap && textD->wrapMargin==0 && width!=oldWidth) {
+    	int oldFirstChar = textD->firstChar;
     	textD->nBufferLines = TextDCountLines(textD, 0, textD->buffer->length,
     	    	True);
 	textD->firstChar = TextDStartOfLine(textD, textD->firstChar);
 	textD->topLineNum = TextDCountLines(textD, 0, textD->firstChar, True)+1;
     	redrawAll = True;
+    	offsetAbsLineNum(textD, oldFirstChar);
     }
-   
+ 
     /* reallocate and update the line starts array, which may have changed
        size and/or contents. (contents can change in continuous wrap mode
        when the width changes, even without a change in height) */
@@ -426,6 +449,10 @@ void TextDResize(textDisp *textD, int width, int height)
 
     /* Decide if the horizontal scroll bar needs to be visible */
     hideOrShowHScrollBar(textD);
+    
+    /* Refresh the line number display to draw more line numbers, or
+       erase extras */
+    redrawLineNumbers(textD, True);
 }
 
 /*
@@ -446,9 +473,13 @@ void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
        clipping rectangles may have changed since the last use */
     resetClipRectangles(textD);
     
-    /* draw the lines */
+    /* draw the lines of text */
     for (line=firstLine; line<=lastLine; line++)
     	redisplayLine(textD, line, left, left+width, 0, INT_MAX);
+    
+    /* draw the line numbers if exposed area includes them */
+    if (textD->lineNumWidth != 0 && left <= textD->lineNumLeft + textD->lineNumWidth)
+	redrawLineNumbers(textD, False);
 }
 
 /*
@@ -616,7 +647,8 @@ void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin)
        change the line number */
     textD->firstChar = TextDStartOfLine(textD, textD->firstChar);
     textD->topLineNum = TextDCountLines(textD, 0, textD->firstChar, True) + 1;
-    
+    resetAbsLineNum(textD);
+        
     /* update the line starts array */
     calcLineStarts(textD, 0, textD->nVisibleLines);
     calcLastChar(textD);
@@ -630,8 +662,8 @@ void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin)
     hideOrShowHScrollBar(textD);
 
     /* Do a full redraw */
-    TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
-    	    textD->height);
+    TextDRedisplayRect(textD, 0, textD->top, textD->width + textD->left,
+	    textD->height);
 }
 
 int TextDGetInsertPosition(textDisp *textD)
@@ -709,11 +741,19 @@ void TextDOverstrike(textDisp *textD, char *text)
 }
 
 /*
-** Translate window coordinates to the nearest (insert cursor) text position.
+** Translate window coordinates to the nearest text cursor position.
 */
 int TextDXYToPosition(textDisp *textD, int x, int y)
 {
     return xyToPos(textD, x, y, CURSOR_POS);
+}
+
+/*
+** Translate window coordinates to the nearest character cell.
+*/
+int TextDXYToCharPos(textDisp *textD, int x, int y)
+{
+    return xyToPos(textD, x, y, CHARACTER_POS);
 }
 
 /*
@@ -780,22 +820,36 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
 }
 
 /*
-** Find the line number of position "pos".  Note: this only works for
-** displayed lines.  If the line is not displayed, the function returns
-** False (without the lineStarts array it could turn in to very long
-** calculation involving scanning large amounts of text in the buffer).
+** If the text widget is maintaining a line number count appropriate to "pos"
+** return the line and column numbers of pos, otherwise return False.  If
+** continuous wrap mode is on, returns the absolute line number (as opposed to
+** the wrapped line number which is used for scrolling).  THIS ROUTINE ONLY
+** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
+** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns False.
 */
 int TextDPosToLineAndCol(textDisp *textD, int pos, int *lineNum, int *column)
 {
-    int retVal;
+    textBuffer *buf = textD->buffer;
     
-    retVal = posToVisibleLineNum(textD, pos, lineNum);
-    if (retVal) {
-    	*column = BufCountDispChars(textD->buffer,
-    	    	textD->lineStarts[*lineNum], pos);
-    	*lineNum += textD->topLineNum;
+    /* In continuous wrap mode, the absolute (non-wrapped) line count is
+       maintained separately, as needed.  Only return it if we're actually
+       keeping track of it and pos is in the displayed text */
+    if (textD->continuousWrap) {
+	if (!maintainingAbsTopLineNum(textD) || pos < textD->firstChar ||
+		pos > textD->lastChar)
+	    return False;
+	*lineNum = textD->absTopLineNum + BufCountLines(buf,
+		textD->firstChar, pos);
+	*column = BufCountDispChars(buf, BufStartOfLine(buf, pos), pos);
+	return True;
     }
-    return retVal;
+
+    /* Only return the data if pos is within the displayed text */
+    if (!posToVisibleLineNum(textD, pos, lineNum))
+	return False;
+    *column = BufCountDispChars(buf, textD->lineStarts[*lineNum], pos);
+    *lineNum += textD->topLineNum;
+    return True;
 }
 
 /*
@@ -1108,6 +1162,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     int linesInserted, linesDeleted, startDispPos, endDispPos;
     textDisp *textD = (textDisp *)cbArg;
     textBuffer *buf = textD->buffer;
+    int oldFirstChar = textD->firstChar;
     int scrolled, origCursorPos = textD->cursorPos;
     int wrapModStart, wrapModEnd;
  
@@ -1139,9 +1194,19 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     } else
     	scrolled = False;
     
+    /* If we're counting non-wrapped lines as well, maintain the absolute
+       (non-wrapped) line number of the text displayed */
+    if (maintainingAbsTopLineNum(textD) && (nInserted != 0 || nDeleted != 0)) {
+	if (pos + nDeleted < oldFirstChar)
+	    textD->absTopLineNum += BufCountLines(buf, pos, pos + nInserted) -
+		    countLines(deletedText);
+	else if (pos < oldFirstChar)
+	    resetAbsLineNum(textD);
+    }    	    
+    
     /* Update the line count for the whole buffer */
     textD->nBufferLines += linesInserted - linesDeleted;
-    
+        
     /* Update the scroll bar ranges (and value if the value changed).  Note
        that updating the horizontal scroll bar range requires scanning the
        entire displayed text, however, it doesn't seem to hurt performance
@@ -1165,8 +1230,8 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     /* If the changes caused scrolling, re-paint everything and we're done. */
     if (scrolled) {
     	blankCursorProtrusions(textD);
-    	TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
-    		textD->height);
+    	TextDRedisplayRect(textD, 0, textD->top, textD->width + textD->left,
+		textD->height);
     	if (textD->styleBuffer) /* See comments in extendRangeForStyleMods */
     	    textD->styleBuffer->primary.selected = False;
     	return;
@@ -1190,10 +1255,11 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     	    	    (origCursorPos <= endDispPos || endDispPos == buf->length))
     	    	blankCursorProtrusions(textD);
     	}
-    } else {
+    } else { /* linesInserted != linesDeleted */
     	endDispPos = textD->lastChar + 1;
     	if (origCursorPos >= pos)
     	    blankCursorProtrusions(textD);
+	redrawLineNumbers(textD, False);
     }
     
     /* If there is a style buffer, check if the modification caused additional
@@ -1205,6 +1271,71 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     
     /* Redisplay computed range */
     TextDRedisplayRange(textD, startDispPos, endDispPos);
+}
+
+/*
+** In continuous wrap mode, internal line numbers are calculated after
+** wrapping.  A separate non-wrapped line count is maintained when line
+** numbering is turned on.  There is some performance cost to maintaining this
+** line count, so normally absolute line numbers are not tracked if line
+** numbering is off.  This routine allows callers to specify that they still
+** want this line count maintained (for use via TextDPosToLineAndCol).
+** More specifically, this allows the line number reported in the statistics
+** line to be calibrated in absolute lines, rather than post-wrapped lines.
+*/
+void TextDMaintainAbsLineNum(textDisp *textD, int state)
+{
+    textD->needAbsTopLineNum = state;
+    resetAbsLineNum(textD);
+}
+
+/*
+** Returns the absolute (non-wrapped) line number of the first line displayed.
+** Returns 0 if the absolute top line number is not being maintained.
+*/
+static int getAbsTopLineNum(textDisp *textD)
+{
+    if (!textD->continuousWrap)
+	return textD->topLineNum;
+    if (maintainingAbsTopLineNum(textD))
+	return textD->absTopLineNum;
+    return 0;
+}
+
+/*
+** Re-calculate absolute top line number for a change in scroll position.
+*/
+static void offsetAbsLineNum(textDisp *textD, int oldFirstChar)
+{
+    if (maintainingAbsTopLineNum(textD)) {
+	if (textD->firstChar < oldFirstChar)
+	    textD->absTopLineNum -= BufCountLines(textD->buffer,
+		    textD->firstChar, oldFirstChar);
+	else
+	    textD->absTopLineNum += BufCountLines(textD->buffer,
+		    oldFirstChar, textD->firstChar);
+    }
+}
+
+/*
+** Return true if a separate absolute top line number is being maintained
+** (for displaying line numbers or showing in the statistics line).
+*/
+static int maintainingAbsTopLineNum(textDisp *textD)
+{
+    return textD->continuousWrap &&
+	    (textD->lineNumWidth != 0 || textD->needAbsTopLineNum);
+}
+
+/*
+** Count lines from the beginning of the buffer to reestablish the
+** absolute (non-wrapped) top line number.  If mode is not continuous wrap,
+** or the number is not being maintained, does nothing.
+*/
+static void resetAbsLineNum(textDisp *textD)
+{
+    textD->absTopLineNum = 1;
+    offsetAbsLineNum(textD, 0);
 }
 
 /*
@@ -1423,6 +1554,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     XGCValues gcValues;
     XFontStruct *fs = textD->fontStruct;
     styleTableEntry *styleRec;
+    int underlineStyle = FALSE;
     
     /* Don't draw if widget isn't realized */
     if (XtWindow(textD->w) == 0)
@@ -1430,7 +1562,9 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     
     /* Draw blank area rather than text, if that was the request */
     if (style & FILL_MASK) {
-	clearRect(textD, style, x, y, toX - x, textD->ascent + textD->descent);
+	if (toX >= textD->left)
+	    clearRect(textD, style, max(x, textD->left), y,
+		    toX - max(x, textD->left), textD->ascent + textD->descent);
         return;
     }
     
@@ -1440,6 +1574,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
        configured here, on the fly. */
     if (style & STYLE_LOOKUP_MASK) {
     	styleRec = &textD->styleTable[(style & STYLE_LOOKUP_MASK) - 'A'];
+	underlineStyle = styleRec->underline;
     	fs = styleRec->font;
     	gc = textD->styleGC ;
 	gcValues.font = fs->fid;
@@ -1471,9 +1606,9 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     		textD->descent - fs->descent);
 
     /* Underline if style is secondary selection */
-    if (style & SECONDARY_MASK)
+    if (style & SECONDARY_MASK || underlineStyle)
     	XDrawLine(XtDisplay(textD->w), XtWindow(textD->w), gc, x,
-    	    	y + textD->ascent, toX - 1, y + fs->ascent);
+    	    	y + textD->ascent, toX - 1, y + textD->ascent);
 }
 
 /*
@@ -1725,6 +1860,7 @@ static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
 static void offsetLineStarts(textDisp *textD, int newTopLineNum)
 {
     int oldTopLineNum = textD->topLineNum;
+    int oldFirstChar = textD->firstChar;
     int lineDelta = newTopLineNum - oldTopLineNum;
     int nVisLines = textD->nVisibleLines;
     int *lineStarts = textD->lineStarts;
@@ -1786,6 +1922,10 @@ static void offsetLineStarts(textDisp *textD, int newTopLineNum)
     calcLastChar(textD);
     textD->topLineNum = newTopLineNum;
     
+    /* If we're numbering lines or being asked to maintain an absolute line
+       number, re-calculate the absolute line number */
+    offsetAbsLineNum(textD, oldFirstChar);
+    
     /* {   int i;
     	printf("lineStarts After: ");
     	for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
@@ -1819,7 +1959,7 @@ static void updateLineStarts(textDisp *textD, int pos, int charsInserted,
        start entries and first and last characters */
     if (pos + charsDeleted < textD->firstChar) {
     	textD->topLineNum += lineDelta;
-    	for (i=0; i<nVisLines; i++)
+    	for (i=0; i<nVisLines && lineStarts[i] != -1; i++)
     	    lineStarts[i] += charDelta;
     	/* {   int i;
     	    printf("lineStarts after delete doesn't touch: ");
@@ -2073,6 +2213,10 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	/* Restore protruding parts of the cursor */
 	TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
     }
+    
+    /* Refresh line number display if its up and we've scrolled vertically */
+    if (lineDelta != 0)
+	redrawLineNumbers(textD, False);
 }
 
 /*
@@ -2143,6 +2287,80 @@ static int updateHScrollBarRange(textDisp *textD)
 }
 
 /*
+** Define area for drawing line numbers.  A width of 0 disables line
+** number drawing.
+*/
+void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
+	int textLeft)
+{
+    int newWidth = textD->width + textD->left - textLeft;
+    textD->lineNumLeft = lineNumLeft;
+    textD->lineNumWidth = lineNumWidth;
+    textD->left = textLeft;
+    XClearWindow(XtDisplay(textD->w), XtWindow(textD->w));
+    resetAbsLineNum(textD);
+    TextDResize(textD, newWidth, textD->height);
+    TextDRedisplayRect(textD, 0, textD->top, INT_MAX, textD->height);
+}
+
+/*
+** Refresh the line number area.  If clearAll is False, writes only over
+** the character cell areas.  Setting clearAll to True will clear out any
+** stray marks outside of the character cell area, which might have been
+** left from before a resize or font change.
+*/
+static void redrawLineNumbers(textDisp *textD, int clearAll)
+{
+    int y, line, visLine, nCols, lineStart;
+    char lineNumString[12];
+    int lineHeight = textD->ascent + textD->descent;
+    int charWidth = textD->fontStruct->max_bounds.width;
+    
+    /* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
+       not yet realized */
+    if (textD->lineNumWidth == 0 || XtWindow(textD->w) == 0)
+    	return;
+    
+    /* GC is allocated on demand, since not everyone will use line numbering */
+    if (textD->lineNumGC == NULL) {
+	XGCValues values;
+ 	values.foreground = textD->lineNumFGPixel;
+	values.background = textD->bgPixel;
+	values.font = textD->fontStruct->fid;
+   	textD->lineNumGC = XtGetGC(textD->w,
+		GCFont| GCForeground | GCBackground, &values);
+    }
+    
+    /* Erase the previous contents of the line number area, if requested */
+    if (clearAll)
+    	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumLeft,
+		textD->top, textD->lineNumWidth, textD->height, False);
+    
+    /* Draw the line numbers, aligned to the text */
+    nCols = min(11, textD->lineNumWidth / charWidth);
+    y = textD->top;
+    line = getAbsTopLineNum(textD);
+    for (visLine=0; visLine < textD->nVisibleLines; visLine++) {
+	lineStart = textD->lineStarts[visLine];
+	if (lineStart != -1 && (lineStart==0 ||
+		BufGetCharacter(textD->buffer, lineStart-1)=='\n')) {
+	    sprintf(lineNumString, "%*d", nCols, line);
+	    XDrawImageString(XtDisplay(textD->w), XtWindow(textD->w),
+		    textD->lineNumGC, textD->lineNumLeft, y + textD->ascent,
+		    lineNumString, strlen(lineNumString));
+	    line++;
+	} else {
+	    XClearArea(XtDisplay(textD->w), XtWindow(textD->w),
+		    textD->lineNumLeft, y, textD->lineNumWidth,
+		    textD->ascent + textD->descent, False);
+	    if (visLine == 0)
+		line++;
+	}
+	y += lineHeight;
+    }
+}
+
+/*
 ** Callbacks for drag or valueChanged on scroll bars
 */
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2192,6 +2410,8 @@ static int countLines(char *string)
     char *c;
     int lineCount = 0;
     
+    if (string == NULL)
+	return 0;
     for (c=string; *c!='\0'; c++)
     	if (*c == '\n') lineCount++;
     return lineCount;
@@ -2608,7 +2828,7 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	    	}
     	    }
     	    if (!foundBreak) { /* no whitespace, just break at margin */
-    	    	newLineStart = p;
+    	    	newLineStart = max(p, lineStart+1);
     	    	colNum = BufCharWidth(c, colNum, tabDist, nullSubsChar);
     	    	if (countPixels) {
    	    	    expLen = BufExpandCharacter(c, colNum, expChar, tabDist,
@@ -2626,7 +2846,7 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	    }
     	    nLines++;
     	    if (nLines >= maxLines) {
-    		*retPos = foundBreak ? b + 1 : p;
+    		*retPos = foundBreak ? b + 1 : max(p, lineStart+1);
     		*retLines = nLines;
     		*retLineStart = lineStart;
     		*retLineEnd = foundBreak ? b : p;
