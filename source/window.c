@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.149 2004/04/24 03:48:25 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.150 2004/04/24 04:53:41 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4424,6 +4424,16 @@ WindowInfo *DetachDocument(WindowInfo *window)
     sprintf(geometry, "%dx%d", cols, rows);
     cloneWin = CreateWindow(window->filename, geometry, False);
     
+    /* CreateWindow() simply adds the new window's pointer to the
+       head of WindowList. We need to adjust the detached window's 
+       pointer, so that macro functions such as focus_window("last")
+       will travel across the documents per the sequence they're 
+       opened. The new doc will appear to replace it's former self 
+       as the old doc is closed. */
+    WindowList = cloneWin->next;
+    cloneWin->next = window->next;
+    window->next = cloneWin;
+    
     /* these settings should follow the detached document.
        must be done before cloning window, else the height 
        of split panes may not come out correctly */
@@ -4474,6 +4484,16 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
     ShowTabBar(cloneWin, GetShowTabBar(cloneWin));
     cloneDocument(cloneWin, window);
     
+    /* CreateDocument() simply adds the new window's pointer to the
+       head of WindowList. We need to adjust the detached window's 
+       pointer, so that macro functions such as focus_window("last")
+       will travel across the documents per the sequence they're 
+       opened. The new doc will appear to replace it's former self 
+       as the old doc is closed. */
+    WindowList = cloneWin->next;
+    cloneWin->next = window->next;
+    window->next = cloneWin;
+
     /* remove the document from the old window */
     window->fileChanged = False;
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
