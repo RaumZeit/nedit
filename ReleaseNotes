@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.5RC2, July 2004
+          Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.26 2004/08/26 04:51:24 n8gray Exp $
+$Id: ReleaseNotes,v 1.27 2004/09/30 09:30:33 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -62,6 +62,47 @@ Bugs fixed in 5.5
   - Improved shell syntax highlighting patterns (SF bug #770855).
   
   - Regular expression crash fix (SF bug #987102).
+  
+Changes since 5.5RC1
+
+  - Using exit() in macro no longer causes hang (SF bug #999021).
+
+  - Updated rangeset documentation (SF bug #1005442).
+
+  - Minor changes to the regular expression word boundary semantics
+    (SF bug #1008656).
+
+  - Tabs keep reasonable sizes when things get crowded (SF bug #1005064).
+
+  - Many unnecessary file status checks are avoided.
+
+  - Warn On Exit also affects closing of window with multiple tabs
+    (SF bug #1006830)
+
+  - "File Modified Externally" dialogs are only allowed for top tabs.
+
+  - Broken virtual key bindings workaround was restored (problems with
+    page-up and page-down).
+
+  - Preference file number was bumped.
+
+  - Dialogs' OK button layout fixes.
+
+  - Fix for SF bug #999820: spaces in dialog button mnemonics.
+
+  - Fix for SF bug #996786: problems with overtype mode
+  
+Changes since 5.5RC2
+
+  - Less confusing menu wording (SF bug #1023089).
+
+  - Shell command output is now sent to a new window or a new tab,
+    depending on the tabbed editing preference settings.
+
+  - Detaching/Moving non-top tab should not change top tab (SF bug #1020035).
+
+  - Opening new window from a tabbed window no longer diminishes size
+    (SF bug #1011233).
 
 New Features in 5.4
 

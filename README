@@ -1,6 +1,6 @@
-                    NEdit Version 5.5RC2, August 2004
+                    NEdit Version 5.5, October 2004
 
-$Id: README,v 1.43 2004/08/26 04:51:24 n8gray Exp $
+$Id: README,v 1.44 2004/09/30 09:30:33 edg Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -393,6 +393,48 @@ Preferences->Syntax Highlighting->Recognition Patterns menu, though.
 Next, some version specific upgrading issues are listed. Note that 
 non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
 
+* Upgrading from 5.4 to 5.5
+  
+  - Changes in the widget hierarchy, possibly effecting resource settings
+  
+    In NEdit 5.4 and below, the widget hierarchy consisted of a separate
+    widget tree for each window. This was rather unconventional and caused
+    certain problems. In 5.5, the hierarchy was changed such that all widgets
+    belong to a single tree with a single root widget.
+    
+    For instance, with 5.4, the top of the widget hierarchy for a 2-window
+    NEdit session looks as follows:
+    
+      NEdit  nedit
+       +-- XmMainWindow  main
+
+      NEdit  nedit
+       +-- XmMainWindow  main
+      
+    In 5.5, the same session results in the following tree:
+    
+      NEdit  nedit
+       +-- TopLevelShell  textShell
+       |    +-- XmMainWindow  main
+       +-- TopLevelShell  textShell
+            +-- XmMainWindow  main
+            
+    Users with advanced X-resource settings may be affected by this
+    change and may have to adapt their resource specifications.        
+  
+  - Minor change to the regular expression word boundary semantics
+  
+    In 5.4, the semantics for word boundary regular expressions ('<', '>', 
+    and '\B') were changed to behave in a more intuitive way (see Upgrading
+    from 5.3 to 5.4 below). However, this introduced an inconsistency between
+    the regular expressions and several other places in NEdit where word
+    boundaries were taken into account. Therefore, the changes were partially
+    reverted to restore consistency, but without giving up the benefits of the
+    more intuitive word boundary definition. More in particular, a boundary
+    between two characters is now considered to be a word boundary only if
+    exactly one of the characters is a delimiter.
+    This change will have little or no consequences for most users.
+  
 * Upgrading from 5.3 to 5.4
 
   - Resource syntax
