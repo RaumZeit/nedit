@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.57 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: nedit.h,v 1.58 2004/08/20 19:33:20 n8gray Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -322,6 +322,7 @@ typedef struct _WindowInfo {
     Widget	autoSaveItem;
     Widget	saveLastItem;
     Widget      openSelItem;
+    Widget      newOppositeItem;
     Widget	closeItem;
     Widget	printSelItem;
     Widget	undoItem;

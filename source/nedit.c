@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.81 2004/08/10 22:28:19 yooden Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.82 2004/08/20 19:33:20 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -223,10 +223,10 @@ static char *fallbackResources[] = {
     "*macroMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*helpMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*fileMenu.mnemonic: F",
-    "*fileMenu.newWindow.accelerator: Ctrl<Key>n",
-    "*fileMenu.newWindow.acceleratorText: Ctrl+N",
-    "*fileMenu.newTab.accelerator: Shift Ctrl<Key>n",
-    "*fileMenu.newTab.acceleratorText: Shift+Ctrl+N",
+    "*fileMenu.new.accelerator: Ctrl<Key>n",
+    "*fileMenu.new.acceleratorText: Ctrl+N",
+    "*fileMenu.newOpposite.accelerator: Shift Ctrl<Key>n",
+    "*fileMenu.newOpposite.acceleratorText: Shift+Ctrl+N",
     "*fileMenu.open.accelerator: Ctrl<Key>o",
     "*fileMenu.open.acceleratorText: Ctrl+O",
     "*fileMenu.openSelected.accelerator: Ctrl<Key>y",

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.125 2004/08/04 17:43:29 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.126 2004/08/20 19:33:20 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1381,7 +1381,10 @@ void ImportPrefFile(const char *filename, int convertOld)
 
 void SetPrefOpenInTab(int state)
 {
+    WindowInfo *w = WindowList;
     setIntPref(&PrefData.openInTab, state);
+    for(; w != NULL; w = w->next)
+        UpdateNewOppositeMenu(w, state);
 }
 
 int GetPrefOpenInTab(void)

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.75 2004/08/20 16:37:30 edg Exp $
+.. $Id: help.etx,v 1.76 2004/08/20 19:33:08 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2705,7 +2705,7 @@ Range Sets
 ----------
 
   A rangeset is a set of ranges. A range is a contiguous range of characters
-  defined by its start and end position in the text buffer.  The user can
+  defined by its start and end position in the document.  The user can
   create rangesets, identified by arbitrary integers (chosen by the editor when
   the rangesets are created), and each range within a rangeset is identified by
   a numeric index, counting from 1, in the order of appearance in the text
@@ -2727,7 +2727,7 @@ Range Sets
   is then passed to the other rangeset functions to manipulate the rangeset.
     
   There is a limit to the number of rangesets which can exist at any time -
-  currently up to 63 in each text buffer.  Care should be taken to destroy
+  currently up to 63 in each document.  Care should be taken to destroy
   any rangesets which are no longer needed, by using the rangeset_destroy()
   function, if this limit is attained.
 
@@ -2740,13 +2740,68 @@ Range Sets
   identifiers, which will be empty if the name has not been associated with
   a rangeset.
 
-  Warnings: A rangeset is manipulated ONLY through macro routines. Rangesets
+4>How rangesets change with modifications
+
+  When changes are made to the document text, ranges within each set are altered
+  with it, according to their behavioral mode.  If changes are made outside of
+  the ranges in a rangeset, each range simply maintains its size and adjusts its
+  position to match the changes.  When text within a range is deleted, the
+  range's length is reduced by the same amount. When changes involving new text
+  are made within a range of the set, or to one of the extremities of a range,
+  different behaviours may be desirable. The rangeset_set_mode() function allows
+  these modes to be chosen.
+
+  Note that the precise behaviour of these modes may change in future versions
+  of NEdit.
+
+  The available modes are:
+
+  **maintain** or **ins_del** -
+  Both these modes have the same behaviour.  New text added at the front of a
+  range in a set is not added to the range; new text added within the range or
+  at the end extends the range.  Replacement overlapping an extremity of the
+  set acts as if the new text were added first, then the old text deleted. 
+  This causes curtailment at the front of the range, extension at the end. 
+  Replacement of the full text of the range removes the range from the set.
+  The default behaviour for a newly created rangeset is **maintain**.
+
+  **del_ins** -
+  New text added at the front or end of a range in a set is not added to the
+  range; new text added within the range extends the range.  Replacement
+  overlapping an extremity of the set acts as if the old text were deleted
+  first, then the new text added. This causes curtailment at either end.
+  Replacement of the full text of the range removes the range from the set.
+
+  **include** -
+  New text added at the front or end of a range in a set extends the range, as
+  does new text added within the range.  Replacement overlapping an extremity
+  of the set acts as if the new text were added first, then the old text
+  deleted.  This causes curtailment at the front of the range, extension at
+  the end.  Replacement of the full text of the range adds the new text to the
+  range if the start position of the replacement is at the range's start
+  point.
+
+  **exclude** -
+  New text added at the front or end of a range in a set does not extend the
+  range; new text added within the range extends the range.  Replacement
+  overlapping an extremity causes curtailment of the range.  Replacement of
+  the full text of the range removes the range from the set.
+
+  **break** -
+  New text added at the front or end of a range in a set does not extend the
+  range; new text added within the range will split the range.  Replacement
+  overlapping an extremity causes curtailment of the range.  Replacement of
+  the full text of the range removes the range from the set.
+
+4>Notes
+
+  A rangeset is manipulated ~only~ through macro routines. Rangesets
   can easily become very large, and may exceed the capacity of the running
   process.  Coloring relies on proper color names or specifications (such as
-  the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. 
-  Behaviours set using rangeset_set_mode() are still experimental.
-
-
+  the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. If
+  an invalid color name is given, the default background color is used instead. 
+  Behaviours set using rangeset_set_mode() are subject to change in future
+  versions.
 
 3>Rangeset read-only variables
 
@@ -2835,8 +2890,8 @@ Range Sets
 **rangeset_set_mode( r, type )**
   Changes the behaviour of the rangeset r when modifications to the text
   buffer occur.  type can be one of the following: "maintain" (the default),
-  "break", "include", "exclude", "ins_del" or "del_ins". (The differences are
-  fairly subtle.)
+  "break", "include", "exclude", "ins_del" or "del_ins". (These modes are
+  described above.)
 
 
 Highlighting Information
@@ -2987,6 +3042,8 @@ Action Routines
   Arguments are text strings enclosed in quotes. Below are the menu action
   routines which take arguments.  Optional arguments are enclosed in [].
 
+    **new**( ["tab" | "window" | "prefs" | "opposite"] )
+
     **close**( ["prompt" | "save" | "nosave"] )
     
     **execute_command**( shell-command )
@@ -3040,6 +3097,15 @@ Action Routines
     **unload_tags_file**( ~filename~ )
 
     **----------- Some notes on argument types above -----------**
+
+    ~Arguments to new()~
+                   "tab":      Open a new tab
+                   "window":   Open a new window
+                   "prefs":    Follow the user's tab/window 
+                               preference
+                   "opposite": Opposite of user's tab/window 
+                               preference
+                   Default behaviour is "prefs".
 
     ~filename~       Path names are relative to the directory from
                    which NEdit was started. Shell interpreted 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.111 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.112 2004/08/20 19:33:20 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -209,8 +209,8 @@ static void unloadTagsFileMenuCB(Widget w, WindowInfo *window,
 static void unloadTipsFileMenuCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
-static void newWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
-static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+static void newOppositeAP(Widget w, XEvent *event, String *args, 
+        Cardinal *nArgs); 
 static void openDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs); 
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
@@ -423,8 +423,7 @@ static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu,
 /* Application action table */
 static XtActionsRec Actions[] = {
     {"new", newAP},
-    {"new_window", newWindowAP},
-    {"new_tab", newTabAP},
+    {"new_opposite", newOppositeAP},
     {"open", openAP},
     {"open-dialog", openDialogAP},
     {"open_dialog", openDialogAP},
@@ -649,8 +648,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     ** "File" pull down menu.
     */
     menuPane = createMenu(menuBar, "fileMenu", "File", 0, NULL, SHORT);
-    createMenuItem(menuPane, "newWindow", "New Window", 'N', doActionCB, "new_window", SHORT);
-    createMenuItem(menuPane, "newTab", "New Tab", 'T', doActionCB, "new_tab", SHORT);
+    createMenuItem(menuPane, "new", "New", 'N', doActionCB, "new", SHORT);
+    if ( GetPrefOpenInTab() )
+        window->newOppositeItem = createMenuItem(menuPane, "newOpposite", 
+                "New (in Window)", 'W', doActionCB, "new_opposite", SHORT);
+    else
+        window->newOppositeItem = createMenuItem(menuPane, "newOpposite", 
+                "New (in Tab)", 'T', doActionCB, "new_opposite", SHORT);
     createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog",
     	    SHORT);
     window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
@@ -2688,36 +2692,46 @@ static void unloadTipsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 }
 
 /*
-** open a new tab or window, per preference.
+** open a new tab or window.
 */
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
+    int openInTab = GetPrefOpenInTab();
 
-    EditNewFile(GetPrefOpenInTab()? window : NULL, NULL, False, NULL,
+    if (*nArgs > 0) {
+        if (strcmp(args[0], "prefs") == 0) {
+            /* accept default */;
+        }
+        else if (strcmp(args[0], "tab") == 0) {
+            openInTab = 1;
+        }
+        else if (strcmp(args[0], "window") == 0) {
+            openInTab = 0;
+        }
+        else if (strcmp(args[0], "opposite") == 0) {
+            openInTab = !openInTab;
+        }
+        else {
+            fprintf(stderr, "nedit: Unknown argument to action procedure \"new\": %s\n", args[0]);
+        }
+    }
+    
+    EditNewFile(openInTab? window : NULL, NULL, False, NULL, window->path);
+    CheckCloseDim();
+}
+
+/*
+** This is just here because our techniques make it hard to bind a menu item
+** to an action procedure that takes arguments.  The user doesn't need to know
+** about it -- they can use new( "opposite" ).
+*/
+static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+{
+    WindowInfo *window = WidgetToWindow(w);
+
+    EditNewFile(GetPrefOpenInTab()? NULL : window, NULL, False, NULL,
             window->path);
-    CheckCloseDim();
-}
-
-/*
-** open a new window.
-*/
-static void newWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
-{
-    WindowInfo *window = WidgetToWindow(w);
-
-    EditNewFile(NULL, NULL, False, NULL, window->path);
-    CheckCloseDim();
-}
-
-/*
-** open a new tabbed document
-*/
-static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
-{
-    WindowInfo *window = WidgetToWindow(w);
-
-    EditNewFile(window, NULL, False, NULL, window->path);
     CheckCloseDim();
 }
 
