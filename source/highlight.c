@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.31 2002/07/17 15:14:36 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.32 2002/07/30 13:54:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1338,7 +1338,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo)
 {
-    int i, subExecuted, subIndex;
+    int i, subExecuted, subIndex, numBranches;
     char *stringPtr, *stylePtr, *startingStringPtr, *savedStartPtr;
     signed char *subExpr;
     char savedPrevChar;
@@ -1346,13 +1346,20 @@ static int parseString(highlightDataRec *pattern, char **string,
     
     if (length <= 0)
     	return False;
+
+    numBranches = pattern->nSubPatterns;
+    if (pattern->endRE != NULL) ++numBranches;
+    if (pattern->errorRE != NULL) ++numBranches;
     
     stringPtr = *string;
     stylePtr = *styleString;
     
     while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
 	    *string+length+1, False, *prevChar, '\0', delimiters, lookBehindTo)) {
-	subIndex = pattern->subPatternRE->top_branch;
+	/* Beware of the case where only one real branch exists, but that 
+	   branch has sub-branches itself. In that case the top_branch refers 
+	   to the matching sub-branch and must be ignored. */
+	subIndex = (numBranches > 1) ? pattern->subPatternRE->top_branch : 0;
     	/* Combination of all sub-patterns and end pattern matched */
     	/* printf("combined patterns RE matched at %d\n",
     	    	pattern->subPatternRE->startp[0] - *string); */
