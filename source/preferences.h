@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.35 2003/05/25 15:55:36 edg Exp $ */
+/* $Id: preferences.h,v 1.36 2003/08/03 17:38:49 yooden Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -131,7 +131,7 @@ int GetPrefShortMenus(void);
 #endif
 void EditLanguageModes();
 void ChooseFonts(WindowInfo *window, int forWindow);
-void ChooseColors(WindowInfo *window, int forWindow);
+void ChooseColors(WindowInfo *window);
 char *LanguageModeName(int mode);
 char *GetWindowDelimiters(WindowInfo *window);
 int ReadNumericField(char **inPtr, int *value);
@@ -141,7 +141,7 @@ int ReadQuotedString(char **inPtr, char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(char **inPtr, char **errMsg);
-int SkipOptSeparator(char separator, char **inPtr, char **errMsg);
+int SkipOptSeparator(char separator, char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);
 int AllocatedStringsDiffer(const char *s1, const char *s2);

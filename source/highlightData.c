@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.52 2003/05/25 15:55:36 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.53 2003/08/03 17:38:49 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1027,7 +1027,7 @@ int LoadStylesString(char *inString)
     	    return styleError(inString,inPtr, "color name required");
 	}
         hs->bgColor = NULL;
-	if (SkipOptSeparator('/', &inPtr, &errMsg)) {
+        if (SkipOptSeparator('/', &inPtr)) {
     	    /* read bgColor */
 	    hs->bgColor = ReadSymbolicField(&inPtr); /* no error if fails */
     	}

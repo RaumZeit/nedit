@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.79 2003/06/02 15:18:14 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.80 2003/08/03 17:38:49 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -116,7 +116,6 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
-static void colorCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void backlightCharsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -1547,11 +1546,6 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
     ChooseFonts(window, True);
 }
 
-static void colorCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    ChooseColors(window, True);
-}
-
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"none"};
@@ -1707,7 +1701,7 @@ static void colorDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    ChooseColors(window, False);
+    ChooseColors(window);
 }
 
 static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)

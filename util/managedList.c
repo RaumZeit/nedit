@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.12 2003/05/02 19:19:03 edg Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.13 2003/08/03 17:38:49 yooden Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -250,7 +250,7 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn,
     ml->moveUpBtn = moveUpBtn;
     ml->moveDownBtn = moveDownBtn;
     ml->getDialogDataCB = NULL;
-    ml->getDialogDataArg = setDialogDataArg;
+    ml->getDialogDataArg = getDialogDataArg;
     ml->setDialogDataCB = NULL;
     ml->setDialogDataArg = setDialogDataArg;
     ml->freeItemCB = freeItemCB;

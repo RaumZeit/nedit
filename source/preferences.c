@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.98 2003/06/04 15:34:30 slobasso Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.99 2003/08/03 17:38:49 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1015,7 +1015,7 @@ static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void boldItalicBrowseCB(Widget w, XtPointer clientData,
     	XtPointer callData);
-static void browseFont(Widget parent, Widget fontTextW, fontDialog *fd);
+static void browseFont(Widget parent, Widget fontTextW);
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -3856,26 +3856,26 @@ static void primaryBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->primaryW, fd);
+    browseFont(fd->shell, fd->primaryW);
 }
 static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->italicW, fd);
+    browseFont(fd->shell, fd->italicW);
 }
 static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->boldW, fd);
+    browseFont(fd->shell, fd->boldW);
 }
 static void boldItalicBrowseCB(Widget w, XtPointer clientData,
     	XtPointer callData)
 {
    fontDialog *fd = (fontDialog *)clientData;
 
-   browseFont(fd->shell, fd->boldItalicW, fd);
+   browseFont(fd->shell, fd->boldItalicW);
 }
 
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -3996,7 +3996,7 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW,
 /*
 ** Put up a font selector panel to set the font name in the text widget "fontTextW"
 */
-static void browseFont(Widget parent, Widget fontTextW, fontDialog *fd)
+static void browseFont(Widget parent, Widget fontTextW)
 {
     char *origFontName, *newFontName;
     Pixel fgPixel, bgPixel;
@@ -4850,7 +4850,7 @@ int SkipDelimiter(char **inPtr, char **errMsg)
 ** Skip an optional separator and its surrounding whitespace
 ** return true if delimiter found
 */
-int SkipOptSeparator(char separator, char **inPtr, char **errMsg)
+int SkipOptSeparator(char separator, char **inPtr)
 {
     *inPtr += strspn(*inPtr, " \t");
     if (**inPtr != separator) {
@@ -5726,7 +5726,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
 /* 
  * Code for the dialog itself
  */
-void ChooseColors(WindowInfo *window, int forWindow)
+void ChooseColors(WindowInfo *window)
 {
     Widget form, tmpW, topW, infoLbl;
     Widget okBtn, applyBtn, dismissBtn;
