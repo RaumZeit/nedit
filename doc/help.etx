@@ -3570,7 +3570,7 @@ X Resources
   
   Color for displaying line numbers in the NEdit window.
 
-**nedit.text.blinkRate**: 600
+**nedit.text.blinkRate**: 500
   
   Blink rate of the text insertion cursor in milliseconds.  Set to zero to stop
   blinking.
@@ -3583,11 +3583,11 @@ X Resources
   
   Default foreground color for menus, dialogs, scroll bars, etc..
 
-**nedit.background**: gray70
+**nedit.background**: #b3b3b3
   
   Default background color for menus, dialogs, scroll bars, etc..
 
-**nedit.fontList**: helvetica-bold-14
+**nedit.fontList**: helvetica medium 12 points
   
   Default font for menus, dialogs, scroll bars, etc..
 
