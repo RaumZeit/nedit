@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.124 2004/12/23 22:25:45 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.125 2005/02/15 01:10:15 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2968,7 +2968,7 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	return;
     }
     
-    if (DeleteTagsFile(args[0], TAG)) {
+    if (DeleteTagsFile(args[0], TAG, True)) {
     	WindowInfo *win;
 
 	/* refresh the "Unload Tags File" tear-offs after unloading, or 
@@ -3022,7 +3022,27 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		"nedit: unload_tips_file action requires file argument\n");
 	return;
     }
-    DeleteTagsFile(args[0], TIP);
+    DeleteTagsFile(args[0], TIP, True);
+    /* By symmetry to the Tags case, this code should appear here too.  But I'm
+        not 100% sure so it's commented out for now.  Also, I don't
+        think you can tear off the "Unload calltips file" menu in any case, but
+        maybe it's possible with some version of *tif... -- n8 */
+    /* refresh the "Unload Calltips File" tear-offs after unloading, or 
+       close the tear-offs if all tips files have been unloaded */
+    /* if (DeleteTagsFile(args[0], TIP, True)) {
+    	WindowInfo *win;
+
+	for (win=WindowList; win!=NULL; win=win->next) {
+    	    if (IsTopDocument(win) && 
+	            !XmIsMenuShell(XtParent(win->unloadTipsMenuPane))) {
+    		if (XtIsSensitive(win->unloadTipsMenuItem))
+		    updateTipsFileMenu(win);
+		else
+		    _XmDismissTearOff(XtParent(win->unloadTipsMenuPane),
+		            NULL, NULL);
+	    }
+	}
+    } */
 }
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 

@@ -1,4 +1,4 @@
-/* $Id: tags.h,v 1.15 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: tags.h,v 1.16 2005/02/15 01:10:16 n8gray Exp $ */
 /*******************************************************************************
 *                                                                              *
 * tags.h -- Nirvana Editor Tags Header File                                    *
@@ -40,6 +40,7 @@ typedef struct _tagFile {
     time_t  date;
     Boolean loaded;
     short index;
+    short refcount;     /* Only tips files are refcounted, not tags files */
 } tagFile;
 
 extern tagFile *TagsFileList;         /* list of loaded tags files */
@@ -53,7 +54,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath,
                    int file_type);
 /* tagSpec is a colon-delimited list of filenames */
 int AddTagsFile(const char *tagSpec, int file_type);
-int DeleteTagsFile(const char *tagSpec, int file_type);
+int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload);
 int LookupTag(const char *name, const char **file, int *lang,
               const char **searchString, int * pos, const char **path,
               int search_type);

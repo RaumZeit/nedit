@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.63 2004/12/23 22:25:46 edg Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.64 2005/02/15 01:10:16 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -437,6 +437,10 @@ int AddTagsFile(const char *tagSpec, int file_type)
 
         for (t = FileList; t && strcmp(t->filename,pathName); t = t->next);
         if (t) {
+            /* This file is already in the list.  It's easiest to just
+                refcount all tag/tip files even though we only actually care
+                about tip files. */
+            ++(t->refcount);
             added=1;
             continue;
         }
@@ -451,6 +455,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
         t->date = statbuf.st_mtime;
         t->index = ++tagFileIndex;
         t->next = FileList;
+        t->refcount = 1;
         FileList = setFileListHead(t, file_type );
     }
     free(tmptagSpec);
@@ -464,8 +469,11 @@ int AddTagsFile(const char *tagSpec, int file_type)
 /* Un-manage a colon-delimited set of tags files 
  * Return TRUE if all files were found in the FileList and unloaded, FALSE
  * if any file was not found in the FileList.
+ * "file_type" is either TAG or TIP
+ * If "force_unload" is true, a calltips file will be deleted even if its
+ * refcount is nonzero.
  */
-int DeleteTagsFile(const char *tagSpec, int file_type)
+int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
 {   
     tagFile *t, *last;
     tagFile *FileList;
@@ -502,6 +510,10 @@ int DeleteTagsFile(const char *tagSpec, int file_type)
         for (last=NULL,t = FileList; t; last = t,t = t->next) {
             if (strcmp(t->filename, pathName))
                 continue;
+            /* Don't unload tips files with nonzero refcounts unless forced */
+            if (searchMode == TIP && !force_unload && --t->refcount > 0) {
+                break;
+            }
             if (t->loaded)
                 delTag(NULL,NULL,-2,NULL,-2,t->index);
             if (last) last->next = t->next;

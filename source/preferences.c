@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.134 2005/01/31 14:34:24 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.135 2005/02/15 01:10:15 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3206,21 +3206,6 @@ static int updateLMList(void)
     	}
     }
     
-    /* Unload any default calltips file that is no longer a default. */
-    for (i=0; i<NLanguageModes; i++) {
-        if (!LanguageModes[i]->defTipsFile)
-            continue;
-        for (j=0; j<LMDialog.nLanguageModes; j++) {
-            if (!LMDialog.languageModeList[j]->defTipsFile)
-                continue;
-            if (!strcmp(LanguageModes[i]->defTipsFile, 
-                    LMDialog.languageModeList[j]->defTipsFile))
-                break;
-        }
-        if ( j==LMDialog.nLanguageModes )
-            DeleteTagsFile(LanguageModes[i]->defTipsFile, TIP);
-    }
-    
     /* Replace the old language mode list with the new one from the dialog */
     for (i=0; i<NLanguageModes; i++)
     	freeLanguageModeRec(LanguageModes[i]);
@@ -3518,7 +3503,7 @@ static languageModeRec *readLMDialogFields(int silent)
             freeLanguageModeRec(lm);
             return NULL;
         } else
-            if (DeleteTagsFile(lm->defTipsFile, TIP) == FALSE)
+            if (DeleteTagsFile(lm->defTipsFile, TIP, False) == FALSE)
                 fprintf(stderr, "nedit: Internal error: Trouble deleting " 
                         "calltips file(s):\n  \"%s\"\n", lm->defTipsFile);
     }
@@ -4236,7 +4221,6 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
     int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
     int oldMode = window->languageMode;
-    WindowInfo *wi;
     
     /* If the mode is the same, and changes aren't being forced (as might
        happen with Save As...), don't mess with already correct settings */
@@ -4246,23 +4230,9 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     /* Change the mode name stored in the window */
     window->languageMode = mode;
     
-    /* Unload oldMode's default calltips file if there are no more windows
-        in that mode and the mode has a default file */
+    /* Decref oldMode's default calltips file if needed */
     if (oldMode != PLAIN_LANGUAGE_MODE && LanguageModes[oldMode]->defTipsFile) {
-        for (wi = WindowList; wi; wi = wi->next) 
-            if (wi->languageMode == oldMode) break;
-        if (!wi) DeleteTagsFile( LanguageModes[oldMode]->defTipsFile, TIP );
-    }
-    
-    /* Make sure we didn't accidentally delete a default calltips file that
-       also belongs another language mode (also load the tips file for the
-       new lang. mode) */
-    for (wi = WindowList; wi; wi = wi->next) {
-        i = wi->languageMode;
-        if (i != PLAIN_LANGUAGE_MODE && LanguageModes[i]->defTipsFile)
-            if (AddTagsFile( LanguageModes[i]->defTipsFile, TIP ) == FALSE)
-                fprintf( stderr, "Error loading default calltips file:\n"
-                         "  \"%s\"\n", LanguageModes[i]->defTipsFile );
+        DeleteTagsFile( LanguageModes[oldMode]->defTipsFile, TIP, False );
     }
     
     /* Set delimiters for all text widgets */
@@ -4334,6 +4304,11 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     SetTabDist(window, tabDist);
     SetEmTabDist(window, emTabDist);
     
+    /* Load calltips files for new mode */
+    if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
+        AddTagsFile( LanguageModes[mode]->defTipsFile, TIP );
+    }
+
     /* Add/remove language specific menu items */
     UpdateUserMenus(window);
 }
@@ -5609,31 +5584,13 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
 }
 #endif
 
-/* Unload the default calltips file for this window unless somebody else
-   is using it */
+/* Decref the default calltips file(s) for this window */
 void UnloadLanguageModeTipsFile(WindowInfo *window) {
     int mode;
-    WindowInfo *wi;
     
     mode = window->languageMode;
     if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
-        for (wi = WindowList; wi; wi = wi->next)
-            if (wi->languageMode == mode && wi != window) 
-                break;
-        if (!wi) /* If we got to end of WindowList... */
-            DeleteTagsFile( LanguageModes[mode]->defTipsFile, TIP );
-    }
-    
-    /* Make sure we didn't accidentally delete a default calltips file that
-       also belongs to another language mode */
-    for (wi = WindowList; wi; wi = wi->next) {
-        if (wi == window)
-            continue;
-        mode = wi->languageMode;
-        if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile)
-            if (AddTagsFile( LanguageModes[mode]->defTipsFile, TIP ) == FALSE)
-                fprintf( stderr, "Error loading default calltips file:\n"
-                         "  \"%s\"\n", LanguageModes[mode]->defTipsFile );
+        DeleteTagsFile( LanguageModes[mode]->defTipsFile, TIP, False );
     }
 }
 
