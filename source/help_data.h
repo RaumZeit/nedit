@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 2, 2002 (Do NOT edit!)
+                 Generated on Aug 6, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -3668,15 +3668,16 @@ static char * htxt_resources [] = {
 "\01K.background, .foreground, .fontList, etc., to change colors, fonts\01I ",
 "\01K and other characteristics):\01I ",
 "\n\n",
-"\01A\01Bnedit*statsForm\01A\n",
+"\01A\01Bnedit*statsAreaForm\01A\n",
 "\01I\n",
-"Statistics line and incremental search bar.  Use this to set statistics line ",
-"background color.  To set attributes affecting both the statistics line and ",
-"the incremental search bar, use '*' rather than '.' to separate the resource ",
-"name.  For example, to set the foreground color of both components: ",
-"nedit*statsForm*foreground, or to set the foreground color of the ",
-"statistics line only: nedit*statsForm.statsLine.foreground. ",
-"\n\n",
+"Statistics line and incremental search bar.  To get consistent results across ",
+"the entire stats line and the incremental search bar, use '*' rather than '.' ",
+"to separate the resource name.  For example, to set the foreground color of ",
+"both components use:  ",
+"\01A    nedit*statsAreaForm*foreground\n",
+"\01Iinstead of: ",
+"\01A    nedit*statsAreaForm.foreground\n",
+"\01I\n",
 "\01A\01Bnedit*menuBar\01A\n",
 "\01I\n",
 "Top-of-window menu-bar. ",
@@ -4965,4 +4966,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Aug  2, 2002\n";
+static const char * NEditVersion = "NEdit release of Aug  6, 2002\n";

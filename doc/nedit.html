@@ -4545,15 +4545,20 @@ Command used by the nc program to start an NEdit server.
 <I> and other characteristics):</I>
 <P>
 <PRE>
-<B>nedit*statsForm</B>
+<B>nedit*statsAreaForm</B>
 </PRE>
 <P>
-Statistics line and incremental search bar.  Use this to set statistics line
-background color.  To set attributes affecting both the statistics line and
-the incremental search bar, use '*' rather than '.' to separate the resource
-name.  For example, to set the foreground color of both components: 
-nedit*statsForm*foreground, or to set the foreground color of the
-statistics line only: nedit*statsForm.statsLine.foreground.
+Statistics line and incremental search bar.  To get consistent results across
+the entire stats line and the incremental search bar, use '*' rather than '.'
+to separate the resource name.  For example, to set the foreground color of
+both components use:  
+<PRE>
+    nedit*statsAreaForm*foreground
+</PRE>
+instead of:
+<PRE>
+    nedit*statsAreaForm.foreground
+</PRE>
 <P>
 <PRE>
 <B>nedit*menuBar</B>
@@ -5161,8 +5166,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Aug  2, 2002
-Aug 2, 2002
+NEdit release of Aug  6, 2002
+Aug 6, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

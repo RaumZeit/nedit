@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.26 2002/07/26 21:39:10 n8gray Exp $ */
+/* $Id: nedit.h,v 1.27 2002/08/08 21:00:18 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -146,7 +146,7 @@ typedef struct _WindowInfo {
     Widget	textPanes[MAX_PANES];	/* additional ones created on demand */
     Widget	lastFocus;		/* the last pane to have kbd. focus */
     Widget	statsLine;		/* file stats information display */
-    Widget      statsLineColForm;
+    Widget      statsLineForm;
     Widget      statsLineColNo;         /* Line/Column information display */
     Widget  	iSearchForm;	    	/* incremental search line widgets */
     Widget  	iSearchText;

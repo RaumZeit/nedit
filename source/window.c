@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.58 2002/07/26 22:19:54 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.59 2002/08/08 21:00:19 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -144,12 +144,14 @@ static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 */
 WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
-    Widget appShell, mainWin, menuBar, pane, text, stats, statsForm;
+    Widget appShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
     Widget iSearchLabel;
     WindowInfo *window;
+    Pixel bgpix, fgpix;
     Arg al[20];
     int ac;
     XmString s1;
+    Dimension ht, ht_lc;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
 #endif
@@ -317,11 +319,16 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     mainWin = XmCreateMainWindow(appShell, "main", al, ac);
     XtManageChild(mainWin);
     
-    statsForm = XtVaCreateWidget("statsForm", 
+    /* The statsAreaForm holds the stats line and the I-Search line. */
+    statsAreaForm = XtVaCreateWidget("statsAreaForm", 
             xmFormWidgetClass, mainWin,
-            XmNshadowThickness, STAT_SHADOW_THICKNESS, NULL);
+            XmNshadowThickness, STAT_SHADOW_THICKNESS,
+            XmNmarginWidth, STAT_SHADOW_THICKNESS,
+            XmNmarginHeight, STAT_SHADOW_THICKNESS,
+            //XmNautoUnmanage, False,
+            NULL);
     if(window->showISearchLine || window->showStats)
-        XtManageChild(statsForm);
+        XtManageChild(statsAreaForm);
             
     /* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
        the i-search bar was active, and the i-search text widget was focussed,
@@ -334,16 +341,13 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        to 0 seems to avoid avoid the crash. */
        
     window->iSearchForm = XtVaCreateWidget("iSearchForm", 
-            xmFormWidgetClass, statsForm,
+            xmFormWidgetClass, statsAreaForm,
             XmNleftAttachment, XmATTACH_FORM,
-            XmNleftOffset, STAT_SHADOW_THICKNESS,
             XmNtopAttachment, XmATTACH_FORM,
-            XmNtopOffset, STAT_SHADOW_THICKNESS,
             XmNrightAttachment, XmATTACH_FORM,
-            XmNrightOffset, STAT_SHADOW_THICKNESS,
             XmNbottomAttachment, window->showStats ?
                 XmATTACH_NONE : XmATTACH_FORM,
-            XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
+            NULL);
     if(window->showISearchLine)
         XtManageChild(window->iSearchForm);
     iSearchLabel = XtVaCreateManagedWidget("iSearchLabel",
@@ -419,33 +423,28 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     SetISearchTextCallbacks(window);
     
-    /* This form widget keeps the line/col number display from wiggling up
-        and down by one pixel annoyingly */
-    window->statsLineColForm = XtVaCreateWidget("statsLineColForm",
-            xmFormWidgetClass, statsForm,
+    /* A form to hold the stats line text and line/col widgets */
+    window->statsLineForm = XtVaCreateWidget("statsLineForm",
+            xmFormWidgetClass, statsAreaForm,
             XmNshadowThickness, 0,
             XmNtopAttachment, window->showISearchLine ?
                 XmATTACH_WIDGET : XmATTACH_FORM,
             XmNtopWidget, window->iSearchForm,
             XmNrightAttachment, XmATTACH_FORM,
+            XmNleftAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopOffset, STAT_SHADOW_THICKNESS,
-            XmNrightOffset, STAT_SHADOW_THICKNESS,
-            XmNbottomOffset, STAT_SHADOW_THICKNESS, 
             NULL);
     
     /* A separate display of the line/column number */
     window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo",
-            xmLabelWidgetClass, window->statsLineColForm,
+            xmLabelWidgetClass, window->statsLineForm,
             XmNlabelString, s1=XmStringCreateSimple("L: ---  C: ---"),
             XmNshadowThickness, 0,
+            XmNmarginHeight, 0,
+            XmNmarginTop, 1,    /* Help align with statsLine */
+            XmNtraversalOn, False,
             XmNtopAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopOffset, STAT_SHADOW_THICKNESS,
-            XmNrightOffset, STAT_SHADOW_THICKNESS,
-            XmNbottomOffset, STAT_SHADOW_THICKNESS,
             NULL);
     XmStringFree(s1);
     
@@ -453,35 +452,38 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        a label solves a layout problem with the main window, which messes up
        if the label is too long (we would need a resize callback to control
        the length when the window changed size), and allows users to select
-       file names and line numbers.  Background color is copied from parent
+       file names and line numbers.  Colors are copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-    
-    stats = XtVaCreateWidget("statsLine", xmTextWidgetClass,  statsForm,
+
+    XtVaGetValues(statsAreaForm, XmNbackground, &bgpix, NULL);
+    XtVaGetValues(statsAreaForm, XmNforeground, &fgpix, NULL);
+    stats = XtVaCreateManagedWidget("statsLine", 
+            xmTextWidgetClass,  window->statsLineForm,
+            XmNbackground, bgpix,
+            XmNforeground, fgpix,
             XmNshadowThickness, 0,
+            XmNhighlightColor, bgpix,
+            XmNhighlightThickness, 1,  /* Setting this to zero causes mysterious
+                                          problems with lesstif! */
             XmNmarginHeight, 0,
             XmNscrollHorizontal, False,
             XmNeditMode, XmSINGLE_LINE_EDIT,
             XmNeditable, False,
             XmNtraversalOn, False,
             XmNcursorPositionVisible, False,
+            XmNtopAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_FORM,
-            XmNleftOffset, STAT_SHADOW_THICKNESS,
-            XmNtopAttachment, window->showISearchLine ?
-                XmATTACH_WIDGET : XmATTACH_FORM,
-            XmNtopWidget, window->iSearchForm,
-            XmNtopOffset, STAT_SHADOW_THICKNESS,
             XmNrightAttachment, XmATTACH_WIDGET,
-            XmNrightWidget, window->statsLineColForm,
-            XmNrightOffset, STAT_SHADOW_THICKNESS,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
+            XmNrightWidget, window->statsLineColNo,
+            XmNrightOffset, 3,
+            NULL);
     window->statsLine = stats;
-    if(window->showStats) {
-        XtManageChild(window->statsLineColForm);
-        XtManageChild(stats);
-    }
-        
+    
+    /* Manage the statsLineForm */
+    if(window->showStats)
+        XtManageChild(window->statsLineForm);
+    
     /* If the fontList was NULL, use the magical default provided by Motif,
        since it must have worked if we've gotten this far */
     if (window->fontList == NULL)
@@ -497,7 +499,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
             XmNspacing, 3, XmNsashIndent, -2, NULL);
     window->splitPane = pane;
-    XmMainWindowSetAreas(mainWin, menuBar, statsForm, NULL, NULL, pane);
+    XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, NULL, NULL, pane);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
        recognize Caps Lock and Num Lock as modifiers, and don't trigger if
@@ -965,20 +967,18 @@ static void showStats(WindowInfo *window, int state)
     if (state) {
         XtVaSetValues(window->iSearchForm,
                 XmNbottomAttachment, XmATTACH_NONE, NULL);
-        XtManageChild(window->statsLineColForm);
-        XtManageChild(window->statsLine);
+        XtManageChild(window->statsLineForm);
         showStatsForm(window, True);
     } else {
-        XtUnmanageChild(window->statsLine);
-        XtUnmanageChild(window->statsLineColForm);
+        XtUnmanageChild(window->statsLineForm);
         XtVaSetValues(window->iSearchForm,
-                XmNbottomAttachment, XmATTACH_FORM,
-                XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
+                XmNbottomAttachment, XmATTACH_FORM, NULL);
         showStatsForm(window, window->showISearchLine);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
-    UpdateWMSizeHints(window);
+    /* Already done in showStatsForm */
+    /* UpdateWMSizeHints(window); */
 }
 
 /*
@@ -1012,23 +1012,21 @@ void TempShowISearch(WindowInfo *window, int state)
 static void showISearch(WindowInfo *window, int state)
 {
     if (state) {
-        XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_WIDGET,
-                XmNtopWidget, window->iSearchForm, NULL);
-        XtVaSetValues(window->statsLineColForm, XmNtopAttachment, 
-                XmATTACH_WIDGET, XmNtopWidget, window->iSearchForm, NULL);
         XtManageChild(window->iSearchForm);
+        XtVaSetValues(window->statsLineForm, XmNtopAttachment, 
+                XmATTACH_WIDGET, XmNtopWidget, window->iSearchForm, NULL);
         showStatsForm(window, True);
     } else {
         XtUnmanageChild(window->iSearchForm);
-        XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_FORM, NULL);
-        XtVaSetValues(window->statsLineColForm, XmNtopAttachment, 
+        XtVaSetValues(window->statsLineForm, XmNtopAttachment, 
                 XmATTACH_FORM, NULL);
         showStatsForm(window, window->showStats || 
                 window->modeMessageDisplayed);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
-    UpdateWMSizeHints(window);
+    /* This is already done in showStatsForm */
+    /* UpdateWMSizeHints(window); */
 }
 
 /*
@@ -1037,8 +1035,8 @@ static void showISearch(WindowInfo *window, int state)
 */
 static void showStatsForm(WindowInfo *window, int state)
 {
-    Widget statsForm = XtParent(window->statsLine);
-    Widget mainW = XtParent(statsForm);
+    Widget statsAreaForm = XtParent(window->statsLineForm);
+    Widget mainW = XtParent(statsAreaForm);
 
     /* The very silly use of XmNcommandWindowLocation and XmNshowSeparator
        below are to kick the main window widget to position and remove the
@@ -1050,17 +1048,17 @@ static void showStatsForm(WindowInfo *window, int state)
        double thickness shadows in earlier Motif versions, the #if XmVersion
        directive should be moved back to that earlier version) */
     if (state) {
-        XtUnmanageChild(statsForm);    /*... will this fix Solaris 7??? */
+        XtUnmanageChild(statsAreaForm);    /*... will this fix Solaris 7??? */
         XtVaSetValues(mainW, XmNcommandWindowLocation,
                 XmCOMMAND_ABOVE_WORKSPACE, NULL);
 #if XmVersion < 2001
         XtVaSetValues(mainW, XmNshowSeparator, True, NULL);
 #endif
-        XtManageChild(statsForm);
+        XtManageChild(statsAreaForm);
         XtVaSetValues(mainW, XmNshowSeparator, False, NULL);
         UpdateStatsLine(window);
     } else {
-        XtUnmanageChild(statsForm);
+        XtUnmanageChild(statsAreaForm);
         XtVaSetValues(mainW, XmNcommandWindowLocation,
                 XmCOMMAND_BELOW_WORKSPACE, NULL);
     }
@@ -1908,8 +1906,9 @@ void UpdateStatsLine(WindowInfo *window)
 {
     int line, pos, colNum;
     char *string, *format, slinecol[32];
+    Widget statW = window->statsLine, statform;
     XmString xmslinecol;
-    Widget statW = window->statsLine;
+    Dimension ht;
 #ifdef SGI_CUSTOM
     char *sleft, *smid, *sright;
 #endif
@@ -1945,8 +1944,20 @@ void UpdateStatsLine(WindowInfo *window)
             XmNlabelString, xmslinecol, NULL );
     XmStringFree(xmslinecol);
     
+    /* Workaround for an OpenMotif bug that keeps the statsAreaForm from being
+       redrawn */
+    statform = XtParent(window->statsLineForm);
+    XtVaSetValues(statform, XmNshadowType, XmSHADOW_IN, NULL);
+    XtVaSetValues(statform, XmNshadowType, XmSHADOW_OUT, NULL);
+    /* Another solution would be to send an expose event, but I don't know
+       how I would fabricate one of those. */
+    /*XtDispatchEventToWidget(XtParent(window->statsLineForm), ???);*/
+    
     /* No need to go on if there's a special message being displayed */
     if (window->modeMessageDisplayed) {
+        /* Keep the height of the line/col display equal to the stats line */
+        XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
+        XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
         XtFree(string);
         return;
     }
@@ -1967,6 +1978,13 @@ void UpdateStatsLine(WindowInfo *window)
 #else
     XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 #endif
+
+    /* Keep the height of the line/col display equal to the stats line.  This
+        seems to be the only way to keep the line/col numbers horizontally
+        aligned with left side of the statsline */
+    XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
+    XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
+
     XtFree(string);
 }
 

@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Aug  2, 2002                                               August 2, 2002
+NEdit release of Aug  6, 2002                                               August 6, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -3739,14 +3739,15 @@ nc.serverCommand: nedit -server
   The following are Selected widget names (to which you may append 
   .background, .foreground, .fontList, etc., to change colors, fonts 
 
-nedit*statsForm
+nedit*statsAreaForm
 
-  Statistics line and incremental search bar. Use this to set statistics line 
-  background color. To set attributes affecting both the statistics line and 
-  the incremental search bar, use '*' rather than '.' to separate the resource 
-  name. For example, to set the foreground color of both components: 
-  nedit*statsForm*foreground, or to set the foreground color of the statistics 
-  line only: nedit*statsForm.statsLine.foreground. 
+  Statistics line and incremental search bar. To get consistent results across 
+  the entire stats line and the incremental search bar, use '*' rather than 
+  '.' to separate the resource name. For example, to set the foreground color 
+  of both components use: 
+    nedit*statsAreaForm*foreground
+  instead of: 
+    nedit*statsAreaForm.foreground
 
 nedit*menuBar
 
@@ -4289,8 +4290,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Aug  2, 2002
-Aug 2, 2002
+NEdit release of Aug  6, 2002
+Aug 6, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

@@ -3849,14 +3849,15 @@ X Resources
   ~.background, .foreground, .fontList, etc., to change colors, fonts~
   ~ and other characteristics):~
 
-**nedit@*statsForm**
+**nedit@*statsAreaForm**
 
-  Statistics line and incremental search bar.  Use this to set statistics line
-  background color.  To set attributes affecting both the statistics line and
-  the incremental search bar, use '*' rather than '.' to separate the resource
-  name.  For example, to set the foreground color of both components: 
-  nedit*statsForm*foreground, or to set the foreground color of the
-  statistics line only: nedit*statsForm.statsLine.foreground.
+  Statistics line and incremental search bar.  To get consistent results across
+  the entire stats line and the incremental search bar, use '*' rather than '.'
+  to separate the resource name.  For example, to set the foreground color of
+  both components use:  
+    nedit*statsAreaForm*foreground
+  instead of:
+    nedit*statsAreaForm.foreground
 
 **nedit@*menuBar**
 
