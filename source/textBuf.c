@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.30 2004/02/23 02:51:36 n8gray Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.31 2004/03/03 13:28:20 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -1095,7 +1095,7 @@ int BufCountDispChars(textBuffer *buf, int lineStartPos, int targetPos)
     char expandedChar[MAX_EXP_CHAR_LEN];
     
     pos = lineStartPos;
-    while (pos < targetPos)
+    while (pos < targetPos && pos < buf->length)
     	charCount += BufGetExpandedChar(buf, pos++, charCount, expandedChar);
     return charCount;
 }
