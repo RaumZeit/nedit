@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.21 2003/03/12 18:33:01 n8gray Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.22 2003/03/13 09:11:20 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * fontsel.c -- Nirvana Font Selector                                           *
@@ -135,6 +135,8 @@ static void     startupFont(xfselControlBlkType *ctrlBlk, const char *font);
 static void     setFocus(Widget w, xfselControlBlkType *ctrlBlk, XEvent *event, 
                                                 Boolean *continueToDispatch);
 static void     FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont);
+static void     enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on,
+                             XmFontList *fontList);
 
 /*******************************************************************************
 *                                                                              *
@@ -908,6 +910,7 @@ static void propFontToggleAction(Widget widget,
         setupScrollLists(NONE, *ctrlBlk);
 
         XmTextSetString(ctrlBlk->fontNameField, "");
+        enableSample(ctrlBlk, False, NULL);
     }
 }
 
