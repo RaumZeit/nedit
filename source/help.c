@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.35 2001/04/18 17:02:25 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.36 2001/04/18 17:10:41 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3157,6 +3157,8 @@ text selected in the current window.\n\
 $selection_left, $selection_right -- Left and right character offsets of \
 the rectangular (primary) selection in the current window, or -1 if \
 there is no selection or it is not rectangular.\n\
+\n\
+$server_name -- Name of the current NEdit server.\n\
 \n\
 $show_line_numbers -- Whether line numbers are shown next to the text.\n\
 \n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.23 2001/04/17 18:47:55 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.24 2001/04/18 17:10:41 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -281,6 +281,8 @@ static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
 static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
+static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -320,7 +322,7 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
 	"toupper", "tolower", "list_dialog", "getenv",
     "string_compare", "split"};
-#define N_SPECIAL_VARS 42
+#define N_SPECIAL_VARS 43
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
     	selectionLeftMV, selectionRightMV, wrapMarginMV, tabDistMV,
@@ -332,7 +334,8 @@ static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
         fontNameMV, fontNameItalicMV,
         fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV,
         minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
-        displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV};
+        displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
+        serverNameMV};
 static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
@@ -345,7 +348,8 @@ static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
     "$font_name", "$font_name_italic",
     "$font_name_bold", "$font_name_bold_italic", "$sub_sep",
     "$min_font_width", "$max_font_width", "$top_line", "$n_display_lines",
-    "$display_width", "$active_pane", "$n_panes", "$empty_array"};
+    "$display_width", "$active_pane", "$n_panes", "$empty_array",
+    "$server_name"};
 
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
@@ -3553,6 +3557,17 @@ static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs,
 {
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = NULL;
+    return True;
+}
+
+static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    char *serverName = GetPrefServerName();
+    
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(serverName) + 1);
+    strcpy(result->val.str, serverName);
     return True;
 }
 
