@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jan 28, 2004 (Do NOT edit!)
+                 Generated on Feb 9, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -3663,10 +3663,9 @@ static char * htxt_resources [] = {
 "options not settable via the Preferences menu (for preference resource names, ",
 "see your NEdit preference file): ",
 "\n\n",
-"\01A\01Bnedit.tabbedMode\01A: True\n",
+"\01A\01Bnedit.openInTab\01A: True\n",
 "\01I\n",
-"When set to True, run NEdit in tabbed mode. Same as running NEdit with ",
-"the \01K-tabbed\01I command line option. ",
+"When set to True, open files in new tabs, else open files in new windows. ",
 "\n\n",
 "\01A\01Bnedit.tagFile\01A: (not defined) \n",
 "\01I\n",
@@ -4308,24 +4307,10 @@ static char * htxt_command_line [] = {
 "      [-\01Bfont\01A font] [-\01Blm\01A languagemode] [-\01Bgeometry\01A geometry]\n",
 "      [-\01Biconic\01A] [-\01Bnoiconic\01A] [-\01Bdisplay\01A [host]:server[.screen]\n",
 "      [-\01Bxrm\01A resourcestring] [-\01Bsvrname\01A name] [-\01Bimport\01A file]\n",
-"      [-\01Bbackground\01A color] [-\01Bforeground\01A color] [-\01BV\01A|-\01Bversion\01A]\n",
-"      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01Bwin\01A file]\n",
+"      [-\01Bbackground\01A color] [-\01Bforeground\01A color]\n",
+"      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01BV\01A|-\01Bversion\01A]\n",
 "      [--] [file...]\n",
 "\01I\n",
-"\01A\01B-tabbed\01A\n",
-"\01IRun NEdit in tabbed mode - allow multiple documents (files) per window. ",
-"\n\n",
-"\01A\01B-untabbed\01A\n",
-"\01IDisable tabbed mode, run NEdit in normal (one file per window) mode. ",
-"\n\n",
-"\01A\01B-win\01A\n",
-"\01IIn \01Ktabbed mode\01I, files are opened as new tabs by default, use -win to ",
-"open files in new windows. ",
-"\n\n",
-"\01JNote\01I: this option is \01Knon-sticky\01I, i.e. it applies only to the ",
-"\01Kfirst\01I file specified immediate after the option. This allows users ",
-"to open group of files in the same window. ",
-"\n\n",
 "\01A\01B-read\01A\n",
 "\01IOpen the file Read Only regardless of the actual file protection. ",
 "\n\n",
@@ -4409,6 +4394,12 @@ static char * htxt_command_line [] = {
 "\01IUser interface foreground color. (Foreground color for text can be set ",
 "separately with -xrm \"nedit.textFgColor: color\" or using the Preferences ",
 "-> Colors dialog). ",
+"\n\n",
+"\01A\01B-tabbed\01A\n",
+"\01Iopen all subsequent files in new tabs. ",
+"\n\n",
+"\01A\01B-untabbed\01A\n",
+"\01Iopen all subsequent files in new windows. ",
 "\n\n",
 "\01A\01B-xrm resourcestring\01A \n",
 "\01ISet the value of an X resource to override a default ",
@@ -4518,6 +4509,12 @@ static char * htxt_command_line [] = {
 "/xrm=\"nedit:textFgColor color\" or using the Preferences -> ",
 "Colors dialog). ",
 "\n\n",
+"\01A\01B/tabbed\01A\n",
+"\01Iopen all subsequent files in new tabs. ",
+"\n\n",
+"\01A\01B/untabbed\01A\n",
+"\01Iopen all subsequent files in new windows. ",
+"\n\n",
 "\01A\01B/xrm=resourcestring\01A\n",
 "\01ISet the value of an X resource to override a default value ",
 "(see Customizing NEdit). ",
@@ -4573,7 +4570,7 @@ static char * htxt_server [] = {
 "       [\01B-svrname\01A name] [\01B-svrcmd\01A command]\n",
 "       [\01B-ask\01A] [\01B-noask\01A] [\01B-timeout\01A seconds]\n",
 "       [\01B-geometry\01A geometry | \01B-g\01A geometry] [\01B-icon\01A | \01B-iconic\01A]\n",
-"       [\01B-wait\01A]\n",
+"       [-\01Btabbed\01A] [-\01Buntabbed\01A] [\01B-wait\01A]\n",
 "       [\01B-V\01A | \01B-version\01A]\n",
 "       [\01B-xrm\01A resourcestring] [\01B-display\01A [host]:server[.screen]]\n",
 "       [\01B-\01A-] [file...]\n",
@@ -4630,6 +4627,12 @@ static char * htxt_server [] = {
 "\n\n",
 "Under rare conditions (such as a slow connection), it may be necessary to ",
 "increase the time-out period. In most cases, the default is fine. ",
+"\n\n",
+"\01A\01B-tabbed\01A\n",
+"\01Iopen all subsequent files in new tabs. ",
+"\n\n",
+"\01A\01B-untabbed\01A\n",
+"\01Iopen all subsequent files in new windows. ",
 "\n\n",
 "\01A\01B-wait\01A\n",
 "\01IInstructs nc not to return to the shell until all files given are closed. ",
@@ -5383,4 +5386,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jan 16, 2004\n";
+static const char * NEditVersion = "NEdit release of Feb  9, 2004\n";

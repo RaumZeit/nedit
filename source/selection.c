@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.26 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.27 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -35,6 +35,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.26 2003/12/25 06:55:08 tksoh E
 #include "file.h"
 #include "window.h"
 #include "menu.h"
+#include "preferences.h"
 #include "server.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
@@ -322,7 +323,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
         XBell(TheDisplay, 0);
 	return;
     }	
-    EditExistingFile(window, filename, pathname, 0, NULL, False, NULL);
+    EditExistingFile(window, filename, 
+            pathname, 0, NULL, False, NULL, GetPrefOpenInTab());
 #elif defined(USE_MOTIF_GLOB)
     { char **nameList = NULL;
       int i, nFiles = 0, maxFiles = 30;
@@ -338,8 +340,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	      XBell(TheDisplay, 0);
 	  }
         else {
-    	      EditExistingFile(window, filename, pathname, 0, NULL, 
-	                       False, NULL);
+    	      EditExistingFile(window, filename,
+	              pathname, 0, NULL, False, NULL, GetPrefOpenInTab());
 	  }
       }
       for (i=0; i<nFiles; i++) {
@@ -356,8 +358,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	  if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
 	      XBell(TheDisplay, 0);
 	  else
-    	      EditExistingFile(window, filename, pathname, 0, NULL,
-	                       False, NULL);
+    	      EditExistingFile(GetPrefOpenInTab()? window : NULL, 
+	              filename, pathname, 0, NULL, False, NULL, GetPrefOpenInTab());
       }
       globfree(&globbuf);
     }

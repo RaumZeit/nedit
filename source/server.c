@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.24 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.25 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -287,7 +287,7 @@ static void processServerCommandString(char *string)
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, iconicFlag, newWinFlag;
+    int lineNum, createFlag, readFlag, iconicFlag, tabbed;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window;
 
@@ -323,7 +323,7 @@ static void processServerCommandString(char *string)
 	   header, and converts the newlines following the filename and do
 	   command to nulls to terminate the filename and doCommand strings */
 	itemsRead = sscanf(inPtr, "%d %d %d %d %d %d %d %d %d%n", &lineNum,
-		&readFlag, &createFlag, &iconicFlag, &newWinFlag, &fileLen,
+		&readFlag, &createFlag, &iconicFlag, &tabbed, &fileLen,
 		&doLen, &lmLen, &geomLen, &charsRead);
 	if (itemsRead != 9)
     	    goto readError;
@@ -359,38 +359,31 @@ static void processServerCommandString(char *string)
     	    	    break;
 
     	    if (*doCommand == '\0') {
-	    	if (newWinFlag) {
-		    EditNewFile(NULL, geometry, iconicFlag,
-		            lmLen==0?NULL:langMode, NULL);
-		} else {
-                    if (window == NULL) {
-    			EditNewFile(WindowList, NULL, iconicFlag, 
-			        lmLen==0?NULL:langMode, NULL);
-    	            } else {
-	        	if (!iconicFlag) {
-    		            XMapRaised(TheDisplay, XtWindow(window->shell));
-			}
-	            }
-		}
+                if (window == NULL) {
+    		    EditNewFile(tabbed? WindowList : NULL, NULL, iconicFlag, 
+			    lmLen==0?NULL:langMode, NULL);
+    	        } else {
+	            if (iconicFlag)
+		    	RaiseDocument(window);
+		    else
+		    	RaiseDocumentWindow(window);
+	        }
             } else {
                 WindowInfo *win = WindowList;
-	    	if (newWinFlag) {
-		    win = EditNewFile(NULL, geometry, iconicFlag, NULL, NULL);
-		} else {
-		    /* Starting a new command while another one is still running
-		       in the same window is not possible (crashes). */
-		    while (win != NULL && win->macroCmdData != NULL) {
-			win = win->next;
-		    }
+		/* Starting a new command while another one is still running
+		   in the same window is not possible (crashes). */
+		while (win != NULL && win->macroCmdData != NULL) {
+		    win = win->next;
 		}
 		
 		if (!win) {
 		    XBell(TheDisplay, 0);
 		} else {
 		    /* Raise before -do (macro could close window). */
-		    if (!iconicFlag) {
-			XMapRaised(TheDisplay, XtWindow(win->shell));
-		    }
+	            if (iconicFlag)
+		    	RaiseDocument(win);
+		    else
+		    	RaiseDocumentWindow(win);
 		    DoMacro(win, doCommand, "-do macro");
 		}
 	    }
@@ -409,9 +402,10 @@ static void processServerCommandString(char *string)
 	}
     	window = FindWindowWithFile(filename, pathname);
     	if (window == NULL)
-	    window = EditExistingFile(newWinFlag? NULL: WindowList,
+	    window = EditExistingFile(WindowList,
 		    filename, pathname, editFlags, geometry, iconicFlag, 
-		    lmLen==0?NULL:langMode);
+		    lmLen == 0 ? NULL : langMode, 
+		    tabbed == -1? GetPrefOpenInTab() : tabbed);
 	
 	/* Do the actions requested (note DoMacro is last, since the do
 	   command can do anything, including closing the window!) */

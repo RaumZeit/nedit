@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.64 2004/01/16 09:18:28 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.65 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1921,15 +1921,13 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     /* doing replace on non-top buffers will modified certain shell
        properties, in this case the menu bar, owned by the top 
        buffers. we need to restore them for the top buffers */
-    if (GetPrefTabbedMode()) {
-	for (i=0; i<window->nWritableWindows; ++i) {
-	    if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
-		WindowInfo *topBuf =
-			GetTopDocument(window->writableWindows[i]->shell);
-		
-	    	DimSelectionDepUserMenuItems(topBuf, topBuf->wasSelected);
-		RefreshMenuToggleStates(topBuf);
-	    }
+    for (i=0; i<window->nWritableWindows; ++i) {
+	if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
+	    WindowInfo *topBuf =
+		    GetTopDocument(window->writableWindows[i]->shell);
+
+	    DimSelectionDepUserMenuItems(topBuf, topBuf->wasSelected);
+	    RefreshMenuToggleStates(topBuf);
 	}
     }
     

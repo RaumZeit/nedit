@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.118 2004/02/14 02:22:25 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.119 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -209,7 +209,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
     XmFontList fontList;
-    int fontWidth, tabWidth;
+    int fontWidth, tabWidth, state;
     XFontStruct *fs;
 
     if (firstTime) 
@@ -755,16 +755,12 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     CreateReplaceDlog(window->shell, window);
     CreateReplaceMultiFileDlog(window);
 
-    /* tell the world there's a new window to move in */
-    if (GetPrefTabbedMode()) {
-	int state = NDocuments(window) < NWindows();
-
-	/* dim/undim Attach_Tab menu items */
-	for(win=WindowList; win; win=win->next) {
-    	    if (IsTopDocument(win)) {
-    		XtSetSensitive(win->attachDocumentItem, state);
-    		XtSetSensitive(win->contextAttachDocumentItem, state);
-	    }
+    /* dim/undim Attach_Tab menu items */
+    state = NDocuments(window) < NWindows();
+    for(win=WindowList; win; win=win->next) {
+    	if (IsTopDocument(win)) {
+    	    XtSetSensitive(win->attachDocumentItem, state);
+    	    XtSetSensitive(win->contextAttachDocumentItem, state);
 	}
     }
     
@@ -874,7 +870,7 @@ WindowInfo *TabToWindow(Widget tab)
 */
 void CloseWindow(WindowInfo *window)
 {
-    int keepWindow;
+    int keepWindow, state;
     char name[MAXPATHLEN];
     WindowInfo *win, *topBuf = NULL, *nextBuf = NULL;
 
@@ -988,25 +984,20 @@ void CloseWindow(WindowInfo *window)
 	ShowWindowTabBar(topBuf);
     }
     
-    /* tell the world there's one less window to move in */
-    if (GetPrefTabbedMode()) {
-	int state;
+    /* dim/undim Detach_Tab menu items */
+    win = nextBuf? nextBuf : topBuf;
+    if (win) {
+	state = NDocuments(win) > 1;
+    	XtSetSensitive(win->detachDocumentItem, state);
+    	XtSetSensitive(win->contextDetachDocumentItem, state);
+    }
 
-	/* dim/undim Detach_Tab menu items */
-    	win = nextBuf? nextBuf : topBuf;
-    	if (win) {
-	    state = NDocuments(win) > 1;
-    	    XtSetSensitive(win->detachDocumentItem, state);
-    	    XtSetSensitive(win->contextDetachDocumentItem, state);
-	}
-	
-	/* dim/undim Attach_Tab menu items */
-	state = NDocuments(WindowList) < NWindows();
-	for(win=WindowList; win; win=win->next) {
-    	    if (IsTopDocument(win)) {    
-    		XtSetSensitive(win->attachDocumentItem, state);
-    		XtSetSensitive(win->contextAttachDocumentItem, state);
-	    }
+    /* dim/undim Attach_Tab menu items */
+    state = NDocuments(WindowList) < NWindows();
+    for(win=WindowList; win; win=win->next) {
+    	if (IsTopDocument(win)) {    
+    	    XtSetSensitive(win->attachDocumentItem, state);
+    	    XtSetSensitive(win->contextAttachDocumentItem, state);
 	}
     }
 
@@ -1787,13 +1778,13 @@ void SetWrapMargin(WindowInfo *window, int margin)
 
 /*
 ** Recover the window pointer from any widget in the window, by searching
-** up the widget hierarcy for the top level container widget where the window
-** pointer is stored in the userData field. In tabbed mode, this is the window
-** pointer of the top (active) buffer, which is returned if w is 'shell-level'
-** widget - menus, find/replace dialogs, etc.
+** up the widget hierarcy for the top level container widget where the
+** window pointer is stored in the userData field. In a tabbed window,
+** this is the window pointer of the top (active) document, which is 
+** returned if w is 'shell-level' widget - menus, find/replace dialogs, etc.
 **
-** To support action routine in tabbed mode, a copy of the window pointer 
-** is also store in the splitPane widget.
+** To support action routine in tabbed windows, a copy of the window
+** pointer is also store in the splitPane widget.
 */
 WindowInfo *WidgetToWindow(Widget w)
 {
@@ -2251,23 +2242,7 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData)
 {
     window = WidgetToWindow(w);
     
-    if (GetPrefTabbedMode()) {
-	/* in window-tabbed mode, we now have only one app window,
-	   to close is to quit */
-	CloseDocumentWindow(w, window, callData);
-    }
-    else {
-    	/* close this window */
-	if (WindowList->next == NULL) {
-	    if (!CheckPrefsChangesSaved(window->shell))
-    		return;
-	    if (!WindowList->fileChanged)
-     		exit(EXIT_SUCCESS);
-     	    if (CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE))
-     		exit(EXIT_SUCCESS);
-	} else
-    	    CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);    
-    }
+    CloseDocumentWindow(w, window, callData);
 }
 
 static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData) 
@@ -3850,16 +3825,13 @@ static void closeTearOffs(Widget menuPane)
 void RaiseDocument(WindowInfo *window)
 {
     WindowInfo *win, *lastwin;        
-
-    if (!GetPrefTabbedMode())
-    	return;
 	
+    if (!window || !WindowList)
+    	return;
+
     lastwin = MarkActiveDocument(window);
     if (lastwin != window && IsValidWindow(lastwin))
     	MarkLastDocument(lastwin);
-
-    if (!GetPrefTabbedMode() || !window || !WindowList)
-    	return;
 
     /* buffer already active? */
     XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
@@ -3921,7 +3893,7 @@ Boolean IsTopDocument(const WindowInfo *window)
 
 void DeleteDocument(WindowInfo *window)
 {    
-    if (!GetPrefTabbedMode() || !window)
+    if (!window)
     	return;
     
     XtDestroyWidget(window->splitPane);
@@ -4072,9 +4044,6 @@ int NDocuments(WindowInfo *window)
     WindowInfo *win;
     int nDocument = 0;
     
-    if (!GetPrefTabbedMode())
-    	return 1;
-	
     for (win = WindowList; win; win = win->next) {
     	if (win->shell == window->shell)
 	    nDocument++;
@@ -4088,7 +4057,7 @@ int NDocuments(WindowInfo *window)
 */
 void RefreshWindowStates(WindowInfo *window)
 {
-    if (!GetPrefTabbedMode() || !IsTopDocument(window))
+    if (!IsTopDocument(window))
     	return;
 	
     if (window->modeMessageDisplayed)

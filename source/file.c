@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.76 2004/02/10 22:29:11 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.77 2004/02/16 01:02:37 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -114,7 +114,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     UniqueUntitledName(name);
 
     /* create the window/buffer */
-    if (GetPrefTabbedMode() && inWindow)
+    if (inWindow)
 	window = CreateDocument(inWindow, name, geometry, iconic);
     else 
 	window = CreateWindow(name, geometry, iconic);
@@ -159,7 +159,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 */
 WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
         const char *path, int flags, char *geometry, int iconic,
-	const char *languageMode)
+	const char *languageMode, int tabbed)
 {
     WindowInfo *window;
     char fullname[MAXPATHLEN];
@@ -179,7 +179,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     }
     else if (inWindow->filenameSet || inWindow->fileChanged ||
 	    inWindow->macroCmdData != NULL) {
-	if (GetPrefTabbedMode()) {
+	if (tabbed) {
 	    window = CreateDocument(inWindow, name, geometry, iconic);
     	}
 	else {

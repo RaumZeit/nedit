@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.88 2004/02/07 15:44:33 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.89 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -93,11 +93,8 @@ enum menuModes {FULL, SHORT};
 
 typedef void (*menuCallbackProc)();
 
-static char shiftKeyDown(XtPointer callData);
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void newWindowCB(Widget w, XtPointer clientData, XtPointer callData);
-static void openDialogCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData); 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -137,6 +134,7 @@ static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void openInTabDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarHideDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void toolTipsDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -208,6 +206,8 @@ static void unloadTagsFileMenuCB(Widget w, WindowInfo *window,
 static void unloadTipsFileMenuCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
+static void newWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
+static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void openDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs); 
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
@@ -422,6 +422,8 @@ static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu,
 /* Application action table */
 static XtActionsRec Actions[] = {
     {"new", newAP},
+    {"new_window", newWindowAP},
+    {"new_tab", newTabAP},
     {"open", openAP},
     {"open-dialog", openDialogAP},
     {"open_dialog", openDialogAP},
@@ -641,11 +643,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     ** "File" pull down menu.
     */
     menuPane = createMenu(menuBar, "fileMenu", "File", 0, NULL, SHORT);
-    createMenuItem(menuPane, "new", "New", 'N', newWindowCB, window, SHORT);
-    createFakeMenuItem(menuPane, "newShift", newWindowCB, window);
-    createMenuItem(menuPane, "open", "Open...", 'O', openDialogCB, window,
+    createMenuItem(menuPane, "newWindow", "New Window", 'N', doActionCB, "new_window", SHORT);
+    createMenuItem(menuPane, "newTab", "New Tab", 'T', doActionCB, "new_tab", SHORT);
+    createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog",
     	    SHORT);
-    createFakeMenuItem(menuPane, "openShift", openDialogCB, window);
     window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
     	    doActionCB, "open_selected", FULL);
     if (GetPrefMaxPrevOpenFiles() != 0) {
@@ -936,10 +937,12 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
           "backlightChars", "Apply Backlighting", 'g', backlightCharsDefCB,
           window, GetPrefBacklightChars(), FULL);
 
-    /* tabbed mode sub menu */
-    subSubPane = createMenu(subPane, "tabbedModeMenu", "Tabbed Mode", 0,
+    /* tabbed editing sub menu */
+    subSubPane = createMenu(subPane, "tabbedEditMenu", "Tabbed Editing", 0,
     	    &cascade, SHORT);
-    XtSetSensitive(cascade, GetPrefTabbedMode());
+    window->openInTabDefItem = createMenuToggle(subSubPane, "openAsTab",
+    	    "Open File In New Tab", 'B', openInTabDefCB, window,
+	    GetPrefOpenInTab(), FULL);
     window->tabBarDefItem = createMenuToggle(subSubPane, "showTabBar",
     	    "Show Tab Bar", 'B', tabBarDefCB, window,
 	    GetPrefTabBar(), FULL);
@@ -1188,7 +1191,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,NULL);
     XtSetSensitive(window->closePaneItem, False);
 
-    if (GetPrefTabbedMode()) {
 	btn = createMenuSeparator(menuPane, "sep01", SHORT);
 	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
 	window->detachDocumentItem = createMenuItem(menuPane, "detachBuffer",
@@ -1206,7 +1208,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     		"Previous Tab", 'P', doActionCB, "previous_document", SHORT);
 	createMenuItem(menuPane, "lastDocument",
     		"Last Viewed Tab", 'o', doActionCB, "last_document", SHORT);
-    }
 
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
@@ -1366,30 +1367,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
-static void newWindowCB(Widget w, XtPointer clientData, XtPointer callData)
-{
-    static char *params[1] = {"1"};
-    Widget menu = MENU_WIDGET(w);
-
-    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
-    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "new",
-    	    ((XmAnyCallbackStruct *)callData)->event, params,
-	    shiftKeyDown(callData)? 1 : 0);
-}
-
-static void openDialogCB(Widget w, XtPointer clientData, XtPointer callData)
-{
-    static char *params[1] = {"1"};
-    
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
-	    
-    XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-	    "open_dialog", ((XmAnyCallbackStruct *)callData)->event, 
-    	    params, shiftKeyDown(callData)? 1 : 0);
-}
-
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) 
 {
     static char *params[1] = {"rect"};
@@ -1527,7 +1504,6 @@ static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"off"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1547,7 +1523,6 @@ static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"on"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1567,7 +1542,6 @@ static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"smart"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1586,7 +1560,6 @@ static void autoSaveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1605,7 +1578,6 @@ static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1625,7 +1597,6 @@ static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {NO_FLASH_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1645,7 +1616,6 @@ static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData
     static char *params[1] = {FLASH_DELIMIT_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1665,7 +1635,6 @@ static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {FLASH_RANGE_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1684,7 +1653,6 @@ static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1709,7 +1677,6 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"none"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1729,7 +1696,6 @@ static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"auto"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1749,7 +1715,6 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"continuous"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1793,7 +1758,6 @@ static void statsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -2222,6 +2186,17 @@ static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     	XmToggleButtonSetState(win->exitWarnDefItem, state, False);
 }
 
+static void openInTabDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefOpenInTab(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->openInTabDefItem, state, False);
+}
+
 static void tabBarDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
@@ -2564,7 +2539,6 @@ static void replayCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->windowMenuValid) {
@@ -2575,7 +2549,6 @@ static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->macroMenuValid) {
@@ -2586,7 +2559,6 @@ static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->shellMenuValid) {
@@ -2597,7 +2569,6 @@ static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
 
     if (!window->prevOpenMenuValid) {
@@ -2617,14 +2588,36 @@ static void unloadTipsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 }
 
 /*
-** Action Procedures for menu item commands
+** open a new tab or window, per preference.
 */
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
 
-    EditNewFile((*nArgs>0 && !strcmp(args[0], "1")? NULL: window),
-    	    NULL, False, NULL, window->path);
+    EditNewFile(GetPrefOpenInTab()? window : NULL, NULL, False, NULL,
+            window->path);
+    CheckCloseDim();
+}
+
+/*
+** open a new window.
+*/
+static void newWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+{
+    WindowInfo *window = WidgetToWindow(w);
+
+    EditNewFile(NULL, NULL, False, NULL, window->path);
+    CheckCloseDim();
+}
+
+/*
+** open a new tabbed document
+*/
+static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+{
+    WindowInfo *window = WidgetToWindow(w);
+
+    EditNewFile(window, NULL, False, NULL, window->path);
     CheckCloseDim();
 }
 
@@ -2661,8 +2654,8 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	        args[0]);
     	return;
     } 
-    EditExistingFile((*nArgs>1 && !strcmp(args[1], "1")? NULL: window),
-    	    filename, pathname, 0, NULL, False, NULL);
+    EditExistingFile(window, filename, pathname, 0, NULL, False, 
+            NULL, GetPrefOpenInTab());
     CheckCloseDim();
 }
 
@@ -4394,10 +4387,7 @@ static char* getWindowsMenuEntry(const WindowInfo* window)
     title = title + SGI_WINDOW_TITLE_LEN;
 #endif
 
-    /* in tabbed mode, put brackets around the filename
-       of buffers that don't belong to this window */
-    sprintf(fullTitle, "%s%s",
-	  window->filename, 
+    sprintf(fullTitle, "%s%s", window->filename, 
 	  window->fileChanged? "*" : "");
 
     if (GetPrefShowPathInWindowsMenu() && window->filenameSet)
@@ -4935,14 +4925,6 @@ static char **shiftKeyToDir(XtPointer callData)
     return forwardParam;
 }
 
-/*
-** check if <Shift> key is pressed
-*/
-static char shiftKeyDown(XtPointer callData)
-{
-    return (((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask);
-}
-
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
@@ -5041,7 +5023,7 @@ static int compareWindowShell(const void *windowA, const void *windowB)
 /*
 ** create & return a sorted list of windows
 ** Windows are first sort by their filename then,
-** if in tabbed mode, grouped by their shell windows
+** if windows are tabbed, grouped by their shell windows
 **
 ** Note: caller must XtFree the returned window list.
 */
@@ -5058,7 +5040,7 @@ WindowInfo **MakeSortedWindowArray(void)
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
     
     /* group the buffers together by their shell window */
-    if (GetPrefTabbedMode())
+    if (GetPrefOpenInTab())
         qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowShell);
 
     return windows;
@@ -5095,7 +5077,7 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
     XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
     menu = XmCreatePopupMenu(parent, "tabContext", args, n);
     
-    createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new", SHORT);
+    createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new_tab", SHORT);
     createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
     createMenuSeparator(menu, "sep1", SHORT);
     window->contextDetachDocumentItem = createMenuItem(menu, "detach",

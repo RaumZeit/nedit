@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.61 2004/02/10 14:25:41 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.62 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -188,12 +188,12 @@ static char *fallbackResources[] = {
     "*macroMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*helpMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*fileMenu.mnemonic: F",
-    "*fileMenu.new.accelerator: Ctrl<Key>n",
-    "*fileMenu.new.acceleratorText: [Shift]Ctrl+N",
-    "*fileMenu.newShift.accelerator: Shift Ctrl<Key>n",
+    "*fileMenu.newWindow.accelerator: Ctrl<Key>n",
+    "*fileMenu.newWindow.acceleratorText: Ctrl+N",
+    "*fileMenu.newTab.accelerator: Shift Ctrl<Key>n",
+    "*fileMenu.newTab.acceleratorText: Shift+Ctrl+N",
     "*fileMenu.open.accelerator: Ctrl<Key>o",
-    "*fileMenu.open.acceleratorText: [Shift]Ctrl+O",
-    "*fileMenu.openShift.accelerator: Shift Ctrl<Key>O",
+    "*fileMenu.open.acceleratorText: Ctrl+O",
     "*fileMenu.openSelected.accelerator: Ctrl<Key>y",
     "*fileMenu.openSelected.acceleratorText: Ctrl+Y",
     "*fileMenu.close.accelerator: Ctrl<Key>w",
@@ -346,7 +346,7 @@ static const char cmdLineHelp[] =
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
 	      [-import file] [-background color] [-foreground color]\n\
-	      [-V|-version] [-tabbed] [-untabbed] [-win]\n\
+	      [-V|-version] [-tabbed] [-untabbed]\n\
 	      [--] [file...]\n";
 #else
 "";
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int gotoLine = False, macroFileRead = False, opts = True;
-    int iconic = False, newWin = False;
+    int iconic = False, tabbed = -1;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
@@ -503,10 +503,10 @@ int main(int argc, char **argv)
     	    editFlags |= PREF_READ_ONLY;
     	} else if (opts && !strcmp(argv[i], "-create")) {
     	    editFlags |= SUPPRESS_CREATE_WARN;
-    	} else if (opts && !strcmp(argv[i], "-win")) {
-	    /* NB: -win option is non-sticky, it will be reset 
-	           after being used once */
-    	    newWin = 1;
+    	} else if (opts && !strcmp(argv[i], "-tabbed")) {
+    	    tabbed = 1;
+    	} else if (opts && !strcmp(argv[i], "-untabbed")) {
+    	    tabbed = 0;
     	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineNum);
@@ -548,6 +548,8 @@ int main(int argc, char **argv)
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {
+	    int openTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed;
+	    WindowInfo *hostWin = openTabbed? WindowList : NULL;
 #ifdef VMS
 	    int numFiles, j;
 	    char **nameList = NULL;
@@ -557,8 +559,8 @@ int main(int argc, char **argv)
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
 	    	if (ParseFilename(nameList[j], filename, pathname) == 0) {
-		    EditExistingFile(WindowList, filename, pathname, editFlags,
-				     geometry, iconic, langMode);
+		    EditExistingFile(hostWin, filename, pathname, editFlags,
+				     geometry, iconic, langMode, openTabbed);
 		    fileSpecified = TRUE;
 		    if (!macroFileRead) {
 		        ReadMacroInitFile(WindowList);
@@ -577,8 +579,8 @@ int main(int argc, char **argv)
 	    	free(nameList);
 #else
 	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
-		EditExistingFile(newWin? NULL : WindowList, filename, pathname,
-				 editFlags, geometry, iconic, langMode);
+		EditExistingFile(hostWin, filename, pathname,
+				 editFlags, geometry, iconic, langMode, openTabbed);
 		fileSpecified = TRUE;
 		if (!macroFileRead) {
 		    ReadMacroInitFile(WindowList);
@@ -593,7 +595,6 @@ int main(int argc, char **argv)
 	    }
 #endif /*VMS*/
 	    toDoCommand = NULL;
-    	    newWin = 0;     /* this option is non-sticky */	    
 	}
     }
 #ifdef VMS
@@ -601,7 +602,7 @@ int main(int argc, char **argv)
 #endif /*VMS*/
     
     /* If no file to edit was specified, open a window to edit "Untitled" */
-    if (!fileSpecified || newWin) {
+    if (!fileSpecified) {
     	EditNewFile(NULL, geometry, iconic, langMode, NULL);
 	ReadMacroInitFile(WindowList);
 	if (toDoCommand != NULL)

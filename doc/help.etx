@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.58 2004/01/28 01:50:33 tksoh Exp $
+.. $Id: help.etx,v 1.59 2004/02/16 01:02:37 tksoh Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3862,10 +3862,9 @@ X Resources
   options not settable via the Preferences menu (for preference resource names,
   see your NEdit preference file):
 
-**nedit.tabbedMode**: True
+**nedit.openInTab**: True
 
-  When set to True, run NEdit in tabbed mode. Same as running NEdit with
-  the ~-tabbed~ command line option.
+  When set to True, open files in new tabs, else open files in new windows.
 
 **nedit.tagFile**: (not defined) 
 
@@ -4516,23 +4515,9 @@ NEdit Command Line
       [-**font** font] [-**lm** languagemode] [-**geometry** geometry]
       [-**iconic**] [-**noiconic**] [-**display** [host]:server[.screen]
       [-**xrm** resourcestring] [-**svrname** name] [-**import** file]
-      [-**background** color] [-**foreground** color] [-**V**|-**version**]
-      [-**tabbed**] [-**untabbed**] [-**win** file]
+      [-**background** color] [-**foreground** color]
+      [-**tabbed**] [-**untabbed**] [-**V**|-**version**]
       [--] [file...]
-
-**-tabbed**
-  Run NEdit in tabbed mode - allow multiple documents (files) per window.
-
-**-untabbed**
-  Disable tabbed mode, run NEdit in normal (one file per window) mode.
-
-**-win**
-  In ~tabbed mode~, files are opened as new tabs by default, use -win to 
-  open files in new windows. 
-  
-  **Note**: this option is ~non-sticky~, i.e. it applies only to the
-  ~first~ file specified immediate after the option. This allows users 
-  to open group of files in the same window.
 
 **-read**
   Open the file Read Only regardless of the actual file protection.
@@ -4617,6 +4602,12 @@ NEdit Command Line
   User interface foreground color. (Foreground color for text can be set
   separately with -xrm "nedit.textFgColor: color" or using the Preferences
   -> Colors dialog).
+
+**-tabbed**
+  open all subsequent files in new tabs.
+
+**-untabbed**
+  open all subsequent files in new windows.
 
 **-xrm resourcestring** 
   Set the value of an X resource to override a default
@@ -4729,6 +4720,12 @@ NEdit Command Line
   /xrm="nedit:textFgColor color" or using the Preferences ->
   Colors dialog).
 
+**/tabbed**
+  open all subsequent files in new tabs.
+
+**/untabbed**
+  open all subsequent files in new windows.
+
 **/xrm=resourcestring**
   Set the value of an X resource to override a default value 
   (see Customizing NEdit).
@@ -4787,7 +4784,7 @@ Client/Server Mode
        [**-svrname** name] [**-svrcmd** command]
        [**-ask**] [**-noask**] [**-timeout** seconds]
        [**-geometry** geometry | **-g** geometry] [**-icon** | **-iconic**]
-       [**-wait**]
+       [-**tabbed**] [-**untabbed**] [**-wait**]
        [**-V** | **-version**]
        [**-xrm** resourcestring] [**-display** [host]:server[.screen]]
        [**-**-] [file...]
@@ -4844,6 +4841,12 @@ Client/Server Mode
 
   Under rare conditions (such as a slow connection), it may be necessary to
   increase the time-out period. In most cases, the default is fine.
+
+**-tabbed**
+  open all subsequent files in new tabs.
+
+**-untabbed**
+  open all subsequent files in new windows.
 
 **-wait**
   Instructs nc not to return to the shell until all files given are closed.

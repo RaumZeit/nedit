@@ -1,4 +1,4 @@
-/* $Id: file.h,v 1.11 2003/12/25 06:55:07 tksoh Exp $ */
+/* $Id: file.h,v 1.12 2004/02/16 01:02:37 tksoh Exp $ */
 
 #ifndef NEDIT_FILE_H_INCLUDED
 #define NEDIT_FILE_H_INCLUDED
@@ -20,7 +20,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
         const char *languageMode, const char *defaultPath);
 WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
         const char *path, int flags, char *geometry, int iconic,
-	const char *languageMode);
+	const char *languageMode, int tabbed);
 void RevertToSaved(WindowInfo *window);
 int SaveWindow(WindowInfo *window);
 int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap);

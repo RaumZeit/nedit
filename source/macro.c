@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.81 2004/02/03 08:18:52 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.82 2004/02/16 01:02:37 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1121,7 +1121,7 @@ static void finishMacroCmdExecution(WindowInfo *window)
        with focus_window() may modify the 'shell-level' properties (menus,
        statsline, etc) belong to the top buffer, we refresh these 
        properties in case they did get modified */
-    if (GetPrefTabbedMode() && focusShifted) {
+    if (focusShifted) {
 	WindowInfo *macroRunWindow = cmdData->context->runWindow;
     	WindowInfo *win;
 	

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.111 2004/02/03 14:26:52 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.112 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -232,7 +232,7 @@ typedef struct {
 
 /* Repository for simple preferences settings */
 static struct prefData {
-    int tabbedMode;		/* run nedit in vim/emacs-like tabbed mode */
+    int openInTab;		/* open files in new tabs  */
     int wrapStyle;		/* what kind of wrapping to do */
     int wrapMargin;		/* 0=wrap at window width, other=wrap margin */
     int autoIndent;		/* style for auto-indent */
@@ -746,8 +746,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.autoIndent, AutoIndentTypes, True},
     {"autoSave", "AutoSave", PREF_BOOLEAN, "True",
     	&PrefData.autoSave, NULL, True},
-    {"tabbedMode", "TabbedMode", PREF_BOOLEAN, "True",
-    	&PrefData.tabbedMode, NULL, True},
+    {"openInTab", "OpenInTab", PREF_BOOLEAN, "True",
+    	&PrefData.openInTab, NULL, True},
     {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False",
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
@@ -971,8 +971,6 @@ static XrmOptionDescRec OpTable[] = {
     {"-noautoindent", ".autoIndent", XrmoptionNoArg, (caddr_t)"False"},
     {"-autosave", ".autoSave", XrmoptionNoArg, (caddr_t)"True"},
     {"-noautosave", ".autoSave", XrmoptionNoArg, (caddr_t)"False"},
-    {"-tabbed", ".tabbedMode", XrmoptionNoArg, (caddr_t)"True"},
-    {"-untabbed", ".tabbedMode", XrmoptionNoArg, (caddr_t)"False"},
     {"-rows", ".textRows", XrmoptionSepArg, (caddr_t)NULL},
     {"-columns", ".textCols", XrmoptionSepArg, (caddr_t)NULL},
     {"-tabs", ".tabDistance", XrmoptionSepArg, (caddr_t)NULL},
@@ -1371,14 +1369,14 @@ void ImportPrefFile(const char *filename, int convertOld)
     }
 }
 
-void SetPrefTabbedMode(int state)
+void SetPrefOpenInTab(int state)
 {
-    setIntPref(&PrefData.tabbedMode, state);
+    setIntPref(&PrefData.openInTab, state);
 }
 
-int GetPrefTabbedMode(void)
+int GetPrefOpenInTab(void)
 {
-    return PrefData.tabbedMode;
+    return PrefData.openInTab;
 }
 
 void SetPrefWrap(int state)
@@ -1536,7 +1534,7 @@ void SetPrefTabBar(int state)
 
 int GetPrefTabBar(void)
 {
-    return PrefData.tabBar && GetPrefTabbedMode();
+    return PrefData.tabBar;
 }
 
 void SetPrefTabBarHideOne(int state)
@@ -1546,7 +1544,7 @@ void SetPrefTabBarHideOne(int state)
 
 int GetPrefTabBarHideOne(void)
 {
-    return PrefData.tabBarHideOne && GetPrefTabbedMode();
+    return PrefData.tabBarHideOne;
 }
 
 void SetPrefGlobalTabNavigate(int state)
@@ -1556,7 +1554,7 @@ void SetPrefGlobalTabNavigate(int state)
 
 int GetPrefGlobalTabNavigate(void)
 {
-    return PrefData.globalTabNavigate && GetPrefTabbedMode();
+    return PrefData.globalTabNavigate;
 }
 
 void SetPrefToolTips(int state)

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.53 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.54 2004/02/16 01:02:38 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1429,7 +1429,7 @@ static void editTaggedLocation( Widget parent, int i )
     
     ParseFilename(tagFiles[i],filename,pathname);
     /* open the file containing the definition */
-    EditExistingFile(parentWindow, filename, pathname, 0, NULL, False, NULL);
+    EditExistingFile(parentWindow, filename, pathname, 0, NULL, False, NULL, GetPrefOpenInTab());
     windowToSearch = FindWindowWithFile(filename, pathname);
     if (windowToSearch == NULL) {
         DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK",
