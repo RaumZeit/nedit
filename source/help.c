@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.44 2001/08/09 08:37:50 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.45 2001/08/13 09:51:01 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3032,7 +3032,7 @@ Elements can be removed from an array using the delete command:\n\
 The number of elements in an array can be determined by referencing \
 the array with no sub-scripts:\n\
 \n\
-    dialog(\"array x has \" x[] \" elemnts\")\n\
+    dialog(\"array x has \" x[] \" elements\")\n\
 \n\
 Arrays can be combined with some operators. All the following operators \
 only compare the keys of the arrays.\n\

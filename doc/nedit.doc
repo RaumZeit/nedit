@@ -1,6 +1,6 @@
                      NEdit Version 5.2, August, 2001
 
-$Id: nedit.doc,v 1.2 2001/08/06 20:38:51 tringali Exp $
+$Id: nedit.doc,v 1.3 2001/08/13 09:51:01 amai Exp $
 
 NEdit is a standard GUI (Graphical User Interface) style text editor for
 programs and plain-text files.  Users of Macintosh and MS Windows based text
@@ -1672,6 +1672,55 @@ Comparison between character strings is done with the == and != operators, (as
 with integers).  There are a number of useful built-in routines for working
 with character strings, which are listed in the section called Macro
 Subroutines.
+
+Arrays and Array Operators
+
+Arrays may contain either strings, integers, or other arrays. Arrays are
+associative, which means that they relate two pieces of information, the key and
+the value.  The key is always a string, although you can use integers and
+strings, they are always converted to strings.  Array keys can also contain
+multiple sub-scripts:
+
+    x[1,2,3] = "string"
+    x[1 $sub_sep 2 $sub_sep 3] = "string"
+    x["1" $sub_sep "2" $sub_sep "3"] = "string"
+
+The sub-scripts are concatenated with $sub_sep. The above assignments are
+eqivalent.  To determine if a given key is in an array, use the in keyword.
+
+    if ("6" in x) <body>
+
+If the left side of the in keyword is an array, the result is true if every key
+in the left array is in the right array.  Array values are not compared.
+
+To iterate through all the keys of an array use the for looping construct. Keys
+are not guarranteed in any particular order:
+
+    for (aKey in x) <body>
+
+Elements can be removed from an array using the delete command:
+
+    delete x[3] # deletes element with key 3
+    delete x[]  # deletes all elements
+
+The number of elements in an array can be determined by referencing the array
+with no sub-scripts:
+
+    dialog("array x has " x[] " elements")
+
+Arrays can be combined with some operators. All the following operators only
+compare the keys of the arrays.
+
+   + merge arrays
+   - remove keys
+   & common keys
+   | all keys that are not shared
+
+When duplicate keys are encountered using the + and & operators, the values from
+the array on the right side of the operators are used for the result.  All of
+the above operators are array only, meaning both the left and right sides of the
+operator must be arrays.  The results are also arrays.
+
 
 Looping and Conditionals
 
