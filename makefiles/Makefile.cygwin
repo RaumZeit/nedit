@@ -1,4 +1,4 @@
-# $Id: Makefile.cygwin,v 1.7 2003/05/20 00:27:55 n8gray Exp $
+# $Id: Makefile.cygwin,v 1.8 2004/01/12 17:31:34 edg Exp $
 CC=gcc
 AR=ar
 
@@ -16,4 +16,4 @@ LIBS= -L/usr/X11R6/lib -lXm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
 
-verify_config:
+verify_config: check_tif_rule
