@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.11 2001/04/25 17:01:09 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.12 2001/05/11 19:56:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.11 2001/04/25 17:01:09 amai Ex
 * Modified by:	DMR - Ported to VMS (1st stage for Histo-Scope)		       *
 *									       *
 *******************************************************************************/
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #ifdef VAXC
@@ -89,6 +90,7 @@ int ParseFilename(const char *fullname, char *filename, char *pathname)
     }
 #endif
 
+
     /* move chars before / (or ] or :) into pathname,& after into filename */
     pathLen = i + 1;
     fileLen = fullLen - pathLen;
@@ -96,6 +98,7 @@ int ParseFilename(const char *fullname, char *filename, char *pathname)
     pathname[pathLen] = 0;
     strncpy(filename, &fullname[pathLen], fileLen);
     filename[fileLen] = 0;
+
 #ifdef VMS
     return TRUE;
 #else     /* UNIX specific... Modify at a later date for VMS */
@@ -136,7 +139,12 @@ static int normalizePathname(char *pathname)
     char oldPathname[MAXPATHLEN];
 
     /* if this is a relative pathname, prepend current directory */
+#ifdef __EMX__
+    /* OS/2, ...: welcome to the world of drive letters ... */
+    if (!_fnisabs(pathname)) {
+#else
     if (pathname[0] != '/') {
+#endif
         size_t len;
 
         /* make a copy of pathname to work from */
