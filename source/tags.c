@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.11 2001/03/25 08:42:20 arnef Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -401,6 +401,7 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
     strncpy(tagText, tagMark, ml);
     tagText[ml] = '\0';
     findAllDialogAP(window->textArea, tagText);
+    XtFree(value);
 }
 
 /*	store all of the info into a pre-allocated tags struct */
