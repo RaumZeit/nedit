@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.34 2003/03/05 23:50:59 n8gray Exp $ */
+/* $Id: nedit.h,v 1.35 2003/03/24 17:05:26 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -362,7 +362,6 @@ typedef struct _WindowInfo {
     Boolean	showStats;		/* is stats line supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */
-    Boolean 	showPathInWindowsMenu; 	/* is the path shown in windows menu */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
     Boolean	backlightChars;		/* is char backlighting turned on? */
     char	*backlightCharTypes;	/* what backlighting to use */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.68 2003/03/05 23:50:58 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.69 2003/03/24 17:05:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2104,6 +2104,7 @@ static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callDat
     SetPrefShowPathInWindowsMenu(state);
     for (win=WindowList; win!=NULL; win=win->next)
     	XmToggleButtonSetState(win->pathInWindowsMenuDefItem, state, False);
+    InvalidateWindowMenus(); 
 }
 
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -4019,7 +4020,7 @@ static char* getWindowsMenuEntry(const WindowInfo* thisWindow, const WindowInfo*
     title = title + SGI_WINDOW_TITLE_LEN;
 #endif
     strcpy(fullTitle, title);
-    if (thisWindow->showPathInWindowsMenu && window->filenameSet)
+    if (GetPrefShowPathInWindowsMenu() && window->filenameSet)
     {
        strcat(fullTitle, " - ");
        strcat(fullTitle, window->path);
