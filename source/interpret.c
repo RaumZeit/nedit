@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.13 2001/04/06 13:03:31 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.14 2001/08/02 17:26:50 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1512,14 +1512,25 @@ static int callSubroutine(void)
     if (sym->type == ACTION_ROUTINE_SYM) {
     	String argList[MAX_ARGS];
     	Cardinal numArgs = nArgs;
-    	XKeyEvent event;
+    	XKeyEvent key_event;
+	Display *disp;
+	Window win;
     
 	/* Create a fake event with a timestamp suitable for actions which need
 	   timestamps, a marker to indicate that the call was from a macro
 	   (to stop shell commands from putting up their own separate banner) */
-	event.type = KeyPress;
-	event.send_event = MACRO_EVENT_MARKER;
-	event.time=XtLastTimestampProcessed(XtDisplay(InitiatingWindow->shell));
+        disp=XtDisplay(InitiatingWindow->shell);
+	win=XtWindow(InitiatingWindow->shell);
+
+	key_event.type = KeyPress;
+	key_event.send_event = MACRO_EVENT_MARKER;
+	key_event.time=XtLastTimestampProcessed(XtDisplay(InitiatingWindow->shell));
+	
+	/* The following entries are just filled in to avoid problems
+	   in strange cases, like calling "self_insert()" directly from the
+	   macro menu. In fact the display was sufficient to cure this crash. */
+        key_event.display=disp;
+        key_event.window=key_event.root=key_event.subwindow=win;
     
 	/* pop arguments off the stack and put them in the argument list */
 	for (i=nArgs-1; i>=0; i--) {
@@ -1529,7 +1540,7 @@ static int callSubroutine(void)
     	/* Call the action routine and check for preemption */
     	PreemptRequest = False;
     	((XtActionProc)sym->value.val.ptr)(FocusWindow->lastFocus,
-    	    	(XEvent *)&event, argList, &numArgs);
+    	    	(XEvent *)&key_event, argList, &numArgs);
     	if (*PC == fetchRetVal)
     	    return execError("%s does not return a value", sym->name);
     	return PreemptRequest ? STAT_PREEMPT : STAT_OK;
