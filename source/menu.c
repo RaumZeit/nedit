@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.125 2005/02/15 01:10:15 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.126 2005/02/15 09:13:28 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2692,7 +2692,7 @@ static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void unloadTipsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    updateTipsFileMenu(window);
+    updateTipsFileMenu(WidgetToWindow(MENU_WIDGET(w)));
 }
 
 /*
