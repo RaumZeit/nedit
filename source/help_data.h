@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jan 10, 2002 (Do NOT edit!)
+                 Generated on Feb 13, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -1245,19 +1245,19 @@ static char * htxt_escapeSequences [] = {
 "NEdit defines some escape sequences that are handy shortcuts for commonly ",
 "used character classes. ",
 "\n\n",
-"\01A     \\d  digits            0-9\n",
-"     \\l  letters           a-z and A-Z\n",
-"     \\s  whitespace        \\t, \\r, \\v, \\f, and space\n",
-"     \\w  word characters   a-z, A-Z, 0-9, and underscore, `_'\n",
+"\01A   \\d  digits            0-9\n",
+"   \\l  letters           a-z, A-Z, and locale dependent letters\n",
+"   \\s  whitespace        \\t, \\r, \\v, \\f, and space\n",
+"   \\w  word characters   letters, digits, and underscore, `_'\n",
 "\01I\n",
 "\\D, \\L, \\S, and \\W are the same as the lowercase versions except that the ",
 "resulting character class is negated.  For example, \\d is equivalent to ",
 "`[0-9]', while \\D is equivalent to `[^0-9]'. ",
 "\n\n",
 "These escape sequences can also be used within a character class.  For ",
-"example, `[\\l_]' is the same as `[a-zA-Z]'.  The escape sequences for ",
-"special characters, and octal and hexadecimal escapes are also valid within a ",
-"class. ",
+"example, `[\\l_]' is the same as `[a-zA-Z_]', extended with possible locale ",
+"dependent letters. The escape sequences for special characters, and octal ",
+"and hexadecimal escapes are also valid within a class. ",
 "\n\n",
 "\01RWord Delimiter Tokens\01I",
 "\n\n",
@@ -3408,7 +3408,7 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Color for displaying line numbers in the NEdit window. ",
 "\n\n",
-"\01A\01Bnedit.text.blinkRate\01A: 600\n",
+"\01A\01Bnedit.text.blinkRate\01A: 500\n",
 "\01I\n",
 "Blink rate of the text insertion cursor in milliseconds.  Set to zero to stop ",
 "blinking. ",
@@ -3421,11 +3421,11 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Default foreground color for menus, dialogs, scroll bars, etc.. ",
 "\n\n",
-"\01A\01Bnedit.background\01A: gray70\n",
+"\01A\01Bnedit.background\01A: #b3b3b3\n",
 "\01I\n",
 "Default background color for menus, dialogs, scroll bars, etc.. ",
 "\n\n",
-"\01A\01Bnedit.fontList\01A: helvetica-bold-14\n",
+"\01A\01Bnedit.fontList\01A: helvetica medium 12 points\n",
 "\01I\n",
 "Default font for menus, dialogs, scroll bars, etc.. ",
 "\n\n",
@@ -4758,5 +4758,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jan 10, 2002\n";
-
+static const char * NEditVersion = "NEdit release of Feb 13, 2002\n";

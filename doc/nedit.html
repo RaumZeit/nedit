@@ -15,7 +15,7 @@
 </PRE>
 <P>
 <PRE>
-    Basic_Operation                     Macro/Shell_Extensions
+    Basic Operation                     Macro/Shell Extensions
       <A HREF="#Selecting_Text">Selecting Text</A>                      <A HREF="#Shell_Commands_and_Filters">Shell Commands and Filters</A>
       <A HREF="#Finding_and_Replacing_Text">Finding and Replacing Text</A>          <A HREF="#Learn/Replay">Learn/Replay</A>
       <A HREF="#Cut_and_Paste">Cut and Paste</A>                       <A HREF="#Macro_Language">Macro Language</A>
@@ -24,7 +24,7 @@
       <A HREF="#Shifting_and_Filling">Shifting and Filling</A>
       <A HREF="#File_Format">File Format</A>
                                         Customizing
-    Features_for_Programming              <A HREF="#Customizing_NEdit">Customizing NEdit</A>
+    Features for Programming              <A HREF="#Customizing_NEdit">Customizing NEdit</A>
       <A HREF="#Programming_with_NEdit">Programming with NEdit</A>              <A HREF="#Preferences">Preferences</A>
       <A HREF="#Tabs/Emulated_Tabs">Tabs/Emulated Tabs</A>                  <A HREF="#X_Resources">X Resources</A>
       <A HREF="#Auto/Smart_Indent">Auto/Smart Indent</A>                   <A HREF="#Key_Binding">Key Binding</A>
@@ -33,7 +33,7 @@
 </PRE>
 <P>
 <PRE>
-    Regular_Expressions                 <A HREF="#NEdit_Command_Line">NEdit Command Line</A>
+    Regular Expressions                 <A HREF="#NEdit_Command_Line">NEdit Command Line</A>
       <A HREF="#Basic_Regular_Expression_Syntax">Basic Regular Expression Syntax</A>   <A HREF="#Client/Server_Mode">Client/Server Mode</A>
       <A HREF="#Metacharacters">Metacharacters</A>                    <A HREF="#Crash_Recovery">Crash Recovery</A>
       <A HREF="#Parenthetical_Constructs">Parenthetical Constructs</A>          <A HREF="#Version">Version</A>
@@ -742,9 +742,6 @@ titled "<A HREF="#Using_the_Mouse">Using the Mouse</A>")
 <PRE>
     Ctrl+PageUp   Scroll and move the cursor left by one
                   page.
-</PRE>
-<P>
-<PRE>
     PageDown      Scroll and move the cursor down by one
                   page.
 </PRE>
@@ -1143,14 +1140,18 @@ command line:
 <P>
 NEdit can also be set to load a tags file automatically when it starts up. 
 Setting the X resource nedit.tagFile to the name of a tag file tells NEdit to
-look for that file at startup time (see "<A HREF="#Customizing_NEdit">Customizing NEdit</A>").  The file name can
-be either a complete path name, in which case NEdit will always load the same
-tags file, or a file name without a path or with a relative path, in which case
-NEdit will load it starting from the current directory.  The second option
-allows you to have different tags files for different projects, each
-automatically loaded depending on the directory you're in when you start
-NEdit.  Setting the name to "tags" is an obvious choice since this is the name
-that ctags uses.
+look for that file at startup time (see "<A HREF="#Customizing_NEdit">Customizing NEdit</A>").  The file name
+can be either a complete path name, in which case NEdit will always load the
+same tags file, or a file name without a path or with a relative path, in
+which case NEdit will load it starting from the current directory.  The
+second option allows you to have different tags files for different projects,
+each automatically loaded depending on the directory you're in when you start
+NEdit.  Setting the name to "tags" is an obvious choice since this is the
+name that ctags uses. NEdit normally evaluates relative path tag file
+specifications every time a file is opened. All accessible tag files are
+loaded at this time. To disable the automatic loading of tag files specified
+as relative paths, set the X resource nedit.alwaysCheckRelativeTagsSpecs to
+False.
 <P>
 To unload a tags file, select "Un-load Tags File" from the File menu and
 choose from the list of tags files.  NEdit will keep track of tags file updates
@@ -1392,10 +1393,10 @@ NEdit defines some escape sequences that are handy shortcuts for commonly
 used character classes.
 <P>
 <PRE>
-     \d  digits            0-9
-     \l  letters           a-z and A-Z
-     \s  whitespace        \t, \r, \v, \f, and space
-     \w  word characters   a-z, A-Z, 0-9, and underscore, `_'
+   \d  digits            0-9
+   \l  letters           a-z, A-Z, and locale dependent letters
+   \s  whitespace        \t, \r, \v, \f, and space
+   \w  word characters   letters, digits, and underscore, `_'
 </PRE>
 <P>
 \D, \L, \S, and \W are the same as the lowercase versions except that the
@@ -1403,9 +1404,9 @@ resulting character class is negated.  For example, \d is equivalent to
 `[0-9]', while \D is equivalent to `[^0-9]'.
 <P>
 These escape sequences can also be used within a character class.  For
-example, `[\l_]' is the same as `[<B><font color=red>--&#62; a-zA-Z &#60;-- NO HREF!!</font></B>]'.  The escape sequences for
-special characters, and octal and hexadecimal escapes are also valid within a
-class.
+example, `[\l_]' is the same as `[a-zA-Z_]', extended with possible locale 
+dependent letters. The escape sequences for special characters, and octal
+and hexadecimal escapes are also valid within a class.
 <P>
 <H3>Word Delimiter Tokens</H3>
 <P>
@@ -3961,10 +3962,21 @@ see your .nedit file):
 <B>nedit.tagFile</B>: (not defined) 
 </PRE>
 <P>
-The name of a file of the type produced by Exuberant Ctags or the Unix ctags
+This can be the name of a file, or multiple files separated by a colon (:)
+character, of the type produced by Exuberant Ctags or the Unix ctags
 command, which NEdit will load at startup time (see <A HREF="#ctags">ctag support</A> ). The tag
 file provides a database from which NEdit can automatically open files
 containing the definition of a particular subroutine or data type.
+<P>
+<PRE>
+<B>nedit.alwaysCheckRelativeTagsSpecs: True</B>
+</PRE>
+<P>
+When this resource is set to True, and there are tag files specified (with
+the nedit.tagFile resource, see above) as relative paths, NEdit will evaluate
+these tag value paths whenever a file is opened. All accessible tag files
+will be loaded at this time. When this resource value is False, relative path
+tag specifications will only be evaluated at NEdit startup time.
 <P>
 <PRE>
 <B>nedit.shell</B>: /bin/csh 
@@ -4203,7 +4215,7 @@ Color for text cursor in the text editing area of the NEdit window.
 Color for displaying line numbers in the NEdit window.
 <P>
 <PRE>
-<B>nedit.text.blinkRate</B>: 600
+<B>nedit.text.blinkRate</B>: 500
 </PRE>
 <P>
 Blink rate of the text insertion cursor in milliseconds.  Set to zero to stop
@@ -4222,13 +4234,13 @@ Modifies key bindings (see below).
 Default foreground color for menus, dialogs, scroll bars, etc..
 <P>
 <PRE>
-<B>nedit.background</B>: gray70
+<B>nedit.background</B>: #b3b3b3
 </PRE>
 <P>
 Default background color for menus, dialogs, scroll bars, etc..
 <P>
 <PRE>
-<B>nedit.fontList</B>: helvetica-bold-14
+<B>nedit.fontList</B>: helvetica medium 12 points
 </PRE>
 <P>
 Default font for menus, dialogs, scroll bars, etc..
@@ -4270,21 +4282,19 @@ Fixed bold for online help.
 Fixed italic font for online help.
 <P>
 <PRE>
-<B>nedit.h3HelpFont</B>: adobe times 14 bold
+<B>nedit.h1HelpFont</B>: adobe times 14 bold
 </PRE>
 <P>
-Font for level-1 titles in help text (the name h3 comes from how the
-help system maps titles between the html, text, and online help versions of
-the help text, level one and level two headings map to menu titles).
+Font for level-1 titles in help text.
 <P>
 <PRE>
-<B>nedit.h4HelpFont</B>: adobe times 14 italic
+<B>nedit.h2HelpFont</B>: adobe times 14 italic
 </PRE>
 <P>
 Font for level-2 titles in help text.
 <P>
 <PRE>
-<B>nedit.h5HelpFont</B>: adobe courier 12 bold
+<B>nedit.h3HelpFont</B>: adobe courier 12 bold
 </PRE>
 <P>
 Font for level-3 titles in help text.
@@ -4928,8 +4938,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Dec 13, 2001
-Dec 13, 2001
+NEdit release of Feb 13, 2002
+Feb 13, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

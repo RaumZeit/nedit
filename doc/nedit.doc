@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Dec 13, 2001                                               December 13, 2001
+NEdit release of Feb 13, 2002                                               February 13, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -618,7 +618,6 @@ KEYBOARD SHORTCUTS
 
     Ctrl+PageUp   Scroll and move the cursor left by one
                   page.
-
     PageDown      Scroll and move the cursor down by one
                   page.
 
@@ -1034,7 +1033,11 @@ FINDING DECLARATIONS (CTAGS)
   The second option allows you to have different tags files for different 
   projects, each automatically loaded depending on the directory you're in 
   when you start NEdit. Setting the name to "tags" is an obvious choice since 
-  this is the name that ctags uses. 
+  this is the name that ctags uses. NEdit normally evaluates relative path tag 
+  file specifications every time a file is opened. All accessible tag files 
+  are loaded at this time. To disable the automatic loading of tag files 
+  specified as relative paths, set the X resource 
+  nedit.alwaysCheckRelativeTagsSpecs to False. 
 
   To unload a tags file, select "Un-load Tags File" from the File menu and 
   choose from the list of tags files. NEdit will keep track of tags file 
@@ -1268,18 +1271,19 @@ METACHARACTERS
   NEdit defines some escape sequences that are handy shortcuts for commonly 
   used character classes. 
 
-     \d  digits            0-9
-     \l  letters           a-z and A-Z
-     \s  whitespace        \t, \r, \v, \f, and space
-     \w  word characters   a-z, A-Z, 0-9, and underscore, `_'
+   \d  digits            0-9
+   \l  letters           a-z, A-Z, and locale dependent letters
+   \s  whitespace        \t, \r, \v, \f, and space
+   \w  word characters   letters, digits, and underscore, `_'
 
   \D, \L, \S, and \W are the same as the lowercase versions except that the 
   resulting character class is negated. For example, \d is equivalent to 
   `[0-9]', while \D is equivalent to `[^0-9]'. 
 
   These escape sequences can also be used within a character class. For 
-  example, `[\l_]' is the same as `[a-zA-Z]'. The escape sequences for special 
-  characters, and octal and hexadecimal escapes are also valid within a class. 
+  example, `[\l_]' is the same as `[a-zA-Z_]', extended with possible locale 
+  dependent letters. The escape sequences for special characters, and octal 
+  and hexadecimal escapes are also valid within a class. 
 
 
   WORD DELIMITER TOKENS
@@ -3279,10 +3283,20 @@ X RESOURCES
 
 nedit.tagFile: (not defined) 
 
-  The name of a file of the type produced by Exuberant Ctags or the Unix ctags 
+  This can be the name of a file, or multiple files separated by a colon (:) 
+  character, of the type produced by Exuberant Ctags or the Unix ctags 
   command, which NEdit will load at startup time (see ctag support ). The tag 
   file provides a database from which NEdit can automatically open files 
   containing the definition of a particular subroutine or data type. 
+
+nedit.alwaysCheckRelativeTagsSpecs: True
+
+  When this resource is set to True, and there are tag files specified (with 
+  the nedit.tagFile resource, see above) as relative paths, NEdit will 
+  evaluate these tag value paths whenever a file is opened. All accessible tag 
+  files will be loaded at this time. When this resource value is False, 
+  relative path tag specifications will only be evaluated at NEdit startup 
+  time. 
 
 nedit.shell: /bin/csh 
 
@@ -3462,7 +3476,7 @@ nedit.text.lineNumForeground: gray47
 
   Color for displaying line numbers in the NEdit window. 
 
-nedit.text.blinkRate: 600
+nedit.text.blinkRate: 500
 
   Blink rate of the text insertion cursor in milliseconds. Set to zero to stop 
   blinking. 
@@ -3475,11 +3489,11 @@ nedit.foreground: black
 
   Default foreground color for menus, dialogs, scroll bars, etc.. 
 
-nedit.background: gray70
+nedit.background: #b3b3b3
 
   Default background color for menus, dialogs, scroll bars, etc.. 
 
-nedit.fontList: helvetica-bold-14
+nedit.fontList: helvetica medium 12 points
 
   Default font for menus, dialogs, scroll bars, etc.. 
 
@@ -3507,17 +3521,15 @@ nedit.italicFixedHelpFont: adobe courier 12 italic
 
   Fixed italic font for online help. 
 
-nedit.h3HelpFont: adobe times 14 bold
+nedit.h1HelpFont: adobe times 14 bold
 
-  Font for level-1 titles in help text (the name h3 comes from how the help 
-  system maps titles between the html, text, and online help versions of the 
-  help text, level one and level two headings map to menu titles). 
+  Font for level-1 titles in help text. 
 
-nedit.h4HelpFont: adobe times 14 italic
+nedit.h2HelpFont: adobe times 14 italic
 
   Font for level-2 titles in help text. 
 
-nedit.h5HelpFont: adobe courier 12 bold
+nedit.h3HelpFont: adobe courier 12 bold
 
   Font for level-3 titles in help text. 
 
@@ -4086,8 +4098,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Dec 13, 2001
-Dec 13, 2001
+NEdit release of Feb 13, 2002
+Feb 13, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
