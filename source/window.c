@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.77 2003/03/24 17:05:26 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.78 2003/04/03 15:45:18 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1133,7 +1133,11 @@ void SetModeMessage(WindowInfo *window, const char *message)
 {
     window->modeMessageDisplayed = True;
     XmTextSetString(window->statsLine, (char*)message);
-    showStats(window, True);
+    /*
+     * Don't invoke the stats line again, if stats line is already displayed.
+     */
+    if (!window->showStats)
+	showStats(window, True);
 }
 
 /*
@@ -1143,7 +1147,11 @@ void SetModeMessage(WindowInfo *window, const char *message)
 void ClearModeMessage(WindowInfo *window)
 {
     window->modeMessageDisplayed = False;
-    showStats(window, window->showStats);
+    /*
+     * Remove the stats line only if indicated by it's window state.
+     */
+    if (!window->showStats)
+        showStats(window, False);
     UpdateStatsLine(window);
 }
 
