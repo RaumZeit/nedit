@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.32 2001/05/17 11:42:27 arnef Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.33 2001/05/29 18:21:45 arnef Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -799,6 +799,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    macroDefCB, window, FULL);
     createMenuItem(subSubPane, "windowBackgroundMenu",
 	    "Window Background Menu...", 'W', bgMenuDefCB, window, FULL);
+    createMenuSeparator(subSubPane, "sep1", SHORT);
     window->pathInWindowsMenuDefItem = createMenuToggle(subSubPane, "pathInWindowsMenu",
     	    "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(),
     	    SHORT);
