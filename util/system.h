@@ -86,6 +86,8 @@
 #   define COMPILE_OS "BSDI"
 #elif defined(__ultrix)                 /* Untested, please verify */
 #   define COMPILE_OS "Ultrix"
+#elif defined(__EMX__)                  /* In theory people might EMX elsewhere ... */
+#   define COMPILE_OS "OS/2"
 #else
 #   define COMPILE_OS "Unknown"
 #endif
