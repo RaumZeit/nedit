@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.67 2004/06/08 15:36:15 edg Exp $
+.. $Id: help.etx,v 1.68 2004/06/10 17:04:34 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -780,17 +780,17 @@ Shifting and Filling
   text columns.
    ----------------------------------------------------------------------
 
-Tabbed Interface
+Tabbed Editing
 ----------------
 
   NEdit is able to display files in distinct editor windows, or to display files
   under tabs in the same editor window.  The Options for controlling the tabbed
-  interface are found under Preferences -> Default Settings -> Tabbed Interface 
+  interface are found under Preferences -> Default Settings -> Tabbed Editing 
   (cf. "Preferences_", also "NEdit_Command_Line_"). 
   
   Notice that you can re-group tabs at any time by detaching and attaching them,
-  or moving them, to other windows. Tabs are detached using the Windows menu, or
-  by right clicking on a tab (which opens a context menu).
+  or moving them, to other windows. This can be done using the Windows menu, or
+  using the context menu, which pops up when right clicking on a tab.
 
   You can switch to a tab by simply clicking on it, or you can use the keyboard.
   The default keybindings to switch tabs (which are Ctrl+PageUp/-Down and Alt+Home,
@@ -3699,6 +3699,10 @@ Preferences
   
   ~Sort Tabs Alphabetically~
 
+**Show Tooltips**
+  Show file name and path in a tooltip when moving the mouse pointer over a tab
+  (See Basic Operations -> Tabbed_Editing_).
+
 **Terminate with Line Break on Save**
   Some UNIX tools expect that files end with a line feed. If this option is
   activated, NEdit will append one if required.
@@ -5566,7 +5570,7 @@ Problems/Defects
 .. Menu:   Using the Mouse                  # mouse
 .. Menu:   Keyboard Shortcuts               # keyboard
 .. Menu:   S_h_ifting and Filling           # fill
-.. Menu:   Tabbed Interface                 # interface
+.. Menu:   Tabbed Editing                   # interface
 .. Menu:   F_i_le Format                    # format
 
 .. Menu: Features for Programming           # features

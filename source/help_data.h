@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jun 8, 2004 (Do NOT edit!)
+                 Generated on Jun 10, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -36,7 +36,7 @@ char *HelpTitles[] = {
     "Using the Mouse",
     "Keyboard Shortcuts",
     "Shifting and Filling",
-    "Tabbed Interface",
+    "Tabbed Editing",
     "File Format",
     "Programming with NEdit",
     "Tabs/Emulated Tabs",
@@ -109,7 +109,7 @@ static char * htxt_start [] = {
 "To open an existing file, choose Open... from the file menu. Select the file ",
 "that you want to open in the pop-up dialog that appears and click on OK.  You ",
 "may open any number of files at the same time.  Depending on your settings ",
-"(cf. \"\01QTabbed Interface\01I\") each file can appear in its own editor window, or it ",
+"(cf. \"Tabbed Interface\") each file can appear in its own editor window, or it ",
 "can appear under a tab in the same editor window.  Using Open... rather than ",
 "re-typing the NEdit command and running additional copies of NEdit, will give ",
 "you quick access to all of the files you have open via the Windows menu, and ",
@@ -758,12 +758,12 @@ NULL
 static char * htxt_interface [] = {
 "\01INEdit is able to display files in distinct editor windows, or to display files ",
 "under tabs in the same editor window.  The Options for controlling the tabbed ",
-"interface are found under Preferences -> Default Settings -> Tabbed Interface ",
+"interface are found under Preferences -> Default Settings -> Tabbed Editing ",
 "(cf. \"\01QPreferences\01I\", also \"\01QNEdit Command Line\01I\"). ",
 "\n\n",
 "Notice that you can re-group tabs at any time by detaching and attaching them, ",
-"or moving them, to other windows. Tabs are detached using the Windows menu, or ",
-"by right clicking on a tab (which opens a context menu). ",
+"or moving them, to other windows. This can be done using the Windows menu, or ",
+"using the context menu, which pops up when right clicking on a tab. ",
 "\n\n",
 "You can switch to a tab by simply clicking on it, or you can use the keyboard. ",
 "The default keybindings to switch tabs (which are Ctrl+PageUp/-Down and Alt+Home, ",
@@ -3497,6 +3497,10 @@ static char * htxt_preferences [] = {
 "\n\n",
 "\01KSort Tabs Alphabetically\01I ",
 "\n\n",
+"\01A\01BShow Tooltips\01A\n",
+"\01IShow file name and path in a tooltip when moving the mouse pointer over a tab ",
+"(See Basic Operations -> \01QTabbed Editing\01I). ",
+"\n\n",
 "\01A\01BTerminate with Line Break on Save\01A\n",
 "\01ISome UNIX tools expect that files end with a line feed. If this option is ",
 "activated, NEdit will append one if required. ",
@@ -5474,4 +5478,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Jun  8, 2004\n";
+static const char * NEditVersion = "NEdit release of Jun 10, 2004\n";
