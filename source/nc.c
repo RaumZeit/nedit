@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.32 2002/12/10 13:16:16 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.33 2003/02/20 17:30:02 arnef Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -78,15 +78,16 @@ static const char CVSID[] = "$Id: nc.c,v 1.32 2002/12/10 13:16:16 edg Exp $";
 
 typedef struct
 {
-   char* org;
-   char* string;
+   char* shell;
+   char* serverRequest;
 } CommandLine;
 
 static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id);
 static int startServer(const char *message, const char *commandLine);
 static CommandLine processCommandLine(int argc, char** argv);
-static char *parseCommandLine(int argc, char **argv);
+static void parseCommandLine(int argc, char **arg, CommandLine *cmdLine);
 static void nextArg(int argc, char **argv, int *argIndex);
+static void copyCommandLineArg(CommandLine *cmdLine, const char *arg);
 static void printNcVersion(void);
 static Boolean findExistingServer(XtAppContext context,
                                   Window rootWindow,
@@ -300,12 +301,12 @@ int main(int argc, char **argv)
                                       serverExistsAtom);
 
     if (serverExists == False) {
-        startNewServer(context, rootWindow, commandLine.org, serverExistsAtom);
+        startNewServer(context, rootWindow, commandLine.shell, serverExistsAtom);
     }
 
     waitUntilRequestProcessed(context,
                               rootWindow,
-                              commandLine.string,
+                              commandLine.serverRequest,
                               serverRequestAtom);
 
     waitUntilFilesOpenedOrClosed(context,
@@ -313,8 +314,8 @@ int main(int argc, char **argv)
                                  serverExistsAtom);
 
     XtCloseDisplay(TheDisplay);
-    XtFree(commandLine.org);
-    XtFree(commandLine.string);
+    XtFree(commandLine.shell);
+    XtFree(commandLine.serverRequest);
     return 0;
 }
 
@@ -419,7 +420,7 @@ static void startNewServer(XtAppContext context,
        database to the command line for starting the server.  If -svrcmd
        appeared on the original command line, it was removed by
        CreatePreferencesDatabase before the command line was recorded
-       in commandLine.org. Moreover, if no server name was specified, it
+       in commandLine.shell. Moreover, if no server name was specified, it
        may have defaulted to the ClearCase view tag. */
     if (Preferences.serverName[0] != '\0') {
         strcat(commandLine, " -svrname ");
@@ -567,60 +568,18 @@ static int startServer(const char *message, const char *commandLineArgs)
 static CommandLine processCommandLine(int argc, char** argv)
 {
     CommandLine commandLine;
-    char *c, *outPtr;
     int i;
     int length = 0;
    
     for (i=1; i<argc; i++) {
     	length += 1 + strlen(argv[i])*4 + 2;
     }
-    commandLine.org = XtMalloc(length+1 + 9 + MAXPATHLEN);
-    outPtr = commandLine.org;
-#if defined(VMS) || defined(__EMX__)
-    /* Non-Unix shells don't want/need esc */
-    for (i=1; i<argc; i++) {
-        /* Don't pass macro commands at the command line. They are
-           communicated via properties and we don't want the commands
-           to be executed twice. */
-	if (strcmp(argv[i], "-do")) {
-	    for (c=argv[i]; *c!='\0'; c++) {
-		*outPtr++ = *c;
-	    }
-	    *outPtr++ = ' ';
-	} else {
-	    nextArg(argc, argv, &i);
-	}
-    }
-    *outPtr = '\0';
-#else
-    for (i=1; i<argc; i++) {
-        /* Don't pass macro commands at the command line. They are
-           communicated via properties and we don't want the commands
-           to be executed twice. */
-	if (strcmp(argv[i], "-do")) {
-	    *outPtr++ = '\'';
-	    for (c=argv[i]; *c!='\0'; c++) {
-		if (*c == '\'') {
-		    *outPtr++ = '\'';
-		    *outPtr++ = '\\';
-		}
-		*outPtr++ = *c;
-		if (*c == '\'') {
-		    *outPtr++ = '\'';
-		}
-	    }
-	    *outPtr++ = '\'';
-	    *outPtr++ = ' ';
-	} else {
-	    nextArg(argc, argv, &i);
-	}
-    }
-    *outPtr = '\0';
-#endif /* VMS */
+    commandLine.shell = XtMalloc(length+1 + 9 + MAXPATHLEN);
+    *commandLine.shell = '\0';
 
     /* Convert command line arguments into a command string for the server */
-    commandLine.string = parseCommandLine(argc, argv);
-    if (commandLine.string == NULL) {
+    parseCommandLine(argc, argv, &commandLine);
+    if (commandLine.serverRequest == NULL) {
         fprintf(stderr, "nc: Invalid commandline argument\n");
 	exit(EXIT_FAILURE);
     }
@@ -633,19 +592,26 @@ static CommandLine processCommandLine(int argc, char** argv)
 ** Converts command line into a command string suitable for passing to
 ** the server
 */
-static char *parseCommandLine(int argc, char **argv)
+static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 {
+#define MAX_RECORD_HEADER_LENGTH 38
     char name[MAXPATHLEN], path[MAXPATHLEN];
-    char *toDoCommand = "", *langMode = "", *geometry = "";
+    const char *toDoCommand = "", *langMode = "", *geometry = "";
     char *commandString, *outPtr;
     int lineNum = 0, read = 0, create = 0, iconic = 0, length = 0;
     int i, lineArg, nRead, charsWritten, opts = True;
+    int fileCount = 0;
     
     /* Allocate a string for output, for the maximum possible length.  The
        maximum length is calculated by assuming every argument is a file,
        and a complete record of maximum length is created for it */
     for (i=1; i<argc; i++) {
-    	length += 38 + strlen(argv[i]) + MAXPATHLEN;
+    	length += MAX_RECORD_HEADER_LENGTH + strlen(argv[i]) + MAXPATHLEN;
+    }
+    /* In case of no arguments, must still allocate space for one record header */
+    if (length < MAX_RECORD_HEADER_LENGTH)
+    {
+       length = MAX_RECORD_HEADER_LENGTH;
     }
     commandString = XtMalloc(length+1);
     
@@ -663,8 +629,10 @@ static char *parseCommandLine(int argc, char **argv)
     	    langMode = argv[i];
     	} else if (opts && (!strcmp(argv[i], "-g")  || 
 	                    !strcmp(argv[i], "-geometry"))) {
+	    copyCommandLineArg(commandLine, argv[i]);
     	    nextArg(argc, argv, &i);
     	    geometry = argv[i];
+	    copyCommandLineArg(commandLine, argv[i]);
     	} else if (opts && !strcmp(argv[i], "-read")) {
     	    read = 1;
     	} else if (opts && !strcmp(argv[i], "-create")) {
@@ -672,6 +640,7 @@ static char *parseCommandLine(int argc, char **argv)
     	} else if (opts && (!strcmp(argv[i], "-iconic") || 
 	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = 1;
+	    copyCommandLineArg(commandLine, argv[i]);
     	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineArg);
@@ -688,10 +657,13 @@ static char *parseCommandLine(int argc, char **argv)
     	} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noAsk"))) {
     	    ; /* Ignore resource-based arguments which are processed later */
     	} else if (opts && (!strcmp(argv[i], "-svrname") || 
-	                    !strcmp(argv[i], "-xrm") ||
-		            !strcmp(argv[i], "-svrcmd") || 
-	                    !strcmp(argv[i], "-display"))) {
+		            !strcmp(argv[i], "-svrcmd"))) {
     	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
+    	} else if (opts && (!strcmp(argv[i], "-xrm") ||
+	                    !strcmp(argv[i], "-display"))) {
+	    copyCommandLineArg(commandLine, argv[i]);
+    	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
+	    copyCommandLineArg(commandLine, argv[i]);
     	} else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
     	    printNcVersion();
 	    exit(EXIT_SUCCESS);
@@ -719,7 +691,8 @@ static char *parseCommandLine(int argc, char **argv)
 	    	outPtr = newCommandString + oldLength;
 	    	if (ParseFilename(nameList[j], name, path) != 0) {
 	           /* An Error, most likely too long paths/strings given */
-	           return NULL;
+	           commandLine->serverRequest = NULL;
+	           return;
 		}
     		strcat(path, name);
                 /* See below for casts */
@@ -733,13 +706,15 @@ static char *parseCommandLine(int argc, char **argv)
 
                 /* Create the file open atoms for the paths supplied */
                 addToFileList(path);
+	        fileCount++;
 	    }
 	    if (nameList != NULL)
 	    	free(nameList);
 #else
     	    if (ParseFilename(argv[i], name, path) != 0) {
 	       /* An Error, most likely too long paths/strings given */
-	       return NULL;
+	       commandLine->serverRequest = NULL;
+	       return;
 	    }
     	    strcat(path, name);
     	    /* SunOS 4 acc or acc and/or its runtime library has a bug
@@ -770,6 +745,7 @@ static char *parseCommandLine(int argc, char **argv)
 
             /* Create the file open atoms for the paths supplied */
             addToFileList(path);
+	    fileCount++;
 #endif /* VMS */
     	}
     }
@@ -777,9 +753,13 @@ static char *parseCommandLine(int argc, char **argv)
     VMSFileScanDone();
 #endif /*VMS*/
     
-    /* If there's an un-written -do command, write it with an empty file name */
-    if (toDoCommand[0] != '\0') {
-	sprintf(outPtr, "0 0 0 0 0 %d 0 0\n\n%n", (int) strlen(toDoCommand),
+    /* If there's an un-written -do command,
+     * or user has requested iconic state, but not provided a file name,
+     * create a server request with an empty file name and requested
+     * iconic state.
+     */
+    if (toDoCommand[0] != '\0' || fileCount == 0) {
+	sprintf(outPtr, "0 0 0 %d 0 %d 0 0\n\n%n", iconic, (int) strlen(toDoCommand),
 		&charsWritten);
 	outPtr += charsWritten;
 	strcpy(outPtr, toDoCommand);
@@ -790,7 +770,7 @@ static char *parseCommandLine(int argc, char **argv)
     }
     
     *outPtr = '\0';
-    return commandString;
+    commandLine->serverRequest = commandString;
 }
 
 
@@ -922,6 +902,40 @@ static void nextArg(int argc, char **argv, int *argIndex)
     (*argIndex)++;
 }
 
+/* Copies a given nc command line argument to the server startup command
+** line (-icon, -geometry, -xrm, ...) Special characters are protected from
+** the shell by escaping EVERYTHING with \ 
+** Note that the .shell string in the command line structure is large enough
+** to hold the escaped characters.
+*/
+static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
+{
+    const char *c;
+    char *outPtr = commandLine->shell + strlen(commandLine->shell);
+#if defined(VMS) || defined(__EMX__)
+    /* Non-Unix shells don't want/need esc */
+    for (c=arg; *c!='\0'; c++) {
+	*outPtr++ = *c;
+    }
+    *outPtr++ = ' ';
+    *outPtr = '\0';
+#else
+    *outPtr++ = '\'';
+    for (c=arg; *c!='\0'; c++) {
+	if (*c == '\'') {
+	    *outPtr++ = '\'';
+	    *outPtr++ = '\\';
+	}
+	*outPtr++ = *c;
+	if (*c == '\'') {
+	    *outPtr++ = '\'';
+	}
+    }
+    *outPtr++ = '\'';
+    *outPtr++ = ' ';
+    *outPtr = '\0';
+#endif /* VMS */
+}
 
 /* Print version of 'nc' */
 static void printNcVersion(void ) {

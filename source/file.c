@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.56 2003/02/15 02:33:27 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.57 2003/02/20 17:30:00 arnef Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -178,7 +178,9 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	window = CreateWindow(name, geometry, iconic);
     else {
     	window = inWindow;
-        RaiseShellWindow(window->shell);
+        if (!iconic) {
+            RaiseShellWindow(window->shell);
+        }
     }
     	
     /* Open the file */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.20 2002/10/29 15:49:21 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.21 2003/02/20 17:30:05 arnef Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -290,21 +290,7 @@ static void processServerCommandString(char *string)
     int lineNum, createFlag, readFlag, iconicFlag;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window;
-
-    /* If the command string is empty, put up an empty, Untitled window
-       (or just pop one up if it already exists) */
-    if (string[0] == '\0') {
-    	for (window=WindowList; window!=NULL; window=window->next)
-    	    if (!window->filenameSet && !window->fileChanged)
-    	    	break;
-    	if (window == NULL) {
-    	    EditNewFile(NULL, False, NULL, NULL);
-    	    CheckCloseDim();
-    	} else
-    	    XMapRaised(TheDisplay, XtWindow(window->shell));
-    	return;
-    }
-
+    
     /*
     ** Loop over all of the files in the command list
     */
@@ -346,9 +332,23 @@ static void processServerCommandString(char *string)
 	inPtr += geomLen;
 	*inPtr++ = '\0';
 	
-	/* An empty file name means: choose a random window for
-	   executing the -do macro upon */
+	/* An empty file name means: 
+	 *   put up an empty, Untitled window, or use an existing one
+	 *   choose a random window for executing the -do macro upon
+	 */
 	if (fileLen <= 0) {
+    	    for (window=WindowList; window!=NULL; window=window->next)
+    		if (!window->filenameSet && !window->fileChanged)
+    	    	    break;
+    	    if (window == NULL) {
+    		EditNewFile(NULL, iconicFlag, NULL, NULL);
+    		CheckCloseDim();
+    	    } else {
+	        if (!iconicFlag) {
+    		    XMapRaised(TheDisplay, XtWindow(window->shell));
+		}
+	    }
+
 	    if (*doCommand != '\0') {
                 WindowInfo *win = WindowList;
 		/* Starting a new command while another one is still running
