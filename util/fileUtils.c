@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.16 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.17 2001/11/26 14:54:40 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -58,13 +58,14 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.16 2001/11/18 19:02:58 arnef E
 
 static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
-static int compareThruSlash(char *string1, char *string2);
+static int compareThruSlash(const char *string1, const char *string2);
 static void copyThruSlash(char **toString, char **fromString);
 
 /*
 ** Decompose a Unix file name into a file name and a path
 */
-int ParseFilename(const char *fullname, char *filename, char *pathname)
+int
+ParseFilename(const char *fullname, char *filename, char *pathname)
 {
     int fullLen = strlen(fullname);
     int i, pathLen, fileLen;
@@ -111,28 +112,48 @@ int ParseFilename(const char *fullname, char *filename, char *pathname)
 
 #ifndef VMS
 
+
 /*
 ** Expand tilde characters which begin file names as done by the shell
+** If it doesn't work just out leave pathname unmodified.
+** This implementation is neither fast, nor elegant, nor ...
 */
-int ExpandTilde(char *pathname)
+int
+ExpandTilde(char *pathname)
 {
     struct passwd *passwdEntry;
-    char username[MAXPATHLEN], temp[MAXPATHLEN], *nameEnd;
+    char username[MAXPATHLEN], temp[MAXPATHLEN];
+    char *nameEnd;
+    int len_left;
     
     if (pathname[0] != '~')
 	return TRUE;
     nameEnd = strchr(&pathname[1], '/');
-    if (nameEnd == NULL)
+    if (nameEnd == NULL) {
 	nameEnd = pathname + strlen(pathname);
+    }
     strncpy(username, &pathname[1], nameEnd - &pathname[1]);
     username[nameEnd - &pathname[1]] = '\0';
-    if (username[0] == '\0')
+    /* We might consider to re-use the GetHomeDir() function,
+       but to keep the code more similar for both cases ... */
+    if (username[0] == '\0') {
     	passwdEntry = getpwuid(getuid());
-    else
+    }
+    else {
     	passwdEntry = getpwnam(username);
-    if (passwdEntry == NULL)
+    }
+    /* Really paranoid ... */
+    if ( (passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0'))
 	return FALSE;
-    sprintf(temp, "%s/%s", passwdEntry->pw_dir, nameEnd);
+
+    strcpy(temp, passwdEntry->pw_dir);
+    strcat(temp, "/");
+    len_left= sizeof(temp)-strlen(temp)-1;
+    if (len_left < strlen(nameEnd)) {
+      /* It won't work out */
+       return FALSE;
+    }
+    strcat(temp, nameEnd);
     strcpy(pathname, temp);
     return TRUE;
 }
@@ -151,7 +172,8 @@ int ExpandTilde(char *pathname)
  *   FALSE an error occured while trying to resolve the symlink, i.e.
  *         pathIn was no absolute path or the link is a loop.
  */
-int ResolvePath(const char * pathIn, char * pathResolved) 
+int
+ResolvePath(const char * pathIn, char * pathResolved) 
 {
     char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
     char *pathEnd;
@@ -196,7 +218,8 @@ int ResolvePath(const char * pathIn, char * pathResolved)
 }
 
     
-int NormalizePathname(char *pathname)
+int
+NormalizePathname(char *pathname)
 {
     char oldPathname[MAXPATHLEN];
 
@@ -227,7 +250,9 @@ int NormalizePathname(char *pathname)
     return CompressPathname(pathname);
 }
 
-int CompressPathname(char *pathname)
+
+int
+CompressPathname(char *pathname)
 {
     char buf[MAXPATHLEN+1];
     char *inPtr, *outPtr;
@@ -288,7 +313,8 @@ int CompressPathname(char *pathname)
     return TRUE;
 }
 
-static char *nextSlash(char *ptr)
+static char
+*nextSlash(char *ptr)
 {
     for(; *ptr!='/'; ptr++) {
     	if (*ptr == '\0')
@@ -297,13 +323,15 @@ static char *nextSlash(char *ptr)
     return ptr + 1;
 }
 
-static char *prevSlash(char *ptr)
+static char
+*prevSlash(char *ptr)
 {
     for(ptr -= 2; *ptr!='/'; ptr--);
     return ptr + 1;
 }
 
-static int compareThruSlash(char *string1, char *string2)
+static int
+compareThruSlash(const char *string1, const char *string2)
 {
     while (TRUE) {
     	if (*string1 != *string2)
@@ -315,7 +343,8 @@ static int compareThruSlash(char *string1, char *string2)
     }
 }
 
-static void copyThruSlash(char **toString, char **fromString)
+static void
+copyThruSlash(char **toString, char **fromString)
 {
     char *to = *toString;
     char *from = *fromString;
@@ -340,7 +369,8 @@ static void copyThruSlash(char **toString, char **fromString)
 /*
 ** Return the trailing 'n' no. of path components
 */
-const char* GetTrailingPathComponents(const char* path,
+const char
+*GetTrailingPathComponents(const char* path,
                                       int noOfComponents)
 {
     /* Start from the rear */
