@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.10 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.11 2001/08/27 09:08:07 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -69,13 +69,13 @@ static const char CVSID[] = "$Id: nc.c,v 1.10 2001/08/14 08:37:16 jlous Exp $";
 #define APP_CLASS "NEditClient"
 
 static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id);
-static void startServer(const char *message, const char *commandLine);
+static int startServer(const char *message, const char *commandLine);
 static char *parseCommandLine(int argc, char **argv);
 static const char *getUserName(void);
 static const char *getHostName(void);
 static void nextArg(int argc, char **argv, int *argIndex);
 
-Display *TheDisplay;
+static Display *TheDisplay;
 
 static const char cmdLineHelp[] =
 #ifndef VMS
@@ -110,6 +110,7 @@ static XrmOptionDescRec OpTable[] = {
     {"-svrname", ".serverName", XrmoptionSepArg, (caddr_t)NULL},
     {"-svrcmd", ".serverCommand", XrmoptionSepArg, (caddr_t)NULL},
 };
+
 
 int main(int argc, char **argv)
 {
@@ -228,8 +229,10 @@ int main(int argc, char **argv)
     if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0,
     	    INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems,
     	    &dummyULong, &propValue) != Success || nItems == 0) {
-    	startServer("No servers available, start one (yes)? ", commandLine);
-    	return 0;
+	int success;
+
+	success=startServer("No servers available, start one (yes)? ", commandLine);
+	return success;
     }
     XFree(propValue);
 
@@ -263,15 +266,22 @@ int main(int argc, char **argv)
 ** Xt timer procedure for timeouts on NEdit server requests
 */
 static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id)
-{    
-    startServer("No servers responding, start one (yes)? ", (char *)clientData);
-    exit(EXIT_SUCCESS);
+{   
+    int success;
+    
+    success=startServer("No servers responding, start one (yes)? ",
+            (char *)clientData);
+    if (success==0) {
+       exit(EXIT_SUCCESS);
+    } else {
+       exit(EXIT_FAILURE);
+    }
 }
 
 /*
 ** Prompt the user about starting a server, with "message", then start server
 */
-static void startServer(const char *message, const char *commandLineArgs)
+static int startServer(const char *message, const char *commandLineArgs)
 {
     char c, *commandLine;
 #ifdef VMS
@@ -280,16 +290,18 @@ static void startServer(const char *message, const char *commandLineArgs)
     struct dsc$descriptor_s *cmdDesc;
     char *nulDev = "NL:";
     struct dsc$descriptor_s *nulDevDesc;
-#endif /*VMS*/
+#else
+    int sysrc;
+#endif /* !VMS */
     
     /* prompt user whether to start server */
     if (!Preferences.autoStart) {
-	printf(message);
+	puts(message);
 	do {
     	    c = getc(stdin);
 	} while (c == ' ' || c == '\t');
 	if (c != 'Y' && c != 'y' && c != '\n')
-    	    return;
+    	    return 0;
     }
     
     /* start the server */
@@ -300,13 +312,17 @@ static void startServer(const char *message, const char *commandLineArgs)
     cmdDesc = NulStrToDesc(commandLine);	/* build command descriptor */
     nulDevDesc = NulStrToDesc(nulDev);		/* build "NL:" descriptor */
     spawn_sts = lib$spawn(cmdDesc, nulDevDesc, 0, &spawnFlags, 0,0,0,0,0,0,0,0);
+    XtFree(commandLine);
     if (spawn_sts != SS$_NORMAL) {
 	fprintf(stderr, "Error return from lib$spawn: %d\n", spawn_sts);
 	fprintf(stderr, "Nedit server not started.\n");
-	return;
+	return (-1);
+    } else {
+       FreeStrDesc(cmdDesc);
+       return 0;
     }
-    FreeStrDesc(cmdDesc);
-#elif defined(__EMX__)  /* OS/2 */
+#else
+#if defined(__EMX__)  /* OS/2 */
     /* Unfortunately system() calls a shell determined by the environment
        variables COMSPEC and EMXSHELL. We have to figure out which one */
     {
@@ -321,18 +337,26 @@ static void startServer(const char *message, const char *commandLineArgs)
     base=_getname(strdup(sh));
     _remext(base);
     if (stricmp (base, "cmd") == 0 || stricmp (base, "4os2") == 0)
-       sprintf(commandLine, "start /MIN %s %s", Preferences.serverCmd, commandLineArgs);
+       sprintf(commandLine, "start /MIN %s %s",
+               Preferences.serverCmd, commandLineArgs);
     else
-       sprintf(commandLine, "%s %s &", Preferences.serverCmd, commandLineArgs);
-    system(commandLine);
+       sprintf(commandLine, "%s %s &", 
+               Preferences.serverCmd, commandLineArgs);
     }
 #else /* Unix */
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
     	    strlen(commandLineArgs) + 3);
     sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
-    system(commandLine);
 #endif
+
+    sysrc=system(commandLine);
     XtFree(commandLine);
+    
+    if (sysrc==0)
+       return 0;
+    else
+       return (-1);
+#endif /* !VMS */
 }
 
 /*
@@ -536,6 +560,7 @@ static const char *getHostName(void)
     
     rc=uname(&nameStruct);
     if (rc<0) {
+       /* Shouldn't ever happen, so we better exit() here */
        perror("nc: uname() failed ");
        exit(EXIT_FAILURE);
     }
@@ -550,8 +575,8 @@ static void nextArg(int argc, char **argv, int *argIndex)
 #ifdef VMS
 	    *argv[*argIndex] = '/';
 #endif /*VMS*/
-    	fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex],
-    	        cmdLineHelp);
+    	fprintf(stderr, "nc: %s requires an argument\n%s",
+	        argv[*argIndex], cmdLineHelp);
     	exit(EXIT_FAILURE);
     }
     (*argIndex)++;
