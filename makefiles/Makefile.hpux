@@ -1,0 +1,10 @@
+CC=cc
+AR=ar
+# CFLAGS=-O -Ae -I/usr/include/X11R6 -I/usr/include/Motif1.2_R6
+CFLAGS=-O -Aa -I/usr/include/X11R5 -I/usr/include/Motif1.2 -D_HPUX_SOURCE
+ARFLAGS=-urs
+# LIBS=-Wl,-L /usr/lib/X11R6 -L /usr/lib/Motif1.2_R6 -lm -lXm -lXt -lX11
+LIBS=-L /usr/lib/X11R5 -L /usr/lib/Motif1.2 -lm -lXm -lXt -lX11
+BIGGER_STRINGS = -Wp,-H20000
+
+include Makefile.common

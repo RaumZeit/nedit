@@ -1,0 +1,9 @@
+# Makefile for UHC Unix
+#
+# Thanks to peter@stella.nmti.co
+CC=/usr/ucb/cc
+AR=ar
+CFLAGS=-O
+LIBS=-lm -lXm -lXt -lX11 -lgen
+
+include Makefile.common

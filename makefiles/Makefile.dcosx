@@ -1,0 +1,9 @@
+# Makefile for Pyramid
+#
+# Thanks to Koen D'Hondt and patrick@wombat.logica.co.uk
+CC=cc
+AR=ar
+CFLAGS=-O
+LIBS= -lXm -lXt -lX11
+
+include Makefile.common

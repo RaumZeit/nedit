@@ -1,0 +1,13 @@
+#
+# Makefile for BSD/386
+#
+# Thanks to Eric Johnson and Kurt Knochner
+CC=gcc2
+AR=ar
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+CFLAGS=-O2 -m486 -DUSE_LPR_PRINT_CMD -I/usr/X11/include
+# LIBS=-lXm -lXt -lX11
+LIBS= -L/usr/X11/lib -lXm -lXt -lXext -lX11 -lSM -lICE -lipc
+ARFLAGS=-ur
+
+include Makefile.common

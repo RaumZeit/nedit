@@ -1,0 +1,9 @@
+# Makefile for Convex
+#
+# Thanks to Stephane Bortzmeyer, Conservatoire National des Arts et Metiers
+CC=/bin/cc
+AR=/bin/ar
+ARFLAGS = ur
+CFLAGS= -O3 -nv
+LIBS= -L/usr/lib/X11 -lXm -lXt -lX11
+include Makefile.common

@@ -1,0 +1,8 @@
+#Makefile for ReliantUNIX-N Version 5.44 (SINIX)
+CC=cc
+AR=ar
+CFLAGS=-O -DUSE_DIRENT
+LIBS=-L/usr/lib/netlib -lm -lXm -lXpm -lXext -lXt -lSM -lICE -lX11 -lsocket -lns
+l -ltcpip -lstraddr -lnsl
+
+include Makefile.common

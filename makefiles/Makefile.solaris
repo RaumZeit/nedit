@@ -1,0 +1,18 @@
+#CC=gcc
+CC=/opt/SUNWspro/bin/cc
+AR=ar
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+# For Solaris 2.4, add -DDONT_USE_GLOB
+# On older Solaris systems, Motif may be in /opt/SUNWmotif or even in
+# /usr/local.  Some Solaris versions require explicit -I/usr/include
+# as the first include directory.
+CFLAGS=-O -I/usr/openwin/include -I/usr/dt/include \
+    	-DUSE_DIRENT -DROWCOLPATCH -DNO_XMIM -DUSE_ACCESS
+#CFLAGS=-O -I/usr/openwin/include -I/opt/SUNWmotif/include -DUSE_DIRENT
+ARFLAGS=-urs
+LIBS= -L/usr/lib -L/usr/openwin/lib -L/usr/dt/lib -lm -lXm -lXt -lX11 \
+    	-lsocket -lnsl  -R /usr/openwin/lib -R /usr/dt/lib -R /usr/ucblib
+#LIBS= -L/usr/openwin/lib -L/opt/SUNWmotif/lib -lm -lXm \
+#	-lXt -lX11 -lgen -R /usr/openwin/lib
+
+include Makefile.common

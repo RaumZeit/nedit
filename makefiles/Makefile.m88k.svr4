@@ -1,0 +1,9 @@
+# Makefile for Motorola SVR4 m88k
+#
+# Thanks to Mark Scott, Motorola Computer Group
+CC=cc
+AR=ar
+CFLAGS=-O -s -DUSE_DIRENT -DSVR4 -DMOTOROLA
+LIBS= -lm -lXm -lXt -lX11 -lgen 
+
+include Makefile.common

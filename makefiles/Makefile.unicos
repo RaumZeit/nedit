@@ -1,0 +1,10 @@
+# Makefile for Cray Unicos
+#
+# Thanks to Osman Buyukisik
+CC=cc
+AR=ar
+CFLAGS=-O -DUSE_DIRENT -DUNICOS
+BIGGER_STRINGS=
+LIBS=  -lXm -lXt -lX11 -lm
+
+include Makefile.common

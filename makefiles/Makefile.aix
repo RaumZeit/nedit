@@ -1,0 +1,13 @@
+CC=cc
+AR=ar
+# Note that -O is conspicuously absent from CFLAGS below due to an IBM
+# optimizer bug (which affects only textDisp.c).  For improved
+# performance you can optimize all of the other files by specifically
+# modifying Makefile.common.
+#
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+CFLAGS=-DIBM  -DIBM_FWRITE_BUG -DUSE_DIRENT
+ARFLAGS=-urs
+LIBS= -lm -lXm -lXt -lX11 -lPW
+
+include Makefile.common

@@ -1,0 +1,16 @@
+# Makefile for Concurrent SVR4 using PowerMax OS 4.2 or later
+#  
+# Provided by Robert Yunk of the Boeing Company
+
+CC=cc
+AR=ar
+CFLAGS=-O -DUSE_DIRENT -DEDITRES -DUSE_ACCESS
+ARFLAGS=-urs
+LIBS=-lm -lXm -lXmu -lXt -lX11 -lnsl -lsocket -lXp -lSM -lICE -lXext
+
+include Makefile.common
+
+# Installation Notes:
+#   Remember to delete or update the old version of the app-defaults
+#   file(s) or you will have accelerator keys missing and File Open
+#   and File Save As errors.

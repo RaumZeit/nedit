@@ -1,0 +1,8 @@
+CC=/usr/ccs/bin/cc
+AR=ar
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+CFLAGS=-O -I/usr/X/include -DUSE_DIRENT -DROWCOLPATCH
+
+LIBS= -L/usr/X/lib -lm -lXm -lXt -lX11 -lgen -lnsl
+
+include Makefile.common
