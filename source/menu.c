@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.98 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.99 2004/03/25 17:37:32 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3868,19 +3868,6 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
     else { \
         (newState) = !(oValue); \
     }
-
-static void showTabBarAP(Widget w, XEvent *event, String *args,
-    Cardinal *nArgs)
-{
-    WindowInfo *window = WidgetToWindow(w);
-    Boolean newState;
-    
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, 
-            GetShowTabBar(window), "show_tabs");
-
-    XmToggleButtonSetState(window->showTabBarItem, newState, False);
-    ShowTabBar(window, newState);
-}
 
 static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs)

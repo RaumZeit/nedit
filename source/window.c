@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.132 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.133 2004/03/25 17:37:32 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -145,7 +145,6 @@ static Widget manageToolBars(Widget toolBarsForm);
 static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
-static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer *clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int cols, int emTabDist, char *delimiters, int wrapMargin,
@@ -4572,14 +4571,6 @@ static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
        the tab. For now. */
     XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0,
     	    closeTabProc, GetTopDocument(mainWin));
-}
-
-/*
-** callback to tab (button).
-*/
-static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData)
-{
-    hideTooltip(w);
 }
 
 /*
