@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.35 2001/08/27 18:45:39 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.36 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2068,7 +2068,7 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
 
     /* Allocate a new string to hold the data */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(length + 1);
+    result->val.str = AllocString((int)length + 1);
 
     /* Copy the clipboard contents to the string */
     if (XmClipboardRetrieve(TheDisplay, XtWindow(window->shell), "STRING",

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.14 2001/08/17 14:09:00 tringali Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.15 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -59,7 +59,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.14 2001/08/17 14:09:00 tringali Exp
 #define MAX_TAG_LEN 256
 #define MAXDUPTAGS 100
 
-#define STRSAVE(a)  ((a)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
+#define STRSAVE(a)  ((a!=NULL)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
  
  
 enum searchDirection {FORWARD, BACKWARD};

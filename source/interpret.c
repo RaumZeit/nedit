@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.17 2001/08/23 14:59:14 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.18 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -118,6 +118,7 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
+static SparseArrayEntry *allocateSparseArrayEntry(void);
 /*#define DEBUG_ASSEMBLY*/
 #ifdef DEBUG_ASSEMBLY
 static void disasm(Program *prog, int nInstr);
@@ -357,16 +358,19 @@ void StartLoopAddrList(void)
 {
     addLoopAddr(NULL);
 }
+
 void AddBreakAddr(Inst *addr)
 {
     addLoopAddr(addr);
     *addr = NEEDS_BREAK;
 }
+
 void AddContinueAddr(Inst *addr)
 {   
     addLoopAddr(addr);
     *addr = NEEDS_CONTINUE;
 }
+
 static void addLoopAddr(Inst *addr)
 {
     if (LoopStackPtr > &LoopStack[LOOP_STACK_SIZE-1]) {
@@ -375,6 +379,7 @@ static void addLoopAddr(Inst *addr)
     }
     *LoopStackPtr++ = addr;
 }
+
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr)
 {
     while (True) {
@@ -718,7 +723,7 @@ char *AllocString(int length)
     return mem + sizeof(char *) + 1;
 }
 
-SparseArrayEntry *AllocateSparseArrayEntry(void)
+static SparseArrayEntry *allocateSparseArrayEntry(void)
 {
     SparseArrayEntryWrapper *mem;
 
@@ -1764,7 +1769,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString)
 */
 static rbTreeNode *arrayEmptyAllocator(void)
 {
-    SparseArrayEntry *newNode = AllocateSparseArrayEntry();
+    SparseArrayEntry *newNode = allocateSparseArrayEntry();
     if (newNode) {
         newNode->key = NULL;
         newNode->value.tag = NO_TAG;
@@ -1778,7 +1783,7 @@ static rbTreeNode *arrayEmptyAllocator(void)
 */
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src)
 {
-    SparseArrayEntry *newNode = AllocateSparseArrayEntry();
+    SparseArrayEntry *newNode = allocateSparseArrayEntry();
     if (newNode) {
         newNode->key = ((SparseArrayEntry *)src)->key;
         newNode->value = ((SparseArrayEntry *)src)->value;
@@ -2327,4 +2332,4 @@ static void disasm(Program *prog, int nInstr)
     	    printf("%x\n", prog->code[i]);
     }
 }
-#endif
+#endif /* ifdef DEBUG_ASSEMBLY */

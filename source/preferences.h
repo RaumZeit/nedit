@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.12 2001/08/25 15:58:54 amai Exp $ */
+/* $Id: preferences.h,v 1.13 2001/08/28 11:29:21 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -116,8 +116,10 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 void SetLangModeMenu(Widget optMenu, const char *modeName);
 Widget CreateLanguageModeSubMenu(WindowInfo *window, Widget parent, char *name,
     	char *label, char mnemonic);
+void SetPrefFindReplaceUsesSelection(int state);
 int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);
+void SetPrefStickyCaseSenseBtn(int state);
 void SetPrefBeepOnSearchWrap(int state);
 int GetPrefBeepOnSearchWrap(void);
 #ifdef REPLACE_SCOPE

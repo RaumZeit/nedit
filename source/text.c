@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.16 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.17 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -625,7 +625,7 @@ static XtResource resources[] = {
       NULL},
 };
 
-TextClassRec textClassRec = {
+static TextClassRec textClassRec = {
      /* CoreClassPart */
   {
     (WidgetClass) &xmPrimitiveClassRec,  /* superclass       */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.36 2001/08/25 12:09:17 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.37 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -4150,7 +4150,7 @@ void ReadNEditDB(void)
        comments and are thrown away.  Lines are subject to cursory checking,
        then just copied to the Open Previous file menu list */
     while (True) {
-    	if (fgets(line, MAXPATHLEN, fp) == NULL) {
+    	if (fgets(line, (int)MAXPATHLEN, fp) == NULL) {
     	    fclose(fp);
     	    return;					 /* end of file */
     	}

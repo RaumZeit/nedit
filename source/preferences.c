@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.32 2001/08/25 15:58:54 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.33 2001/08/28 11:29:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1169,6 +1169,11 @@ void SetPrefSearchWraps(int state)
 int GetPrefStickyCaseSenseBtn(void)
 {
     return PrefData.stickyCaseSenseBtn;
+}
+
+void SetPrefStickyCaseSenseBtn(int state)
+{
+    setIntPref(&PrefData.stickyCaseSenseBtn, state);
 }
 
 int GetPrefSearchWraps(void)
