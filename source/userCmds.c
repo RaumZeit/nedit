@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.18 2001/08/25 12:09:17 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.19 2001/10/27 20:19:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1612,8 +1612,10 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
        repeat any operation, and to embed macros within eachother at any
        level, however, a call here with a macro running means that THE USER
        is explicitly invoking another macro via the menu or an accelerator. */
-    if (window->macroCmdData != NULL)
+    if (window->macroCmdData != NULL) {
+	XBell(TheDisplay, 0);
 	return;
+    }
     
     /* get the index of the macro command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
@@ -1632,6 +1634,12 @@ static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     int index;
     char *params[1];
 
+    /* Same remark as for macro menu commands (see above). */
+    if (window->macroCmdData != NULL) {
+	XBell(TheDisplay, 0);
+	return;
+    }
+    
     /* get the index of the macro command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
     index = (int)userData - 10;

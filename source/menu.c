@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.37 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.38 2001/10/27 20:19:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -3109,6 +3109,22 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     		"NEdit: macro_menu_command requires item-name argument\n");
     	return;
     }
+    /* Don't allow users to execute a macro command from the menu (or accel)
+       if there's already a macro command executing, UNLESS the macro is
+       directly called from another one.  NEdit can't handle
+       running multiple, independent uncoordinated, macros in the same
+       window.  Macros may invoke macro menu commands recursively via the
+       macro_menu_command action proc, which is important for being able to
+       repeat any operation, and to embed macros within eachother at any
+       level, however, a call here with a macro running means that THE USER
+       is explicitly invoking another macro via the menu or an accelerator,
+       UNLESS the macro event marker is set */
+    if (event->xany.send_event != MACRO_EVENT_MARKER) {
+	if (WidgetToWindow(w)->macroCmdData != NULL) {
+	    XBell(TheDisplay, 0);
+            return;
+	}
+    }
     DoNamedMacroMenuCmd(WidgetToWindow(w), args[0]);
 }
 
@@ -3118,6 +3134,13 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr,
     		"NEdit: bg_menu_command requires item-name argument\n");
     	return;
+    }
+    /* Same remark as for macro menu commands (see above). */
+    if (event->xany.send_event != MACRO_EVENT_MARKER) {
+	if (WidgetToWindow(w)->macroCmdData != NULL) {
+	    XBell(TheDisplay, 0);
+            return;
+	}
     }
     DoNamedBGMenuCmd(WidgetToWindow(w), args[0]);
 }
