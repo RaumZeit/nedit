@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.29 2001/04/06 09:49:55 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.30 2001/04/09 21:43:21 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1281,16 +1281,30 @@ this menu are:\n\
 \n\
 	    Verbose - Presents search results in dialog\n\
 	        form, asks before wrapping a search back\n\
-		around the beginning (or end) of the file.\n\
+		around the beginning (or end) of the file\n\
+                (unless Beep On Search Wrap is turned on).\n\
 \n\
 	    Wrap Around - Search and Replace operations wrap\n\
 	        around the beginning (or end) of the file.\n\
+\n\
+	    Beep On Search Wrap - Beep when Search and\n\
+                Replace operations wrap around the \n\
+                beginning (or end) of the file (only if\n\
+                Wrap Around is turned on).\n\
 \n\
 	    Keep Dialogs Up - Don't pop down Replace and\n\
 	        Find boxes after searching.\n\
 \n\
 	    Default Search Style - Initial setting for\n\
 	        search type in Find and Replace dialogs.\n\
+\n\
+	    Default Replace Scope - Initial setting for the\n\
+	        scope in the Replace/Find dialog, when a \n\
+                selection exists. It can be either\n\
+                \"In Window\", \"In Selection\", or \"Smart\".\n\
+                \"Smart\" results in \"In Window\" if the\n\
+                size of the selection is smaller than\n\
+                1 line, and to \"In Selection\" otherwise.\n\
 \n\
     Syntax Highlighting -- Program and configure enhanced\n\
         text display for new or supported languages (See\n\
@@ -2472,6 +2486,16 @@ resource names, see your .nedit file):\n\
         the Find and Replace dialogs are automatically\n\
         loaded with the contents of the primary selection.\n\
 \n\
+    nedit.stickyCaseSenseButton: True -- Controls if the\n\
+        \"Case Sensitive\" buttons in the Find and Replace\n\
+        dialogs and the incremental search bar maintain\n\
+        a separate state for literal and regular expression\n\
+        searches. Moreover, when set to True, by default\n\
+        literal searches are case insensitive and regular\n\
+        expression searches are case sensitive. When set\n\
+        to False, the \"Case Sensitive\" buttons are\n\
+        independent of the \"Regular Expression\" toggle.\n\
+\n\
     nedit.multiClickTime: (system specific) -- Maximum\n\
         time in milliseconds allowed between mouse clicks\n\
         within double and triple click actions.\n\
@@ -3232,9 +3256,10 @@ replace_in_string(string, search_for, replace_with, [type]) -- \
 Replaces all occurrences of a search string in a string with a \
 replacement string.  Arguments are 1: string to search in, 2: \
 string to search for, 3: replacement string.  Argument 4 is an \
-optional search type, one of \"literal\", \"case\" or \"regex\".  The \
-default search type is \"literal\".  Returns a new string with all of \
-the replacements done, or an empty string (\"\") if no occurrences \
+optional search type, one of \"literal\", \"case\", \"word\", \
+\"caseWord\", \"regex\", or \"regexNoCase\".  The default search \
+type is \"literal\".  Returns a new string with all of the \
+replacements done, or an empty string (\"\") if no occurrences \
 were found.\n\
 \n\
 replace_range(start, end, string) -- Replaces all of the text in the \
@@ -3252,8 +3277,9 @@ the selection.  Arguments are: 1: string to search for, 2: starting \
 position. Optional arguments may include the strings: \"wrap\" to \
 make the search wrap around the beginning or end of the string, \
 \"backward\" or \"forward\" to change the search direction (\"forward\" \
-is the default), \"literal\", \"case\" or \"regex\" to change the search \
-type (default is \"literal\").  Returns the starting position of the \
+is the default), \"literal\", \"case\", \"word\", \"caseWord\",\
+\"regex\", or \"regexNoCase\" to change the search  type \
+(default is \"literal\").  Returns the starting position of the \
 match, or -1 if nothing matched. also returns the ending position \
 of the match in search_end\n\
 \n\
@@ -3263,9 +3289,10 @@ search_string(string, search_for, start, [search_type, direction]) \
 position.  Optional arguments may include the strings: \"wrap\" to \
 make the search wrap around the beginning or end of the string, \
 \"backward\" or \"forward\" to change the search direction (\"forward\" \
-is the default), \"literal\", \"case\" or \"regex\" to change the search \
-type (default is \"literal\").  Returns the starting position of the \
-match, or -1 if nothing matched.  Also returns the ending position \
+is the default), \"literal\", \"case\", \"word\", \"caseWord\", \
+\"regex\", or \"regexNoCase\" to change the search type (default \
+is \"literal\").  Returns the starting position of the match, \
+or -1 if nothing matched.  Also returns the ending position \
 of the match in $search_end\n\
 \n\
 select(start, end) -- Selects (with the primary selection) text in \
@@ -3440,13 +3467,15 @@ Some notes on argument types above:\n\
  		    \n\
   search-direction  Either \"forward\" or \"backward\"\n\
 \n\
-  search-type	    Either \"literal\", \"case\", or \"regex\"\n\
+  search-type	    Either \"literal\", \"case\", \"word\", \
+	            \"caseWord\", \"regex\", or \"regexNoCase\"\n\
 \n\
-  non-regex-search-type	    Either \"literal\" or \"case\"\n\
+  non-regex-search-type	 Either \"literal\". \"case\", \"word\", \
+	                 or \"caseWord\"\n\
 \n\
   search-wrap	    Either \"wrap\" or \"nowrap\"\n\
 \n\
-  consider-case	 Either \"case\" or \"nocase\"\n\
+  consider-case	    Either \"case\" or \"nocase\"\n\
 \n\
   keep-dialog	    Either \"keep\" or \"nokeep\"\n\
 \n\
