@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.60 2004/02/19 06:23:13 tksoh Exp $
+.. $Id: help.etx,v 1.61 2004/02/21 14:25:27 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2284,6 +2284,15 @@ Macro Subroutines
 
   These variables are read-only and can not be changed.
 
+**$1**, **$2**, **$3**, **$4**, **$5**, **$6**, **$7**, **$8**, **$9**
+**$args**[~expr~]
+**$n_args**
+  Argument information. The first 9 arguments (if there are that many) can
+  be referenced as read-only values using the shorthand form. All arguments
+  can be accessed as values in the **$args** array, using a numeric index
+  starting at 1. The total number of arguments received by a function is
+  given by **$n_args** or **$args[]**.
+
 **$active_pane**
   Index of the current pane.
 
@@ -2837,7 +2846,7 @@ Highlighting Information
 
   The colors use the names specified in the color definitions for the style.
   These will either be names matching those the X server recognises, or RGB
-  (red/green/black) specifications.
+  (red/green/blue) specifications.
 
   If 'style_name' is invalid, an empty array is returned.
 
@@ -5290,12 +5299,15 @@ Mailing Lists
   Communication among and with NEdit developers.  
   Developers should also subscribe to the discuss list.
 
-  To subscribe, send mail to <majordomo@@nedit.org> with one or more of the 
-  following in the body of the message:
+  To subscribe, send mail to one of the following addresses:
 
-    subscribe announce
-    subscribe discuss
-    subscribe develop
+    announce-request@nedit.org
+    discuss-request@nedit.org
+    develop-request@nedit.org
+
+  with the body consisting of the single word
+
+    subscribe
    ----------------------------------------------------------------------
 
 Problems/Defects

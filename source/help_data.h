@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 18, 2004 (Do NOT edit!)
+                 Generated on Feb 21, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -2114,6 +2114,15 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "These variables are read-only and can not be changed. ",
 "\n\n",
+"\01A\01B$1\01A, \01B$2\01A, \01B$3\01A, \01B$4\01A, \01B$5\01A, \01B$6\01A, \01B$7\01A, \01B$8\01A, \01B$9\01A\n",
+"\01B$args\01A[\01Cexpr\01A]\n",
+"\01B$n_args\01A\n",
+"\01IArgument information. The first 9 arguments (if there are that many) can ",
+"be referenced as read-only values using the shorthand form. All arguments ",
+"can be accessed as values in the \01J$args\01I array, using a numeric index ",
+"starting at 1. The total number of arguments received by a function is ",
+"given by \01J$n_args\01I or \01J$args[]\01I. ",
+"\n\n",
 "\01A\01B$active_pane\01A\n",
 "\01IIndex of the current pane. ",
 "\n\n",
@@ -2646,7 +2655,7 @@ static char * htxt_hiliteInfo [] = {
 "\n",
 "The colors use the names specified in the color definitions for the style. ",
 "These will either be names matching those the X server recognises, or RGB ",
-"(red/green/black) specifications. ",
+"(red/green/blue) specifications. ",
 "\n\n",
 "If 'style_name' is invalid, an empty array is returned. ",
 "\n\n",
@@ -5051,12 +5060,15 @@ static char * htxt_mailing_list [] = {
 "Communication among and with NEdit developers.  ",
 "Developers should also subscribe to the discuss list. ",
 "\n\n",
-"To subscribe, send mail to <majordomo@nedit.org> with one or more of the ",
-"following in the body of the message: ",
+"To subscribe, send mail to one of the following addresses: ",
 "\n\n",
-"\01A    subscribe announce\n",
-"    subscribe discuss\n",
-"    subscribe develop\n",
+"\01A    announce-requestnedit.org\n",
+"    discuss-requestnedit.org\n",
+"    develop-requestnedit.org\n",
+"\01I\n",
+"with the body consisting of the single word ",
+"\n\n",
+"\01A    subscribe\n",
 NULL
 };
 
@@ -5395,4 +5407,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Feb 18, 2004\n";
+static const char * NEditVersion = "NEdit 5.5DEV\nFeb 21, 2004\n";
