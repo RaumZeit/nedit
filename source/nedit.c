@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.90 2005/02/14 22:18:54 yooden Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.91 2005/03/03 14:49:37 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -372,10 +372,10 @@ static const char cmdLineHelp[] =
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
 	      [-import file] [-background color] [-foreground color]\n\
-	      [-tabbed] [-untabbed] [-group] [-V|-version]\n\
+	      [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n\
 	      [--] [file...]\n";
 #else
-"";
+"[Sorry, no on-line help available.]\n"; /* Why is that ? */
 #endif /*VMS*/
 
 int main(int argc, char **argv)
@@ -606,6 +606,10 @@ int main(int argc, char **argv)
 	} else if (opts && (!strcmp(argv[i], "-V") || 
 	                    !strcmp(argv[i], "-version"))) {
 	    PrintVersion();
+	    exit(EXIT_SUCCESS);
+	} else if (opts && (!strcmp(argv[i], "-h") ||
+			    !strcmp(argv[i], "-help"))) {
+	    fprintf(stderr, "%s", cmdLineHelp);
 	    exit(EXIT_SUCCESS);
 	} else if (opts && (*argv[i] == '-')) {
 #ifdef VMS

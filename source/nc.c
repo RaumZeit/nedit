@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.45 2004/09/30 20:51:05 n8gray Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.46 2005/03/03 14:49:37 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -111,7 +111,7 @@ static Atom noAtom = (Atom)(-1);
 
 static const char cmdLineHelp[] =
 #ifdef VMS
-"";
+"[Sorry, no on-line help available.]\n"; /* Why is that ? */
 #else
 "Usage:  nc [-read] [-create]\n"
 "           [-line n | +n] [-do command] [-lm languagemode]\n"
@@ -119,7 +119,7 @@ static const char cmdLineHelp[] =
 "           [-ask] [-noask] [-timeout seconds]\n"
 "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
 "           [-tabbed] [-untabbed] [-group] [-wait]\n"
-"           [-V | -version]\n"
+"           [-V | -version] [-h|-help]\n"
 "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
 "           [--] [file...]\n";
 #endif /*VMS*/
@@ -687,6 +687,10 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 	    copyCommandLineArg(commandLine, argv[i]);
     	} else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
     	    printNcVersion();
+	    exit(EXIT_SUCCESS);
+	} else if (opts && (!strcmp(argv[i], "-h") ||
+			    !strcmp(argv[i], "-help"))) {
+	    fprintf(stderr, "%s", cmdLineHelp);
 	    exit(EXIT_SUCCESS);
     	} else if (opts && (*argv[i] == '-')) {
 #ifdef VMS

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.88 2005/02/18 11:10:30 edg Exp $
+.. $Id: help.etx,v 1.89 2005/03/03 14:49:37 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3834,8 +3834,9 @@ Preferences
   If external file modification warnings are requested, also check the file
   contents iso. only the modification date.
 
-  ~Exit Warnings~ -
-  Ask before exiting when two or more files are open in an NEdit session.
+  ~On Exit~ -
+  Ask before exiting when two or more files are open in an NEdit session
+  or before closing a window with two or more tabs.
 
 **Initial Window Size**
   Default size for new windows.
@@ -4743,7 +4744,7 @@ NEdit Command Line
       [-**font** font] [-**lm** languagemode] [-**geometry** geometry]
       [-**iconic**] [-**noiconic**] [-**display** [host]:server[.screen]
       [-**xrm** resourcestring] [-**svrname** name] [-**import** file]
-      [-**background** color] [-**foreground** color]
+      [-**background** color] [-**foreground** color] [-**h**|-**help**]
       [-**tabbed**] [-**untabbed**] [-**group**] [-**V**|-**version**]
       [--] [file...]
 
@@ -4859,6 +4860,9 @@ NEdit Command Line
 
 **-version**
   Prints out the NEdit version information. The -V option is synonymous.
+  
+**-help**
+  Prints out the NEdit command line help. The -h option is synonymous.
   
 **--**
   Treats all subsequent arguments as file names, even if they start with a

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 18, 2005 (Do NOT edit!)
+                 Generated on Mar 3, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -3644,8 +3644,9 @@ static char * htxt_preferences [] = {
 "If external file modification warnings are requested, also check the file ",
 "contents iso. only the modification date. ",
 "\n\n",
-"\01KExit Warnings\01I - ",
-"Ask before exiting when two or more files are open in an NEdit session. ",
+"\01KOn Exit\01I - ",
+"Ask before exiting when two or more files are open in an NEdit session ",
+"or before closing a window with two or more tabs. ",
 "\n\n",
 "\01A\01BInitial Window Size\01A\n",
 "\01IDefault size for new windows. ",
@@ -4542,7 +4543,7 @@ static char * htxt_command_line [] = {
 "      [-\01Bfont\01A font] [-\01Blm\01A languagemode] [-\01Bgeometry\01A geometry]\n",
 "      [-\01Biconic\01A] [-\01Bnoiconic\01A] [-\01Bdisplay\01A [host]:server[.screen]\n",
 "      [-\01Bxrm\01A resourcestring] [-\01Bsvrname\01A name] [-\01Bimport\01A file]\n",
-"      [-\01Bbackground\01A color] [-\01Bforeground\01A color]\n",
+"      [-\01Bbackground\01A color] [-\01Bforeground\01A color] [-\01Bh\01A|-\01Bhelp\01A]\n",
 "      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01Bgroup\01A] [-\01BV\01A|-\01Bversion\01A]\n",
 "      [--] [file...]\n",
 "\01I\n",
@@ -4658,6 +4659,9 @@ static char * htxt_command_line [] = {
 "\n\n",
 "\01A\01B-version\01A\n",
 "\01IPrints out the NEdit version information. The -V option is synonymous. ",
+"\n\n",
+"\01A\01B-help\01A\n",
+"\01IPrints out the NEdit command line help. The -h option is synonymous. ",
 "\n\n",
 "\01A\01B--\01A\n",
 "\01ITreats all subsequent arguments as file names, even if they start with a ",
@@ -5645,4 +5649,4 @@ Href H_R [] =
     { NULL,       5794, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Feb 18, 2005\n";
+static const char * NEditVersion = "NEdit release of Mar  3, 2005\n";

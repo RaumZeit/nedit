@@ -1,4 +1,4 @@
-# $Id: nc.pod,v 1.6 2004/07/21 11:32:04 yooden Exp $
+# $Id: nc.pod,v 1.7 2005/03/03 14:49:37 edg Exp $
 =pod
 
 =head1 NAME
@@ -14,7 +14,7 @@ nc [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>]
    [B<-display> I<[host]:server[.screen]>] 
    [B<-timeout> I<seconds>] [B<-wait>] [B<-xrm> I<resourcestring>] 
    [B<-tabbed>] [B<-untabbed>] [B<-group>] 
-   [B<-V> | B<-version>] [B<-->] [file...]
+   [B<-V> | B<-version>] [B<-h> | B<-help>] [B<-->] [file...]
 
 =head1 DESCRIPTION
 
@@ -138,6 +138,10 @@ Open all subsequent files as tabs in a new window.
 
 Prints version and build information, to be mentioned when reporting bugs and
 problems. 
+
+=item  B<-h>, B<-help> 
+
+Prints the command line help and then exits.
 
 =item B<-->
 
