@@ -277,15 +277,6 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
                 XmNforeground, textD->calltipFGPixel,
                 XmNbackground, textD->calltipBGPixel,
                 NULL );
-                
-        /* Workaround for Button-2 drag crash on Solaris: disable dragging. */
-        {
-            static const char dragTranslations[] = "<Btn2Down>: \n";
-            static XtTranslations trans_table = NULL;
-            if (trans_table == NULL)
-               trans_table = XtParseTranslationTable(dragTranslations);
-            XtOverrideTranslations(textD->calltipW, trans_table);
-        }
     }
     
     /* Set the text on the label */
