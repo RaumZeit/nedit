@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.72 2003/04/08 08:54:40 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.73 2003/04/24 08:26:41 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2931,8 +2931,18 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int lineNum, column, position, curCol;
     
-    if (*nArgs == 0 || StringToLineAndCol( args[0], &lineNum, &column ) == -1) {
-    	fprintf(stderr,"nedit: goto_line_number action requires line and/or column number\n");
+    /* Accept various formats:
+          [line]:[column]   (menu action)
+          line              (macro call)
+          line, column      (macro call) */
+    if ( *nArgs == 0 || 
+         *nArgs > 2  ||
+        (*nArgs == 1 && 
+            StringToLineAndCol( args[0], &lineNum, &column ) == -1) ||
+        (*nArgs == 2 && 
+           (!StringToNum(args[0], &lineNum) || 
+            !StringToNum(args[1], &column)) ) ) {
+        fprintf(stderr,"nedit: goto_line_number action requires line and/or column number\n");
     	return;
     }
     /* User specified column, but not line number */
