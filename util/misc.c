@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.69 2004/08/09 22:20:00 n8gray Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.70 2004/10/15 13:57:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -682,6 +682,14 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist,
     al = (ArgList)XtMalloc(sizeof(Arg) * ((*argcount) + 3));
     if ((*argcount) != 0)
     	memcpy(al, arglist, sizeof(Arg) * (*argcount));
+
+    /* For non-Lesstif versions, the visual, depth, and colormap are now set 
+       globally via the resource database. So strictly spoken, it is no 
+       longer necessary to set them explicitly for every shell widget. 
+       
+       For Lesstif, however, this doesn't work. Luckily, Lesstif handles 
+       non-default visuals etc. properly for its own shells and 
+       we can take care of things for our shells (eg, call tips) here. */
     XtSetArg(al[*argcount], XtNvisual, visual); (*argcount)++;
     XtSetArg(al[*argcount], XtNdepth, depth); (*argcount)++;
     XtSetArg(al[*argcount], XtNcolormap, colormap); (*argcount)++;

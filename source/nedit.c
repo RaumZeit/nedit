@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.83 2004/09/02 08:49:56 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.84 2004/10/15 13:57:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -864,14 +864,40 @@ static void patchResourcesForVisual(void)
     if (!usingDefaultVisual)
     {
 #ifndef LESSTIF_VERSION
+          /* 
+             For non-Lesstif versions, we have to put non-default visuals etc.
+             in the resource data base to make sure that all (shell) widgets
+             inherit them, especially Motif's own shells (eg, drag icons).
+             
+             For Lesstif, this doesn't work, but luckily, Lesstif handles 
+             non-default visuals etc. properly for its own shells and 
+             we can take care of things for our shells (eg, call tips) through
+             our shell creation wrappers in misc.c. 
+          */
+            
+          XrmValue value;
+          value.addr = (XPointer)&visual;
+          value.size = sizeof(visual);
+          XrmPutResource(&db, "*visual", "Visual", &value);
+          value.addr = (XPointer)&map;
+          value.size = sizeof(map);
+          XrmPutResource(&db, "*colormap", "Colormap", &value);
+          value.addr = (XPointer)&depth;
+          value.size = sizeof(depth);
+          XrmPutResource(&db, "*depth", "Int", &value);
+
         /* Drag-and-drop visuals do not work well when using a different
            visual.  One some systems, you'll just get a funny-looking icon
            (maybe all-black) but on other systems it crashes with a BadMatch
            error.  This appears to be an OSF Motif bug.  It would be nicer 
            to just disable the visual itself, instead of the entire drag
-           operation. */
-
-        XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
+           operation.
+          
+           Update: this is no longer necessary since all problems with 
+           non-default visuals should now be solved. 
+           
+           XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
+         */
 #endif
 
         for (i = 1; i < XtNumber(fallbackResources); ++i)
