@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.16 2001/04/09 18:46:10 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.17 2001/04/09 22:12:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -109,7 +109,7 @@ static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
 static void findAndActivateMnemonic(Widget w, unsigned int keycode);
 static void addAccelGrabs(Widget topWidget, Widget w);
 static void addAccelGrab(Widget topWidget, Widget w);
-static int parseAccelString(char *string, KeySym *keysym,
+static int parseAccelString(const char *string, KeySym *keysym,
 	unsigned int *modifiers);
 static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
@@ -273,7 +273,7 @@ void RealizeWithoutForcingPosition(Widget shell)
 ** visual (particularly *background), and these must be avoided by widgets
 ** which are allowed to handle any visual.
 */
-void FindBestVisual(Display *display, char *appName, char *appClass,
+void FindBestVisual(Display *display, const char *appName, char *appClass,
 	Visual **visual, int *depth, Colormap *colormap)
 {
     char rsrcName[256], rsrcClass[256], *valueString, *type, *endPtr;
@@ -1551,7 +1551,7 @@ static void addAccelGrab(Widget topWidget, Widget w)
 ** Read a Motif accelerator string and translate it into a keysym + modifiers.
 ** Returns TRUE if the parse was successful, FALSE, if not.
 */
-static int parseAccelString(char *string, KeySym *keySym,
+static int parseAccelString(const char *string, KeySym *keySym,
 	unsigned int *modifiers)
 {
 #define N_MODIFIERS 12
@@ -1565,7 +1565,7 @@ static int parseAccelString(char *string, KeySym *keySym,
     char modStr[MAX_ACCEL_LEN];
     char evtStr[MAX_ACCEL_LEN];
     char keyStr[MAX_ACCEL_LEN];
-    char *c, *evtStart, *keyStart;
+    const char *c, *evtStart, *keyStart;
     int i;
     
     if (strlen(string) >= MAX_ACCEL_LEN)
