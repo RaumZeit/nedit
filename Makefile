@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2001/02/26 23:38:02 edg Exp $
+# $Id: Makefile,v 1.6 2001/07/28 19:53:48 tringali Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor
@@ -15,6 +15,7 @@ SHELL=/bin/sh
 
 all:
 	@echo "Please specify target:"
+	@echo "(For example, type \"make linux\" for a Linux system.)"
 	@(cd makefiles && ls -C Makefile* | sed -e 's/Makefile.//g')
 
 .DEFAULT:
