@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.80 2004/08/09 16:48:10 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.81 2004/08/10 22:28:19 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -57,6 +57,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.80 2004/08/09 16:48:10 edg Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 
 #ifndef NO_XMIM
 #include <X11/Xlocale.h>
