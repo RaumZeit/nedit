@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.19 2003/03/05 23:51:01 n8gray Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.20 2003/03/12 18:03:53 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -290,8 +290,6 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont,
 		n++;
 	XtSetArg(args[n], XmNforeground, sampleFG); n++;
 	XtSetArg(args[n], XmNbackground, sampleBG); n++;
-	/* fprintf(stderr, "%d, %d\n", sampleFG, sampleBG);
-	XtSetArg(args[n], XmNfontList, ctrlBlk.oldFontList); n++; */
 	dispField = XtCreateManagedWidget(" ", xmTextFieldWidgetClass, form, 
 								       args, n);
 
@@ -915,9 +913,6 @@ static void	propFontToggleAction(Widget widget,
 
 		setupScrollLists(NONE, *ctrlBlk);
 
-		n = 0;
-		XtSetArg(args[n], XmNvalue, ""); n++;
-		XtSetValues(ctrlBlk->dispField, args, n);
 		XmTextSetString(ctrlBlk->fontNameField, "");
 	}
 }
@@ -970,9 +965,9 @@ static void	sizeToggleAction(Widget widget,
 static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on, 
         XmFontList *fontList)
 {
-    int	n=0;
+    int n=0;
     Pixel bgOff, fgOff;
-    Arg	args[6];
+    Arg args[4];
 
     XtSetArg(args[n], XmNeditable, turn_on); n++;
     XtSetArg(args[n], XmNcursorPositionVisible, turn_on); n++;
@@ -983,13 +978,9 @@ static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on,
         } else {
             XtSetArg(args[n], XmNfontList, *fontList); n++;
         }
-        XtSetArg(args[n], XmNbackground, ctrlBlk->sampleBG); n++;
         XtSetArg(args[n], XmNforeground, ctrlBlk->sampleFG); n++;
     } else {
-        XtVaGetValues(ctrlBlk->okButton, XmNbackground, &bgOff, NULL);
-        XtVaGetValues(ctrlBlk->okButton, XmNforeground, &fgOff, NULL);
-        XtSetArg(args[n], XmNbackground, bgOff); n++;
-        XtSetArg(args[n], XmNforeground, fgOff); n++;
+        XtSetArg(args[n], XmNforeground, ctrlBlk->sampleBG); n++;
     }
     XtSetValues(ctrlBlk->dispField, args, n);
     /* Make sure the sample area gets resized if the font size changes */
