@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.41 2002/01/05 16:45:25 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.42 2002/01/05 16:52:36 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4393,6 +4393,14 @@ static void saveSearchHistory(WindowInfo *window, const char *searchString,
     }
     currentItemIsIncremental = isIncremental;
     
+    if (NHist==0) {
+    	for (w=WindowList; w!=NULL; w=w->next) {
+       	XtSetSensitive(w->findAgainItem, True);
+    		XtSetSensitive(w->replaceFindAgainItem, True);
+    		XtSetSensitive(w->replaceAgainItem, True);
+    	}
+    }
+
     /* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
        some space, free the entry that's about to be overwritten */
     if (NHist == MAX_SEARCH_HISTORY) {
@@ -4401,12 +4409,6 @@ static void saveSearchHistory(WindowInfo *window, const char *searchString,
     } else
     	NHist++;
 
-    for (w=WindowList; w!=NULL; w=w->next) {
-    	XtSetSensitive(w->findAgainItem, True);
-    	XtSetSensitive(w->replaceFindAgainItem, True);
-    	XtSetSensitive(w->replaceAgainItem, True);
-    }
-    
     /* Allocate and copy the search and replace strings and add them to the
        circular buffers at HistStart, bump the buffer pointer to next pos. */
     sStr = XtMalloc(strlen(searchString) + 1);
