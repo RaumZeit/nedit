@@ -1,11 +1,11 @@
-$ ! $Id: comnedit.com,v 1.5 2001/07/11 15:21:52 amai Exp $
+$ ! $Id: comnedit.com,v 1.6 2001/08/12 15:45:03 amai Exp $
 $ !
 $ ! VMS procedure to compile and link modules for NEdit
 $ !
 $ SET NOVERIFY
 $ ON ERROR THEN EXIT
 $ ! COMPILE := CC/DEBUG/NOOPTIMIZE
-$ COMPILE := CC/DEFINE=(NO_FCHMOD,USE_ACCESS)
+$ COMPILE := CC/DEFINE=(USE_ACCESS)
 $ ! For some systems: COMPILE := CC /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 $ DEFINE SYS DECC$LIBRARY_INCLUDE
 $ DEFINE XM DECW$INCLUDE
