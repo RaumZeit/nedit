@@ -1,6 +1,6 @@
 # Makefile for NEdit text editor documentation
 #
-#  $Id: Makefile,v 1.5 2003/11/22 13:03:38 edg Exp $
+#  $Id: Makefile,v 1.6 2003/11/24 17:41:34 edg Exp $
 #
 #  NEdit help documentation and internal help code using one common
 #  source, help.etx, a Structure Enhanced TEXT document.
@@ -84,7 +84,7 @@ all: help doc man
 
 clean:
 	@ echo "Removing generated NEdit documentation..."
-	@ rm -rf help nedit.html html nedit.doc .version
+	@ rm -rf help nedit.html html nedit.doc .version nedit.man nc.man
 
 #
 # FAQ targets. Requires an XSLT parser and processor, such as Java with the
