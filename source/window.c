@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.162 2004/07/21 11:32:06 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.163 2004/07/23 18:07:56 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3763,6 +3763,7 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
     char *delimiters;
     Widget text;
     selection sel;
+    textDisp *textD, *newTextD;
     
     /* transfer the primary selection */
     memcpy(&sel, &orgWin->buffer->primary, sizeof(selection));
@@ -3792,6 +3793,7 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
     window->nPanes = orgWin->nPanes;
     
     /* clone split panes, if any */
+    textD = ((TextWidget)window->textArea)->text.textD;
     if (window->nPanes) {
 	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
     	XtUnmanageChild(window->splitPane);
@@ -3811,8 +3813,17 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
     		AttachHighlightToWidget(text, window);
 	    XtManageChild(text);
 	    window->textPanes[i] = text;
-	}
 
+            /* Fix up the colors */
+            newTextD = ((TextWidget)text)->text.textD;
+            XtVaSetValues(text, XmNforeground, textD->fgPixel,
+                    XmNbackground, textD->bgPixel, NULL);
+            TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, 
+                    textD->selectFGPixel, textD->selectBGPixel,
+                    textD->highlightFGPixel,textD->highlightBGPixel,
+                    textD->lineNumFGPixel, textD->cursorFGPixel);
+	}
+        
 	/* Set the minimum pane height in the new pane */
 	UpdateMinPaneHeights(window);
 
