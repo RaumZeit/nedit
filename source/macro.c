@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.76 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.77 2004/01/06 06:25:16 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4538,7 +4538,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
         if (end > maxpos) end = maxpos;
         if (start > end) {int temp = start; start = end; end = temp;}
 
-        if (!RangesetAddBetween(targetRangeset, start, end)) {
+        if ((start != end) && !RangesetAddBetween(targetRangeset, start, end)) {
             M_FAILURE("Failed to add range in %s");
         }
     }
