@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.22 2003/03/13 09:11:20 n8gray Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.23 2003/03/20 13:05:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * fontsel.c -- Nirvana Font Selector                                           *
@@ -885,9 +885,6 @@ static void propFontToggleAction(Widget widget,
                      xfselControlBlkType *ctrlBlk, 
                      XmToggleButtonCallbackStruct *call_data)
 {
-    int     n;
-    Arg     args[2];
-
     if (call_data->reason == XmCR_VALUE_CHANGED)
     {
         if (ctrlBlk->showPropFonts == PREF_FIXED)
@@ -963,7 +960,6 @@ static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on,
         XmFontList *fontList)
 {
     int n=0;
-    Pixel bgOff, fgOff;
     Arg args[4];
 
     XtSetArg(args[n], XmNeditable, turn_on); n++;
