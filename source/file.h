@@ -1,9 +1,8 @@
-/* $Id: file.h,v 1.8 2001/08/25 15:24:52 amai Exp $ */
+/* $Id: file.h,v 1.9 2001/10/15 17:28:16 slobasso Exp $ */
 /* flags for EditExistingFile */
 #define CREATE 1
 #define SUPPRESS_CREATE_WARN 2
-#define FORCE_READ_ONLY 4
-#define PREF_READ_ONLY 8
+#define PREF_READ_ONLY 4
 
 #define PROMPT_SBC_DIALOG_RESPONSE 0
 #define YES_SBC_DIALOG_RESPONSE 1

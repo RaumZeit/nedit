@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.18 2001/08/18 12:24:59 amai Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.19 2001/10/15 17:28:16 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 	    if (checkDoMacroArg(argv[i]))
     	    	toDoCommand = argv[i];
     	} else if (!strcmp(argv[i], "-read")) {
-    	    editFlags |= FORCE_READ_ONLY;
+    	    editFlags |= PREF_READ_ONLY;
     	} else if (!strcmp(argv[i], "-create")) {
     	    editFlags |= SUPPRESS_CREATE_WARN;
     	} else if (!strcmp(argv[i], "-line")) {

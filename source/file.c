@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.31 2001/09/17 14:06:24 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.32 2001/10/15 17:28:16 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -140,7 +140,7 @@ void EditNewFile(char *geometry, int iconic, const char *languageMode,
 **	CREATE: 		If file is not found, (optionally) prompt the
 **				user whether to create
 **	SUPPRESS_CREATE_WARN	When creating a file, don't ask the user
-**	FORCE_READ_ONLY		Make the file read-only regardless
+**	PREF_READ_ONLY		Make the file read-only regardless
 **
 ** If languageMode is passed as NULL, it will be determined automatically
 ** from the file extension or file contents.
@@ -225,7 +225,6 @@ void RevertToSaved(WindowInfo *window)
     strcpy(path, window->path);
     RemoveBackupFile(window);
     ClearUndoList(window);
-    openFlags |= IS_FORCE_LOCKED(window->lockReasons) ? FORCE_READ_ONLY : 0;
     openFlags |= IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0;
     if (!doOpen(window, name, path, openFlags)) {
     	CloseWindow(window);
@@ -323,9 +322,6 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
             if ((flags & PREF_READ_ONLY) != 0) {
                 SET_USER_LOCKED(window->lockReasons, TRUE);
             }
-            if ((flags & FORCE_READ_ONLY) != 0) {
-                SET_FORCE_LOCKED(window->lockReasons, TRUE);
-            }
 	    UpdateWindowReadOnly(window);
 	    return TRUE;
 	} else {
@@ -415,9 +411,6 @@ it, but not modify or re-save its contents.", "View", "Cancel");
     /* Set window title and file changed flag */
     if ((flags & PREF_READ_ONLY) != 0) {
         SET_USER_LOCKED(window->lockReasons, TRUE);
-    }
-    if ((flags & FORCE_READ_ONLY) != 0) {
-        SET_FORCE_LOCKED(window->lockReasons, TRUE);
     }
     if (IS_PERM_LOCKED(window->lockReasons)) {
 	window->fileChanged = FALSE;

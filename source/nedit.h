@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.17 2001/05/31 08:49:52 amai Exp $ */
+/* $Id: nedit.h,v 1.18 2001/10/15 17:28:16 slobasso Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -81,8 +81,7 @@ enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
 /* This handles all the different reasons files can be locked */
 #define USER_LOCKED_BIT     0
 #define PERM_LOCKED_BIT     1
-#define FORCE_LOCKED_BIT    2
-#define TOO_MUCH_BINARY_DATA_LOCKED_BIT 3
+#define TOO_MUCH_BINARY_DATA_LOCKED_BIT 2
 
 #define LOCKED_BIT_TO_MASK(bitNum) (1 << (bitNum))
 #define SET_LOCKED_BY_REASON(reasons, onOrOff, reasonBit) ((onOrOff) ? \
@@ -93,8 +92,6 @@ enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
 #define SET_USER_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, USER_LOCKED_BIT)
 #define IS_PERM_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
 #define SET_PERM_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, PERM_LOCKED_BIT)
-#define IS_FORCE_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(FORCE_LOCKED_BIT)) != 0)
-#define SET_FORCE_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, FORCE_LOCKED_BIT)
 #define IS_TMBD_LOCKED(reasons) (((reasons) & LOCKED_BIT_TO_MASK(TOO_MUCH_BINARY_DATA_LOCKED_BIT)) != 0)
 #define SET_TMBD_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, TOO_MUCH_BINARY_DATA_LOCKED_BIT)
 

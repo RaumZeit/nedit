@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.9 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.10 2001/10/15 17:28:16 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -321,7 +321,7 @@ static void processServerCommandString(char *string)
 	
 	/* Process the filename by looking for the files in an
 	   existing window, or opening if they don't exist */
-	editFlags = (readFlag ? FORCE_READ_ONLY : 0) | CREATE |
+	editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE |
 		(createFlag ? SUPPRESS_CREATE_WARN : 0);
 	ParseFilename(fullname, filename, pathname);
     	window = FindWindowWithFile(filename, pathname);
