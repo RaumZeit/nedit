@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.6 2002/04/19 16:22:52 slobasso Exp $ */
+/* $Id: text.h,v 1.7 2002/06/20 21:32:32 slobasso Exp $ */
 #ifndef  Text_H
 #define  Text_H
 
@@ -120,4 +120,5 @@ int TextLastVisiblePos(Widget w);
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
+void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 #endif

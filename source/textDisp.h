@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.9 2002/04/19 16:22:53 slobasso Exp $ */
+/* $Id: textDisp.h,v 1.10 2002/06/20 21:32:32 slobasso Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -9,6 +9,12 @@ typedef struct {
     Boolean underline;
     XFontStruct *font;
 } styleTableEntry;
+
+typedef struct graphicExposeTranslationEntry {
+    int horizontal;
+    int vertical;
+    struct graphicExposeTranslationEntry *next;
+} graphicExposeTranslationEntry;
 
 typedef void (*unfinishedStyleCBProc)();
 
@@ -46,8 +52,6 @@ typedef struct _textDisp {
     					   maintaining absTopLineNum even if
 					   it isn't needed for line # display */
     int horizOffset;			/* Horizontal scroll pos. in pixels */
-    int visibility;			/* Window visibility (see XVisibility
-    					   event) */
     int nStyles;			/* Number of entries in styleTable */
     styleTableEntry *styleTable;    	/* Table of fonts and colors for
     	    	    	    	    	   coloring/syntax-highlighting */
@@ -80,6 +84,7 @@ typedef struct _textDisp {
     int modifyingTabDist;		/* Whether tab distance is being
     					   modified */
     Boolean pointerHidden;              /* true if the mouse pointer is hidden */
+    graphicExposeTranslationEntry *graphicsExposeQueue;
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
@@ -139,3 +144,6 @@ void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
 void TextDMaintainAbsLineNum(textDisp *textD, int state);
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
+void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
+Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
+void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
