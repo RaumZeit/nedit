@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.29 2002/08/14 19:20:31 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.30 2002/08/19 07:22:17 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1178,6 +1178,10 @@ int TextDMoveUp(textDisp *textD, int absolute)
     
     /* if a preferred column wasn't aleady established, establish it */
     textD->cursorPreferredCol = column;
+    
+    /* Redraw any visible calltip */
+    TextDRedrawCalltip(textD, 0);
+    
     return True;
 }
 int TextDMoveDown(textDisp *textD, int absolute)
@@ -1206,6 +1210,9 @@ int TextDMoveDown(textDisp *textD, int absolute)
     	newPos = min(newPos, TextDEndOfLine(textD, nextLineStartPos, True));
     TextDSetInsertPosition(textD, newPos);
     textD->cursorPreferredCol = column;
+    
+    /* Redraw any visible calltip */
+    TextDRedrawCalltip(textD, 0);
     return True;
 }
 
@@ -3434,6 +3441,8 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     if( textD->calltipAnchored ) {
         /* Put it at the anchor position */
         if (!TextDPositionToXY(textD, textD->calltipPos, &int_x, &int_y))
+            /* This XY position is offscreen.  Bail out. (maybe we should kill
+                the tip in this case?) */
             return;
         int_y += lineHeight>>1;
     } else {
