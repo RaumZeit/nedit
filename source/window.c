@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.62 2002/08/12 21:21:36 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.63 2002/08/15 19:03:38 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -438,6 +438,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
+            XmNresizable, False,    /*  */
             NULL);
     
     /* A separate display of the line/column number */
@@ -450,6 +451,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtraversalOn, False,
             XmNtopAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_FORM,
+            XmNbottomAttachment, XmATTACH_FORM, /*  */
             NULL);
     XmStringFree(s1);
     
@@ -970,10 +972,17 @@ void ShowStatsLine(WindowInfo *window, int state)
 static void showStats(WindowInfo *window, int state)
 {
     if (state) {
+        Dimension ht;
+
         XtVaSetValues(window->iSearchForm,
                 XmNbottomAttachment, XmATTACH_NONE, NULL);
         XtManageChild(window->statsLineForm);
         showStatsForm(window, True);
+        
+        /* workaround for Lesstif (0.93.0, maybe others) to reveal the 
+            statsline */
+        XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
+        XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
     } else {
         XtUnmanageChild(window->statsLineForm);
         XtVaSetValues(window->iSearchForm,
@@ -1929,54 +1938,33 @@ void UpdateStatsLine(WindowInfo *window)
                     window->filename, format, window->buffer->length);
     }
     
-    /* Update the line/column number */
-    xmslinecol = XmStringCreateSimple(slinecol);
-    XtVaSetValues( window->statsLineColNo, 
-            XmNlabelString, xmslinecol, NULL );
-    XmStringFree(xmslinecol);
-    
-    /* Workaround for an OpenMotif bug that keeps the statsAreaForm from being
-       redrawn */
-    statform = XtParent(window->statsLineForm);
-    XtVaSetValues(statform, XmNshadowType, XmSHADOW_IN, NULL);
-    XtVaSetValues(statform, XmNshadowType, XmSHADOW_OUT, NULL);
-    /* Another solution would be to send an expose event, but I don't know
-       how I would fabricate one of those. */
-    /*XtDispatchEventToWidget(XtParent(window->statsLineForm), ???);*/
-    
-    /* No need to go on if there's a special message being displayed */
-    if (window->modeMessageDisplayed) {
-        /* Keep the height of the line/col display equal to the stats line */
-        XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
-        XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
-        XtFree(string);
-        return;
-    }
-    /* Change the text in the stats line */
+    /* Don't clobber the line if there's a special message being displayed */
+    if (!window->modeMessageDisplayed) {
+        /* Change the text in the stats line */
 #ifdef SGI_CUSTOM
-    /* don't show full pathname, just dir and filename (+ byte info) */
-    smid = strchr(string, '/'); 
-    if ( smid != NULL ) {
-        sleft = smid;
-        sright = strrchr(string, '/'); 
-        while (strcmp(smid, sright)) {
-                sleft = smid;
-                smid = strchr(sleft + 1, '/');
-        }
-        XmTextReplace(statW, 0, XmTextGetLastPosition(statW), sleft + 1);
-    } else
-        XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
+        /* don't show full pathname, just dir and filename (+ byte info) */
+        smid = strchr(string, '/'); 
+        if ( smid != NULL ) {
+            sleft = smid;
+            sright = strrchr(string, '/'); 
+            while (strcmp(smid, sright)) {
+                    sleft = smid;
+                    smid = strchr(sleft + 1, '/');
+            }
+            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), sleft + 1);
+        } else
+            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 #else
-    XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
+        XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 #endif
-
-    /* Keep the height of the line/col display equal to the stats line.  This
-        seems to be the only way to keep the line/col numbers horizontally
-        aligned with left side of the statsline */
-    XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
-    XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
-
+    }
     XtFree(string);
+    
+    /* Update the line/col display */
+    xmslinecol = XmStringCreateSimple(slinecol);
+    XtVaSetValues(window->statsLineColNo,
+            XmNlabelString, xmslinecol, NULL);
+    XmStringFree(xmslinecol);
 }
 
 static Boolean currentlyBusy = False;

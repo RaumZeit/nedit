@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.47 2002/07/26 21:39:09 n8gray Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.48 2002/08/15 19:03:38 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -688,6 +688,9 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     
     /* If name has changed, language mode may have changed as well */
     DetermineLanguageMode(window, False);
+    
+    /* Update the stats line with the new filename */
+    UpdateStatsLine(window);
 
     return retVal;
 }
