@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.11 2001/04/13 22:58:10 slobasso Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.12 2001/04/18 16:12:08 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -476,33 +476,25 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
 }
 
 /*
-** Automatically create mnemonics for a widget.  Traverse all it's
-** children.  If the child is a push button, snag the first unused letter
-** and make that the mnemonic.  This is useful for DialogF dialogs which
-** can have arbitrary text in the buttons.
+** Only used by createMnemonics(Widget w)
 */
-
-static void createMnemonics(Widget w)
+static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
 {
     WidgetList children;
     int        numChildren, i;
-    static Boolean mnemonicUsed[UCHAR_MAX];
 
-    if (XtIsShell(w))
-        memset(mnemonicUsed, FALSE, sizeof mnemonicUsed / sizeof *mnemonicUsed);
-            
     XtVaGetValues(w,
                   XmNchildren,    &children,
                   XmNnumChildren, &numChildren,
                   NULL);
 
-    for (i=0; i<numChildren; i++)
+    for (i = 0; i < numChildren; i++)
     {
         Widget child = children[i];
         
         if (XtIsComposite(child))
         {
-            createMnemonics(child);
+            recurseCreateMnemonics(child, mnemonicUsed);
         }
         else if (XtIsSubclass(child, xmPushButtonWidgetClass) ||
                  XtIsSubclass(child, xmPushButtonGadgetClass))
@@ -512,22 +504,39 @@ static void createMnemonics(Widget w)
             int c;
             
             XtVaGetValues(child, XmNlabelString, &xmslabel, NULL);
-            XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label);
-
-            /* Scan through the string to see if the label is already used */            
-            for (c = 0; c < strlen(label); c++)
+            if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label))
             {
-                char lc = tolower(label[c]);
-
-                if (!mnemonicUsed[lc])
+                /* Scan through the string to see if the label is already used */            
+                int labelLen = strlen(label);
+                for (c = 0; c < labelLen; c++)
                 {
-                    mnemonicUsed[lc] = TRUE;
-                    XtVaSetValues(child, XmNmnemonic, label[c], NULL);
-                    break;
+                    unsigned char lc = tolower((unsigned char)label[c]);
+
+                    if (!mnemonicUsed[lc])
+                    {
+                        mnemonicUsed[lc] = TRUE;
+                        XtVaSetValues(child, XmNmnemonic, lc, NULL);
+                        break;
+                    }
                 }
+
+                XtFree(label);
             }
-                
-            XtFree(label);
         }
     }
+}
+
+/*
+** Automatically create mnemonics for a widget.  Traverse all it's
+** children.  If the child is a push button, snag the first unused letter
+** and make that the mnemonic.  This is useful for DialogF dialogs which
+** can have arbitrary text in the buttons.
+*/
+
+static void createMnemonics(Widget w)
+{
+    Boolean mnemonicUsed[UCHAR_MAX + 1];
+    
+    memset(mnemonicUsed, FALSE, sizeof mnemonicUsed / sizeof *mnemonicUsed);
+    recurseCreateMnemonics(w, mnemonicUsed);
 }
