@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.89 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.90 2004/02/20 09:27:21 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1191,23 +1191,23 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,NULL);
     XtSetSensitive(window->closePaneItem, False);
 
-	btn = createMenuSeparator(menuPane, "sep01", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-	window->detachDocumentItem = createMenuItem(menuPane, "detachBuffer",
-    		"Detach Tab", 'D', doActionCB, "detach_document", SHORT);
-    	XtSetSensitive(window->detachDocumentItem, False);
-	
-	window->attachDocumentItem = createMenuItem(menuPane, "attachDocument",
-    		"Attach Tab...", 'A', doActionCB, "attach_document_dialog", SHORT);
-    	XtSetSensitive(window->attachDocumentItem, False);
-	btn = createMenuSeparator(menuPane, "sep0", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-	createMenuItem(menuPane, "nextDocument",
-    		"Next Tab", 'N', doActionCB, "next_document", SHORT);
-	createMenuItem(menuPane, "prevDocument",
-    		"Previous Tab", 'P', doActionCB, "previous_document", SHORT);
-	createMenuItem(menuPane, "lastDocument",
-    		"Last Viewed Tab", 'o', doActionCB, "last_document", SHORT);
+    btn = createMenuSeparator(menuPane, "sep01", SHORT);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    window->detachDocumentItem = createMenuItem(menuPane, "detachBuffer",
+    	    "Detach Tab", 'D', doActionCB, "detach_document", SHORT);
+    XtSetSensitive(window->detachDocumentItem, False);
+
+    window->attachDocumentItem = createMenuItem(menuPane, "attachDocument",
+    	    "Attach Tab...", 'A', doActionCB, "attach_document_dialog", SHORT);
+    XtSetSensitive(window->attachDocumentItem, False);
+    btn = createMenuSeparator(menuPane, "sep0", SHORT);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    createMenuItem(menuPane, "nextDocument",
+    	    "Next Tab", 'N', doActionCB, "next_document", SHORT);
+    createMenuItem(menuPane, "prevDocument",
+    	    "Previous Tab", 'P', doActionCB, "previous_document", SHORT);
+    createMenuItem(menuPane, "lastDocument",
+    	    "Last Viewed Tab", 'L', doActionCB, "last_document", SHORT);
 
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
