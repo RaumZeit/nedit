@@ -1,5 +1,5 @@
-# $Id: Makefile.linux,v 1.12 2004/10/18 15:54:10 yooden Exp $
-CC=distcc
+# $Id: Makefile.linux,v 1.13 2004/10/18 16:05:04 yooden Exp $
+CC=cc
 AR=ar
 
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
@@ -17,11 +17,11 @@ AR=ar
 # To test if the Motif library exports the runtime version
 # add -DHAVE__XMVERSIONSTRING to CFLAGS
 #
-CFLAGS=-g -O2 -Wall -pedantic -I/usr/X11R6/include -DHAVE__XMVERSIONSTRING -DUSE_DIRENT -DUSE_LPR_PRINT_CMD
+CFLAGS=-O -I/usr/X11R6/include -DUSE_DIRENT -DUSE_LPR_PRINT_CMD
 
 ARFLAGS=-urs
 
-LIBS= -L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXp -lXmu -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
+LIBS= -L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXp -lXpm -lXext -lXt -lSM -lICE -lX11 -lm
 
 include Makefile.common
 
