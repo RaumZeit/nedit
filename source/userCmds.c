@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.15 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.16 2001/08/15 08:56:33 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -64,6 +64,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.15 2001/08/14 08:37:16 jlous Ex
 #include "rbTree.h"
 #include "interpret.h"
 #include "parse.h"
+#include "userCmds.h"
 
 /* max number of user programmable menu commands allowed per each of the
    macro, shell, and bacground menus */
@@ -183,8 +184,8 @@ static void genAccelEventName(char *text, unsigned int modifiers,
 	KeySym keysym);
 static int parseAcceleratorString(char *string, unsigned int *modifiers,
 	KeySym *keysym);
-static int parseError(char *message);
-static char *copyMacroToEnd(char **inPtr, char *itemName);
+static int parseError(const char *message);
+static char *copyMacroToEnd(char **inPtr);
 static void addTerminatingNewline(char **string);
 
 /*
@@ -1001,6 +1002,7 @@ char *WriteMacroCmdsString(void)
 {
     return writeMenuItemString(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
 }
+
 char *WriteBGMenuCmdsString(void)
 {
     return writeMenuItemString(BGMenuItems, NBGMenuItems, BG_MENU_CMDS);
@@ -1025,6 +1027,7 @@ int LoadMacroCmdsString(char *inString)
     return loadMenuItemString(inString, MacroMenuItems, &NMacroMenuItems,
     	    MACRO_CMDS);
 }
+
 int LoadBGMenuCmdsString(char *inString)
 {
     return loadMenuItemString(inString, BGMenuItems, &NBGMenuItems,
@@ -1036,7 +1039,7 @@ int LoadBGMenuCmdsString(char *inString)
 ** name "itemName".  Returns True on successs and False on failure.
 */
 #ifndef VMS
-int DoNamedShellMenuCmd(WindowInfo *window, char *itemName, int fromMacro)
+int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro)
 {
     int i;
     
@@ -1061,7 +1064,7 @@ int DoNamedShellMenuCmd(WindowInfo *window, char *itemName, int fromMacro)
 ** with menu item name "itemName".  Returns True on successs and False on
 ** failure.
 */
-int DoNamedMacroMenuCmd(WindowInfo *window, char *itemName)
+int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName)
 {
     int i;
     
@@ -1073,7 +1076,8 @@ int DoNamedMacroMenuCmd(WindowInfo *window, char *itemName)
     }
     return False;
 }
-int DoNamedBGMenuCmd(WindowInfo *window, char *itemName)
+
+int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName)
 {
     int i;
     
@@ -1284,9 +1288,11 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     
     generateAcceleratorString(accText, f->modifiers, f->keysym);
     genAccelEventName(accKeys, f->modifiers, f->keysym);
+    st1=XmStringCreateSimple(name);
+    st2=XmStringCreateSimple(accText);
     btn = XtVaCreateManagedWidget("cmd", xmPushButtonWidgetClass, menuPane, 
-    	    XmNlabelString, st1=XmStringCreateSimple(name),
-    	    XmNacceleratorText, st2=XmStringCreateSimple(accText),
+    	    XmNlabelString, st1,
+    	    XmNacceleratorText, st2,
     	    XmNaccelerator, accKeys,
     	    XmNmnemonic, f->mnemonic,
     	    XmNuserData, index+10, NULL);
@@ -1998,7 +2004,8 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
 	int *nItems, int listType)
 {
     menuItemRec *f;
-    char *cmdStr, *inPtr = inString;
+    char *cmdStr;
+    char *inPtr = inString;
     char *nameStr, accStr[MAX_ACCEL_LEN], mneChar;
     KeySym keysym;
     unsigned int modifiers;
@@ -2095,7 +2102,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
     	    cmdStr[cmdLen] = '\0';
     	    inPtr += cmdLen;
 	} else {
-	    cmdStr = copyMacroToEnd(&inPtr, nameStr);
+	    cmdStr = copyMacroToEnd(&inPtr);
 	    if (cmdStr == NULL)
 	    	return False;
 	}
@@ -2136,7 +2143,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
     }
 }
 
-static int parseError(char *message)
+static int parseError(const char *message)
 {
     fprintf(stderr, "NEdit: Parse error in user defined menu item, %s\n",
     	    message);
@@ -2305,7 +2312,7 @@ static int parseAcceleratorString(char *string, unsigned int *modifiers,
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-static char *copyMacroToEnd(char **inPtr, char *itemName)
+static char *copyMacroToEnd(char **inPtr)
 {
     char *retStr, *errMsg, *stoppedAt, *p, *retPtr;
     Program *prog;
