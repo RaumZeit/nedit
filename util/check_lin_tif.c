@@ -63,6 +63,7 @@
  * Motif 1.2 mode.
  */
 char *good_lesstif_1_2_versions[] = {
+    "0.92.32",
     "0.93.0",
     "0.93.12",
     "0.93.18",
@@ -74,6 +75,7 @@ char *good_lesstif_1_2_versions[] = {
  * Motif 2.1 mode.
  */
 char *good_lesstif_2_1_versions[] = {
+    "0.92.32",
     "0.93.0",
     "0.93.12",
     "0.93.18",
