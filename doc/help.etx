@@ -27,7 +27,7 @@ Table of Contents
 
     Getting_Started_                    
                                         
-    Basic_Operation                     Macro/Shell_Extensions
+    Basic Operation                     Macro/Shell Extensions
       Selecting_Text_                      Shell_Commands_and_Filters_
       Finding_and_Replacing_Text_          Learn/Replay_
       Cut_and_Paste_                       Macro_Language_
@@ -36,14 +36,14 @@ Table of Contents
       Shifting_and_Filling_
       File_Format_
                                         Customizing
-    Features_for_Programming              Customizing_NEdit_
+    Features for Programming              Customizing_NEdit_
       Programming_with_NEdit_              Preferences_
       Tabs/Emulated_Tabs_                  X_Resources_
       Auto/Smart_Indent_                   Key_Binding_
       Syntax_Highlighting_                 Highlighting_Patterns_
       Finding_Declarations_(ctags)_        Smart_Indent_Macros_
  
-    Regular_Expressions                 NEdit_Command_Line_
+    Regular Expressions                 NEdit_Command_Line_
       Basic_Regular_Expression_Syntax_   Client/Server_Mode_
       Metacharacters_                    Crash_Recovery_
       Parenthetical_Constructs_          Version_
@@ -1393,7 +1393,7 @@ Metacharacters
   `[0-9]', while \D is equivalent to `[^0-9]'.
 
   These escape sequences can also be used within a character class.  For
-  example, `[\l_]' is the same as `[a-zA-Z_]', extended with possible locale 
+  example, `[\l_]' is the same as `[a-zA-Z@_]', extended with possible locale 
   dependent letters. The escape sequences for special characters, and octal
   and hexadecimal escapes are also valid within a class.
 
