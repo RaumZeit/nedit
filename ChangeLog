@@ -1,7 +1,69 @@
-2004-08-24 09:37  edg
+2004-09-30 11:30  edg
 
-	* source/file.c (1.88): Fix for SF bug #999021 Using exit() in a
-	macro causes hang.
+	* README (1.44), ReleaseNotes (1.27): Updates for 5.5
+
+2004-09-16 00:50  n8gray
+
+	* source/: menu.c (1.115), window.c (1.174): Addressing Bug
+	1023089: can't open new tab.  Let's see if this phrasing is more
+	clear.	The File menu now has either:	  New	  New Window or:   
+	 New	 New Tab depending on the user's "open new files in..."
+	preference.
+
+2004-09-07 06:19  n8gray
+
+	* source/menu.c (1.114): Fixed spelling of incrementalSearchLine
+	resource as reported by Arne Forlie.
+
+2004-09-02 10:50  edg
+
+	* source/userCmds.c (1.50): Shell command dialog: renamed window to
+	document.
+
+2004-09-02 10:49  edg
+
+	* source/: nedit.c (1.83), shell.c (1.35): Fixes for the state of
+	the File->Close menu item (bug reported by Arne Førlie).  Also made
+	the output of a shell command go to a new window or a new tab,
+	depending on the user preference wrt. tabbed editing.
+
+2004-09-01 20:42  n8gray
+
+	* source/menu.c (1.113): Fix the "New Tab" menu item in the tab
+	context menu.
+
+2004-09-01 20:19  n8gray
+
+	* source/window.c (1.173): Clean out dead variables in
+	DetachDocument.
+
+2004-09-01 15:50  tksoh
+
+	* source/window.c (1.172): Fix for SF Bug #1020035:
+	Detaching/Moving non-top tab should not change top tab.
+
+2004-08-31 23:37  n8gray
+
+	* source/window.c (1.171): This should fix bug 1011233 - Openning
+	new window from a tabbed window diminishes size.  The comment says
+	that the previous version was supposed to reduce flickering but it
+	caused these size problems and I didn't notice any appreciable
+	difference in the flickering without it.
+
+2004-08-26 06:51  n8gray
+
+	* Makefile (1.18), README (1.43), ReleaseNotes (1.26), source/nc.c
+	(1.44) (utags: BETA-5-5-RC2): Updating version info for RC2.
+
+2004-08-24 12:12  edg
+
+	* ChangeLog (1.39, BETA-5-5-RC2): Regenerated (cvs2cl.pl -b -r -t
+	--accum --gmt).
+
+2004-08-24 11:37  edg
+
+	* source/file.c (1.88, BETA-5-5-RC2): Fix for SF bug #999021 Using
+	exit() in a macro causes hang.
 
 2004-08-20 19:33  n8gray
 
