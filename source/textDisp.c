@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.46 2003/03/25 18:31:36 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.47 2003/03/26 10:40:29 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -2765,11 +2765,23 @@ static void redrawLineNumbers(textDisp *textD, int clearAll)
     char lineNumString[12];
     int lineHeight = textD->ascent + textD->descent;
     int charWidth = textD->fontStruct->max_bounds.width;
+    XRectangle clipRect;
+    Display *display = XtDisplay(textD->w);
     
     /* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
        not yet realized */
     if (textD->lineNumWidth == 0 || XtWindow(textD->w) == 0)
         return;
+    
+    /* Make sure we reset the clipping range for the line numbers GC, because
+       the GC may be shared (eg, if the line numbers and text have the same
+       color) and therefore the clipping ranges may be invalid. */
+    clipRect.x = textD->lineNumLeft;
+    clipRect.y = textD->top;
+    clipRect.width = textD->lineNumWidth;
+    clipRect.height = textD->height;
+    XSetClipRectangles(display, textD->lineNumGC, 0, 0,
+    	    &clipRect, 1, Unsorted);
     
     /* Erase the previous contents of the line number area, if requested */
     if (clearAll)
@@ -2994,9 +3006,9 @@ static void resetClipRectangles(textDisp *textD)
     XRectangle clipRect;
     Display *display = XtDisplay(textD->w);
     
-    clipRect.x = textD->lineNumLeft; /* Line numbers may share GC ! */
+    clipRect.x = textD->left;
     clipRect.y = textD->top;
-    clipRect.width = textD->left - textD->lineNumLeft + textD->width;
+    clipRect.width = textD->width;
     clipRect.height = textD->height - textD->height %
     	    (textD->ascent + textD->descent);
     
@@ -3011,8 +3023,6 @@ static void resetClipRectangles(textDisp *textD)
     XSetClipRectangles(display, textD->highlightBGGC, 0, 0,
             &clipRect, 1, Unsorted);
     XSetClipRectangles(display, textD->styleGC, 0, 0,
-            &clipRect, 1, Unsorted);
-    XSetClipRectangles(display, textD->lineNumGC, 0, 0,
             &clipRect, 1, Unsorted);
 } 
 
