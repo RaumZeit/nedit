@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.67 2002/11/28 23:22:28 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.68 2003/03/05 23:50:58 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -116,6 +116,7 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
+static void colorCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void backlightCharsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -148,6 +149,7 @@ static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void colorDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static void languageDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -799,7 +801,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    wrapMarginDefCB, window, SHORT);
     
     /* Smart Tags sub menu */
-    subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'C',
+    subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'l',
 	    NULL, FULL);
     window->allTagsDefItem = createMenuRadioToggle(subSubPane, "showall",
 	    "Show All", 'A', showAllTagsDefCB, window, !GetPrefSmartTags(),
@@ -810,6 +812,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(subPane, "tabDistance", "Tabs...", 'T', tabsDefCB, window,
     	    SHORT);
     createMenuItem(subPane, "textFont", "Text Font...", 'F', fontDefCB, window,
+    	    FULL);
+    createMenuItem(subPane, "colors", "Colors...", 'C', colorDefCB, window,
     	    FULL);
     
     /* Customize Menus sub menu */
@@ -1022,6 +1026,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    wrapMarginCB, window, SHORT);
     createMenuItem(menuPane, "tabs", "Tabs...", 'T', tabsCB, window, SHORT);
     createMenuItem(menuPane, "textFont", "Text Font...", 'F', fontCB, window,
+    	    FULL);
+    createMenuItem(menuPane, "colors", "Colors...", 'C', colorCB, window,
     	    FULL);
     window->highlightItem = createMenuToggle(menuPane, "highlightSyntax",
 	    "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax",
@@ -1550,6 +1556,11 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
     ChooseFonts(window, True);
 }
 
+static void colorCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    ChooseColors(window, True);
+}
+
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     static char *params[1] = {"none"};
@@ -1699,6 +1710,13 @@ static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     ChooseFonts(window, False);
+}
+
+static void colorDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
+    ChooseColors(window, False);
 }
 
 static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)

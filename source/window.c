@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.74 2003/01/10 15:33:51 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.75 2003/03/05 23:51:01 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -240,10 +240,27 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->flashTimeoutID = 0;
     window->fileClosedAtom = None;
     window->wasSelected = FALSE;
+    strncpy(window->colorNames[TEXT_FG_COLOR  ], 
+            GetPrefColorName(TEXT_FG_COLOR  ), MAX_COLOR_LEN);
+    strncpy(window->colorNames[TEXT_BG_COLOR  ], 
+            GetPrefColorName(TEXT_BG_COLOR  ), MAX_COLOR_LEN);
+    strncpy(window->colorNames[SELECT_FG_COLOR], 
+            GetPrefColorName(SELECT_FG_COLOR), MAX_COLOR_LEN);
+    strncpy(window->colorNames[SELECT_BG_COLOR], 
+            GetPrefColorName(SELECT_BG_COLOR), MAX_COLOR_LEN);
+    strncpy(window->colorNames[HILITE_FG_COLOR], 
+            GetPrefColorName(HILITE_FG_COLOR), MAX_COLOR_LEN);
+    strncpy(window->colorNames[HILITE_BG_COLOR], 
+            GetPrefColorName(HILITE_BG_COLOR), MAX_COLOR_LEN);
+    strncpy(window->colorNames[LINENO_FG_COLOR], 
+            GetPrefColorName(LINENO_FG_COLOR), MAX_COLOR_LEN);
+    strncpy(window->colorNames[CURSOR_FG_COLOR], 
+            GetPrefColorName(CURSOR_FG_COLOR), MAX_COLOR_LEN);
     strcpy(window->fontName, GetPrefFontName());
     strcpy(window->italicFontName, GetPrefItalicFontName());
     strcpy(window->boldFontName, GetPrefBoldFontName());
     strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
+    window->colorDialog = NULL;
     window->fontList = GetPrefFontList();
     window->italicFontStruct = GetPrefItalicFont();
     window->boldFontStruct = GetPrefBoldFont();
@@ -1289,6 +1306,63 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     UpdateMinPaneHeights(window);
 }
 
+void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
+        const char *selectFg, const char *selectBg, const char *hiliteFg, 
+        const char *hiliteBg, const char *lineNoFg, const char *cursorFg)
+{
+    int i, dummy;
+    Pixel   textFgPix   = AllocColor( window->textArea, textFg, 
+                    &dummy, &dummy, &dummy),
+            textBgPix   = AllocColor( window->textArea, textBg, 
+                    &dummy, &dummy, &dummy),
+            selectFgPix = AllocColor( window->textArea, selectFg, 
+                    &dummy, &dummy, &dummy),
+            selectBgPix = AllocColor( window->textArea, selectBg, 
+                    &dummy, &dummy, &dummy),
+            hiliteFgPix = AllocColor( window->textArea, hiliteFg, 
+                    &dummy, &dummy, &dummy),
+            hiliteBgPix = AllocColor( window->textArea, hiliteBg, 
+                    &dummy, &dummy, &dummy),
+            lineNoFgPix = AllocColor( window->textArea, lineNoFg, 
+                    &dummy, &dummy, &dummy),
+            cursorFgPix = AllocColor( window->textArea, cursorFg, 
+                    &dummy, &dummy, &dummy);
+    textDisp *textD;
+    
+    /* Update the names in the WindowInfo */
+    strncpy(window->colorNames[TEXT_FG_COLOR  ], textFg  , MAX_COLOR_LEN);
+    strncpy(window->colorNames[TEXT_BG_COLOR  ], textBg  , MAX_COLOR_LEN);
+    strncpy(window->colorNames[SELECT_FG_COLOR], selectFg, MAX_COLOR_LEN);
+    strncpy(window->colorNames[SELECT_BG_COLOR], selectBg, MAX_COLOR_LEN);
+    strncpy(window->colorNames[HILITE_FG_COLOR], hiliteFg, MAX_COLOR_LEN);
+    strncpy(window->colorNames[HILITE_BG_COLOR], hiliteBg, MAX_COLOR_LEN);
+    strncpy(window->colorNames[LINENO_FG_COLOR], lineNoFg, MAX_COLOR_LEN);
+    strncpy(window->colorNames[CURSOR_FG_COLOR], cursorFg, MAX_COLOR_LEN);
+    
+    /* Update the main pane */
+    XtVaSetValues(window->textArea,
+            XmNforeground, textFgPix,
+            XmNbackground, textBgPix,
+            NULL);
+    textD = ((TextWidget)window->textArea)->text.textD;
+    TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
+            hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
+    /* Update any additional panes */
+    for (i=0; i<window->nPanes; i++) {
+        XtVaSetValues(window->textPanes[i],
+                XmNforeground, textFgPix,
+                XmNbackground, textBgPix,
+                NULL);
+        textD = ((TextWidget)window->textPanes[i])->text.textD;
+        TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
+                hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
+    }
+    
+    /* Redo any syntax highlighting */
+    if (window->highlightData != NULL)
+        UpdateHighlightStyles(window);
+}
+
 /*
 ** Set insert/overstrike mode
 */
@@ -1577,6 +1651,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int lineNumCols)
 {
     Widget text, sw, hScrollBar, vScrollBar, frame;
+    int dummy;
         
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
@@ -1604,9 +1679,32 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNsmartIndent, window->indentStyle == SMART_INDENT,
             textNautoWrap, window->wrapMode == NEWLINE_WRAP,
             textNcontinuousWrap, window->wrapMode == CONTINUOUS_WRAP,
-            textNoverstrike, window->overstrike, NULL);
-    XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar,
-            XmNverticalScrollBar, vScrollBar, NULL);
+            textNoverstrike, window->overstrike, 
+            XmNforeground, AllocColor(sw, GetPrefColorName(TEXT_FG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            XmNbackground, AllocColor(sw, GetPrefColorName(TEXT_BG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNselectForeground,
+                    AllocColor(sw, GetPrefColorName(SELECT_FG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNselectBackground,
+                    AllocColor(sw, GetPrefColorName(SELECT_BG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNhighlightForeground,
+                    AllocColor(sw, GetPrefColorName(HILITE_FG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNhighlightBackground,
+                    AllocColor(sw, GetPrefColorName(HILITE_BG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNlineNumForeground,
+                    AllocColor(sw, GetPrefColorName(LINENO_FG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            textNcursorForeground,
+                    AllocColor(sw, GetPrefColorName(CURSOR_FG_COLOR), 
+                    &dummy, &dummy, &dummy),
+            NULL);
+    XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
+                    hScrollBar, XmNverticalScrollBar, vScrollBar, NULL);
     
     /* add focus, drag, cursor tracking, and smart indent callbacks */
     XtAddCallback(text, textNfocusCallback, (XtCallbackProc)focusCB, window);

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.38 2003/01/02 01:48:29 yooden Exp $
+.. $Id: help.etx,v 1.39 2003/03/05 23:50:56 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -842,7 +842,7 @@ Programming with NEdit
 3>Backlighting
 
   Nedit can be made to set the background color of particular classes of
-  characters to allow easy identifcation of those characters. This is
+  characters to allow easy identification of those characters. This is
   particularly useful if you need to be able to distiguish between tabs
   and spaces in a file where the difference is important. The colors used
   for backlighting are specified by a resource, "nedit*backlightCharTypes"
@@ -3495,6 +3495,14 @@ Preferences
   set using X resources for the text area of the window). See below for more
   information.
 
+**Colors...**
+  Change the colors used to display text.  Note that syntax hilighting styles 
+  and backlighting will override the colors set in the "Plain Text" fields. 
+  (For information on changing syntax highlighting styles and patterns use see 
+  Help -> Features for Programming -> Syntax_Highlighting_.)  The "Matching ()"
+  fields change the colors that matching parens, brackets and braces are flashed
+  when the "Show Matching (..)" option is enabled.
+
 **Highlight Syntax**
   If NEdit recognizes the language being edited, and highlighting patterns are
   available for that language, use fonts and colors to enhance viewing of the
@@ -4008,41 +4016,6 @@ X Resources
   
   When Auto Newline Wrap is turned on, apply automatic wrapping (which
   normally only applies to typed text) to pasted text as well.
-
-**nedit@*text.foreground**: black
-  
-  Foreground color of the text editing area of the NEdit window.
-
-**nedit@*text.background**: white
-  
-  Background color of the text editing area of the NEdit window.
-
-**nedit@*text.selectForeground**: black
-  
-  Foreground (text) color for selections in the text editing area of the NEdit
-  window.
-
-**nedit@*text.selectBackground**: gray80
-  
-  Color for selections in the text editing area of the NEdit window.
-
-**nedit@*text.highlightForeground**: white
-  
-  Foreground (text) color for highlights (parenthesis flashing) in the text
-  editing area of the NEdit window.
-
-**nedit@*text.highlightBackground**: red
-  
-  Color for highlights (parenthesis flashing) in the text editing area of the
-  NEdit window.
-
-**nedit@*text.cursorForeground**: black
-  
-  Color for text cursor in the text editing area of the NEdit window.
-
-**nedit@*text.lineNumForeground**: gray47
-  
-  Color for displaying line numbers in the NEdit window.
 
 **nedit@*text.heavyCursor**: False
   
@@ -4574,12 +4547,14 @@ NEdit Command Line
   host or screen can be omitted and default to the local machine, and screen 0.
 
 **-background color (or -bg color)**
-  Background color. (background color for text can be set separately with 
-  -xrm "nedit*text.background: color").
+  User interface background color. (Background color for text can be set
+  separately with  -xrm "nedit.textFgColor: color" or using the Preferences ->
+  Colors dialog).
 
 **-foreground color (or -fg color)**
-  Foreground color. (foreground color for text can be set separately with -xrm
-  "nedit*text.foreground: color").
+  User interface foreground color. (Foreground color for text can be set
+  separately with -xrm "nedit*text.textBgColor: color" or using the Preferences
+  -> Colors dialog).
 
 **-xrm resourcestring** 
   Set the value of an X resource to override a default
@@ -4683,11 +4658,13 @@ NEdit Command Line
 **/background=color (or /bg=color)**
 
   Background color. (background color for text can be set separately with 
-  /xrm="nedit*text:background color").
+  /xrm="nedit:textBgColor color" or using the Preferences ->
+  Colors dialog).
 
 **/foreground=color (or /fg=color)**
   Foreground color. (foreground color for text can be set separately with
-  /xrm="nedit*text:foreground color").
+  /xrm="nedit:textFgColor color" or using the Preferences ->
+  Colors dialog).
 
 **/xrm=resourcestring**
   Set the value of an X resource to override a default value 

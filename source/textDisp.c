@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.41 2002/11/13 21:58:44 tringali Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.42 2003/03/05 23:51:00 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -374,6 +374,61 @@ void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
     /* Call TextDSetFont to combine font information from style table and
        primary font, adjust font-related parameters, and then redisplay */
     TextDSetFont(textD, textD->fontStruct);
+}
+
+
+/* Change the (non syntax-highlit) colors */ 
+void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP, 
+        Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, 
+        Pixel lineNoFgP, Pixel cursorFgP)
+{
+    XGCValues values;
+    Display *d = XtDisplay(textD->w);
+    
+    /* Update the stored pixels */
+    textD->lineNumFGPixel = lineNoFgP;
+    textD->bgPixel = textBgP;
+    textD->selectBGPixel = selectBgP;
+    textD->highlightBGPixel = hiliteBgP;
+    
+    /* Change the main gc */
+    values.foreground = textFgP;
+    values.background = textBgP;
+    XChangeGC( d, textD->gc, GCForeground | GCBackground, &values );
+    
+    /* Change the select GC */
+    values.foreground = selectFgP;
+    values.background = selectBgP;
+    XChangeGC( d, textD->selectGC, GCForeground | GCBackground, &values );
+    
+    /* Change the select BGGC */
+    values.foreground = selectBgP;
+    XChangeGC( d, textD->selectBGGC, GCForeground, &values );
+    
+    /* Change the highlight GC */
+    values.foreground = hiliteFgP;
+    values.background = hiliteBgP;
+    XChangeGC( d, textD->highlightGC, GCForeground | GCBackground, &values );
+    
+    /* Change the highlight BGGC */
+    values.foreground = hiliteBgP;
+    XChangeGC( d, textD->highlightBGGC, GCForeground, &values );
+    
+    /* Change the line number GC (it's not always initialized) */
+    if( textD->lineNumGC ) {
+        values.foreground = lineNoFgP;
+        values.background = textBgP;
+        XChangeGC( d, textD->lineNumGC, GCForeground | GCBackground, &values );
+    }        
+    
+    /* Change the cursor GC */
+    values.foreground = cursorFgP;
+    XChangeGC( d, textD->cursorFGGC, GCForeground, &values );
+    
+    /* Redisplay */
+    TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
+                       textD->height);
+    redrawLineNumbers(textD, True);
 }
 
 /*

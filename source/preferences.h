@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.31 2003/02/15 01:06:19 yooden Exp $ */
+/* $Id: preferences.h,v 1.32 2003/03/05 23:50:59 n8gray Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -22,6 +22,12 @@ enum helpFonts {HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT,
     BOLD_ITALIC_HELP_FONT, FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
     ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT, HELP_LINK_FONT,
     H1_HELP_FONT, H2_HELP_FONT, H3_HELP_FONT, NUM_HELP_FONTS
+};
+
+/* Identifiers for the different colors that can be adjusted.  Make sure
+   to keep this in synch with NUM_COLORS in nedit.h */
+enum colorTypes {TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR,
+        HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR
 };
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
@@ -108,6 +114,8 @@ XFontStruct *GetPrefItalicFont(void);
 XFontStruct *GetPrefBoldItalicFont(void);
 char *GetPrefHelpFontName(int index);
 char *GetPrefHelpLinkColor();
+char *GetPrefColorName(int colorIndex);
+void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefShell(const char *shell);
 char *GetPrefShell(void);
 void SetPrefGeometry(const char *geometry);
@@ -130,6 +138,7 @@ int GetPrefShortMenus(void);
 #endif
 void EditLanguageModes(Widget parent);
 void ChooseFonts(WindowInfo *window, int forWindow);
+void ChooseColors(WindowInfo *window, int forWindow);
 char *LanguageModeName(int mode);
 char *GetWindowDelimiters(WindowInfo *window);
 int ReadNumericField(char **inPtr, int *value);

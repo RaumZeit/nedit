@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.75 2002/11/28 23:22:29 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.76 2003/03/05 23:50:59 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -199,6 +199,29 @@ typedef struct {
     int forWindow;
 } fontDialog;
 
+/* Color dialog information */
+typedef struct {
+    Widget shell;
+    Widget textFgW;
+    Widget textFgErrW;
+    Widget textBgW;
+    Widget textBgErrW;
+    Widget selectFgW;
+    Widget selectFgErrW;
+    Widget selectBgW;
+    Widget selectBgErrW;
+    Widget hiliteFgW;
+    Widget hiliteFgErrW;
+    Widget hiliteBgW;
+    Widget hiliteBgErrW;
+    Widget lineNoFgW;
+    Widget lineNoFgErrW;
+    Widget cursorFgW;
+    Widget cursorFgErrW;
+    WindowInfo *window;
+    int forWindow;
+} colorDialog;
+
 /* Repository for simple preferences settings */
 static struct prefData {
     int wrapStyle;		/* what kind of wrapping to do */
@@ -269,7 +292,8 @@ static struct prefData {
 				   never, if invalid, or always */
     char titleFormat[MAX_TITLE_FORMAT_LEN];
     char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN];/* fonts for help system */
-    char helpLinkColor[30];    	/* Color for hyperlinks in the help system */
+    char helpLinkColor[MAX_COLOR_LEN]; 	/* Color for hyperlinks in the help system */
+    char colorNames[NUM_COLORS][MAX_COLOR_LEN];
     int  undoModifiesSelection;
 } PrefData;
 
@@ -831,6 +855,32 @@ static PrefDescripRec PrefDescrip[] = {
     {"helpLinkColor", "helpLinkColor", PREF_STRING, "#009900",
 	PrefData.helpLinkColor,
 	(void *)sizeof(PrefData.helpLinkColor), False},
+        
+    {"textFgColor", "textFgColor", PREF_STRING, "black",
+	PrefData.colorNames[TEXT_FG_COLOR],
+	(void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), True},
+    {"textBgColor", "textBgColor", PREF_STRING, "#e5e5e5",
+	PrefData.colorNames[TEXT_BG_COLOR],
+	(void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), True},
+    {"selectFgColor", "selectFgColor", PREF_STRING, "black",
+        PrefData.colorNames[SELECT_FG_COLOR],
+        (void *)sizeof(PrefData.colorNames[SELECT_FG_COLOR]), True},
+    {"selectBgColor", "selectBgColor", PREF_STRING, "#cccccc",
+        PrefData.colorNames[SELECT_BG_COLOR],
+        (void *)sizeof(PrefData.colorNames[SELECT_BG_COLOR]), True},
+    {"hiliteFgColor", "hiliteFgColor", PREF_STRING, "black",
+        PrefData.colorNames[HILITE_FG_COLOR],
+        (void *)sizeof(PrefData.colorNames[HILITE_FG_COLOR]), True},
+    {"hiliteBgColor", "hiliteBgColor", PREF_STRING, "red",
+        PrefData.colorNames[HILITE_BG_COLOR],
+        (void *)sizeof(PrefData.colorNames[HILITE_BG_COLOR]), True},
+    {"lineNoFgColor", "lineNoFgColor", PREF_STRING, "#777777",
+        PrefData.colorNames[LINENO_FG_COLOR],
+        (void *)sizeof(PrefData.colorNames[LINENO_FG_COLOR]), True},
+    {"cursorFgColor", "cursorFgColor", PREF_STRING, "black",
+        PrefData.colorNames[CURSOR_FG_COLOR],
+        (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), True},
+                
     {"shell", "Shell", PREF_STRING,
 #if defined(__MVS__) || defined(__EMX__)
     	"/bin/sh",
@@ -900,13 +950,13 @@ static const char HeaderText[] = "\
 !\n\
 ! This file is overwritten by the \"Save Defaults...\" command in NEdit \n\
 ! and serves only the interactively settable options presented in the NEdit\n\
-! \"Preferences\" menu.  To modify other options, such as background colors\n\
-! and key bindings, use the .Xdefaults file in your home directory (or\n\
-! the X resource specification method appropriate to your system).  The\n\
-! contents of this file can be moved into an X resource file, but since\n\
-! resources in this file override their corresponding X resources, either\n\
-! this file should be deleted or individual resource lines in the file\n\
-! should be deleted for the moved lines to take effect.\n";
+! \"Preferences\" menu.  To modify other options, such as key bindings, use \n\
+! the .Xdefaults file in your home directory (or the X resource \n\
+! specification method appropriate to your system).  The contents of this \n\
+! file can be moved into an X resource file, but since resources in this file\n\
+! override their corresponding X resources, either this file should be \n\
+! deleted or individual resource lines in the file should be deleted for the\n\
+! moved lines to take effect.\n";
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */	
@@ -944,6 +994,8 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void reapplyLanguageMode(WindowInfo *window, int mode,int forceDefaults);
+
+
 static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     	XtPointer callData);
 static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW);
@@ -961,12 +1013,39 @@ static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void boldItalicBrowseCB(Widget w, XtPointer clientData,
     	XtPointer callData);
-static void browseFont(Widget parent, Widget fontTextW);
+static void browseFont(Widget parent, Widget fontTextW, fontDialog *fd);
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontDismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateFonts(fontDialog *fd);
+
+static int checkColorStatus(colorDialog *cd, Widget colorFieldW);
+static int verifyAllColors (colorDialog *cd);
+static int showColorStatus (colorDialog *cd, Widget colorFieldW,
+      Widget errorLabelW);
+static void updateColors(colorDialog *cd);
+static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
+static void colorOkCB     (Widget w, XtPointer clientData, XtPointer callData);
+static void colorApplyCB  (Widget w, XtPointer clientData, XtPointer callData);
+static void colorDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void textFgModifiedCB  (Widget w, XtPointer clientData,
+      XtPointer callData);
+static void textBgModifiedCB  (Widget w, XtPointer clientData,
+      XtPointer callData);
+static void selectFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+static void selectBgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+static void hiliteFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+static void hiliteBgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+static void lineNoFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+static void cursorFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData);
+
 static int matchLanguageMode(WindowInfo *window);
 static int loadLanguageModesString(char *inString, int fileVer);
 static char *writeLanguageModesString(void);
@@ -1661,6 +1740,16 @@ int GetPrefAlwaysCheckRelTagsSpecs(void)
 char *GetPrefDelimiters(void)
 {
     return PrefData.delimiters;
+}
+
+char *GetPrefColorName(int index)
+{
+    return PrefData.colorNames[index];
+}
+
+void SetPrefColorName(int index, const char *name)
+{
+    setStringPref(PrefData.colorNames[index], name);
 }
 
 /*
@@ -3588,7 +3677,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     RemapDeleteKey(fd->boldItalicW);
     XtAddCallback(fd->boldItalicW, XmNvalueChangedCallback,
     	    boldItalicModifiedCB, fd);
-    XtVaSetValues(boldItalicLbl, XmNuserData, fd->boldItalicW, NULL);
+    XtVaSetValues(boldItalicLbl, XmNuserData, fd->boldItalicW, NULL);    
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple("OK"),
@@ -3723,26 +3812,26 @@ static void primaryBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->primaryW);
+    browseFont(fd->shell, fd->primaryW, fd);
 }
 static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->italicW);
+    browseFont(fd->shell, fd->italicW, fd);
 }
 static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
-    browseFont(fd->shell, fd->boldW);
+    browseFont(fd->shell, fd->boldW, fd);
 }
 static void boldItalicBrowseCB(Widget w, XtPointer clientData,
     	XtPointer callData)
 {
    fontDialog *fd = (fontDialog *)clientData;
 
-   browseFont(fd->shell, fd->boldItalicW);
+   browseFont(fd->shell, fd->boldItalicW, fd);
 }
 
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -3756,7 +3845,7 @@ static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
-
+    
     updateFonts(fd);
 
     /* pop down and destroy the dialog */
@@ -3766,7 +3855,7 @@ static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData)
 static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
-
+    
     updateFonts(fd);
 }
 
@@ -3863,12 +3952,27 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW,
 /*
 ** Put up a font selector panel to set the font name in the text widget "fontTextW"
 */
-static void browseFont(Widget parent, Widget fontTextW)
+static void browseFont(Widget parent, Widget fontTextW, fontDialog *fd)
 {
     char *origFontName, *newFontName;
+    Pixel fgPixel, bgPixel;
+    int dummy;
     
     origFontName = XmTextGetString(fontTextW);
-    newFontName = FontSel(parent, PREF_FIXED, origFontName);
+    if (fd->forWindow) {
+        /* Get the values from the window */
+        fgPixel = AllocColor(parent, fd->window->colorNames[TEXT_FG_COLOR],
+                &dummy, &dummy, &dummy);
+        bgPixel = AllocColor(parent, fd->window->colorNames[TEXT_BG_COLOR],
+                &dummy, &dummy, &dummy);
+    } else {
+        /* Get the values from the defaults */
+        fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR),
+                &dummy, &dummy, &dummy);
+        bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR),
+                &dummy, &dummy, &dummy);
+    }
+    newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
     XtFree(origFontName);
     if (newFontName == NULL)
     	return;
@@ -5164,4 +5268,488 @@ void UnloadLanguageModeTipsFile(WindowInfo *window) {
                 fprintf( stderr, "Error loading default calltips file:\n"
                          "  \"%s\"\n", LanguageModes[mode]->defTipsFile );
     }
+}
+
+/******************************************************************************
+ * The Color selection dialog
+ ******************************************************************************/
+
+/* 
+There are 8 colors:   And 8 indices:
+textFg                TEXT_FG_COLOR
+textBg                TEXT_BG_COLOR
+selectFg              SELECT_FG_COLOR
+selectBg              SELECT_BG_COLOR
+hiliteFg              HILITE_FG_COLOR
+hiliteBg              HILITE_BG_COLOR
+lineNoFg              LINENO_FG_COLOR
+cursorFg              CURSOR_FG_COLOR
+*/
+
+#define MARGIN_SPACING 10
+
+/* 
+ * Callbacks for field modifications
+ */
+static void textFgModifiedCB(Widget w, XtPointer clientData,
+      XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->textFgW, cd->textFgErrW);
+}
+    
+static void textBgModifiedCB(Widget w, XtPointer clientData,
+      XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->textBgW, cd->textBgErrW);
+}
+
+static void selectFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->selectFgW, cd->selectFgErrW);
+}
+
+static void selectBgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->selectBgW, cd->selectBgErrW);
+}
+
+static void hiliteFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->hiliteFgW, cd->hiliteFgErrW);
+}
+
+static void hiliteBgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->hiliteBgW, cd->hiliteBgErrW);
+}
+
+static void lineNoFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->lineNoFgW, cd->lineNoFgErrW);
+}
+
+static void cursorFgModifiedCB(Widget w, XtPointer clientData,
+        XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    showColorStatus(cd, cd->cursorFgW, cd->cursorFgErrW);
+}
+
+
+/* 
+ * Helper functions for validating colors
+ */
+static int verifyAllColors(colorDialog *cd) {
+    /* Maybe just check for empty strings in error widgets instead? */
+    return (checkColorStatus(cd, cd->textFgW) &&
+            checkColorStatus(cd, cd->textBgW) &&
+            checkColorStatus(cd, cd->selectFgW) &&
+            checkColorStatus(cd, cd->selectBgW) &&
+            checkColorStatus(cd, cd->hiliteFgW) &&
+            checkColorStatus(cd, cd->hiliteBgW) &&
+            checkColorStatus(cd, cd->lineNoFgW) &&
+            checkColorStatus(cd, cd->cursorFgW) );
+}
+
+static int checkColorStatus(colorDialog *cd, Widget colorFieldW)
+{
+    Colormap cMap;
+    XColor colorDef;
+    Display *display = XtDisplay(cd->shell);
+    
+    XtVaGetValues(cd->shell, XtNcolormap, &cMap, NULL);
+    
+    return XParseColor( display, cMap, XmTextGetString(colorFieldW), 
+                            &colorDef);
+}
+
+static int showColorStatus(colorDialog *cd, Widget colorFieldW, 
+        Widget errorLabelW)
+{
+    int status;
+    XmString s;    
+    
+    /* XXX: See the message in addColorGroup about mapping/unmapping 
+        errorLabelW instead of changing the label string.  For some reason 
+        XtIsWidget(errorLabelW) is False!
+    */
+    status = checkColorStatus(cd, colorFieldW);
+    if (status)
+        s = XmStringCreateSimple("");
+    else
+        s = XmStringCreateSimple("(Invalid!)");
+
+    XtVaSetValues(errorLabelW, XmNlabelString, s, NULL);
+    XmStringFree(s);
+    return status;
+}
+
+/* Update the colors in the window or in the preferences */
+static void updateColors(colorDialog *cd)
+{
+    char    *textFg = XmTextGetString(cd->textFgW),
+            *textBg = XmTextGetString(cd->textBgW),
+            *selectFg = XmTextGetString(cd->selectFgW),
+            *selectBg = XmTextGetString(cd->selectBgW),
+            *hiliteFg = XmTextGetString(cd->hiliteFgW),
+            *hiliteBg = XmTextGetString(cd->hiliteBgW),
+            *lineNoFg = XmTextGetString(cd->lineNoFgW),
+            *cursorFg = XmTextGetString(cd->cursorFgW);
+    
+    if (cd->forWindow) {
+        SetColors(cd->window, textFg, textBg, selectFg, selectBg, hiliteFg, 
+                hiliteBg, lineNoFg, cursorFg);
+    }
+    else {
+        SetPrefColorName(TEXT_FG_COLOR  , textFg  );
+        SetPrefColorName(TEXT_BG_COLOR  , textBg  );
+        SetPrefColorName(SELECT_FG_COLOR, selectFg);
+        SetPrefColorName(SELECT_BG_COLOR, selectBg);
+        SetPrefColorName(HILITE_FG_COLOR, hiliteFg);
+        SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
+        SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
+        SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
+    }
+    XtFree(textFg);
+    XtFree(textBg);
+    XtFree(selectFg);
+    XtFree(selectBg);
+    XtFree(hiliteFg);
+    XtFree(hiliteBg);
+    XtFree(lineNoFg);
+    XtFree(cursorFg);
+}
+
+
+/* 
+ * Dialog button callbacks
+ */
+
+static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    
+    cd->window->colorDialog = NULL;
+    XtFree((char *)cd);
+}
+
+static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    
+    if(!verifyAllColors(cd)) {
+        DialogF(DF_ERR, w, 1, "All colors must be valid to proceed.", 
+                "Dismiss");
+        return;
+    }
+    updateColors(cd);
+
+    /* pop down and destroy the dialog */
+    XtDestroyWidget(cd->shell);
+}
+
+static void colorFillCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    WindowInfo *window = cd->window;
+    
+    XmTextSetString(cd->textFgW,   window->colorNames[TEXT_FG_COLOR  ]);
+    XmTextSetString(cd->textBgW,   window->colorNames[TEXT_BG_COLOR  ]);
+    XmTextSetString(cd->selectFgW, window->colorNames[SELECT_FG_COLOR]);
+    XmTextSetString(cd->selectBgW, window->colorNames[SELECT_BG_COLOR]);
+    XmTextSetString(cd->hiliteFgW, window->colorNames[HILITE_FG_COLOR]);
+    XmTextSetString(cd->hiliteBgW, window->colorNames[HILITE_BG_COLOR]);
+    XmTextSetString(cd->lineNoFgW, window->colorNames[LINENO_FG_COLOR]);
+    XmTextSetString(cd->cursorFgW, window->colorNames[CURSOR_FG_COLOR]);
+}
+
+static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+    
+    if(!verifyAllColors(cd)) {
+        DialogF(DF_ERR, w, 1, "All colors must be valid to be applied.", 
+                "Dismiss");
+        return;
+    }
+    updateColors(cd);
+}
+
+static void colorDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    colorDialog *cd = (colorDialog *)clientData;
+
+    /* pop down and destroy the dialog */
+    XtDestroyWidget(cd->shell);
+}
+
+
+/* Add a label, error label, and text entry label with a validation
+    callback */
+Widget addColorGroup( Widget parent, const char *name, char mnemonic, 
+        char *label, Widget *fieldW, Widget *errW, Widget topWidget, 
+        int leftPos, int rightPos, XtCallbackProc modCallback, 
+        colorDialog *cd )
+{
+    Widget lblW;
+    char *longerName;
+    XmString s1;
+    int nameLen = strlen(name);
+    
+    /* The label widget */
+    longerName = XtMalloc(nameLen+7);
+    strcpy(longerName, name);
+    strcat(longerName, "Lbl");
+    lblW = XtVaCreateManagedWidget(longerName,
+          xmLabelGadgetClass, parent,
+          XmNlabelString, s1=XmStringCreateSimple( label ),
+          XmNmnemonic, mnemonic,
+          XmNtopAttachment, XmATTACH_WIDGET,
+          XmNtopWidget, topWidget,
+          XmNtopOffset, MARGIN_SPACING,
+          XmNleftAttachment, XmATTACH_POSITION,
+          XmNleftPosition, leftPos, NULL);
+    XmStringFree(s1);
+
+    /* The error label widget 
+    
+       XXX: I think the right thing to do would be to map/unmap the widget
+       instead of changing the text of the label.  That way the layout would
+       reserve room for it even when it's not shown.  Right now this label can
+       get crowded out with bad results if the fieldW is too narrow and the 
+       LblW is too wide.  (Change XmNcolumns in the fieldW below to see what I
+       mean.)
+
+       But when I try to use XtMapWidget or XtUnmapWidget on errW in 
+       showColorStatus I get a segfault.  If I test it with XtIsWidget it
+       never evaluates to true.  Yet the code that's there now works fine!
+       I'm stumped.
+    */
+    strcpy(&(longerName[nameLen]), "ErrLbl");
+    *errW = XtVaCreateManagedWidget(longerName,
+          xmLabelGadgetClass, parent,
+          /* XmNmappedWhenManaged, False, */
+          XmNlabelString, s1=XmStringCreateSimple("(Invalid!)"),
+          XmNalignment, XmALIGNMENT_END,
+          XmNtopAttachment, XmATTACH_WIDGET,
+          XmNtopWidget, topWidget,
+          XmNtopOffset, MARGIN_SPACING,
+          XmNleftAttachment, XmATTACH_WIDGET,
+          XmNleftWidget, lblW,
+          XmNrightAttachment, XmATTACH_POSITION,
+          XmNrightPosition, rightPos, NULL);
+    XmStringFree(s1);
+    
+    /* The text field entry widget */
+    *fieldW = XtVaCreateManagedWidget(name, xmTextWidgetClass,
+          parent,
+          XmNcolumns, MAX_COLOR_LEN-1,
+          XmNmaxLength, MAX_COLOR_LEN-1,
+          XmNleftAttachment, XmATTACH_POSITION,
+          XmNleftPosition, leftPos,
+          XmNrightAttachment, XmATTACH_POSITION,
+          XmNrightPosition, rightPos,
+          XmNtopAttachment, XmATTACH_WIDGET,
+          XmNtopWidget, lblW, NULL);
+    RemapDeleteKey(*fieldW);
+    XtAddCallback(*fieldW, XmNvalueChangedCallback,
+          modCallback, cd);
+    XtVaSetValues(lblW, XmNuserData, *fieldW, NULL);
+    
+    XtFree(longerName);
+    return *fieldW;
+}
+
+
+/* 
+ * Code for the dialog itself
+ */
+void ChooseColors(WindowInfo *window, int forWindow)
+{
+    Widget form, tmpW, topW, infoLbl;
+    Widget okBtn, applyBtn, dismissBtn, fillBtn;
+    colorDialog *cd;
+    XmString s1;
+    int ac;
+    Arg args[20];
+    
+    /* if the dialog is already displayed, just pop it to the top and return */
+    if (window->colorDialog != NULL) {
+      RaiseShellWindow(((colorDialog *)window->colorDialog)->shell);
+      return;
+    }
+    
+    /* Create a structure for keeping track of dialog state */
+    cd = XtNew(colorDialog);
+    cd->window = window;
+    cd->forWindow = forWindow;
+    window->colorDialog = (void*)cd;
+    
+    /* Create a form widget in a dialog shell */
+    ac = 0;
+    XtSetArg(args[ac], XmNautoUnmanage, False); ac++;
+    XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE); ac++;
+    form = CreateFormDialog(window->shell, "choose colors", args, ac);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
+    cd->shell = XtParent(form);
+    XtVaSetValues(cd->shell, XmNtitle, "Colors", NULL);
+    AddMotifCloseCallback(XtParent(form), colorDismissCB, cd);
+    XtAddCallback(form, XmNdestroyCallback, colorDestroyCB, cd);
+    
+    /* Information label */
+    infoLbl = XtVaCreateManagedWidget("infoLbl",
+            xmLabelGadgetClass, form,
+            XmNtopAttachment, XmATTACH_POSITION,
+            XmNtopPosition, 2,
+            XmNleftAttachment, XmATTACH_POSITION,
+            XmNleftPosition, 1,
+            XmNrightAttachment, XmATTACH_POSITION,
+            XmNrightPosition, 99,
+            XmNalignment, XmALIGNMENT_CENTER,
+            XmNlabelString, s1 = XmStringCreateLtoR(
+                "Colors can be entered as names (e.g. red, blue) or "
+                "as RGB triples\nin the format #RRGGBB, where each digit "
+                "is in the range 0-f.", XmFONTLIST_DEFAULT_TAG),
+            NULL);
+    XmStringFree(s1);
+    
+    if(!forWindow) {
+        fillBtn = XtVaCreateManagedWidget(
+                "fill", xmPushButtonWidgetClass, form,
+              XmNlabelString, s1=XmStringCreateSimple(
+                        "Copy Colors from Current Window"),
+                XmNtopAttachment, XmATTACH_WIDGET,
+                XmNtopWidget, infoLbl,
+                XmNtopOffset, MARGIN_SPACING,
+              XmNmnemonic, 'y',
+              XmNleftAttachment, XmATTACH_POSITION,
+              XmNleftPosition, 1,
+              XmNrightAttachment, XmATTACH_POSITION,
+              XmNrightPosition, 99,
+              NULL);
+        XtAddCallback(fillBtn, XmNactivateCallback, colorFillCB, cd);
+        XmStringFree(s1);
+        topW = fillBtn;
+    } else {
+        topW = infoLbl;
+    }
+    
+    /* The left column (foregrounds) of color entry groups */
+    tmpW = addColorGroup( form, "textFg", 'P', "Plain Text Foreground", 
+            &(cd->textFgW), &(cd->textFgErrW), topW, 1, 49, 
+            textFgModifiedCB, cd );
+    tmpW = addColorGroup( form, "selectFg", 'S', "Selected Foreground",
+            &(cd->selectFgW), &(cd->selectFgErrW), tmpW, 1, 49, 
+            selectFgModifiedCB, cd );
+    tmpW = addColorGroup( form, "hiliteFg", 'M', "Matching () Foreground",
+            &(cd->hiliteFgW), &(cd->hiliteFgErrW), tmpW, 1, 49, 
+            hiliteFgModifiedCB, cd );
+    tmpW = addColorGroup( form, "lineNoFg", 'L', "Line Numbers",
+            &(cd->lineNoFgW), &(cd->lineNoFgErrW), tmpW, 1, 49, 
+            lineNoFgModifiedCB, cd );
+
+    /* The right column (backgrounds) */
+    tmpW = addColorGroup( form, "textBg", 'T', "Plain Text Background",
+            &(cd->textBgW), &(cd->textBgErrW), topW, 51, 99, 
+            textBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "selectBg", 'B', "Selected Background",
+            &(cd->selectBgW), &(cd->selectBgErrW), tmpW, 51, 99, 
+            selectBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "hiliteBg", 'a', "Matching () Background",
+            &(cd->hiliteBgW), &(cd->hiliteBgErrW), tmpW, 51, 99, 
+            hiliteBgModifiedCB, cd );
+    tmpW = addColorGroup( form, "cursorFg", 'C', "Cursor Color",
+            &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 51, 99, 
+            cursorFgModifiedCB, cd );
+
+    /* The OK, Apply, and Cancel buttons */
+    okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
+          XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, tmpW,
+            XmNtopOffset, MARGIN_SPACING,
+          XmNleftAttachment, XmATTACH_POSITION,
+          XmNleftPosition, 10,
+          XmNrightAttachment, XmATTACH_POSITION,
+          XmNrightPosition, 30,
+          XmNbottomAttachment, XmATTACH_POSITION,
+          XmNbottomPosition, 99, NULL);
+    XtAddCallback(okBtn, XmNactivateCallback, colorOkCB, cd);
+    XmStringFree(s1);
+
+    if (forWindow) {
+        applyBtn = XtVaCreateManagedWidget(
+                "apply", xmPushButtonWidgetClass, form,
+              XmNlabelString, s1=XmStringCreateSimple("Apply"),
+                XmNtopAttachment, XmATTACH_WIDGET,
+                XmNtopWidget, tmpW,
+                XmNtopOffset, MARGIN_SPACING,
+              XmNmnemonic, 'A',
+              XmNleftAttachment, XmATTACH_POSITION,
+              XmNleftPosition, 40,
+              XmNrightAttachment, XmATTACH_POSITION,
+              XmNrightPosition, 60,
+              XmNbottomAttachment, XmATTACH_POSITION,
+              XmNbottomPosition, 99, NULL);
+        XtAddCallback(applyBtn, XmNactivateCallback, colorApplyCB, cd);
+        XmStringFree(s1);
+    }
+    
+    dismissBtn = XtVaCreateManagedWidget(
+            "dismiss", xmPushButtonWidgetClass, form,
+          XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, tmpW,
+            XmNtopOffset, MARGIN_SPACING,
+          XmNleftAttachment, XmATTACH_POSITION,
+          XmNleftPosition, 70,
+          XmNrightAttachment, XmATTACH_POSITION,
+          XmNrightPosition, 90,
+          XmNbottomAttachment, XmATTACH_POSITION,
+          XmNbottomPosition, 99, NULL);
+    XtAddCallback(dismissBtn, XmNactivateCallback, colorDismissCB, cd);
+    XmStringFree(s1);
+ 
+    /* Set initial default button */
+    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    
+    /* Set initial values */
+    if (forWindow) {
+        XmTextSetString(cd->textFgW,   window->colorNames[TEXT_FG_COLOR  ]);
+        XmTextSetString(cd->textBgW,   window->colorNames[TEXT_BG_COLOR  ]);
+        XmTextSetString(cd->selectFgW, window->colorNames[SELECT_FG_COLOR]);
+        XmTextSetString(cd->selectBgW, window->colorNames[SELECT_BG_COLOR]);
+        XmTextSetString(cd->hiliteFgW, window->colorNames[HILITE_FG_COLOR]);
+        XmTextSetString(cd->hiliteBgW, window->colorNames[HILITE_BG_COLOR]);
+        XmTextSetString(cd->lineNoFgW, window->colorNames[LINENO_FG_COLOR]);
+        XmTextSetString(cd->cursorFgW, window->colorNames[CURSOR_FG_COLOR]);
+    } else {
+        XmTextSetString(cd->textFgW,   GetPrefColorName(TEXT_FG_COLOR  ));
+        XmTextSetString(cd->textBgW,   GetPrefColorName(TEXT_BG_COLOR  ));
+        XmTextSetString(cd->selectFgW, GetPrefColorName(SELECT_FG_COLOR));
+        XmTextSetString(cd->selectBgW, GetPrefColorName(SELECT_BG_COLOR));
+        XmTextSetString(cd->hiliteFgW, GetPrefColorName(HILITE_FG_COLOR));
+        XmTextSetString(cd->hiliteBgW, GetPrefColorName(HILITE_BG_COLOR));
+        XmTextSetString(cd->lineNoFgW, GetPrefColorName(LINENO_FG_COLOR));
+        XmTextSetString(cd->cursorFgW, GetPrefColorName(CURSOR_FG_COLOR));
+    }
+    
+    /* Handle mnemonic selection of buttons and focus to dialog */
+    AddDialogMnemonicHandler(form, FALSE);
+    
+    /* put up dialog */
+    ManageDialogCenteredOnPointer(form);
 }

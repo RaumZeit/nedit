@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.33 2002/12/12 17:25:56 slobasso Exp $ */
+/* $Id: nedit.h,v 1.34 2003/03/05 23:50:59 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -36,6 +36,9 @@
 #define AUTOSAVE_OP_LIMIT 8	/* number of distinct editing operations user
 				   can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100	/* maximum length for a font name */
+#define NUM_COLORS 8            /* The number of adjustable colors (not
+                                   for syntax highlighting) */
+#define MAX_COLOR_LEN 30	/* maximum length for a color name */
 #define MAX_MARKS 36	    	/* max. # of bookmarks (one per letter & #) */
 #define MIN_LINE_NUM_COLS 4 	/* Min. # of columns in line number display */
 #define APP_NAME "nedit"	/* application name for loading resources */
@@ -195,6 +198,7 @@ typedef struct _WindowInfo {
     Widget	replaceMultiFileList;
     Widget	replaceMultiFilePathBtn;
     Widget	fontDialog;		/* NULL, unless font dialog is up */
+    Widget	colorDialog;		/* NULL, unless color dialog is up */
     Widget	readOnlyItem;		/* menu bar settable widgets... */
     Widget	autoSaveItem;
     Widget	saveLastItem;
@@ -325,6 +329,7 @@ typedef struct _WindowInfo {
     int		undoOpCount;		/* count of stored undo operations */
     int		undoMemUsed;		/* amount of memory (in bytes)
     					   dedicated to the undo list */
+    char	colorNames[NUM_COLORS][MAX_COLOR_LEN]; /* Text color names */
     char	fontName[MAX_FONT_LEN];	/* names of the text fonts in use */
     char	italicFontName[MAX_FONT_LEN];
     char	boldFontName[MAX_FONT_LEN];

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.18 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.19 2003/03/05 23:51:01 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -46,6 +46,7 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.18 2002/06/26 23:39:21 slobasso 
 #include <Xm/List.h>
 #include <Xm/Label.h>
 #include <Xm/Text.h>
+#include <Xm/TextF.h>
 #include <Xm/ToggleB.h>
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
@@ -80,7 +81,7 @@ typedef struct
 	Widget		fontNameField;	/* widget id */
 	Widget		sizeToggle;	/* widget id */
 	Widget		propFontToggle;	/* widget id */
-	Widget		dispLabel;	/* widget id */
+	Widget		dispField;	/* widget id */
 	char		**fontData;	/* font name info  */
 	int		numFonts;	/* number of fonts */
 	char		*sel1;		/* selection from list 1 */
@@ -93,6 +94,8 @@ typedef struct
 	XmFontList	oldFontList;	/* font data structure for dispSample */
 	int	exitFlag;		/* used for program exit control */
 	int	destroyedFlag;		/* used to prevent double destruction */
+	Pixel	sampleFG;		/* Colors for the sample field */
+	Pixel	sampleBG;
 }	xfselControlBlkType;
 
 
@@ -158,8 +161,13 @@ static void	FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont);
 *                                                      but starting option is  *
 *                                                      proportional fonts.     *
 *                                                                              *
-*           char *	currFont        - ASCII string that contains the name  *
+*           char *	currFont        - ASCII string that contains the name      *
 *                                         of the currently selected font.      *
+*                                                                              *
+*           Pixel   sampleFG, sampleBG      - Foreground/Background colors in  *
+*                                               which to display the sample    *
+*                                               text.                          *
+*                                                                              *
 *                                                                              *
 *     Returns:                                                                 *
 *                                                                              *
@@ -174,12 +182,13 @@ static void	FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont);
 *                                                                              *
 *******************************************************************************/
 
-char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
+char 	*FontSel(Widget parent, int showPropFonts, const char *currFont,
+            Pixel sampleFG, Pixel sampleBG)
 {
 	Widget			dialog, form, okButton, cancelButton;
 	Widget			styleList, sizeList, fontName, fontList;
-	Widget			sizeToggle, propFontToggle = NULL, dispLabel;
-	Widget			nameLabel;
+	Widget			sizeToggle, propFontToggle = NULL, dispField;
+	Widget			nameLabel, sampleLabel;
 	Arg			args[MAX_ARGS];
 	int			n;
 	XmString		tempStr;
@@ -194,6 +203,8 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	ctrlBlk.oldFont = XLoadQueryFont(XtDisplay(parent), bigFont);
 	ctrlBlk.oldFontList = XmFontListCreate(ctrlBlk.oldFont,
 		XmSTRING_DEFAULT_CHARSET);
+	ctrlBlk.sampleFG = sampleFG;
+	ctrlBlk.sampleBG = sampleBG;
 
 	dialog	= CreateDialogShell(parent, "Font Selector", args, 0);
 
@@ -201,7 +212,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 
 	n = 0;
 	XtSetArg(args[n], XmNautoUnmanage, FALSE); n++;
- 	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
+	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
 
 	/*	Create form popup dialog widget */
 
@@ -213,8 +224,8 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	n = 0;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
- 	XtSetArg(args[n], XmNbottomOffset, 4); n++;
- 	XtSetArg(args[n], XmNtopOffset, 1); n++;
+	XtSetArg(args[n], XmNbottomOffset, 4); n++;
+	XtSetArg(args[n], XmNtopOffset, 1); n++;
 	XtSetArg(args[n], XmNrightPosition, 45); n++;
 	XtSetArg(args[n], XmNwidth, 110); n++;
 	XtSetArg(args[n], XmNheight, 28); n++;
@@ -264,7 +275,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 		form, args, n);
 	XmStringFree(tempStr);
 
-	/*	create sample display label widget */
+	/*	create sample display text field widget */
 
 	n = 0;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION); n++; 
@@ -273,11 +284,29 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XtSetArg(args[n], XmNrightPosition, 99); n++;
 	XtSetArg(args[n], XmNbottomWidget, nameLabel); n++;
 	XtSetArg(args[n], XmNleftPosition, 1); n++; 
- 	XtSetArg(args[n], XmNalignment, XmALIGNMENT_BEGINNING); n++;
-       	XtSetArg(args[n], XmNrecomputeSize, FALSE); n++;
-   	XtSetArg(args[n], XmNfontList, ctrlBlk.oldFontList); n++;
- 	dispLabel = XtCreateManagedWidget(" ", xmLabelWidgetClass, form, 
+	XtSetArg(args[n], XmNalignment, XmALIGNMENT_BEGINNING); n++;
+	XtSetArg(args[n], XmNvalue, 
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789");
+		n++;
+	XtSetArg(args[n], XmNforeground, sampleFG); n++;
+	XtSetArg(args[n], XmNbackground, sampleBG); n++;
+	/* fprintf(stderr, "%d, %d\n", sampleFG, sampleBG);
+	XtSetArg(args[n], XmNfontList, ctrlBlk.oldFontList); n++; */
+	dispField = XtCreateManagedWidget(" ", xmTextFieldWidgetClass, form, 
 								       args, n);
+
+	n = 0; 
+	tempStr = XmStringCreate("Sample:", XmSTRING_DEFAULT_CHARSET);
+	XtSetArg(args[n], XmNlabelString, tempStr); n++;
+	XtSetArg(args[n], XmNmnemonic, 'S'); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET); n++; 
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++; 
+	XtSetArg(args[n], XmNleftWidget, dispField); n++; 
+	XtSetArg(args[n], XmNbottomWidget, dispField); n++;
+	XtSetArg(args[n], XmNtopOffset, 1); n++;
+	sampleLabel = XtCreateManagedWidget("Font Name:", xmLabelWidgetClass,
+		form, args, n);
+	XmStringFree(tempStr);
 
 	/*	create toggle buttons */
 
@@ -290,7 +319,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++; 
 	XtSetArg(args[n], XmNleftPosition, 2); n++; 
 	XtSetArg(args[n], XmNtopOffset, 1); n++;
-	XtSetArg(args[n], XmNbottomWidget, dispLabel); n++;
+	XtSetArg(args[n], XmNbottomWidget, sampleLabel); n++;
 	sizeToggle = XtCreateManagedWidget("sizetoggle", 
 				      xmToggleButtonWidgetClass, form, args, n);
 	XmStringFree(tempStr);
@@ -345,7 +374,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XtManageChild(fontList);
 	XtVaSetValues(nameLabel, XmNuserData, fontList, NULL);
 
-	/*	"Style" list */
+	/* "Style" list */
 
 	n = 0;
 	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
@@ -418,7 +447,7 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	ctrlBlk.sizeToggle	= sizeToggle;
 	if (showPropFonts != ONLY_FIXED)
 		ctrlBlk.propFontToggle	= propFontToggle;
-	ctrlBlk.dispLabel	= dispLabel;
+	ctrlBlk.dispField	= dispField;
 	ctrlBlk.exitFlag	= FALSE;
 	ctrlBlk.destroyedFlag	= FALSE;
 	ctrlBlk.showPropFonts	= showPropFonts;
@@ -469,9 +498,9 @@ char 	*FontSel(Widget parent, int showPropFonts, const char *currFont)
 	XmAddTabGroup(okButton);
 	XmAddTabGroup(cancelButton);
 
-        /* Make sure that we don't try to access the dialog if the user
-           destroyed it (possibly indirectly, by destroying the parent). */
-        XtAddCallback(dialog, XmNdestroyCallback,
+	/* Make sure that we don't try to access the dialog if the user
+	   destroyed it (possibly indirectly, by destroying the parent). */
+	XtAddCallback(dialog, XmNdestroyCallback,
 		(XtCallbackProc)destroyCB, (char *)&ctrlBlk);
         
 	/*	Link Motif Close option to cancel action */
@@ -864,7 +893,6 @@ static void	propFontToggleAction(Widget widget,
 {
 	int		n;
 	Arg		args[2];
-	XmString	str;
 
 	if (call_data->reason == XmCR_VALUE_CHANGED)
 	{
@@ -888,11 +916,9 @@ static void	propFontToggleAction(Widget widget,
 		setupScrollLists(NONE, *ctrlBlk);
 
 		n = 0;
-		str = XmStringCreate("", XmSTRING_DEFAULT_CHARSET);
-		XtSetArg(args[n], XmNlabelString, str); n++;
-		XtSetValues(ctrlBlk->dispLabel, args, n);
+		XtSetArg(args[n], XmNvalue, ""); n++;
+		XtSetValues(ctrlBlk->dispField, args, n);
 		XmTextSetString(ctrlBlk->fontNameField, "");
-		XmStringFree(str);
 	}
 }
 
@@ -941,6 +967,37 @@ static void	sizeToggleAction(Widget widget,
 }
 
 
+static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on, 
+        XmFontList *fontList)
+{
+    int	n=0;
+    Pixel bgOff, fgOff;
+    Arg	args[6];
+
+    XtSetArg(args[n], XmNeditable, turn_on); n++;
+    XtSetArg(args[n], XmNcursorPositionVisible, turn_on); n++;
+    if( turn_on ) {
+        if( !fontList ) {
+            fprintf(stderr, "nedit: Internal error in fontsel.c, line %i\n", \
+                    __LINE__);
+        } else {
+            XtSetArg(args[n], XmNfontList, *fontList); n++;
+        }
+        XtSetArg(args[n], XmNbackground, ctrlBlk->sampleBG); n++;
+        XtSetArg(args[n], XmNforeground, ctrlBlk->sampleFG); n++;
+    } else {
+        XtVaGetValues(ctrlBlk->okButton, XmNbackground, &bgOff, NULL);
+        XtVaGetValues(ctrlBlk->okButton, XmNforeground, &fgOff, NULL);
+        XtSetArg(args[n], XmNbackground, bgOff); n++;
+        XtSetArg(args[n], XmNforeground, fgOff); n++;
+    }
+    XtSetValues(ctrlBlk->dispField, args, n);
+    /* Make sure the sample area gets resized if the font size changes */
+    XtUnmanageChild(ctrlBlk->dispField);
+    XtManageChild(ctrlBlk->dispField);
+}
+
+
 static void	fontAction(Widget widget, xfselControlBlkType *ctrlBlk, 
 				 XmListCallbackStruct *call_data)
 {
@@ -976,16 +1033,8 @@ static void	fontAction(Widget widget, xfselControlBlkType *ctrlBlk,
 		choiceMade(ctrlBlk);
 	else
 	{
-		int		n;
-		XmString	str;
-		Arg		args[2];
-
-		n = 0;
-		str = XmStringCreate("", XmSTRING_DEFAULT_CHARSET);
-		XtSetArg(args[n], XmNlabelString, str); n++;
-		XtSetValues(ctrlBlk->dispLabel, args, n);
+		enableSample(ctrlBlk, False, NULL);
 		XmTextSetString(ctrlBlk->fontNameField, "");
-		XmStringFree(str);
 	}
 }
 
@@ -1025,19 +1074,10 @@ static void	styleAction(Widget widget, xfselControlBlkType *ctrlBlk,
 		choiceMade(ctrlBlk);
 	else
 	{
-		int		n;
-		XmString	str;
-		Arg		args[2];
-
-		n = 0;
-		str = XmStringCreate("", XmSTRING_DEFAULT_CHARSET);
-		XtSetArg(args[n], XmNlabelString, str); n++;
-		XtSetValues(ctrlBlk->dispLabel, args, n);
+        enableSample(ctrlBlk, False, NULL);
 		XmTextSetString(ctrlBlk->fontNameField, "");
-		XmStringFree(str);
 	}
 }
-
 
 static void	sizeAction(Widget widget, xfselControlBlkType *ctrlBlk, 
 				 XmListCallbackStruct *call_data)
@@ -1074,16 +1114,8 @@ static void	sizeAction(Widget widget, xfselControlBlkType *ctrlBlk,
 		choiceMade(ctrlBlk);
 	else
 	{
-		int		n;
-		XmString	str;
-		Arg		args[2];
-
-		n = 0;
-		str = XmStringCreate("", XmSTRING_DEFAULT_CHARSET);
-		XtSetArg(args[n], XmNlabelString, str); n++;
-		XtSetValues(ctrlBlk->dispLabel, args, n);
+        enableSample(ctrlBlk, False, NULL);
 		XmTextSetString(ctrlBlk->fontNameField, "");
-		XmStringFree(str);
 	}
 }
 
@@ -1126,30 +1158,19 @@ static void	choiceMade(xfselControlBlkType *ctrlBlk)
 
 static void	dispSample(xfselControlBlkType *ctrlBlk)
 {
-	Arg		args[2];
-	int			n;
 	XFontStruct		*font;
 	XmFontList		fontList;
 	Display			*display;
-	XmString		dispStr;
 
 	display		= XtDisplay(ctrlBlk->form);
 	font		= XLoadQueryFont(display, ctrlBlk->fontName);
 	fontList	= XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
 
-	n = 0;
-	dispStr = XmStringCreate(
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789",
-	    XmSTRING_DEFAULT_CHARSET);
-	XtSetArg(args[n], XmNlabelString, dispStr); n++;
-	XtSetArg(args[n], XmNfontList, fontList); n++;
-
-	XtSetValues(ctrlBlk->dispLabel, args, n);
-	XmStringFree(dispStr);
+	enableSample(ctrlBlk, True, &fontList);
 
 	if (ctrlBlk->oldFont != NULL)
 	{
- 		XFreeFont(display, ctrlBlk->oldFont);
+		XFreeFont(display, ctrlBlk->oldFont);
 		XmFontListFree(ctrlBlk->oldFontList);
 	}
 	ctrlBlk->oldFont	= font;
@@ -1293,10 +1314,10 @@ static void	FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont)
 			maxSize = size;
 		}
 	}
-    if (ind >= 0) {
-	    strcpy(bigFont, ctrlBlk->fontData[ind]);
-    }
-    else {
-        bigFont[0] = 0;
-    }
+	if (ind >= 0) {
+		strcpy(bigFont, ctrlBlk->fontData[ind]);
+	}
+	else {
+		bigFont[0] = 0;
+	}
 }

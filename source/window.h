@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.11 2002/09/26 12:37:40 ajhood Exp $ */
+/* $Id: window.h,v 1.12 2003/03/05 23:51:01 n8gray Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -27,6 +27,9 @@ void SetAutoIndent(WindowInfo *window, int state);
 void SetShowMatching(WindowInfo *window, int state);
 void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 	const char *boldName, const char *boldItalicName);
+void SetColors(WindowInfo *window, const char *textFg, const char *textBg,  
+        const char *selectFg, const char *selectBg, const char *hiliteFg, 
+        const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);

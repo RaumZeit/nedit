@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.18 2002/11/08 20:22:46 edg Exp $ */
+/* $Id: textDisp.h,v 1.19 2003/03/05 23:51:00 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -147,6 +147,9 @@ textBuffer *TextDGetBuffer(textDisp *textD);
 void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
     	styleTableEntry *styleTable, int nStyles, char unfinishedStyle,
     	unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
+void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP,
+        Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, 
+        Pixel lineNoFgP, Pixel cursorFgP);
 void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
 int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
 int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
