@@ -1,4 +1,4 @@
-# $Id: Makefile.unicos,v 1.4 2001/08/17 23:02:55 edg Exp $
+# $Id: Makefile.unicos,v 1.5 2002/03/01 16:04:58 amai Exp $
 # Makefile for Cray Unicos
 #
 # Thanks to Osman Buyukisik
@@ -8,7 +8,7 @@ AR=ar
 # To evaluate an alternative layout for the Replace/Find dialog, add
 # -DREPLACE_SCOPE to the CFLAGS. See the README file for more information.
 #
-CFLAGS=-O -DUSE_DIRENT -DUNICOS
+CFLAGS=-DUSE_DIRENT -DUNICOS -DMAXPATHLEN=1023
 BIGGER_STRINGS=
 LIBS=  -lXm -lXt -lX11 -lSM -lICE -lm
 
