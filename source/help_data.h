@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Dec 23, 2004 (Do NOT edit!)
+                 Generated on Feb 9, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2004 Mark Edel                                            *
+* Copyright (c) 1999-2005 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -2339,8 +2339,8 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01Bdialog( message, btn_1_label, btn_2_label, ... )\01A  \n",
 "\01IPop up a dialog for querying and presenting information to the user. First ",
-"argument is a string to show in the message area of the dialog. Up to eight ",
-"additional optional arguments represent labels for buttons to appear along ",
+"argument is a string to show in the message area of the dialog. ",
+"Additional optional arguments represent labels for buttons to appear along ",
 "the bottom of the dialog. Returns the number of the button pressed (the ",
 "first button is number 1), or 0 if the user closed the dialog via the window ",
 "close box. ",
@@ -2383,7 +2383,7 @@ static char * htxt_macro_subrs [] = {
 "string. The first argument is a message string to be used as a title for the ",
 "fixed text describing the list. The second string provides the list data: ",
 "this is a text string in which list entries are separated by newline ",
-"characters. Up to seven additional optional arguments represent labels for ",
+"characters. Additional optional arguments represent labels for ",
 "buttons to appear along the bottom of the dialog. Returns the line of text ",
 "selected by the user as the function value (without any newline separator) or ",
 "the empty string if none was selected, and number of the button pressed (the ",
@@ -2413,7 +2413,8 @@ static char * htxt_macro_subrs [] = {
 "Returns a new string with all of the replacements done. ",
 "\n\n",
 "\01A\01Breplace_range( start, end, string )\01A  \n",
-"\01IReplaces all of the text in the current window between two positions. ",
+"\01IReplaces all the text between two positions in the current window. If the ",
+"cursor position is between start and end it will be set to start. ",
 "\n\n",
 "\01A\01Breplace_selection( string )\01A  \n",
 "\01IReplaces the primary-selection selected text in the current window. ",
@@ -2466,7 +2467,7 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01Bstring_dialog( message, btn_1_label, btn_2_label, ... )\01A  \n",
 "\01IPops up a dialog prompting the user to enter information. The first argument ",
-"is a string to show in the message area of the dialog. Up to nine additional ",
+"is a string to show in the message area of the dialog. Additional ",
 "optional arguments represent labels for buttons to appear along the bottom of ",
 "the dialog. Returns the string entered by the user as the function value, ",
 "and number of the button pressed (the first button is number 1), in ",
@@ -5608,4 +5609,4 @@ Href H_R [] =
     { NULL,       5625, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of dec 23, 2004\n";
+static const char * NEditVersion = "NEdit release of Feb  9, 2005\n";

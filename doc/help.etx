@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.84 2005/02/06 12:31:59 yooden Exp $
+.. $Id: help.etx,v 1.85 2005/02/11 01:46:41 ajbj Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2509,8 +2509,8 @@ Macro Subroutines
 
 **dialog( message, btn_1_label, btn_2_label, ... )**  
   Pop up a dialog for querying and presenting information to the user. First
-  argument is a string to show in the message area of the dialog. Up to eight
-  additional optional arguments represent labels for buttons to appear along
+  argument is a string to show in the message area of the dialog.
+  Additional optional arguments represent labels for buttons to appear along
   the bottom of the dialog. Returns the number of the button pressed (the
   first button is number 1), or 0 if the user closed the dialog via the window
   close box.
@@ -2553,7 +2553,7 @@ Macro Subroutines
   string. The first argument is a message string to be used as a title for the
   fixed text describing the list. The second string provides the list data:
   this is a text string in which list entries are separated by newline
-  characters. Up to seven additional optional arguments represent labels for
+  characters. Additional optional arguments represent labels for
   buttons to appear along the bottom of the dialog. Returns the line of text
   selected by the user as the function value (without any newline separator) or
   the empty string if none was selected, and number of the button pressed (the
@@ -2646,7 +2646,7 @@ Macro Subroutines
 
 **string_dialog( message, btn_1_label, btn_2_label, ... )**  
   Pops up a dialog prompting the user to enter information. The first argument
-  is a string to show in the message area of the dialog. Up to nine additional
+  is a string to show in the message area of the dialog. Additional
   optional arguments represent labels for buttons to appear along the bottom of
   the dialog. Returns the string entered by the user as the function value,
   and number of the button pressed (the first button is number 1), in

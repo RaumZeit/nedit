@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.96 2005/02/10 03:35:12 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.97 2005/02/11 01:46:43 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2773,8 +2773,9 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
-    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char stringStorage[TYPE_INT_STR_SIZE(int)];
+    char btnStorage[TYPE_INT_STR_SIZE(int)];
+    char *btnLabel;
     char *message;
     Arg al[20];
     int ac;
@@ -2800,28 +2801,33 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	*errMsg = "%s subroutine called with no arguments";
     	return False;
     }
-    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
-        *errMsg = "%s subroutine called with too many arguments";
+    if (!readStringArg(argList[0], &message, stringStorage, errMsg)) {
         return False;
     }
-    if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
-	return False;
-    for (i=1; i<nArgs; i++)
-	if (!readStringArg(argList[i], &btnLabels[i-1], stringStorage[i],
-	    	errMsg))
-	    return False;
+
+    /* check that all button labels can be read */
+    for (i=1; i<nArgs; i++) {
+        if (!readStringArg(argList[i], &btnLabel, btnStorage, errMsg)) {
+            return False;
+        }
+    }
+
+    /* pick up the first button */
     if (nArgs == 1) {
-        btnLabels[0] = "OK";
-    	nBtns = 1;
-    } else
-    	nBtns = nArgs - 1;
+        btnLabel = "OK";
+        nBtns = 1;
+    }
+    else {
+        nBtns = nArgs - 1;
+        argList++;
+        readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+    }
 
     /* Create the message box dialog widget and its dialog shell parent */
     ac = 0;
     XtSetArg(al[ac], XmNtitle, " "); ac++;
     XtSetArg(al[ac], XmNmessageString, s1=MKSTRING(message)); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
-    	    ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabel)); ac++;
     dialog = CreateMessageDialog(window->shell, "macroDialog", al, ac);
     if (1 == nArgs)
     {
@@ -2850,8 +2856,9 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Add user specified buttons (1st is already done) */
     for (i=1; i<nBtns; i++) {
+        readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-    	    	XmNlabelString, s1=XmStringCreateSimple(btnLabels[i]),
+    	    	XmNlabelString, s1=XmStringCreateSimple(btnLabel),
     	    	XmNuserData, (XtPointer)(i+1), NULL);
     	XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
     	XmStringFree(s1);
@@ -2943,8 +2950,9 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
-    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char stringStorage[TYPE_INT_STR_SIZE(int)];
+    char btnStorage[TYPE_INT_STR_SIZE(int)];
+    char *btnLabel;
     char *message;
     Widget dialog, btn;
     int i, nBtns;
@@ -2970,28 +2978,30 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	*errMsg = "%s subroutine called with no arguments";
     	return False;
     }
-    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
-        *errMsg = "%s subroutine called with too many arguments";
+    if (!readStringArg(argList[0], &message, stringStorage, errMsg)) {
         return False;
     }
-    if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
-	return False;
-    for (i=1; i<nArgs; i++)
-	if (!readStringArg(argList[i], &btnLabels[i-1], stringStorage[i],
-	    	errMsg))
-	    return False;
+    /* check that all button labels can be read */
+    for (i=1; i<nArgs; i++) {
+        if (!readStringArg(argList[i], &btnLabel, stringStorage, errMsg)) {
+            return False;
+        }
+    }
     if (nArgs == 1) {
-        btnLabels[0] = "OK";
-    	nBtns = 1;
-    } else
-    	nBtns = nArgs - 1;
+        btnLabel = "OK";
+        nBtns = 1;
+    }
+    else {
+        nBtns = nArgs - 1;
+        argList++;
+        readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+    }
 
     /* Create the selection box dialog widget and its dialog shell parent */
     ac = 0;
     XtSetArg(al[ac], XmNtitle, " "); ac++;
     XtSetArg(al[ac], XmNselectionLabelString, s1=MKSTRING(message)); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
-    	    ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabel)); ac++;
     dialog = CreatePromptDialog(window->shell, "macroStringDialog", al, ac);
     if (1 == nArgs)
     {
@@ -3023,8 +3033,9 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
        added, that's what the separator below is for */
     XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, NULL);
     for (i=1; i<nBtns; i++) {
+        readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-    	    	XmNlabelString, s1=XmStringCreateSimple(btnLabels[i]),
+    	    	XmNlabelString, s1=XmStringCreateSimple(btnLabel),
     	    	XmNuserData, (XtPointer)(i+1), NULL);
     	XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
     	XmStringFree(s1);
@@ -3290,8 +3301,10 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
-    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char stringStorage[TYPE_INT_STR_SIZE(int)];
+    char textStorage[TYPE_INT_STR_SIZE(int)];
+    char btnStorage[TYPE_INT_STR_SIZE(int)];
+    char *btnLabel;
     char *message, *text;
     Widget dialog, btn;
     int i, nBtns;
@@ -3324,15 +3337,11 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       *errMsg = "%s subroutine called with no message, string or arguments";
       return False;
     }
-    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
-        *errMsg = "%s subroutine called with too many arguments";
-        return False;
-    }
 
-    if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
+    if (!readStringArg(argList[0], &message, stringStorage, errMsg))
       return False;
 
-    if (!readStringArg(argList[1], &text, stringStorage[0], errMsg))
+    if (!readStringArg(argList[1], &text, textStorage, errMsg))
       return False;
 
     if (!text || text[0] == '\0') {
@@ -3340,15 +3349,21 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       return False;
     }
 
+    /* check that all button labels can be read */
     for (i=2; i<nArgs; i++)
-      if (!readStringArg(argList[i], &btnLabels[i-2], stringStorage[i],
-              errMsg))
+      if (!readStringArg(argList[i], &btnLabel, btnStorage, errMsg))
           return False;
+
+    /* pick up the first button */
     if (nArgs == 2) {
-      btnLabels[0] = "OK";
+      btnLabel = "OK";
       nBtns = 1;
-    } else
+    }
+    else {
       nBtns = nArgs - 2;
+      argList += 2;
+      readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+    }
 
     /* count the lines in the text - add one for unterminated last line */
     nlines = 1;
@@ -3431,7 +3446,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     XtSetArg(al[ac], XmNlistItems, test_strings); ac++;
     XtSetArg(al[ac], XmNlistItemCount, nlines); ac++;
     XtSetArg(al[ac], XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0])); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabel)); ac++;
     dialog = CreateSelectionDialog(window->shell, "macroListDialog", al, ac);
     if (2 == nArgs)
     {
@@ -3476,8 +3491,9 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
        added, that's what the separator below is for */
     XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, NULL);
     for (i=1; i<nBtns; i++) {
+      readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
       btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-              XmNlabelString, s1=XmStringCreateSimple(btnLabels[i]),
+              XmNlabelString, s1=XmStringCreateSimple(btnLabel),
               XmNuserData, (XtPointer)(i+1), NULL);
       XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
       XmStringFree(s1);
