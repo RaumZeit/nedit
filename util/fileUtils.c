@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.18 2001/11/26 21:40:35 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.19 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -62,7 +62,10 @@ static int compareThruSlash(const char *string1, const char *string2);
 static void copyThruSlash(char **toString, char **fromString);
 
 /*
-** Decompose a Unix file name into a file name and a path
+** Decompose a Unix file name into a file name and a path.
+** Return non-zero value if it fails, zero else.
+** For now we assume that filename and pathname are at
+** least MAXPATHLEN chars long.
 */
 int
 ParseFilename(const char *fullname, char *filename, char *pathname)
@@ -94,17 +97,22 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     }
 #endif
 
-
     /* move chars before / (or ] or :) into pathname,& after into filename */
     pathLen = i + 1;
     fileLen = fullLen - pathLen;
+    if (pathLen > MAXPATHLEN) {
+       return 1;
+    }
     strncpy(pathname, fullname, pathLen);
     pathname[pathLen] = 0;
+    if (fileLen > MAXPATHLEN) {
+       return 2;
+    }
     strncpy(filename, &fullname[pathLen], fileLen);
     filename[fileLen] = 0;
 
 #ifdef VMS
-    return TRUE;
+    return 0;
 #else     /* UNIX specific... Modify at a later date for VMS */
     return NormalizePathname(pathname);
 #endif
@@ -224,12 +232,14 @@ ResolvePath(const char * pathIn, char * pathResolved)
 #endif /* NO_READLINK */
 }
 
-    
+
+/*
+** Return 0 if everything's fine. In fact it always return 0 ...
+** Capable to handle arbitrary path length (>MAXPATHLEN)!
+*/
 int
 NormalizePathname(char *pathname)
 {
-    char oldPathname[MAXPATHLEN];
-
     /* if this is a relative pathname, prepend current directory */
 #ifdef __EMX__
     /* OS/2, ...: welcome to the world of drive letters ... */
@@ -237,9 +247,11 @@ NormalizePathname(char *pathname)
 #else
     if (pathname[0] != '/') {
 #endif
+        char *oldPathname;
         size_t len;
 
         /* make a copy of pathname to work from */
+	oldPathname=(char *)malloc(strlen(pathname)+1);
 	strcpy(oldPathname, pathname);
 	/* get the working directory and prepend to the path */
 	strcpy(pathname, GetCurrentDir());
@@ -251,6 +263,7 @@ NormalizePathname(char *pathname)
 	   strcat(pathname, "/");
 	}
 	strcat(pathname, oldPathname);
+	free(oldPathname);
     }
 
     /* compress out .. and . */
@@ -258,17 +271,20 @@ NormalizePathname(char *pathname)
 }
 
 
+/*
+** Return 0 if everything's fine, 1 else.
+*/
 int
 CompressPathname(char *pathname)
 {
-    char buf[MAXPATHLEN+1];
-    char *inPtr, *outPtr;
+    char *buf, *inPtr, *outPtr;
     struct stat statbuf;
 
     /* (Added by schwarzenberg)
     ** replace multiple slashes by a single slash 
     */
     inPtr=pathname;
+    buf=(char *)malloc(strlen(pathname)+2);
     outPtr=buf;
     while (*inPtr) {
       	*outPtr=*inPtr++;
@@ -294,8 +310,7 @@ CompressPathname(char *pathname)
 	       is a symbolic link, preserve the ../.  It is not valid to
 	       compress ../ when the previous component is a symbolic link
 	       because ../ is relative to where the link points.  If there's
-	       no S_ISLNK macro, assume system does not do symbolic links
-	       (currently OS/2) */
+	       no S_ISLNK macro, assume system does not do symbolic links. */
 #ifdef S_ISLNK
 	    if(outPtr-1 == buf || (lstat(buf, &statbuf) == 0 &&
 		    S_ISLNK(statbuf.st_mode))) {
@@ -316,8 +331,17 @@ CompressPathname(char *pathname)
 	}
     }
     /* updated pathname with the new value */
-    strcpy(pathname, buf);
-    return TRUE;
+    if (strlen(buf)>MAXPATHLEN) {
+       fprintf(stderr, "NEdit: CompressPathname(): file name too long %s\n",
+               pathname);
+       free(buf);
+       return 1;
+    }
+    else {
+       strcpy(pathname, buf);
+       free(buf);
+       return 0;
+    }
 }
 
 static char
@@ -383,6 +407,7 @@ const char
     /* Start from the rear */
     const char* ptr = path + strlen(path);
     int count = 0;
+
     while (--ptr > path) {
         if (*ptr == '/') {
             if (count++ == noOfComponents) {

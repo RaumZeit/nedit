@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.24 2001/11/16 09:39:26 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.25 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -744,7 +744,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
     
     if (nTags>1) {
 	if (!(dupTagsList = (char **) malloc(sizeof(char *) * nTags))) {
-	    printf("findDef(): out of heap space!\n");
+	    fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
 	    XBell(TheDisplay, 0);
 	    return;
 	}
@@ -756,7 +756,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	    else 
 		sprintf(temp,"%2d. %s%s",i+1,pathname,filename);
 	    if (!(dupTagsList[i] = (char *) malloc(strlen(temp) + 1))) {
-		printf("findDef(): out of heap space!\n");
+		fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
 		XBell(TheDisplay, 0);
 		return;
 	    }

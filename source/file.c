@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.38 2001/11/27 09:09:11 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.39 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -627,7 +627,9 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     	addWrapNewlines(window);
     
     /* If the requested file is this file, just save it and return */
-    ParseFilename(fullname, filename, pathname);
+    if (ParseFilename(fullname, filename, pathname) != 0) {
+       return FALSE;
+    }
     if (!strcmp(window->filename, filename) &&
     	    !strcmp(window->path, pathname)) {
 	if (writeBckVersion(window))

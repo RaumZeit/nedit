@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.24 2001/12/03 22:21:58 amai Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.25 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -462,9 +462,12 @@ int main(int argc, char **argv)
 	    if (nameList != NULL)
 	    	free(nameList);
 #else
-	    ParseFilename(argv[i], filename, pathname);
-	    EditExistingFile(WindowList, filename, pathname, editFlags,
-		    geometry, iconic, langMode);
+	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
+  	        EditExistingFile(WindowList, filename, pathname, editFlags,
+		                 geometry, iconic, langMode);
+	    } else {
+    	        fprintf(stderr, "NEdit: file name too long: %s", argv[i]);
+	    }
 	    fileSpecified = TRUE;
 	    if (!macroFileRead) {
 		ReadMacroInitFile(WindowList);

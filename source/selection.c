@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.14 2001/11/20 13:25:06 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.15 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -285,7 +285,8 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
     if ((strchr(nameText, ':') == NULL) && (strlen(nameText) > 1) &&
       	    !((nameText[0] == '[') && (nameText[1] != '-') &&
 	      (nameText[1] != '.'))) {
-	sprintf(filename, "%s%s", window->path, nameText);
+	strcpy(filename, window->path);
+	strcat(filename, nameText);
 	strcpy(nameText, filename);
     }
 #else
@@ -294,7 +295,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
         
     /* If path name is relative, make it refer to current window's directory */
     if (nameText[0] != '/') {
-	sprintf(filename, "%s%s", window->path, nameText);
+	strcat(filename, nameText);
 	strcpy(nameText, filename);
     }
 #endif
@@ -306,17 +307,28 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
        guranteed to be available, but in practice is there and does work. */
 #if defined(DONT_HAVE_GLOB) || defined(VMS)
     /* Open the file */
-    ParseFilename(nameText, filename, pathname);
+    if (ParseFilename(nameText, filename, pathname) != 0) {
+        XBell(TheDisplay, 0);
+	return;
+    }	
     EditExistingFile(WindowList, filename, pathname, 0, NULL, False, NULL);
 #elif defined(USE_MOTIF_GLOB)
-    { char **nameList = NULL; int i, nFiles = 0, maxFiles = 30;
-      ParseFilename(nameText, filename, pathname);
+    { char **nameList = NULL;
+      int i, nFiles = 0, maxFiles = 30;
+
+      if (ParseFilename(nameText, filename, pathname) != 0) {
+           XBell(TheDisplay, 0);
+	   return;
+      }
       _XmOSGetDirEntries(pathname, filename, XmFILE_ANY_TYPE, False, True,
 	      &nameList, &nFiles, &maxFiles);
       for (i=0; i<nFiles; i++) {
-	  ParseFilename(nameList[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, 0, NULL, False,
-		  NULL);
+	  if (ParseFilename(nameList[i], filename, pathname) != 0) {
+	      XBell(TheDisplay, 0);
+          else
+    	      EditExistingFile(WindowList, filename, pathname, 0, NULL, 
+	                       False, NULL);
+	  }
       }
       for (i=0; i<nFiles; i++)
 	  XtFree(nameList[i]);
@@ -325,11 +337,14 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 #else
     { glob_t globbuf;
       int i;
+
       glob(nameText, GLOB_NOCHECK, NULL, &globbuf);
       for (i=0; i<(int)globbuf.gl_pathc; i++) {
-	  ParseFilename(globbuf.gl_pathv[i], filename, pathname);
-    	  EditExistingFile(WindowList, filename, pathname, 0, NULL, False,
-		  NULL);
+	  if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
+	      XBell(TheDisplay, 0);
+	  else
+    	      EditExistingFile(WindowList, filename, pathname, 0, NULL,
+	                       False, NULL);
       }
       globfree(&globbuf);
     }

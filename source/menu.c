@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.42 2001/11/27 10:47:10 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.43 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2360,7 +2360,11 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr, "NEdit: open action requires file argument\n");
     	return;
     }
-    ParseFilename(args[0], filename, pathname);
+    if (ParseFilename(args[0], filename, pathname) != 0) {
+        fprintf(stderr, "NEdit: invalid file name for open action: %s\n",
+	        args[0]);
+    	return;
+    } 
     EditExistingFile(window, filename, pathname, 0, NULL, False, NULL);
     CheckCloseDim();
 }
@@ -4551,4 +4555,4 @@ static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName)
     }
     return False; /* not reached */
 }
-#endif
+#endif /* SGI_CUSTOM */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.15 2001/12/03 22:18:19 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.16 2001/12/04 17:50:37 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -146,15 +146,16 @@ int main(int argc, char **argv)
     }
     commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
     outPtr = commandLine;
-    for (i=1; i<argc; i++) {
-/* #if !defined(VMS) && !defined(__EMX__) */
 #if defined(VMS)
+    for (i=1; i<argc; i++) {
    /* Non-Unix shells don't want/need esc */
     	for (c=argv[i]; *c!='\0'; c++) {
             *outPtr++ = *c;
     	}
     }
+    *outPtr = '\0';
 #else
+    for (i=1; i<argc; i++) {
         *outPtr++ = '\'';
     	for (c=argv[i]; *c!='\0'; c++) {
             if (*c == '\'') {
@@ -169,18 +170,21 @@ int main(int argc, char **argv)
         *outPtr++ = '\'';
     	*outPtr++ = ' ';
     }
-#endif
     *outPtr = '\0';
+#endif
 
     /* Convert command line arguments into a command string for the server */
     commandString = parseCommandLine(argc, argv);
-
+    if (commandString == NULL) {
+        XtWarning ("nc: Invalid commandline argument\n");
+	exit(EXIT_FAILURE);
+    }
     /* Open the display and find the root window */
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
     	    0, &argc, argv);
     if (!TheDisplay) {
 	XtWarning ("nc: Can't open display\n");
-	return 1;
+	exit(EXIT_FAILURE);
     }
     rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
     
@@ -377,8 +381,9 @@ static char *parseCommandLine(int argc, char **argv)
     /* Allocate a string for output, for the maximum possible length.  The
        maximum length is calculated by assuming every argument is a file,
        and a complete record of maximum length is created for it */
-    for (i=1; i<argc; i++)
+    for (i=1; i<argc; i++) {
     	length += 38 + strlen(argv[i]) + MAXPATHLEN;
+    }
     commandString = XtMalloc(length+1);
     
     /* Parse the arguments and write the output string */
@@ -449,7 +454,10 @@ static char *parseCommandLine(int argc, char **argv)
 	    	XtFree(commandString);
 	    	commandString = newCommandString;
 	    	outPtr = newCommandString + oldLength;
-	    	ParseFilename(nameList[j], name, path);
+	    	if (ParseFilename(nameList[j], name, path) != 0) {
+	           /* An Error, most likely too long paths/strings given */
+	           return NULL;
+		}
     		strcat(path, name);
                 /* See below for casts */
     		sprintf(outPtr, "%d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
@@ -463,7 +471,10 @@ static char *parseCommandLine(int argc, char **argv)
 	    if (nameList != NULL)
 	    	free(nameList);
 #else
-    	    ParseFilename(argv[i], name, path);
+    	    if (ParseFilename(argv[i], name, path) != 0) {
+	       /* An Error, most likely too long paths/strings given */
+	       return NULL;
+	    }
     	    strcat(path, name);
     	    /* SunOS 4 acc or acc and/or its runtime library has a bug
     	       such that %n fails (segv) if it follows a string in a
@@ -497,7 +508,7 @@ static char *parseCommandLine(int argc, char **argv)
     VMSFileScanDone();
 #endif /*VMS*/
     
-    /* If ther's an un-written -do command, write it with an empty file name */
+    /* If there's an un-written -do command, write it with an empty file name */
     if (toDoCommand[0] != '\0') {
 	sprintf(outPtr, "0 0 0 0 0 %d 0 0\n\n%n", (int) strlen(toDoCommand),
 		&charsWritten);
