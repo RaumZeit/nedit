@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.130 2004/03/19 09:53:21 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.131 2004/03/21 14:25:56 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -60,7 +60,7 @@ static const char CVSID[] = "$Id: window.c,v 1.130 2004/03/19 09:53:21 tksoh Exp
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
 #include "../util/DialogF.h"
-#include "../Xlt/BubbleButton.h"
+#include "../Xlt/BubbleButtonP.h"
 #include "../Microline/XmL/Folder.h"
 
 #include <stdio.h>
@@ -134,6 +134,7 @@ static unsigned char close_bits[] = {
 
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
+static void hideTooltip(Widget tab);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin);
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
@@ -770,6 +771,21 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 }
 
 /*
+** ButtonPress event handler for tabs.
+*/
+static void tabClickEH(Widget w, XtPointer clientData, XEvent *event)
+{
+    /* hide the tooltip when user clicks with any button. */
+    if (BubbleButton_Timer(w)) {
+    	XtRemoveTimeOut(BubbleButton_Timer(w));
+    	BubbleButton_Timer(w) = (XtIntervalId)NULL;
+    }
+    else {
+        hideTooltip(w);
+    }
+}
+
+/*
 ** add a new tab to the tab bar, where the [new] buffer belongs.
 */
 static Widget addTab(Widget folder, WindowInfo *window, const char *string)
@@ -793,8 +809,9 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
 	    NULL);
     XmStringFree(s1);
 
-    XtAddCallback(tab, XmNactivateCallback,
-    	    (XtCallbackProc)clickTabCB, NULL);
+    /* there's things to do as user click on the tab */
+    XtAddEventHandler(tab, ButtonPressMask, False, 
+            (XtEventHandler)tabClickEH, (XtPointer)0);
 
     /* BubbleButton simply use reversed video for tooltips,
        we try to use the 'standard' color */

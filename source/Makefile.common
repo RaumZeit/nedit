@@ -1,4 +1,4 @@
-# $Id: Makefile.common,v 1.16 2003/12/25 06:55:07 tksoh Exp $
+# $Id: Makefile.common,v 1.17 2004/03/21 14:25:56 tksoh Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #
@@ -13,7 +13,7 @@ XLTLIB = ../Xlt/libXlt.a
 XMLLIB = ../Microline/XmL/libXmL.a
 
 .c.o:
-	$(CC) -c -I../Microline $(CFLAGS) -o $@ $<
+	$(CC) -c -I../Microline -I../Xlt $(CFLAGS) -o $@ $<
 
 all: nedit nc
 
