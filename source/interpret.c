@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.38 2004/04/30 15:27:00 edg Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.39 2004/05/12 09:21:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2836,7 +2836,7 @@ static void dumpVal(DataValue dv)
             {
                 int k;
                 char s[21];
-                char *src = dv.val.str;
+                char *src = dv.val.str.rep;
                 if (!src) {
                     printf("s=<NULL>");
                 }
