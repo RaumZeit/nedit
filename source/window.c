@@ -402,6 +402,11 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     menuBar = CreateMenuBar(mainWin, window);
     window->menuBar = menuBar;
     XtManageChild(menuBar);
+    
+    /* Patch around Motif's most idiotic "feature", that its menu accelerators
+       recognize Caps Lock and Num Lock as modifiers, and don't trigger if
+       they are engaged */ 
+    AccelLockBugPatch(appShell, menuBar);
         
     /* Create paned window to manage split window behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,

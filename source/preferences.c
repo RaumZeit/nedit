@@ -499,7 +499,7 @@ static PrefDescripRec PrefDescrip[] = {
 #endif /*VMS*/
 #ifdef VMS
        "C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.CC .HH .I .CXX .HXX::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+	C++:.CC .HH .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Java:.JAVA::::::\n\
 	Ada:.ADA .AD .ADS .ADB .A::::::\n\
 	Fortran:.F .F77 .FOR::::::\n\
@@ -522,7 +522,7 @@ static PrefDescripRec PrefDescrip[] = {
 	NEdit Macro:.NM .NEDITMACRO::::::",
 #else
        "C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.cc .hh .C .H .i .cxx .hxx::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+	C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Java:.java::::::\n\
 	JavaScript:.js::::::\n\
 	Ada:.ada .ad .ads .adb .a::::::\n\

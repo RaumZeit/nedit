@@ -1179,6 +1179,7 @@ static void updateMenu(WindowInfo *window, int menuType)
 		    window->bgMenuUndoItem = btn;
 		else if (menuType == BG_MENU_CMDS && !strcmp(f->cmd,"redo()\n"))
 		    window->bgMenuRedoItem = btn;
+		UpdateAccelLockPatch(window->shell, btn);
 		break;
 	    }
 	    hierName = copySubstring(strippedName, subSep - strippedName);

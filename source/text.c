@@ -2402,6 +2402,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     else {
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args,nArgs));
 	checkAutoShowInsertPos(w);
+        callCursorMovementCBs(w, event);
     }
 }
 

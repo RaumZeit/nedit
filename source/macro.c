@@ -2363,7 +2363,9 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     macroCmdInfo *cmdData;
     char stringStorage[9][25], *btnLabels[8], *message;
-    Widget shell, dialog, btn;
+    Arg al[20];
+    int ac;
+    Widget dialog, btn;
     int i, nBtns;
     XmString s1, s2;
     
@@ -2398,17 +2400,18 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	nBtns = nArgs - 1;
 
     /* Create the message box dialog widget and its dialog shell parent */
-    shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
-    	    window->shell, XmNtitle, " ", NULL);
-    AddMotifCloseCallback(shell, dialogCloseCB, window);
-    dialog = XtVaCreateWidget("macroDialog", xmMessageBoxWidgetClass,
-    	    shell, XmNmessageString, s1=MKSTRING(message),
-    	    XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]), NULL);
+    ac = 0;
+    XtSetArg(al[ac], XmNtitle, " "); ac++;
+    XtSetArg(al[ac], XmNmessageString, s1=MKSTRING(message)); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
+    	    ac++;
+    dialog = CreateMessageDialog(window->shell, "macroDialog", al, ac);
+    XmStringFree(s1);
+    XmStringFree(s2);
+    AddMotifCloseCallback(XtParent(dialog), dialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, dialogBtnCB, window);
     XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
     	    XmNuserData, (XtPointer)1, NULL);
-    XmStringFree(s1);
-    XmStringFree(s2);
     cmdData->dialog = dialog;
 
     /* Unmanage default buttons, except for "OK" */
@@ -2493,9 +2496,11 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     macroCmdInfo *cmdData;
     char stringStorage[9][25], *btnLabels[8], *message;
-    Widget shell, dialog, btn;
+    Widget dialog, btn;
     int i, nBtns;
     XmString s1, s2;
+    Arg al[20];
+    int ac;
     
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
@@ -2528,18 +2533,18 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	nBtns = nArgs - 1;
 
     /* Create the selection box dialog widget and its dialog shell parent */
-    shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
-    	    window->shell, XmNtitle, " ", NULL);
-    AddMotifCloseCallback(shell, stringDialogCloseCB, window);
-    dialog = XtVaCreateWidget("macroStringDialog", xmSelectionBoxWidgetClass,
-    	    shell, XmNselectionLabelString, s1=MKSTRING(message),
-    	    XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]),
-    	    XmNdialogType, XmDIALOG_PROMPT, NULL);
+    ac = 0;
+    XtSetArg(al[ac], XmNtitle, " "); ac++;
+    XtSetArg(al[ac], XmNselectionLabelString, s1=MKSTRING(message)); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
+    	    ac++;
+    dialog = CreatePromptDialog(window->shell, "macroStringDialog", al, ac);
+    XmStringFree(s1);
+    XmStringFree(s2);
+    AddMotifCloseCallback(XtParent(dialog), stringDialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, stringDialogBtnCB, window);
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
     	    XmNuserData, (XtPointer)1, NULL);
-    XmStringFree(s1);
-    XmStringFree(s2);
     cmdData->dialog = dialog;
 
     /* Unmanage unneded widgets */
@@ -2654,7 +2659,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     macroCmdInfo *cmdData;
     char stringStorage[9][25], *btnLabels[8], *message, *text;
-    Widget shell, dialog, btn;
+    Widget dialog, btn;
     int i, nBtns;
     XmString s1, s2;
     long nlines = 0;
@@ -2663,6 +2668,9 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     int n, is_last;
     XmString *test_strings;
     int tabDist;
+    Arg al[20];
+    int ac;
+
   
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
@@ -2779,16 +2787,15 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     /* Create the selection box dialog widget and its dialog shell parent */
-    shell = XtVaCreateWidget("macroDialogShell", xmDialogShellWidgetClass,
-          window->shell, XmNtitle, " ", NULL);
-    AddMotifCloseCallback(shell, listDialogCloseCB, window);
-    dialog = XtVaCreateWidget("macroListDialog", xmSelectionBoxWidgetClass,
-          shell, XmNlistLabelString, s1=MKSTRING(message),
-          XmNlistItems, test_strings,
-          XmNlistItemCount, nlines,
-          XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines,
-          XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]),
-          XmNdialogType, XmDIALOG_SELECTION, NULL);
+    ac = 0;
+    XtSetArg(al[ac], XmNtitle, " "); ac++;
+    XtSetArg(al[ac], XmNlistLabelString, s1=MKSTRING(message)); ac++;
+    XtSetArg(al[ac], XmNlistItems, test_strings); ac++;
+    XtSetArg(al[ac], XmNlistItemCount, nlines); ac++;
+    XtSetArg(al[ac], XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0])); ac++;
+    dialog = CreateSelectionDialog(window->shell, "macroListDialog", al, ac);
+    AddMotifCloseCallback(XtParent(dialog), listDialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, listDialogBtnCB, window);
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
           XmNuserData, (XtPointer)1, NULL);
