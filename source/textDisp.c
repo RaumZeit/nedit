@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.32 2002/08/31 07:24:00 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.33 2002/09/02 08:55:57 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -3035,10 +3035,12 @@ static void findWrapRange(textDisp *textD, char *deletedText, int pos,
 
     length = (pos-countFrom) + nDeleted +(countTo-(pos+nInserted));
     deletedTextBuf = BufCreatePreallocated(length);
-    BufCopyFromBuf(textD->buffer, deletedTextBuf, countFrom, pos, 0);
+    if (pos > countFrom)
+        BufCopyFromBuf(textD->buffer, deletedTextBuf, countFrom, pos, 0);
     if (nDeleted != 0)
-    	BufInsert(deletedTextBuf, pos-countFrom, deletedText);
-    BufCopyFromBuf(textD->buffer, deletedTextBuf,
+	BufInsert(deletedTextBuf, pos-countFrom, deletedText);
+    if (countTo > pos+nInserted)    
+	BufCopyFromBuf(textD->buffer, deletedTextBuf,
     	    pos+nInserted, countTo, pos-countFrom+nDeleted);
     /* Note that we need to take into account an offset for the style buffer:
        the deletedTextBuf can be out of sync with the style buffer. */
