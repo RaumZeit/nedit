@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.56 2003/12/30 15:19:17 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.57 2003/12/30 15:32:28 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -140,6 +140,11 @@ static char *fallbackResources[] = {
         "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
+
+    "*XmLFolder.highlightThickness: 0",
+    "*XmLFolder.shadowThickness:    1",
+    "*XmLFolder.maxTabWidth:        150",
+    "*XmLFolder.traversalOn:        False",
 
     /* Prevent the file selection box from acting stupid. */
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
@@ -401,7 +406,8 @@ int main(int argc, char **argv)
     }
 
     /* Create a hidden application shell that is the parent of all the
-       main editor windows. */
+       main editor windows.  Realize it so it the window can act as 
+       group leader. */
     TheAppShell = CreateShellWithBestVis(APP_NAME, 
                                          APP_CLASS,
                                          applicationShellWidgetClass,
@@ -409,6 +415,9 @@ int main(int argc, char **argv)
                                          NULL,
                                          0);
 
+    XtSetMappedWhenManaged(TheAppShell, False);
+    XtRealizeWidget(TheAppShell);
+    
     patchResourcesForVisual();
     patchResourcesForKDEbug();
     
