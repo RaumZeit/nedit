@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.4 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.5 2001/03/23 14:41:09 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -59,6 +59,7 @@ static void freeUndoRecord(UndoInfo *undo);
 void Undo(WindowInfo *window)
 {
     UndoInfo *undo = window->undo;
+	int restoredTextLength;
     
     /* return if nothing to undo */
     if (undo == NULL)
@@ -75,11 +76,18 @@ void Undo(WindowInfo *window)
     BufReplace(window->buffer, undo->startPos, undo->endPos,
     	    (undo->oldText != NULL ? undo->oldText : ""));
     
+	restoredTextLength = undo->oldText != NULL ? strlen(undo->oldText) : 0;
     /* position the cursor in the focus pane after the changed text
        to show the user where the undo was done */
-    TextSetCursorPos(window->lastFocus, undo->startPos +
-    	    (undo->oldText != NULL ? strlen(undo->oldText) : 0));
+    TextSetCursorPos(window->lastFocus, undo->startPos + restoredTextLength);
     
+	if (restoredTextLength > 0) {
+		BufSelect(window->buffer, undo->startPos, undo->startPos + restoredTextLength);
+	}
+	else {
+		BufUnselect(window->buffer);
+	}
+	 
     /* restore the file's unmodified status if the file was unmodified
        when the change being undone was originally made.  Also, remove
        the backup file, since the text in the buffer is now identical to
@@ -96,7 +104,8 @@ void Undo(WindowInfo *window)
 void Redo(WindowInfo *window)
 {
     UndoInfo *redo = window->redo;
-    
+	int restoredTextLength;
+
     /* return if nothing to redo */
     if (window->redo == NULL)
     	return;
@@ -110,11 +119,18 @@ void Redo(WindowInfo *window)
     BufReplace(window->buffer, redo->startPos, redo->endPos,
     	    (redo->oldText != NULL ? redo->oldText : ""));
     
+ 	restoredTextLength = redo->oldText != NULL ? strlen(redo->oldText) : 0;
     /* position the cursor in the focus pane after the changed text
        to show the user where the redo was done */
-    TextSetCursorPos(window->lastFocus, redo->startPos +
-    	    (redo->oldText != NULL ? strlen(redo->oldText) : 0));
+    TextSetCursorPos(window->lastFocus, redo->startPos + restoredTextLength);
     
+ 	if (restoredTextLength > 0) {
+		BufSelect(window->buffer, redo->startPos, redo->startPos + restoredTextLength);
+	}
+	else {
+		BufUnselect(window->buffer);
+	}
+
     /* restore the file's unmodified status if the file was unmodified
        when the change being redone was originally made */	    
     if (redo->restoresToSaved)
