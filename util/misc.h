@@ -1,3 +1,4 @@
+/* $Id: misc.h,v 1.5 2001/02/26 23:38:03 edg Exp $ */
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2

@@ -1,4 +1,4 @@
-/* SCCS ID: nedit.bm 1.4 9/1/94 */
+/* $Id: nedit.bm,v 1.2 2001/02/26 23:38:03 edg Exp $ */
 #define iconBitmapWidth 50
 #define iconBitmapHeight 50
 static unsigned char iconBits[] = {

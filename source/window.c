@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: window.c,v 1.13 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *

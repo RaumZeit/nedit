@@ -1,3 +1,4 @@
+/* $Id: text.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 #ifndef  Text_H
 #define  Text_H
 

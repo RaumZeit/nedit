@@ -1,3 +1,4 @@
+/* $Id: highlightData.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 patternSet *FindPatternSet(char *langModeName);
 int LoadHighlightString(char *inString, int convertOld);
 char *WriteHighlightString(void);

@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: preferences.c,v 1.15 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *

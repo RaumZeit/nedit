@@ -1,3 +1,4 @@
+$ ! $Id: comnedit.com,v 1.4 2001/02/26 23:38:03 edg Exp $
 $ !
 $ ! VMS procedure to compile and link modules for NEdit
 $ !

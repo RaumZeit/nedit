@@ -1,3 +1,4 @@
+# $Id: Makefile,v 1.5 2001/02/26 23:38:02 edg Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor

@@ -1,3 +1,4 @@
+/* $Id: textSel.h,v 1.2 2001/02/26 23:38:03 edg Exp $ */
 void HandleXSelections(Widget w);
 void StopHandlingXSelections(Widget w);
 void CopyToClipboard(Widget w, Time time);

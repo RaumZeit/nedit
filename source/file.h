@@ -1,3 +1,4 @@
+/* $Id: file.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
 /* flags for EditExistingFile */
 #define CREATE 1
 #define SUPPRESS_CREATE_WARN 2

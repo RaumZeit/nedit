@@ -1,3 +1,4 @@
+/* $Id: menu.h,v 1.5 2001/02/26 23:38:03 edg Exp $ */
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
 

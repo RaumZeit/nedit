@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: undo.c,v 1.4 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *

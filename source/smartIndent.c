@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: smartIndent.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *

@@ -1,3 +1,4 @@
+/* $Id: textP.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 /*******************************************************************************
 *									       *
 * textP.h - Text Editing Widget	private include file			       *

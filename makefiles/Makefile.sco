@@ -1,3 +1,4 @@
+# $Id: Makefile.sco,v 1.2 2001/02/26 23:38:03 edg Exp $
 # Makefile for SCO Unix
 #
 # Thanks to Koen D'Hondt and patrick@wombat.logica.co.uk, and Andras Porjesz

@@ -1,3 +1,4 @@
+/* $Id: userCmds.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 void EditShellMenu(WindowInfo *window);
 void EditMacroMenu(WindowInfo *window);
 void EditBGMenu(WindowInfo *window);

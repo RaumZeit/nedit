@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: textDisp.c,v 1.6 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *

@@ -1,3 +1,4 @@
+/* $Id: highlight.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 /* Pattern flags for modifying pattern matching behavior */
 #define PARSE_SUBPATS_FROM_START 1
 #define DEFER_PARSING 2

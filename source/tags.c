@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: tags.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *

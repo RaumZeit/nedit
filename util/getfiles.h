@@ -1,3 +1,4 @@
+/* $Id: getfiles.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 #define GFN_OK		1               /* Get Filename OK constant     */
 #define GFN_CANCEL	2               /* Get Filename Cancel constant */
 

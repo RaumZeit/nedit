@@ -1,3 +1,4 @@
+/* $Id: interpret.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */

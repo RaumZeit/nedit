@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: highlight.c,v 1.11 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *

@@ -1,3 +1,4 @@
+# $Id: Makefile.dependencies,v 1.3 2001/02/26 23:38:03 edg Exp $
 DialogF.o: DialogF.c misc.h DialogF.h
 fileUtils.o: fileUtils.c fileUtils.h ../util/utils.h
 fontsel.o: fontsel.c DialogF.h misc.h fontsel.h

@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: textDrag.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDrag.c - Text Dragging routines for NEdit text widget		       *

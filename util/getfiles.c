@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: getfiles.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *

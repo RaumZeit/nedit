@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: vmsUtils.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * vmsUtils.c - Utility routines for VMS systems.			       *
@@ -60,7 +61,6 @@
 * Written by Joy Kyriakopulos						       *
 *									       *
 *******************************************************************************/
-static char SCCSID[] = "@(#)vmsUtils.c	1.8     7/7/94";
 
 #ifdef VMS
 

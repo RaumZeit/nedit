@@ -1,3 +1,4 @@
+# $Id: Makefile.reliant,v 1.2 2001/02/26 23:38:03 edg Exp $
 #Makefile for ReliantUNIX-N Version 5.44 (SINIX)
 CC=cc
 AR=ar

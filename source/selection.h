@@ -1,3 +1,4 @@
+/* $Id: selection.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 void GotoSelectedLineNumber(WindowInfo *window, Time time);
 void GotoLineNumber(WindowInfo *window);
 void SelectNumberedLine(WindowInfo *window, int lineNum);

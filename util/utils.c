@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: utils.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *

@@ -1,3 +1,4 @@
+/* $Id: macro.h,v 1.2 2001/02/26 23:38:03 edg Exp $ */
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
 	

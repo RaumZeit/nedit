@@ -1,3 +1,4 @@
+# $Id: Makefile.sunos,v 1.2 2001/02/26 23:38:03 edg Exp $
 CC=/usr/lang/acc
 AR=/usr/5bin/ar
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS

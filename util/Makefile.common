@@ -1,4 +1,4 @@
-# SCCS ID: Makefile.common 1.18 9/20/93
+# $Id: Makefile.common,v 1.5 2001/02/26 23:38:03 edg Exp $
 #
 # Platform independent part of make procedure for Nirvana utilities directory, 
 # included by machine specific makefiles.

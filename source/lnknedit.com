@@ -1,3 +1,4 @@
+$ ! $Id: lnknedit.com,v 1.3 2001/02/26 23:38:03 edg Exp $
 $ !
 $ ! DCL link procedure for NEdit
 $ !

@@ -1,3 +1,4 @@
+/* $Id: DialogF.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
 /*
  *  To use DialogF, #include <stdarg.h>
  */

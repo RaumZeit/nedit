@@ -1,3 +1,4 @@
+/* $Id: preferences.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */

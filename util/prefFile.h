@@ -1,3 +1,4 @@
+/* $Id: prefFile.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
 enum PrefDataTypes {PREF_INT, PREF_BOOLEAN, PREF_ENUM, PREF_STRING,
 	PREF_ALLOC_STRING};
 

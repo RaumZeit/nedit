@@ -1,3 +1,4 @@
+/* $Id: textDisp.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 

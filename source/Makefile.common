@@ -1,3 +1,4 @@
+# $Id: Makefile.common,v 1.5 2001/02/26 23:38:03 edg Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #

@@ -1,3 +1,4 @@
+/* $Id: printUtils.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 /* Maximum length of an error returned by IssuePrintCommand() */
 #define MAX_PRINT_ERROR_LENGTH 1024
 

@@ -1,3 +1,4 @@
+/* $Id: textBuf.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20

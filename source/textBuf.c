@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: textBuf.c,v 1.5 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *

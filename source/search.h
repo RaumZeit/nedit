@@ -1,3 +1,4 @@
+/* $Id: search.h,v 1.5 2001/02/26 23:38:03 edg Exp $ */
 enum SearchType {SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX};
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 

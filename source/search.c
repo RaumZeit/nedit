@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: search.c,v 1.14 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *

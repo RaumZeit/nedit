@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: DialogF.c,v 1.8 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *

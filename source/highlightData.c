@@ -1,3 +1,4 @@
+static const char CVSID[] = "$Id: highlightData.c,v 1.8 2001/02/26 23:38:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *

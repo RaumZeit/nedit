@@ -1,7 +1,7 @@
+$ ! $Id: comutil.com,v 1.2 2001/02/26 23:38:03 edg Exp $
 $ !
 $ ! VMS procedure to compile and link modules for utilities directory
 $ !
-$ ! SCCS ID: @(#)comutil.com	1.1     8/13/93
 $ SET NOVERIFY
 $ ON ERROR THEN EXIT
 $ COMPILE := CC
