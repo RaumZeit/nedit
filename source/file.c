@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.91 2004/10/18 15:54:11 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.92 2004/12/05 01:23:48 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -369,44 +369,45 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 #endif
 	} else if (flags & CREATE && errno == ENOENT) {
 	    /* Give option to create (or to exit if this is the only window) */
-	    if (!(flags & SUPPRESS_CREATE_WARN))
-        {
-            if (WindowList == window && window->next == NULL)
-            {
-                resp = DialogF(DF_WARN, window->shell, 3, "New File",
-                        "Can't open %s:\n%s", "New File", "Cancel",
-                        "Exit NEdit", fullname, errorString());
-            } else
-            {
-                resp = DialogF(DF_WARN, window->shell, 2, "New File",
-                        "Can't open %s:\n%s", "New File", "Cancel", fullname,
-                        errorString());
-            }
+	    if (!(flags & SUPPRESS_CREATE_WARN)) {
+                /* on Solaris 2.6, and possibly other OSes, dialog won't 
+		   show if parent window is iconized. */
+                RaiseShellWindow(window->shell);
 
-            if (resp == 2)
-            {
-                return FALSE;
-            } else if (resp == 3)
-            {
-                exit(EXIT_SUCCESS);
+                /* ask user for next action if file not found */
+                if (WindowList == window && window->next == NULL) {
+                    resp = DialogF(DF_WARN, window->shell, 3, "New File",
+                            "Can't open %s:\n%s", "New File", "Cancel",
+                            "Exit NEdit", fullname, errorString());
+                } 
+	        else {
+                    resp = DialogF(DF_WARN, window->shell, 2, "New File",
+                            "Can't open %s:\n%s", "New File", "Cancel", fullname,
+                            errorString());
+                }
+
+                if (resp == 2) {
+                    return FALSE;
+                } 
+                else if (resp == 3) {
+                    exit(EXIT_SUCCESS);
+                }
             }
-        }
         
-        /* Test if new file can be created */
-        if ((fd = creat(fullname, 0666)) == -1)
-        {
-            DialogF(DF_ERR, window->shell, 1, "Error creating File",
-                    "Can't create %s:\n%s", "OK", fullname, errorString());
-            return FALSE;
-        } else
-        {
+            /* Test if new file can be created */
+            if ((fd = creat(fullname, 0666)) == -1) {
+                DialogF(DF_ERR, window->shell, 1, "Error creating File",
+                        "Can't create %s:\n%s", "OK", fullname, errorString());
+                return FALSE;
+            } 
+	    else {
 #ifdef VMS
-            /* get correct version number and close before removing */
-            getname(fd, fullname);
+                /* get correct version number and close before removing */
+                getname(fd, fullname);
 #endif
-            close(fd);
-            remove(fullname);
-        }
+                close(fd);
+                remove(fullname);
+            }
 
 	    SetWindowModified(window, FALSE);
             if ((flags & PREF_READ_ONLY) != 0) {
@@ -414,8 +415,8 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
             }
 	    UpdateWindowReadOnly(window);
 	    return TRUE;
-        } else
-        {
+        }
+	else {
             /* A true error */
             DialogF(DF_ERR, window->shell, 1, "Error opening File",
                     "Could not open %s%s:\n%s", "OK", path, name,
@@ -426,8 +427,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     
     /* Get the length of the file, the protection mode, and the time of the
        last modification to the file */
-    if (fstat(fileno(fp), &statbuf) != 0)
-    {
+    if (fstat(fileno(fp), &statbuf) != 0) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
@@ -436,8 +436,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         return FALSE;
     }
 
-    if (S_ISDIR(statbuf.st_mode))
-    {
+    if (S_ISDIR(statbuf.st_mode)) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
@@ -447,8 +446,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     }
 
 #ifdef S_ISBLK
-    if (S_ISBLK(statbuf.st_mode))
-    {
+    if (S_ISBLK(statbuf.st_mode)) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
@@ -461,8 +459,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
-    if (fileString == NULL)
-    {
+    if (fileString == NULL) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
@@ -473,8 +470,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 
     /* Read the file into fileString and terminate with a null */
     readLen = fread(fileString, sizeof(char), fileLen, fp);
-    if (ferror(fp))
-    {
+    if (ferror(fp)) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
@@ -486,8 +482,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     fileString[readLen] = 0;
  
     /* Close the file */
-    if (fclose(fp) != 0)
-    {
+    if (fclose(fp) != 0) {
         /* unlikely error */
         DialogF(DF_WARN, window->shell, 1, "Error while opening File",
                 "Unable to close file", "OK");
@@ -502,10 +497,12 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     window->fileMissing = FALSE;
     /* Detect and convert DOS and Macintosh format files */
     window->fileFormat = FormatOfFile(fileString);
-    if (window->fileFormat == DOS_FILE_FORMAT)
+    if (window->fileFormat == DOS_FILE_FORMAT) {
 	ConvertFromDosFileString(fileString, &readLen, NULL);
-    else if (window->fileFormat == MAC_FILE_FORMAT)
+    }
+    else if (window->fileFormat == MAC_FILE_FORMAT) {
 	ConvertFromMacFileString(fileString, readLen);
+    }
     
     /* Display the file contents in the text widget */
     window->ignoreModify = True;
@@ -516,24 +513,19 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
        as what we gave it.  If not, there were probably nuls in the file.
        Substitute them with another character.  If that is impossible, warn
        the user, make the file read-only, and force a substitution */
-    if (window->buffer->length != readLen)
-    {
-        if (!BufSubstituteNullChars(fileString, readLen, window->buffer))
-        {
+    if (window->buffer->length != readLen) {
+        if (!BufSubstituteNullChars(fileString, readLen, window->buffer)) {
             resp = DialogF(DF_ERR, window->shell, 2, "Error while opening File",
                     "Too much binary data in file.  You may view\n"
                     "it, but not modify or re-save its contents.", "View",
                     "Cancel");
-            if (resp == 2)
-            {
+            if (resp == 2) {
                 return FALSE;
             }
 
             SET_TMBD_LOCKED(window->lockReasons, TRUE);
-            for (c = fileString; c < &fileString[readLen]; c++)
-            {
-                if (*c == '\0')
-                {
+            for (c = fileString; c < &fileString[readLen]; c++) {
+                if (*c == '\0') {
                     *c = (char) 0xfe;
                 }
             }
