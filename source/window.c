@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.87 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -316,7 +316,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
 
-    winShell = CreateWidget(TheAppShell, "text",
+    winShell = CreateWidget(TheAppShell, "textShell",
                 topLevelShellWidgetClass, al, ac);
     window->shell = winShell;
 
