@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.42 2003/05/16 15:11:52 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.43 2003/05/16 16:47:20 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -84,6 +84,8 @@ static void handleHidePointer(Widget w, XtPointer unused,
 static void handleShowPointer(Widget w, XtPointer unused, 
         XEvent *event, Boolean *continue_to_dispatch);
 static void redisplay(TextWidget w, XEvent *event, Region region);
+static void redisplayGE(TextWidget w, XtPointer client_data,
+                    XEvent *event, Boolean *continue_to_dispatch_return);
 static void destroy(TextWidget w);
 static void resize(TextWidget w);
 static Boolean setValues(TextWidget current, TextWidget request,
@@ -844,6 +846,9 @@ static void initialize(TextWidget request, TextWidget new)
     XmImVaSetValues((Widget)new, NULL);
 #endif
 
+    XtAddEventHandler((Widget)new, GraphicsExpose, True,
+            (XtEventHandler)redisplayGE, (Opaque)NULL);
+
     if (new->text.hidePointer) {
         Display *theDisplay;
         Pixmap empty_pixmap;
@@ -999,6 +1004,85 @@ static void redisplay(TextWidget w, XEvent *event, Region region)
     XExposeEvent *e = &event->xexpose;
     
     TextDRedisplayRect(w->text.textD, e->x, e->y, e->width, e->height);
+}
+
+static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg)
+{
+    if ((theDisplay == event->xany.display) && 
+        (event->type == GraphicsExpose || event->type == NoExpose) &&
+        ((Widget)arg == XtWindowToWidget(event->xany.display, event->xany.window))) {
+        return(True);
+    }
+    else {
+        return(False);
+    }
+}
+
+static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *event,
+                            Boolean *first, int *left, int *top, int *width, int *height)
+{
+    Boolean removeQueueEntry = False;
+    
+    if (event->type == GraphicsExpose) {
+        XGraphicsExposeEvent *e = &event->xgraphicsexpose;
+        int x = e->x, y = e->y;
+
+        TextDImposeGraphicsExposeTranslation(w->text.textD, &x, &y);
+        if (*first) {
+            *left = x;
+            *top = y;
+            *width = e->width;
+            *height = e->height;
+            
+            *first = False;
+        }
+        else {
+            int prev_left = *left;
+            int prev_top = *top;
+            
+            *left = min(*left, x);
+            *top = min(*top, y);
+            *width = max(prev_left + *width, x + e->width) - *left;
+            *height = max(prev_top + *height, y + e->height) - *top;
+        }
+        if (e->count == 0) {
+            removeQueueEntry = True;
+        }
+    }
+    else if (event->type == NoExpose) {
+        removeQueueEntry = True;
+    }
+    if (removeQueueEntry) {
+        TextDPopGraphicExposeQueueEntry(w->text.textD);
+    }
+}
+
+static void redisplayGE(TextWidget w, XtPointer client_data,
+                    XEvent *event, Boolean *continue_to_dispatch_return)
+{
+    if (event->type == GraphicsExpose || event->type == NoExpose) {
+        HandleAllPendingGraphicsExposeNoExposeEvents(w, event);
+    }
+}
+
+void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event)
+{
+    XEvent foundEvent;
+    int left;
+    int top;
+    int width;
+    int height;
+    Boolean invalidRect = True;
+
+    if (event) {
+        adjustRectForGraphicsExposeOrNoExposeEvent(w, event, &invalidRect, &left, &top, &width, &height);
+    }
+    while (XCheckIfEvent(XtDisplay(w), &foundEvent, findGraphicsExposeOrNoExposeEvent, (XPointer)w)) {
+        adjustRectForGraphicsExposeOrNoExposeEvent(w, &foundEvent, &invalidRect, &left, &top, &width, &height);
+    }
+    if (!invalidRect) {
+        TextDRedisplayRect(w->text.textD, left, top, width, height);
+    }
 }
 
 /*

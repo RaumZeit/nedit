@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.22 2003/05/16 15:11:54 tringali Exp $ */
+/* $Id: textDisp.h,v 1.23 2003/05/16 16:47:21 slobasso Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -32,6 +32,12 @@ typedef struct {
     unsigned short bgBlue;
     Pixel bgColor;
 } styleTableEntry;
+
+typedef struct graphicExposeTranslationEntry {
+    int horizontal;
+    int vertical;
+    struct graphicExposeTranslationEntry *next;
+} graphicExposeTranslationEntry;
 
 typedef void (*unfinishedStyleCBProc)();
 
@@ -83,8 +89,7 @@ typedef struct _textDisp {
     					   maintaining absTopLineNum even if
 					   it isn't needed for line # display */
     int horizOffset;			/* Horizontal scroll pos. in pixels */
-    int visibility;			/* Window visibility (see XVisibility
-    					   event) */
+    int visibility;        /* Window visibility (see XVisibility event) */
     int nStyles;			/* Number of entries in styleTable */
     styleTableEntry *styleTable;    	/* Table of fonts and colors for
     	    	    	    	    	   coloring/syntax-highlighting */
@@ -129,6 +134,7 @@ typedef struct _textDisp {
     					   modified */
     Boolean pointerHidden;              /* true if the mouse pointer is 
                                            hidden */
+    graphicExposeTranslationEntry *graphicsExposeQueue;
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
@@ -194,5 +200,13 @@ void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
 void TextDMaintainAbsLineNum(textDisp *textD, int state);
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
+
+#ifdef VMS /* VMS linker doesn't like long names (>31 chars) */
+#define TextDImposeGraphicsExposeTranslation TextDGraphicsExposeTranslation
+#endif /* VMS */
+
+void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
+Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
+void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
 
 #endif /* NEDIT_TEXTDISP_H_INCLUDED */
