@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.68 2004/06/10 17:04:34 edg Exp $
+.. $Id: help.etx,v 1.69 2004/06/21 07:42:15 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -35,7 +35,7 @@ Table of Contents
       Using_the_Mouse_                     Macro_Subroutines_
       Keyboard_Shortcuts_                  Highlighting_Information_
       Shifting_and_Filling_                Range_Sets_
-      Tabbed_Interface_                    Action_Routines_
+      Tabbed_Editing_                      Action_Routines_
       File_Format_                         
                                         Customizing
     Features for Programming              Customizing_NEdit_
@@ -114,7 +114,7 @@ Getting Started
   To open an existing file, choose Open... from the file menu. Select the file
   that you want to open in the pop-up dialog that appears and click on OK.  You
   may open any number of files at the same time.  Depending on your settings
-  (cf. "Tabbed_Interface_") each file can appear in its own editor window, or it
+  (cf. "Tabbed_Editing_") each file can appear in its own editor window, or it
   can appear under a tab in the same editor window.  Using Open... rather than
   re-typing the NEdit command and running additional copies of NEdit, will give
   you quick access to all of the files you have open via the Windows menu, and
@@ -5518,6 +5518,9 @@ Problems/Defects
 .. _discuss@@nedit.org   mailto:discuss@@nedit.org
 .. _announce@@nedit.org  mailto:announce@@nedit.org
 .. _develop@@nedit.org   mailto:develop@@nedit.org
+.. _discuss-request@@nedit.org   mailto:discuss-request@@nedit.org
+.. _announce-request@@nedit.org  mailto:announce-request@@nedit.org
+.. _develop-request@@nedit.org   mailto:develop-request@@nedit.org
 .. _http://www.nedit.org http://www.nedit.org
 .. _ctag_support         #ctags
 .. _Alternation          #alternation
