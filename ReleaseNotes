@@ -1,6 +1,6 @@
-          Release Notes for NEdit Version 5.2 Beta, May 2001
+          Release Notes for NEdit Version 5.2 Beta, July 2001
 
-$Id: ReleaseNotes,v 1.6 2001/05/12 00:48:47 tringali Exp $
+$Id: ReleaseNotes,v 1.7 2001/07/04 09:29:28 uid30962 Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -65,6 +65,8 @@ Bug Fixes in 5.2
 
  - Accelerators now available in confirmation dialogs, and may be invoked
    without the Alt key.
+
+ - Don't even try to open a directory for editing
 
   
 New Features in 5.1
