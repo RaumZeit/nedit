@@ -37,13 +37,14 @@
 #include "prefFile.h"
 
 #define N_BOOLEAN_STRINGS 13
-char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
+static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
 	"Yes", "yes", "YES", "y", "Y", "on", "On", "ON"};
-char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f",
+static const char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f",
 	"No", "no", "NO", "n", "N", "off", "Off", "OFF"};
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName,
-	const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
+        const char *appName, const char *appClass,
+	PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
 static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
 static char *removeWhiteSpace(const char *string);
 
@@ -108,7 +109,7 @@ static char *removeWhiteSpace(const char *string);
 **			recognized in the option table.
 **	argvInOut	Argument vector.  Will be altered as argcInOut.
 */
-XrmDatabase CreatePreferencesDatabase(char *fileName, char *appName, 
+XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName, 
 	 XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut,
 	 char **argvInOut)
 {
@@ -162,7 +163,7 @@ XrmDatabase CreatePreferencesDatabase(char *fileName, char *appName,
 ** precidence over those in appDB.
 */	 
 void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB,
-	char *appName, char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc)
+	const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc)
 {
     readPrefs(prefDB, appDB, appName, appClass, rsrcDescrip, nRsrc, False);
 }
@@ -173,14 +174,15 @@ void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB,
 ** Incorporate preference specified in database "prefDB", preserving (not
 ** restoring to default) existing preferences, not mentioned in "prefDB"
 */	 
-void OverlayPreferences(XrmDatabase prefDB, char *appName, char *appClass,
-	PrefDescripRec *rsrcDescrip, int nRsrc)
+void OverlayPreferences(XrmDatabase prefDB, const char *appName,
+        const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc)
 {
     readPrefs(NULL, prefDB, appName, appClass, rsrcDescrip, nRsrc, True);
 }
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName,
-	const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay)
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
+        const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip,
+        int nRsrc, int overlay)
 {
     char rsrcName[256], rsrcClass[256], *valueString, *type;
     XrmValue rsrcValue;
@@ -234,8 +236,8 @@ void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc)
 ** Create or replace an application preference file according to
 ** the resource descriptions in rsrcDesrcip.
 */
-int SavePreferences(Display *display, char *fileName, char *fileHeader,
-	PrefDescripRec *rsrcDescrip, int nRsrc)
+int SavePreferences(Display *display, const char *fileName,
+        const char *fileHeader,	PrefDescripRec *rsrcDescrip, int nRsrc)
 {
     char fullName[MAXPATHLEN], *appName, *appClass, **enumStrings;
     FILE *fp;

@@ -99,9 +99,9 @@ static int branchTrue(void);
 static int branchFalse(void);
 static int branchNever(void);
 static void freeSymbolTable(Symbol *symTab);
-static int errCheck(char *s);
-static int execError(char *s1, char *s2);
-static int stringToNum(char *string, int *number);
+static int errCheck(const char *s);
+static int execError(const char *s1, const char *s2);
+static int stringToNum(const char *string, int *number);
 static void disasm(Program *prog, int nInstr);
 
 /* Global symbols and function definitions */
@@ -323,7 +323,7 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end)
 ** address for a break or continue statement, and FillLoopAddrs to fill
 ** in all the addresses and return to the level of the enclosing loop.
 */
-void StartLoopAddrList()
+void StartLoopAddrList(void)
 {
     addLoopAddr(NULL);
 }
@@ -769,7 +769,7 @@ static void freeSymbolTable(Symbol *symTab)
     PUSH_INT(operator n) \
     return STAT_OK;
 
-static int pushSymVal()
+static int pushSymVal(void)
 {
     Symbol *s;
     int nArgs, argNum;
@@ -806,17 +806,18 @@ static int pushSymVal()
     return STAT_OK;
 }
 
-static int assign()      /* assign top value to next symbol */
+static int assign(void)      /* assign top value to next symbol */
 {
     Symbol *sym;
     sym = (Symbol *)(*PC++);
-    if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM)
+    if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
 	if (sym->type == ARG_SYM)
 	    return execError("assignment to function argument: %s",  sym->name);
     	else if (sym->type == PROC_VALUE_SYM)
     	    return execError("assignment to read-only variable: %s", sym->name);
     	else
 	    return execError("assignment to non-variable: %s", sym->name);
+    }
     if (StackP == Stack)
 	return execError(StackUnderflowMsg, "");
     --StackP;
@@ -827,7 +828,7 @@ static int assign()      /* assign top value to next symbol */
     return STAT_OK;
 }
 
-static int dupStack()
+static int dupStack(void)
 {
     if (StackP >= &Stack[STACK_SIZE])
     	return execError(StackOverflowMsg, "");
@@ -836,22 +837,22 @@ static int dupStack()
     return STAT_OK;
 }
 
-static int add()
+static int add(void)
 {
     BINARY_NUMERIC_OPERATION(+)
 }
 
-static int subtract()
+static int subtract(void)
 {
     BINARY_NUMERIC_OPERATION(-)
 }
 
-static int multiply()
+static int multiply(void)
 {
     BINARY_NUMERIC_OPERATION(*)
 }
 
-static int divide()
+static int divide(void)
 {
     int n1, n2;
     POP_INT(n2)
@@ -862,47 +863,47 @@ static int divide()
     return STAT_OK;
 }
 
-static int modulo()
+static int modulo(void)
 {
     BINARY_NUMERIC_OPERATION(%)
 }
 
-static int negate()
+static int negate(void)
 {
     UNARY_NUMERIC_OPERATION(-)
 }
 
-static int increment()
+static int increment(void)
 {
     UNARY_NUMERIC_OPERATION(++)
 }
 
-static int decrement()
+static int decrement(void)
 {
     UNARY_NUMERIC_OPERATION(--)
 }
 
-static int gt()
+static int gt(void)
 {
     BINARY_NUMERIC_OPERATION(>)
 }
 
-static int lt()
+static int lt(void)
 {
     BINARY_NUMERIC_OPERATION(<)
 }
 
-static int ge()
+static int ge(void)
 {
     BINARY_NUMERIC_OPERATION(>=)
 }
 
-static int le()
+static int le(void)
 {
     BINARY_NUMERIC_OPERATION(<=)
 }
 
-static int eq()
+static int eq(void)
 {
     DataValue v1, v2;
     
@@ -930,38 +931,38 @@ static int eq()
     return STAT_OK;
 }
 
-static int ne()
+static int ne(void)
 {
     eq();
     return not();
 }
 
-static int bitAnd()
+static int bitAnd(void)
 { 
     BINARY_NUMERIC_OPERATION(&)
 }
 
-static int bitOr()
+static int bitOr(void)
 { 
     BINARY_NUMERIC_OPERATION(|)
 }
 
-static int and()
+static int and(void)
 { 
     BINARY_NUMERIC_OPERATION(&&)
 }
 
-static int or()
+static int or(void)
 {
     BINARY_NUMERIC_OPERATION(||)
 }
     
-static int not()
+static int not(void)
 {
     UNARY_NUMERIC_OPERATION(!)
 }
 
-static int power()
+static int power(void)
 {
     int n1, n2;
     POP_INT(n2)
@@ -970,7 +971,7 @@ static int power()
     return errCheck("exponentiation");
 }
 
-static int concat()
+static int concat(void)
 {
     char *s1, *s2, *out;
     int len1, len2;
@@ -1236,7 +1237,7 @@ static int branchNever(void)
 ** checks errno after operations which can set it.  If an error occured,
 ** creates appropriate error messages and returns false
 */
-static int errCheck(char *s)
+static int errCheck(const char *s)
 {
     if (errno == EDOM)
 	return execError("%s argument out of domain", s);
@@ -1250,7 +1251,7 @@ static int errCheck(char *s)
 ** result.  Returns false so a single return execError() statement can
 ** be used to both process the message and return.
 */
-static int execError(char *s1, char *s2)
+static int execError(const char *s1, const char *s2)
 {
     static char msg[MAX_ERR_MSG_LEN];
     
@@ -1259,10 +1260,10 @@ static int execError(char *s1, char *s2)
     return STAT_ERROR;
 }
 
-static int stringToNum(char *string, int *number)
+static int stringToNum(const char *string, int *number)
 {
     int i;
-    char *c;
+    const char *c;
     
     /*... this is still not finished */
     for (c=string, i=0; *c != '\0'; i++, c++)
