@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.3 2002/03/07 20:36:28 edg Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.4 2002/03/11 22:41:01 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.3 2002/03/07 20:36:28 edg Ex
 *******************************************************************************/
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #ifdef VMS
@@ -36,8 +37,6 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.3 2002/03/07 20:36:28 edg Ex
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include <string.h>
-#include <stdio.h>
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
@@ -122,7 +121,7 @@ static char* removeSequence(char* sourcePtr, char c)
 */
 static char* safeStrCpy(char* dest, char* destEnd, const char* source)
 {
-   size_t len = strlen(source);
+   int len = (int)strlen(source);
    if (len <= (destEnd - dest)) {
        strcpy(dest, source);
        return(dest + len);
@@ -1462,4 +1461,3 @@ void EditCustomTitleFormat(Widget parent, WindowInfo *window)
     /* put up dialog and wait for user to press ok or cancel */
     ManageDialogCenteredOnPointer(etDialog.form);
 }
-
