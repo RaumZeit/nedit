@@ -1,6 +1,6 @@
                     NEdit Version 5.5RC1, July 2004
 
-$Id: README,v 1.40 2004/07/27 18:23:48 n8gray Exp $
+$Id: README,v 1.41 2004/07/27 18:25:48 n8gray Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -75,8 +75,8 @@ Version 5.5 offers one major new feature along with a few others:
   - Superuser receives a warning when trying to overwrite a read-only file
   - Various bug fixes and performance improvements
 
-For a more detailed description of these new features and a list of 
-important bug fixes, see the ReleaseNotes file for more details.
+See the ReleaseNotes file for a more detailed description of these new features
+and a list of bugs fixed in this version.
 
 BUILDING NEDIT
 
