@@ -1,4 +1,4 @@
-/* $Id: userCmds.h,v 1.8 2004/10/14 21:53:25 edg Exp $ */
+/* $Id: userCmds.h,v 1.9 2004/10/15 18:04:22 arnef Exp $ */
 /*******************************************************************************
 *                                                                              *
 * userCmds.h -- Nirvana Editor user commands header file                       *
@@ -48,7 +48,7 @@ void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive);
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive);
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
 void DimPasteReplayBtns(int sensitive);
-UserMenuCache *CreateUserMenuCache();
+UserMenuCache *CreateUserMenuCache(void);
 void FreeUserMenuCache(UserMenuCache *cache);
 void InitUserBGMenuCache(UserBGMenuCache *cache);
 void FreeUserBGMenuCache(UserBGMenuCache *cache);

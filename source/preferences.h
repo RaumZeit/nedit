@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.45 2004/10/07 22:34:11 yooden Exp $ */
+/* $Id: preferences.h,v 1.46 2004/10/15 18:04:22 arnef Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -145,7 +145,7 @@ XFontStruct *GetPrefItalicFont(void);
 XFontStruct *GetPrefBoldItalicFont(void);
 char *GetPrefTooltipBgColor(void);
 char *GetPrefHelpFontName(int index);
-char *GetPrefHelpLinkColor();
+char *GetPrefHelpLinkColor(void);
 char *GetPrefColorName(int colorIndex);
 void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefShell(const char *shell);
@@ -168,7 +168,7 @@ int GetPrefTypingHidesPointer(void);
 void SetPrefShortMenus(int state);
 int GetPrefShortMenus(void);
 #endif
-void EditLanguageModes();
+void EditLanguageModes(void);
 void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window);
 char *LanguageModeName(int mode);

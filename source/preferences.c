@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.130 2004/10/07 22:34:11 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.131 2004/10/15 18:04:21 arnef Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2683,7 +2683,7 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
 /*
 ** Present a dialog for editing language mode information
 */
-void EditLanguageModes()
+void EditLanguageModes(void)
 {
 #define LIST_RIGHT 40
 #define LEFT_MARGIN_POS 1

@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.16 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: interpret.h,v 1.17 2004/10/15 18:04:21 arnef Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *
@@ -132,7 +132,7 @@ int AddSym(Symbol *sym, char **msg);
 int AddImmediate(void *value, char **msg);
 int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
-Symbol *InstallIteratorSymbol();
+Symbol *InstallIteratorSymbol(void);
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(const char *name);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.50 2004/09/02 08:50:38 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.51 2004/10/15 18:04:22 arnef Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1203,7 +1203,7 @@ int LoadBGMenuCmdsString(char *inString)
 ** string (reason: language mode info from preference string is read *after*
 ** user menu preference string was read).
 */
-void SetupUserMenuInfo()
+void SetupUserMenuInfo(void)
 {
     parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
     parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
@@ -3056,7 +3056,7 @@ static void addTerminatingNewline(char **string)
 ** Cache user menus:
 ** allocate an empty user (shell, macro) menu cache structure
 */
-UserMenuCache *CreateUserMenuCache()
+UserMenuCache *CreateUserMenuCache(void)
 {
     /* allocate some memory for the new data structure */
     UserMenuCache *cache = (UserMenuCache *)XtMalloc(sizeof(UserMenuCache));

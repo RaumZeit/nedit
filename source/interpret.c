@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.40 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.41 2004/10/15 18:04:21 arnef Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -663,7 +663,7 @@ void SetMacroFocusWindow(WindowInfo *window)
 ** it is tagged as an integer but holds an array node pointer
 */
 #define ARRAY_ITER_SYM_PREFIX "aryiter "
-Symbol *InstallIteratorSymbol()
+Symbol *InstallIteratorSymbol(void)
 {
     char symbolName[sizeof(ARRAY_ITER_SYM_PREFIX) + TYPE_INT_STR_SIZE(int)];
     DataValue value;

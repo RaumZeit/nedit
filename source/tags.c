@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.59 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.60 2004/10/15 18:04:22 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -110,7 +110,7 @@ static void setTag(tag *t, const char *name, const char *file,
 static int fakeRegExSearch(WindowInfo *window, char *buffer, 
                         const char *searchString, int *startPos, int *endPos);
 static unsigned hashAddr(const char *key);
-static void updateMenuItems();
+static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, 
                     const char *search, int posInf,  const  char *path, 
                     int index);
@@ -530,7 +530,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type)
 ** Update the "Find Definition", "Unload Tags File", "Show Calltip", 
 ** and "Unload Calltips File" menu items in the existing windows. 
 */
-static void updateMenuItems() 
+static void updateMenuItems(void) 
 {
     WindowInfo *w; 
     Boolean tipStat=FALSE, tagStat=FALSE;

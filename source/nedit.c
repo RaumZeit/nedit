@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.84 2004/10/15 13:57:45 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.85 2004/10/15 18:04:21 arnef Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -93,7 +93,7 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void patchResourcesForVisual(void);
 static void patchResourcesForKDEbug(void);
 static void patchLocaleForMotif(void);
-static unsigned char* sanitizeVirtualKeyBindings();
+static unsigned char* sanitizeVirtualKeyBindings(void);
 static int sortAlphabetical(const void* k1, const void* k2);
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
@@ -1159,7 +1159,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
 
 static Atom virtKeyAtom;
 
-static unsigned char* sanitizeVirtualKeyBindings()
+static unsigned char* sanitizeVirtualKeyBindings(void)
 {
     int overrideBindings = GetPrefOverrideVirtKeyBindings();
     Window rootWindow;
