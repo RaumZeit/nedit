@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.3 2003/12/25 06:55:07 tksoh Exp $
+ * $Id: BubbleButton.c,v 1.4 2004/05/03 08:54:33 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -48,7 +48,7 @@
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.3 2003/12/25 06:55:07 tksoh Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.4 2004/05/03 08:54:33 edg Exp $";
 
 /*
    Widget methods, forward declarations
@@ -320,7 +320,7 @@ set_values(Widget old, Widget request, Widget new_w, ArgList args, Cardinal *num
     return (False);
 }
 
-void
+static void
 _XmExportLabelString(Widget w, int offset, XtArgVal *value)
 {
     _XmString str;
