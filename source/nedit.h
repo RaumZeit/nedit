@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.16 2001/05/17 11:42:27 arnef Exp $ */
+/* $Id: nedit.h,v 1.17 2001/05/31 08:49:52 amai Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -366,4 +366,4 @@ typedef struct _WindowInfo {
 extern WindowInfo *WindowList;
 extern Display *TheDisplay;
 extern char *ArgV0;
-Boolean IsServer;
+extern Boolean IsServer;
