@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.46 2003/05/09 17:43:45 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.47 2003/05/16 16:58:13 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -703,39 +703,43 @@ static char *DefaultPatternSets[] = {
 	String3d:\"[uU]?[rR]?\"\"{3}\":\"\"\"{3}\"::String::\n\
 	String1s:\"[uU]?[rR]?'\":\"'\":\"$\":String::\n\
 	String1d:\"[uU]?[rR]?\"\"\":\"\"\"\":\"$\":String::\n\
-	String escape chars 3s:\"\\\\(\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String3s:\n\
-	String escape chars 3d:\"\\\\(\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String3d:\n\
-	String escape chars 1s:\"\\\\(\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1s:\n\
-	String escape chars 1d:\"\\\\(\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1d:\n\
+	String escape chars 3s:\"\\\\(?:\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String3s:\n\
+	String escape chars 3d:\"\\\\(?:\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String3d:\n\
+	String escape chars 1s:\"\\\\(?:\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1s:\n\
+	String escape chars 1d:\"\\\\(?:\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1d:\n\
 	Representation:\"`\":\"`\":\"$\":String2::\n\
 	Representation cont:\"\\\\\\n\":::String2:Representation:\n\
-	Number:\"(?<!\\Y)((([1-9]\\d*|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|([1-9]\\d*|0)?\\.\\d+|([1-9]\\d*|0)\\.)[jJ]?|([1-9]\\d*|0)[jJ]|(0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)(?!\\Y)\":::Numeric Const::\n\
-	Import:\"<(import|from)>\":\";|$\":\"#\":Preprocessor::\n\
+	Number:\"(?<!\\w)(?:(?:(?:[1-9]\\d*|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[jJ]?|(?:[1-9]\\d*|0)[jJ]|(?:0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)(?!\\w)\":::Numeric Const::\n\
+	Import:\"<(?:import|from)>\":\";|$\":\"#\":Preprocessor::\n\
 	Import continuation:\"\\\\\\n\":::Preprocessor:Import:\n\
-	Member definition:\"<(def)\\s+((__(abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|float|getattr|getitem|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|ipow|irshift|isub|ixor|len|long|lshift|mod|mul|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|xor)__)|((__(bases|class|dict|members|methods)__)|(__(delslice|getslice|setslice)__))|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|class|global|lambda)|([\\l_]\\w*))(?=(\\s*(\\\\\\n\\s*)?\\(\\s*|\\s*\\(\\s*(\\\\?\\n\\s*)?)self>)\":::Plain::\n\
+	Member definition:\"<(def)\\s+(?:(__(?:abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|eq|float|floordiv|ge|getattr|getitem|gt|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|irshift|isub|iter|ixor|le|len|long|lshift|lt|mod|mul|ne|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|truediv|xor)__)|((__(?:bases|class|dict)__)|(__(?:delslice|getslice|setslice)__)|(__(?:members|methods)__))|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield|class|global|lambda)|([\\l_]\\w*))(?=(?:\\s*(?:\\\\\\n\\s*)?\\(\\s*|\\s*\\(\\s*(?:\\\\?\\n\\s*)?)self>)\":::Plain::\n\
 	Member def color:\"\\1\":::Keyword:Member definition:C\n\
-	Member def special:\"\\3\":::Subroutine:Member definition:C\n\
-	Member def deprecated:\"\\5\":::Subroutine1:Member definition:C\n\
-	Member def error:\"\\10\":::Flag:Member definition:C\n\
-	Function definition:\"<(def)\\s+((ArithmeticError|AssertionError|AttributeError|EOFError|Ellipsis|EnvironmentError|Exception|FloatingPointError|IOError|ImportError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NotImplementedError|OSError|OverflowError|RuntimeError|StandardError|SyntaxError|SystemError|SystemExit|TypeError|UnboundLocalError|UnicodeError|ValueError|WindowsError|ZeroDivisionError|__builtins__|__debug__|__doc__|__import__|__name__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|copyright|credits|delattr|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|int|intern|isinstance|issubclass|len|license|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|self|setattr|slice|str|tuple|type|unichr|unicode|vars|xrange|zip)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
+	Member def special:\"\\2\":::Subroutine:Member definition:C\n\
+	Member def deprecated:\"\\3\":::Warning:Member definition:C\n\
+	Member def error:\"\\7\":::Flag:Member definition:C\n\
+	Static method definition:\"<(def)\\s+(__(?:new)__)\":::Plain::\n\
+	Static def color:\"\\1\":::Keyword:Static method definition:C\n\
+	Static def special:\"\\2\":::Subroutine:Static method definition:C\n\
+	Function definition:\"<(def)\\s+(?:(ArithmeticError|AssertionError|AttributeError|DeprecationWarning|EOFError|Ellipsis|EnvironmentError|Exception|False|FloatingPointError|IOError|ImportError|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NotImplemented|NotImplementedError|OSError|OverflowError|OverflowWarning|ReferenceError|RuntimeError|RuntimeWarning|StandardError|StopIteration|SyntaxError|SyntaxWarning|SystemError|SystemExit|TabError|True|TypeError|UnboundLocalError|UnicodeError|UserWarning|ValueError|Warning|WindowsError|ZeroDivisionError|__builtins__|__debug__|__doc__|__import__|__name__|abs|apply|bool|buffer|callable|chr|classmethod|cmp|coerce|compile|complex|copyright|credits|delattr|dict|dir|divmod|eval|execfile|file|filter|float|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|license|list|locals|long|map|max|min|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|round|self|setattr|slice|staticmethod|str|super|tuple|type|unichr|unicode|vars|xrange|zip)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
 	Function def color:\"\\1\":::Keyword:Function definition:C\n\
-	Function def deprecated:\"\\3\":::Subroutine1:Function definition:C\n\
-	Function def error:\"\\4\":::Flag:Function definition:C\n\
-	Class definition:\"<(class)\\s+((ArithmeticError|AssertionError|AttributeError|EOFError|Ellipsis|EnvironmentError|Exception|FloatingPointError|IOError|ImportError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NotImplementedError|OSError|OverflowError|RuntimeError|StandardError|SyntaxError|SystemError|SystemExit|TypeError|UnboundLocalError|UnicodeError|ValueError|WindowsError|ZeroDivisionError|__builtins__|__debug__|__doc__|__import__|__name__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|copyright|credits|delattr|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|int|intern|isinstance|issubclass|len|license|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|self|setattr|slice|str|tuple|type|unichr|unicode|vars|xrange|zip)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
+	Function def deprecated:\"\\2\":::Warning:Function definition:C\n\
+	Function def error:\"\\3\":::Flag:Function definition:C\n\
+	Class definition:\"<(class)\\s+(?:(ArithmeticError|AssertionError|AttributeError|DeprecationWarning|EOFError|Ellipsis|EnvironmentError|Exception|False|FloatingPointError|IOError|ImportError|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NotImplemented|NotImplementedError|OSError|OverflowError|OverflowWarning|ReferenceError|RuntimeError|RuntimeWarning|StandardError|StopIteration|SyntaxError|SyntaxWarning|SystemError|SystemExit|TabError|True|TypeError|UnboundLocalError|UnicodeError|UserWarning|ValueError|Warning|WindowsError|ZeroDivisionError|__builtins__|__debug__|__doc__|__import__|__name__|abs|apply|bool|buffer|callable|chr|classmethod|cmp|coerce|compile|complex|copyright|credits|delattr|dict|dir|divmod|eval|execfile|file|filter|float|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|license|list|locals|long|map|max|min|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|round|self|setattr|slice|staticmethod|str|super|tuple|type|unichr|unicode|vars|xrange|zip)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
 	Class def color:\"\\1\":::Storage Type:Class definition:C\n\
-	Class def deprecated:\"\\3\":::Subroutine1:Class definition:C\n\
-	Class def error:\"\\4\":::Flag:Class definition:C\n\
-	Member reference:\"\\.\\s*(\\\\?\\n\\s*)?((__(abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|float|getattr|getitem|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|ipow|irshift|isub|ixor|len|long|lshift|mod|mul|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|xor)__)|(__(delslice|getslice|setslice)__)|(__(bases|class|dict|members|methods)__)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
-	Member special method:\"\\3\":::Subroutine:Member reference:C\n\
-	Member deprecated:\"\\5\":::Subroutine1:Member reference:C\n\
+	Class def deprecated:\"\\2\":::Warning:Class definition:C\n\
+	Class def error:\"\\3\":::Flag:Class definition:C\n\
+	Member reference:\"\\.\\s*(?:\\\\?\\n\\s*)?(?:((__(?:abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|eq|float|floordiv|ge|getattr|getitem|gt|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|irshift|isub|iter|ixor|le|len|long|lshift|lt|mod|mul|ne|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|truediv|xor)__)|(__(?:new)__))|((__(?:delslice|getslice|setslice)__)|(__(?:members|methods)__))|(__(?:bases|class|dict)__)|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield|class|global|lambda)|([\\l_]\\w*))>\":::Plain::\n\
+	Member special method:\"\\1\":::Subroutine:Member reference:C\n\
+	Member deprecated:\"\\4\":::Warning:Member reference:C\n\
 	Member special attrib:\"\\7\":::Identifier1:Member reference:C\n\
-	Member ref error:\"\\9\":::Flag:Member reference:C\n\
-	Storage keyword:\"<(class|global|lambda)>\":::Storage Type::\n\
-	Keyword:\"<(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while)>\":::Keyword::\n\
-	Built-in function:\"<(__import__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|delattr|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|int|intern|isinstance|issubclass|len|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|setattr|slice|str|tuple|type|unichr|unicode|vars|xrange|zip)>\":::Subroutine::\n\
-	Built-in name:\"<(Ellipsis|None|__builtins__|__debug__|__doc__|__name__|copyright|credits|license|self)>\":::Identifier1::\n\
-	Built-in exceptions:\"<(ArithmeticError|AssertionError|AttributeError|EOFError|EnvironmentError|Exception|FloatingPointError|IOError|ImportError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|NotImplementedError|OSError|OverflowError|RuntimeError|StandardError|SyntaxError|SystemError|SystemExit|TypeError|UnboundLocalError|UnicodeError|ValueError|WindowsError|ZeroDivisionError)>\":::Identifier1::\n\
-	Braces and parens:\"[[{()}\\]]\":::Keyword::}",
+	Member ref error:\"\\8\":::Flag:Member reference:C\n\
+	Storage keyword:\"<(?:class|global|lambda)>\":::Storage Type::\n\
+	Keyword:\"<(?:and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield)>\":::Keyword::\n\
+	Built-in function:\"<(?:__import__|abs|apply|bool|buffer|callable|chr|classmethod|cmp|coerce|compile|complex|delattr|dict|dir|divmod|eval|execfile|file|filter|float|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|list|locals|long|map|max|min|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|round|setattr|slice|staticmethod|str|super|tuple|type|unichr|unicode|vars|xrange|zip)>\":::Subroutine::\n\
+	Built-in name:\"<(?:Ellipsis|False|None|NotImplemented|True|__builtins__|__debug__|__doc__|__name__|copyright|credits|license|self)>\":::Identifier1::\n\
+	Built-in exceptions:\"<(?:ArithmeticError|AssertionError|AttributeError|EOFError|EnvironmentError|Exception|FloatingPointError|IOError|ImportError|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|NotImplementedError|OSError|OverflowError|ReferenceError|RuntimeError|StandardError|StopIteration|SyntaxError|SystemError|SystemExit|TabError|TypeError|UnboundLocalError|UnicodeError|ValueError|WindowsError|ZeroDivisionError)>\":::Identifier1::\n\
+	Built-in warnings:\"<(?:DeprecationWarning|OverflowWarning|RuntimeWarning|SyntaxWarning|UserWarning|Warning)>\":::Identifier1::\n\
+	Braces and parens:\"[[{()}\\]]\":::Keyword::D}",
     "Regex:1:0{\n\
 	Comments:\"(?#This is a comment!)\\(\\?#[^)]*(?:\\)|$)\":::Comment::\n\
 	Literal Escape:\"(?#Special chars that need escapes)\\\\[abefnrtv()\\[\\]<>{}.|^$*+?&\\\\]\":::Preprocessor::\n\
