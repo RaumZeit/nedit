@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.67 2004/03/31 12:31:13 tksoh Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.68 2004/07/12 20:08:56 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3095,6 +3095,8 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
 static void iSearchTextClearCB(Widget w, WindowInfo *window,
 	XmAnyCallbackStruct *callData)
 {
+    window = WidgetToWindow(w);
+
     iSearchTextSetString(w, window, NULL);
 }
 
