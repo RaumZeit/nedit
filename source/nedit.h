@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.23 2002/03/11 22:05:11 edg Exp $ */
+/* $Id: nedit.h,v 1.24 2002/05/01 06:36:10 n8gray Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -135,6 +135,8 @@ typedef struct _WindowInfo {
     Widget	textPanes[MAX_PANES];	/* additional ones created on demand */
     Widget	lastFocus;		/* the last pane to have kbd. focus */
     Widget	statsLine;		/* file stats information display */
+    Widget      statsLineColForm;
+    Widget      statsLineColNo;         /* Line/Column information display */
     Widget  	iSearchForm;	    	/* incremental search line widgets */
     Widget  	iSearchText;
     Widget  	iSearchRegexToggle;

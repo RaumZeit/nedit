@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.51 2002/04/29 00:28:09 amai Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.52 2002/05/01 06:36:11 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -60,6 +60,7 @@ static const char CVSID[] = "$Id: window.c,v 1.51 2002/04/29 00:28:09 amai Exp $
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
 #include <Xm/PrimitiveP.h>
+#include <Xm/Frame.h>
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
 /* extern void _XEditResCheckMessages(); */
@@ -416,6 +417,33 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     SetISearchTextCallbacks(window);
     
+    /* This form widget keeps the line/col number display from wiggling up
+        and down by one pixel annoyingly */
+    window->statsLineColForm = XtVaCreateWidget("statsLineColForm",
+            xmFormWidgetClass, statsForm,
+    	    XmNshadowThickness, 0,
+	    XmNtopAttachment, window->showISearchLine ?
+	    	XmATTACH_WIDGET : XmATTACH_FORM,
+	    XmNtopWidget, window->iSearchForm,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNtopOffset, STAT_SHADOW_THICKNESS,
+	    XmNrightOffset, STAT_SHADOW_THICKNESS,
+	    XmNbottomOffset, STAT_SHADOW_THICKNESS, 
+            NULL);
+    
+    /* A separate display of the line/column number */
+    window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo",
+      	    xmLabelWidgetClass, window->statsLineColForm,
+	    XmNlabelString, s1=XmStringCreateSimple("L: ---  C: ---"),
+            XmNshadowThickness, 0,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNleftAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM,
+            NULL);
+    XmStringFree(s1);
+    
     /* Create file statistics display area.  Using a text widget rather than
        a label solves a layout problem with the main window, which messes up
        if the label is too long (we would need a resize callback to control
@@ -423,7 +451,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        file names and line numbers.  Background color is copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-
+    
     stats = XtVaCreateWidget("statsLine", xmTextWidgetClass,  statsForm,
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
@@ -438,13 +466,16 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    	XmATTACH_WIDGET : XmATTACH_FORM,
 	    XmNtopWidget, window->iSearchForm,
 	    XmNtopOffset, STAT_SHADOW_THICKNESS,
-	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNrightAttachment, XmATTACH_WIDGET,
+	    XmNrightWidget, window->statsLineColForm,
 	    XmNrightOffset, STAT_SHADOW_THICKNESS,
 	    XmNbottomAttachment, XmATTACH_FORM,
 	    XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
     window->statsLine = stats;
-    if(window->showStats)
+    if(window->showStats) {
+	XtManageChild(window->statsLineColForm);
 	XtManageChild(stats);
+    }
     	
     /* If the fontList was NULL, use the magical default provided by Motif,
        since it must have worked if we've gotten this far */
@@ -925,10 +956,12 @@ static void showStats(WindowInfo *window, int state)
     if (state) {
 	XtVaSetValues(window->iSearchForm,
 		XmNbottomAttachment, XmATTACH_NONE, NULL);
+        XtManageChild(window->statsLineColForm);
 	XtManageChild(window->statsLine);
 	showStatsForm(window, True);
     } else {
 	XtUnmanageChild(window->statsLine);
+        XtUnmanageChild(window->statsLineColForm);
 	XtVaSetValues(window->iSearchForm,
 		XmNbottomAttachment, XmATTACH_FORM,
 		XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
@@ -972,12 +1005,17 @@ static void showISearch(WindowInfo *window, int state)
     if (state) {
 	XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, window->iSearchForm, NULL);
+	XtVaSetValues(window->statsLineColForm, XmNtopAttachment, 
+                XmATTACH_WIDGET, XmNtopWidget, window->iSearchForm, NULL);
 	XtManageChild(window->iSearchForm);
 	showStatsForm(window, True);
     } else {
 	XtUnmanageChild(window->iSearchForm);
 	XtVaSetValues(window->statsLine, XmNtopAttachment, XmATTACH_FORM, NULL);
-	showStatsForm(window, window->showStats || window->modeMessageDisplayed);
+	XtVaSetValues(window->statsLineColForm, XmNtopAttachment, 
+                XmATTACH_FORM, NULL);
+	showStatsForm(window, window->showStats || 
+                window->modeMessageDisplayed);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
@@ -1855,16 +1893,16 @@ void UpdateLineNumDisp(WindowInfo *window)
 void UpdateStatsLine(WindowInfo *window)
 {
     int line, pos, colNum;
-    char *string, *format;
+    char *string, *format, slinecol[32];
+    XmString xmslinecol;
     Widget statW = window->statsLine;
 #ifdef SGI_CUSTOM
     char *sleft, *smid, *sright;
 #endif
     
     /* This routine is called for each character typed, so its performance
-       affects overall editor perfomance.  Only update if the line is on
-       and not displaying a special mode message */ 
-    if (!window->showStats || window->modeMessageDisplayed)
+       affects overall editor perfomance.  Only update if the line is on. */ 
+    if (!window->showStats)
     	return;
     
     /* Compose the string to display. If line # isn't available, leave it off */
@@ -1872,19 +1910,35 @@ void UpdateStatsLine(WindowInfo *window)
     string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
     format = window->fileFormat == DOS_FILE_FORMAT ? " DOS" :
 	    (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
-    if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum))
+    if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
     	sprintf(string, "%s%s%s %d bytes", window->path, window->filename,
 		format, window->buffer->length);
-    else if (window->showLineNumbers)
-	sprintf(string, "%s%s%s byte %d, col %d, %d bytes", window->path,
-    	    	window->filename, format, pos, colNum, window->buffer->length);
-    else
-    	sprintf(string, "%s%s%s line %d, col %d, %d bytes", window->path,
-    	    	window->filename, format, line, colNum, window->buffer->length);
+        sprintf(slinecol, "L: ---  C: ---");
+    } else {
+        sprintf(slinecol, "L: %d  C: %d", line, colNum);
+        if (window->showLineNumbers)
+	    sprintf(string, "%s%s%s byte %d of %d", window->path,
+    	    	    window->filename, format, pos, 
+                    window->buffer->length);
+        else
+    	    sprintf(string, "%s%s%s %d bytes", window->path,
+    	    	    window->filename, format, window->buffer->length);
+    }
     
+    /* Update the line/column number */
+    xmslinecol = XmStringCreateSimple(slinecol);
+    XtVaSetValues( window->statsLineColNo, 
+            XmNlabelString, xmslinecol, NULL );
+    XmStringFree(xmslinecol);
+    
+    /* No need to go on if there's a special message being displayed */
+    if (window->modeMessageDisplayed) {
+        XtFree(string);
+        return;
+    }
     /* Change the text in the stats line */
 #ifdef SGI_CUSTOM
-    /* don't show full pathname, just dir and filename (+ line/col/byte info) */
+    /* don't show full pathname, just dir and filename (+ byte info) */
     smid = strchr(string, '/'); 
     if ( smid != NULL ) {
 	sleft = smid;
