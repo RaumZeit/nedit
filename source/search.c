@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.52 2002/11/19 18:05:51 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.53 2002/12/08 09:29:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3839,11 +3839,14 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
     /* If we're already outside the boundaries, we must consider wrapping
        immediately (Note: fileEnd+1 is a valid starting position. Consider
        searching for $ at the end of a file ending with \n.) */
-    if (direction == SEARCH_FORWARD && beginPos > fileEnd + 1 || 
-	direction == SEARCH_BACKWARD && beginPos < 0) 
-	outsideBounds = TRUE;
-    else
-	outsideBounds = FALSE;
+    if ((direction == SEARCH_FORWARD && beginPos > fileEnd + 1)
+            || (direction == SEARCH_BACKWARD && beginPos < 0))
+    {
+        outsideBounds = TRUE;
+    } else
+    {
+        outsideBounds = FALSE;
+    }
     
     /* search the string copied from the text area widget, and present
        dialogs, or just beep.  iSearchStartPos is not a perfect indicator that

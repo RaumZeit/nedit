@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.58 2002/12/04 12:30:57 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.59 2002/12/08 09:29:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -418,7 +418,6 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         highlightPatternStyleMS,
         highlightStyleColorMS, highlightStyleColorValueMS,
         highlightStyleIsBoldMS, highlightStyleIsItalicMS,
-        /*  YOO */
         getPatternMS, getStyleMS
     };
 #define N_MACRO_SUBRS (sizeof MacroSubrs/sizeof *MacroSubrs)
@@ -443,7 +442,6 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "highlight_pattern_style",
         "highlight_style_color", "highlight_style_color_value",
         "highlight_style_is_bold", "highlight_style_is_italic",
-        /*  YOO */
         "get_pattern", "get_style"
     };
 static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
@@ -2385,7 +2383,7 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs,
 static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
-    int beginPos, wrap, direction, found, foundStart, foundEnd, type;
+    int beginPos, wrap, direction, found = False, foundStart, foundEnd, type;
     int skipSearch = False, len;
     char stringStorage[2][25], *string, *searchStr;
     
@@ -4814,7 +4812,6 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
     int r, g, b;
     Pixel pixel;
 
-/*YOO    fprintf(stderr, "Enter getStyleMS()\n"); */
     /* Validate number of arguments */
     if (nArgs != 1)
     {
@@ -4831,7 +4828,6 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
         {
             return False;
         }
-/*YOO        fprintf(stderr, "getStyleMS(): Argument is a string: '%s'\n", styleName); */
     } else if (argList[0].tag == INT_TAG)
     {
         int cursorPos;
@@ -4841,7 +4837,6 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
         {
             return False;
         }
-/*YOO        fprintf(stderr, "getStyleMS(): Argument is an integer: '%d'\n", cursorPos); */
 
         /*  Verify sane cursor position */
         if ((cursorPos < 0) || (cursorPos >= buf->length))
@@ -4851,7 +4846,6 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
 
         /* Determine style name */
-/*YOO        fprintf(stderr, "getStyleMS(): Learn style code and name.\n"); */
         styleCode = HighlightCodeOfPos(window, cursorPos);
         if (styleCode == 0)
         {
@@ -4860,14 +4854,12 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
             return True;
         }
         styleName = HighlightStyleOfCode(window, styleCode);
-/*YOO        fprintf(stderr, "getStyleMS(): styleName is %s.\n", styleName); */
     } else
     {
         *errMsg = "Parameter is neither position nor name in %s";
         return False;
     }
 
-/*YOO    fprintf(stderr, "getStyleMS(): Init result array.\n"); */
     result->val.arrayPtr = ArrayNew();
 
     /* set up reusable data value records for strings and ints */
@@ -4982,11 +4974,10 @@ static int getPatternMS(WindowInfo *window, DataValue *argList, int nArgs,
     char* styleKey;
 
     int extension;
-    int uselessCode = 0;   /* YOO: legacy thing, seems to be useless */
+    int uselessCode = 0;   /* yooden: legacy thing, seems to be useless */
     DataValue extensionDV;
     char* extensionKey;
     
-/*YOO    fprintf(stderr, "Enter getPatternMS()\n"); */
     /* Validate number of arguments */
     if (nArgs != 1)
     {
@@ -5013,7 +5004,6 @@ static int getPatternMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Determine pattern name */
     styleCode = HighlightCodeOfPos(window, cursorPos);
-/*YOO    fprintf(stderr, "getPatternMS(): styleCode: %d\n", styleCode); */
     if (styleCode == 0)
     {
         /* if there is no style we just return an empty array. */
@@ -5021,7 +5011,6 @@ static int getPatternMS(WindowInfo *window, DataValue *argList, int nArgs,
         return True;
     }
     patternName = HighlightNameOfCode(window, styleCode);
-/*YOO    fprintf(stderr, "getPatternMS(): patternName: %s\n", patternName); */
 
     /* initialize array */
     result->val.arrayPtr = ArrayNew();
@@ -5353,16 +5342,23 @@ static int strCaseCmp(char *str1, char *str2)
 {
     char *c1, *c2;
 
-    for (c1 = str1, c2 = str2; (*c1 != '\0' && *c2 != '\0') && 
-        toupper((unsigned char)*c1) == toupper((unsigned char)*c2); ++c1, ++c2) {
+    for (c1 = str1, c2 = str2;
+            (*c1 != '\0' && *c2 != '\0')
+                    && toupper((unsigned char)*c1) == toupper((unsigned char)*c2);
+            ++c1, ++c2)
+    {
     }
-    if (((unsigned char)toupper((unsigned char)*c1)) > ((unsigned char)toupper((unsigned char)*c2))) {
+
+    if (((unsigned char)toupper((unsigned char)*c1))
+            > ((unsigned char)toupper((unsigned char)*c2)))
+    {
         return(1);
-    }
-    else if (((unsigned char)toupper((unsigned char)*c1)) < ((unsigned char)toupper((unsigned char)*c2))) {
+    } else if (((unsigned char)toupper((unsigned char)*c1))
+            < ((unsigned char)toupper((unsigned char)*c2)))
+    {
         return(-1);
-    }
-    else {
+    } else
+    {
         return(0);
     }
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.38 2002/11/13 21:58:05 tringali Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.39 2002/12/08 09:29:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1291,7 +1291,6 @@ int FontOfNamedStyleIsItalic(char *styleName)
 */
 char *ColorOfNamedStyle(const char *styleName)
 {
-/*YOO    fprintf(stderr, "Enter ColorOfNamedStyle()\n"); */
     int styleNo=lookupNamedStyle(styleName);
     
     if (styleNo<0)
@@ -3568,17 +3567,14 @@ static int lookupNamedStyle(const char *styleName)
 {
     int i;
     
-/*YOO    fprintf(stderr, "Enter lookupNamedStyle()\n"); */
-/*YOO    fprintf(stderr, "styleName is %s\n", styleName); */
     for (i = 0; i < NHighlightStyles; i++)
     {
-/*YOO        fprintf(stderr, "%s\n", HighlightStyles[i]->name); */
         if (!strcmp(styleName, HighlightStyles[i]->name))
         {
             return i;
         }
     }
-/*YOO    fprintf(stderr, "lookupNamedStyle(): No style found.\n"); */
+
     return -1;
 }
 

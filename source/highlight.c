@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.37 2002/11/19 18:05:51 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.38 2002/12/08 09:29:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1116,7 +1116,6 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode)
 ** Functions to return style information from the highlighting style table.
 */
 
-/* YOO: This returns the name of the highlight? */
 char *HighlightNameOfCode(WindowInfo *window, int hCode)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);

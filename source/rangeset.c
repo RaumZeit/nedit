@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.2 2002/11/08 20:22:45 edg Exp $ */
+/* $Id: rangeset.c,v 1.3 2002/12/08 09:29:40 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -157,23 +157,26 @@ static Range *RangesNew(int n)
 
 /* -------------------------------------------------------------------------- */
 
-static Range *RangesRealloc(Range *p, int n)
+static Range* RangesRealloc(Range* range, int n)
 {
-    int sz;
-    Range *new_p;
+    int size;
+    Range* newRange;
 
-    if (n) {
-	/* see RangesNew() for comments */
-	n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-	sz = n * sizeof (Range);
-	new_p = (Range *)(p ? XtRealloc((char *)p, sz) : XtMalloc(sz));
-	return new_p;
-    }
-    else if (p) {
-	XtFree((char *)p);
+    if (n > 0)
+    {
+        /* see RangesNew() for comments */
+        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+        size = n * sizeof (Range);
+        newRange = (Range*) (range != NULL
+                ? XtRealloc((char *)range, size)
+                : XtMalloc(size));
+        return newRange;
+    } else if (range != NULL)
+    {
+        XtFree((char*) range);
     }
 
-    return (Range *)0;
+    return (Range*) 0;
 }
 
 /* -------------------------------------------------------------------------- */
