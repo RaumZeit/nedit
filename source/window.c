@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.163 2004/07/23 18:07:56 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.164 2004/07/23 18:40:55 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -191,7 +191,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 static void refreshMenuBar(WindowInfo *window);
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
-static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin);
+static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
 static UndoInfo *cloneUndoItems(UndoInfo *orgList);
 static Widget containingPane(Widget w);
 
@@ -3754,119 +3754,6 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
     }
 }
 
-static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
-{
-    short paneHeights[MAX_PANES+1];
-    int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
-    int horizOffsets[MAX_PANES+1];
-    int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
-    char *delimiters;
-    Widget text;
-    selection sel;
-    textDisp *textD, *newTextD;
-    
-    /* transfer the primary selection */
-    memcpy(&sel, &orgWin->buffer->primary, sizeof(selection));
-	    
-    if (sel.selected) {
-    	if (sel.rectangular)
-    	    BufRectSelect(window->buffer, sel.start, sel.end,
-		    sel.rectStart, sel.rectEnd);
-    	else
-    	    BufSelect(window->buffer, sel.start, sel.end);
-    } else
-    	BufUnselect(window->buffer);
-
-    /* Record the current heights, scroll positions, and insert positions
-       of the existing panes, keyboard focus */
-    focusPane = 0;
-    for (i=0; i<=orgWin->nPanes; i++) {
-    	text = i==0 ? orgWin->textArea : orgWin->textPanes[i-1];
-    	insertPositions[i] = TextGetCursorPos(text);
-    	XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], NULL);
-    	totalHeight += paneHeights[i];
-    	TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-    	if (text == orgWin->lastFocus)
-    	    focusPane = i;
-    }
-    
-    window->nPanes = orgWin->nPanes;
-    
-    /* clone split panes, if any */
-    textD = ((TextWidget)window->textArea)->text.textD;
-    if (window->nPanes) {
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-    	XtUnmanageChild(window->splitPane);
-
-	/* Create a text widget to add to the pane and set its buffer and
-	   highlight data to be the same as the other panes in the orgWin */
-	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
-    		textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
-		textNlineNumCols, &lineNumCols, NULL);
-
-	for(i=0; i<orgWin->nPanes; i++) {
-	    text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
-    		    delimiters, wrapMargin, lineNumCols);
-	    TextSetBuffer(text, window->buffer);
-
-	    if (window->highlightData != NULL)
-    		AttachHighlightToWidget(text, window);
-	    XtManageChild(text);
-	    window->textPanes[i] = text;
-
-            /* Fix up the colors */
-            newTextD = ((TextWidget)text)->text.textD;
-            XtVaSetValues(text, XmNforeground, textD->fgPixel,
-                    XmNbackground, textD->bgPixel, NULL);
-            TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, 
-                    textD->selectFGPixel, textD->selectBGPixel,
-                    textD->highlightFGPixel,textD->highlightBGPixel,
-                    textD->lineNumFGPixel, textD->cursorFGPixel);
-	}
-        
-	/* Set the minimum pane height in the new pane */
-	UpdateMinPaneHeights(window);
-
-	for (i=0; i<=window->nPanes; i++) {
-    	    text = i==0 ? window->textArea : window->textPanes[i-1];
-    	    setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-	}
-
-	/* Re-manage panedWindow to recalculate pane heights & reset selection */
-    	XtManageChild(window->splitPane);
-    }
-
-    /* Reset all of the heights, scroll positions, etc. */
-    for (i=0; i<=window->nPanes; i++) {
-    	textDisp *textD;
-	
-    	text = i==0 ? window->textArea : window->textPanes[i-1];
-	TextSetCursorPos(text, insertPositions[i]);
-	TextSetScroll(text, topLines[i], horizOffsets[i]);
-
-	/* dim the cursor */
-    	textD = ((TextWidget)text)->text.textD;
-	TextDSetCursorStyle(textD, DIM_CURSOR);
-	TextDUnblankCursor(textD);
-    }
-        
-    /* set the focus pane */
-    for (i=0; i<=window->nPanes; i++) {
-    	text = i==0 ? window->textArea : window->textPanes[i-1];
-	if(i == focusPane) {
-	    window->lastFocus = text;
-    	    XmProcessTraversal(text, XmTRAVERSE_CURRENT);
-	    break;
-	}
-    }
-    
-    /* Update the window manager size hints after the sizes of the panes have
-       been set (the widget heights are not yet readable here, but they will
-       be by the time the event loop gets around to running this timer proc) */
-    XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0,
-    	    wmSizeUpdateProc, window);
-}
-
 /*
 ** Refresh the menu entries per the settings of the
 ** top document.
@@ -4201,6 +4088,181 @@ void DeleteDocument(WindowInfo *window)
 }
 
 /*
+** return the number of documents owned by this shell window
+*/
+int NDocuments(WindowInfo *window)
+{
+    WindowInfo *win;
+    int nDocument = 0;
+    
+    for (win = WindowList; win; win = win->next) {
+    	if (win->shell == window->shell)
+	    nDocument++;
+    }
+    
+    return nDocument;
+}
+
+/* 
+** refresh window state for this document
+*/
+void RefreshWindowStates(WindowInfo *window)
+{
+    if (!IsTopDocument(window))
+    	return;
+	
+    if (window->modeMessageDisplayed)
+    	XmTextSetString(window->statsLine, window->modeMessage);
+    else
+    	UpdateStatsLine(window);
+    UpdateWindowReadOnly(window);
+    UpdateWindowTitle(window);
+
+    /* show/hide statsline as needed */
+    if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm)) {
+    	/* turn on statline to display mode message */
+    	showStats(window, True);
+    }
+    else if (window->showStats && !XtIsManaged(window->statsLineForm)) {
+    	/* turn on statsline since it is enabled */
+    	showStats(window, True);
+    }
+    else if (!window->showStats && !window->modeMessageDisplayed &&
+             XtIsManaged(window->statsLineForm)) {
+    	/* turn off statsline since there's nothing to show */
+    	showStats(window, False);
+    }
+    
+    /* signal if macro/shell is running */
+    if (window->shellCmdData || window->macroCmdData)
+    	BeginWait(window->shell);
+    else
+    	EndWait(window->shell);
+
+    /* we need to force the statsline to reveal itself */
+    if (XtIsManaged(window->statsLineForm)) {
+	XmTextSetCursorPosition(window->statsLine, 0);     /* start of line */
+	XmTextSetCursorPosition(window->statsLine, 9000);  /* end of line */
+    }
+    
+    XmUpdateDisplay(window->statsLine);    
+    refreshMenuBar(window);
+}
+
+static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
+{
+    short paneHeights[MAX_PANES+1];
+    int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
+    int horizOffsets[MAX_PANES+1];
+    int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
+    char *delimiters;
+    Widget text;
+    selection sel;
+    textDisp *textD, *newTextD;
+    
+    /* transfer the primary selection */
+    memcpy(&sel, &orgWin->buffer->primary, sizeof(selection));
+	    
+    if (sel.selected) {
+    	if (sel.rectangular)
+    	    BufRectSelect(window->buffer, sel.start, sel.end,
+		    sel.rectStart, sel.rectEnd);
+    	else
+    	    BufSelect(window->buffer, sel.start, sel.end);
+    } else
+    	BufUnselect(window->buffer);
+
+    /* Record the current heights, scroll positions, and insert positions
+       of the existing panes, keyboard focus */
+    focusPane = 0;
+    for (i=0; i<=orgWin->nPanes; i++) {
+    	text = i==0 ? orgWin->textArea : orgWin->textPanes[i-1];
+    	insertPositions[i] = TextGetCursorPos(text);
+    	XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], NULL);
+    	totalHeight += paneHeights[i];
+    	TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+    	if (text == orgWin->lastFocus)
+    	    focusPane = i;
+    }
+    
+    window->nPanes = orgWin->nPanes;
+    
+    /* clone split panes, if any */
+    textD = ((TextWidget)window->textArea)->text.textD;
+    if (window->nPanes) {
+	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+    	XtUnmanageChild(window->splitPane);
+
+	/* Create a text widget to add to the pane and set its buffer and
+	   highlight data to be the same as the other panes in the orgWin */
+	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
+    		textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
+		textNlineNumCols, &lineNumCols, NULL);
+
+	for(i=0; i<orgWin->nPanes; i++) {
+	    text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
+    		    delimiters, wrapMargin, lineNumCols);
+	    TextSetBuffer(text, window->buffer);
+
+	    if (window->highlightData != NULL)
+    		AttachHighlightToWidget(text, window);
+	    XtManageChild(text);
+	    window->textPanes[i] = text;
+
+            /* Fix up the colors */
+            newTextD = ((TextWidget)text)->text.textD;
+            XtVaSetValues(text, XmNforeground, textD->fgPixel,
+                    XmNbackground, textD->bgPixel, NULL);
+            TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, 
+                    textD->selectFGPixel, textD->selectBGPixel,
+                    textD->highlightFGPixel,textD->highlightBGPixel,
+                    textD->lineNumFGPixel, textD->cursorFGPixel);
+	}
+        
+	/* Set the minimum pane height in the new pane */
+	UpdateMinPaneHeights(window);
+
+	for (i=0; i<=window->nPanes; i++) {
+    	    text = i==0 ? window->textArea : window->textPanes[i-1];
+    	    setPaneDesiredHeight(containingPane(text), paneHeights[i]);
+	}
+
+	/* Re-manage panedWindow to recalculate pane heights & reset selection */
+    	XtManageChild(window->splitPane);
+    }
+
+    /* Reset all of the heights, scroll positions, etc. */
+    for (i=0; i<=window->nPanes; i++) {
+    	textDisp *textD;
+	
+    	text = i==0 ? window->textArea : window->textPanes[i-1];
+	TextSetCursorPos(text, insertPositions[i]);
+	TextSetScroll(text, topLines[i], horizOffsets[i]);
+
+	/* dim the cursor */
+    	textD = ((TextWidget)text)->text.textD;
+	TextDSetCursorStyle(textD, DIM_CURSOR);
+	TextDUnblankCursor(textD);
+    }
+        
+    /* set the focus pane */
+    for (i=0; i<=window->nPanes; i++) {
+    	text = i==0 ? window->textArea : window->textPanes[i-1];
+	if(i == focusPane) {
+	    window->lastFocus = text;
+    	    XmProcessTraversal(text, XmTRAVERSE_CURRENT);
+	    break;
+	}
+    }
+    
+    /* Update the window manager size hints after the sizes of the panes have
+       been set (the widget heights are not yet readable here, but they will
+       be by the time the event loop gets around to running this timer proc) */
+    XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0,
+    	    wmSizeUpdateProc, window);
+}
+
+/*
 ** clone a document's states and settings into the other.
 */
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
@@ -4297,7 +4359,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->findLastLiteralCase = orgWin->findLastLiteralCase;
     
     /* copy the text/split panes settings, cursor pos & selection */
-    cloneTextPane(window, orgWin);
+    cloneTextPanes(window, orgWin);
     
     /* copy undo & redo list */
     window->undo = cloneUndoItems(orgWin->undo);
@@ -4343,68 +4405,6 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
     }
 
     return head;
-}
-
-/*
-** return the number of documents owned by this shell window
-*/
-int NDocuments(WindowInfo *window)
-{
-    WindowInfo *win;
-    int nDocument = 0;
-    
-    for (win = WindowList; win; win = win->next) {
-    	if (win->shell == window->shell)
-	    nDocument++;
-    }
-    
-    return nDocument;
-}
-
-/* 
-** refresh window state for this document
-*/
-void RefreshWindowStates(WindowInfo *window)
-{
-    if (!IsTopDocument(window))
-    	return;
-	
-    if (window->modeMessageDisplayed)
-    	XmTextSetString(window->statsLine, window->modeMessage);
-    else
-    	UpdateStatsLine(window);
-    UpdateWindowReadOnly(window);
-    UpdateWindowTitle(window);
-
-    /* show/hide statsline as needed */
-    if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm)) {
-    	/* turn on statline to display mode message */
-    	showStats(window, True);
-    }
-    else if (window->showStats && !XtIsManaged(window->statsLineForm)) {
-    	/* turn on statsline since it is enabled */
-    	showStats(window, True);
-    }
-    else if (!window->showStats && !window->modeMessageDisplayed &&
-             XtIsManaged(window->statsLineForm)) {
-    	/* turn off statsline since there's nothing to show */
-    	showStats(window, False);
-    }
-    
-    /* signal if macro/shell is running */
-    if (window->shellCmdData || window->macroCmdData)
-    	BeginWait(window->shell);
-    else
-    	EndWait(window->shell);
-
-    /* we need to force the statsline to reveal itself */
-    if (XtIsManaged(window->statsLineForm)) {
-	XmTextSetCursorPosition(window->statsLine, 0);     /* start of line */
-	XmTextSetCursorPosition(window->statsLine, 9000);  /* end of line */
-    }
-    
-    XmUpdateDisplay(window->statsLine);    
-    refreshMenuBar(window);
 }
 
 /*
