@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Sep 6, 2002 (Do NOT edit!)
+                 Generated on Sep 10, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -2244,7 +2244,9 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01Bcalltip( \"text_or_key\" [, mode [, pos [, position_modifier ...]]] )\01A\n",
 "\01IPops up a calltip. <pos> is an optional position in the buffer where the tip ",
-"will be displayed.  The upper-left corner of the calltip will appear below ",
+"will be displayed.  Passing -1 for <pos> is equivalent to not specifying a ",
+"position, and it guarantees that the tip will appear on-screen somewhere even ",
+"if the cursor is not.  The upper-left corner of the calltip will appear below ",
 "where the cursor would appear if it were at this position.  <mode> is one of ",
 "\"tipText\" (default), \"tipKey\", or \"tagKey\". \"tipText\" displays the text as-is, ",
 "\"tagKey\" uses it as the key to look up a tag, then converts the tag to a ",
@@ -4344,7 +4346,8 @@ static char * htxt_version [] = {
 "NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, ",
 "Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max ",
 "Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve ",
-"LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn. ",
+"LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn, ",
+"and Andrew Hood. ",
 "\n\n",
 "The regular expression matching routines used in NEdit are adapted (with ",
 "permission) from original code written by Henry Spencer at the ",
@@ -5004,4 +5007,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Sep  6, 2002\n";
+static const char * NEditVersion = "NEdit release of Sep 10, 2002\n";

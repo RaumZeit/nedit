@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Sep  6, 2002                                               September 6, 2002
+NEdit release of Sep 10, 2002                                               September 10, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -2316,11 +2316,13 @@ beep()
 
 calltip( "text_or_key" [, mode [, pos [, position_modifier ...]]] )
   Pops up a calltip. <pos> is an optional position in the buffer where the tip 
-  will be displayed. The upper-left corner of the calltip will appear below 
-  where the cursor would appear if it were at this position. <mode> is one of 
-  "tipText" (default), "tipKey", or "tagKey". "tipText" displays the text 
-  as-is, "tagKey" uses it as the key to look up a tag, then converts the tag 
-  to a calltip, and "tipKey" uses it as the key to look up a calltip, then 
+  will be displayed. Passing -1 for <pos> is equivalent to not specifying a 
+  position, and it guarantees that the tip will appear on-screen somewhere 
+  even if the cursor is not. The upper-left corner of the calltip will appear 
+  below where the cursor would appear if it were at this position. <mode> is 
+  one of "tipText" (default), "tipKey", or "tagKey". "tipText" displays the 
+  text as-is, "tagKey" uses it as the key to look up a tag, then converts the 
+  tag to a calltip, and "tipKey" uses it as the key to look up a calltip, then 
   falls back to "tagKey" behavior if that fails. You'll usually use "tipKey" 
   or "tipText". Finally, you can modify the placement of the calltip relative 
   to the cursor position (or <pos>) with one or more of these optional 
@@ -4326,13 +4328,13 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Sep  6, 2002
-Sep 6, 2002
+NEdit release of Sep 10, 2002
+Sep 10, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
   Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve LoBasso, 
-  Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn. 
+  Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn, and Andrew Hood. 
 
   The regular expression matching routines used in NEdit are adapted (with 
   permission) from original code written by Henry Spencer at the University of 

@@ -2622,7 +2622,9 @@ Ring the bell.
 <B>calltip( "text_or_key" [, mode [, pos [, position_modifier ...]]] )</B>
 </PRE>
 Pops up a calltip. &#60;pos&#62; is an optional position in the buffer where the tip
-will be displayed.  The upper-left corner of the calltip will appear below
+will be displayed.  Passing -1 for &#60;pos&#62; is equivalent to not specifying a 
+position, and it guarantees that the tip will appear on-screen somewhere even
+if the cursor is not.  The upper-left corner of the calltip will appear below
 where the cursor would appear if it were at this position.  &#60;mode&#62; is one of
 "tipText" (default), "tipKey", or "tagKey". "tipText" displays the text as-is,
 "tagKey" uses it as the key to look up a tag, then converts the tag to a
@@ -5186,14 +5188,15 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Sep  6, 2002
-Sep 6, 2002
+NEdit release of Sep 10, 2002
+Sep 10, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn.
+LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
+and Andrew Hood.
 <P>
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the
