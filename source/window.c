@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.104 2004/01/26 09:23:22 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.105 2004/01/27 18:02:32 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3628,14 +3628,19 @@ void RefreshMenuToggleStates(WindowInfo *window)
 */
 static void refreshMenuBar(WindowInfo *window)
 {
+    void *mode;
+
     RefreshMenuToggleStates(window);
     
     /* Add/remove language specific menu items */
+    XtVaGetValues(window->macroMenuPane, XmNuserData, &mode, NULL);
+    if (window->languageMode != (int)mode) {
 #ifndef VMS
-    UpdateShellMenu(window);
+    	UpdateShellMenu(window);
 #endif
-    UpdateMacroMenu(window);
-    UpdateBGMenu(window);
+    	UpdateMacroMenu(window);
+    	UpdateBGMenu(window);
+    }
     
     /* refresh selection-sensitive menus */
     DimSelectionDepUserMenuItems(window, window->wasSelected);
