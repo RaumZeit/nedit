@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.9 2001/08/25 15:24:52 amai Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.10 2001/08/29 13:56:06 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -325,8 +325,8 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.9 2001/08/25 15:24:52 amai Ex
 #define GET_OP_CODE(p)  (*(unsigned char *)(p))
 #define OPERAND(p)      ((p) + NODE_SIZE)
 #define GET_OFFSET(p)   ((( *((p) + 1) & 0377) << 8) + (( *((p) + 2)) & 0377))
-#define PUT_OFFSET_L(v) (unsigned char)(((v) >> 8) & 0377L)
-#define PUT_OFFSET_R(v) (unsigned char) ((v)       & 0377L)
+#define PUT_OFFSET_L(v) (unsigned char)(((v) >> 8) & 0377)
+#define PUT_OFFSET_R(v) (unsigned char) ((v)       & 0377)
 
 /* Utility definitions. */
 
