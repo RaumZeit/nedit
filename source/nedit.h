@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.53 2004/04/15 22:32:31 n8gray Exp $ */
+/* $Id: nedit.h,v 1.54 2004/04/27 01:35:28 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -173,8 +173,7 @@ enum colorTypes {
     NUM_COLORS
 };
 
-/* cache user menus (start):
-   manage mode of user menu list element */
+/* cache user menus: manage mode of user menu list element */
 typedef enum {
     UMMM_UNMANAGE,     /* user menu item is unmanaged */
     UMMM_UNMANAGE_ALL, /* user menu item is a sub menu and is
@@ -232,8 +231,24 @@ typedef struct _UserBGMenuCache {
                                          items were created */
     UserMenuList ubmcMenuList;        /* list of all background menu items */
 } UserBGMenuCache;
-/* cache user menus (end) */
 
+/* The WindowInfo structure holds the information on a Document. A number
+   of 'tabbed' documents may reside within a shell window, hence some of 
+   its members are of 'shell-level'; namely the find/replace dialogs, the
+   menu bar & its associated members, the components on the stats area
+   (i-search line, statsline and tab bar), plus probably a few others.
+   See CreateWindow() and CreateDocument() for more info.
+   
+   Each document actually 'lives' within its splitPane widget member, 
+   which can be raised to become the 'top' (visible) document by function
+   RaiseDocument(). The non-top documents may still be accessed through
+   macros, or the context menu on the tab bar.
+   
+   Prior to the introduction of tabbed mode, each window may house only 
+   one document, making it effectively an 'editor window', hence the name
+   WindowInfo. This struct name has been preserved to ease the transition
+   when tabbed mode was introduced after NEdit 5.4.
+*/
 typedef struct _WindowInfo {
     struct _WindowInfo *next;
     Widget	shell;			/* application shell of window */
@@ -253,8 +268,8 @@ typedef struct _WindowInfo {
     Widget  	iSearchCaseToggle;
     Widget  	iSearchRevToggle;
     Widget	menuBar;    	    	/* the main menu bar */
-    Widget	tabBar;		/* toolbar for tabbed window */
-    Widget	tab;		/* tab for this buffer */
+    Widget	tabBar;			/* tab bar for tabbed window */
+    Widget	tab;			/* tab for this document */
     Widget	replaceDlog;		/* replace dialog */
     Widget	replaceText;		/* replace dialog settable widgets... */
     Widget	replaceWithText;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.100 2004/04/15 22:32:30 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.101 2004/04/27 01:35:28 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -5135,7 +5135,7 @@ WindowInfo **MakeSortedWindowArray(void)
     	windows[i] = w;
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
     
-    /* group the buffers together by their shell window */
+    /* group the documents together by their shell window */
     if (GetPrefOpenInTab())
         qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowShell);
 

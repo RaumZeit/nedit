@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.80 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.81 2004/04/27 01:35:28 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -113,7 +113,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     /* Find a (relatively) unique name for the new file */
     UniqueUntitledName(name);
 
-    /* create the window/buffer */
+    /* create new window/document */
     if (inWindow)
 	window = CreateDocument(inWindow, name, geometry, iconic);
     else 
@@ -198,7 +198,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	}
     }
     else {
-    	/* open file in untitled buffer */
+    	/* open file in untitled document */
     	window = inWindow;
     	strcpy(window->path, path);
     	strcpy(window->filename, name);

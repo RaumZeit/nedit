@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.151 2004/04/26 03:01:43 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.152 2004/04/27 01:35:28 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -121,9 +121,6 @@ static const char CVSID[] = "$Id: window.c,v 1.151 2004/04/26 03:01:43 tksoh Exp
 /* Thickness of 3D border around statistics and/or incremental search areas
    below the main menu bar */
 #define STAT_SHADOW_THICKNESS 1
-
-/* buffer tabs configuration */
-#define MIN_TAB_SLOTS 3
 
 /* bitmap data for the close-tab button */
 #define close_width 11
@@ -546,7 +543,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     SetISearchTextCallbacks(window);
 
-    /* create the buffer tab bar */
+    /* create the a form to house the tab bar and close-tab button */
     tabForm = XtVaCreateWidget("tabForm", 
        	    xmFormWidgetClass, statsAreaForm,
 	    XmNmarginHeight, 0,
@@ -557,7 +554,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightAttachment, XmATTACH_FORM,
 	    XmNshadowThickness, 0, NULL);
 
-    /* button to close top buffer */
+    /* button to close top document */
     if (closeTabPixmap == 0) {
         closeTabPixmap = createBitmapWithDepth(tabForm, 
 	        (char *)close_bits, close_width, close_height);
@@ -709,7 +706,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->splitPane = pane;
     XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, NULL, NULL, pane);
     
-    /* buffer/window info should associate with text pane */
+    /* Store a copy of document/window pointer in text pane to support
+       action procedures. See also WidgetToWindow() for info. */
     XtVaSetValues(pane, XmNuserData, window, NULL);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
@@ -794,8 +792,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     restoreInsaneVirtualKeyBindings(invalidBindings);
     
-    /* create persistant dialog upfront, shared by all buffers
-       in a common shell window */
+    /* create dialogs shared by all documents in a window */
     CreateFindDlog(window->shell, window);
     CreateReplaceDlog(window->shell, window);
     CreateReplaceMultiFileDlog(window);
@@ -828,7 +825,7 @@ static void tabClickEH(Widget w, XtPointer clientData, XEvent *event)
 }
 
 /*
-** add a new tab to the tab bar, where the [new] buffer belongs.
+** add a tab to the tab bar for the new document.
 */
 static Widget addTab(Widget folder, WindowInfo *window, const char *string)
 {
@@ -938,8 +935,8 @@ void SortTabBar(WindowInfo *window)
 }
 
 /* 
- * find which buffer/window a tab belongs to
-**/
+** find which document a tab belongs to
+*/
 WindowInfo *TabToWindow(Widget tab)
 {
     WindowInfo *win;
@@ -952,7 +949,7 @@ WindowInfo *TabToWindow(Widget tab)
 }
 
 /*
-** Close an editor window
+** Close a document, or an editor window
 */
 void CloseWindow(WindowInfo *window)
 {
@@ -1038,15 +1035,14 @@ void CloseWindow(WindowInfo *window)
     ClearUndoList(window);
     ClearRedoList(window);
     
-    /* close window, or buffer */
+    /* close the document/window */
     if (NDocuments(window) > 1) {
     	if (MacroRunWindow() && MacroRunWindow() != window &&
 	    	MacroRunWindow()->shell == window->shell) {
 	    nextBuf = MacroRunWindow();
 	}
 	else if (IsTopDocument(window)) {
-	    /* if this is the active buffer, then we need
-	       to find its successor */
+	    /* need to find a successor before closing a top document */
     	    nextBuf = getNextTabWindow(window, 1, 0, 0);
     	    RaiseDocument(nextBuf);
 	}
@@ -1058,17 +1054,14 @@ void CloseWindow(WindowInfo *window)
     removeFromWindowList(window);
     InvalidateWindowMenus();
 
-    /* remove tab from tab bar */
+    /* remove the tab of the closing document from tab bar */
     XtDestroyWidget(window->tab);
 
-    if (nextBuf) {
-        /* show the replacement buffer */
+    /* refresh tab bar after closing a document */
+    if (nextBuf)
 	ShowWindowTabBar(nextBuf);
-    }
-    else if (topBuf) {
-    	/* refresh tabbar after deleting a non-top buffer */
+    else if (topBuf)
 	ShowWindowTabBar(topBuf);
-    }
     
     /* dim/undim Detach_Tab menu items */
     win = nextBuf? nextBuf : topBuf;
@@ -1087,14 +1080,15 @@ void CloseWindow(WindowInfo *window)
 	}
     }
 
-    /* destroy the buffer pane, or window:
-       free window related background menu cache */
+    /* free background menu cache for document */
     FreeUserBGMenuCache(&window->userBGMenuCache);
+
+    /* destroy the document's pane, or the window */
     if (nextBuf || topBuf) {
         DeleteDocument(window);
     }
     else {
-        /* cache user menus: no more buffer panes -> free user menu cache */
+        /* free user menu cache for window */
         FreeUserMenuCache(window->userMenuCache);
 
 	/* remove and deallocate all of the widgets associated with window */
@@ -1951,7 +1945,7 @@ WindowInfo *WidgetToWindow(Widget w)
     Widget parent;
     
     while (True) {
-    	/* return window pointer of buffer */
+    	/* return window pointer of document */
     	if (XtClass(w) == xmPanedWindowWidgetClass)
 	    break;
 	    
@@ -2307,8 +2301,8 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
         (!window->wasSelected && selected)) {
     	window->wasSelected = selected;
 	
-	/* buffers may share a common shell window, menu-bar etc.
-	   we don't do much if things happen to the hidden ones */
+	/* do not refresh shell-level items (window, menu-bar etc)
+	   when motifying non-top document */
         if (IsTopDocument(window)) {
     	    XtSetSensitive(window->printSelItem, selected);
     	    XtSetSensitive(window->cutItem, selected);
@@ -3448,7 +3442,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     XtManageChild(pane);
     window->splitPane = pane;
     
-    /* buffer/window info should associate with text pane */
+    /* Store a copy of document/window pointer in text pane to support
+       action procedures. See also WidgetToWindow() for info. */
     XtVaSetValues(pane, XmNuserData, window, NULL);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
@@ -3519,8 +3514,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
        somehow refused to resize to fit the text widget. Resizing
        the shell window or making changes [again] to the statsAreaForm 
        appeared to bring out the text widget, though doesn't fix it for
-       the subsequently added buffers. Here we try to do the latter 
-       for all new buffer created. */
+       the subsequently added documents. Here we try to do the latter 
+       for all new documents created. */
     if (XtIsManaged(XtParent(window->statsLineForm))) {
     	XtUnmanageChild(XtParent(window->statsLineForm));
     	XtManageChild(XtParent(window->statsLineForm));    
@@ -3642,7 +3637,7 @@ static int getTabPosition(Widget tab)
 }
 
 /*
-** update the tab label, etc. of a tab per the states of it's buffer.
+** update the tab label, etc. of a tab, per the states of it's document.
 */
 void RefreshTabState(WindowInfo *win)
 {
@@ -3685,21 +3680,21 @@ void RefreshTabState(WindowInfo *win)
 }
 
 /*
-** close all the buffers in a shell window
+** close all the documents in a window
 */
 int CloseAllDocumentInWindow(WindowInfo *window) 
 {
     WindowInfo *win;
     
     if (NDocuments(window) == 1) {
-    	/* the only buffer in the window */
+    	/* only one document in the window */
     	return CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
     }
     else {
 	Widget winShell = window->shell;
 	WindowInfo *topDocument;
 
-    	/* close all _modified_ buffers belong to this window */
+    	/* close all _modified_ documents belong to this window */
 	for (win = WindowList; win; ) {
     	    if (win->shell == winShell && win->fileChanged) {
 	    	WindowInfo *next = win->next;
@@ -3711,7 +3706,7 @@ int CloseAllDocumentInWindow(WindowInfo *window)
 	    	win = win->next;
 	}
 
-    	/* see there's still buffers left in the window */
+    	/* see there's still documents left in the window */
 	for (win = WindowList; win; win=win->next)
 	    if (win->shell == winShell)
 	    	break;
@@ -3719,7 +3714,7 @@ int CloseAllDocumentInWindow(WindowInfo *window)
 	if (win) {
 	    topDocument = GetTopDocument(winShell);
 
-    	    /* close all non-top buffers belong to this window */
+    	    /* close all non-top documents belong to this window */
 	    for (win = WindowList; win; ) {
     		if (win->shell == winShell && win != topDocument) {
 	    	    WindowInfo *next = win->next;
@@ -3731,7 +3726,7 @@ int CloseAllDocumentInWindow(WindowInfo *window)
 	    	    win = win->next;
 	    }
 
-	    /* close the last buffer and its window */
+	    /* close the last document and its window */
     	    if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
 		return False;
 	}
@@ -3755,7 +3750,7 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
 	}
     	else {
             int resp = DialogF(DF_QUES, window->shell, 2, "Close Window",
-	    	    "Close ALL buffers in this window?", "Close", "Cancel");
+	    	    "Close ALL documents in this window?", "Close", "Cancel");
 
             if (resp == 1)
     		CloseAllDocumentInWindow(window);
@@ -3867,7 +3862,7 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
 
 /*
 ** Refresh the menu entries per the settings of the
-** top/active buffer.
+** top document.
 */
 void RefreshMenuToggleStates(WindowInfo *window)
 {
@@ -3922,7 +3917,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
 
 /*
 ** Refresh the various settings/state of the shell window per the
-** settings of the top/active buffer.
+** settings of the top document.
 */
 static void refreshMenuBar(WindowInfo *window)
 {
@@ -3936,7 +3931,7 @@ static void refreshMenuBar(WindowInfo *window)
 }
 
 /*
-** remember the last active buffer
+** remember the last document.
 */
 WindowInfo *MarkLastDocument(WindowInfo *window)
 {
@@ -3949,7 +3944,7 @@ WindowInfo *MarkLastDocument(WindowInfo *window)
 }
 
 /*
-** remember the active buffer
+** remember the active (top) document.
 */
 WindowInfo *MarkActiveDocument(WindowInfo *window)
 {
@@ -4038,7 +4033,7 @@ int IsValidWindow(WindowInfo *window)
 }
 
 /*
-** raise the buffer and its shell window
+** raise the document and its shell window
 */
 void RaiseDocumentWindow(WindowInfo *window)
 {
@@ -4117,16 +4112,15 @@ void RaiseDocument(WindowInfo *window)
     if (lastwin != window && IsValidWindow(lastwin))
     	MarkLastDocument(lastwin);
 
-    /* buffer already active? */
+    /* document already on top? */
     XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
-
     if (win == window)
     	return;    
 
-    /* set the buffer as active */
+    /* set the document as top document */
     XtVaSetValues(window->mainWin, XmNuserData, window, NULL);
     
-    /* show the new top buffer */ 
+    /* show the new top document */ 
     XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, NULL);
     XtManageChild(window->splitPane);
     XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
@@ -4150,14 +4144,14 @@ void RaiseDocument(WindowInfo *window)
     	    getTabPosition(window->tab), False);
 
     /* set keyboard focus. Must be done before unmanaging previous
-       top buffer, else lastFocus will be reset to textArea */
+       top document, else lastFocus will be reset to textArea */
     XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
     
-    /* we only manage the top buffer, else the next time a buffer 
+    /* we only manage the top document, else the next time a document
        is raised again, it's textpane might not resize properly.
        Also, somehow (bug?) XtUnmanageChild() doesn't hide the 
-       splitPane, which obscure lower part of the statsform where
-       we toggle its components, so we need to put the buffer at 
+       splitPane, which obscure lower part of the statsform when
+       we toggle its components, so we need to put the document at 
        the back */
     XLowerWindow(TheDisplay, XtWindow(win->splitPane));
     XtUnmanageChild(win->splitPane);
@@ -4165,7 +4159,7 @@ void RaiseDocument(WindowInfo *window)
 
     /* now refresh window state/info. RefreshWindowStates() 
        has a lot of work to do, so we update the screen first so
-       the buffers appear to switch immediately */
+       the document appears to switch swiftly. */
     XmUpdateDisplay(window->splitPane);
     RefreshWindowStates(window);
     RefreshTabState(window);
@@ -4200,7 +4194,7 @@ void DeleteDocument(WindowInfo *window)
 }
 
 /*
-** clone a buffer into the other.
+** clone a document's states and settings into the other.
 */
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 {
@@ -4215,7 +4209,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 
     window->ignoreModify = True;
     
-    /* copy the buffer */
+    /* copy the text buffer */
     orgDocument = BufGetAll(orgWin->buffer);
     BufSetAll(window->buffer, orgDocument);
     XtFree(orgDocument);
@@ -4243,7 +4237,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     if (window->highlightSyntax)
     	StartHighlighting(window, False);
 
-    /* clone original buffer's states */
+    /* copy states of original document */
     window->filenameSet = orgWin->filenameSet;
     window->fileFormat = orgWin->fileFormat;
     window->lastModTime = orgWin->lastModTime;
@@ -4315,7 +4309,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->indentStyle = NO_AUTO_INDENT;
     SetAutoIndent(window, orgWin->indentStyle);
 
-    /* synchronize window state to this buffer */
+    /* synchronize window state to this document */
     RefreshWindowStates(window);
 }
 
@@ -4345,7 +4339,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 }
 
 /*
-** return number of buffers own by this shell window
+** return the number of documents owned by this shell window
 */
 int NDocuments(WindowInfo *window)
 {
@@ -4451,7 +4445,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
     window->fileChanged = False;
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
-    /* some menu states might have changed when deleting buffer */
+    /* refresh former host window */
     RefreshWindowStates(win);
     
     /* this should keep the new document window fresh */
@@ -4472,7 +4466,7 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
 {
     WindowInfo *win, *cloneWin;
 
-    /* raise another document in the window of attaching buffer */
+    /* raise another document to replace the document being moved */
     for (win = WindowList; win; win = win->next) {
     	if (win->shell == window->shell && window != win)
 	    break;
@@ -4690,7 +4684,7 @@ static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
 }
 
 /*
-** callback to tab (tabbar) that raise the buffer.
+** callback to clicks on a tab to raise it's document.
 */
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData)
 {

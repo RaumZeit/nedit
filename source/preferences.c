@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.118 2004/04/15 22:32:31 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.119 2004/04/27 01:35:28 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -244,9 +244,9 @@ static struct prefData {
     int searchWraps;	/* whether to attempt search again if reach bof or eof */
     int statsLine;		/* whether to show the statistics line */
     int iSearchLine;	    	/* whether to show the incremental search line*/
-    int tabBar;	    	/* whether to show the windows/buffers tabs */
-    int tabBarHideOne;  	/* hide buffer tabbar if only one buffer */
-    int globalTabNavigate;  	/* cross-windows buffer navigation */
+    int tabBar;			/* whether to show the tab bar */
+    int tabBarHideOne;		/* hide tab bar if only one document in window */
+    int globalTabNavigate;  	/* prev/next document across windows */
     int toolTips;	    	/* whether to show the tooltips */
     int lineNums;   	    	/* whether to show line numbers */
     int pathInWindowsMenu;   	/* whether to show path in windows menu */
