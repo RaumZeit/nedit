@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.1 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.2 2002/02/11 21:23:16 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -64,6 +64,8 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.1 2001/11/18 19:02:58 arnef 
 #include "preferences.h"
 #include "help.h"
 
+#define WINDOWTITLE_MAX_LEN 500
+
 /* Customize window title dialog information */
 static struct {
     Widget      form;
@@ -87,9 +89,9 @@ static struct {
 
 
 
-static char* removeSpace(char* sourcePtr)
+static char* removeSequence(char* sourcePtr, char c)
 {
-    while (*sourcePtr == ' ') {
+    while (*sourcePtr == c) {
         sourcePtr++;
     }
     return(sourcePtr);
@@ -97,9 +99,37 @@ static char* removeSpace(char* sourcePtr)
 
 
 /*
+** Two functions for performing safe insertions into a finite
+** size buffer so that we don't get any memory overruns.
+*/
+static char* safeStrCpy(char* dest, char* destEnd, const char* source)
+{
+   size_t len = strlen(source);
+   if (len <= (destEnd - dest)) {
+       strcpy(dest, source);
+       return(dest + len);
+   }
+   else {
+       strncpy(dest, source, destEnd - dest);
+       *destEnd = '\0';
+       return(destEnd);
+   }
+}
+
+static char* safeCharAdd(char* dest, char* destEnd, char c)
+{
+   if (destEnd - dest > 0)
+   {
+      *dest++ = c;
+      *dest = '\0';
+   }
+   return(dest);
+}
+
+/*
 ** Remove empty paranthesis pairs and multiple spaces in a row
 ** with one space.
-** Also remove leading spaces, and trailing spaces and dashes.
+** Also remove leading and trailing spaces and dashes.
 */
 static void compressWindowTitle(char *title)
 {
@@ -112,18 +142,19 @@ static void compressWindowTitle(char *title)
 
         modified = False;
 
-        /* Remove leading space */
-        while (c == ' ') {
+        /* Remove leading spaces and dashes */
+        while (c == ' ' || c == '-') {
             c= *sourcePtr++;
         }
 
         /* Remove empty constructs */
         while (c != '\0') {
             switch (c) {
-                /* remove sequences of spaces */
+                /* remove sequences */
                 case ' ':
-                    sourcePtr = removeSpace(sourcePtr);
-                    *destPtr++ = c; /* leave one space */
+                case '-':
+                    sourcePtr = removeSequence(sourcePtr, c);
+                    *destPtr++ = c; /* leave one */
                     break;
 
                 /* remove empty paranthesis pairs */
@@ -133,7 +164,7 @@ static void compressWindowTitle(char *title)
                         sourcePtr++;
                     }
                     else *destPtr++ = c;
-                    sourcePtr = removeSpace(sourcePtr);
+                    sourcePtr = removeSequence(sourcePtr, ' ');
                     break;
 
                 case '[':
@@ -142,7 +173,7 @@ static void compressWindowTitle(char *title)
                         sourcePtr++;
                     }
                     else *destPtr++ = c;
-                    sourcePtr = removeSpace(sourcePtr);
+                    sourcePtr = removeSequence(sourcePtr, ' ');
                     break;
 
                 case '{':
@@ -151,9 +182,9 @@ static void compressWindowTitle(char *title)
                         sourcePtr++;
                     }
                     else *destPtr++ = c;
-                    sourcePtr = removeSpace(sourcePtr);
+                    sourcePtr = removeSequence(sourcePtr, ' ');
                     break;
-
+                    
                 default:
                     *destPtr++ = c;
                     break;
@@ -198,8 +229,9 @@ char *FormatWindowTitle(const char* filename,
                         int fileChanged,
                         const char* titleFormat)
 {
-    static char title[500];
+    static char title[WINDOWTITLE_MAX_LEN];
     char *titlePtr = title;
+    char* titleEnd = title + WINDOWTITLE_MAX_LEN - 1;
     
     
     /* Flags to supress one of these if both are specified and they are identical */
@@ -208,7 +240,7 @@ char *FormatWindowTitle(const char* filename,
 
     *titlePtr = '\0';  /* always start with an empty string */
 
-    while (*titleFormat != '\0') {
+    while (*titleFormat != '\0' && titlePtr < titleEnd) {
         char c = *titleFormat++;
         if (c == '%') {
             c = *titleFormat++;
@@ -217,8 +249,7 @@ char *FormatWindowTitle(const char* filename,
                     if (clearCaseViewTag != NULL) {
                         if (serverNameSeen == False ||
                             strcmp(serverName, clearCaseViewTag) != 0) {
-                            strcpy(titlePtr, clearCaseViewTag);
-                            titlePtr += strlen(titlePtr);
+                            titlePtr = safeStrCpy(titlePtr, titleEnd, clearCaseViewTag);
                             clearCaseViewTagSeen = True;
                         }
                     }
@@ -228,8 +259,7 @@ char *FormatWindowTitle(const char* filename,
                     if (isServer && serverName[0] != '\0') { /* only applicable for servers */ 
                         if (clearCaseViewTagSeen == False ||
                             strcmp(serverName, clearCaseViewTag) != 0) {
-                            strcpy(titlePtr, serverName);
-                            titlePtr += strlen(titlePtr);
+                            titlePtr = safeStrCpy(titlePtr, titleEnd, serverName);
                             serverNameSeen = True;
                         }
                     }
@@ -237,8 +267,7 @@ char *FormatWindowTitle(const char* filename,
                    
                 case 'd': /* directory without any limit to no. of components */
                     if (filenameSet) {
-                       strcat(titlePtr, path);
-                       titlePtr += strlen(titlePtr);
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, path);
                     }
                     break;
                     
@@ -262,52 +291,45 @@ char *FormatWindowTitle(const char* filename,
 
                            /* prefix with ellipsis if components were skipped */
                            if (trailingPath > path) {
-                               strcpy(titlePtr, "...");
+                               titlePtr = safeStrCpy(titlePtr, titleEnd, "...");
                            }
-                           strcat(titlePtr, trailingPath);
-                           titlePtr += strlen(titlePtr);
+                           titlePtr = safeStrCpy(titlePtr, titleEnd, trailingPath);
                        }
                     }
                     break;
                     
                 case 'f': /* file name */
-                    strcpy(titlePtr, filename);
-                    titlePtr += strlen(filename);
+                    titlePtr = safeStrCpy(titlePtr, titleEnd, filename);
                     break;
                     
                 case 'h': /* host name */
-                    strcpy(titlePtr, GetHostName());
-                    titlePtr += strlen(titlePtr);
+                    titlePtr = safeStrCpy(titlePtr, titleEnd, GetHostName());
                     break;
                    
                 case 'S': /* file status */
                     if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
-    	                strcpy(titlePtr, "read only, modified");
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, "read only, modified");
                     else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
-    	                strcpy(titlePtr, "read only");
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, "read only");
                     else if (IS_USER_LOCKED(lockReasons) && fileChanged)
-    	                strcpy(titlePtr, "locked, modified");
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, "locked, modified");
                     else if (IS_USER_LOCKED(lockReasons))
-    	                strcpy(titlePtr, "locked");
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, "locked");
                     else if (fileChanged)
-    	                strcpy(titlePtr, "modified");
-                    titlePtr += strlen(titlePtr);
+                       titlePtr = safeStrCpy(titlePtr, titleEnd, "modified");
                     break;
                     
                 case 'u': /* user name */
-                    strcpy(titlePtr, GetUserName());
-                    titlePtr += strlen(titlePtr);
+                    titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserName());
                     break;
                    
                 default:
-                    *titlePtr++ = c;
-                    *titlePtr = '\0';
+                    titlePtr = safeCharAdd(titlePtr, titleEnd, c);
                     break;
             }
         }
         else {
-            *titlePtr++ = c;
-            *titlePtr = '\0';
+            titlePtr = safeCharAdd(titlePtr, titleEnd, c);
         }
     }
     
@@ -430,6 +452,10 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
     Help(etDialog.form, HELP_CUSTOM_TITLE_DIALOG);
 }
 
+static void wtDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    etDialog.form = NULL;
+}
 
 static void createEditTitleDialog(Widget parent, WindowInfo *window)
 {
@@ -447,6 +473,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     int ac = 0;
     XtSetArg(args[ac], XmNautoUnmanage, False); ac++;
     etDialog.form = CreateFormDialog(parent, "customizeTitle", args, ac);
+    XtAddCallback(etDialog.form, XmNdestroyCallback, wtDestroyCB, NULL);
     
     etDialog.shell = XtParent(etDialog.form);
     
