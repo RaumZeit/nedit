@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.53 2003/05/02 19:19:03 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.54 2003/05/03 09:15:00 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2006,20 +2006,23 @@ void InstallMouseWheelActions(XtAppContext context)
 */
 void AddMouseWheelSupport(Widget w)
 {
-   if (XmIsScrolledWindow(XtParent(w))) 
-   {
-      static char scrollTranslations[] =
-         "Shift<Btn4Down>,<Btn4Up>: scrolled-window-scroll-up(1)\n"
-         "Shift<Btn5Down>,<Btn5Up>: scrolled-window-scroll-down(1)\n"
-         "Ctrl<Btn4Down>,<Btn4Up>:  scrolled-window-page-up()\n"
-         "Ctrl<Btn5Down>,<Btn5Up>:  scrolled-window-page-down()\n"
-         "<Btn4Down>,<Btn4Up>:      scrolled-window-scroll-up(3)\n"
-         "<Btn5Down>,<Btn5Up>:      scrolled-window-scroll-down(3)\n";
-
-      XtTranslations trans_table;
-      trans_table = XtParseTranslationTable(scrollTranslations);
-      XtOverrideTranslations(w, trans_table);
-   }
+    if (XmIsScrolledWindow(XtParent(w))) 
+    {
+        static char scrollTranslations[] =
+           "Shift<Btn4Down>,<Btn4Up>: scrolled-window-scroll-up(1)\n"
+           "Shift<Btn5Down>,<Btn5Up>: scrolled-window-scroll-down(1)\n"
+           "Ctrl<Btn4Down>,<Btn4Up>:  scrolled-window-page-up()\n"
+           "Ctrl<Btn5Down>,<Btn5Up>:  scrolled-window-page-down()\n"
+           "<Btn4Down>,<Btn4Up>:      scrolled-window-scroll-up(3)\n"
+           "<Btn5Down>,<Btn5Up>:      scrolled-window-scroll-down(3)\n";
+        static XtTranslations trans_table = NULL;
+        
+        if (trans_table == NULL)
+        {
+            trans_table = XtParseTranslationTable(scrollTranslations);
+        }
+        XtOverrideTranslations(w, trans_table);
+    }
 }
 
 static void pageUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
