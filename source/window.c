@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.119 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.120 2004/02/17 01:01:18 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -280,6 +280,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
         }
     }
     window->modeMessageDisplayed = FALSE;
+    window->modeMessage = NULL;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
     window->macroMenuValid = FALSE;
@@ -1491,7 +1492,12 @@ static void showStatsForm(WindowInfo *window, int state)
 */
 void SetModeMessage(WindowInfo *window, const char *message)
 {
+    /* this document may be hidden (not on top) or later made hidden,
+       so we save a copy of the mode message, so we can restore the
+       statsline when the document is raised to top again */
     window->modeMessageDisplayed = True;
+    if (window->modeMessage)
+    	XtFree(window->modeMessage);
     window->modeMessage = XtNewString(message);
 
     if (!IsTopDocument(window))
@@ -1511,6 +1517,9 @@ void SetModeMessage(WindowInfo *window, const char *message)
 */
 void ClearModeMessage(WindowInfo *window)
 {
+    if (!window->modeMessageDisplayed)
+    	return;
+
     window->modeMessageDisplayed = False;
     XtFree(window->modeMessage);
     window->modeMessage = NULL;
@@ -3115,13 +3124,10 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 
     /* Allocate some memory for the new window data structure */
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    
+    /* inherit settings and later reset those required */
     memcpy(window, shellWindow, sizeof(WindowInfo));
     
-    /* initialize window structure */
-    /* + Schwarzenberg: should a 
-      memset(window, 0, sizeof(WindowInfo));
-         be added here ?
-    */
 #if 0
     /* share these dialog items with parent shell */
     window->replaceDlog = NULL;
@@ -3139,6 +3145,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->replaceMultiFilePathBtn = NULL;
     window->replaceMultiFileList = NULL;
 #endif
+
     window->multiFileReplSelected = FALSE;
     window->multiFileBusy = FALSE;
     window->writableWindows = NULL;
@@ -3179,6 +3186,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
       }
     }
     window->modeMessageDisplayed = FALSE;
+    window->modeMessage = NULL;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
     window->prevOpenMenuValid = FALSE;
