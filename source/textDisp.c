@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.43 2003/03/20 13:02:38 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.44 2003/03/21 18:51:01 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -112,31 +112,31 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.43 2003/03/20 13:02:38 edg Exp 
 enum positionTypes {CURSOR_POS, CHARACTER_POS};
 
 static void updateLineStarts(textDisp *textD, int pos, int charsInserted,
-	int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
+        int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
 static void offsetLineStarts(textDisp *textD, int newTopLineNum);
 static void calcLineStarts(textDisp *textD, int startLine, int endLine);
 static void calcLastChar(textDisp *textD);
 static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum);
 static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
-	int rightClip, int leftCharIndex, int rightCharIndex);
+        int rightClip, int leftCharIndex, int rightCharIndex);
 static void drawString(textDisp *textD, int style, int x, int y, int toX,
-	char *string, int nChars);
+        char *string, int nChars);
 static void clearRect(textDisp *textD, GC gc, int x, int y, 
-    	int width, int height);
+        int width, int height);
 static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos,
-    	int lineLen, int lineIndex, int dispIndex, int thisChar);
+        int lineLen, int lineIndex, int dispIndex, int thisChar);
 static int stringWidth(textDisp *textD, char *string, int length, int style);
 static int inSelection(selection *sel, int pos, int lineStartPos,
-	int dispIndex);
+        int dispIndex);
 static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
-	int *column, int posType);
+        int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted,
-	int nRestyled, char *deletedText, void *cbArg);
+        int nRestyled, char *deletedText, void *cbArg);
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
-	int updateVScrollBar, int updateHScrollBar);
+        int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void redrawLineNumbers(textDisp *textD, int clearAll);
@@ -149,23 +149,23 @@ static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
 static void blankCursorProtrusions(textDisp *textD);
 static void allocateFixedFontGCs(textDisp *textD, XFontStruct *fontStruct,
-	Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-	Pixel highlightFGPixel, Pixel highlightBGPixel);
+        Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
+        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
 static GC allocateGC(Widget w, unsigned long valueMask,
-	unsigned long foreground, unsigned long background, Font font,
-	unsigned long dynamicMask, unsigned long dontCareMask);
+        unsigned long foreground, unsigned long background, Font font,
+        unsigned long dynamicMask, unsigned long dontCareMask);
 static void releaseGC(Widget w, GC gc);
 static void resetClipRectangles(textDisp *textD);
 static int visLineLength(textDisp *textD, int visLineNum);
 static void measureDeletedLines(textDisp *textD, int pos, int nDeleted);
 static void findWrapRange(textDisp *textD, char *deletedText, int pos,
-    	int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
-    	int *linesInserted, int *linesDeleted);
+        int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
+        int *linesInserted, int *linesDeleted);
 static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
-    	int maxPos, int maxLines, int startPosIsLineStart, int styleBufOffset,
+        int maxPos, int maxLines, int startPosIsLineStart, int styleBufOffset,
         int *retPos, int *retLines, int *retLineStart, int *retLineEnd);
 static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart,
-    	int *lineEnd, int *nextLineStart);
+        int *lineEnd, int *nextLineStart);
 static int wrapUsesCharacter(textDisp *textD, int lineEndPos);
 static void hideOrShowHScrollBar(textDisp *textD);
 static int rangeTouchesRectSel(selection *sel, int rangeStart, int rangeEnd);
@@ -179,12 +179,12 @@ static Pixel allocBGColor(Widget w, char *colorName, int *ok);
 Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
-	Position left, Position top, Position width, Position height,
-	Position lineNumLeft, Position lineNumWidth, textBuffer *buffer,
-	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
-	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
-	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
-      int continuousWrap, int wrapMargin, XmString bgClassString)
+        Position left, Position top, Position width, Position height,
+        Position lineNumLeft, Position lineNumWidth, textBuffer *buffer,
+        XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
+        Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
+        Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
+        int continuousWrap, int wrapMargin, XmString bgClassString)
 {
     textDisp *textD;
     XGCValues gcValues;
@@ -231,10 +231,9 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->wrapMargin = wrapMargin;
     textD->continuousWrap = continuousWrap;
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
-	    selectBGPixel, highlightFGPixel, highlightBGPixel);
+            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
     textD->styleGC = allocateGC(textD->w, 0, 0, 0, fontStruct->fid,
-    	    GCClipMask|GCForeground|GCBackground, GCArcMode);
-    textD->lineNumGC = NULL;
+            GCClipMask|GCForeground|GCBackground, GCArcMode);
     textD->lineNumLeft = lineNumLeft;
     textD->lineNumWidth = lineNumWidth;
     textD->nVisibleLines = (height - 1) / (textD->ascent + textD->descent) + 1;
@@ -306,8 +305,7 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->selectBGGC);
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->styleGC);
-    if (textD->lineNumGC != NULL)
-	XtReleaseGC(textD->w, textD->lineNumGC);
+    releaseGC(textD->w, textD->lineNumGC);
     XtFree((char *)textD->lineStarts);
     while (TextDPopGraphicExposeQueueEntry(textD)) {
     }
@@ -414,12 +412,10 @@ void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP,
     values.foreground = hiliteBgP;
     XChangeGC( d, textD->highlightBGGC, GCForeground, &values );
     
-    /* Change the line number GC (it's not always initialized) */
-    if( textD->lineNumGC ) {
-        values.foreground = lineNoFgP;
-        values.background = textBgP;
-        XChangeGC( d, textD->lineNumGC, GCForeground | GCBackground, &values );
-    }        
+    /* Change the line number GC */
+    values.foreground = lineNoFgP;
+    values.background = textBgP;
+    XChangeGC( d, textD->lineNumGC, GCForeground | GCBackground, &values );
     
     /* Change the cursor GC */
     values.foreground = cursorFgP;
@@ -440,7 +436,7 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     int i, maxAscent = fontStruct->ascent, maxDescent = fontStruct->descent;
     int width, height, fontWidth;
     Pixel bgPixel, fgPixel, selectFGPixel, selectBGPixel;
-    Pixel highlightFGPixel, highlightBGPixel;
+    Pixel highlightFGPixel, highlightBGPixel, lineNumFGPixel;
     XGCValues values;
     XFontStruct *styleFont;
     
@@ -450,11 +446,11 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     /* If there is a (syntax highlighting) style table in use, find the new
        maximum font height for this text display */
     for (i=0; i<textD->nStyles; i++) {
-    	styleFont = textD->styleTable[i].font;
-	if (styleFont != NULL && styleFont->ascent > maxAscent)
-    	    maxAscent = styleFont->ascent;
-    	if (styleFont != NULL && styleFont->descent > maxDescent)
-    	    maxDescent = styleFont->descent;
+        styleFont = textD->styleTable[i].font;
+        if (styleFont != NULL && styleFont->ascent > maxAscent)
+            maxAscent = styleFont->ascent;
+        if (styleFont != NULL && styleFont->descent > maxDescent)
+            maxDescent = styleFont->descent;
     }
     textD->ascent = maxAscent;
     textD->descent = maxDescent;
@@ -462,14 +458,15 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     /* If all of the current fonts are fixed and match in width, compute */
     fontWidth = fontStruct->max_bounds.width;
     if (fontWidth != fontStruct->min_bounds.width)
-	fontWidth = -1;
+        fontWidth = -1;
     else {
-	for (i=0; i<textD->nStyles; i++) {
-    	    styleFont = textD->styleTable[i].font;
-	    if (styleFont != NULL && (styleFont->max_bounds.width != fontWidth ||
-		    styleFont->max_bounds.width != styleFont->min_bounds.width))
-		fontWidth = -1;
-	}
+        for (i=0; i<textD->nStyles; i++) {
+            styleFont = textD->styleTable[i].font;
+            if (styleFont != NULL && 
+                    (styleFont->max_bounds.width != fontWidth ||
+                    styleFont->max_bounds.width != styleFont->min_bounds.width))
+                fontWidth = -1;
+        }
     }
     textD->fixedFontWidth = fontWidth;
     
@@ -491,16 +488,16 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     XGetGCValues(display, textD->highlightGC,GCForeground|GCBackground,&values);
     highlightFGPixel = values.foreground;
     highlightBGPixel = values.background;
+    XGetGCValues(display, textD->highlightGC,GCForeground,&values);
+    lineNumFGPixel = values.foreground;
     releaseGC(textD->w, textD->gc);
     releaseGC(textD->w, textD->selectGC);
     releaseGC(textD->w, textD->highlightGC);
     releaseGC(textD->w, textD->selectBGGC);
     releaseGC(textD->w, textD->highlightBGGC);
-    if (textD->lineNumGC != NULL)
-	releaseGC(textD->w, textD->lineNumGC);
-    textD->lineNumGC = NULL;
+    releaseGC(textD->w, textD->lineNumGC);
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
-	    selectBGPixel, highlightFGPixel, highlightBGPixel);
+            selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
     XSetFont(display, textD->styleGC, fontStruct->fid);
     
     /* Do a full resize to force recalculation of font related parameters */
@@ -511,7 +508,7 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     
     /* Redisplay */
     TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
-    	    textD->height);
+            textD->height);
     
     /* Clean up line number area in case spacing has changed */
     redrawLineNumbers(textD, True);
@@ -2789,44 +2786,34 @@ static void redrawLineNumbers(textDisp *textD, int clearAll)
     /* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
        not yet realized */
     if (textD->lineNumWidth == 0 || XtWindow(textD->w) == 0)
-    	return;
-    
-    /* GC is allocated on demand, since not everyone will use line numbering */
-    if (textD->lineNumGC == NULL) {
-	XGCValues values;
- 	values.foreground = textD->lineNumFGPixel;
-	values.background = textD->bgPixel;
-	values.font = textD->fontStruct->fid;
-   	textD->lineNumGC = XtGetGC(textD->w,
-		GCFont| GCForeground | GCBackground, &values);
-    }
+        return;
     
     /* Erase the previous contents of the line number area, if requested */
     if (clearAll)
-    	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumLeft,
-		textD->top, textD->lineNumWidth, textD->height, False);
+        XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumLeft,
+                textD->top, textD->lineNumWidth, textD->height, False);
     
     /* Draw the line numbers, aligned to the text */
     nCols = min(11, textD->lineNumWidth / charWidth);
     y = textD->top;
     line = getAbsTopLineNum(textD);
     for (visLine=0; visLine < textD->nVisibleLines; visLine++) {
-	lineStart = textD->lineStarts[visLine];
-	if (lineStart != -1 && (lineStart==0 ||
-		BufGetCharacter(textD->buffer, lineStart-1)=='\n')) {
-	    sprintf(lineNumString, "%*d", nCols, line);
-	    XDrawImageString(XtDisplay(textD->w), XtWindow(textD->w),
-		    textD->lineNumGC, textD->lineNumLeft, y + textD->ascent,
-		    lineNumString, strlen(lineNumString));
-	    line++;
-	} else {
-	    XClearArea(XtDisplay(textD->w), XtWindow(textD->w),
-		    textD->lineNumLeft, y, textD->lineNumWidth,
-		    textD->ascent + textD->descent, False);
-	    if (visLine == 0)
-		line++;
-	}
-	y += lineHeight;
+        lineStart = textD->lineStarts[visLine];
+        if (lineStart != -1 && (lineStart==0 ||
+                BufGetCharacter(textD->buffer, lineStart-1)=='\n')) {
+            sprintf(lineNumString, "%*d", nCols, line);
+            XDrawImageString(XtDisplay(textD->w), XtWindow(textD->w),
+                    textD->lineNumGC, textD->lineNumLeft, y + textD->ascent,
+                    lineNumString, strlen(lineNumString));
+            line++;
+        } else {
+            XClearArea(XtDisplay(textD->w), XtWindow(textD->w),
+                    textD->lineNumLeft, y, textD->lineNumWidth,
+                    textD->ascent + textD->descent, False);
+            if (visLine == 0)
+                line++;
+        }
+        y += lineHeight;
     }
 }
 
@@ -2840,7 +2827,7 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData)
     int lineDelta = newValue - textD->topLineNum;
     
     if (lineDelta == 0)
-    	return;
+        return;
     setScroll(textD, newValue, textD->horizOffset, False, True);
 }
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2849,7 +2836,7 @@ static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData)
     int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
     
     if (newValue == textD->horizOffset)
-    	return;
+        return;
     setScroll(textD, textD->topLineNum, newValue, False, False);
 }
 
@@ -2932,16 +2919,16 @@ static void blankCursorProtrusions(textDisp *textD)
     
     cursorWidth = (fontWidth/3) * 2;
     if (cursorX >= left-1 && cursorX <= left + cursorWidth/2 - 1) {
-    	x = cursorX - cursorWidth/2;
-    	width = left - x;
+        x = cursorX - cursorWidth/2;
+        width = left - x;
     } else if (cursorX >= right - cursorWidth/2 && cursorX <= right) {
-    	x = right;
-    	width = cursorX + cursorWidth/2 + 2 - right;
+        x = right;
+        width = cursorX + cursorWidth/2 + 2 - right;
     } else
-    	return;
-    	
+        return;
+        
     XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, cursorY,
-    	    width, fontHeight, False);
+            width, fontHeight, False);
 }
 
 /*
@@ -2949,21 +2936,24 @@ static void blankCursorProtrusions(textDisp *textD)
 ** re-allocated on a font change.
 */
 static void allocateFixedFontGCs(textDisp *textD, XFontStruct *fontStruct,
-	Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
-	Pixel highlightFGPixel, Pixel highlightBGPixel)
+        Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel,
+        Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel)
 {
     textD->gc = allocateGC(textD->w, GCFont | GCForeground | GCBackground,
-    	    fgPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode); 
+            fgPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode); 
     textD->selectGC = allocateGC(textD->w, GCFont | GCForeground | GCBackground,
-    	    selectFGPixel, selectBGPixel, fontStruct->fid, GCClipMask,
-    	    GCArcMode);
+            selectFGPixel, selectBGPixel, fontStruct->fid, GCClipMask,
+            GCArcMode);
     textD->selectBGGC = allocateGC(textD->w, GCForeground, selectBGPixel, 0,
-    	    fontStruct->fid, GCClipMask, GCArcMode);
+            fontStruct->fid, GCClipMask, GCArcMode);
     textD->highlightGC = allocateGC(textD->w, GCFont|GCForeground|GCBackground,
-    	    highlightFGPixel, highlightBGPixel, fontStruct->fid, GCClipMask,
-    	    GCArcMode);
+            highlightFGPixel, highlightBGPixel, fontStruct->fid, GCClipMask,
+            GCArcMode);
     textD->highlightBGGC = allocateGC(textD->w, GCForeground, highlightBGPixel,
-	    0, fontStruct->fid, GCClipMask, GCArcMode);
+            0, fontStruct->fid, GCClipMask, GCArcMode);
+    textD->lineNumGC = allocateGC(textD->w, GCFont | GCForeground | 
+            GCBackground, lineNumFGPixel, bgPixel, fontStruct->fid, 
+            GCClipMask, GCArcMode);
 }
 
 /*
