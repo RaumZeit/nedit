@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.111 2004/02/08 02:49:13 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.112 2004/02/09 04:16:01 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3237,13 +3237,23 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     getTextPaneDimension(shellWindow, &nRows, &nCols);
     
     /* Create pane that actaully holds the new document. As 
-       document is created in 'background', so we'll let
-       RaiseDocument() to the job to manage it. */
+       document is created in 'background', we need to hide
+       it. If we leave it unmanaged without setting it to
+       the XmNworkWindow of the mainWin, due to a unknown
+       bug in Motif where splitpane's scrollWindow child 
+       somehow came up with a height taller than the splitpane,
+       the bottom part of the text editing widget is obstructed
+       when later brought up by  RaiseDocument(). So we first 
+       manage it hidden, then unmanage it and reset XmNworkWindow, 
+       then let RaiseDocument() show it later. */
     pane = XtVaCreateWidget("pane",
     	    xmPanedWindowWidgetClass, window->mainWin,
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2,
+	    XmNmappedWhenManaged, False,
 	    NULL);
+    XtVaSetValues(window->mainWin, XmNworkWindow, pane, NULL);
+    XtManageChild(pane);
     window->splitPane = pane;
     
     /* buffer/window info should associate with text pane */
@@ -3304,6 +3314,30 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     InvalidateWindowMenus();
     addToWindowList(window);
 
+#ifdef LESSTIF_VERSION
+    /* FIXME: Temporary workaround for disappearing-text-window bug
+              when linking to Lesstif.
+       
+       After changes is made to statsAreaForm (parent of statsline,
+       i-search line and tab bar) widget such as enabling/disabling
+       the statsline, the XmForm widget enclosing the text widget 
+       somehow refused to resize to fit the text widget. Resizing
+       the shell window or making changes [again] to the statsAreaForm 
+       appeared to bring out the text widget, though doesn't fix it for
+       the subsequently added buffers. Here we try to do the latter 
+       for all new buffer created. */
+    if (XtIsManaged(XtParent(window->statsLineForm))) {
+    	XtUnmanageChild(XtParent(window->statsLineForm));
+    	XtManageChild(XtParent(window->statsLineForm));    
+    }
+#endif /* LESSTIF_VERSION */
+
+    /* return the shell ownership to previous tabbed doc */
+    XtVaSetValues(window->mainWin, XmNworkWindow, shellWindow->splitPane, NULL);
+    XLowerWindow(TheDisplay, XtWindow(window->splitPane));
+    XtUnmanageChild(window->splitPane);
+    XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, NULL);
+    
     return window;
 }
 
