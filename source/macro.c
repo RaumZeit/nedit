@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.94 2005/01/06 06:23:45 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.95 2005/02/02 09:07:36 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -3684,7 +3684,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     char stringStorage[3][TYPE_INT_STR_SIZE(int)];
     char *sourceStr, *splitStr, *typeSplitStr;
-    int searchType, beginPos, foundStart, foundEnd, strLength;
+    int searchType, beginPos, foundStart, foundEnd, strLength, lastEnd;
     int found, elementEnd, indexNum;
     char indexStr[TYPE_INT_STR_SIZE(int)], *allocIndexStr;
     DataValue element;
@@ -3723,6 +3723,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     result->val.arrayPtr = ArrayNew();
 
     beginPos = 0;
+    lastEnd = 0;
     indexNum = 0;
     strLength = strlen(sourceStr);
     found = 1;
@@ -3738,9 +3739,9 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
             False, beginPos, &foundStart, &foundEnd,
 	        NULL, NULL, GetWindowDelimiters(window));
         elementEnd = found ? foundStart : strLength;
-        elementLen = elementEnd - beginPos;
+        elementLen = elementEnd - lastEnd;
         element.tag = STRING_TAG;
-        if (!AllocNStringNCpy(&element.val.str, &sourceStr[beginPos], elementLen)) {
+        if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
             *errMsg = "failed to allocate element value: %s";
             return(False);
         }
@@ -3749,7 +3750,16 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
             M_ARRAY_INSERT_FAILURE();
         }
 
-        beginPos = found ? foundEnd : strLength;
+        if (found) {
+            if (foundStart == foundEnd) {
+                beginPos = foundEnd + 1; /* Avoid endless loop for 0-width match */
+            } else {
+                beginPos = foundEnd;
+            }
+        } else {
+            beginPos = strLength; /* Break the loop */
+        }
+        lastEnd = foundEnd;
         ++indexNum;
     }
     if (found) {
@@ -3761,11 +3771,55 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
         strcpy(allocIndexStr, indexStr);
         element.tag = STRING_TAG;
-        element.val.str.rep = PERM_ALLOC_STR("");
-        element.val.str.len = 0;
+        if (lastEnd == strLength) {
+            /* The pattern mathed the end of the string. Add an empty chunk. */
+            element.val.str.rep = PERM_ALLOC_STR("");
+            element.val.str.len = 0;
 
-        if (!ArrayInsert(result, allocIndexStr, &element)) {
-            M_ARRAY_INSERT_FAILURE();
+            if (!ArrayInsert(result, allocIndexStr, &element)) {
+                M_ARRAY_INSERT_FAILURE();
+            }
+        } else {
+            /* We skipped the last character to prevent an endless loop. 
+               Add it to the list. */
+            elementLen = strLength - lastEnd;
+            if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
+                *errMsg = "failed to allocate element value: %s";
+                return(False);
+            }
+
+            if (!ArrayInsert(result, allocIndexStr, &element)) {
+                M_ARRAY_INSERT_FAILURE();
+            }
+
+            /* If the pattern can match zero-length strings, we may have to
+               add a final empty chunk. 
+               For instance:  split("abc\n", "$", "regex")
+                 -> matches before \n and at end of string
+                 -> expected output: "abc", "\n", ""
+               The '\n' gets added in the lines above, but we still have to
+               verify whether the pattern also matches the end of the string,
+               and add an empty chunk in case it does. */
+            found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, 
+                searchType, False, strLength, &foundStart, &foundEnd, 
+                NULL, NULL, GetWindowDelimiters(window));
+            if (found) {
+                ++indexNum;
+                sprintf(indexStr, "%d", indexNum);
+                allocIndexStr = AllocString(strlen(indexStr) + 1);
+                if (!allocIndexStr) {
+                    *errMsg = "array element failed to allocate key: %s";
+                    return(False);
+                }
+                strcpy(allocIndexStr, indexStr);
+                element.tag = STRING_TAG;
+                element.val.str.rep = PERM_ALLOC_STR("");
+                element.val.str.len = 0;
+
+                if (!ArrayInsert(result, allocIndexStr, &element)) {
+                    M_ARRAY_INSERT_FAILURE();
+                }
+            }
         }
     }
     return(True);
