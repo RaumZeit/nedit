@@ -1,4 +1,4 @@
-/* $Id: menu.h,v 1.8 2003/12/25 06:55:07 tksoh Exp $ */
+/* $Id: menu.h,v 1.9 2004/02/07 15:44:33 tringali Exp $ */
 
 #ifndef NEDIT_MENU_H_INCLUDED
 #define NEDIT_MENU_H_INCLUDED
@@ -25,5 +25,7 @@ Widget CreateBGMenu(WindowInfo *window);
 void AddBGMenuAction(Widget widget);
 WindowInfo **MakeSortedWindowArray(void);
 void HidePointerOnKeyedEvent(Widget w, XEvent *event);
+Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
+void AddTabContextMenuAction(Widget widget);
 
 #endif /* NEDIT_MENU_H_INCLUDED */

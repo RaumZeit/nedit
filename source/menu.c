@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.87 2004/02/04 08:44:48 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.88 2004/02/07 15:44:33 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -74,8 +74,8 @@ static const char CVSID[] = "$Id: menu.c,v 1.87 2004/02/04 08:44:48 tksoh Exp $"
 #include <Xm/CascadeB.h>
 #include <Xm/PushB.h>
 #include <Xm/ToggleB.h>
-#include <Xm/RowColumn.h>
 #include <Xm/Separator.h>
+#include <Xm/RowColumn.h>
 #include <Xm/MenuShell.h>
 
 #ifdef HAVE_DEBUG_H
@@ -95,6 +95,7 @@ typedef void (*menuCallbackProc)();
 
 static char shiftKeyDown(XtPointer callData);
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
+static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void newWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openDialogCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData); 
@@ -365,6 +366,8 @@ static int compareWindowNames(const void *windowA, const void *windowB);
 static int compareWindowShell(const void *windowA, const void *windowB);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
+static void tabMenuPostAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args,
@@ -540,6 +543,7 @@ static XtActionsRec Actions[] = {
     {"macro_menu_command", macroMenuAP},
     {"bg_menu_command", bgMenuAP},
     {"post_window_bg_menu", bgMenuPostAP},
+    {"post_tab_context_menu", tabMenuPostAP},
     {"beginning-of-selection", beginningOfSelectionAP},
     {"beginning_of_selection", beginningOfSelectionAP},
     {"end-of-selection", endOfSelectionAP},
@@ -1333,6 +1337,24 @@ static HelpMenu * buildHelpMenu(
 }
 
 /*----------------------------------------------------------------------------*/
+
+/*
+** handle actions called from the context menus of tabs.
+*/
+static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    Widget menu = MENU_WIDGET(w);
+    WindowInfo *win, *window = WidgetToWindow(menu);
+    
+    /* extract the window to be acted upon, see comment in
+       tabMenuPostAP() for detail */
+    XtVaGetValues(window->tabMenuPane, XmNuserData, &win, NULL);
+    
+    HidePointerOnKeyedEvent(win->lastFocus,
+            ((XmAnyCallbackStruct *)callData)->event);
+    XtCallActionProc(win->lastFocus, (char *)clientData,
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+}
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -5061,6 +5083,31 @@ Widget CreateBGMenu(WindowInfo *window)
 }
 
 /*
+** Create context popup menu for tabs & tab bar
+*/
+Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
+{
+    Widget   menu;
+    Arg      args[8];
+    int      n;
+
+    n = 0;
+    XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
+    menu = XmCreatePopupMenu(parent, "tabContext", args, n);
+    
+    createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new", SHORT);
+    createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
+    createMenuSeparator(menu, "sep1", SHORT);
+    window->contextDetachDocumentItem = createMenuItem(menu, "detach",
+            "Detach Tab", 0, doTabActionCB, "detach_document", SHORT);
+    XtSetSensitive(window->contextDetachDocumentItem, False);
+    window->contextAttachDocumentItem = createMenuItem(menu, "attach", 
+            "Attach Tab...", 0, doTabActionCB, "attach_document_dialog", SHORT);
+    
+    return menu;
+}
+
+/*
 ** Add a translation to the text widget to trigger the background menu using
 ** the mouse-button + modifier combination specified in the resource:
 ** nedit.bgMenuBtn.
@@ -5103,6 +5150,59 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args,
        XtMapWidget(XtParent(window->bgMenuPane));
        XtMapWidget(window->bgMenuPane);  
     */
+}
+
+void AddTabContextMenuAction(Widget widget)
+{
+    static XtTranslations table = NULL;
+
+    if (table == NULL) {
+	char *translations = "<Btn3Down>: post_tab_context_menu()\n";
+    	table = XtParseTranslationTable(translations);
+    }
+    XtOverrideTranslations(widget, table);
+}
+
+/*
+** action procedure for posting context menu of tabs
+*/
+static void tabMenuPostAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs)
+{
+    WindowInfo *window;
+    XButtonPressedEvent *xbutton = (XButtonPressedEvent *)event;
+    Widget wgt;
+    
+    /* Determine if the context menu was called from tabs or gutter,
+       then stored the corresponding window info as userData of
+       the popup menu pane, which will later be extracted by
+       doTabActionCB() to act upon. When the context menu was called
+       from the gutter, the active doc is assumed.
+       
+       Lesstif requires the action [to pupop the menu] to also be
+       to the tabs, else nothing happed when right-click on tabs. 
+       Even so, the action procedure sometime appear to be called 
+       from the gutter even if users did right-click on the tabs.
+       Here we try to cater for the uncertainty. */
+    if (XtClass(w) == xrwsBubbleButtonWidgetClass)
+	window = TabToWindow(w);
+    else if (xbutton->subwindow) {
+    	wgt = XtWindowToWidget(XtDisplay(w), xbutton->subwindow);
+	window = TabToWindow(wgt);
+    }
+    else {
+    	window = WidgetToWindow(w);
+    }
+    XtVaSetValues(window->tabMenuPane, XmNuserData, (XtPointer)window, NULL);
+    
+    /* The Motif popup handling code BLOCKS events while the menu is posted,
+       including the matching btn-up events which complete various dragging
+       operations which it may interrupt.  Cancel to head off problems */
+    XtCallActionProc(window->lastFocus, "process_cancel", event, NULL, 0);
+    
+    /* Pop up the menu */
+    XmMenuPosition(window->tabMenuPane, (XButtonPressedEvent *)event);
+    XtManageChild(window->tabMenuPane); 
 }
 
 #ifdef SGI_CUSTOM

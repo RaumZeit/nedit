@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.108 2004/02/05 07:29:50 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.109 2004/02/07 15:44:33 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -533,6 +533,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopAttachment, XmATTACH_FORM,
 	    NULL);
 
+    window->tabMenuPane = CreateTabContextMenu(window->tabBar, window);
+    AddTabContextMenuAction(window->tabBar);
+    
     /* create an unmanaged composite widget to get the folder
        widget to hide the 3D shadow for the manager area.
        Note: this works only on the patched XmLFolder widget */
@@ -748,10 +751,14 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     /* tell the world there's a new window to move in */
     if (GetPrefTabbedMode()) {
+	int state = NDocuments(window) < NWindows();
+
+	/* dim/undim Attach_Tab menu items */
 	for(win=WindowList; win; win=win->next) {
-    	    if (IsTopDocument(win))	    
-    		XtSetSensitive(win->attachDocumentItem, 
-	    		NDocuments(window) < NWindows());
+    	    if (IsTopDocument(win)) {
+    		XtSetSensitive(win->attachDocumentItem, state);
+    		XtSetSensitive(win->contextAttachDocumentItem, state);
+	    }
 	}
     }
     
@@ -798,6 +805,11 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
        came without borders */
     XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, NULL);
 	
+#ifdef LESSTIF_VERSION
+    /* If we don't do this, no popup when right-click on tabs */
+    AddTabContextMenuAction(tab);
+#endif /* LESSTIF_VERSION */
+
     return tab;
 }
 	    
@@ -972,10 +984,23 @@ void CloseWindow(WindowInfo *window)
     
     /* tell the world there's one less window to move in */
     if (GetPrefTabbedMode()) {
+	int state;
+
+	/* dim/undim Detach_Tab menu items */
+    	win = nextBuf? nextBuf : topBuf;
+    	if (win) {
+	    state = NDocuments(win) > 1;
+    	    XtSetSensitive(win->detachDocumentItem, state);
+    	    XtSetSensitive(win->contextDetachDocumentItem, state);
+	}
+	
+	/* dim/undim Attach_Tab menu items */
+	state = NDocuments(WindowList) < NWindows();
 	for(win=WindowList; win; win=win->next) {
-    	    if (IsTopDocument(win))	    
-    		XtSetSensitive(win->attachDocumentItem, 
-	    		NDocuments(WindowList) < NWindows());
+    	    if (IsTopDocument(win)) {    
+    		XtSetSensitive(win->attachDocumentItem, state);
+    		XtSetSensitive(win->contextAttachDocumentItem, state);
+	    }
 	}
     }
 
@@ -1827,7 +1852,7 @@ void UpdateWindowTitle(const WindowInfo *window)
 {
     char *iconTitle, *title;
     
-    if (!IsTopDocument((WindowInfo*)window))
+    if (!IsTopDocument(window))
     	return;
 
     title = FormatWindowTitle(window->filename,
@@ -3599,6 +3624,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
     XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
     XtSetSensitive(window->closePaneItem, window->nPanes > 0);
     XtSetSensitive(window->detachDocumentItem, NDocuments(window)>1);
+    XtSetSensitive(window->contextDetachDocumentItem, NDocuments(window)>1);
 
     for (win=WindowList; win; win=win->next)
     	if (win->shell != window->shell)  

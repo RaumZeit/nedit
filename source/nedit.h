@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.45 2004/02/04 08:45:01 tksoh Exp $ */
+/* $Id: nedit.h,v 1.46 2004/02/07 15:44:33 tringali Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -266,6 +266,7 @@ typedef struct _WindowInfo {
     Widget	shellMenuPane;
     Widget	macroMenuPane;
     Widget  	bgMenuPane;
+    Widget  	tabMenuPane;
     Widget  	prevOpenMenuPane;
     Widget  	prevOpenMenuItem;
     Widget  	unloadTagsMenuPane;
@@ -335,6 +336,8 @@ typedef struct _WindowInfo {
     Widget	closePaneItem;
     Widget	detachDocumentItem;
     Widget	attachDocumentItem;
+    Widget	contextAttachDocumentItem;
+    Widget	contextDetachDocumentItem;
     Widget  	bgMenuUndoItem;
     Widget  	bgMenuRedoItem;
 #ifdef SGI_CUSTOM
