@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.4 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.5 2001/03/19 16:30:07 slobasso Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -460,7 +460,7 @@ static int             init_ansi_classes  (void);
 
 regexp * CompileRE (char *exp, char **errorText) {
 
-   register                regexp *comp_regex;
+   register                regexp *comp_regex = NULL;
    register unsigned char *scan;
                      int   flags_local, pass;
 
@@ -594,7 +594,7 @@ static unsigned char * chunk (int paren, int *flag_param) {
    register unsigned char *ret_val = NULL;
    register unsigned char *this_branch;
    register unsigned char *ender = NULL;
-   register          int   this_paren;
+   register          int   this_paren = 0;
                      int   flags_local, first = 1, zero_width, i;
                      int   old_sensitive = Is_Case_Insensitive;
                      int   old_newline   = Match_Newline;
@@ -1451,7 +1451,7 @@ static unsigned char * atom (int *flag_param) {
          {
             register unsigned int  second_value;
             register unsigned int  last_value;
-                     unsigned char last_emit;
+                     unsigned char last_emit = 0;
 
             /* Handle characters that can only occur at the start of a class. */
 
@@ -1511,9 +1511,9 @@ static unsigned char * atom (int *flag_param) {
 
                         Reg_Parse++;
 
-                        if (test = numeric_escape (*Reg_Parse, &Reg_Parse)) {
+                        if ((test = numeric_escape (*Reg_Parse, &Reg_Parse))) {
                            last_value = (unsigned int) test;
-                        } else if (test = literal_escape (*Reg_Parse)) {
+                        } else if ((test = literal_escape (*Reg_Parse))) {
                            last_value = (unsigned int) test;
                         } else if (shortcut_escape (*Reg_Parse,
                                                     NULL,
@@ -1633,11 +1633,11 @@ static unsigned char * atom (int *flag_param) {
 
          Error_Text [0] = '\0';
 
-         if (ret_val = shortcut_escape (*Reg_Parse, flag_param, EMIT_NODE)) {
+         if ((ret_val = shortcut_escape (*Reg_Parse, flag_param, EMIT_NODE))) {
 
             Reg_Parse++; break;
 
-         } else if (ret_val = back_ref (Reg_Parse, flag_param, EMIT_NODE)) {
+         } else if ((ret_val = back_ref (Reg_Parse, flag_param, EMIT_NODE))) {
             /* Can't make any assumptions about a back-reference as to SIMPLE
                or HAS_WIDTH.  For example (^|<) is neither simple nor has
                width.  So we don't flip bits in flag_param here. */
@@ -1684,13 +1684,13 @@ static unsigned char * atom (int *flag_param) {
 
                   Error_Text [0] = '\0';  /* See comment above. */
 
-                  if (test = numeric_escape (*Reg_Parse, &Reg_Parse)) {
+                  if ((test = numeric_escape (*Reg_Parse, &Reg_Parse))) {
                      if (Is_Case_Insensitive) {
                         emit_byte (tolower (test));
                      } else {
                         emit_byte (test);
                      }
-                  } else if (test = literal_escape (*Reg_Parse)) {
+                  } else if ((test = literal_escape (*Reg_Parse))) {
                      emit_byte (test);
                   } else if (back_ref (Reg_Parse, NULL, CHECK_ESCAPE)) {
                      /* Leave back reference for next `atom' call */
@@ -2508,8 +2508,8 @@ int ExecRE (
 
    Prev_Is_BOL        = ((prev_char == '\n') || (prev_char == '\0') ? 1 : 0);
    Succ_Is_EOL        = ((succ_char == '\n') || (succ_char == '\0') ? 1 : 0);
-   Prev_Is_Delim      = (Current_Delimiters [prev_char] ? 1 : 0);
-   Succ_Is_Delim      = (Current_Delimiters [succ_char] ? 1 : 0);
+   Prev_Is_Delim      = (Current_Delimiters [(unsigned char)prev_char] ? 1 : 0);
+   Succ_Is_Delim      = (Current_Delimiters [(unsigned char)succ_char] ? 1 : 0);
 
    Total_Paren        = (int) (prog->program [1]);
    Num_Braces         = (int) (prog->program [2]);
@@ -2994,7 +2994,7 @@ static int match (unsigned char *prog) {
          case LAZY_BRACE:
             {
                register unsigned long  num_matched = REG_ZERO;
-               register unsigned long  min, max;
+               register unsigned long  min = ULONG_MAX, max = REG_ZERO;
                register unsigned char *save;
                register unsigned char  next_char;
                         unsigned char *next_op;

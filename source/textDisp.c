@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.8 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.9 2001/03/19 16:30:07 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -2808,7 +2808,7 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	int maxPos, int maxLines, int startPosIsLineStart, int *retPos,
     	int *retLines, int *retLineStart, int *retLineEnd)
 {
-    int lineStart, newLineStart, b, p, colNum, wrapMargin;
+    int lineStart, newLineStart = 0, b, p, colNum, wrapMargin;
     int maxWidth, width, countPixels, i, foundBreak;
     int nLines = 0, tabDist = textD->buffer->tabDist;
     unsigned char c;

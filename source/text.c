@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.11 2001/03/19 14:43:17 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.12 2001/03/19 16:30:07 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -199,7 +199,6 @@ static int spanForward(textBuffer *buf, int startPos, char *searchChars,
 static int spanBackward(textBuffer *buf, int startPos, char *searchChars, int
     	ignoreSpace, int *foundPos);
 static void selectLine(Widget w);
-static int whiteSpaceAtPos(textBuffer *buf, int pos);
 static int startOfWord(TextWidget w, int pos);
 static int endOfWord(TextWidget w, int pos);
 static void checkAutoScroll(TextWidget w, int x, int y);

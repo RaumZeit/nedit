@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.11 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.12 2001/03/19 16:30:06 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1257,7 +1257,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     int i;
     char *stringPtr, *stylePtr, *startingStringPtr;
     signed char *subExpr;
-    highlightDataRec *subPat, *subSubPat;
+    highlightDataRec *subPat = NULL, *subSubPat;
     
     if (length <= 0)
     	return False;
@@ -1386,7 +1386,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *delimiters)
 {
     int inParseRegion = False;
-    char *stylePtr, *stringPtr, temp, *parseStart, *parseEnd, *s, *c;
+    char *stylePtr, *stringPtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
     int firstPass2Style = (unsigned char)pattern[1].style;
     
     for (c = string, s = styleString; ; c++, s++) {
@@ -1539,7 +1539,7 @@ static Pixel allocColor(Widget w, const char *colorName)
     double       small = 1.0e9;
     int          depth;
     unsigned int ncolors;
-    unsigned long i, best;    /* pixel value */
+    unsigned long i, best = 0;    /* pixel value */
     
     /* Get the correct colormap for compatability with the "best" visual
        feature in 5.2.  Default visual of screen is no good here. */

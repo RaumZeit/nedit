@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regexConvert.c,v 1.2 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: regexConvert.c,v 1.3 2001/03/19 16:30:07 slobasso Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `ConvertSubstituteRE' -- regular expression parsing
  *
@@ -167,7 +167,7 @@ static int chunk (int paren, int *flag_param) {
 
    if (paren == PAREN) {
       if (Total_Paren >= NSUBEXP) {
-         sprintf (Error_Text, "number of ()'s > %d\0", (int) NSUBEXP);
+         sprintf (Error_Text, "number of ()'s > %d", (int) NSUBEXP);
          CONVERT_FAIL (Error_Text);
       }
 
@@ -271,7 +271,7 @@ static int piece (int *flag_param) {
       item. */
 
    if (!(flags_local & HAS_WIDTH) && min_val > REG_ZERO) {
-      sprintf (Error_Text, "%c operand could be empty\0", op_code);
+      sprintf (Error_Text, "%c operand could be empty", op_code);
 
       CONVERT_FAIL (Error_Text);
    }
@@ -286,7 +286,7 @@ static int piece (int *flag_param) {
    }
 
    if (IS_QUANTIFIER (*Reg_Parse)) {
-      sprintf (Error_Text, "nested quantifiers, %c%c\0", op_code, *Reg_Parse);
+      sprintf (Error_Text, "nested quantifiers, %c%c", op_code, *Reg_Parse);
 
       CONVERT_FAIL (Error_Text);
    }
@@ -350,7 +350,7 @@ static int atom (int *flag_param) {
       case '?':
       case '+':
       case '*':
-         sprintf (Error_Text, "%c follows nothing\0", *(Reg_Parse - 1));
+         sprintf (Error_Text, "%c follows nothing", *(Reg_Parse - 1));
          CONVERT_FAIL (Error_Text);
 
       case '{':
@@ -362,7 +362,7 @@ static int atom (int *flag_param) {
       case '[':
          {
             register unsigned int  last_value;
-                     unsigned char last_emit;
+                     unsigned char last_emit = 0;
                      unsigned char buffer [500];
                               int  head = 0;
                               int  negated = 0;
@@ -424,7 +424,7 @@ static int atom (int *flag_param) {
 
                         Reg_Parse++;
 
-                        if (test = literal_escape (*Reg_Parse, 0)) {
+                        if ((test = literal_escape (*Reg_Parse, 0))) {
 
                            buffer [head++] = '-';
 
@@ -437,7 +437,7 @@ static int atom (int *flag_param) {
                         } else {
                            sprintf (
                               Error_Text,
-                              "\\%c is an invalid escape sequence(3)\0",
+                              "\\%c is an invalid escape sequence(3)",
                               *Reg_Parse);
 
                            CONVERT_FAIL (Error_Text);
@@ -457,7 +457,7 @@ static int atom (int *flag_param) {
                         } else {
                            buffer [head++] = '-';
 
-                           if (test = literal_escape (*Reg_Parse, 1)) {
+                           if ((test = literal_escape (*Reg_Parse, 1))) {
                               /* Ordinary character matches an escape sequence;
                                  convert it to the escape sequence. */
 
@@ -512,7 +512,7 @@ static int atom (int *flag_param) {
 
                   } else {
                      sprintf (Error_Text,
-                              "\\%c is an invalid escape sequence(1)\0",
+                              "\\%c is an invalid escape sequence(1)",
                               *Reg_Parse);
 
                      CONVERT_FAIL (Error_Text);
@@ -527,7 +527,7 @@ static int atom (int *flag_param) {
                   if (*Reg_Parse == '_') {
                      u_score_flag = 1; /* Emit later if we can't do `\w'. */
 
-                  } else if (test = literal_escape (*Reg_Parse, 1)) {
+                  } else if ((test = literal_escape (*Reg_Parse, 1))) {
                      /* Ordinary character matches an escape sequence;
                         convert it to the escape sequence. */
 
@@ -677,7 +677,7 @@ static int atom (int *flag_param) {
                emit_save  = Code_Emit_Ptr;
 
                if (*Reg_Parse == '\\') {
-                  if (test = literal_escape (*(Reg_Parse + 1), 0)) {
+                  if ((test = literal_escape (*(Reg_Parse + 1), 0))) {
                      if (*(Reg_Parse + 1) != '\"') {
                         emit_convert_byte ('\\');
                      }
@@ -687,7 +687,7 @@ static int atom (int *flag_param) {
 
                   } else {
                      sprintf (Error_Text,
-                              "\\%c is an invalid escape sequence(2)\0",
+                              "\\%c is an invalid escape sequence(2)",
                               *(Reg_Parse + 1));
 
                      CONVERT_FAIL (Error_Text);
@@ -697,7 +697,7 @@ static int atom (int *flag_param) {
                } else {
                   /* Ordinary character */
 
-                  if (test = literal_escape (*Reg_Parse, 1)) {
+                  if ((test = literal_escape (*Reg_Parse, 1))) {
                      /* Ordinary character matches an escape sequence;
                         convert it to the escape sequence. */
 
@@ -908,7 +908,7 @@ void ConvertSubstituteRE (
          if (((char *) dst - (char *) dest) >= (max - 1)) {
             break;
          } else {
-            if (test = literal_escape (c, 1)) {
+            if ((test = literal_escape (c, 1))) {
                /* Ordinary character matches an escape sequence;
                   convert it to the escape sequence. */
 

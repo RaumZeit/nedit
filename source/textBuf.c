@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.5 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.6 2001/03/19 16:30:07 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -868,12 +868,12 @@ int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
     }
 #ifdef __MVS__
     if (((unsigned char)c) <= 63) {
-    	sprintf(outStr, "<%s>", ControlCodeTable[c]);
+    	sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
     	return strlen(outStr);
     }
 #else
     if (((unsigned char)c) <= 31) {
-    	sprintf(outStr, "<%s>", ControlCodeTable[c]);
+    	sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
     	return strlen(outStr);
     } else if (c == 127) {
     	sprintf(outStr, "<del>");
@@ -901,7 +901,7 @@ int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar)
     else if (c == '\t')
 	return tabDist - (indent % tabDist);
     else if (((unsigned char)c) <= 31)
-    	return strlen(ControlCodeTable[c]) + 2;
+    	return strlen(ControlCodeTable[(unsigned char)c]) + 2;
     else if (c == 127)
     	return 5;
     return 1;
@@ -1216,7 +1216,7 @@ static char chooseNullSubsChar(char hist[256])
 	    20,21,22,23,24,25,26,28,29,30,31,11,7};
     int i;
     for (i = 0; i < N_REPLACEMENTS; i++)
-	if (hist[replacements[i]] == 0)
+	if (hist[(unsigned char)replacements[i]] == 0)
 	    return replacements[i];
     return '\0';
 }
@@ -1289,7 +1289,7 @@ static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
 {
     int nLines, start, end, insWidth, lineStart, lineEnd;
     int expReplLen, expInsLen, len, endOffset;
-    char *c, *outStr, *outPtr, *line, *replText, *expText, *insLine, *insPtr;
+    char *outStr, *outPtr, *line, *replText, *expText, *insLine, *insPtr;
 
     if (column < 0)
     	column = 0;
@@ -1334,11 +1334,14 @@ static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
     	XtFree(line);
     	XtFree(insLine);
 #if 0   /* Earlier comments claimed that trailing whitespace could multiply on
-	   the ends of lines, but insertColInLine looks like it should never
-	   add space unnecessarily, and this trimming interfered with
-	   paragraph filling, so lets see if it works without it. MWE */
-    	for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
-    	    len--;
+        the ends of lines, but insertColInLine looks like it should never
+        add space unnecessarily, and this trimming interfered with
+        paragraph filling, so lets see if it works without it. MWE */
+        {
+            char *c;
+            for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
+                len--;
+        }
 #endif
 	outPtr += len;
 	*outPtr++ = '\n';
