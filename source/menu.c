@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.107 2004/07/13 11:44:17 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.108 2004/07/14 19:51:58 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -674,7 +674,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    doActionCB, "include_file_dialog", SHORT);
     createMenuItem(menuPane, "loadMacroFile", "Load Macro File...", 'M',
     	    doActionCB, "load_macro_file_dialog", FULL);
-    createMenuItem(menuPane, "loadTagsFile", "Load Tags File...", 'T',
+    createMenuItem(menuPane, "loadTagsFile", "Load Tags File...", 'g',
     	    doActionCB, "load_tags_file_dialog", FULL);
     window->unloadTagsMenuPane = createMenu(menuPane, "unloadTagsFiles",
 	    "Unload Tags File", 'U', &window->unloadTagsMenuItem, FULL);
