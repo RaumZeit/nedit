@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.37 2002/11/13 17:56:42 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.38 2002/11/13 21:58:05 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1248,7 +1248,8 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
     int styleNo=lookupNamedStyle(styleName),fontNum;
     XFontStruct *font;
     
-    if (styleNo<0) return GetDefaultFontStruct(window->fontList);
+    if (styleNo<0)
+        return GetDefaultFontStruct(window->fontList);
     fontNum = HighlightStyles[styleNo]->font;
     if (fontNum == BOLD_FONT)
     	font = window->boldFontStruct;
@@ -1267,7 +1268,8 @@ int FontOfNamedStyleIsBold(char *styleName)
 {
     int styleNo=lookupNamedStyle(styleName),fontNum;
     
-    if (styleNo<0) return 0;
+    if (styleNo<0)
+        return 0;
     fontNum = HighlightStyles[styleNo]->font;
     return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
 }
@@ -1276,7 +1278,8 @@ int FontOfNamedStyleIsItalic(char *styleName)
 {
     int styleNo=lookupNamedStyle(styleName),fontNum;
     
-    if (styleNo<0) return 0;
+    if (styleNo<0)
+        return 0;
     fontNum = HighlightStyles[styleNo]->font;
     return (fontNum == ITALIC_FONT || fontNum == BOLD_ITALIC_FONT);
 }
@@ -1291,7 +1294,8 @@ char *ColorOfNamedStyle(const char *styleName)
 /*YOO    fprintf(stderr, "Enter ColorOfNamedStyle()\n"); */
     int styleNo=lookupNamedStyle(styleName);
     
-    if (styleNo<0) return "black";
+    if (styleNo<0)
+        return "black";
     return HighlightStyles[styleNo]->color;
 }
 
@@ -1302,7 +1306,8 @@ char *BgColorOfNamedStyle(const char *styleName)
 {
     int styleNo=lookupNamedStyle(styleName);
 
-    if (styleNo<0) return "";
+    if (styleNo<0)
+        return "";
     return HighlightStyles[styleNo]->bgColor;
 }
 
@@ -1732,7 +1737,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XmStringFree(s1);
     
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Name"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Name:"),
     	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -1753,7 +1758,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtVaSetValues(nameLbl, XmNuserData, HSDialog.nameW, NULL);
     
     colorLbl = XtVaCreateManagedWidget("colorLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Color"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Foreground Color:"),
     	    XmNmnemonic, 'C',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -1776,7 +1781,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     bgColorLbl = XtVaCreateManagedWidget("bgColorLbl", xmLabelGadgetClass, form,
     	    XmNlabelString,
     	      s1=XmStringCreateSimple("Background Color (optional)"),
-    	    XmNmnemonic, 'G',
+    	    XmNmnemonic, 'g',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, HS_LIST_RIGHT,
@@ -1797,7 +1802,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtVaSetValues(bgColorLbl, XmNuserData, HSDialog.bgColorW, NULL);
     
     fontLbl = XtVaCreateManagedWidget("fontLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Font"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Font:"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, HS_LIST_RIGHT,
