@@ -26,12 +26,13 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.12 2001/03/06 01:00:01 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.13 2001/03/09 22:21:07 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
+static int follow_non_whitespace(char expect, int yes, int no);
 static Symbol *matchesActionRoutine(char **inPtr);
 
 static char *ErrMsg;
@@ -347,7 +348,7 @@ static int yylex(void)
 	    if (!strcmp(symName, "continue")) return CONTINUE;
 	    if (!strcmp(symName, "return")) return RETURN;
         if (!strcmp(symName, "in")) return IN;
-        if (!strcmp(symName, "delete")) return DELETE;
+        if (!strcmp(symName, "delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
 	    if (!strcmp(symName, "define")) {
 	    	InPtr -= 6;
 	    	return 0;
@@ -440,6 +441,26 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
     	return yes2;
     InPtr--;
     return no;
+}
+
+static int follow_non_whitespace(char expect, int yes, int no)
+{
+    char *localInPtr = InPtr;
+    
+    while (1) {
+        if (*localInPtr == ' ' || *localInPtr == '\t') {
+            ++localInPtr;
+        }
+        else if (*localInPtr == '\\' && *(localInPtr + 1) == '\n') {
+            localInPtr += 2;
+        }
+        else if (*localInPtr == expect) {
+            return(yes);
+        }
+        else {
+            return(no);
+        }
+    }
 }
 
 /*
