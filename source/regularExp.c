@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.22 2003/05/07 10:51:52 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.23 2004/07/15 18:39:58 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2600,6 +2600,18 @@ static unsigned char  *Back_Ref_Start [10]; /* Back_Ref_Start [0] and        */
 static unsigned char  *Back_Ref_End   [10]; /* Back_Ref_End [0] are not      */
                                             /* used. This simplifies         */
                                             /* indexing.                     */
+/*
+ * Measured recursion limits:
+ *    Linux:      +/-  40 000 (up to 110 000)
+ *    Solaris:    +/-  85 000
+ *    HP-UX 11:   +/- 325 000 
+ *
+ * So 10 000 ought to be safe.
+ */
+#define REGEX_RECURSION_LIMIT 10000
+static int Recursion_Count;          /* Recursion counter */
+static int Recursion_Limit_Exceeded; /* Recursion limit exceeded flag */
+
 /* static regexp *Cross_Regex_Backref; */
 
 static int Prev_Is_BOL;
@@ -2720,6 +2732,9 @@ int ExecRE (
 
    Total_Paren        = (int) (prog->program [1]);
    Num_Braces         = (int) (prog->program [2]);
+   
+   /* Reset the recursion detection flag */
+   Recursion_Limit_Exceeded = 0;
 
 /*   Cross_Regex_Backref = cross_regex_backref; */
 
@@ -2758,7 +2773,7 @@ int ExecRE (
          }
 
          for (str = (unsigned char *) string;
-             *str != '\0' && str != (unsigned char *) end;
+             *str != '\0' && str != (unsigned char *) end && !Recursion_Limit_Exceeded;
               str++) {
 
             if (*str == '\n') {
@@ -2775,7 +2790,7 @@ int ExecRE (
          /* We know what char match must start with. */
 
          for (str = (unsigned char *) string;
-             *str != '\0' && str != (unsigned char *) end;
+             *str != '\0' && str != (unsigned char *) end && !Recursion_Limit_Exceeded;
               str++) {
 
             if (*str == (unsigned char)prog->match_start) {
@@ -2791,7 +2806,7 @@ int ExecRE (
          /* General case */
 
          for (str = (unsigned char *) string;
-             *str != '\0' && str != (unsigned char *) end;
+             *str != '\0' && str != (unsigned char *) end && !Recursion_Limit_Exceeded;
               str++) {
 
             if (attempt (prog, str)) {
@@ -2801,7 +2816,7 @@ int ExecRE (
          }
          
          /* Beware of a single $ matching \0 */
-         if (!ret_val && *str == '\0' && str != (unsigned char *) end) {
+         if (!Recursion_Limit_Exceeded && !ret_val && *str == '\0' && str != (unsigned char *) end) {
             if (attempt (prog, str)) {
                ret_val = 1;
             }
@@ -2815,7 +2830,7 @@ int ExecRE (
          /* Search is anchored at BOL */
 
          for (str = (unsigned char *)(end - 1);
-              str >= (unsigned char *) string;
+              str >= (unsigned char *) string && !Recursion_Limit_Exceeded;
               str--) {
 
             if (*str == '\n') {
@@ -2826,7 +2841,7 @@ int ExecRE (
             }
          }
 
-         if (attempt (prog, (unsigned char *) string)) {
+         if (!Recursion_Limit_Exceeded && attempt (prog, (unsigned char *) string)) {
             ret_val = 1;
             goto SINGLE_RETURN;
          }
@@ -2836,7 +2851,7 @@ int ExecRE (
          /* We know what char match must start with. */
 
          for (str =  (unsigned char *) end;
-              str >= (unsigned char *) string;
+              str >= (unsigned char *) string && !Recursion_Limit_Exceeded;
               str--) {
 
             if (*str == (unsigned char)prog->match_start) {
@@ -2852,7 +2867,7 @@ int ExecRE (
          /* General case */
 
          for (str =  (unsigned char *) end;
-              str >= (unsigned char *) string;
+              str >= (unsigned char *) string && !Recursion_Limit_Exceeded;
               str--) {
 
             if (attempt (prog, str)) {
@@ -2864,6 +2879,8 @@ int ExecRE (
    }
 
    SINGLE_RETURN: if (Brace) free (Brace);
+
+   if (Recursion_Limit_Exceeded) return (0);
 
    return (ret_val);
 }
@@ -2941,6 +2958,9 @@ static int attempt (regexp *prog, unsigned char *string) {
    s_ptr          = (unsigned char **) prog->startp;
    e_ptr          = (unsigned char **) prog->endp;
 
+   /* Reset the recursion counter. */
+   Recursion_Count = 0;
+
    /* Overhead due to capturing parentheses. */
 
    Extent_Ptr_BW = string;
@@ -2975,12 +2995,23 @@ static int attempt (regexp *prog, unsigned char *string) {
  * (that don't need to know whether the rest of the match failed) by a
  * loop instead of by recursion.  Returns 0 failure, 1 success.
  *----------------------------------------------------------------------*/
-
+#define MATCH_RETURN(X)\
+ { --Recursion_Count; return (X); }
+#define CHECK_RECURSION_LIMIT\
+ if (Recursion_Limit_Exceeded) MATCH_RETURN (0);
+ 
 static int match (unsigned char *prog, int *branch_index_param) {
 
    register unsigned char *scan;  /* Current node. */
             unsigned char *next;  /* Next node. */
    register int next_ptr_offset;  /* Used by the NEXT_PTR () macro */
+   
+   if (++Recursion_Count > REGEX_RECURSION_LIMIT) {
+       if (!Recursion_Limit_Exceeded) /* Prevent duplicate errors */
+           reg_error("recursion limit exceeded, please respecify expression");
+       Recursion_Limit_Exceeded = 1;
+       MATCH_RETURN (0);
+   }
 	    
 
    scan = prog;
@@ -3004,16 +3035,18 @@ static int match (unsigned char *prog, int *branch_index_param) {
 		     {
 			if (branch_index_param)
 			   *branch_index_param = branch_index_local;
-  			return (1);
+  			MATCH_RETURN (1);
 		     }
-		     
+
+		     CHECK_RECURSION_LIMIT
+
 		     ++branch_index_local;
 
                      Reg_Input = save; /* Backtrack. */
                      NEXT_PTR (scan, scan);
                   } while (scan != NULL && GET_OP_CODE (scan) == BRANCH);
 
-                  return (0); /* NOT REACHED */
+                  MATCH_RETURN (0); /* NOT REACHED */
                }
             }
 
@@ -3028,14 +3061,14 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
                /* Inline the first character, for speed. */
 
-               if (*opnd != *Reg_Input) return (0);
+               if (*opnd != *Reg_Input) MATCH_RETURN (0);
 
                len = strlen ((char *) opnd);
 
                if (len > 1  &&
                    strncmp ((char *) opnd, (char *) Reg_Input, len) != 0) {
 
-                   return (0);
+                   MATCH_RETURN (0);
                }
 
                Reg_Input += len;
@@ -3054,7 +3087,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
                   regex compile. */
 
                while ((test = *opnd++) != '\0') {
-                  if (tolower (*Reg_Input++) != test) return (0);
+                  if (tolower (*Reg_Input++) != test) MATCH_RETURN (0);
                }
             }
 
@@ -3067,14 +3100,14 @@ static int match (unsigned char *prog, int *branch_index_param) {
                break;
             }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case EOL: /* `$' anchor matches end of line and end of string */
             if (*Reg_Input == '\n' || (*Reg_Input == '\0' && Succ_Is_EOL)) {
                break;
             }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case BOWORD: /* `<' (beginning of word anchor) */
             /* Check to see if the current character is a word character
@@ -3099,7 +3132,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
 	       }
 	    }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case EOWORD: /* `>' (end of word anchor) */
             /* Check to see if the current character is not a word character
@@ -3124,7 +3157,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
 	       }
 	    }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case NOT_BOUNDARY: /* \B (NOT a word boundary) */
             {
@@ -3145,99 +3178,99 @@ static int match (unsigned char *prog, int *branch_index_param) {
 	       if (!(prev_is_wchar ^ current_is_wchar)) break;
 	    }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case IS_DELIM: /* \y (A word delimiter character.) */
             if (Current_Delimiters [ *Reg_Input ]) {
                Reg_Input++; break;
             }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case NOT_DELIM: /* \Y (NOT a word delimiter character.) */
             if (!Current_Delimiters [ *Reg_Input ]) {
                Reg_Input++; break;
             }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case WORD_CHAR: /* \w (word character; alpha-numeric or underscore) */
             if (isalnum ((int) *Reg_Input) || *Reg_Input == '_') {
                Reg_Input++; break;
             }
 
-            return (0);
+            MATCH_RETURN (0);
 
          case NOT_WORD_CHAR:/* \W (NOT a word character) */
             if (isalnum ((int) *Reg_Input) ||
                 *Reg_Input == '_' ||
                 *Reg_Input == '\n' ||
-                *Reg_Input == '\0') return (0);
+                *Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case ANY: /* `.' (matches any character EXCEPT newline) */
-            if (*Reg_Input == '\0' || *Reg_Input == '\n') return (0);
+            if (*Reg_Input == '\0' || *Reg_Input == '\n') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case EVERY: /* `.' (matches any character INCLUDING newline) */
-            if (*Reg_Input == '\0') return (0);
+            if (*Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case DIGIT: /* \d, same as [0123456789] */
-            if (!isdigit ((int) *Reg_Input)) return (0);
+            if (!isdigit ((int) *Reg_Input)) MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case NOT_DIGIT: /* \D, same as [^0123456789] */
             if (isdigit ((int) *Reg_Input) || 
                 *Reg_Input == '\n' ||
-                *Reg_Input == '\0') return (0);
+                *Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case LETTER: /* \l, same as [a-zA-Z] */
-            if (!isalpha ((int) *Reg_Input)) return (0);
+            if (!isalpha ((int) *Reg_Input)) MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case NOT_LETTER: /* \L, same as [^0123456789] */
             if (isalpha ((int) *Reg_Input) || 
                 *Reg_Input == '\n' ||
-                *Reg_Input == '\0') return (0);
+                *Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case SPACE: /* \s, same as [ \t\r\f\v] */
-            if (!isspace ((int) *Reg_Input) || *Reg_Input == '\n') return (0);
+            if (!isspace ((int) *Reg_Input) || *Reg_Input == '\n') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case SPACE_NL: /* \s, same as [\n \t\r\f\v] */
-            if (!isspace ((int) *Reg_Input)) return (0);
+            if (!isspace ((int) *Reg_Input)) MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case NOT_SPACE: /* \S, same as [^\n \t\r\f\v] */
-            if (isspace ((int) *Reg_Input) || *Reg_Input == '\0') return (0);
+            if (isspace ((int) *Reg_Input) || *Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case NOT_SPACE_NL: /* \S, same as [^ \t\r\f\v] */
             if ((isspace ((int) *Reg_Input) && *Reg_Input != '\n') ||
-                *Reg_Input == '\0') return (0);
+                *Reg_Input == '\0') MATCH_RETURN (0);
 
             Reg_Input++; break;
 
          case ANY_OF:  /* [...] character class. */
-            if (*Reg_Input == '\0') return (0); /* Needed because strchr ()
-                                                   considers \0 as a member
-                                                   of the character set. */
+            if (*Reg_Input == '\0') MATCH_RETURN (0); /* Needed because strchr ()
+                                                         considers \0 as a member
+                                                         of the character set. */
 
             if (strchr ((char *) OPERAND (scan), (int) *Reg_Input) == NULL) {
-               return (0);
+               MATCH_RETURN (0);
             }
 
             Reg_Input++; break;
@@ -3246,10 +3279,10 @@ static int match (unsigned char *prog, int *branch_index_param) {
                        match newline (\n added usually to operand at compile
                        time.) */
 
-            if (*Reg_Input == '\0') return (0); /* See comment for ANY_OF. */
+            if (*Reg_Input == '\0') MATCH_RETURN (0); /* See comment for ANY_OF. */
 
             if (strchr ((char *) OPERAND (scan), (int) *Reg_Input) != NULL) {
-               return (0);
+               MATCH_RETURN (0);
             }
 
             Reg_Input++; break;
@@ -3332,13 +3365,15 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
                while (min <= num_matched && num_matched <= max) {
                   if (next_char == '\0' || next_char == *Reg_Input) {
-                     if (match (next, NULL)) return (1);
+                     if (match (next, NULL)) MATCH_RETURN (1);
+                     
+                     CHECK_RECURSION_LIMIT
                   }
 
                   /* Couldn't or didn't match. */
 
                   if (lazy) {
-                     if (!greedy (next_op, 1)) return (0);
+                     if (!greedy (next_op, 1)) MATCH_RETURN (0);
 
                      num_matched++; /* Inch forward. */
                   } else if (num_matched > REG_ZERO) {
@@ -3350,7 +3385,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
                   Reg_Input = save + num_matched;
                }
 
-               return (0);
+               MATCH_RETURN (0);
             }
 
             break;
@@ -3360,7 +3395,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
                Extent_Ptr_FW = Reg_Input;
             }
 
-            return (1);  /* Success! */
+            MATCH_RETURN (1);  /* Success! */
 
             break;
 
@@ -3396,7 +3431,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
                /* if (GET_OP_CODE (scan) == X_REGEX_BR ||
                    GET_OP_CODE (scan) == X_REGEX_BR_CI) {
 
-                  if (Cross_Regex_Backref == NULL) return (0);
+                  if (Cross_Regex_Backref == NULL) MATCH_RETURN (0);
 
                   captured =
                      (unsigned char *) Cross_Regex_Backref->startp [paren_no];
@@ -3409,25 +3444,25 @@ static int match (unsigned char *prog, int *branch_index_param) {
                /* } */
 
                if ((captured != NULL) && (finish != NULL)) {
-                  if (captured > finish) return (0);
+                  if (captured > finish) MATCH_RETURN (0);
 
                   if (GET_OP_CODE (scan) == BACK_REF_CI  /* ||
                       GET_OP_CODE (scan) == X_REGEX_BR_CI*/ ) {
 
                      while (captured < finish) {
                         if (tolower (*captured++) != tolower (*Reg_Input++)) {
-                           return (0);
+                           MATCH_RETURN (0);
                         }
                      }
                   } else {
                      while (captured < finish) {
-                        if (*captured++ != *Reg_Input++) return (0);
+                        if (*captured++ != *Reg_Input++) MATCH_RETURN (0);
                      }
                   }
 
                   break;
                } else {
-                  return (0);
+                  MATCH_RETURN (0);
                }
             }
 
@@ -3439,6 +3474,8 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
                save      = Reg_Input;
                answer    = match (next, NULL); /* Does the look-ahead regex match? */
+
+               CHECK_RECURSION_LIMIT
 
                if ((GET_OP_CODE (scan) == POS_AHEAD_OPEN) ? answer : !answer) {
                   /* Remember the last (most to the right) character position
@@ -3466,7 +3503,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
                } else {
                   Reg_Input = save; /* Backtrack to look-ahead start. */
 
-                  return (0);
+                  MATCH_RETURN (0);
                }
             }
 
@@ -3512,7 +3549,9 @@ static int match (unsigned char *prog, int *branch_index_param) {
            	  }
                   
                   answer    = match (next, NULL); /* Does the look-behind regex match? */
-                  
+
+                  CHECK_RECURSION_LIMIT
+
                   /* The match must have ended at the current position;
                      otherwise it is invalid */
                   if (answer && Reg_Input == save) {
@@ -3552,14 +3591,14 @@ static int match (unsigned char *prog, int *branch_index_param) {
                   next = next_ptr (next); /* Skip LOOK_BEHIND_CLOSE */
                } else {
                   /* Not a match */
-                  return (0);
+                  MATCH_RETURN (0);
                }
             }            
             break;
 
          case LOOK_AHEAD_CLOSE:
          case LOOK_BEHIND_CLOSE:
-            return (1);  /* We have reached the end of the look-ahead or
+            MATCH_RETURN (1);  /* We have reached the end of the look-ahead or
 	                    look-behind which implies that we matched it, 
 			    so return TRUE. */
          default:
@@ -3583,9 +3622,9 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
                   if (Start_Ptr_Ptr [no] == NULL) Start_Ptr_Ptr [no] = save;
 
-                  return (1);
+                  MATCH_RETURN (1);
                } else {
-                  return (0);
+                  MATCH_RETURN (0);
                }
             } else if ((GET_OP_CODE (scan) > CLOSE) &&
                        (GET_OP_CODE (scan) < CLOSE + NSUBEXP)) {
@@ -3604,14 +3643,14 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
                   if (End_Ptr_Ptr [no] == NULL) End_Ptr_Ptr [no] = save;
 
-                  return (1);
+                  MATCH_RETURN (1);
                } else {
-                  return (0);
+                  MATCH_RETURN (0);
                }
             } else {
                reg_error ("memory corruption, `match\'");
 
-               return (0);
+               MATCH_RETURN (0);
             }
 
             break;
@@ -3625,7 +3664,7 @@ static int match (unsigned char *prog, int *branch_index_param) {
 
    reg_error ("corrupted pointers, `match\'");
 
-   return (0);
+   MATCH_RETURN (0);
 }
 
 /*----------------------------------------------------------------------*
