@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.45 2003/05/03 22:45:36 yooden Exp $
+.. $Id: help.etx,v 1.46 2003/05/04 13:20:46 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -810,7 +810,7 @@ File Format
   and approximately half of Unix editors enforce the terminating newline on all
   files that they write; Emacs does not enforce this rule.  Users are divided
   on which is best.  NEdit makes the final terminating newline optional
-  (Preferences -> Default Settings -> Append Line Feed on Save).
+  (Preferences -> Default Settings -> Terminate with Line Break on Save).
    ----------------------------------------------------------------------
 
 Features for Programming
@@ -3577,7 +3577,7 @@ Preferences
   Program and configure enhanced text display for new or supported languages
   (See Features for Programming -> Syntax_Highlighting_).
 
-**Append Line Feed on Save**
+**Terminate with Line Break on Save**
   Some UNIX tools expect that files end with a line feed. If this option is
   activated, NEdit will append one if required.
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.74 2003/04/24 17:20:37 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.75 2003/05/04 13:20:47 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -940,7 +940,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     /* Append LF at end of files on save */
     window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
-            "Append Line Feed on Save", 'v', appendLFCB, NULL,
+            "Terminate with Line Break on Save", 'v', appendLFCB, NULL,
             GetPrefAppendLF(), FULL);
 
     window->sortOpenPrevDefItem = createMenuToggle(subPane, "sortOpenPrevMenu",

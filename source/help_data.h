@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 3, 2003 (Do NOT edit!)
+                 Generated on May 4, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -785,7 +785,7 @@ static char * htxt_format [] = {
 "and approximately half of Unix editors enforce the terminating newline on all ",
 "files that they write; Emacs does not enforce this rule.  Users are divided ",
 "on which is best.  NEdit makes the final terminating newline optional ",
-"(Preferences -> Default Settings -> Append Line Feed on Save). ",
+"(Preferences -> Default Settings -> Terminate with Line Break on Save). ",
 NULL
 };
 
@@ -3394,7 +3394,7 @@ static char * htxt_preferences [] = {
 "\01IProgram and configure enhanced text display for new or supported languages ",
 "(See Features for Programming -> \01QSyntax Highlighting\01I). ",
 "\n\n",
-"\01A\01BAppend Line Feed on Save\01A\n",
+"\01A\01BTerminate with Line Break on Save\01A\n",
 "\01ISome UNIX tools expect that files end with a line feed. If this option is ",
 "activated, NEdit will append one if required. ",
 "\n\n",
@@ -5241,4 +5241,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.4DEV\nMay 3, 2003\n";
+static const char * NEditVersion = "NEdit 5.4DEV\nMay 4, 2003\n";

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.63 2003/04/10 09:39:45 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.64 2003/05/04 13:20:47 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -834,6 +834,15 @@ static int doSave(WindowInfo *window)
     fgetname(fp, fullname);
 #endif
     
+    /* add a terminating newline if the file doesn't already have one for
+    Unix utilities which get confused otherwise */
+    if (BufGetCharacter(window->buffer, window->buffer->length - 1) != '\n'
+            && fileLen != 0
+            && GetPrefAppendLF())
+    {
+        BufInsert(window->buffer, window->buffer->length, "\n");
+    }
+    
     /* get the text buffer contents and its length */
     fileString = BufGetAll(window->buffer);
     fileLen = window->buffer->length;
@@ -855,15 +864,6 @@ static int doSave(WindowInfo *window)
         ConvertToMacFileString(fileString, fileLen);
     }
 
-    /* add a terminating newline if the file doesn't already have one for
-    Unix utilities which get confused otherwise */
-    if (window->fileFormat == UNIX_FILE_FORMAT && fileLen != 0
-            && fileString[fileLen-1] != '\n'
-            && GetPrefAppendLF())
-    {
-        fileString[fileLen++] = '\n';   /* null terminator no longer needed */
-    }
-    
     /* write to the file */
 #ifdef IBM_FWRITE_BUG
     write(fileno(fp), fileString, fileLen);
