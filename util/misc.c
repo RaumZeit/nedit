@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.64 2004/06/08 15:30:02 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.65 2004/07/09 07:44:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2233,9 +2233,9 @@ static long queryDesktop(Display *display, Window window, Atom deskTopAtom)
 */
 long QueryCurrentDesktop(Display *display, Window rootWindow)
 {
-    static Atom currentDesktopAtom = -1;
+    static Atom currentDesktopAtom = (Atom)-1;
 
-    if (currentDesktopAtom == -1)
+    if (currentDesktopAtom == (Atom)-1)
         currentDesktopAtom = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
 
     if (currentDesktopAtom != None)
@@ -2251,9 +2251,9 @@ long QueryCurrentDesktop(Display *display, Window rootWindow)
 */
 long QueryDesktop(Display *display, Widget shell)
 {
-    static Atom wmDesktopAtom = -1;
+    static Atom wmDesktopAtom = (Atom)-1;
 
-    if (wmDesktopAtom == -1)
+    if (wmDesktopAtom == (Atom)-1)
         wmDesktopAtom = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
     if (wmDesktopAtom != None)
