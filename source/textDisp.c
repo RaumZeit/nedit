@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.36 2002/09/04 08:40:01 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.37 2002/09/06 19:13:08 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -34,6 +34,7 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.36 2002/09/04 08:40:01 n8gray E
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"
+#include "calltips.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -145,7 +146,6 @@ static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
 static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
-static char *expandAllTabs( char *text, int tab_width );
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
@@ -208,9 +208,9 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
     textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
     textD->lineStarts[0] = 0;
-    textD->calltip = NULL;
+    textD->calltipW = NULL;
     textD->calltipShell = NULL;
-    textD->calltipID = 0;
+    textD->calltip.ID = 0;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
     textD->suppressResync = 0;
@@ -3425,231 +3425,4 @@ static void extendRangeForStyleMods(textDisp *textD, int *start, int *end)
        redraw characters exposed by possible font size changes */
     if (textD->fixedFontWidth == -1 && extended)
     	*end = BufEndOfLine(textD->buffer, *end) + 1;
-}
-
-
-/**********************  Calltip Functions ******************************/
-
-/*
-** Pop-down a calltip if one exists, else do nothing
-*/
-void TextDKillCalltip(textDisp *textD, int calltipID) {
-    if( textD->calltipID == 0 ) 
-        return;
-    if( calltipID == 0 || calltipID == textD->calltipID ) {
-        XtPopdown( textD->calltipShell );
-        textD->calltipID = 0;
-    }
-}
-
-/*
-** Is a calltip displayed?  Returns the calltip ID of the currently displayed 
-** calltip, or 0 if there is no calltip displayed.  If called with 
-** calltipID != 0, returns 0 unless there is a calltip being 
-** displayed with that calltipID.
-*/
-int TextDGetCalltipID(textDisp *textD, int calltipID) {
-    if( calltipID == 0 )
-        return textD->calltipID;
-    else {
-        if( calltipID == textD->calltipID)
-            return calltipID;
-        else
-            return 0;
-    }
-} 
-
-/*
-** Update the position of the current calltip if one exists, else do nothing
-*/
-#define CALLTIP_EDGE_GUARD 5
-void TextDRedrawCalltip(textDisp *textD, int calltipID) {
-    int lineHeight = textD->ascent + textD->descent;
-    Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
-    XWindowAttributes screenAttr;
-    int rel_x, rel_y;
-    
-    if( textD->calltipID == 0 ) 
-        return;
-    if( calltipID != 0 && calltipID != textD->calltipID )
-        return;
-    /* Get the location/dimensions of the text area */
-    XtVaGetValues(textD->w,
-        XmNx, &txtX,
-        XmNy, &txtY,
-        NULL);
-    if( textD->calltipAnchored ) {
-        /* Put it at the anchor position */
-        if (!TextDPositionToXY(textD, textD->calltipPos, &rel_x, &rel_y))
-            return;
-    } else {
-        /* Put underneath the cursor, preserving its original x pos. */
-        if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y))
-            return;
-        rel_x = textD->calltipPos;
-    }
-
-    XtVaGetValues(textD->calltipShell, XmNwidth, &tipWidth, XmNheight, 
-            &tipHeight, XmNborderWidth, &borderWidth, NULL);
-    rel_x += borderWidth;
-    rel_y += lineHeight/2 + borderWidth;
-    /* To implement "center", "left", and "right", adjust rel_x here */
-    /* Ditto for "above" with rel_y */
-    
-    XtTranslateCoords(textD->w, rel_x, rel_y, &abs_x, &abs_y);
-    /* fprintf(stderr, "%i, %i -> %i, %i -> ", rel_x, rel_y, abs_x, abs_y); */
-
-    /* To implement "strict" mode, skip the rest of this function until the 
-        last XtVaSetValues */
-    
-    XGetWindowAttributes(XtDisplay(textD->w), 
-            RootWindowOfScreen(XtScreen(textD->w)), &screenAttr);
-
-    /* make sure tip doesn't run off right or left side of screen */
-    if (abs_x + tipWidth >= screenAttr.width - CALLTIP_EDGE_GUARD)
-    	abs_x = screenAttr.width - tipWidth - CALLTIP_EDGE_GUARD;
-    if (abs_x < CALLTIP_EDGE_GUARD)
-        abs_x = CALLTIP_EDGE_GUARD;
-
-    /* If tip runs off bottom of screen, move it above line */
-    rel_y = abs_y;
-    if (abs_y + tipHeight >= screenAttr.height - CALLTIP_EDGE_GUARD)
-    	abs_y -= tipHeight + lineHeight + 2*borderWidth;
-    
-    /* Unless it goes off the top of screen.  If both ways go off the edge
-        then we prefer to put it below the line. */
-    if (abs_y < CALLTIP_EDGE_GUARD)
-        abs_y = rel_y;
-    
-    /* fprintf(stderr, "%i, %i\n", abs_x, abs_y); */
-    XtVaSetValues( textD->calltipShell, XmNx, abs_x, XmNy, abs_y, NULL );
-}
-
-/* 
-** Returns a new string with each \t replaced with tab_width spaces or
-** a pointer to text if there were no tabs.  Returns NULL on malloc failure.
-** Note that this is dumb replacement, not smart tab-like behavior!  The goal
-** is to prevent tabs from turning into squares in calltips, not to get the
-** formatting just right.
-*/
-static char *expandAllTabs( char *text, int tab_width ) {
-    int i, len, nTabs=0;
-    char *c, *cCpy, *textCpy;
-    
-    /* First count 'em */
-    for( c = text; *c; ++c )
-        if( *c == '\t' )
-            ++nTabs;
-    if( nTabs == 0 )
-        return text;
-
-    /* Allocate the new string */
-    len = strlen( text ) + ( tab_width - 1 )*nTabs;
-    textCpy = (char*)malloc( len + 1 );
-    if( !textCpy ) {
-        fprintf(stderr, 
-                "nedit: Out of heap memory in expandAllTabs!\n");
-        return NULL;
-    }
-    
-    /* Now replace 'em */
-    for( c = text, cCpy = textCpy;  *c;  ++c, ++cCpy) {
-        if( *c == '\t' ) {
-            for( i = 0; i < tab_width; ++i, ++cCpy )
-                *cCpy = ' ';
-            --cCpy;  /* Will be incremented in outer for loop */
-        } else
-            *cCpy = *c;
-    }
-    *cCpy = '\0';
-    return textCpy;
-}
-
-/*
-** Pop-up a calltip.  
-** If a calltip is already being displayed it is destroyed and replaced with
-** the new calltip.  Returns the ID of the calltip or 0 on failure.
-*/
-int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored, 
-        int pos) {
-    static int StaticCalltipID = 1;
-    int rel_x, rel_y;
-    Position txtX, txtY;
-    char *textCpy;
-    XmString str;
-    
-    /* Destroy any previous calltip */
-    TextDKillCalltip( textD, 0 );
-
-    /* Make sure the text isn't NULL */
-    if (text == NULL) return 0;
-    
-    /* Expand any tabs in the calltip and make it an XmString */
-    textCpy = expandAllTabs( text, BufGetTabDistance(textD->buffer) );
-    if( textCpy == NULL )
-        return 0;       /* Out of memory */
-    str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
-    if( textCpy != text )
-        free( textCpy );
-    
-    /* Get the location/dimensions of the text area */
-    XtVaGetValues(textD->w,
-        XmNx, &txtX,
-        XmNy, &txtY,
-        NULL);
-    
-    /* Create the calltip widget on first request */
-    if (textD->calltip == NULL) {
-        textD->calltipShell = XtVaCreatePopupShell(
-                "calltipshell", overrideShellWidgetClass, textD->w, 
-                XmNsaveUnder, True,
-                XmNallowShellResize, True,
-                NULL );
-                
-        /* Might want to make this a read-only XmText eventually so that 
-            users can copy from it */
-        textD->calltip = XtVaCreateManagedWidget( 
-                "calltip", xmLabelWidgetClass, textD->calltipShell,
-                XmNborderWidth, 1,              /* Thin borders */
-                XmNhighlightThickness, 0,
-                XmNalignment, XmALIGNMENT_BEGINNING,
-                NULL );
-    }
-    
-    /* Set the text on the label */
-    XtVaSetValues( textD->calltip, XmNlabelString, str, NULL );
-    XmStringFree( str );
-    
-    /* Figure out where to put the tip */
-    textD->calltipAnchored = anchored;
-    if (anchored) {
-        /* Put it at the specified position */
-        /* If position is not displayed, return 0 */
-        if (pos < textD->firstChar || pos > textD->lastChar ) {
-            XBell(TheDisplay, 0);
-            return 0;
-        }
-        textD->calltipPos = pos;
-    } else {
-        /* Put it next to the cursor */
-        if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y)) {
-            XBell(TheDisplay, 0);
-            return 0;
-        }
-        /* Store the x-offset for use when redrawing */
-        textD->calltipPos = rel_x;
-    }
-
-    /* Increment the static calltip ID.  Macro variables can only be int, 
-        not unsigned, so have to work to keep it > 0 on overflow */
-    textD->calltipID = StaticCalltipID;
-    if(++StaticCalltipID <= 0)
-        StaticCalltipID = 1;
-    
-    /* Realize the calltip's shell so that its width & height are known */
-    XtRealizeWidget( textD->calltipShell );
-    /* Move the calltip and pop it up */
-    TextDRedrawCalltip(textD, 0);
-    XtPopup( textD->calltipShell, XtGrabNone );
-    return textD->calltipID;
 }

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.14 2002/09/04 05:58:52 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.15 2002/09/06 19:13:08 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -26,6 +26,16 @@ typedef struct graphicExposeTranslationEntry {
 } graphicExposeTranslationEntry;
 
 typedef void (*unfinishedStyleCBProc)();
+
+typedef struct _calltipStruct {
+    int ID;                 /* ID of displayed calltip.  Equals
+                              zero if none is displayed. */
+    Boolean anchored;       /* Is it anchored to a position */
+    int pos;                /* Position tip is anchored to */
+    int hAlign;             /* horizontal alignment */
+    int vAlign;             /* vertical alignment */
+    int alignMode;          /* Strict or sloppy alignment */
+} calltipStruct;
 
 typedef struct _textDisp {
     Widget w;
@@ -89,12 +99,9 @@ typedef struct _textDisp {
     	    	    	    	    	   for drawing colored/styled text */
     GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     
-    Widget calltip;                     /* The Label widget for the calltip */
+    Widget calltipW;                    /* The Label widget for the calltip */
     Widget calltipShell;                /* The Shell that holds the calltip */
-    Boolean calltipAnchored;            /* Is it anchored to a position */
-    int calltipPos;                     /* Position tip is anchored to */
-    int calltipID;                      /* ID of displayed calltip.  Equals
-                                           zero if none is displayed. */
+    calltipStruct calltip;              /* The info for the calltip itself */
     int suppressResync;			/* Suppress resynchronization of line
                                            starts during buffer updates */
     int nLinesDeleted;			/* Number of lines deleted during
@@ -168,10 +175,5 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
-int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored, 
-        int pos);
-void TextDKillCalltip(textDisp *textD, int calltipID);
-int TextDGetCalltipID(textDisp *textD, int calltipID);
-void TextDRedrawCalltip(textDisp *textD, int calltipID);
 
 #endif /* NEDIT_TEXTDISP_H_INCLUDED */

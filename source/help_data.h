@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 31, 2002 (Do NOT edit!)
+                 Generated on Sep 6, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -1053,7 +1053,7 @@ static char * htxt_calltips [] = {
 "and return type of a function are.  More generally, they're a UI mechanism to ",
 "present a small amount of crucial information in a prominent location.  To ",
 "display a calltip, select some text and choose \"Show Calltip\" from the Search ",
-"menu. ",
+"menu.  To kill a displayed calltip, hit Esc. ",
 "\n\n",
 "Calltips get their information from one of two places -- either a tags file (see ",
 "\"\01QFinding Declarations (ctags)\01I\") or a calltips file.  First, any loaded calltips ",
@@ -2242,16 +2242,22 @@ static char * htxt_macro_subrs [] = {
 "\01A\01Bbeep()\01A\n",
 "\01IRing the bell. ",
 "\n\n",
-"\01A\01Bcalltip( \"text_or_key\" [, mode [, pos]] )\01A\n",
+"\01A\01Bcalltip( \"text_or_key\" [, mode [, pos [, position_modifier ...]]] )\01A\n",
 "\01IPops up a calltip. <pos> is an optional position in the buffer where the tip ",
 "will be displayed.  The upper-left corner of the calltip will appear below ",
 "where the cursor would appear if it were at this position.  <mode> is one of ",
 "\"tipText\" (default), \"tipKey\", or \"tagKey\". \"tipText\" displays the text as-is, ",
 "\"tagKey\" uses it as the key to look up a tag, then converts the tag to a ",
-"calltip, and \"tipKey uses it as the key to look up a calltip, then falls back ",
-"to a tag if that fails.  You'll usually use \"tipKey\" or \"tipText\". ",
-"Returns the ID of the calltip if it was found and/or displayed correctly, ",
-"0 otherwise. ",
+"calltip, and \"tipKey\" uses it as the key to look up a calltip, then falls back ",
+"to \"tagKey\" behavior if that fails.  You'll usually use \"tipKey\" or \"tipText\". ",
+"Finally, you can modify the placement of the calltip relative to the cursor ",
+"position (or <pos>) with one or more of these optional position modifiers: ",
+"\"center\" aligns the center of the calltip with the position.  \"right\" aligns ",
+"the right edge of the calltip with the position.  (\"center\" and \"right\" may ",
+"not both be used.)  \"above\" places the calltip above the position.  \"strict\" ",
+"does not allow the calltip to move from its position in order to avoid going ",
+"off-screen or obscuring the cursor.  Returns the ID of the calltip if it was ",
+"found and/or displayed correctly, 0 otherwise. ",
 "\n\n",
 "\01A\01Bclipboard_to_string()\01A  \n",
 "\01IReturns the contents of the clipboard as a macro string. Returns empty ",
@@ -3513,6 +3519,14 @@ static char * htxt_resources [] = {
 "older X applications).  It may also be set to a numeric visual-id value (use ",
 "xdpyinfo to see the list of visuals supported by your display), or a visual ",
 "class name: PseudoColor, DirectColor, TrueColor, etc.. ",
+"\n\n",
+"If you are running under a themed environment (like KDE or CDE) that places ",
+"its colors in a shallow visual, and you'd rather have that color scheme ",
+"instead of more colors available, then you may need set the visual to ",
+"\"Default\" so that NEdit doesn't choose one with more colors.  (The reason ",
+"for this is: if the \"best\" visual is not the server's default, then NEdit ",
+"cannot use the colors provided by your environment.  NEdit will fall back to ",
+"its own default color scheme.) ",
 "\n\n",
 "\01A\01Bnedit.installColormap\01A: False\n",
 "\01I\n",
@@ -4990,4 +5004,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Aug 31, 2002\n";
+static const char * NEditVersion = "NEdit release of Sep  6, 2002\n";

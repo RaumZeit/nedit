@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.33 2002/08/31 07:24:00 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.34 2002/09/06 19:13:08 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -36,6 +36,7 @@ static const char CVSID[] = "$Id: text.c,v 1.33 2002/08/31 07:24:00 n8gray Exp $
 #include "textDrag.h"
 #include "nedit.h"
 #include "preferences.h"
+#include "calltips.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.44 2002/09/04 08:40:01 n8gray Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.45 2002/09/06 19:13:07 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -39,12 +39,11 @@ static const char CVSID[] = "$Id: tags.c,v 1.44 2002/09/04 08:40:01 n8gray Exp $
 #include "preferences.h"
 #include "search.h"
 #include "selection.h"
+#include "calltips.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
-#include "textDisp.h" /* For Calltips */
-#include "textP.h" /* For Calltips */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +116,7 @@ static int addTag(const char *name, const char *file, int lang,
 static int delTag(const char *name, const char *file, int lang, 
                     const char *search, int posInf,  int index);
 static tag *getTag(const char *name, int search_type);
-static void findDef(WindowInfo *window, const char *value, int search_type);
+static int findDef(WindowInfo *window, const char *value, int search_type);
 static int findAllMatches(WindowInfo *window, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, const char *name,
@@ -154,12 +153,15 @@ static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
 static int  tagPosInf[MAXDUPTAGS];
 static Boolean globAnchored;
 static int globPos;
+static int globHAlign;
+static int globVAlign;
+static int globAlignMode;
 
 /* A wrapper for calling TextDShowCalltip */
 static int tagsShowCalltip( WindowInfo *window, char *text ) {
     if (text) 
-        return TextDShowCalltip( ((TextWidget)window->lastFocus)->text.textD, 
-                text, globAnchored, globPos);
+        return ShowCalltip( window, text, globAnchored, globPos, globHAlign, 
+                globVAlign, globAlignMode);
     else
         return 0;
 }
@@ -846,12 +848,13 @@ int LookupTag(const char *name, const char **file, int *language,
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-static void findDef(WindowInfo *window, const char *value, int search_type) {
+static int findDef(WindowInfo *window, const char *value, int search_type) {
     static char tagText[MAX_TAG_LEN + 1];
     const char *p;
     char message[MAX_TAG_LEN+40];
-    int l, ml, status;
+    int l, ml, status = 0;
     
+    searchMode = search_type;
     l = strlen(value);
     if (l <= MAX_TAG_LEN) {
         /* should be of type text??? */
@@ -889,6 +892,7 @@ static void findDef(WindowInfo *window, const char *value, int search_type) {
         fprintf(stderr, "NEdit: Tag Length too long.\n");
         XBell(TheDisplay, 0);
     }
+    return status;
 }
 
 /*
@@ -896,16 +900,16 @@ static void findDef(WindowInfo *window, const char *value, int search_type) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void findDefHelper(WindowInfo *window, Time time, const char *arg,
+void findDefinitionHelper(WindowInfo *window, Time time, const char *arg,
                    int search_type)
 {
-    searchMode = search_type;
     if(arg)
     {
         findDef(window, arg, search_type); 
     }
     else
     {
+        searchMode = search_type;
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
                 (XtSelectionCallbackProc)findDefCB, window, time);
     }
@@ -916,7 +920,7 @@ void findDefHelper(WindowInfo *window, Time time, const char *arg,
 */
 void FindDefinition(WindowInfo *window, Time time, const char *arg)
 {
-    findDefHelper(window, time, arg, TAG);
+    findDefinitionHelper(window, time, arg, TAG);
 }
 
 /*
@@ -924,7 +928,7 @@ void FindDefinition(WindowInfo *window, Time time, const char *arg)
 */
 void FindDefCalltip(WindowInfo *window, Time time, const char *arg)
 {
-    findDefHelper(window, time, arg, TIP);
+    findDefinitionHelper(window, time, arg, TIP);
 }
 
 /* Callback function for FindDefinition */
@@ -940,45 +944,7 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
     XtFree(value);
 }
 
-/*
-** Find and display (jump to or show calltip) a tag or calltip.
-** If tip_or_tag is TIP or TIP_FROM_TAG then anchored and pos specify if
-** the calltip is anchored to the given buffer position.
-** Returns 1 on success, 0 on no match, -1 on error
-*/
-int showHelper(WindowInfo *window, char *text,
-        Boolean anchored, int pos, int tip_or_tag) {
-    char message[MAX_TAG_LEN+40];
-    int status;
-    
-    searchMode = tip_or_tag;
-    globAnchored = anchored;
-    globPos = pos;
-    
-    /* Try to find the text */
-    status = findAllMatches(window, text);
-    /* If we didn't find a requested calltip, see if we can use a tag */
-    if (status == 0 && searchMode == TIP && TagsFileList != NULL) {
-        searchMode = TIP_FROM_TAG;
-        status = findAllMatches(window, text);
-    }
-    if (status == 0) {
-        sprintf(message, "No match for %s", text);
-        tagsShowCalltip( window, message );
-    }
-    return status;
-}
-
-/*
-** See showHelper
-** Try to jump to a tag's definition
-*/
-int ShowDefString(WindowInfo *window, char *text) {
-    return showHelper(window, text, False, 0, TAG);
-}
-
 /* 
-** See showHelper
 ** Try to display a calltip
 **  anchored:       If true, tip appears at position pos
 **  lookup:         If true, text is considered a key to be searched for in the
@@ -986,36 +952,24 @@ int ShowDefString(WindowInfo *window, char *text) {
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
 int ShowTipString(WindowInfo *window, char *text, Boolean anchored,
-                          int pos, Boolean lookup, int search_type) {
+        int pos, Boolean lookup, int search_type, int hAlign, int vAlign,
+        int alignMode) {
+
     if (search_type == TAG) return 0;
-    if (lookup)
-        return showHelper(window, text, anchored, pos, search_type);
     
+    /* So we don't have to carry all of the calltip alignment info around */
     globAnchored = anchored;
     globPos = pos;
-    tagsShowCalltip(window, text);
-    return GetCalltipID(window, 0);
+    globHAlign = hAlign;
+    globVAlign = vAlign;
+    globAlignMode = alignMode;
+    
+    /* If this isn't a lookup request, just display it. */
+    if (!lookup)
+        return tagsShowCalltip(window, text);
+    else
+        return findDef(window, text, search_type);
 }
-
-/*
-** Kill the current calltip if calltipID == 0 or if its ID matches
-** the non-zero calltipID.
-*/
-void KillCalltip(WindowInfo *window, int calltipID) {
-    TextDKillCalltip( ((TextWidget)window->lastFocus)->text.textD, calltipID );
-}
-
-/*
-** If calltipID == 0:
-**      return ID of displayed calltip, or 0 if none is displayed.
-** else:
-**      same as above, but also return 0 if displayed calltip doesn't have 
-**      ID == calltipID
-*/
-int GetCalltipID(WindowInfo *window, int calltipID) {
-    return TextDGetCalltipID( 
-            ((TextWidget)window->lastFocus)->text.textD, calltipID );
-} 
 
 /* store all of the info into a pre-allocated tags struct */
 static void setTag(tag *t, const char *name, const char *file, 

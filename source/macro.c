@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.48 2002/08/10 23:48:55 tringali Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.49 2002/09/06 19:13:07 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -46,6 +46,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.48 2002/08/10 23:48:55 tringali Ex
 #include "selection.h"
 #include "rbTree.h"
 #include "tags.h"
+#include "calltips.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
@@ -2872,7 +2873,15 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
 **                  search in calltips database.)
 ** Optional third arg is the buffer position beneath which to display the 
 **      upper-left corner of the tip.  Default (or -1) puts it under the cursor.
-** Returns 1 on success, 0 if no calltip matches the key, -1 on error
+** Additional optional arguments:
+**      "center":   Horizontally center the calltip at the position
+**      "right":    Put the right edge of the calltip at the position
+**                  "center" and "right" cannot both be specified.
+**      "above":    Place the calltip above the position
+**      "strict":   Don't move the calltip to keep it on-screen and away
+**                  from the cursor's line.
+** 
+** Returns the new calltip's ID on success, 0 on failure.
 **
 ** Does this need to go on IgnoredActions?  I don't think so, since
 ** showing a calltip may be part of the action you want to learn.
@@ -2880,17 +2889,18 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
 static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
-    char stringStorage[25], *tipText, *txtMode;
-    int mode;
+    char stringStorage[25], *tipText, *txtArg;
     Boolean anchored = False, lookup = True;
-    int anchorPos;
+    int mode, i;
+    int anchorPos, hAlign = TIP_LEFT, vAlign = TIP_BELOW, 
+            alignMode = TIP_SLOPPY;
     
     /* Read and check the string */
     if (nArgs < 1) {
         *errMsg = "%s subroutine called with too few arguments";
         return False;
     }
-    if (nArgs > 3) {
+    if (nArgs > 6) {
         *errMsg = "%s subroutine called with too many arguments";
         return False;
     }
@@ -2901,14 +2911,14 @@ static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Read the mode (one of "tipText", "tipKey", or "tagKey") */    
     if (nArgs > 1) {
-        if (!readStringArg(argList[1], &txtMode, stringStorage, errMsg)){
+        if (!readStringArg(argList[1], &txtArg, stringStorage, errMsg)){
             return False;
         }
-        if (!strcmp(txtMode, "tipText"))
+        if (!strcmp(txtArg, "tipText"))
             mode = -1;
-        else if (!strcmp(txtMode, "tipKey"))
+        else if (!strcmp(txtArg, "tipKey"))
             mode = TIP;
-        else if (!strcmp(txtMode, "tagKey"))
+        else if (!strcmp(txtArg, "tagKey"))
             mode = TIP_FROM_TAG;
         else {
             *errMsg = "unrecognized argument to %s";
@@ -2925,13 +2935,53 @@ static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
     } else {
         anchorPos = -1;
     }
-    if (anchorPos > 0) anchored = True;
+    if (anchorPos >= 0) anchored = True;
+    
+    /* Any further args are directives for relative positioning */
+    for (i = 3; i < nArgs; ++i) {
+        if (!readStringArg(argList[i], &txtArg, stringStorage, errMsg)){
+            return False;
+        }
+        switch( txtArg[0] ) {
+          case 'c':
+            if (strcmp(txtArg, "center")) {
+                *errMsg = "unrecognized argument to %s";
+                return False;
+            }
+            hAlign = TIP_CENTER;
+            break;
+          case 'r':
+            if (strcmp(txtArg, "right")) {
+                *errMsg = "unrecognized argument to %s";
+                return False;
+            }
+            hAlign = TIP_RIGHT;
+            break;
+          case 'a':
+            if (strcmp(txtArg, "above")) {
+                *errMsg = "unrecognized argument to %s";
+                return False;
+            }
+            vAlign = TIP_ABOVE;
+            break;
+          case 's':
+            if (strcmp(txtArg, "strict")) {
+                *errMsg = "unrecognized argument to %s";
+                return False;
+            }
+            alignMode = TIP_STRICT;
+            break;
+          default:
+            *errMsg = "unrecognized argument to %s";
+            return False;
+        }
+    }
     
     result->tag = INT_TAG;
     if (mode < 0) lookup = False;
     /* Look up (maybe) a calltip and display it */
     result->val.n = ShowTipString( window, tipText, anchored, anchorPos, lookup,
-                                 mode );
+                                 mode, hAlign, vAlign, alignMode );
 
     return True;
 }

@@ -1204,7 +1204,7 @@ Calltips
   and return type of a function are.  More generally, they're a UI mechanism to
   present a small amount of crucial information in a prominent location.  To 
   display a calltip, select some text and choose "Show Calltip" from the Search
-  menu.
+  menu.  To kill a displayed calltip, hit Esc.
   
   Calltips get their information from one of two places -- either a tags file (see
   "Finding_Declarations_(ctags)_") or a calltips file.  First, any loaded calltips 
@@ -2414,16 +2414,24 @@ Macro Subroutines
 **beep()**
   Ring the bell.
 
-**calltip( "text_or_key" [, mode [, pos]] )**
+**calltip( "text_or_key" [, mode [, pos [, position_modifier ...]]] )**
   Pops up a calltip. <pos> is an optional position in the buffer where the tip
-  will be displayed.  The upper-left corner of the calltip will appear below
+  will be displayed.  Passing -1 for <pos> is equivalent to not specifying a 
+  position, and it guarantees that the tip will appear on-screen somewhere even
+  if the cursor is not.  The upper-left corner of the calltip will appear below
   where the cursor would appear if it were at this position.  <mode> is one of
   "tipText" (default), "tipKey", or "tagKey". "tipText" displays the text as-is,
   "tagKey" uses it as the key to look up a tag, then converts the tag to a
-  calltip, and "tipKey uses it as the key to look up a calltip, then falls back
-  to a tag if that fails.  You'll usually use "tipKey" or "tipText".
-  Returns the ID of the calltip if it was found and/or displayed correctly, 
-  0 otherwise.
+  calltip, and "tipKey" uses it as the key to look up a calltip, then falls back
+  to "tagKey" behavior if that fails.  You'll usually use "tipKey" or "tipText".
+  Finally, you can modify the placement of the calltip relative to the cursor
+  position (or <pos>) with one or more of these optional position modifiers:
+  "center" aligns the center of the calltip with the position.  "right" aligns
+  the right edge of the calltip with the position.  ("center" and "right" may 
+  not both be used.)  "above" places the calltip above the position.  "strict"
+  does not allow the calltip to move from its position in order to avoid going 
+  off-screen or obscuring the cursor.  Returns the ID of the calltip if it was 
+  found and/or displayed correctly, 0 otherwise.
 
 **clipboard_to_string()**  
   Returns the contents of the clipboard as a macro string. Returns empty
