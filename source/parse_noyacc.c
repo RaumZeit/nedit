@@ -14,6 +14,10 @@ yyrcsid[] = "$FreeBSD: src/usr.bin/yacc/skeleton.c,v 1.28 2000/01/17 02:04:06 bd
 static int yygrowstack();
 #define YYPREFIX "yy"
 #line 3 "parse.y"
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "parse.h"
 #include "textBuf.h"
 #include "nedit.h"
@@ -33,6 +37,10 @@ static int yygrowstack();
 #endif
 #endif /*VMS*/
 
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
@@ -43,7 +51,7 @@ static int yygrowstack();
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.4 2002/09/05 23:17:25 slobasso Exp $";
+static const char CVSID[] = "$Id: parse_noyacc.c,v 1.5 2002/12/12 17:26:01 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -57,13 +65,13 @@ static char *InPtr;
 extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
-#line 48 "parse.y"
+#line 56 "parse.y"
 typedef union {
     Symbol *sym;
     Inst *inst;
     int nArgs;
 } YYSTYPE;
-#line 67 "y.tab.c"
+#line 75 "y.tab.c"
 #define YYERRCODE 256
 #define NUMBER 257
 #define STRING 258
@@ -699,7 +707,7 @@ short *yyss;
 short *yysslim;
 YYSTYPE *yyvs;
 int yystacksize;
-#line 424 "parse.y"
+#line 432 "parse.y"
  /* User Subroutines Section */
 
 
@@ -742,7 +750,6 @@ static int yylex(void)
 {
     int i, len;
     Symbol *s;
-    static int stringConstIndex = 0;
     static DataValue value = {0, {0}};
     static char escape[] = "\\\"ntbrfav";
     static char replace[] = "\\\"\n\t\b\r\f\a\v";
@@ -821,7 +828,6 @@ static int yylex(void)
     /* process quoted strings w/ embedded escape sequences */
     if (*InPtr == '\"') {
         char string[MAX_STRING_CONST_LEN], *p = string;
-        char stringName[25];
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
             if (p >= string + MAX_STRING_CONST_LEN) {
@@ -849,13 +855,7 @@ static int yylex(void)
         }
         *p = '\0';
         InPtr++;
-        if ((yylval.sym = LookupStringConstSymbol(string)) == NULL) {
-                value.val.str = AllocString(p-string+1);
-                strcpy(value.val.str, string);
-                value.tag = STRING_TAG;
-                sprintf(stringName, "string #%d", stringConstIndex++);
-                yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
-        }
+        yylval.sym = InstallStringConstSymbol(string);
         return STRING;
     }
 
@@ -1157,50 +1157,50 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 81 "parse.y"
+#line 89 "parse.y"
 {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
 break;
 case 2:
-#line 84 "parse.y"
+#line 92 "parse.y"
 {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
 break;
 case 3:
-#line 87 "parse.y"
+#line 95 "parse.y"
 {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
 break;
 case 4:
-#line 90 "parse.y"
+#line 98 "parse.y"
 {
                 return 1;
             }
 break;
 case 11:
-#line 102 "parse.y"
+#line 110 "parse.y"
 {
                 SET_BR_OFF(yyvsp[-3].inst, GetPC());
             }
 break;
 case 12:
-#line 105 "parse.y"
+#line 113 "parse.y"
 {
                 SET_BR_OFF(yyvsp[-6].inst, (yyvsp[-2].inst+1)); SET_BR_OFF(yyvsp[-2].inst, GetPC());
             }
 break;
 case 13:
-#line 108 "parse.y"
+#line 116 "parse.y"
 {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(yyvsp[-5].inst);
                 SET_BR_OFF(yyvsp[-3].inst, GetPC()); FillLoopAddrs(GetPC(), yyvsp[-5].inst);
             }
 break;
 case 14:
-#line 112 "parse.y"
+#line 120 "parse.y"
 {
                 FillLoopAddrs(GetPC()+2+(yyvsp[-3].inst-(yyvsp[-5].inst+1)), GetPC());
                 SwapCode(yyvsp[-5].inst+1, yyvsp[-3].inst, GetPC());
@@ -1208,7 +1208,7 @@ case 14:
             }
 break;
 case 15:
-#line 117 "parse.y"
+#line 125 "parse.y"
 {
                 Symbol *iterSym = InstallIteratorSymbol();
                 ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(iterSym);
@@ -1216,7 +1216,7 @@ case 15:
             }
 break;
 case 16:
-#line 122 "parse.y"
+#line 130 "parse.y"
 {
                     ADD_OP(OP_BRANCH); ADD_BR_OFF(yyvsp[-4].inst+2);
                     SET_BR_OFF(yyvsp[-4].inst+5, GetPC());
@@ -1224,7 +1224,7 @@ case 16:
             }
 break;
 case 17:
-#line 127 "parse.y"
+#line 135 "parse.y"
 {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
                 if (AddBreakAddr(GetPC()-1)) {
@@ -1233,7 +1233,7 @@ case 17:
             }
 break;
 case 18:
-#line 133 "parse.y"
+#line 141 "parse.y"
 {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
                 if (AddContinueAddr(GetPC()-1)) {
@@ -1242,79 +1242,79 @@ case 18:
             }
 break;
 case 19:
-#line 139 "parse.y"
+#line 147 "parse.y"
 {
                 ADD_OP(OP_RETURN);
             }
 break;
 case 20:
-#line 142 "parse.y"
+#line 150 "parse.y"
 {
                 ADD_OP(OP_RETURN_NO_VAL);
             }
 break;
 case 21:
-#line 146 "parse.y"
+#line 154 "parse.y"
 {
                 ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 22:
-#line 149 "parse.y"
+#line 157 "parse.y"
 {
                 ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 23:
-#line 152 "parse.y"
+#line 160 "parse.y"
 {
                 ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 24:
-#line 155 "parse.y"
+#line 163 "parse.y"
 {
                 ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 25:
-#line 158 "parse.y"
+#line 166 "parse.y"
 {
                 ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 26:
-#line 161 "parse.y"
+#line 169 "parse.y"
 {
                 ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 27:
-#line 164 "parse.y"
+#line 172 "parse.y"
 {
                 ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 28:
-#line 167 "parse.y"
+#line 175 "parse.y"
 {
                 ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-2].sym);
             }
 break;
 case 29:
-#line 170 "parse.y"
+#line 178 "parse.y"
 {
                 ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((void *)yyvsp[-1].nArgs);
             }
 break;
 case 30:
-#line 173 "parse.y"
+#line 181 "parse.y"
 {
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
             }
 break;
 case 31:
-#line 176 "parse.y"
+#line 184 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_ADD);
@@ -1322,7 +1322,7 @@ case 31:
             }
 break;
 case 32:
-#line 181 "parse.y"
+#line 189 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_SUB);
@@ -1330,7 +1330,7 @@ case 32:
             }
 break;
 case 33:
-#line 186 "parse.y"
+#line 194 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_MUL);
@@ -1338,7 +1338,7 @@ case 33:
             }
 break;
 case 34:
-#line 191 "parse.y"
+#line 199 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_DIV);
@@ -1346,7 +1346,7 @@ case 34:
             }
 break;
 case 35:
-#line 196 "parse.y"
+#line 204 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_MOD);
@@ -1354,7 +1354,7 @@ case 35:
             }
 break;
 case 36:
-#line 201 "parse.y"
+#line 209 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_BIT_AND);
@@ -1362,7 +1362,7 @@ case 36:
             }
 break;
 case 37:
-#line 206 "parse.y"
+#line 214 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
                 ADD_OP(OP_BIT_OR);
@@ -1370,7 +1370,7 @@ case 37:
             }
 break;
 case 38:
-#line 211 "parse.y"
+#line 219 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-2].nArgs);
                 ADD_OP(OP_INCR);
@@ -1378,7 +1378,7 @@ case 38:
             }
 break;
 case 39:
-#line 216 "parse.y"
+#line 224 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-2].nArgs);
                 ADD_OP(OP_DECR);
@@ -1386,7 +1386,7 @@ case 39:
             }
 break;
 case 40:
-#line 221 "parse.y"
+#line 229 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-1].nArgs);
                 ADD_OP(OP_INCR);
@@ -1394,7 +1394,7 @@ case 40:
             }
 break;
 case 41:
-#line 226 "parse.y"
+#line 234 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-1].nArgs);
                 ADD_OP(OP_DECR);
@@ -1402,138 +1402,138 @@ case 41:
             }
 break;
 case 42:
-#line 231 "parse.y"
+#line 239 "parse.y"
 {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED((void *)yyvsp[-1].nArgs);
             }
 break;
 case 43:
-#line 235 "parse.y"
+#line 243 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 44:
-#line 239 "parse.y"
+#line 247 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[-1].sym); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-1].sym);
             }
 break;
 case 45:
-#line 243 "parse.y"
+#line 251 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 46:
-#line 247 "parse.y"
+#line 255 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[-1].sym); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-1].sym);
             }
 break;
 case 47:
-#line 252 "parse.y"
+#line 260 "parse.y"
 {
                 yyval.sym = yyvsp[0].sym; ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 48:
-#line 256 "parse.y"
+#line 264 "parse.y"
 {
                 yyval.inst = GetPC();
             }
 break;
 case 49:
-#line 259 "parse.y"
+#line 267 "parse.y"
 {
                 yyval.inst = GetPC();
             }
 break;
 case 50:
-#line 262 "parse.y"
+#line 270 "parse.y"
 {
                 yyval.inst = GetPC();
             }
 break;
 case 51:
-#line 266 "parse.y"
+#line 274 "parse.y"
 {
                 yyval.nArgs = 0;
             }
 break;
 case 52:
-#line 269 "parse.y"
+#line 277 "parse.y"
 {
                 yyval.nArgs = 1;
             }
 break;
 case 53:
-#line 272 "parse.y"
+#line 280 "parse.y"
 {
                 yyval.nArgs = yyvsp[-2].nArgs + 1;
             }
 break;
 case 55:
-#line 277 "parse.y"
+#line 285 "parse.y"
 {
                 ADD_OP(OP_CONCAT);
             }
 break;
 case 56:
-#line 281 "parse.y"
+#line 289 "parse.y"
 {
                     ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED((void *)1);
                 }
 break;
 case 57:
-#line 284 "parse.y"
+#line 292 "parse.y"
 {
                     ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
                 }
 break;
 case 58:
-#line 288 "parse.y"
+#line 296 "parse.y"
 {
                 ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED((void *)0);
             }
 break;
 case 59:
-#line 291 "parse.y"
+#line 299 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
             }
 break;
 case 60:
-#line 295 "parse.y"
+#line 303 "parse.y"
 {
                 yyval.inst = GetPC();
             }
 break;
 case 61:
-#line 299 "parse.y"
+#line 307 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 62:
-#line 302 "parse.y"
+#line 310 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 63:
-#line 305 "parse.y"
+#line 313 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 64:
-#line 308 "parse.y"
+#line 316 "parse.y"
 {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED((void *)yyvsp[-1].nArgs);
@@ -1541,192 +1541,192 @@ case 64:
             }
 break;
 case 66:
-#line 314 "parse.y"
+#line 322 "parse.y"
 {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
             }
 break;
 case 67:
-#line 317 "parse.y"
+#line 325 "parse.y"
 {
                 ADD_OP(OP_ADD);
             }
 break;
 case 68:
-#line 320 "parse.y"
+#line 328 "parse.y"
 {
                 ADD_OP(OP_SUB);
             }
 break;
 case 69:
-#line 323 "parse.y"
+#line 331 "parse.y"
 {
                 ADD_OP(OP_MUL);
             }
 break;
 case 70:
-#line 326 "parse.y"
+#line 334 "parse.y"
 {
                 ADD_OP(OP_DIV);
             }
 break;
 case 71:
-#line 329 "parse.y"
+#line 337 "parse.y"
 {
                 ADD_OP(OP_MOD);
             }
 break;
 case 72:
-#line 332 "parse.y"
+#line 340 "parse.y"
 {
                 ADD_OP(OP_POWER);
             }
 break;
 case 73:
-#line 335 "parse.y"
+#line 343 "parse.y"
 {
                 ADD_OP(OP_NEGATE);
             }
 break;
 case 74:
-#line 338 "parse.y"
+#line 346 "parse.y"
 {
                 ADD_OP(OP_GT);
             }
 break;
 case 75:
-#line 341 "parse.y"
+#line 349 "parse.y"
 {
                 ADD_OP(OP_GE);
             }
 break;
 case 76:
-#line 344 "parse.y"
+#line 352 "parse.y"
 {
                 ADD_OP(OP_LT);
             }
 break;
 case 77:
-#line 347 "parse.y"
+#line 355 "parse.y"
 {
                 ADD_OP(OP_LE);
             }
 break;
 case 78:
-#line 350 "parse.y"
+#line 358 "parse.y"
 {
                 ADD_OP(OP_EQ);
             }
 break;
 case 79:
-#line 353 "parse.y"
+#line 361 "parse.y"
 {
                 ADD_OP(OP_NE);
             }
 break;
 case 80:
-#line 356 "parse.y"
+#line 364 "parse.y"
 {
                 ADD_OP(OP_BIT_AND);
             }
 break;
 case 81:
-#line 359 "parse.y"
+#line 367 "parse.y"
 {
                 ADD_OP(OP_BIT_OR);
             }
 break;
 case 82:
-#line 362 "parse.y"
+#line 370 "parse.y"
 {
                 ADD_OP(OP_AND); SET_BR_OFF(yyvsp[-1].inst, GetPC());
             }
 break;
 case 83:
-#line 365 "parse.y"
+#line 373 "parse.y"
 {
                 ADD_OP(OP_OR); SET_BR_OFF(yyvsp[-1].inst, GetPC());
             }
 break;
 case 84:
-#line 368 "parse.y"
+#line 376 "parse.y"
 {
                 ADD_OP(OP_NOT);
             }
 break;
 case 85:
-#line 371 "parse.y"
+#line 379 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym); ADD_OP(OP_INCR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 86:
-#line 375 "parse.y"
+#line 383 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[-1].sym); ADD_OP(OP_DUP);
                 ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-1].sym);
             }
 break;
 case 87:
-#line 379 "parse.y"
+#line 387 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[0].sym); ADD_OP(OP_DECR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[0].sym);
             }
 break;
 case 88:
-#line 383 "parse.y"
+#line 391 "parse.y"
 {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM(yyvsp[-1].sym); ADD_OP(OP_DUP);
                 ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM(yyvsp[-1].sym);
             }
 break;
 case 89:
-#line 387 "parse.y"
+#line 395 "parse.y"
 {
                 ADD_OP(OP_IN_ARRAY);
             }
 break;
 case 90:
-#line 391 "parse.y"
+#line 399 "parse.y"
 {
             yyval.inst = GetPC(); StartLoopAddrList();
         }
 break;
 case 91:
-#line 395 "parse.y"
+#line 403 "parse.y"
 {
             StartLoopAddrList(); yyval.inst = GetPC();
         }
 break;
 case 92:
-#line 399 "parse.y"
+#line 407 "parse.y"
 {
             ADD_OP(OP_BRANCH); yyval.inst = GetPC(); ADD_BR_OFF(0);
         }
 break;
 case 93:
-#line 403 "parse.y"
+#line 411 "parse.y"
 {
             ADD_OP(OP_BRANCH_NEVER); yyval.inst = GetPC(); ADD_BR_OFF(0);
         }
 break;
 case 94:
-#line 406 "parse.y"
+#line 414 "parse.y"
 {
             ADD_OP(OP_BRANCH_FALSE); yyval.inst = GetPC(); ADD_BR_OFF(0);
         }
 break;
 case 95:
-#line 410 "parse.y"
+#line 418 "parse.y"
 {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); yyval.inst = GetPC();
             ADD_BR_OFF(0);
         }
 break;
 case 96:
-#line 415 "parse.y"
+#line 423 "parse.y"
 {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); yyval.inst = GetPC();
             ADD_BR_OFF(0);
