@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.54 2002/10/15 11:00:41 ajhood Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.55 2002/11/08 16:53:36 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -4084,8 +4084,8 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
 */
 
 /* The following definition causes an exit from the macro with a message */
-/* added if (s == *errMsg) to remove compiler warnings */
-#define M_FAILURE(s)  do { *errMsg = s; if (*errMsg == s) return False; } while (0)
+/* added if (1) to remove compiler warnings on solaris */
+#define M_FAILURE(s)  do { *errMsg = s; if (1) return False; } while (0)
 
 static int rangesetLabelMV(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
@@ -4769,13 +4769,11 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     int styleCode=0;
     char* styleName;
-    int styleNameLen;
 
     char* key;
     DataValue intDV;
     DataValue strDV;
 
-    char* colorName;
     char colorValue[20];
     int r, g, b;
     Pixel pixel;
