@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.8 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.9 2001/04/25 07:52:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -137,11 +137,19 @@ static int normalizePathname(char *pathname)
 
     /* if this is a relative pathname, prepend current directory */
     if (pathname[0] != '/') {
+        size_t len;
+
         /* make a copy of pathname to work from */
 	strcpy(oldPathname, pathname);
 	/* get the working directory and prepend to the path */
-      strcpy(pathname, GetCurrentDir());
-	strcat(pathname, "/");
+	strcpy(pathname, GetCurrentDir());
+	/* check for trailing slash, or pathname being root dir "/":
+	   don't add a second '/' character as this may break things
+	   on non-un*x systems */
+        len=strlen(pathname); /* GetCurrentDir() returns non-NULL value */
+	if (pathname[len] != '/') {
+	   strcat(pathname, "/");
+	}
 	strcat(pathname, oldPathname);
     }
 
