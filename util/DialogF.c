@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.13 2001/04/18 16:51:50 slobasso Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.14 2001/04/18 19:08:37 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -481,7 +481,7 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
 static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
 {
     WidgetList children;
-    int        numChildren, i;
+    Cardinal   numChildren, i;
 
     XtVaGetValues(w,
                   XmNchildren,    &children,
