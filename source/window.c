@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.91 2003/12/28 17:25:32 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.92 2003/12/29 10:58:40 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3275,6 +3275,25 @@ WindowInfo *CreateBuffer(WindowInfo *shellWindow, const char *name,
 
     window->bufferTab = addBufferTab(window->bufferTabBar, window, name);
     ShowBufferTabBar(window, GetPrefTabBar());
+
+#ifdef LESSTIF_VERSION
+    /* FIXME: Temporary workaround for disappearing-text-window bug
+              when linking to Lesstif.
+       
+       After changes is made to statsAreaForm (parent of statsline,
+       i-search line and tab bar) widget such as enabling/disabling
+       the statsline, the XmForm widget enclosing the text widget 
+       somehow refused to resize to fit the text widget. Resizing
+       the shell window or making changes [again] to the statsAreaForm 
+       appeared to bring out the text widget, though doesn't fix it for
+       the subsequently added buffers. Here we try to do the latter 
+       for all new buffer created. */
+    if (XtIsManaged(XtParent(window->statsLineForm))) {
+    	XtUnmanageChild(XtParent(window->statsLineForm));
+    	XtManageChild(XtParent(window->statsLineForm));    
+    }
+#endif /* LESSTIF_VERSION */
+
     return window;
 }
 
