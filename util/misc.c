@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.26 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.27 2001/08/15 09:00:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -79,10 +79,6 @@ typedef Widget (*MotifDialogCreationCall)(Widget, String, ArgList, Cardinal);
    before carpal tunnel syndrome sets in */
 #define HISTORY_LIST_TRIM_TO 1000
 #define HISTORY_LIST_MAX 2000
-
-/* Maximum length for a menu accelerator string which can be parsed by
-   parseAccelString (how many modifier keys can you hold down at once?) */
-#define MAX_ACCEL_LEN 100
 
 /* flags to enable/disable delete key remapping and pointer centered dialogs */
 static int RemapDeleteEnabled = True;

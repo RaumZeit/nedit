@@ -1,10 +1,16 @@
-/* $Id: misc.h,v 1.7 2001/04/13 17:50:50 tringali Exp $ */
+/* $Id: misc.h,v 1.8 2001/08/15 09:00:21 amai Exp $ */
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2
 
 /* maximum length for a window geometry string */
 #define MAX_GEOM_STRING_LEN 24
+
+/* Maximum length for a menu accelerator string.
+   Which e.g. can be parsed by misc.c:parseAccelString()
+   (how many modifier keys can you hold down at once?) */
+#define MAX_ACCEL_LEN 100
+
 
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void SuppressPassiveGrabWarnings(void);

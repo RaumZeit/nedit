@@ -1,11 +1,8 @@
-/* $Id: preferences.h,v 1.10 2001/05/17 11:42:27 arnef Exp $ */
+/* $Id: preferences.h,v 1.11 2001/08/15 09:00:21 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
 #define MAX_LANGUAGE_MODES 127
-
-/* max length of an accelerator string */
-#define MAX_ACCEL_LEN 50
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
