@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.45 2002/07/27 08:55:05 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.46 2002/07/29 03:51:47 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2469,6 +2469,7 @@ static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    return False;
 	printf("%s%s", string, i==nArgs-1 ? "" : " ");
     }
+    fflush( stdout );
     result->tag = NO_TAG;
     return True;
 }
