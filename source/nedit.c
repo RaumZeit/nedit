@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.14 2001/08/04 20:49:21 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.15 2001/08/07 01:12:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -282,29 +282,10 @@ int main(int argc, char **argv)
     /* Save the command which was used to invoke nedit for restart command */
     ArgV0 = argv[0];
     
-#ifndef NO_XMIM
-    /* Set local for C library and X, and Motif input functions */
-    if (setlocale(LC_CTYPE, "") == NULL) {
-	fprintf(stderr, "NEdit: Locale not supported by C library.\n");
-	if(setlocale(LC_CTYPE, NULL)==NULL) {
-            fprintf(stderr,"NEdit: cannot continue.\n");
-            exit(EXIT_FAILURE);
-	} else
-            fprintf(stderr,"NEdit: Using %s locale instead.\n",
-            	    setlocale(LC_CTYPE, NULL));
-    }
-    if (!XSupportsLocale()) {
-    	fprintf(stderr, "NEdit: Xlib: locale %s not supported\n.",
-    	    	setlocale(LC_CTYPE, NULL));
-    	exit(EXIT_FAILURE);
-    }
-    if (XSetLocaleModifiers("") == NULL)
-        fprintf(stderr,"NEdit: cannot set locale modifiers.\n");
-#else
-    /* Set locale for C library functions */
-    setlocale(LC_CTYPE, "");
-#endif
-    
+    /* Set locale for C library, X, and Motif input functions. 
+       Reverts to "C" if requested locale not available. */
+    XtSetLanguageProc(NULL, NULL, NULL);
+ 
     /* Initialize X toolkit (does not open display yet) */
     XtToolkitInitialize();
     context = XtCreateApplicationContext();
