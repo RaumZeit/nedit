@@ -475,7 +475,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     	syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", TRUE);
     }
     XmAddProtocolCallback(appShell, wmpAtom, syAtom,
-	    (XtCallbackProc)saveYourselfCB, window);
+	    (XtCallbackProc)saveYourselfCB, (XtPointer)window);
 #endif
         
     /* Make window resizing work in nice character heights */
