@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.110 2004/02/03 07:27:58 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.111 2004/02/03 14:26:52 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -476,7 +476,7 @@ static PrefDescripRec PrefDescrip[] = {
 		    keepStart = commentStart + 2\n\
 		keepEnd = search_string(sel, \"*/\", length(sel), \"backward\")\n\
 		commentEnd = keepEnd + 2\n\
-		if (substring(sel, keepEnd - 1, keepEnd == \" \"))\n\
+		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n\
 		    keepEnd = keepEnd - 1\n\
 		replace_range(selStart + commentStart, selStart + commentEnd, \\\n\
 			substring(sel, keepStart, keepEnd))\n\
@@ -1111,6 +1111,7 @@ static void updatePatternsTo5dot3(void);
 static void updatePatternsTo5dot4(void);
 static void updateShellCmdsTo5dot3(void);
 static void updateShellCmdsTo5dot4(void);
+static void updateMacroCmdsTo5dot5(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
@@ -1185,6 +1186,12 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
         migrateColorResources(prefDB, appDB);
         updateShellCmdsTo5dot4();
         updatePatternsTo5dot4();
+    }
+    if (PrefData.prefFileRead && (fileVer < 5005)) {
+        /* Uncomment this in the next release
+        fprintf(stderr, "NEdit: Converting .nedit file to 5.5 version.\n"
+                "    To keep, use Preferences -> Save Defaults\n"); */
+        updateMacroCmdsTo5dot5();
     }
     /* Migrate colors if there's no config file yet */
     if (!PrefData.prefFileRead) {
@@ -5479,6 +5486,18 @@ static void updateShellCmdsTo5dot4(void)
     
 #endif /* VMS */
     
+    return;
+}
+
+static void updateMacroCmdsTo5dot5(void) 
+{
+    const char* uc5dot4 = 
+      "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
+    const char* uc5dot5 = 
+      "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
+    if (regexFind(TempStringPrefs.macroCmds, uc5dot4))
+	regexReplace(&TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
+
     return;
 }
 
