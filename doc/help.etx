@@ -4558,7 +4558,8 @@ Version
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
   Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
   Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-  LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, and Steve Haehn.
+  LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
+  and Andrew Hood.
 
   The regular expression matching routines used in NEdit are adapted (with
   permission) from original code written by Henry Spencer at the

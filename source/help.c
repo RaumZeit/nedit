@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.83 2002/08/21 13:21:16 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.84 2002/09/10 12:10:42 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -176,6 +176,10 @@ static int findTopicFromShellWidget(Widget shellWidget);
 static void loadFontsAndColors(Widget parent, int style);
 static void initNavigationHistory(void);
 
+#ifdef HAVE__XMVERSIONSTRING
+extern char _XmVersionString[];
+#endif
+
 /*============================================================================*/
 /*================================= PROGRAMS =================================*/
 /*============================================================================*/
@@ -191,13 +195,33 @@ static const char *getBuildInfo(void)
         "     Built on: %s, %s, %s\n"
         "     Built at: %s, %s\n"
         "   With Motif: %d.%d.%d [%s]\n"
+#ifdef HAVE__XMVERSIONSTRING
+        "Running Motif: %d.%d [%s]\n"
+#else
         "Running Motif: %d.%d\n"
+#endif
         "       Server: %s %d\n"
+        "       Visual: %s\n"
        ;
+    const char * visualClass[] = {"StaticGray",  "GrayScale",
+                                  "StaticColor", "PseudoColor",
+                                  "TrueColor",   "DirectColor"};
     static char * bldInfoString=NULL;
     
     if (bldInfoString==NULL)
     {
+        char        visualStr[30]="";
+        if (TheDisplay) {
+            Visual     *visual;
+            int         depth;
+            Colormap    map;
+            Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME,
+                                                        APP_CLASS, &visual,
+                                                        &depth, &map);
+            sprintf(visualStr,"Id %#lx %s %d bit%s", visual->visualid,
+                    visualClass[visual->class], depth,
+                    usingDefaultVisual ?" (Default)":"");
+        }
        bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
        sprintf(bldInfoString, bldFormat,
             NEditVersion,
@@ -206,7 +230,11 @@ static const char *getBuildInfo(void)
             XmVERSION, XmREVISION, XmUPDATE_LEVEL,
             XmVERSION_STRING,
             xmUseVersion/1000, xmUseVersion%1000,
-            ServerVendor(TheDisplay), VendorRelease(TheDisplay)
+#ifdef HAVE__XMVERSIONSTRING
+            _XmVersionString,
+#endif
+            ServerVendor(TheDisplay), VendorRelease(TheDisplay),
+            visualStr
             );
     }
     
