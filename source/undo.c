@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.8 2002/01/28 10:43:10 amai Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.9 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -26,6 +26,10 @@ static const char CVSID[] = "$Id: undo.c,v 1.8 2002/01/28 10:43:10 amai Exp $";
 *									       *
 *******************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <string.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -36,6 +40,7 @@ static const char CVSID[] = "$Id: undo.c,v 1.8 2002/01/28 10:43:10 amai Exp $";
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <Xm/Text.h>
+
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.18 2002/02/24 21:16:30 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.18 2002/02/24 21:16:30 edg Exp $
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

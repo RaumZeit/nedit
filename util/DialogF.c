@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.20 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.21 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.20 2001/12/04 17:50:37 amai Exp 
 * Written by Joy Kyriakopulos						       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -39,8 +44,10 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.20 2001/12/04 17:50:37 amai Exp 
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
+
 #include "misc.h"
 #include "DialogF.h"
+
 
 #define NUM_DIALOGS_SUPPORTED 6
 #define NUM_BUTTONS_SUPPORTED 3		/* except prompt dialog */

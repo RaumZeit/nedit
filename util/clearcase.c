@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: clearcase.c,v 1.1 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: clearcase.c,v 1.2 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * clearcase.c -- Nirvana Editor ClearCase support utilities     	       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.1 2001/11/18 19:02:58 arnef Ex
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <string.h>
 #include <stdlib.h>
 #include <X11/Intrinsic.h>

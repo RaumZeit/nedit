@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.18 2001/12/17 16:28:46 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -23,6 +23,11 @@ static const char CVSID[] = "$Id: selection.c,v 1.18 2001/12/17 16:28:46 amai Ex
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>

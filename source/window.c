@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.48 2002/03/11 22:05:11 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.49 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: window.c,v 1.48 2002/03/11 22:05:11 edg Exp $"
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,8 +65,10 @@ static const char CVSID[] = "$Id: window.c,v 1.48 2002/03/11 22:05:11 edg Exp $"
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
+#include "../util/clearcase.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/utils.h"
 #include "textBuf.h"
 #include "textSel.h"
 #include "text.h"
@@ -82,8 +89,6 @@ static const char CVSID[] = "$Id: window.c,v 1.48 2002/03/11 22:05:11 edg Exp $"
 #include "userCmds.h"
 #include "nedit.bm"
 #include "n.bm"
-#include "../util/utils.h"
-#include "../util/clearcase.h"
 #include "windowTitle.h"
 
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight

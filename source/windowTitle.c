@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.4 2002/03/11 22:41:01 amai Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.5 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -26,6 +26,10 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.4 2002/03/11 22:41:01 amai E
 *                                                                              *
 *******************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -37,6 +41,7 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.4 2002/03/11 22:41:01 amai E
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
@@ -51,6 +56,7 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.4 2002/03/11 22:41:01 amai E
 #include <Xm/CascadeBG.h>
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
+
 #include "../util/prefFile.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"

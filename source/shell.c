@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.18 2001/11/27 10:47:10 amai Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: shell.c,v 1.18 2001/11/27 10:47:10 amai Exp $"
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +42,7 @@ static const char CVSID[] = "$Id: shell.c,v 1.18 2001/11/27 10:47:10 amai Exp $"
 #include <unistd.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <errno.h>
 #ifdef notdef
 #ifdef IBM
 #define NBBY 8
@@ -47,12 +53,12 @@ static const char CVSID[] = "$Id: shell.c,v 1.18 2001/11/27 10:47:10 amai Exp $"
 #ifdef __EMX__
 #include <process.h>
 #endif
-#include <errno.h>
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
 #include <Xm/Text.h>
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "textBuf.h"

@@ -1,4 +1,4 @@
-/* $Id: linkdate.c,v 1.1 2001/12/03 16:46:40 tringali Exp $ */
+/* $Id: linkdate.c,v 1.2 2002/03/14 01:25:23 amai Exp $ */
 /*******************************************************************************
 *                                                                              *
 * linkdate.c -- Compile time configuration                                     *
@@ -25,6 +25,10 @@
 * Written by Scott Tringali, http://www.tringali.org                           *
 *                                                                              *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 
 const char linkdate[] = __DATE__;
 const char linktime[] = __TIME__;

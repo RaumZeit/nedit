@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.13 2002/01/28 10:43:10 amai Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.14 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: server.c,v 1.13 2002/01/28 10:43:10 amai Exp $
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +50,7 @@ static const char CVSID[] = "$Id: server.c,v 1.13 2002/01/28 10:43:10 amai Exp $
 #include <pwd.h>
 #endif
 #include <Xm/Xm.h>
+
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "textBuf.h"

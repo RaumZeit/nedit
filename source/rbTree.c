@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: rbTree.c,v 1.4 2001/08/14 15:05:05 slobasso Exp $";
+static const char CVSID[] = "$Id: rbTree.c,v 1.5 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * rbTree.c -- Nirvana editor red-black balanced binary tree                    *
@@ -32,7 +32,9 @@ static const char CVSID[] = "$Id: rbTree.c,v 1.4 2001/08/14 15:05:05 slobasso Ex
 ** and a node count
 */
 
-#include "rbTree.h"
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +42,8 @@ static const char CVSID[] = "$Id: rbTree.c,v 1.4 2001/08/14 15:05:05 slobasso Ex
 #ifdef RBTREE_TEST_CODE
 #include <stdio.h>
 #endif
+
+#include "rbTree.h"
 
 #define rbTreeNodeRed       0
 #define rbTreeNodeBlack     1

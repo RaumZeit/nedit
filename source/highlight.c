@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.25 2002/03/11 22:05:11 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.26 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -26,6 +26,11 @@ static const char CVSID[] = "$Id: highlight.c,v 1.25 2002/03/11 22:05:11 edg Exp
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.12 2002/02/05 20:55:12 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.13 2002/03/14 01:25:23 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -52,11 +52,16 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.12 2002/02/05 20:55:12 edg Ex
  *    Added "not a word boundary" anchor \B.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+
 #include "regularExp.h"
 
 /* The first byte of the regexp internal `program' is a magic number to help

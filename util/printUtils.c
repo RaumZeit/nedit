@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.15 2001/12/13 13:14:33 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.16 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -31,12 +31,17 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.15 2001/12/13 13:14:33 amai E
 * Modified by Donna Reid and Joy Kyriakopulos 4/8/93 - VMS port		       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <ctype.h>
+#include <sys/types.h>
 #ifdef VMS
 #include "vmsparam.h"
 #include <ssdef.h>
@@ -56,6 +61,7 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.15 2001/12/13 13:14:33 amai E
 #endif
 #endif /*VMS*/
 #include <sys/stat.h>
+
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -65,6 +71,7 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.15 2001/12/13 13:14:33 amai E
 #include <Xm/PushB.h>
 #include <Xm/SeparatoG.h>
 #include <Xm/Text.h>
+
 #include "DialogF.h"
 #include "misc.h"
 #include "prefFile.h"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.21 2002/03/01 17:12:35 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.22 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -27,6 +27,11 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.21 2002/03/01 17:12:35 amai Ex
 * Modified by:	DMR - Ported to VMS (1st stage for Histo-Scope)		       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,6 +51,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.21 2002/03/01 17:12:35 amai Ex
 #include <unistd.h>
 #include <pwd.h>
 #endif /*VMS*/
+
 #include "fileUtils.h"
 #include "../util/utils.h"
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.18 2001/12/24 09:46:57 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -45,6 +45,11 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.18 2001/12/24 09:46:57 amai Exp
 *                      find a place for a new file.                           *
 *                                                                             *
 ******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,6 +76,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.18 2001/12/24 09:46:57 amai Exp
 #include <Xm/Text.h>
 #include <Xm/MessageB.h>
 #include <Xm/List.h>
+
 #include "fileUtils.h"
 #include "misc.h"
 #include "getfiles.h"

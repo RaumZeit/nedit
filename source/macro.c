@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.38 2001/12/24 11:50:24 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.39 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -26,6 +26,11 @@ static const char CVSID[] = "$Id: macro.c,v 1.38 2001/12/24 11:50:24 amai Exp $"
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,6 +67,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.38 2001/12/24 11:50:24 amai Exp $"
 
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/utils.h"
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"
@@ -76,7 +82,6 @@ static const char CVSID[] = "$Id: macro.c,v 1.38 2001/12/24 11:50:24 amai Exp $"
 #include "smartIndent.h"
 #include "userCmds.h"
 #include "selection.h"
-#include "../util/utils.h"
 
 #define AUTO_LOAD_MACRO_FILE_NAME ".neditmacro"
 	

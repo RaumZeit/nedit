@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.53 2002/03/11 22:05:11 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.54 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: menu.c,v 1.53 2002/03/11 22:05:11 edg Exp $";
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -44,10 +49,12 @@ static const char CVSID[] = "$Id: menu.c,v 1.53 2002/03/11 22:05:11 edg Exp $";
 #include <Xm/RowColumn.h>
 #include <Xm/Separator.h>
 #include <Xm/MenuShell.h>
+
 #include "../util/getfiles.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
+#include "../util/utils.h"
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"
@@ -69,7 +76,6 @@ static const char CVSID[] = "$Id: menu.c,v 1.53 2002/03/11 22:05:11 edg Exp $";
 #include "rbTree.h"
 #include "interpret.h"
 #include "smartIndent.h"
-#include "../util/utils.h"
 #include "windowTitle.h"
 
 /* File name for Open Previous file database */

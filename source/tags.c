@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.32 2002/03/08 08:43:49 edg Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.33 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: tags.c,v 1.32 2002/03/08 08:43:49 edg Exp $";
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +52,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.32 2002/03/08 08:43:49 edg Exp $";
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
+#include "../util/utils.h"
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"
@@ -56,7 +62,6 @@ static const char CVSID[] = "$Id: tags.c,v 1.32 2002/03/08 08:43:49 edg Exp $";
 #include "search.h"
 #include "selection.h"
 #include "tags.h"
-#include "../util/utils.h"
 
 #define MAXLINE 2048
 #define MAX_TAG_LEN 256

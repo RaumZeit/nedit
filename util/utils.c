@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.10 2001/12/13 13:27:01 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.11 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -20,6 +20,10 @@ static const char CVSID[] = "$Id: utils.c,v 1.10 2001/12/13 13:27:01 amai Exp $"
 *                                                                              *
 *******************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +43,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.10 2001/12/13 13:27:01 amai Exp $"
 #include <sys/param.h>
 #endif /*VMS*/
 #include <pwd.h>
+
 /* just to get 'Boolean' types defined: */
 #include <X11/Xlib.h>
 

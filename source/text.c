@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.23 2002/02/27 11:26:07 edg Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.24 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -29,11 +29,17 @@ static const char CVSID[] = "$Id: text.c,v 1.23 2002/02/27 11:26:07 edg Exp $";
 *     4/19/96 - Joachim Keltsch - Motif Input Method support   	 	       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
+
 #include <X11/Intrinsic.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -43,6 +49,7 @@ static const char CVSID[] = "$Id: text.c,v 1.23 2002/02/27 11:26:07 edg Exp $";
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
 #endif
+
 #include "textBuf.h"
 #include "textDisp.h"
 #include "textP.h"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.49 2002/03/11 22:05:11 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.50 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: preferences.c,v 1.49 2002/03/11 22:05:11 edg E
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -50,6 +55,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.49 2002/03/11 22:05:11 edg E
 #include <Xm/CascadeBG.h>
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
+
 #include "../util/prefFile.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"

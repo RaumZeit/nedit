@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.14 2002/03/01 17:04:05 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.15 2002/03/14 01:25:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -25,6 +25,11 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.14 2002/03/01 17:04:05 amai Exp 
 * Written by Suresh Ravoor (assisted by Mark Edel)			       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

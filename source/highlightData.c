@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.27 2002/02/11 10:45:41 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.28 2002/03/14 01:25:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -26,6 +26,11 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.27 2002/02/11 10:45:41 edg
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
