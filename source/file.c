@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.17 2001/05/11 08:05:33 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.18 2001/06/05 08:01:10 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -774,21 +774,20 @@ int WriteBackupFile(WindowInfo *window)
     char *fileString = NULL;
     char name[MAXPATHLEN];
     FILE *fp;
-    int fileLen;
+    int fd, fileLen;
     
     /* Generate a name for the autoSave file */
     backupFileName(window, name);
 
-#ifdef VMS
-    /* remove the old backup file because we reuse the same version number */
+    /* remove the old backup file.
+       Well, this might fail - we'll notice later however. */
     remove(name);
-#endif /*VMS*/
     
     /* open the file */
 #ifdef VMS
     if ((fp = fopen(name, "w", "rfm = stmlf")) == NULL) {
 #else
-    if ((fp = fopen(name, "w")) == NULL) {
+    if ((fd = open(name, O_CREAT|O_EXCL|O_WRONLY)) < 0 || (fp = fdopen(fd, "w")) == NULL) {
 #endif /* VMS */
     	DialogF(DF_WARN, window->shell, 1,
     	       "Unable to save backup for %s:\n%s\nAutomatic backup is now off",
