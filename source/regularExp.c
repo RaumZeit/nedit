@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.17 2002/07/15 14:11:18 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.18 2002/07/17 15:14:37 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -194,6 +194,27 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.17 2002/07/15 14:11:18 edg Ex
 #error "Too many parentheses for storage in an unsigned char (LAST_PAREN too big.)"
 #endif
 
+/* The next_ptr () function can consume up to 30% of the time during matching
+   because it is called an immense number of times (an average of 25 
+   next_ptr() calls per match() call was witnessed for Perl syntax 
+   highlighting). Therefore it is well worth removing some of the function
+   call overhead by selectively inlining the next_ptr() calls. Moreover,
+   the inlined code can be simplified for matching because one of the tests, 
+   only necessary during compilation, can be left out.
+   The net result of using this inlined version at two critical places is 
+   a 25% speedup (again, witnesses on Perl syntax highlighting). */
+   
+#define NEXT_PTR(in_ptr, out_ptr)\
+   next_ptr_offset = GET_OFFSET (in_ptr);\
+   if (next_ptr_offset == 0)\
+       out_ptr = NULL;\
+   else {\
+       if (GET_OP_CODE (in_ptr) == BACK)\
+           out_ptr = in_ptr - next_ptr_offset;\
+       else \
+           out_ptr = in_ptr + next_ptr_offset;\
+   }
+   
 /* OPCODE NOTES:
    ------------
 
@@ -2603,7 +2624,7 @@ static unsigned char *Current_Delimiters;  /* Current delimiter table */
 /* Forward declarations of functions used by `ExecRE' */
 
 static int             attempt            (regexp *, unsigned char *);
-static int             match              (unsigned char *);
+static int             match              (unsigned char *, int *);
 static unsigned long   greedy             (unsigned char *, long);
 static void            adjustcase         (unsigned char *, int, unsigned char);
 static unsigned char * makeDelimiterTable (unsigned char *, unsigned char *);
@@ -2901,6 +2922,7 @@ static int attempt (regexp *prog, unsigned char *string) {
    register          int    i;
    register unsigned char **s_ptr;
    register unsigned char **e_ptr;
+   		     int    branch_index = 0; /* Must be set to zero ! */
 
    Reg_Input      = string;
    Start_Ptr_Ptr  = (unsigned char **) prog->startp;
@@ -2918,11 +2940,13 @@ static int attempt (regexp *prog, unsigned char *string) {
       *e_ptr++ = NULL;
    }
 
-   if (match ((unsigned char *) (prog->program + REGEX_START_OFFSET))) {
+   if (match ((unsigned char *) (prog->program + REGEX_START_OFFSET),
+	&branch_index)) {
       prog->startp [0] = (char *) string;
       prog->endp   [0] = (char *) Reg_Input;     /* <-- One char AFTER  */
       prog->extentpBW  = (char *) Extent_Ptr_BW; /*     matched string! */
       prog->extentpFW  = (char *) Extent_Ptr_FW;
+      prog->top_branch = branch_index;
 
       return (1);
    } else {
@@ -2941,20 +2965,23 @@ static int attempt (regexp *prog, unsigned char *string) {
  * loop instead of by recursion.  Returns 0 failure, 1 success.
  *----------------------------------------------------------------------*/
 
-static int match (unsigned char *prog) {
+static int match (unsigned char *prog, int *branch_index_param) {
 
    register unsigned char *scan;  /* Current node. */
             unsigned char *next;  /* Next node. */
+   register int next_ptr_offset;  /* Used by the NEXT_PTR () macro */
+	    
 
    scan = prog;
 
    while (scan != NULL) {
-      next = next_ptr (scan);
+      NEXT_PTR (scan, next);
 
       switch (GET_OP_CODE (scan)) {
          case BRANCH:
             {
                register unsigned char *save;
+	       register int branch_index_local = 0;
 
                if (GET_OP_CODE (next) != BRANCH) {  /* No choice. */
                   next = OPERAND (scan);   /* Avoid recursion. */
@@ -2962,10 +2989,17 @@ static int match (unsigned char *prog) {
                   do {
                      save = Reg_Input;
 
-                     if (match (OPERAND (scan))) return (1);
+                     if (match (OPERAND (scan), NULL)) 
+		     {
+			if (branch_index_param)
+			   *branch_index_param = branch_index_local;
+  			return (1);
+		     }
+		     
+		     ++branch_index_local;
 
                      Reg_Input = save; /* Backtrack. */
-                     scan      = next_ptr (scan);
+                     NEXT_PTR (scan, scan);
                   } while (scan != NULL && GET_OP_CODE (scan) == BRANCH);
 
                   return (0); /* NOT REACHED */
@@ -3241,7 +3275,7 @@ static int match (unsigned char *prog) {
 
                while (min <= num_matched && num_matched <= max) {
                   if (next_char == '\0' || next_char == *Reg_Input) {
-                     if (match (next)) return (1);
+                     if (match (next, NULL)) return (1);
                   }
 
                   /* Couldn't or didn't match. */
@@ -3347,7 +3381,7 @@ static int match (unsigned char *prog) {
                                  int   answer;
 
                save      = Reg_Input;
-               answer    = match (next); /* Does the look-ahead regex match? */
+               answer    = match (next, NULL); /* Does the look-ahead regex match? */
 
                if ((GET_OP_CODE (scan) == POS_AHEAD_OPEN) ? answer : !answer) {
                   /* Remember the last (most to the right) character position
@@ -3420,7 +3454,7 @@ static int match (unsigned char *prog) {
                      break;
            	  }
                   
-                  answer    = match (next); /* Does the look-behind regex match? */
+                  answer    = match (next, NULL); /* Does the look-behind regex match? */
                   
                   /* The match must have ended at the current position;
                      otherwise it is invalid */
@@ -3486,7 +3520,7 @@ static int match (unsigned char *prog) {
                   Back_Ref_End   [no] = NULL;
                }
 
-               if (match (next)) {
+               if (match (next, NULL)) {
                   /* Do not set `Start_Ptr_Ptr' if some later invocation (think
                      recursion) of the same parentheses already has. */
 
@@ -3507,7 +3541,7 @@ static int match (unsigned char *prog) {
 
                if (no < 10) Back_Ref_End [no] = save;
 
-               if (match (next)) {
+               if (match (next, NULL)) {
                   /* Do not set `End_Ptr_Ptr' if some later invocation of the
                      same parentheses already has. */
 
@@ -3757,6 +3791,9 @@ static unsigned long greedy (unsigned char *p, long max) {
 
 /*----------------------------------------------------------------------*
  * next_ptr - compute the address of a node's "NEXT" pointer.
+ * Note: a simplified inline version is available via the NEXT_PTR() macro,
+ *       but that one is only to be used at time-critical places (see the
+ *       description of the macro).
  *----------------------------------------------------------------------*/
 
 static unsigned char * next_ptr (unsigned char *ptr) {

@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.9 2002/07/15 14:11:18 edg Exp $ */
+/* $Id: regularExp.h,v 1.10 2002/07/17 15:14:37 edg Exp $ */
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
@@ -23,6 +23,8 @@ typedef struct regexp {
    char *extentpFW;         /* Points to the maximum extent of text scanned by
                                ExecRE to achieve a match (needed because of
                                positive look-ahead.) */
+   int   top_branch;        /* Zero-based index of the top branch that matches.
+                               Used by syntax highlighting only. */
    char  match_start;       /* Internal use only. */
    char  anchor;            /* Internal use only. */
    char  program [1];       /* Unwarranted chumminess with compiler. */

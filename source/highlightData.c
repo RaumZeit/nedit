@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.31 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.32 2002/07/17 15:14:37 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -668,7 +668,7 @@ static char *DefaultPatternSets[] = {
 	re sub comment:\"\\(\\?#[^)]*\\)\":::Comment:re sub:\n\
 	re sub syms:\"[.^$[\\])|)]|\\{\\d+(,\\d*)?\\}\\??|\\((\\?([:=!>imsx]|\\<[=!]))?|[?+*]\\??\":::Regex:re sub:\n\
 	re sub refs:\"\\\\[1-9]\\d?\":::Identifier1:re sub:\n\
-	info:\"(?# version: 2.02; author/maintainer: Joor Loohuis, joor@loohuis-consulting.nl)\":::Plain::}",
+	info:\"version: 2.02p1; author/maintainer: Joor Loohuis, joor@loohuis-consulting.nl\":::Plain::}",
     "PostScript:1:0{\n\
 	DSCcomment:\"^%[%|!]\":\"$\"::Preprocessor::\n\
 	Comment:\"%\":\"$\"::Comment::\n\
