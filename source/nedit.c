@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.12 2001/03/19 14:43:18 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.13 2001/06/22 18:27:53 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -106,6 +106,7 @@ static char *fallbackResources[] = {
     "nedit*helpText.background: #cccccc",
     "nedit*helpText.foreground: black",
     "nedit*helpText.selectBackground: #b3b3b3",
+    "nedit*statsLine.background: #b3b3b3",
     "*helpText.font: -adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
     "*XmText.translations: #override \
 Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.25 2001/05/17 11:42:27 arnef Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.26 2001/06/22 18:27:53 tringali Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -128,7 +128,6 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     Arg al[20];
     int ac;
     XmString s1;
-    Pixel statsBG;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
 #endif
@@ -396,7 +395,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
        file names and line numbers.  Background color is copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-    XtVaGetValues(statsForm, XmNbackground, &statsBG, NULL);
+
     stats = XtVaCreateWidget("statsLine", xmTextWidgetClass,  statsForm,
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
@@ -405,7 +404,6 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     	    XmNeditable, False,
     	    XmNtraversalOn, False,
     	    XmNcursorPositionVisible, False,
-	    XmNbackground, statsBG,
     	    XmNfontList, window->fontList,
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNleftOffset, STAT_SHADOW_THICKNESS,
