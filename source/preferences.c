@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.45 2002/02/14 14:28:50 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.46 2002/02/14 21:08:10 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -926,7 +926,7 @@ static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
-static void updatePatternsPast5dot2(void);
+static void updatePatternsTo5dot3(void);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
@@ -959,8 +959,6 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     requiresConversion = PrefData.prefFileRead &&
     	    PrefData.fileVersion[0] == '\0';
     if (requiresConversion) {
-	fprintf(stderr, "NEdit: Converting .nedit file from pre-5.1 version.\n"
-		"    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot1();
     }
 
@@ -978,17 +976,13 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     }
     
     if (PrefData.prefFileRead && fileVer < 5002) {
-        fprintf(stderr, "NEdit: Converting .nedit file from pre-5.2 version.\n"
-                "    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot2();
     }
     
-    if (PrefData.prefFileRead && fileVer == 5002) {
-        /* For now, update preferences silently.
-           When the next version is about to be released, make it more
-           verbose and rename this function properly (depending on whether
-           it will be 5.3 or 6.0). */
-        updatePatternsPast5dot2();
+    if (PrefData.prefFileRead && fileVer < 5003) {
+        fprintf(stderr, "NEdit: Converting .nedit file from pre-5.3 version.\n"
+                "    To keep, use Preferences -> Save Defaults\n");
+        updatePatternsTo5dot3();
     }
        
     /* Do further parsing on resource types which RestorePreferences does
@@ -1103,7 +1097,7 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
     TempStringPrefs.styles = WriteStylesString();
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
-    strcpy(PrefData.fileVersion, "5.2");
+    strcpy(PrefData.fileVersion, "5.3");
     if (!SavePreferences(XtDisplay(parent), PREF_FILE_NAME, HeaderText,
     	    PrefDescrip, XtNumber(PrefDescrip)))
     	DialogF(DF_WARN, parent, 1,
@@ -4580,24 +4574,20 @@ static void updatePatternsTo5dot2(void)
 	spliceString(&TempStringPrefs.styles, ptrStyle, "^[ \t]*Regex:");
 }
 
-/*
-** Temporary function, to be extended gradually when preferences are 
-** altered and to be renamed when next version is about to be released
-** (5.3 or 6.0).
-*/
-static void updatePatternsPast5dot2(void)
+static void updatePatternsTo5dot3(void)
 {
+    /* This is a bogus function on non-VMS */
 #ifdef VMS
     const char *psLm5dot2 =
         "^[ \t]*PostScript:\\.ps \\.PS \\.eps \\.EPS \\.epsf \\.epsi:\"\\^%!\":::::\"/%\\(\\)\\{\\}\\[\\]\\<\\>\"";
 
-    const char *psLmPost5dot2 = 
+    const char *psLm5dot3 = 
         "PostScript:.ps .PS .eps .EPS .epsf .EPSF .epsi .EPSI:\"^%!\":::::\"/%(){}[]<>\"";
     
     /* Upgrade modified language modes, only if the user hasn't
        altered the default 5.2 definitions. */
     if (regexFind(TempStringPrefs.language, psLm5dot2))
-	regexReplace(&TempStringPrefs.language, psLm5dot2, psLmPost5dot2);
+	regexReplace(&TempStringPrefs.language, psLm5dot2, psLm5dot3);
 #endif 
 }
  
