@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.34 2001/08/26 02:28:30 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.35 2001/08/27 18:45:39 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -1404,7 +1404,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 ** Create a macro string to represent an invocation of an action routine.
 ** Returns NULL for non-operational or un-recordable actions.
 */
-char *actionToString(char *actionName, XEvent *event, String *params,
+static char *actionToString(char *actionName, XEvent *event, String *params,
 	Cardinal numParams)
 {
     char chars[20], *charList[1], *outStr, *outPtr;
