@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.42 2002/01/15 17:05:23 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.43 2002/02/05 18:16:58 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -840,16 +840,20 @@ void SetTabDist(WindowInfo *window, int tabDist)
         
         for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
             Widget w = GetPaneByIndex(window, paneIndex);
+            textDisp *textD = ((TextWidget)w)->text.textD;
 
             TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
             saveCursorPositions[paneIndex] = TextGetCursorPos(w);
+            textD->modifyingTabDist = 1;
         }
         
         BufSetTabDistance(window->buffer, tabDist);
 
         for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
             Widget w = GetPaneByIndex(window, paneIndex);
-
+            textDisp *textD = ((TextWidget)w)->text.textD;
+            
+            textD->modifyingTabDist = 0;
             TextSetCursorPos(w, saveCursorPositions[paneIndex]);
             TextSetScroll(w, saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
         }

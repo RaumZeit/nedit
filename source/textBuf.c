@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.16 2002/02/03 16:41:06 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.17 2002/02/05 18:16:58 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -599,10 +599,13 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
 {
     char *deletedText;
     
+    /* First call the pre-delete callbacks with the previous tab setting 
+       still active. */
+    callPreDeleteCBs(buf, 0, buf->length);
+    
     /* Change the tab setting */
     buf->tabDist = tabDist;
     
-    callPreDeleteCBs(buf, 0, buf->length);
     /* Force any display routines to redisplay everything (unfortunately,
        this means copying the whole buffer contents to provide "deletedText" */
     deletedText = BufGetAll(buf);

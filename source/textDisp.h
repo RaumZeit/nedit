@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.7 2002/02/03 16:41:06 edg Exp $ */
+/* $Id: textDisp.h,v 1.8 2002/02/05 18:16:58 edg Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -77,6 +77,8 @@ typedef struct _textDisp {
     int nLinesDeleted;			/* Number of lines deleted during
 					   buffer modification (only used
 				           when resynchronization is suppressed) */
+    int modifyingTabDist;		/* Whether tab distance is being
+    					   modified */
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,

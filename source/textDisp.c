@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.16 2002/02/03 16:41:06 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.17 2002/02/05 18:16:58 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -189,6 +189,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     	textD->lineStarts[i] = -1;
     textD->suppressResync = 0;
     textD->nLinesDeleted = 0;
+    textD->modifyingTabDist = 0;
     
     /* Attach an event handler to the widget so we can know the visibility
        (used for choosing the fastest drawing method) */
@@ -1305,11 +1306,16 @@ int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines)
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg)
 {
     textDisp *textD = (textDisp *)cbArg;
-    if (textD->continuousWrap && textD->fixedFontWidth == -1)
+    if (textD->continuousWrap && 
+        (textD->fixedFontWidth == -1 || textD->modifyingTabDist))
 	/* Note: we must perform this measurement, even if there is not a
 	   single character deleted; the number of "deleted" lines is the
 	   number of visual lines spanned by the real line in which the 
-	   modification takes place. */
+	   modification takes place. 
+	   Also, a modification of the tab distance requires the same
+	   kind of calculations in advance, even if the font width is "fixed",
+	   because when the width of the tab characters changes, the layout 
+	   of the text may be completely different. */
 	measureDeletedLines(textD, pos, nDeleted);
     else
 	textD->suppressResync = 0; /* Probably not needed, but just in case */
@@ -2930,7 +2936,6 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
     int *lineStarts = textD->lineStarts;
     int countFrom, lineStart;
     int visLineNum = 0, nLines = 0, i;
-    
     /*
     ** Determine where to begin searching: either the previous newline, or
     ** if possible, limit to the start of the (original) previous displayed
