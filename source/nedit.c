@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.89 2005/02/12 01:53:20 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.90 2005/02/14 22:18:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -178,7 +178,7 @@ static char *fallbackResources[] = {
 
     "*XmLFolder.highlightThickness: 0",
     "*XmLFolder.shadowThickness:    1",
-    "*XmLFolder.maxTabWidth:        32767",
+    "*XmLFolder.maxTabWidth:        150",
     "*XmLFolder.traversalOn:        False",
     "*XmLFolder.inactiveForeground: #666" ,
     "*tab.alignment: XmALIGNMENT_BEGINNING",
@@ -395,8 +395,10 @@ int main(int argc, char **argv)
 
     /* Warn user if this has been compiled wrong. */
     enum MotifStability stability = GetMotifStability();
-    if (stability == MotifKnownBad)
-        fputs("WARNING: This version of NEdit is built incorrectly, and will be unstable.\n", stderr);
+    if (stability == MotifKnownBad) {
+        fprintf(stderr, "nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n"
+                "nedit: Please get a stable version of NEdit from http://www.nedit.org.\n");
+    }
 
     /* Save the command which was used to invoke nedit for restart command */
     ArgV0 = argv[0];

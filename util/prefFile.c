@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.25 2004/10/07 22:34:12 yooden Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.26 2005/02/14 22:18:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -218,14 +218,14 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
     	if (prefDB!=NULL &&
     	       XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
     	    if (strcmp(type, XmRString)) {
-    	    	fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
+                fprintf(stderr,"nedit: Internal Error: Unexpected resource type, %s\n",
     	    		type);
     	    	return;
     	    }
     	    valueString = rsrcValue.addr;
     	} else if (XrmGetResource(appDB,rsrcName,rsrcClass,&type,&rsrcValue)) {
     	    if (strcmp(type, XmRString)) {
-    	    	fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
+                fprintf(stderr,"nedit: Internal Error: Unexpected resource type, %s\n",
     	    		type);
     	    	return;
     	    }
@@ -235,7 +235,7 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
 	if (overlay && valueString == rsrcDescrip[i].defaultString)
 	    continue;
     	if (!stringToPref(valueString, &rsrcDescrip[i]))
-    	    fprintf(stderr, "Could not read value of resource %s\n", rsrcName);
+            fprintf(stderr, "nedit: Could not read value of resource %s\n", rsrcName);
     }
 }
 
