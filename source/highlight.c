@@ -27,6 +27,8 @@
 *******************************************************************************/
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
+#include <stdlib.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -139,7 +141,7 @@ static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
-static Pixel allocColor(Widget w, char *colorName);
+static Pixel allocColor(Widget w, const char *colorName);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 static char getPrevChar(textBuffer *buf, int pos);
@@ -1498,31 +1500,117 @@ static int lastModified(textBuffer *styleBuf)
 }
 
 /*
+** Compute the distance between two colors.
+*/
+
+static double colorDistance(const XColor *c1, const XColor *c2)
+{
+    /* This is done in RGB space, which is close, but not optimal.  It's
+       probably better to do it in HSV or YIQ space, however, that means
+       a whole lot of extra conversions.  This would allow us to weight
+       the coordinates differently, e.g, prefer to match hue over
+       brightness. */
+
+    static const double scale = 65535;
+
+    double tred   = c1->red   / scale - c2->red   / scale;
+    double tgreen = c1->green / scale - c2->green / scale;
+    double tblue  = c1->blue  / scale - c2->blue  / scale;
+
+    /* use square Euclidian distance */
+    return tred * tred + tgreen * tgreen + tblue * tblue;
+}
+
+/*
 ** Allocate a read-only (shareable) colormap cell for a named color, from the
 ** the default colormap of the screen on which the widget (w) is displayed. If
-** the colormap is full and there's no suitable substiture, print an error on
+** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's foreground color as a backup.
 */
-static Pixel allocColor(Widget w, char *colorName)
+
+static Pixel allocColor(Widget w, const char *colorName)
 {
-    XColor colorDef;
-    Display *display = XtDisplay(w);
-    Colormap cMap;
-    Pixel foreground;
+    XColor       colorDef;
+    XColor      *allColorDefs;
+    Display     *display = XtDisplay(w);
+    Colormap     cMap;
+    Pixel        foreground, bestPixel;
+    double       small = 1.0e9;
+    int          depth;
+    unsigned int ncolors;
+    unsigned long i, best;    /* pixel value */
+    
+    /* Get the correct colormap for compatability with the "best" visual
+       feature in 5.2.  Default visual of screen is no good here. */
 
-    /* Allocate and return the color cell, or print an error and fall through */
-    XtVaGetValues(w, XtNcolormap, &cMap, NULL);
-    if (XParseColor(display, cMap,  colorName, &colorDef)) {
-	if (XAllocColor(display, cMap, &colorDef))
-	    return colorDef.pixel;
-    	else
-	    fprintf(stderr, "NEdit: Can't allocate color: %s\n", colorName);
-    } else
-	fprintf(stderr, "NEdit: Color name %s not in database\n",  colorName);
+    XtVaGetValues(w,
+                  XtNcolormap,   &cMap,
+                  XtNdepth,      &depth,
+                  XtNforeground, &foreground,
+                  NULL);
 
-    /* Color cell couldn't be allocated, return the widget's foreground color */
-    XtVaGetValues(w, XmNforeground, &foreground, NULL);
-    return foreground;
+    bestPixel = foreground; /* Our last fallback */
+
+    /* First, check for valid syntax */        
+    if (! XParseColor(display, cMap, colorName, &colorDef)) {
+        fprintf(stderr, "NEdit: Color name %s not in database\n",  colorName);
+        return foreground;
+    }
+
+    /* Attempt allocation of the exact color. */
+    if (XAllocColor(display, cMap, &colorDef))
+        return colorDef.pixel;
+
+    /* ---------- Allocation failed, the colormap may be full. ---------- */
+
+#if 0
+    printf("Couldn't allocate %d %d %d\n", colorDef.red, colorDef.green, colorDef.blue);
+#endif
+ 
+    /* We can't do the nearest-match on other than 8 bit visuals because
+       it just takes too long.  */
+
+    if (depth > 8)               /* Oh no! */
+        return foreground;
+
+    /* Get the entire colormap so we can find the closet one. */
+    ncolors = pow(2, depth);
+    allColorDefs = malloc(ncolors * sizeof(XColor));
+    memset(allColorDefs, 0, ncolors * sizeof(XColor));
+    
+    for (i = 0; i < ncolors; i++)
+        allColorDefs[i].pixel = i;
+
+    XQueryColors(display, cMap, allColorDefs, ncolors);
+
+    /* Scan through each color, looking for the closest one. */
+    for (i = 0; i < ncolors; i++)
+    {
+        double dist = colorDistance(&allColorDefs[i], &colorDef);
+
+        if (dist < small)
+        {
+            best = i;
+            small = dist;
+        }
+    }
+
+    /* Legally try to acquire the shared color- we should loop through
+       the shortest distances here.  We could sort the map in order
+       of decreasing distances and loop through it until one works. */
+
+    if (XAllocColor(display, cMap, &allColorDefs[best]))
+        bestPixel = allColorDefs[best].pixel;
+
+#if 0
+    printf("Got %d %d %d, ", allColorDefs[best].red,
+                             allColorDefs[best].green,
+                             allColorDefs[best].blue);
+    printf("That's %f off\n", small);
+#endif
+
+    free(allColorDefs);
+    return bestPixel;
 }
 
 /*
