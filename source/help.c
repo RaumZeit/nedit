@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.45 2001/08/13 09:51:01 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.46 2001/08/13 09:55:48 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -737,6 +737,8 @@ dragging non-rectangular selections, overlay mode also converts the \
 selection to rectangular form, allowing it to be dragged outside of \
 the bounds of the existing text.\n\
 \n\
+Mouse buttons 4 and 5 are usually represented by a mouse wheel\n\
+nowadays. They are used to scroll up/down in the text window.\n\
 \n\
 * The Alt key may be labeled Meta or Compose-Character on some \
 keyboards.  Some window managers, including default configurations \
