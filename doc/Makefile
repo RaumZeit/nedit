@@ -1,6 +1,7 @@
 # Makefile for NEdit text editor documentation
 #
-#  
+#  $Id: Makefile,v 1.3 2002/09/26 10:24:23 ajhood Exp $
+#
 #  NEdit help documentation and internal help code using one common
 #  source, help.etx, a Structure Enhanced TEXT document.
 #
@@ -31,23 +32,25 @@ instructions:
 	@ echo "be 'NEdit release of <currentDate>'"
 	@ echo ""
 	
-version:
+.version:
 	@ if [ "$(VERSION)" = "" ]; then \
 	      echo "NEdit release of `date +'%b %e, %Y'`" > .version; \
 	  else \
 	      echo "$(VERSION)" > .version; \
 	  fi
-help: version help.etx
-	@ echo "Creating NEdit help code..."
-	@ setext -m -v version="`cat .version`" help.etx
-	@ mv help_topic.h ../source
-	@ mv help_data.h ../source
+help: ../source/help_topic.h ../source/help_data.h setext
 
-nedit.html: help.etx
+../source/help_topic.h ../source/help_data.h: .version help.etx setext
+	@ echo "Creating NEdit help code `cat .version`"
+	@ ./setext -m -v version="`cat .version`" help.etx
+	@ mv -f help_topic.h ../source
+	@ mv -f help_data.h ../source
+
+nedit.html: .version help.etx setext
 	@ echo "Creating NEdit HTML documentation..."
-	@ setext -v version="`cat .version`" help.etx nedit.html
+	@ ./setext -v version="`cat .version`" help.etx nedit.html
 
-html/nedit.html: help.etx
+html/nedit.html: .version help.etx setext
 	@ echo "Creating NEdit HTML website documentation..."
 	@ if [ ! -d html ]; then mkdir html; fi
 	@ if [ -d html ]; then \
@@ -57,15 +60,15 @@ html/nedit.html: help.etx
 	      echo "** Unable to create html directory to hold NEdit documentation"; \
 	  fi
 
-nedit.doc: help.etx
+nedit.doc: .version help.etx setext
 	@ echo "Creating NEdit plain text documenation..."
-	@ setext -c NEDITDOC -v version="`cat .version`" help.etx nedit.doc
+	@ ./setext -c NEDITDOC -v version="`cat .version`" help.etx nedit.doc
 
-doc: version nedit.doc nedit.html html/nedit.html 
+doc: .version nedit.doc nedit.html html/nedit.html
 
 all: help doc
 
 clean:
 	@ echo "Removing generated NEdit documentation..."
-	@ rm -rf nedit.html html nedit.doc .version
+	@ rm -rf help nedit.html html nedit.doc .version
 
