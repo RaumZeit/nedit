@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.68 2003/11/08 00:15:06 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.69 2003/11/14 23:46:35 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1060,9 +1060,10 @@ static int writeBckVersion(WindowInfo *window)
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
     
-    /* Generate name for old version */ {
+    /* Generate name for old version */
     if ((int)(strlen(fullname) + 5) > (int)MAXPATHLEN)
-    	return bckError(window, "file name too long", window->filename);
+    {
+        return bckError(window, "file name too long", window->filename);
     }
     sprintf(bckname, "%s.bck", fullname);
 
