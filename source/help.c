@@ -4308,8 +4308,8 @@ static Widget createHelpPanel(Widget parent, int topic)
     appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, al, ac);
     AddSmallIcon(appShell);
-    form = XtVaCreateManagedWidget("helpForm", xmFormWidgetClass, appShell, 0);
-    XtVaSetValues(form, XmNshadowThickness, 0, 0);
+    form = XtVaCreateManagedWidget("helpForm", xmFormWidgetClass, appShell, NULL);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     
     btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form,
     	    XmNlabelString, st1=XmStringCreateSimple("Find..."),
@@ -4319,7 +4319,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 3,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 25, 0);
+	    XmNrightPosition, 25, NULL);
     XtAddCallback(btn, XmNactivateCallback, searchHelpCB, appShell);
     XmStringFree(st1);
 
@@ -4331,7 +4331,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 27,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 49, 0);
+	    XmNrightPosition, 49, NULL);
     XtAddCallback(btn, XmNactivateCallback, searchHelpAgainCB, appShell);
     XmStringFree(st1);
 
@@ -4343,7 +4343,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 51,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 73, 0);
+	    XmNrightPosition, 73, NULL);
     XtAddCallback(btn, XmNactivateCallback, printCB, appShell);
     XmStringFree(st1);
 
@@ -4354,7 +4354,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 75,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 97, 0);
+	    XmNrightPosition, 97, NULL);
     XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, appShell);
     XmStringFree(st1);
             
@@ -4366,21 +4366,21 @@ static Widget createHelpPanel(Widget parent, int topic)
 	    XmNleftAttachment, XmATTACH_FORM,
     	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, dismissBtn, 0);
+	    XmNbottomWidget, dismissBtn, NULL);
     hScrollBar = XtVaCreateManagedWidget("hScrollBar",
     	    xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, 
-    	    XmNrepeatDelay, 10, 0);
+    	    XmNrepeatDelay, 10, NULL);
     vScrollBar = XtVaCreateManagedWidget("vScrollBar",
     	    xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL,
-    	    XmNrepeatDelay, 10, 0);
+    	    XmNrepeatDelay, 10, NULL);
     HelpTextPanes[topic] = XtVaCreateManagedWidget("helpText",
 	    textWidgetClass, sw, textNrows, 30, textNcolumns, 60,
     	    textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar,
 	    textNreadOnly, True, textNcontinuousWrap, True,
-	    textNautoShowInsertPos, True, 0);
+	    textNautoShowInsertPos, True, NULL);
     XtVaSetValues(sw, XmNworkWindow, HelpTextPanes[topic],
 	    XmNhorizontalScrollBar, hScrollBar,
-    	    XmNverticalScrollBar, vScrollBar, 0);
+    	    XmNverticalScrollBar, vScrollBar, NULL);
     BufSetAll(TextGetBuffer(HelpTextPanes[topic]), HelpText[topic]);
     
     /* This shouldn't be necessary (what's wrong in text.c?) */
@@ -4390,8 +4390,8 @@ static Widget createHelpPanel(Widget parent, int topic)
     AddDialogMnemonicHandler(form);
     
     /* Set the default button */
-    XtVaSetValues(form, XmNdefaultButton, dismissBtn, 0);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, 0);
+    XtVaSetValues(form, XmNdefaultButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* realize all of the widgets in the new window */
     RealizeWithoutForcingPosition(appShell);
@@ -4487,7 +4487,7 @@ static void searchHelpText(Widget parent, int parentTopic, char *searchFor,
     /* If the appropriate window is already up, bring it to the top, if not,
        make the parent window become this topic */
     if (HelpWindows[topic] == NULL) {
-	XtVaSetValues(HelpWindows[parentTopic], XmNtitle, HelpTitles[topic], 0);
+	XtVaSetValues(HelpWindows[parentTopic], XmNtitle, HelpTitles[topic], NULL);
 	BufSetAll(TextGetBuffer(HelpTextPanes[parentTopic]), HelpText[topic]);
 	HelpWindows[topic] = HelpWindows[parentTopic];
 	HelpTextPanes[topic] = HelpTextPanes[parentTopic];

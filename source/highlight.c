@@ -1515,7 +1515,7 @@ static Pixel allocColor(Widget w, char *colorName)
     Pixel foreground;
 
     /* Allocate and return the color cell, or print an error and fall through */
-    XtVaGetValues(w, XtNcolormap, &cMap, 0);
+    XtVaGetValues(w, XtNcolormap, &cMap, NULL);
     if (XParseColor(display, cMap,  colorName, &colorDef)) {
 	if (XAllocColor(display, cMap, &colorDef))
 	    return colorDef.pixel;
@@ -1525,7 +1525,7 @@ static Pixel allocColor(Widget w, char *colorName)
 	fprintf(stderr, "NEdit: Color name %s not in database\n",  colorName);
 
     /* Color cell couldn't be allocated, return the widget's foreground color */
-    XtVaGetValues(w, XmNforeground, &foreground, 0);
+    XtVaGetValues(w, XmNforeground, &foreground, NULL);
     return foreground;
 }
 
@@ -1783,12 +1783,12 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
     	
     /* Decompose the window height into the part devoted to displaying
        text (textHeight) and the non-text part (boderHeight) */
-    XtVaGetValues(window->shell, XmNheight, &windowHeight, 0);
+    XtVaGetValues(window->shell, XmNheight, &windowHeight, NULL);
     XtVaGetValues(window->textArea, XmNheight, &textAreaHeight,
-    	    textNmarginHeight, &marginHeight, 0);
+    	    textNmarginHeight, &marginHeight, NULL);
     textHeight = textAreaHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
-    	XtVaGetValues(window->textPanes[i], XmNheight, &textAreaHeight, 0);
+    	XtVaGetValues(window->textPanes[i], XmNheight, &textAreaHeight, NULL);
     	textHeight += textAreaHeight - 2*marginHeight;
     }
     borderHeight = windowHeight - textHeight;
@@ -1801,10 +1801,10 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
        requests.  Our height increment is probably wrong because it is still
        set for the previous font.  Set the new height in advance, before
        attempting to resize. */
-    XtVaSetValues(window->shell, XmNheightInc, getFontHeight(window), 0);
+    XtVaSetValues(window->shell, XmNheightInc, getFontHeight(window), NULL);
     
     /* Re-size the window */
-    XtVaSetValues(window->shell, XmNheight, newWindowHeight, 0);
+    XtVaSetValues(window->shell, XmNheight, newWindowHeight, NULL);
 }
 
 /*

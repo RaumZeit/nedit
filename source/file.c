@@ -1139,16 +1139,16 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XmStringFree(s1);
     XmStringFree(s2);
     formatForm = XtVaCreateManagedWidget("formatBtns", xmFormWidgetClass,
-	    fileSB, 0);
+	    fileSB, NULL);
     formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
 	    formatForm,
 	    XmNradioBehavior, XmONE_OF_MANY,
 	    XmNorientation, XmHORIZONTAL,
 	    XmNpacking, XmPACK_TIGHT,
 	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNleftAttachment, XmATTACH_FORM, 0);
+	    XmNleftAttachment, XmATTACH_FORM, NULL);
     XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
-	    XmNlabelString, s1=XmStringCreateSimple("Format:"), 0);
+	    XmNlabelString, s1=XmStringCreateSimple("Format:"), NULL);
     XmStringFree(s1);
     unixFormat = XtVaCreateManagedWidget("unixFormat",
 	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
@@ -1156,7 +1156,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 	    XmNset, *fileFormat == UNIX_FILE_FORMAT,
 	    XmNuserData, UNIX_FILE_FORMAT,
     	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'U', 0);
+	    XmNmnemonic, 'U', NULL);
     XmStringFree(s1);
     XtAddCallback(unixFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1166,7 +1166,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 	    XmNset, *fileFormat == DOS_FILE_FORMAT,
 	    XmNuserData, DOS_FILE_FORMAT,
     	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'D', 0);
+	    XmNmnemonic, 'D', NULL);
     XmStringFree(s1);
     XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1176,7 +1176,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 	    XmNset, *fileFormat == MAC_FILE_FORMAT,
 	    XmNuserData, MAC_FILE_FORMAT,
     	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'M', 0);
+	    XmNmnemonic, 'M', NULL);
     XmStringFree(s1);
     XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1188,7 +1188,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 		XmNmnemonic, 'A',
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, formatBtns,
-		XmNleftAttachment, XmATTACH_FORM, 0);
+		XmNleftAttachment, XmATTACH_FORM, NULL);
 	XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB,
     	    	addWrap);
 	XmStringFree(s1);
@@ -1196,17 +1196,17 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     *addWrap = False;
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
     	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
     	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), 0);
+    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
     	    XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), 0);
+    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), NULL);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
     	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
     	    prompt[strspn(prompt, "lFD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), 0);
+    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), NULL);
     AddDialogMnemonicHandler(fileSB);
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
@@ -1389,7 +1389,7 @@ void removeVersionNumber(char *fileName)
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w))
-	XtVaGetValues(w, XmNuserData, clientData, 0);
+	XtVaGetValues(w, XmNuserData, clientData, NULL);
 }
 
 /*
