@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.48 2003/05/19 21:55:42 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.49 2003/05/22 22:00:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -709,7 +709,7 @@ static char *DefaultPatternSets[] = {
 	String escape chars 1d:\"\\\\(?:\\n|\\\\|'|\"\"|a|b|f|n|r|t|v|[0-7]{1,3}|x[\\da-fA-F]{2}|u[\\da-fA-F]{4}|U[\\da-fA-F]{8})\":::String1:String1d:\n\
 	Representation:\"`\":\"`\":\"$\":String2::\n\
 	Representation cont:\"\\\\\\n\":::String2:Representation:\n\
-	Number:\"(?<!\\w)(?:(?:(?:[1-9]\\d*|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[jJ]?|(?:[1-9]\\d*|0)[jJ]|(?:0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)(?!\\w)\":::Numeric Const::\n\
+	Number:\"(?<!\\Y)(?:(?:(?:[1-9]\\d*|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[eE][\\-+]?\\d+|(?:[1-9]\\d*|0)?\\.\\d+|(?:[1-9]\\d*|0)\\.)[jJ]?|(?:[1-9]\\d*|0)[jJ]|(?:0|[1-9]\\d*|0[0-7]+|0[xX][\\da-fA-F]+)[lL]?)(?!\\Y)\":::Numeric Const::\n\
 	Import:\"<(?:import|from)>\":\";|$\":\"#\":Preprocessor::\n\
 	Import continuation:\"\\\\\\n\":::Preprocessor:Import:\n\
 	Member definition:\"<(def)\\s+(?:(__(?:abs|add|and|call|cmp|coerce|complex|contains|del|delattr|delitem|div|divmod|eq|float|floordiv|ge|getattr|getitem|gt|hash|hex|iadd|iand|idiv|ilshift|imod|imul|init|int|invert|ior|ipow|irshift|isub|iter|ixor|le|len|long|lshift|lt|mod|mul|ne|neg|nonzero|oct|or|pos|pow|radd|rand|rdiv|rdivmod|repr|rlshift|rmod|rmul|ror|rpow|rrshift|rshift|rsub|rxor|setattr|setitem|str|sub|truediv|xor)__)|((__(?:bases|class|dict)__)|(__(?:delslice|getslice|setslice)__)|(__(?:members|methods)__))|(and|assert|break|continue|def|del|elif|else|except|exec|finally|for|from|if|import|in|is|not|or|pass|print|raise|return|try|while|yield|class|global|lambda)|([\\l_]\\w*))(?=(?:\\s*(?:\\\\\\n\\s*)?\\(\\s*|\\s*\\(\\s*(?:\\\\?\\n\\s*)?)self>)\":::Plain::\n\
