@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.40 2001/07/24 21:54:45 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.41 2001/07/25 18:37:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -49,6 +49,7 @@ static const char CVSID[] = "$Id: help.c,v 1.40 2001/07/24 21:54:45 tringali Exp
 #include "preferences.h"
 #include "help.h"
 #include "file.h"
+#include <stdio.h>
 
 static const char *const HelpTitles[NUM_TOPICS] = {
 "Version",
@@ -101,9 +102,10 @@ static const char *const HelpTitles[NUM_TOPICS] = {
 static const char *const HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n"
 "\n"
-"    Built on: " COMPILE_OS ", " COMPILE_MACHINE ", " COMPILE_COMPILER "\n"
-"    Built at: " __DATE__ ", " __TIME__ "\n"
-"       Motif: " XmVERSION_STRING "\n"
+"     Built on: %s, %s, %s\n"
+"     Built at: %s, %s\n"
+"   With Motif: %d [%s]\n"
+"Running Motif: %d\n"
 "\n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max \
@@ -4701,7 +4703,24 @@ static Widget createHelpPanel(Widget parent, int topic)
     XtVaSetValues(sw, XmNworkWindow, HelpTextPanes[topic],
 	    XmNhorizontalScrollBar, hScrollBar,
     	    XmNverticalScrollBar, vScrollBar, NULL);
-    BufSetAll(TextGetBuffer(HelpTextPanes[topic]), HelpText[topic]);
+            
+    if (topic == HELP_VERSION)
+    {
+        char* text = XtMalloc(strlen(HelpText[topic]) + 1024);
+
+        sprintf(text, HelpText[topic], 
+                COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+                __DATE__, __TIME__,
+                XmVersion, XmVERSION_STRING,
+                xmUseVersion);
+
+        BufSetAll(TextGetBuffer(HelpTextPanes[topic]), text);
+        XtFree(text);
+    }
+    else
+    {
+        BufSetAll(TextGetBuffer(HelpTextPanes[topic]), HelpText[topic]);
+    }
     
     /* This shouldn't be necessary (what's wrong in text.c?) */
     HandleXSelections(HelpTextPanes[topic]);
