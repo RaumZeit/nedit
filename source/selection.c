@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.22 2002/09/11 18:59:49 arnef Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.23 2002/12/12 17:26:05 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -88,7 +88,7 @@ static void maintainPosition(int *position, int modPos, int nInserted,
 ** Set the line and/or column number to -1 if not specified, and return -1 if
 ** both line and column numbers are not specified.
 */
-int StringToLineAndCol(const char *text, int *lineNum, int *column ) {
+int StringToLineAndCol(const char *text, int *lineNum, int *column) {
     char *endptr;
     long  tempNum;
     int   textLen;
@@ -104,7 +104,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column ) {
 
     /* Find the next digit */
     for ( textLen = strlen( endptr ); textLen > 0; endptr++, textLen-- ) {
-        if ( isdigit((unsigned char) *endptr ) || *endptr == '-' ) {
+        if (isdigit((unsigned char) *endptr ) || *endptr == '-' || *endptr == '+') {
             break;
         }
     }
@@ -132,7 +132,7 @@ void GotoLineNumber(WindowInfo *window)
     if (response == 2)
     	return;
 
-    if ( StringToLineAndCol( lineNumText, &lineNum, &column ) == -1 ) {
+    if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -188,7 +188,8 @@ char *GetAnySelection(WindowInfo *window)
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     	Atom *type, char *value, int *length, int *format)
 {
-    char lineText[21];
+     /* two integers and some space in between */
+    char lineText[(TYPE_INT_STR_SIZE(int) * 2) + 5];
     int rc, lineNum, column, position, curCol;
     
     /* skip if we can't get the selection data, or it's obviously not a number */
@@ -196,7 +197,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     	XBell(TheDisplay, 0);
 	return;
     }
-    if (*length > 20) {
+    if (*length > sizeof(lineText) - 1) {
     	XBell(TheDisplay, 0);
 	XtFree(value);
 	return;
@@ -208,10 +209,10 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
 	XtFree(value);
 	return;
     }
-    strncpy(lineText, value, *length);
-    lineText[*length] = '\0';
+    strncpy(lineText, value, sizeof(lineText));
+    lineText[sizeof(lineText) - 1] = '\0';
     
-    rc = StringToLineAndCol( lineText, &lineNum, &column );
+    rc = StringToLineAndCol(lineText, &lineNum, &column);
     XtFree(value);
     if (rc == -1) {
     	XBell(TheDisplay, 0);
@@ -221,15 +222,14 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     /* User specified column, but not line number */
     if ( lineNum == -1 ) {
         position = TextGetCursorPos(widget);
-        if (TextPosToLineAndCol(widget, position, &lineNum,
-                                 &curCol) == False) {
+        if (TextPosToLineAndCol(widget, position, &lineNum, &curCol) == False) {
             XBell(TheDisplay, 0);
             return;
         }
     }
     /* User didn't specify a column */
     else if ( column == -1 ) {
-    SelectNumberedLine(window, lineNum);
+        SelectNumberedLine(window, lineNum);
         return;
     }
 
