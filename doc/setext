@@ -96,8 +96,8 @@ use English;
 
 sub emit_version
 {
-    my $version = "1.5";
-    my $date    = "Nov 13, 2001";
+    my $version = "1.6";
+    my $date    = "Feb 14, 2002";
     
     print "$pgm: Version $version, $date.\n";
     exit 0;
@@ -1388,6 +1388,17 @@ sub html_finishing {
     my $unt;
     s/\&/\&\#38\;/go; s/\</\&\#60\;/go; s/\>/\&\#62\;/go;
     s/$lt/</go; s/$gt/>/go; s/$amp/\&/go;   # convert markers to real symbols
+
+    #-----------------------------------------------
+    # This fixes the case where an untouchable 
+    # string includes these special html characters.
+    #-----------------------------------------------
+    foreach $element ( @untouchable )
+    {
+        $element =~ s/\&/\&\#38\;/go;
+        $element =~ s/\</\&\#60\;/go;
+        $element =~ s/\>/\&\#62\;/go;
+    }
     recover_extractions();
     $_;
 }
@@ -1834,6 +1845,12 @@ sub help_finishing
     recover_extractions();
     fix_target_tt();
     
+    #-------------------------------------------
+    # Apply any initial style change introduced.
+    #-------------------------------------------
+    $_ = $newLeadStyle . $_;
+    $newLeadStyle = "";
+
     #----------------------------------------------------------------
     # Add newline element to all lines which are not being currently
     # formatted into a flowing paragraph. It is done here because the
@@ -2063,7 +2080,7 @@ sub help_proportional_styles
             $crntStyle eq "header" ) {
 
         $crntStyle = "_$crntStyle";
-        $_ = $styleMark . get_style_name( $crntStyle ) . $_;
+        $newLeadStyle = $styleMark . get_style_name( $crntStyle );
     }
 }
 
@@ -2924,4 +2941,3 @@ Menu and Help directives.
 .. Help: Tabs Dialog                        # tabs_dialog
 
 =cut
-
