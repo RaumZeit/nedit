@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.82 2002/08/10 23:43:28 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.83 2002/08/21 13:21:16 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -503,7 +503,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 
     btn = XtVaCreateManagedWidget("print", xmPushButtonWidgetClass, form,
     	    XmNlabelString, st1=XmStringCreateSimple("Print..."),
-    	    XmNmnemonic, 'r',
+    	    XmNmnemonic, 'P',
    	    XmNbottomAttachment, XmATTACH_FORM,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 51,
@@ -561,62 +561,13 @@ static Widget createHelpPanel(Widget parent, int topic)
 
     btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form,
     	    XmNlabelString, st1=XmStringCreateSimple("Forward"),
-      	    XmNmnemonic, 'o', 
+      	    XmNmnemonic, 'w', 
     	    XmNbottomAttachment, XmATTACH_WIDGET,
       	    XmNbottomWidget, dismissBtn,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 27,
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, 49, NULL);
-    XtAddCallback(btnFW, XmNactivateCallback, fwHistoryCB, appShell);
-    XmStringFree(st1);
-
-    /* Create the next row of buttons (for navigation) */
-    btn = XtVaCreateManagedWidget("prevTopic", xmPushButtonWidgetClass, 
-      	    form, XmNlabelString, st1=XmStringCreateSimple("Prev. Topic"),
-    	    XmNmnemonic, 'P', 
-    	    XmNbottomAttachment, XmATTACH_WIDGET,
-      	    XmNbottomWidget, dismissBtn,
-	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, 3,
-	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 25, NULL);
-    XtAddCallback(btn, XmNactivateCallback, prevTopicCB, appShell);
-    XmStringFree(st1);
-
-    btn = XtVaCreateManagedWidget("nextTopic", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, st1=XmStringCreateSimple("Next Topic"),
-    	    XmNmnemonic, 'N', 
-    	    XmNbottomAttachment, XmATTACH_WIDGET,
-      	    XmNbottomWidget, dismissBtn,
-	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, 27,
-	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 49, NULL);
-    XtAddCallback(btn, XmNactivateCallback, nextTopicCB, appShell);
-    XmStringFree(st1);
-
-    btn = XtVaCreateManagedWidget("histBack", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, st1=XmStringCreateSimple("Backw. Hist."),
-    	    XmNmnemonic, 'B', 
-    	    XmNbottomAttachment, XmATTACH_WIDGET,
-      	    XmNbottomWidget, dismissBtn,
-	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, 51,
-	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 73, NULL);
-    XtAddCallback(btn, XmNactivateCallback, bwHistoryCB, appShell);
-    XmStringFree(st1);
-
-    btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, st1=XmStringCreateSimple("Forw. Hist."),
-      	    XmNmnemonic, 'H', 
-    	    XmNbottomAttachment, XmATTACH_WIDGET,
-      	    XmNbottomWidget, dismissBtn,
-	    XmNleftAttachment, XmATTACH_POSITION,
-	    XmNleftPosition, 75,
-	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 97, NULL);
     XtAddCallback(btnFW, XmNactivateCallback, fwHistoryCB, appShell);
     XmStringFree(st1);
     
