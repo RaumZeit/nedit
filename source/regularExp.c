@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.20 2002/11/19 18:05:51 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.21 2003/01/14 09:50:11 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -3171,7 +3171,8 @@ static int match (unsigned char *prog, int *branch_index_param) {
          case NOT_WORD_CHAR:/* \W (NOT a word character) */
             if (isalnum ((int) *Reg_Input) ||
                 *Reg_Input == '_' ||
-                *Reg_Input == '\n') return (0);
+                *Reg_Input == '\n' ||
+                *Reg_Input == '\0') return (0);
 
             Reg_Input++; break;
 
@@ -3191,7 +3192,9 @@ static int match (unsigned char *prog, int *branch_index_param) {
             Reg_Input++; break;
 
          case NOT_DIGIT: /* \D, same as [^0123456789] */
-            if (isdigit ((int) *Reg_Input) || *Reg_Input == '\n') return (0);
+            if (isdigit ((int) *Reg_Input) || 
+                *Reg_Input == '\n' ||
+                *Reg_Input == '\0') return (0);
 
             Reg_Input++; break;
 
@@ -3201,7 +3204,9 @@ static int match (unsigned char *prog, int *branch_index_param) {
             Reg_Input++; break;
 
          case NOT_LETTER: /* \L, same as [^0123456789] */
-            if (isalpha ((int) *Reg_Input) || *Reg_Input == '\n') return (0);
+            if (isalpha ((int) *Reg_Input) || 
+                *Reg_Input == '\n' ||
+                *Reg_Input == '\0') return (0);
 
             Reg_Input++; break;
 
@@ -3216,12 +3221,13 @@ static int match (unsigned char *prog, int *branch_index_param) {
             Reg_Input++; break;
 
          case NOT_SPACE: /* \S, same as [^\n \t\r\f\v] */
-            if (isspace ((int) *Reg_Input)) return (0);
+            if (isspace ((int) *Reg_Input) || *Reg_Input == '\0') return (0);
 
             Reg_Input++; break;
 
          case NOT_SPACE_NL: /* \S, same as [^ \t\r\f\v] */
-            if (isspace ((int) *Reg_Input) && *Reg_Input != '\n') return (0);
+            if ((isspace ((int) *Reg_Input) && *Reg_Input != '\n') ||
+                *Reg_Input == '\0') return (0);
 
             Reg_Input++; break;
 
