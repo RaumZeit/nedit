@@ -2,8 +2,6 @@
 *                                                                              *
 * help.h --  Nirvana Editor help display                                       *
 *                                                                              *
-                 Generated on Dec 9, 2001 (Do NOT edit!)
-                 Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2001 Mark Edel                                            *
 *                                                                              *
@@ -28,59 +26,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#define MAX_HEADING   6
-#define STL_HD        16+1
-#define STL_LINK      16
-#define STL_NM_HEADER 'R'
-#define STL_NM_LINK   'Q'
-#define STYLE_MARKER  '\01'
-#define STYLE_PLAIN   'A'
-#define TKN_LIST_SIZE 4
+#include "help_topic.h"
 
-enum HelpTopic {
-    HELP_START,
-    HELP_SELECT,
-    HELP_SEARCH,
-    HELP_CLIPBOARD,
-    HELP_MOUSE,
-    HELP_KEYBOARD,
-    HELP_FILL,
-    HELP_FORMAT,
-    HELP_PROGRAMMER,
-    HELP_TABS,
-    HELP_INDENT,
-    HELP_SYNTAX,
-    HELP_TAGS,
-    HELP_BASICSYNTAX,
-    HELP_ESCAPESEQUENCES,
-    HELP_PARENCONSTRUCTS,
-    HELP_ADVANCEDTOPICS,
-    HELP_EXAMPLES,
-    HELP_SHELL,
-    HELP_LEARN,
-    HELP_MACRO_LANG,
-    HELP_MACRO_SUBRS,
-    HELP_ACTIONS,
-    HELP_CUSTOMIZE,
-    HELP_PREFERENCES,
-    HELP_RESOURCES,
-    HELP_BINDING,
-    HELP_PATTERNS,
-    HELP_SMART_INDENT,
-    HELP_COMMAND_LINE,
-    HELP_SERVER,
-    HELP_RECOVERY,
-    HELP_VERSION,
-    HELP_DISTRIBUTION,
-    HELP_MAILING_LIST,
-    HELP_DEFECTS,
-    HELP_TABS_DIALOG,
-    HELP_CUSTOM_TITLE_DIALOG,
-    HELP_LAST_ENTRY,
-    HELP_none = 0x7fffffff  /* Illegal topic */ 
-};
-
-#define NUM_TOPICS HELP_LAST_ENTRY
+/*============================================================================*/
+/*                          VARIABLE TYPE DEFINITIONS                         */
+/*============================================================================*/
 
 typedef struct HelpMenu         /* Maintains help menu structure */
 {
@@ -104,11 +54,18 @@ typedef struct Href             /* Source to topic internal hyperlinks */
 
 } Href;
 
+/*============================================================================*/
+/*                             VARIABLE DECLARATIONS                          */
+/*============================================================================*/
+
 extern HelpMenu H_M[];
 extern char *HelpTitles[];
 extern const char linkdate[];
 extern const char linktime[];
 
-void Help(Widget parent, enum HelpTopic topic);
+/*============================================================================*/
+/*                             PROGRAM PROTOTYPES                             */
+/*============================================================================*/
 
+void Help(Widget parent, enum HelpTopic topic);
 void PrintVersion(void);
