@@ -1,4 +1,5 @@
 #
+# $Id: Makefile.superux,v 1.2 2001/06/09 18:48:44 amai Exp $
 # NEdit Makefile for NEC SUPER-UX
 #
 # CC=/bin/cc
