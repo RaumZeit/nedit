@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.18 2001/09/06 09:37:54 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.19 2001/09/21 09:58:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -66,7 +66,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.18 2001/09/06 09:37:54 amai Exp $";
  
 enum searchDirection {FORWARD, BACKWARD};
 
-static int loadTagsFile(char *tagSpec, int index);
+static int loadTagsFile(const char *tagSpec, int index);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file,
@@ -76,7 +76,8 @@ static int fakeRegExSearch(WindowInfo *window, char *searchString,
 static unsigned hashAddr(const char *key);
 static int addTag(const char *name, const char *file, const char *search,
                   const  char *path, int index);
-static int delTag(const char *name, const char *file, const char *search, int index);
+static int delTag(const char *name, const char *file, const char *search,
+                  int index);
 static tag *getTag(const char *name);
 static void findAllDialogAP(Widget dialogParent, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
@@ -98,6 +99,7 @@ static const char *rcs_strdup(const char *str);
 static void rcs_free(const char *str);
 
 tagFile *TagsFileList = NULL;       /* list of loaded tags files */
+
 
 /*	Compute hash address from a string key */
 static unsigned hashAddr(const char *key)
@@ -186,7 +188,8 @@ static int addTag(const char *name, const char *file, const char *search,
  *  Search is limited to valid matches of 'name','file', 'search', and 'index'.
  *  EX: delete all tags matching index 2 ==> delTag(tagname,NULL,NULL,2);
  */
-static int delTag(const char *name, const char *file, const char *search,int index)
+static int delTag(const char *name, const char *file, const char *search,
+                  int index)
 {
     tag *t, *last;
     int start,finish,i,del=0;
@@ -227,34 +230,37 @@ static int tagFileIndex = 0;
 ** (not starting with [/~]) and extend tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
-int AddRelTagsFile(char *tagSpec, const char *windowPath) 
+int AddRelTagsFile(const char *tagSpec, const char *windowPath) 
 {
     tagFile *t;
     int added=0;
     struct stat statbuf;
     char *filename;
-    char tBuf[MAXPATHLEN];
     char pathName[MAXPATHLEN];
+    char *tmptagSpec;
 
-    tagSpec = strcpy(tBuf,tagSpec);
-    for (filename = strtok(tagSpec,":"); filename; filename = strtok(NULL,":")){
+    tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
+    strcpy(tmptagSpec, tagSpec);
+    for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(NULL, ":")){
       	if (*filename == '/' || *filename == '~')
 	    continue;
-	if(windowPath && *windowPath) 
+	if (windowPath && *windowPath) {
 	    strcpy(pathName, windowPath);
-	else 
+	}
+	else {
 	    strcpy(pathName, GetCurrentDir());
-	strcat(pathName,"/");
-	strcat(pathName,filename);
+	 }   
+	strcat(pathName, "/");
+	strcat(pathName, filename);
 	NormalizePathname(pathName);
       	CompressPathname(pathName);
 
-	for (t = TagsFileList; t && strcmp(t->filename,pathName); t = t->next);
+	for (t = TagsFileList; t && strcmp(t->filename, pathName); t = t->next);
 	if (t) {
 	    added=1;
 	    continue;
 	}
-	if (stat(pathName,&statbuf) != 0)
+	if (stat(pathName, &statbuf) != 0)
 	    continue;
 	t = (tagFile *) malloc(sizeof(tag));
 	t->filename = STRSAVE(pathName);
@@ -265,30 +271,34 @@ int AddRelTagsFile(char *tagSpec, const char *windowPath)
 	TagsFileList = t;
 	added=1;
     }
+    free(tmptagSpec);
     if (added)
 	return TRUE;
-    return FALSE;
+    else
+        return FALSE;
 } 
 
 /*  AddTagsFile():  Add a file spec to the list of tag files to manage
  */
-int AddTagsFile(char *tagSpec)
+int AddTagsFile(const char *tagSpec)
 {
     tagFile *t;
     int added=0;
     struct stat statbuf;
     char *filename;
-    char tBuf[MAXPATHLEN];
     char pathName[MAXPATHLEN];
+    char *tmptagSpec;
 
-    tagSpec = strcpy(tBuf,tagSpec);
-    for (filename = strtok(tagSpec,":"); filename; filename = strtok(NULL,":")) {
+    tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
+    strcpy(tmptagSpec, tagSpec);
+    for (filename = strtok(tmptagSpec,":"); filename; filename = strtok(NULL,":")) {
 	if (*filename != '/') {
           strcpy(pathName, GetCurrentDir());
 	    strcat(pathName,"/");
 	    strcat(pathName,filename);
-	} else
+	} else {
 	    strcpy(pathName,filename);
+	}
 	NormalizePathname(pathName);
       	CompressPathname(pathName);
 
@@ -308,18 +318,20 @@ int AddTagsFile(char *tagSpec)
 	TagsFileList = t;
 	added=1;
     }
+    free(tmptagSpec);
     if (added)
 	return TRUE;
-    return FALSE;
+    else
+       return FALSE;
 }
 
 /*	Un-manage a tags file */
-int DeleteTagsFile(char *filename)
+int DeleteTagsFile(const char *filename)
 {   
     tagFile *t, *last;
 
     for (last=NULL,t = TagsFileList; t; last = t,t = t->next) {
-	if (strcmp(t->filename,filename))
+	if (strcmp(t->filename, filename))
 	    continue;
 	if (t->loaded)
 	    delTag(NULL,NULL,NULL,t->index);
@@ -334,13 +346,13 @@ int DeleteTagsFile(char *filename)
 }
 
 /*	Load the tags file into the hash table */
-static int loadTagsFile(char *tagSpec, int index)
+static int loadTagsFile(const char *tagSpec, int index)
 {
     FILE *fp = NULL;
-    char line[MAXLINE], name[MAXLINE], file[MAXPATHLEN], searchString[MAXLINE];
-    char unused[MAXPATHLEN], tmpPath[MAXPATHLEN];
+    char line[MAXLINE], name[MAXLINE], searchString[MAXLINE];
+    char file[MAXPATHLEN], unused[MAXPATHLEN], tmpPath[MAXPATHLEN];
     char *filename;
-    char *tagPath=NULL;
+    char *tagPath=tmpPath;
     char *tmpTagSpec;
     int nRead;
     WindowInfo *w;
@@ -357,13 +369,11 @@ static int loadTagsFile(char *tagSpec, int index)
     for (filename = strtok(tmpTagSpec,":"); filename; filename = strtok(NULL,":")) {
 
 	/* Open the file */
-	if ((fp = fopen(filename, "r")) == NULL) continue;
+	if ((fp = fopen(filename, "r")) == NULL) {
+	   continue;
+	}
 
-	/* BUG?  tagPath is shared between tags.  I don't think it
-	   gets deallocated when the file is unloaded */
-	ParseFilename(filename, unused, tmpPath);
-	tagPath = (char *)malloc(strlen(tmpPath)+1);
-	strcpy(tagPath, tmpPath);
+	ParseFilename(filename, unused, tagPath);
 	
 	/* Read the file and store its contents */
 	while (fgets(line, MAXLINE, fp)) {
@@ -372,13 +382,15 @@ static int loadTagsFile(char *tagSpec, int index)
 		continue;
 	    if ( *name == '!' )
 		continue;
-	    addTag(name,file,searchString,tagPath,index);
+	    addTag(name, file, searchString, tagPath, index);
 	}
 	fclose(fp);
     }
     free(tmpTagSpec);
-    if (tagPath == NULL) return FALSE;
-    
+    if (tagPath == NULL) {
+       /* Nothing read in?! */
+       return FALSE;
+    }
     /* Undim the "Find Definition" and "Clear All Tags Data" menu item in the existing windows */
     for (w=WindowList; w!=NULL; w=w->next) {
 	XtSetSensitive(w->findDefItem, TRUE);
