@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.3RC1, March 2002
+          Release Notes for NEdit Version 5.4beta, May 2003
 
 
-$Id: ReleaseNotes,v 1.18 2003/05/12 09:38:22 edg Exp $
+$Id: ReleaseNotes,v 1.19 2003/05/12 11:16:05 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -25,11 +25,13 @@ New Features in 5.4
 
   - Full mouse wheel support (SF patch #715941)
 
-  - Look-behind matching for Regular Expressions (SF patch #530308)
+  - Look-behind matching for regular expressions (SF patch #530308)
 
-  - Regular Expression and Syntax Highlighting speed-ups
+  - Regular expression and syntax highlighting speed-ups
 
   - Flexible resource file location (SF patch #484674)
+    See the section "Upgrading from 5.3 to 5.4" of the README file for 
+    more information.
 
   - Color dialog (SF patch #595330)
 
@@ -47,6 +49,11 @@ New Features in 5.4
 
 Bugs Fixed in 5.4
 
+  - Unconvential word boundary semantics for regular expressions have
+    been corrected (including affected syntax highlighting patterns). 
+    See the section "Upgrading from 5.3 to 5.4" of the README file for 
+    important information.
+    
   - Config files didn't accept non-Unix file format (SF bug #411092)
 
   - Removed regex search bugs (SF bug #429110, #515120)

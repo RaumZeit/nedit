@@ -1,6 +1,6 @@
-                    NEdit Version 5.3,  March 2002
+                    NEdit Version 5.4beta,  May 2003
 
-$Id: README,v 1.30 2002/09/26 10:22:38 ajhood Exp $
+$Id: README,v 1.31 2003/05/12 11:16:05 edg Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -42,22 +42,28 @@ John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou,
 Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.
 
 
-VERSION 5.3
+VERSION 5.4
 
-Version 5.3 is mainly a bug fix release but also offers some new features.
+Version 5.4 offers several new features:
 
-The most significant enhancements in this release are:
+  - Calltips
+  - Rangesets
+  - Backlighting
+  - Highlighting information macros
+  - Full mouse wheel support
+  - Look-behind matching for regular expressions
+  - Regular expression and syntax highlighting speed-ups
+  - Flexible resource file location
+  - Color dialog
+  - Option to auto-hide mouse pointer while typing
+  - Option to keep cursor away from top and bottom of the screen
+  - Check for real changes of externally modified files
+  - Synchronized interaction between nc and nedit
+  - Several smaller improvements on usability and speed
+  - Several smaller improvements to the macro language
 
- - A revamped Help system with hyperlinked cross-references.
- - Enhanced support for Exuberant ctags.
- - Goto Line also accepts Column numbers.
- - Automatic line-feed termination when saving is now optional.
- - A customizable window title.
- - Optional syntax based parenthesis matching (iso. purely character based).
- 
-There are also several smaller improvements and bug fixes, see the
-ReleaseNotes file for more details.
-
+For a more detailed description of these new features and a list of 
+important bug fixes, see the ReleaseNotes file for more details.
 
 BUILDING NEDIT
 
@@ -348,6 +354,81 @@ Preferences->Syntax Highlighting->Recognition Patterns menu, though.
 
 Next, some version specific upgrading issues are listed. Note that 
 non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
+
+* Upgrading from 5.3 to 5.4
+
+  - New location of configuration files
+  
+    The default location and name of NEdit's resource files has been changed.
+    The most important change is the fact that they can now be stored in a
+    custom directory, defined by the NEDIT_HOME environment variable. If the
+    variable is not set, the directory defaults to ~/.nedit.
+    The files have been renamed as follows:
+    
+       ~/.nedit        -> $NEDIT_HOME/nedit.rc
+       ~/.neditmacro   -> $NEDIT_HOME/autoload.nm
+       ~/.neditdb      -> $NEDIT_HOME/nedit.history
+       
+    For backward compatibility reasons, NEdit continues to use the old 
+    convention when these files are already present. No attempt is made
+    to force the user to adopt the new convention. 
+    Users that would like to migrate to the new setup can do so manually 
+    by moving and renaming the files.
+    
+  - Changed regular expression word boundary semantics and its effect
+    on the syntax highlighting patterns.
+  
+    During the 5.4 development cycle, it was noted that the implementation 
+    of NEdit's regular expression word boundary matching was rather
+    unconventional. More in particular, the '<', '>', and '\B' patterns
+    interpreted the boundary between any two characters of which at least
+    one was not a word character as a word boundary. A striking effect of this
+    was that the boundary between two spaces was considered to be a word
+    boundary, which is obviously rather unintuitive. This has been corrected 
+    in 5.4: the boundary between two characters is a word boundary, only if
+    exactly one of them is a word character.
+    Several of the built-in syntax highlighting patterns (implicitly) relied 
+    on the old word boundary interpretation and they have been corrected too.
+    
+    However, if the user has customized some of these buggy built-in
+    highlighting patterns, the automatic upgrading routines will NOT upgrade
+    them in order not to loose any customizations. It is left up to the user
+    to correct his/her customized patterns manually (using the corrected 
+    built-in patterns as a guideline). 
+    The following is a list of all language modes and patterns that have been
+    corrected:
+    
+      Ada:         Based Numeric Literals
+      Awk:         Numeric constant
+      C++:         numeric constant
+      C:           numeric constant
+      CSS:         property, selector pseudo class
+      Java:        decimal const, case numeric const
+      JavaScript:  Numeric
+      Lex:         numeric constant, markers
+      Matlab:      Numeric const
+      NEdit Macro: Built-in Vars, Numeric Const
+      Pascal:      TP Numeric Values:
+      Perl:        dq string, sq string, bq string, subroutine call, 
+                   numerics, re match
+      PostScript:  Number, Operator1
+      Python:      Number
+      SQL:         data types, keywords2
+      Sh Ksh Bash: keywords, built ins 
+      Tcl:         Keywords
+      VHDL:        Numeric Literals
+      Verilog:     Reserved WordsA, Numeric Literals, Delay Word, 
+                   Pins Declaration
+      XML:         element declaration keyword
+      Yacc:        numeric constant, percent keyword, markers
+
+    So, if the user has customized the highlighting definitions for any of 
+    these language modes (not restricted to the listed patterns), (s)he is 
+    strongly advised to restore the default patterns in the syntax 
+    highlighting dialog and to re-apply his/her customizations.
+    
+    Moreover, it is advised to check any custom language modes for potential
+    boundary matching problems as described above.
 
 * Upgrading from 5.2 to 5.3
 
