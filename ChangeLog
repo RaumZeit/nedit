@@ -1,3 +1,96 @@
+2001-09-20 11:13  amai
+
+	* ChangeLog (BETA-5-2.4): Update. Remove info about recent main
+	trunk
+
+2001-09-19 12:11  amai
+
+	* makefiles/: Makefile.linux, Makefile.os2 (BETA-5-2.[1,1]):
+	Document -lXp flag (required when linking against a Motif 2.1
+	compatible libXm)
+
+2001-09-17 14:06  amai
+
+	* source/file.c (1.31), source/regularExp.c (1.11), source/search.h
+	(1.13), util/printUtils.c (1.13): Still minor cleanup. Make
+	compiler/lint even more happy
+
+2001-09-14 15:59  edg
+
+	* source/highlight.c (BETA-5-2.1): Fixes for SF bugs #459965 and
+	#460859 (they are related), including patch #460229.
+
+2001-09-13 14:11  tringali
+
+	* source/preferences.c (BETA-5-2.2): #458807: Automatically add 5.2
+	styles if .nedit file is pre-5.2
+
+2001-09-12 20:14  amai
+
+	* doc/: faq-txt.awk, faq-txt.dtd, faq-txt.xsl, faq.txt, faq.xml,
+	faq.xsl (BETA-5-2.[1,1,1,2,4,1]): Update as sent from Florian
+	Xhumari
+
+2001-09-12 09:45  amai
+
+	* ChangeLog (BETA-5-2.3): I forgot to update this file in this beta
+	branch ...
+
+2001-09-12 09:18  amai
+
+	* makefiles/Makefile.depend (BETA-5-2.1): Add CVS info line to
+	output. Makes life even more simple
+
+2001-09-11 11:24  amai
+
+	* doc/faq.xml (BETA-5-2.3): Add a non-visible CVS stamp and update
+	version/time stamp
+
+2001-09-11 10:17  edg
+
+	* source/search.c (BETA-5-2.1): Fixed a minor button sensitivity
+	bug (Multiple Files... button was grayed out after canceling
+	multi-file replace dialog and modifying search text).
+
+2001-09-10 15:28  amai
+
+	* util/system.h (BETA-5-2.2): Update/add/fix compiler info
+
+2001-09-10 13:42  amai
+
+	* source/help.c (BETA-5-2.5): Update timestamp
+
+2001-09-10 13:41  amai
+
+	* doc/faq.xml (BETA-5-2.2): Some updates WRT LessTif, mostly
+	cosmetics.
+
+2001-09-07 14:16  amai
+
+	* doc/NEdit.ad (BETA-5-2.1): Add a 5.1 app defaults file - needs to
+	be updated probably.  This contains only outcommented entries!
+
+2001-09-07 14:16  amai
+
+	* doc/NEdit.ad (1.1): file NEdit.ad was initially added on branch
+	BETA-5-2.
+
+2001-09-07 07:46  amai
+
+	* doc/nc.man, doc/nedit.doc, source/help.c (BETA-5-2.[1,2,4]): Fix
+	typos as reported on the list
+
+2001-09-07 07:39  amai
+
+	* source/help.c (BETA-5-2.3): Don't call XmRegisterConverters() for
+	Motif 2.1, add declaration for 2.0 and add a "helpful" comment on
+	all that
+
+2001-09-06 09:39  amai
+
+	* ChangeLog (1.9), source/help.c (1.55): ChangeLog update and a new
+	timestamp
+
 2001-09-06 09:37  amai
 
 	* source/: Makefile.dependencies (1.11), file.c (1.30), tags.c
