@@ -1,4 +1,4 @@
-# $Id: nedit.pod,v 1.4 2004/05/04 14:19:20 edg Exp $
+# $Id: nedit.pod,v 1.5 2004/05/11 19:56:00 edg Exp $
 =pod
 
 =head1 NAME
@@ -53,8 +53,8 @@ shell command line without starting a new NEdit session.
 
 =item  B<-do> I<command> 
 
-Execute an NEdit macro or action. On each file following the B<-do> argument on
-the command line. B<-do> is particularly useful from the L<nc(1)> program, where
+Execute an NEdit macro or action on the file following the -do argument on the
+command line. B<-do> is particularly useful from the L<nc(1)> program, where
 `nc -do' can remotely execute commands in an nedit B<-server> session.
 
 =item  B<-tags> I<file> 
