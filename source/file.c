@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.54 2002/09/25 10:56:14 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.55 2003/01/10 15:32:18 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -99,7 +99,7 @@ static void backupFileName(WindowInfo *window, char *name, int len);
 static int writeBckVersion(WindowInfo *window);
 static int bckError(WindowInfo *window, const char *errString, const char *file);
 static int fileWasModifiedExternally(WindowInfo *window);
-static char *errorString(void);
+static const char *errorString(void);
 static void addWrapNewlines(WindowInfo *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1242,7 +1242,6 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XtSetArg(args[n],
             XmNdialogTitle,
             s2 = XmStringCreateSimple(prompt)); n++;
-    XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
     fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
@@ -1535,7 +1534,7 @@ int CheckReadOnly(WindowInfo *window)
 /*
 ** Wrapper for strerror so all the calls don't have to be ifdef'd for VMS.
 */
-static char *errorString(void)
+static const char *errorString(void)
 {
 #ifdef VMS
     return strerror(errno, vaxc$errno);
