@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.21 2001/06/06 10:00:23 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.22 2001/07/24 19:27:07 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1572,7 +1572,7 @@ static void addAccelGrab(Widget topWidget, Widget w)
 static int parseAccelString(const char *string, KeySym *keySym,
 	unsigned int *modifiers)
 {
-#define N_MODIFIERS 12
+#define N_MODIFIERS 11
     /*... Is NumLock always Mod3? */
     static char *modifierNames[N_MODIFIERS] = {"Ctrl", "Shift", "Alt", "Mod2",
 	    "Mod4", "Mod5", "Button1", "Button2", "Button3", "Button4",
