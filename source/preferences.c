@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.109 2004/01/28 01:50:33 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.110 2004/02/03 07:27:58 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -747,7 +747,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"autoSave", "AutoSave", PREF_BOOLEAN, "True",
     	&PrefData.autoSave, NULL, True},
     {"tabbedMode", "TabbedMode", PREF_BOOLEAN, "True",
-    	&PrefData.tabbedMode, NULL, False},
+    	&PrefData.tabbedMode, NULL, True},
     {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False",
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
