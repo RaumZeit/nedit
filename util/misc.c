@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.55 2003/05/16 13:47:28 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.56 2003/06/06 17:06:10 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -71,6 +71,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.55 2003/05/16 13:47:28 tringali Exp
 #include <Xm/Form.h>
 #include <Xm/FileSB.h>
 #include <Xm/ScrolledW.h>
+#include <Xm/PrimitiveP.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -2083,4 +2084,67 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
         for (i=0; i<nLines; i++)
             XtCallActionProc(scrollBar, "IncrementDownOrRight", event, al, 1) ;
     return;
+}
+
+
+/* 
+** This is a disguisting hack to work around a bug in OpenMotif.
+** OpenMotif's toggle button Select() action routine remembers the last radio
+** button that was toggled (stored as global state) and refuses to take any
+** action when that button is clicked again. It fails to detect that we may
+** have changed the button state and that clicking that button could make
+** sense. The result is that radio buttons may apparently get stuck, ie.
+** it is not possible to directly select with the mouse the previously
+** selected button without selection another radio button first.
+** The workaround consist of faking a mouse click on the button that we 
+** toggled by calling the Arm, Select, and Disarm action procedures.
+**
+*/
+void RadioButtonChangeStateNotified(Widget widget, Boolean state)
+{
+   /* 
+      The bug only exists in OpenMotif 2.x. Since it's quite hard to detect
+      OpenMotif reliably, we make a rough cut by excluding Lesstif and all
+      Motif versions < 2.x.
+   */
+#ifndef LESSTIF_VERSION
+#if XmVersion >= 2000
+    if (state)
+    {
+        /* 
+           Simulate a mouse button click.
+           The event attributes that matter are the event type and the 
+           coordinates. When the button is managed, the coordinates have to
+           be inside the button. When the button is not managed, they have to
+           be (0, 0) to make sure that the Select routine accepts the event.
+        */
+        XEvent ev;
+        if (XtIsManaged(widget))
+        {
+            Position x, y;
+            /* Calculate the coordinates in the same way as OM. */
+            XtTranslateCoords(XtParent(widget), widget->core.x, widget->core.y,
+                              &x, &y);
+            ev.xbutton.x_root = x + widget->core.border_width;
+            ev.xbutton.y_root = y + widget->core.border_width;
+        }
+        else
+        {
+            ev.xbutton.x_root = 0;
+            ev.xbutton.y_root = 0;
+        }
+        /* Default button bindings:
+              ~c<Btn1Down>: Arm()
+              ~c<Btn1Up>: Select() Disarm() */
+        ev.xany.type = ButtonPress;
+        XtCallActionProc(widget, "Arm", &ev, NULL, 0);
+        ev.xany.type = ButtonRelease;
+        XtCallActionProc(widget, "Select", &ev, NULL, 0);
+        XtCallActionProc(widget, "Disarm", &ev, NULL, 0);
+    }
+#endif /* XmVersion >= 2000 */
+#endif /* LESSTIF_VERSION */
+    
+    /* This is sufficient on non-OM platforms */
+    XmToggleButtonSetState(widget, state, True);
 }
