@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.18 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.19 2003/01/01 15:57:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -813,6 +813,13 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     RestartData *continuation;
     char *errMsg;
     int stat;
+    
+    /* Beware of recursion: the newline macro may insert a string which
+       triggers the newline macro to be called again and so on. Newline
+       macros shouldn't insert strings, but nedit must not crash either if
+       they do. */
+    if (winData->inNewLineMacro)
+	return;
    
     /* Call newline macro with the position at which to add newline/indent */
     posValue.val.n = cbInfo->pos;
