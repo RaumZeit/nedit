@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.86 2002/11/12 10:04:29 ajhood Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.87 2002/11/13 21:58:24 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -34,8 +34,8 @@ static const char CVSID[] = "$Id: help.c,v 1.86 2002/11/12 10:04:29 ajhood Exp $
 #include "help.h"
 #include "textBuf.h"
 #include "text.h"
-#include "textDisp.h"
 #include "textP.h"
+#include "textDisp.h"
 #include "textSel.h"
 #include "nedit.h"
 #include "search.h"
@@ -178,6 +178,8 @@ static void initNavigationHistory(void);
 
 #ifdef HAVE__XMVERSIONSTRING
 extern char _XmVersionString[];
+#else
+static char _XmVersionString[] = "unknown";
 #endif
 
 /*============================================================================*/
@@ -188,6 +190,15 @@ extern char _XmVersionString[];
 ** Create a string containing information on the build environment.  Returned
 ** string must NOT be freed by caller.
 */
+
+static char *bldInfoString = NULL;
+
+static void freeBuildInfo(void)
+{
+    /* This keeps memory leak detectors happy */
+    XtFree(bldInfoString);
+}
+
 static const char *getBuildInfo(void)
 {
     const char * bldFormat =
@@ -195,19 +206,13 @@ static const char *getBuildInfo(void)
         "     Built on: %s, %s, %s\n"
         "     Built at: %s, %s\n"
         "   With Motif: %d.%d.%d [%s]\n"
-#ifdef HAVE__XMVERSIONSTRING
         "Running Motif: %d.%d [%s]\n"
-#else
-        "Running Motif: %d.%d\n"
-#endif
         "       Server: %s %d\n"
         "       Visual: %s\n"
        ;
     const char * visualClass[] = {"StaticGray",  "GrayScale",
                                   "StaticColor", "PseudoColor",
                                   "TrueColor",   "DirectColor"};
-    static char * bldInfoString=NULL;
-    
     if (bldInfoString==NULL)
     {
         char        visualStr[30]="";
@@ -218,9 +223,11 @@ static const char *getBuildInfo(void)
             Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME,
                                                         APP_CLASS, &visual,
                                                         &depth, &map);
-            sprintf(visualStr,"Id %#lx %s %d bit%s", visual->visualid,
-                    visualClass[visual->class], depth,
-                    usingDefaultVisual ?" (Default)":"");
+            sprintf(visualStr,"%d-bit %s (ID %#lx%s)",
+                    depth,
+                    visualClass[visual->class],
+                    visual->visualid,
+                    usingDefaultVisual ? ", Default" : "");
         }
        bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
        sprintf(bldInfoString, bldFormat,
@@ -230,12 +237,11 @@ static const char *getBuildInfo(void)
             XmVERSION, XmREVISION, XmUPDATE_LEVEL,
             XmVERSION_STRING,
             xmUseVersion/1000, xmUseVersion%1000,
-#ifdef HAVE__XMVERSIONSTRING
             _XmVersionString,
-#endif
             ServerVendor(TheDisplay), VendorRelease(TheDisplay),
-            visualStr
-            );
+            visualStr);
+
+        atexit(freeBuildInfo);
     }
     
     return bldInfoString;
