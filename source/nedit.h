@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.37 2003/04/17 21:46:21 n8gray Exp $ */
+/* $Id: nedit.h,v 1.38 2003/05/18 20:05:43 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -31,6 +31,9 @@
 #define NEDIT_DEFAULT_HI_BG     "red"   /*   matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
+#define NEDIT_DEFAULT_HELP_FG   "black"
+#define NEDIT_DEFAULT_HELP_BG   "rgb:cc/cc/cc"
+
 
 /* Tuning parameters */
 #define SEARCHMAX 511		/* Maximum length of search/replace strings */
