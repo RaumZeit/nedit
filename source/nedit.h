@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.47 2004/02/16 01:02:38 tksoh Exp $ */
+/* $Id: nedit.h,v 1.48 2004/03/02 08:15:12 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -336,8 +336,8 @@ typedef struct _WindowInfo {
     Widget	splitWindowItem;
     Widget	closePaneItem;
     Widget	detachDocumentItem;
-    Widget	attachDocumentItem;
-    Widget	contextAttachDocumentItem;
+    Widget	moveDocumentItem;
+    Widget	contextMoveDocumentItem;
     Widget	contextDetachDocumentItem;
     Widget  	bgMenuUndoItem;
     Widget  	bgMenuRedoItem;

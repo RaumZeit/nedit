@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.92 2004/02/25 02:47:10 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.93 2004/03/02 08:15:06 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -298,7 +298,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void detachDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void attachDocumentDialogAP(Widget w, XEvent *event, String *args,
+static void moveDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void nextDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
@@ -515,7 +515,7 @@ static XtActionsRec Actions[] = {
     {"close_pane", closePaneAP},
     {"detach_document", detachDocumentAP},
     {"detach_document_dialog", detachDocumentDialogAP},
-    {"attach_document_dialog", attachDocumentDialogAP},
+    {"move_document_dialog", moveDocumentDialogAP},
     {"next_document", nextDocumentAP},
     {"previous_document", prevDocumentAP},
     {"last_document", lastDocumentAP},
@@ -938,16 +938,16 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     subSubPane = createMenu(subPane, "tabbedEditMenu", "Tabbed Editing", 0,
     	    &cascade, SHORT);
     window->openInTabDefItem = createMenuToggle(subSubPane, "openAsTab",
-    	    "Open File In New Tab", 'B', openInTabDefCB, window,
+    	    "Open File In New Tab", 'T', openInTabDefCB, window,
 	    GetPrefOpenInTab(), FULL);
     window->tabBarDefItem = createMenuToggle(subSubPane, "showTabBar",
     	    "Show Tab Bar", 'B', tabBarDefCB, window,
 	    GetPrefTabBar(), FULL);
     window->tabBarHideDefItem = createMenuToggle(subSubPane,
-    	    "hideTabBar", "Hide Tab Bar With One Tab", 'H', tabBarHideDefCB,
-	    window, GetPrefTabBarHideOne(), FULL);
+    	    "hideTabBar", "Hide Tab Bar When Only One Document is Open", 'H', 
+	    tabBarHideDefCB, window, GetPrefTabBarHideOne(), FULL);
     window->tabNavigateDefItem = createMenuToggle(subSubPane, "tabNavigateDef",
-    	    "Nagivate Tabs Cross Windows", 'v', tabNavigateDefCB, window,
+    	    "Next/Prev Tabs Across Windows", 'W', tabNavigateDefCB, window,
 	    GetPrefGlobalTabNavigate(), FULL);
     window->toolTipsDefItem = createMenuToggle(subPane, "showTooltips",
     	    "Show Tooltips", 0, toolTipsDefCB, window, GetPrefToolTips(),
@@ -1194,9 +1194,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Detach Tab", 'D', doActionCB, "detach_document", SHORT);
     XtSetSensitive(window->detachDocumentItem, False);
 
-    window->attachDocumentItem = createMenuItem(menuPane, "attachDocument",
-    	    "Attach Tab...", 'A', doActionCB, "attach_document_dialog", SHORT);
-    XtSetSensitive(window->attachDocumentItem, False);
+    window->moveDocumentItem = createMenuItem(menuPane, "attachDocument",
+    	    "Move Tab To...", 'M', doActionCB, "move_document_dialog", SHORT);
+    XtSetSensitive(window->moveDocumentItem, False);
     btn = createMenuSeparator(menuPane, "sep0", SHORT);
     XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
     createMenuItem(menuPane, "nextDocument",
@@ -3435,10 +3435,10 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args,
     DetachDocument(window);
 }
 
-static void attachDocumentDialogAP(Widget w, XEvent *event, String *args,
+static void moveDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
-    AttachDocumentDialog(w);
+    MoveDocumentDialog(WidgetToWindow(w));
 }
 
 static void nextDocumentAP(Widget w, XEvent *event, String *args,
@@ -5188,8 +5188,8 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
     window->contextDetachDocumentItem = createMenuItem(menu, "detach",
             "Detach Tab", 0, doTabActionCB, "detach_document", SHORT);
     XtSetSensitive(window->contextDetachDocumentItem, False);
-    window->contextAttachDocumentItem = createMenuItem(menu, "attach", 
-            "Attach Tab...", 0, doTabActionCB, "attach_document_dialog", SHORT);
+    window->contextMoveDocumentItem = createMenuItem(menu, "attach", 
+            "Move Tab To...", 0, doTabActionCB, "move_document_dialog", SHORT);
     
     return menu;
 }

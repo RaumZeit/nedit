@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.124 2004/02/27 00:53:31 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.125 2004/03/02 08:15:13 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -183,7 +183,7 @@ static Widget containingPane(Widget w);
 
 static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
 static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
-static int DoneWithAttachDocumentDialog;
+static int DoneWithMoveDocumentDialog;
 
 /*
 ** Create a new editor window
@@ -759,8 +759,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     state = NDocuments(window) < NWindows();
     for(win=WindowList; win; win=win->next) {
     	if (IsTopDocument(win)) {
-    	    XtSetSensitive(win->attachDocumentItem, state);
-    	    XtSetSensitive(win->contextAttachDocumentItem, state);
+    	    XtSetSensitive(win->moveDocumentItem, state);
+    	    XtSetSensitive(win->contextMoveDocumentItem, state);
 	}
     }
     
@@ -996,8 +996,8 @@ void CloseWindow(WindowInfo *window)
     state = NDocuments(WindowList) < NWindows();
     for(win=WindowList; win; win=win->next) {
     	if (IsTopDocument(win)) {    
-    	    XtSetSensitive(win->attachDocumentItem, state);
-    	    XtSetSensitive(win->contextAttachDocumentItem, state);
+    	    XtSetSensitive(win->moveDocumentItem, state);
+    	    XtSetSensitive(win->contextMoveDocumentItem, state);
 	}
     }
 
@@ -3710,7 +3710,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
     for (win=WindowList; win; win=win->next)
     	if (win->shell != window->shell)  
 	    break;
-    XtSetSensitive(window->attachDocumentItem, win != NULL);
+    XtSetSensitive(window->moveDocumentItem, win != NULL);
 }
 
 /*
@@ -4119,7 +4119,7 @@ int NDocuments(WindowInfo *window)
 }
 
 /* 
-** refresh window state for this buffer
+** refresh window state for this document
 */
 void RefreshWindowStates(WindowInfo *window)
 {
@@ -4165,7 +4165,7 @@ void RefreshWindowStates(WindowInfo *window)
 }
 
 /*
-** spin off the buffer to a new window
+** spin off the document to a new window
 */
 WindowInfo *DetachDocument(WindowInfo *window)
 {
@@ -4175,7 +4175,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
     if (NDocuments(window) < 2)
     	return NULL;
 
-    /* raise another buffer in the same shell window */
+    /* raise another document in the same shell window */
     win = replacementDocument(window);
     RaiseDocument(win);
     
@@ -4185,23 +4185,23 @@ WindowInfo *DetachDocument(WindowInfo *window)
     dim = strtok(geometry, "+-");
     cloneWin = CreateWindow(window->filename, dim, False);
     
-    /* these settings should follow the detached buffer.
+    /* these settings should follow the detached document.
        must be done before cloning window, else the height 
        of split panes may not come out correctly */
     ShowISearchLine(cloneWin, window->showISearchLine);
     ShowStatsLine(cloneWin, window->showStats);
 
-    /* clone the buffer & its pref settings */
+    /* clone the document & its pref settings */
     cloneDocument(cloneWin, window);
 
-    /* remove the buffer from the old window */
+    /* remove the document from the old window */
     window->fileChanged = False;
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
     /* some menu states might have changed when deleting buffer */
     RefreshWindowStates(win);
     
-    /* this should keep the new buffer window fresh */
+    /* this should keep the new document window fresh */
     RefreshWindowStates(cloneWin);
     RefreshTabState(cloneWin);
 
@@ -4209,16 +4209,16 @@ WindowInfo *DetachDocument(WindowInfo *window)
 }
 
 /*
-** attach (move) a buffer to an other window.
+** Move document to an other window.
 **
-** the attaching buffer will inherit the window settings from
-** its new hosts, i.e. the window size, stats and isearch lines.
+** the moving document will receive certain window settings from
+** its new host, i.e. the window size, stats and isearch lines.
 */
-WindowInfo *AttachDocument(WindowInfo *toWindow, WindowInfo *window)
+WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
 {
     WindowInfo *win, *cloneWin;
 
-    /* raise another buffer in the window of attaching buffer */
+    /* raise another document in the window of attaching buffer */
     for (win = WindowList; win; win = win->next) {
     	if (win->shell == window->shell && window != win)
 	    break;
@@ -4229,62 +4229,59 @@ WindowInfo *AttachDocument(WindowInfo *toWindow, WindowInfo *window)
     else
     	XtUnmapWidget(window->shell);
     
-    /* relocate the buffer to target window */
+    /* relocate the document to target window */
     cloneWin = CreateDocument(toWindow, window->filename, NULL, False);
     ShowTabBar(cloneWin, GetShowTabBar(cloneWin));
     cloneDocument(cloneWin, window);
     
-    /* remove the buffer from the old window */
+    /* remove the document from the old window */
     window->fileChanged = False;
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
-    /* some menu states might have changed when deleting buffer */
+    /* some menu states might have changed when deleting document */
     if (win) {
     	RefreshWindowStates(win);
     }
     
-    /* this should keep the new buffer window fresh */
+    /* this should keep the new document window fresh */
     RaiseDocumentWindow(cloneWin);
     RefreshTabState(cloneWin);
     
     return cloneWin;
 }
 
-static void attachDocumentCB(Widget dialog, WindowInfo *parentWin,
+static void moveDocumentCB(Widget dialog, WindowInfo *window,
 	XtPointer call_data)
 {
     XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *) call_data;
-    DoneWithAttachDocumentDialog = cbs->reason;
+    DoneWithMoveDocumentDialog = cbs->reason;
 }
 
 /*
-** present dialog to selecting target window for attaching
-** buffers. Return immediately if there is only one shell window.
+** present dialog for selecting a target window to move this document
+** into. Do nothing if there is only one shell window opened.
 */
-void AttachDocumentDialog(Widget parent)
+void MoveDocumentDialog(WindowInfo *window)
 {
-    WindowInfo *parentWin = WidgetToWindow(parent);    
-    WindowInfo *win, *attachWin, **shellWinList;
+    WindowInfo *win, *targetWin, **shellWinList;
     int i, nList=0, nWindows=0, ac;
     char tmpStr[MAXPATHLEN+50];
-    Widget dialog, listBox, attachAllOption;
+    Widget parent, dialog, listBox, moveAllOption;
     XmString *list = NULL;
     XmString popupTitle, s1;
     Arg csdargs[20];
     int *position_list, position_count;
     
-    /* create the window list */    
+    /* get the list of available shell windows, not counting
+       the document to be moved */    
     nWindows = NWindows();
     list = (XmStringTable) XtMalloc(nWindows * sizeof(XmString *));
     shellWinList = (WindowInfo **) XtMalloc(nWindows * sizeof(WindowInfo *));
 
     for (win=WindowList; win; win=win->next) {
-	if (win->shell == parentWin->shell)
+	if (!IsTopDocument(win) || win->shell == window->shell)
 	    continue;
 	
-	if (!IsTopDocument(win))
-	    continue;
-	        
 	sprintf(tmpStr, "%s%s",
 		win->filenameSet? win->path : "", win->filename);
 
@@ -4293,27 +4290,33 @@ void AttachDocumentDialog(Widget parent)
 	nList++;
     }
 
+    /* stop here if there's no other window to move to */
     if (!nList) {
     	XtFree((char *)list);
     	return;    
     }
     
-    sprintf(tmpStr, "Attach %s to:", parentWin->filename);
-    popupTitle = XmStringCreateSimple(tmpStr);
+    /* create the dialog */
+    parent = window->shell;
+    popupTitle = XmStringCreateSimple("Move Document");
+    sprintf(tmpStr, "Move %s into window of", window->filename);
+    s1 = XmStringCreateSimple(tmpStr);
     ac = 0;
     XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); ac++;
-    XtSetArg(csdargs[ac], XmNlistLabelString, popupTitle); ac++;
+    XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle); ac++;
+    XtSetArg(csdargs[ac], XmNlistLabelString, s1); ac++;
     XtSetArg(csdargs[ac], XmNlistItems, list); ac++;
     XtSetArg(csdargs[ac], XmNlistItemCount, nList); ac++;
     XtSetArg(csdargs[ac], XmNvisibleItemCount, 12); ac++;
     XtSetArg(csdargs[ac], XmNautoUnmanage, False); ac++;
-    dialog = CreateSelectionDialog(parent,"attachDocument",csdargs,ac);
+    dialog = CreateSelectionDialog(parent,"moveDocument",csdargs,ac);
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));        
-    XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)attachDocumentCB, parentWin);
-    XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)attachDocumentCB, parentWin);
-    XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)attachDocumentCB, parentWin);
+    XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)moveDocumentCB, window);
+    XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)moveDocumentCB, window);
+    XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)moveDocumentCB, window);
+    XmStringFree(s1);
     XmStringFree(popupTitle);
 
     /* free the window list */
@@ -4321,59 +4324,60 @@ void AttachDocumentDialog(Widget parent)
 	XmStringFree(list[i]);
     XtFree((char *)list);    
 
-    /* create the option box for attaching all buffers */    
-    s1 = MKSTRING("Attach all tabs in window");
-    attachAllOption =  XtVaCreateWidget("attachAll", 
+    /* create the option box for moving all documents */    
+    s1 = MKSTRING("Move all documents in this window");
+    moveAllOption =  XtVaCreateWidget("moveAll", 
     	    xmToggleButtonWidgetClass, dialog,
 	    XmNlabelString, s1,
 	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    NULL);
     XmStringFree(s1);
     
-    if (NDocuments(parentWin) >1)
-	XtManageChild(attachAllOption);
+    if (NDocuments(window) >1)
+	XtManageChild(moveAllOption);
 
-    /* only one buffer in the window */
+    /* disable option if only one document in the window */
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
-    s1 = MKSTRING("Attach");
+    s1 = MKSTRING("Move");
     XtVaSetValues (dialog, XmNokLabelString, s1, NULL);
     XmStringFree(s1);
     
     /* default to the first window on the list */
     listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
     XmListSelectPos(listBox, 1, True);
+
     /* show the dialog */
-    DoneWithAttachDocumentDialog = 0;
+    DoneWithMoveDocumentDialog = 0;
     ManageDialogCenteredOnPointer(dialog);
-    while (!DoneWithAttachDocumentDialog)
+    while (!DoneWithMoveDocumentDialog)
         XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
 
-    /* get window to attach buffer */   
+    /* get the window to move document into */   
     XmListGetSelectedPos(listBox, &position_list, &position_count);
-    attachWin = shellWinList[position_list[0]-1];
+    targetWin = shellWinList[position_list[0]-1];
     XtFree((char *)position_list);
     
-    /* now attach buffer(s) */
-    if (DoneWithAttachDocumentDialog == XmCR_OK) {
-    	/* attach top (active) buffer */
-	if (XmToggleButtonGetState(attachAllOption)) {
-    	    /* attach all buffers */
+    /* now move document(s) */
+    if (DoneWithMoveDocumentDialog == XmCR_OK) {
+    	/* move top document */
+	if (XmToggleButtonGetState(moveAllOption)) {
+    	    /* move all documents */
 	    for (win = WindowList; win; ) {		
-    		if (win != parentWin && win->shell == parentWin->shell) {
+    		if (win != window && win->shell == window->shell) {
 	    	    WindowInfo *next = win->next;
-    	    	    AttachDocument(attachWin, win);
+    	    	    MoveDocument(targetWin, win);
 		    win = next;
 		}
 		else
 	    	    win = win->next;
 	    }
 
-	    /* top buffer is last to attach */
-    	    AttachDocument(attachWin, parentWin);
+	    /* invoking document is the last to move */
+    	    MoveDocument(targetWin, window);
 	}
 	else {
-    	    AttachDocument(attachWin, parentWin);
+    	    MoveDocument(targetWin, window);
 	}
     }
 

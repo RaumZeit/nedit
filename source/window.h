@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.16 2004/02/21 05:45:46 tksoh Exp $ */
+/* $Id: window.h,v 1.17 2004/03/02 08:15:13 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -64,7 +64,7 @@ void LastDocument(WindowInfo *window);
 int NDocuments(WindowInfo *window);
 WindowInfo *AttachDocument(WindowInfo *toWindow, WindowInfo *window);
 WindowInfo *DetachDocument(WindowInfo *window);
-void AttachDocumentDialog(Widget parent);
+void MoveDocumentDialog(WindowInfo *window);
 WindowInfo* GetTopDocument(Widget w);
 Boolean IsTopDocument(const WindowInfo *window);
 int IsIconic(WindowInfo *window);
