@@ -105,8 +105,8 @@ static void uploadFileListItems(WindowInfo* window, Bool replace);
 static void collectWritableWindows(WindowInfo* window);
 static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData);
-static checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
-                                                WindowInfo* doomedWindow);
+static void checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+                                                     WindowInfo* doomedWindow);
 static void removeDoomedWindowFromList(WindowInfo* window, int index);
 #endif
 static void unmanageReplaceDialogs(WindowInfo *window);
@@ -278,7 +278,7 @@ void DoFindDlog(WindowInfo *window, int direction)
 void DoReplaceMultiFileDlog(WindowInfo *window)
 {
     char	searchString[SEARCHMAX], replaceString[SEARCHMAX];
-    int	direction, searchType, nWritable, nVisible;
+    int		direction, searchType;
     
     /* Validate and fetch the find and replace strings from the dialog */
     if (!getReplaceDlogInfo(window, &direction, searchString, replaceString,
@@ -904,14 +904,12 @@ static void createFindDlog(Widget parent, WindowInfo *window)
 #ifndef DISABLE_MULTI_FILE_REPLACE
 static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window) 
 {
-    Arg    	    args[50];
-    int    	    argcnt, defaultBtnOffset, nWindows, nWritable, nVisible, i;
-    XmString	    st1;
-    Widget	    list, label1, form, pathBtn;
-    Widget        btnForm, replaceBtn, selectBtn, deselectBtn, cancelBtn;
-    char 	    title[MAXPATHLEN + 11];
-    Dimension	    shadowThickness;
-    WindowInfo    *win;
+    Arg		args[50];
+    int		argcnt, defaultBtnOffset;
+    XmString	st1;
+    Widget	list, label1, form, pathBtn;
+    Widget	btnForm, replaceBtn, selectBtn, deselectBtn, cancelBtn;
+    Dimension	shadowThickness;
     
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
@@ -1135,8 +1133,8 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
 ** Iterates through the list of writable windows of a window, and removes
 ** the doomed window if necessary.
 */
-static checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
-                                                WindowInfo* doomedWindow)
+static void checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+						     WindowInfo* doomedWindow)
 {
     WindowInfo        *w;
     int               i;
@@ -1368,9 +1366,12 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     }
 
     /* Fetch the find and replace strings from the dialog; 
-       they have been validated already */
-    getReplaceDlogInfo(window, &direction, searchString, replaceString,
- 	 		  &searchType);
+       they should have been validated already, but since Lesstif may not
+       honor modal dialogs, it is possible that the user modified the 
+       strings again, so we should verify them again too. */
+    if (!getReplaceDlogInfo(window, &direction, searchString, replaceString,
+ 	 		  &searchType))
+	return;
 
     /* Set the initial focus of the dialog back to the search string */
     resetReplaceTabGroup(window);
@@ -1414,16 +1415,19 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     
     /* We suppressed multiple beeps/dialogs. If there wasn't any file in
        which the replacement succeeded, we should still warn the user */
-    if (replaceFailed)
-	if (GetPrefSearchDlogs())
-	    if (noWritableLeft)
+    if (replaceFailed) {
+	if (GetPrefSearchDlogs()) {
+	    if (noWritableLeft) {
 		DialogF(DF_INF, window->shell, 1, 
 			"All selected files have become read-only.", "OK");
-	    else
+	    } else {
 		DialogF(DF_INF, window->shell, 1, 
 			"String was not found", "OK");
-       else
+            }
+	} else {
            XBell(TheDisplay, 0);
+        }
+    }
 }
 
 static void rMultiFileCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
@@ -1487,8 +1491,7 @@ static void rMultiFilePathCB(Widget w, WindowInfo *window,
 static void uploadFileListItems(WindowInfo* window, Bool replace)
 {
     XmStringTable names;
-    Arg           args[50];
-    int           argcnt, nWritable, i, *selected, selectedCount;
+    int           nWritable, i, *selected, selectedCount;
     char          buf[MAXPATHLEN+1], policy;
     Bool          usePathNames;
     WindowInfo    *w;
