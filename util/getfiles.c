@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.14 2001/07/31 07:43:30 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.15 2001/08/14 08:37:16 jlous Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.14 2001/07/31 07:43:30 amai Exp
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

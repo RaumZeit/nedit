@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.11 2001/08/09 18:03:10 slobasso Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.12 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.11 2001/08/09 18:03:10 sloba
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

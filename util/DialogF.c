@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.16 2001/06/06 10:00:23 amai Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.16 2001/06/06 10:00:23 amai Exp 
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

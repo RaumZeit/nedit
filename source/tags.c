@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.12 2001/07/24 21:54:45 tringali Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.13 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.12 2001/07/24 21:54:45 tringali Exp
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

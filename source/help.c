@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.46 2001/08/13 09:55:48 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.47 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: help.c,v 1.46 2001/08/13 09:55:48 amai Exp $";
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

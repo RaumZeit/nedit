@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.6 2001/08/09 13:34:27 amai Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.7 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: managedList.c,v 1.6 2001/08/09 13:34:27 amai E
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

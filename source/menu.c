@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.34 2001/08/04 20:49:20 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.35 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.34 2001/08/04 20:49:20 tringali Exp
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.9 2001/07/31 07:40:14 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.10 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.9 2001/07/31 07:40:14 amai Exp $
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

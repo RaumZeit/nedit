@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.23 2001/08/08 22:31:14 slobasso Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.24 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: file.c,v 1.23 2001/08/08 22:31:14 slobasso Exp
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

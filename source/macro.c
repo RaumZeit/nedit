@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.30 2001/08/09 18:03:11 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.31 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -13,7 +13,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.30 2001/08/09 18:03:11 slobasso Ex
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.15 2001/07/31 11:58:46 amai Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.16 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: text.c,v 1.15 2001/07/31 11:58:46 amai Exp $";
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

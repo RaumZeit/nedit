@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.28 2001/08/07 01:53:37 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.29 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.28 2001/08/07 01:53:37 tring
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

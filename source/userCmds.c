@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.14 2001/08/09 18:39:41 slobasso Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.15 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.14 2001/08/09 18:39:41 slobasso
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.6 2001/08/09 18:47:49 amai Exp $ */
+/* $Id: system.h,v 1.7 2001/08/14 08:37:16 jlous Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -12,7 +12,7 @@
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.16 2001/08/09 20:58:09 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.16 2001/08/09 20:58:09 tringali Ex
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

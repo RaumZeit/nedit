@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.16 2001/08/10 20:36:26 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -13,7 +13,7 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.16 2001/08/10 20:36:26 ama
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *

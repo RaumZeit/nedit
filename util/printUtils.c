@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.10 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.11 2001/08/14 08:37:16 jlous Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -12,7 +12,7 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.10 2001/04/13 17:50:50 tringa
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
 * for more details.							       *
 * 									       *
 * You should have received a copy of the GNU General Public License along with *
