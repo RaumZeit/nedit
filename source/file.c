@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.29 2001/09/05 11:44:25 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.30 2001/09/06 09:37:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: file.c,v 1.29 2001/09/05 11:44:25 amai Exp $";
 #include <unistd.h>
 #include <fcntl.h>
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
@@ -55,6 +56,7 @@ static const char CVSID[] = "$Id: file.c,v 1.29 2001/09/05 11:44:25 amai Exp $";
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
 #include "../util/printUtils.h"
+#include "../util/utils.h"
 #include "textBuf.h"
 #include "text.h"
 #include "nedit.h"
@@ -63,7 +65,8 @@ static const char CVSID[] = "$Id: file.c,v 1.29 2001/09/05 11:44:25 amai Exp $";
 #include "undo.h"
 #include "menu.h"
 #include "file.h"
-#include "../util/utils.h"
+#include "tags.h"
+
 
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS

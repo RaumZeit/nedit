@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.17 2001/09/05 11:44:25 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.18 2001/09/06 09:37:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -227,7 +227,7 @@ static int tagFileIndex = 0;
 ** (not starting with [/~]) and extend tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
-int AddRelTagsFile(char *tagSpec, char *windowPath) 
+int AddRelTagsFile(char *tagSpec, const char *windowPath) 
 {
     tagFile *t;
     int added=0;
