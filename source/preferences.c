@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.36 2001/10/30 21:47:56 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.37 2001/10/31 16:36:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -703,17 +703,17 @@ static PrefDescripRec PrefDescrip[] = {
     {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True",
     	&PrefData.insertTabs, NULL, True},
     {"textFont", "TextFont", PREF_STRING,
-    	"-adobe-courier-medium-r-normal--12-*-*-*-*-*-*",
+    	"-adobe-courier-medium-r-normal--*-120-*-*-*-*-*",
     	PrefData.fontString, (void *)sizeof(PrefData.fontString), True},
     {"boldHighlightFont", "BoldHighlightFont", PREF_STRING,
-    	"-adobe-courier-bold-r-normal--12-*-*-*-*-*-*",
+    	"-adobe-courier-bold-r-normal--*-120-*-*-*-*-*",
     	PrefData.boldFontString, (void *)sizeof(PrefData.boldFontString), True},
     {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING,
-    	"-adobe-courier-medium-o-normal--12-*-*-*-*-*-*",
+    	"-adobe-courier-medium-o-normal--*-120-*-*-*-*-*",
     	PrefData.italicFontString,
     	(void *)sizeof(PrefData.italicFontString), True},
     {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING,
-    	"-adobe-courier-bold-o-normal--12-*-*-*-*-*-*",
+    	"-adobe-courier-bold-o-normal--*-120-*-*-*-*-*",
     	PrefData.boldItalicFontString,
     	(void *)sizeof(PrefData.boldItalicFontString), True},
     {"shell", "Shell", PREF_STRING,
