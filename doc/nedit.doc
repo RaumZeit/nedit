@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Aug 30, 2002                                               August 30, 2002
+NEdit release of Aug 31, 2002                                               August 31, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -1759,10 +1759,8 @@ MACRO LANGUAGE
   NEdit will automatically execute when it is first started. Its location is 
   dependent on your environment: 
     * The default place for the file is '$HOME/.nedit/autoload.nm',
-    * if the variable $NEDIT_HOME is set in your environment it is located at
-'$NEDIT_HOME/autoload.nm',
-    * if you are using old-style run control files (i.e. $HOME/.nedit is a regular
-file) it is located in $HOME/.neditmacro'.
+    * if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/autoload.nm',
+    * if you are using old-style run control files (i.e. $HOME/.nedit is a regular file) it is located in $HOME/.neditmacro'.
   (For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in 
   'SYS$LOGIN:.neditmacro' otherwise.) 
 
@@ -3367,10 +3365,8 @@ Initial Window Size
   with the options that you have moved. The location of NEdit's preferences 
   file depends on your environment: 
     * The default place for the file is '$HOME/.nedit/nedit.rc',
-    * if the variable $NEDIT_HOME is set in your environment it is located at
-'$NEDIT_HOME/nedit.rc',
-    * you may also use old-style run control files; in this case, the preferences
-are stored in $HOME/.nedit.
+    * if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/nedit.rc',
+    * you may also use old-style run control files; in this case, the preferences are stored in $HOME/.nedit.
   (For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in 
   'SYS$LOGIN:.nedit' otherwise.) 
 
@@ -4306,8 +4302,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Aug 30, 2002
-Aug 30, 2002
+NEdit release of Aug 31, 2002
+Aug 31, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

@@ -1920,17 +1920,9 @@ NEdit will automatically execute when it is first started.  Its location is
 dependent on your environment:
 <UL>
 <LI> The default place for the file is '$HOME/.nedit/autoload.nm',
-<LI> if the variable $NEDIT_HOME is set in your environment it is located at
+<LI> if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/autoload.nm',
+<LI> if you are using old-style run control files (i.e. $HOME/.nedit is a regular file) it is located in $HOME/.neditmacro'.
 </UL>
-<PRE>
-'$NEDIT_HOME/autoload.nm',
-</PRE>
-<UL>
-<LI> if you are using old-style run control files (i.e. $HOME/.nedit is a regular
-</UL>
-<PRE>
-file) it is located in $HOME/.neditmacro'.
-</PRE>
 (For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in
 'SYS$LOGIN:.neditmacro' otherwise.)
 <P>
@@ -4061,17 +4053,9 @@ options that you have moved.
 The location of NEdit's preferences file depends on your environment:
 <UL>
 <LI> The default place for the file is '$HOME/.nedit/nedit.rc',
-<LI> if the variable $NEDIT_HOME is set in your environment it is located at
+<LI> if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/nedit.rc',
+<LI> you may also use old-style run control files; in this case, the preferences are stored in $HOME/.nedit.
 </UL>
-<PRE>
-'$NEDIT_HOME/nedit.rc',
-</PRE>
-<UL>
-<LI> you may also use old-style run control files; in this case, the preferences
-</UL>
-<PRE>
-are stored in $HOME/.nedit.
-</PRE>
 (For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in
 'SYS$LOGIN:.nedit' otherwise.)
 <P>
@@ -5184,8 +5168,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Aug 30, 2002
-Aug 30, 2002
+NEdit release of Aug 31, 2002
+Aug 31, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
