@@ -151,6 +151,13 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     window->findLiteralBtn = NULL;
     window->findCaseBtn = NULL;
     window->findRegExpBtn = NULL;
+    window->replaceMultiFileDlog = NULL;
+    window->replaceMultiFilePathBtn = NULL;
+    window->replaceMultiFileList = NULL;
+    window->multiFileReplSelected = FALSE;
+    window->multiFileBusy = FALSE;
+    window->writableWindows = NULL;
+    window->nWritableWindows = 0;
     window->fileChanged = FALSE;
     window->fileMode = 0;
     window->filenameSet = FALSE;

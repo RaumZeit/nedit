@@ -136,6 +136,9 @@ typedef struct _WindowInfo {
     Widget	findBtns;
     Widget	findBtn;
     Widget	findSearchTypeBox;
+    Widget	replaceMultiFileDlog;	/* Replace in multiple files */
+    Widget	replaceMultiFileList;
+    Widget	replaceMultiFilePathBtn;
     Widget	fontDialog;		/* NULL, unless font dialog is up */
     Widget	readOnlyItem;		/* menu bar settable widgets... */
     Widget	autoSaveItem;
@@ -277,6 +280,15 @@ typedef struct _WindowInfo {
     void    	*smartIndentData;   	/* compiled macros for smart indent */
     int    	languageMode;	    	/* identifies language mode currently
     	    	    	    	    	   selected in the window */
+    Boolean	multiFileReplSelected;	/* selected during last multi-window 
+					   replacement operation (history) */
+    struct _WindowInfo**		/* temporary list of writable windows */
+		writableWindows;	/* used during multi-file replacements */
+    int		nWritableWindows;	/* number of elements in the list */
+    Bool 	multiFileBusy;		/* suppresses multiple beeps/dialogs
+					   during multi-file replacements */
+    Bool 	replaceFailed;		/* flags replacements failures during
+					   multi-file replacements */
 } WindowInfo;
 
 extern WindowInfo *WindowList;

@@ -43,6 +43,7 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Text.h>
 #include <Xm/ToggleB.h>
+#include <Xm/List.h>
 #include <X11/Xatom.h>		/* for getting selection */
 #include <X11/keysym.h>
 #ifdef MOTIF10
@@ -68,6 +69,9 @@ static int NHist = 0;
 
 static void createReplaceDlog(Widget parent, WindowInfo *window);
 static void createFindDlog(Widget parent, WindowInfo *window);
+#ifndef DISABLE_MULTI_FILE_REPLACE   
+static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window);
+#endif
 static void fFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData);
@@ -85,6 +89,23 @@ static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void replaceArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event);
 static void findCB(Widget w, WindowInfo *window,XmAnyCallbackStruct *callData); 
+#ifndef DISABLE_MULTI_FILE_REPLACE   
+static void replaceMultiFileCB(Widget w, WindowInfo *window,
+	XmAnyCallbackStruct *callData);
+static void rMultiFileReplaceCB(Widget w, WindowInfo *window,  
+       XmAnyCallbackStruct * callData);
+static void rMultiFileCancelCB(Widget w, WindowInfo *window, caddr_t callData);
+static void rMultiFileSelectAllCB(Widget w, WindowInfo *window, 
+       XmAnyCallbackStruct *callData);
+static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window, 
+       XmAnyCallbackStruct * callData);
+static void rMultiFilePathCB(Widget w, WindowInfo *window,  
+	XmAnyCallbackStruct *callData);
+static void uploadFileListItems(WindowInfo* window, Bool replace);
+static void collectWritableWindows(WindowInfo* window);
+static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
+                                  XmAnyCallbackStruct *callData);
+#endif
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void eraseFlash(WindowInfo *window);
 static int getReplaceDlogInfo(WindowInfo *window, int *direction,
@@ -249,6 +270,44 @@ void DoFindDlog(WindowInfo *window, int direction)
     ManageDialogCenteredOnPointer(window->findDlog);
 }
 
+#ifndef DISABLE_MULTI_FILE_REPLACE   
+void DoReplaceMultiFileDlog(WindowInfo *window)
+{
+    char	searchString[SEARCHMAX], replaceString[SEARCHMAX];
+    int	direction, searchType, nWritable, nVisible;
+    
+    /* Validate and fetch the find and replace strings from the dialog */
+    if (!getReplaceDlogInfo(window, &direction, searchString, replaceString,
+    	    &searchType))
+  	return;
+    
+    /* Don't let the user select files when no replacement can be made */
+    if (*searchString == '\0') {
+       /* Set the initial focus of the dialog back to the search string */
+       resetReplaceTabGroup(window);
+       /* pop down the replace dialog */
+       if (!XmToggleButtonGetState(window->replaceKeepBtn))
+    	   XtUnmanageChild(window->replaceDlog);
+       return;
+    }
+    
+    /* Create the dialog if it doesn't already exist */
+    if (window->replaceMultiFileDlog == NULL)
+    	createReplaceMultiFileDlog(window->shell, window);
+
+    /* Raising the window doesn't make sense. It is modal, so we 
+       can't get here unless it is unmanaged */
+    /* Prepare a list of writable windows */
+    collectWritableWindows(window);
+    
+    /* Initialize/update the list of files. */
+    uploadFileListItems(window, False);
+    
+    /* Display the dialog */
+    ManageDialogCenteredOnPointer(window->replaceMultiFileDlog);
+}
+#endif /* DISABLE_MULTI_FILE_REPLACE */
+
 static void createReplaceDlog(Widget parent, WindowInfo *window)
 {
     Arg    	args[50];
@@ -261,6 +320,9 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     Widget	searchDirBox, forwardBtn, reverseBtn, keepBtn;
     char 	title[MAXPATHLEN + 14];
     Dimension	shadowThickness;
+#ifndef DISABLE_MULTI_FILE_REPLACE
+    Widget replaceMultiFileBtn;
+#endif
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
@@ -553,6 +615,28 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     	    window);
     XtManageChild(cancelBtn);
 
+#ifndef DISABLE_MULTI_FILE_REPLACE
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString,
+    	     st1=MKSTRING("Replace All In Multiple Files (experimental)")); 
+	     argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 10); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 90); argcnt++;
+    XtSetArg(args[argcnt], XmNtopWidget, btnForm); argcnt++;
+    replaceMultiFileBtn = XmCreatePushButton(form, "multiFile", args, argcnt);
+    XtAddCallback(replaceMultiFileBtn, XmNactivateCallback,
+    	    (XtCallbackProc)replaceMultiFileCB, window);
+    XmStringFree(st1);
+    XtManageChild(replaceMultiFileBtn);
+#endif
+     
     XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
     AddDialogMnemonicHandler(form);
     
@@ -794,6 +878,230 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     window->findSearchTypeBox = searchTypeBox;
 }
 
+#ifndef DISABLE_MULTI_FILE_REPLACE
+static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window) 
+{
+    Arg    	    args[50];
+    int    	    argcnt, defaultBtnOffset, nWindows, nWritable, nVisible, i;
+    XmString	    st1;
+    Widget	    list, label1, form, pathBtn;
+    Widget        btnForm, replaceBtn, selectBtn, deselectBtn, cancelBtn;
+    char 	    title[MAXPATHLEN + 11];
+    Dimension	    shadowThickness;
+    WindowInfo    *win;
+    
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
+#ifdef MOTIF10
+    XtSetArg (args[argcnt], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL);
+	    argct ++;
+#else
+    XtSetArg (args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+	    argcnt ++;
+#endif
+    form = CreateFormDialog(window->replaceDlog, "replaceMultiFileDialog", 
+           			     args, argcnt);
+    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
+    XtVaSetValues(XtParent(form), XmNtitle, "Replace All in Multiple Files", 
+		  NULL);
+    
+    /* Label at top left. */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_NONE); argcnt++;
+    /* Offset = 6 + (highlightThickness + detailShadowThickness) of the
+       toggle button (see below). Unfortunately, detailShadowThickness is
+       a Motif 2.x property, so we can't measure it. The default is 2 pixels.
+       To make things even more complicated, the SunOS 5.6 / Solaris 2.6 
+       version of Motif 1.2 seems to use a detailShadowThickness of 0 ...
+       So we'll have to live with a slight misalignment on that platform
+       (those Motif libs are known to have many other problems). */
+    XtSetArg(args[argcnt], XmNtopOffset, 10); argcnt++;
+    XtSetArg(args[argcnt], XmNleftOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, 
+       st1=MKSTRING("Files in which to Replace All:")); argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'F'); argcnt++;
+    label1 = XmCreateLabel(form, "label1", args, argcnt);
+    XmStringFree(st1);
+    XtManageChild(label1);
+    
+    /* Pathname toggle button at top right (always unset by default) */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNset, False); argcnt++;
+    XtSetArg(args[argcnt], XmNrightOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_END); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString,
+    	     st1=MKSTRING("Show Path Names")); argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'P'); argcnt++;
+    pathBtn = XmCreateToggleButton(form, "path", args, argcnt);
+    XmStringFree(st1);
+    XtAddCallback(pathBtn, XmNvalueChangedCallback,
+    	    (XtCallbackProc)rMultiFilePathCB, window);
+    XtManageChild(pathBtn);
+    
+    /*
+     * Buttons at bottom. Place them before the list, such that we can
+     * attach the list to the label and the button box. In that way only
+     * the lists resizes vertically when the dialog is resized; users expect
+     * the list to resize, not the buttons.
+     */
+     
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNleftOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNrightOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNresizable, (short)0); argcnt++;
+    btnForm = XmCreateForm(form, "buttons", args, argcnt);
+    XtManageChild(btnForm);
+    
+    /* Replace */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace")); argcnt++;
+    XtSetArg(args[argcnt], XmNshowAsDefault, (short)1); argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'R'); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 0); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 25); argcnt++;
+    replaceBtn = XmCreatePushButton(btnForm, "replace", args, argcnt);
+    XmStringFree(st1);
+    XtAddCallback(replaceBtn, XmNactivateCallback,
+       (XtCallbackProc)rMultiFileReplaceCB, window);
+    /*
+     * _DON'T_ set the replace button as default (as in other dialogs).
+     * Multi-selection lists have the nasty property of selecting the 
+     * current item when <enter> is pressed.
+     * In that way, the user could inadvertently select an additional file
+     * (most likely the last one that was deselected). 
+     * The user has to activate the replace button explictly (either with
+     * a mouse click or with the shortcut key).
+     *
+     * XtVaSetValues(form, XmNdefaultButton, replaceBtn, NULL); */
+     
+    XtManageChild(replaceBtn);
+    XtVaGetValues(replaceBtn, XmNshadowThickness, &shadowThickness, NULL);
+    defaultBtnOffset = shadowThickness + 4;
+
+    /* Select All */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Select All")); 
+       argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 25); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 50); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, defaultBtnOffset); argcnt++;
+    selectBtn = XmCreatePushButton(btnForm, "select", args, argcnt);
+    XmStringFree(st1);
+    XtAddCallback(selectBtn, XmNactivateCallback,
+       (XtCallbackProc)rMultiFileSelectAllCB, window);
+    XtManageChild(selectBtn);
+
+    /* Deselect All */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Deselect All")); 
+       argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'D'); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 50); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 75); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, defaultBtnOffset); argcnt++;
+    deselectBtn = XmCreatePushButton(btnForm, "deselect", args, argcnt);
+    XmStringFree(st1);
+    XtAddCallback(deselectBtn, XmNactivateCallback,
+       (XtCallbackProc)rMultiFileDeselectAllCB, window);
+    XtManageChild(deselectBtn);
+
+    /* Cancel */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Cancel")); argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'C'); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
+    XtSetArg(args[argcnt], XmNleftPosition, 75); argcnt++;
+    XtSetArg(args[argcnt], XmNrightPosition, 100); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, defaultBtnOffset); argcnt++;
+    cancelBtn = XmCreatePushButton(btnForm, "cancel", args, argcnt);
+    XmStringFree(st1);
+    XtAddCallback(cancelBtn, XmNactivateCallback, 
+       (XtCallbackProc)rMultiFileCancelCB, window);
+    XtManageChild(cancelBtn);
+    
+    /* The list of files */
+    argcnt = 0;
+    XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
+    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_WIDGET); argcnt++;
+    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomWidget, btnForm); argcnt++;
+    XtSetArg(args[argcnt], XmNtopWidget, label1); argcnt++;
+    XtSetArg(args[argcnt], XmNleftOffset, 10); argcnt++;
+    XtSetArg(args[argcnt], XmNvisibleItemCount, 10); argcnt++;
+    XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNbottomOffset, 6); argcnt++;
+    XtSetArg(args[argcnt], XmNrightOffset, 10); argcnt++;
+    /* An alternative is to use the EXTENDED_SELECT, but that one
+       is less suited for keyboard manipulation (moving the selection cursor
+       with the keyboard deselects everything). */
+    XtSetArg(args[argcnt], XmNselectionPolicy, XmMULTIPLE_SELECT); argcnt++;
+    list = XmCreateScrolledList(form, "list_of_files", args, argcnt);
+    XtManageChild(list);
+    
+    /* Traverse: list -> buttons -> path name toggle button */
+    XmAddTabGroup(list);
+    XmAddTabGroup(btnForm);
+    XmAddTabGroup(pathBtn);
+    
+    XtVaSetValues(label1, XmNuserData, list, NULL); /* mnemonic processing */
+    
+    /* Cancel/Mnemonic stuff. */
+    XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
+    AddDialogMnemonicHandler(form);
+    
+    window->replaceMultiFileDlog = form;
+    window->replaceMultiFileList = list;
+    window->replaceMultiFilePathBtn = pathBtn;
+       
+    /* Install a handler that frees the list of writable windows when
+       the dialog is unmapped. */
+    XtAddCallback(form, XmNunmapCallback, 
+	    	    (XtCallbackProc)freeWritableWindowsCB, window); 
+} 
+#endif /* DISABLE_MULTI_FILE_REPLACE */
+
 /*
 ** These callbacks fix a Motif 1.1 problem that the default button gets the
 ** keyboard focus when a dialog is created.  We want the first text field
@@ -885,6 +1193,283 @@ static void replaceAllCB(Widget w, WindowInfo *window,
     if (!XmToggleButtonGetState(window->replaceKeepBtn))
     	XtUnmanageChild(window->replaceDlog);
 }
+
+#ifndef DISABLE_MULTI_FILE_REPLACE
+static void replaceMultiFileCB(Widget w, WindowInfo *window,
+				   XmAnyCallbackStruct *callData) 
+{
+   DoReplaceMultiFileDlog(window);
+}
+
+/*
+** Callback that frees the list of windows the multi-file replace
+** dialog is unmapped.
+**/
+static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
+                                  XmAnyCallbackStruct *callData)
+{
+    XtFree((XtPointer)window->writableWindows);
+    window->writableWindows = NULL;
+    window->nWritableWindows = 0;
+}
+
+/*
+** Comparison function for sorting windows by title for the window menu
+*/
+static int compareWindowNames(const void *windowA, const void *windowB)
+{
+      return strcmp((*((WindowInfo**)windowA))->filename,
+      	    (*((WindowInfo**)windowB))->filename);
+}
+ 
+/*
+** Collects a list of writable windows (sorted by file name). 
+** The previous list, if any is freed first. 
+**/
+static void collectWritableWindows(WindowInfo* window)
+{
+    int nWritable, i;
+    WindowInfo *w;
+    WindowInfo **windows;
+    
+    if (window->writableWindows)
+    {
+       XtFree((XtPointer)window->writableWindows);
+    }
+   
+    /* Make a sorted list of writable windows */
+    for (w=WindowList, nWritable=0; w!=NULL; w=w->next)
+       if (!w->readOnly && !w->lockWrite) ++nWritable;
+    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
+    for (w=WindowList, i=0; w!=NULL; w=w->next)
+       if (!w->readOnly && !w->lockWrite) windows[i++] = w;
+    qsort(windows, nWritable, sizeof(WindowInfo *), compareWindowNames);
+    
+    window->writableWindows = windows;
+    window->nWritableWindows = nWritable;
+} 
+
+static void rMultiFileReplaceCB(Widget w, WindowInfo *window, 
+   XmAnyCallbackStruct *callData) 
+{
+    char 	searchString[SEARCHMAX], replaceString[SEARCHMAX];
+    int 	direction, searchType;
+    char 	*params[4];
+    int 	nSelected, i;
+    WindowInfo 	*writableWin;
+    Bool 	replaceFailed;
+
+    nSelected = 0;
+    for (i=0; i<window->nWritableWindows; ++i)
+       if (XmListPosSelected(window->replaceMultiFileList, i+1))
+          ++nSelected;
+
+    if (!nSelected) {
+       DialogF(DF_INF, XtParent(window->replaceMultiFileDlog), 1,
+  	   	  "No files selected!", "OK");
+       return; /* Give the user another chance */
+    }
+
+    /* Set the initial focus of the dialog back to the search string */
+    resetReplaceTabGroup(window);
+    
+    /*
+     * Protect the user against him/herself; Maybe this is a bit too much?
+     */
+    if (DialogF(DF_QUES, window->shell, 2,
+	        "Multi-file replacements are difficult to undo.\n"
+                "Proceed with the replacement ?", "Yes", "Cancel") != 1) {
+
+       /* pop down the multi-file dialog only */
+       XtUnmanageChild(window->replaceMultiFileDlog);
+
+       return;
+    }
+
+    /* Fetch the find and replace strings from the dialog; 
+       they have been validated already */
+    getReplaceDlogInfo(window, &direction, searchString, replaceString,
+ 	 		  &searchType);
+
+    /* Set the initial focus of the dialog back to the search string */
+    resetReplaceTabGroup(window);
+    
+    params[0] = searchString;
+    params[1] = replaceString;
+    params[2] = searchTypeArg(searchType);
+
+    replaceFailed = True;
+    /* Perform the replacements and mark the selected files (history) */
+    for (i=0; i<window->nWritableWindows; ++i) {
+       writableWin = window->writableWindows[i];
+       if (XmListPosSelected(window->replaceMultiFileList, i+1)) {
+          writableWin->multiFileReplSelected = True;
+          writableWin->multiFileBusy = True; /* Avoid annoying multi-beep */
+          writableWin->replaceFailed = False;
+          XtCallActionProc(writableWin->lastFocus, "replace_all",
+                           callData->event, params, 3);
+          writableWin->multiFileBusy = False;
+          if (!writableWin->replaceFailed) replaceFailed = False;
+       } else {
+          writableWin->multiFileReplSelected = False;
+       }
+    }                          
+
+    if (!XmToggleButtonGetState(window->replaceKeepBtn)) {
+       /* Pop down both replace dialogs. It should be sufficient
+          to pop down only the replace dialog, but the lesstif
+          version that I'm currently using seems to be buggy.*/
+       XtUnmanageChild(window->replaceMultiFileDlog);
+       XtUnmanageChild(window->replaceDlog);
+    } else {
+       /* pow down only the file selection dialog */
+       XtUnmanageChild(window->replaceMultiFileDlog);
+    }
+    
+    /* We suppressed multiple beeps/dialogs. If there wasn't any file in
+       which the replacement succeeded, we should still warn the user */
+    if (replaceFailed)
+       if (GetPrefSearchDlogs())
+    	   DialogF(DF_INF, window->shell, 1, "String was not found", "OK");
+       else
+           XBell(TheDisplay, 0);
+}
+
+static void rMultiFileCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
+{
+    /* Set the initial focus of the dialog back to the search string	*/
+    resetReplaceTabGroup(window);
+
+    /* pop down the multi-window replace dialog */
+    XtUnmanageChild(window->replaceMultiFileDlog);
+}
+
+static void rMultiFileSelectAllCB(Widget w, WindowInfo *window, 
+   XmAnyCallbackStruct *callData) 
+{
+    int i;
+    char policy;
+    Widget list = window->replaceMultiFileList;
+    
+    /*
+     * If the list is in extended selection mode, we can't select more 
+     * than one item (probably because XmListSelectPos is equivalent 
+     * to a button1 click; I don't think that there is an equivalent 
+     * for CTRL-button1). Therefore, we temporarily put the list into 
+     * multiple selection mode.
+     * Note: this is not really necessary if the list is in multiple select
+     *       mode all the time (as it currently is). 
+     */
+    XtVaGetValues(list, XmNselectionPolicy, &policy, NULL);
+    XtVaSetValues(list, XmNselectionPolicy, XmMULTIPLE_SELECT, NULL);
+    
+    /* Is there no other way (like "select all") ? */
+    XmListDeselectAllItems(window->replaceMultiFileList); /* select toggles */
+    
+    for (i=0; i<window->nWritableWindows; ++i) {
+       XmListSelectPos(list, i+1, FALSE);
+    }
+    
+    /* Restore the original policy. */
+    XtVaSetValues(list, XmNselectionPolicy, policy, NULL);
+}
+
+static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window,  
+   XmAnyCallbackStruct *callData) 
+{
+   XmListDeselectAllItems(window->replaceMultiFileList);
+}
+
+static void rMultiFilePathCB(Widget w, WindowInfo *window,  
+   XmAnyCallbackStruct *callData) 
+{
+   uploadFileListItems(window, True);  /* Replace */
+}
+
+/*
+ * Uploads the file items to the multi-file replament dialog list.
+ * A boolean argument indicates whether the elements currently in the 
+ * list have to be replaced or not.
+ * Depending on the state of the "Show path names" toggle button, either
+ * the file names or the path names are listed.
+ */
+static void uploadFileListItems(WindowInfo* window, Bool replace)
+{
+    XmStringTable names;
+    Arg           args[50];
+    int           argcnt, nWritable, i, *selected, selectedCount;
+    char          buf[MAXPATHLEN+1], policy;
+    Bool          usePathNames;
+    WindowInfo    *w;
+    Widget        list;
+
+    nWritable = window->nWritableWindows;
+    list = window->replaceMultiFileList;
+    
+    names = (XmStringTable) XtMalloc(nWritable * sizeof(XmString*));
+    
+    usePathNames = XmToggleButtonGetState(window->replaceMultiFilePathBtn);
+    
+    /* Note: the windows are sorted alphabetically by _file_ name. This
+             order is _not_ changed when we switch to path names. That
+             would be confusing for the user */
+    
+    for (i = 0; i < nWritable; ++i) {
+       w = window->writableWindows[i];
+       if (usePathNames && window->filenameSet) {
+          sprintf(buf, "%s%s", w->path, w->filename);
+       } else {
+          sprintf(buf, "%s", w->filename);
+       }
+       names[i] = XmStringCreateSimple(buf);
+    }
+    
+    /*
+     * If the list is in extended selection mode, we can't pre-select 
+     * more than one item in (probably because XmListSelectPos is 
+     * equivalent to a button1 click; I don't think that there is an 
+     * equivalent for CTRL-button1). Therefore, we temporarily put the 
+     * list into multiple selection mode.
+     */
+    XtVaGetValues(list, XmNselectionPolicy, &policy, NULL);
+    XtVaSetValues(list, XmNselectionPolicy, XmMULTIPLE_SELECT, NULL);
+    if (replace) {
+       /* Note: this function is obsolete in Motif 2.x, but it is available
+                for compatibility reasons */
+       XmListGetSelectedPos(list, &selected,  &selectedCount);
+       
+       XmListReplaceItemsPos(list, names, nWritable, 1);
+       
+       /* Maintain the selections */
+       XmListDeselectAllItems(list);
+       for (i = 0; i < selectedCount; ++i) {
+          XmListSelectPos(list, selected[i], False);
+       }
+       
+       XtFree((XtPointer)selected);
+    } else {
+       /* Remove the old list, if any */
+       XmListDeleteAllItems(list);
+       
+       /* Initial settings */
+       XmListAddItems(list, names, nWritable, 1);
+       
+       /* Pre-select the files from the last run. */   
+       for (i = 0; i < nWritable; ++i) {
+          if (window->writableWindows[i]->multiFileReplSelected) {
+             XmListSelectPos(list, i+1, False);
+          }
+       }
+    }
+    
+    /* Put the list back into its original selection policy. */
+    XtVaSetValues(list, XmNselectionPolicy, policy, NULL);
+    
+    for (i = 0; i < nWritable; ++i)
+       XmStringFree(names[i]);
+    XtFree((XtPointer)names);
+}
+#endif /* DISABLE_MULTI_FILE_REPLACE */
 
 static void rInSelCB(Widget w, WindowInfo *window,
 			 XmAnyCallbackStruct *callData) 
@@ -2077,7 +2662,10 @@ int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
     XtFree(fileString);
     
     if (newFileString == NULL) {
-    	if (GetPrefSearchDlogs()) {
+        if (window->multiFileBusy) {
+            window->replaceFailed = TRUE; /* only needed during multi-file 
+                                             replacements */
+        } else if (GetPrefSearchDlogs()) {
     	    if (window->findDlog && XtIsManaged(window->findDlog) &&
     	    	    !XmToggleButtonGetState(window->findKeepBtn))
     		XtUnmanageChild(window->findDlog);
