@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.16 2001/12/13 13:14:32 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.17 2001/12/16 04:31:35 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -295,6 +295,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
         
     /* If path name is relative, make it refer to current window's directory */
     if (nameText[0] != '/') {
+	strcpy(filename, window->path);
 	strcat(filename, nameText);
 	strcpy(nameText, filename);
     }
