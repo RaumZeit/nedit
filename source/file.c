@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.62 2003/04/09 14:56:22 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.63 2003/04/10 09:39:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -522,6 +522,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Error opening %s", "Dismiss", name);
+        fclose(fp);
         return FALSE;
     }
 
@@ -529,6 +530,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Can't open directory %s", "Dismiss", name);
+        fclose(fp);
         return FALSE;
     }
     fileLen = statbuf.st_size;
@@ -539,6 +541,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "File is too large to include", "Dismiss");
+        fclose(fp);
         return FALSE;
     }
 
