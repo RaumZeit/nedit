@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.15 2001/03/10 15:37:08 arnef Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.16 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -213,17 +213,21 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
         
     /* Set the initial search type */
     switch (searchType) {
-      case SEARCH_LITERAL:
-      	button = window->replaceLiteralBtn;
-	break;
-      case SEARCH_CASE_SENSE:
-      	button = window->replaceCaseBtn;
-	break;
-      case SEARCH_REGEX:
-      	button = window->replaceRegExpBtn;
-	break;
+        case SEARCH_LITERAL:
+            button = window->replaceLiteralBtn;
+        break;
+        case SEARCH_CASE_SENSE:
+            button = window->replaceCaseBtn;
+        break;
+        case SEARCH_REGEX:
+            button = window->replaceRegExpBtn;
+        break;
+        default:
+            fprintf(stderr, "NEdit: unknown search type.\n");
+            button = NULL;
+        break;
     }
-    XmToggleButtonSetState(button, True, True);
+        XmToggleButtonSetState(button, True, True);
     
     /* Set the initial direction based on the direction argument */
     XmToggleButtonSetState(direction == SEARCH_FORWARD ?
@@ -319,15 +323,19 @@ void DoFindDlog(WindowInfo *window, int direction, int searchType,
 
     /* Set the initial search type */
     switch (searchType) {
-      case SEARCH_LITERAL:
-      	button = window->findLiteralBtn;
-	break;
-      case SEARCH_CASE_SENSE:
-      	button = window->findCaseBtn;
-	break;
-      case SEARCH_REGEX:
-      	button = window->findRegExpBtn;
-	break;
+        case SEARCH_LITERAL:
+            button = window->findLiteralBtn;
+        break;
+        case SEARCH_CASE_SENSE:
+            button = window->findCaseBtn;
+        break;
+        case SEARCH_REGEX:
+            button = window->findRegExpBtn;
+        break;
+        default:
+            fprintf(stderr, "NEdit: unknown search type.\n");
+            button = NULL;
+        break;
     }
     XmToggleButtonSetState(button, True, True);
     
@@ -1814,15 +1822,19 @@ static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
     
     /* Set the buttons and fields with the selected search type */
     switch (searchType) {
-      case SEARCH_LITERAL:
-      	button = window->replaceLiteralBtn;
-	break;
-      case SEARCH_CASE_SENSE:
-      	button = window->replaceCaseBtn;
-	break;
-      case SEARCH_REGEX:
-      	button = window->replaceRegExpBtn;
-	break;
+        case SEARCH_LITERAL:
+            button = window->replaceLiteralBtn;
+        break;
+        case SEARCH_CASE_SENSE:
+            button = window->replaceCaseBtn;
+        break;
+        case SEARCH_REGEX:
+            button = window->replaceRegExpBtn;
+        break;
+        default:
+            fprintf(stderr, "NEdit: unknown search type.\n");
+            button = NULL;
+        break;
     }
     XmToggleButtonSetState(button, True, True);
     XmTextSetString(window->replaceText, searchStr);
@@ -1889,15 +1901,19 @@ static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
     
     /* Set the buttons and fields with the selected search type */
     switch (searchType) {
-      case SEARCH_LITERAL:
-      	button = window->findLiteralBtn;
-	break;
-      case SEARCH_CASE_SENSE:
-      	button = window->findCaseBtn;
-	break;
-      case SEARCH_REGEX:
-      	button = window->findRegExpBtn;
-	break;
+        case SEARCH_LITERAL:
+            button = window->findLiteralBtn;
+        break;
+        case SEARCH_CASE_SENSE:
+            button = window->findCaseBtn;
+        break;
+        case SEARCH_REGEX:
+            button = window->findRegExpBtn;
+        break;
+        default:
+            fprintf(stderr, "NEdit: unknown search type.\n");
+            button = NULL;
+        break;
     }
     XmToggleButtonSetState(button, True, True);
     XmTextSetString(window->findText, searchStr);
@@ -3422,7 +3438,7 @@ static int searchMatchesSelection(WindowInfo *window, char *searchString,
     int selLen, selStart, selEnd, startPos, endPos, extent;
     int regexLookaheadContext = searchType == SEARCH_REGEX ? 1000 : 0;
     char *string;
-    int found, isRect, rectStart, rectEnd, lineStart;
+    int found, isRect, rectStart, rectEnd, lineStart = 0;
     
     /* find length of selection, give up on no selection or too long */
     if (!BufGetSelectionPos(window->buffer, &selStart, &selEnd, &isRect,

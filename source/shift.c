@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.6 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.7 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -214,7 +214,7 @@ static void changeCase(WindowInfo *window, int makeUpper)
 void FillSelection(WindowInfo *window)
 {
     textBuffer *buf = window->buffer;
-    char *c, *text, *filledText;
+    char *text, *filledText;
     int left, right, nCols, len, isRect, rectStart, rectEnd;
     int rightMargin, wrapMargin;
     int insertPos = TextGetCursorPos(window->lastFocus);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.24 2001/03/12 15:24:57 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.25 2001/03/13 16:48:22 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -4733,7 +4733,7 @@ static void searchHelpText(Widget parent, int parentTopic, char *searchFor,
 	}
     }
     if (!found) {
-	if (startPos != 0 || allSections && startTopic != 0) { /* Wrap search */
+	if (startPos != 0 || (allSections && startTopic != 0)) { /* Wrap search */
 	    searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
 	    return;
     	}

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.6 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.7 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -293,7 +293,7 @@ static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
 
 void SelectNumberedLine(WindowInfo *window, int lineNum)
 {
-    int i, lineStart, lineEnd;
+    int i, lineStart = 0, lineEnd;
 
     /* count lines to find the start and end positions for the selection */
     if (lineNum < 1)

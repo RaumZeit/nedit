@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.7 2001/03/09 16:58:59 slobasso Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.8 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1462,7 +1462,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     textBuffer *buf = textD->buffer;
     int i, x, y, startX, charIndex, lineStartPos, lineLen, fontHeight;
     int stdCharWidth, charWidth, startIndex, charStyle, style;
-    int charLen, outStartIndex, outIndex, cursorX, hasCursor = False;
+    int charLen, outStartIndex, outIndex, cursorX = 0, hasCursor = False;
     int dispIndexOffset, cursorPos = textD->cursorPos;
     char expandedChar[MAX_EXP_CHAR_LEN], outStr[MAX_DISP_LINE_LEN];
     char *lineStr, *outPtr;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.15 2001/03/12 15:15:14 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.16 2001/03/13 16:48:22 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2933,7 +2933,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     char *text;
     char **text_lines;
     int btnNum;
-    int n_sel, *seltable, sel_index;
+    int n_sel, *seltable, sel_index = 0;
     Widget theList;
 
     /* shouldn't happen, but would crash if it did */

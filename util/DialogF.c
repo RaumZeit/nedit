@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.8 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.9 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -133,7 +133,7 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
     XmString msgstr_xms, input_string_xms, titstr_xms;
     char msgstr_vsp[DF_MAX_MSG_LENGTH+1];
-    char *but_lbl, *input_string, *input_string_ptr;
+    char *but_lbl, *input_string = NULL, *input_string_ptr;
     int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
     Arg args[256];
     
@@ -168,8 +168,8 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     }
     dialog_num = dialog_type - 1;
     prompt = (dialog_type == DF_PROMPT);
-    if  (!prompt && (n > NUM_BUTTONS_SUPPORTED) ||
-	  prompt && (n > NUM_BUTTONS_MAXPROMPT)) {
+    if  ((!prompt && (n > NUM_BUTTONS_SUPPORTED)) ||
+	  (prompt && (n > NUM_BUTTONS_MAXPROMPT))) {
 	printf ("\nError calling DialogF - Too many buttons specified\n");
 	return (0);
     }

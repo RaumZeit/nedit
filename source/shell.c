@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.8 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.9 2001/03/13 16:48:23 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -677,7 +677,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     textBuffer *buf;
     int status, failure, errorReport, reselectStart, outTextLen, errTextLen;
     int resp, cancel = False, fromMacro = cmdData->fromMacro;
-    char *outText, *errText;
+    char *outText, *errText = NULL;
 
     /* Cancel any pending i/o on the file descriptors */
     if (cmdData->stdoutInputID != 0)
