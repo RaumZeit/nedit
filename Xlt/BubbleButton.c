@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.4 2004/05/03 08:54:33 edg Exp $
+ * $Id: BubbleButton.c,v 1.5 2004/05/04 07:41:18 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -48,7 +48,7 @@
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.4 2004/05/03 08:54:33 edg Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.5 2004/05/04 07:41:18 edg Exp $";
 
 /*
    Widget methods, forward declarations
@@ -319,6 +319,11 @@ set_values(Widget old, Widget request, Widget new_w, ArgList args, Cardinal *num
     }
     return (False);
 }
+
+/*
+ * Short-term solution. Doesn't belong here. See SF bug #923924.
+ */
+extern XmString _XmStringCreateExternal(XmFontList fontlist, _XmString cs);
 
 static void
 _XmExportLabelString(Widget w, int offset, XtArgVal *value)
