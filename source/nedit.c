@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.21 2001/10/31 16:36:40 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.22 2001/11/26 17:17:22 amai Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -264,7 +264,7 @@ static const char cmdLineHelp[] =
 	      [-lm languagemode] [-rows n] [-columns n] [-font font]\n\
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
-	      [-import file] [-background color] [-foreground color]\n\
+	      [-import file] [-background color] [-foreground color] [--]\n\
 	      [file...]\n";
 #else
 "";
@@ -273,7 +273,7 @@ static const char cmdLineHelp[] =
 int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
-    int gotoLine = False, macroFileRead = False;
+    int gotoLine = False, macroFileRead = False, opts = True;
     int iconic = False;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -357,10 +357,12 @@ int main(int argc, char **argv)
        open windows (loading preferences doesn't update menu settings,
        which would then be out of sync with the real preference settings) */
     for (i=1; i<argc; i++) {
-    	if (!strcmp(argv[i], "-import")) {
+      	if(!strcmp(argv[i], "--")) {
+	    break; /* treat all remaining arguments as filenames */
+	} else if (!strcmp(argv[i], "-import")) {
     	    nextArg(argc, argv, &i);
     	    ImportPrefFile(argv[i], False);
-	}else if (!strcmp(argv[i], "-importold")) {
+	} else if (!strcmp(argv[i], "-importold")) {
     	    nextArg(argc, argv, &i);
     	    ImportPrefFile(argv[i], True);
 	}
@@ -377,49 +379,55 @@ int main(int argc, char **argv)
        processed by RestoreNEditPrefs. */
     fileSpecified = FALSE;
     for (i=1; i<argc; i++) {
-    	if (!strcmp(argv[i], "-tags")) {
+        if (opts && !strcmp(argv[i], "--")) { 
+    	    opts = False; /* treat all remaining arguments as filenames */
+	    continue;
+	} else if (opts && !strcmp(argv[i], "-tags")) {
     	    nextArg(argc, argv, &i);
     	    if (!AddTagsFile(argv[i]))
     	    	fprintf(stderr, "NEdit: Unable to load tags file\n");
-    	} else if (!strcmp(argv[i], "-do")) {
+    	} else if (opts && !strcmp(argv[i], "-do")) {
     	    nextArg(argc, argv, &i);
 	    if (checkDoMacroArg(argv[i]))
     	    	toDoCommand = argv[i];
-    	} else if (!strcmp(argv[i], "-read")) {
+    	} else if (opts && !strcmp(argv[i], "-read")) {
     	    editFlags |= PREF_READ_ONLY;
-    	} else if (!strcmp(argv[i], "-create")) {
+    	} else if (opts && !strcmp(argv[i], "-create")) {
     	    editFlags |= SUPPRESS_CREATE_WARN;
-    	} else if (!strcmp(argv[i], "-line")) {
+    	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineNum);
 	    if (nRead != 1)
     		fprintf(stderr, "NEdit: argument to line should be a number\n");
     	    else
     	    	gotoLine = True;
-    	} else if (*argv[i] == '+') {
+    	} else if (opts && (*argv[i] == '+')) {
     	    nRead = sscanf((argv[i]+1), "%d", &lineNum);
 	    if (nRead != 1)
     		fprintf(stderr, "NEdit: argument to + should be a number\n");
     	    else
     	    	gotoLine = True;
-    	} else if (!strcmp(argv[i], "-server")) {
+    	} else if (opts && !strcmp(argv[i], "-server")) {
     	    IsServer = True;
-	} else if (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon")) {
+	} else if (opts && (!strcmp(argv[i], "-iconic") || 
+	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = True;
-	} else if (!strcmp(argv[i], "-noiconic")) {
+	} else if (opts && !strcmp(argv[i], "-noiconic")) {
     	    iconic = False;
-	} else if (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g")) {
+	} else if (opts && (!strcmp(argv[i], "-geometry") || 
+	                    !strcmp(argv[i], "-g"))) {
 	    nextArg(argc, argv, &i);
     	    geometry = argv[i];
-	} else if (!strcmp(argv[i], "-lm")) {
+	} else if (opts && !strcmp(argv[i], "-lm")) {
 	    nextArg(argc, argv, &i);
     	    langMode = argv[i];
-	} else if (!strcmp(argv[i], "-import")) {
+	} else if (opts && !strcmp(argv[i], "-import")) {
 	    nextArg(argc, argv, &i); /* already processed, skip */
-	} else if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version")) {
+	} else if (opts && (!strcmp(argv[i], "-V") || 
+	                    !strcmp(argv[i], "-version"))) {
 	    PrintVersion();
 	    exit(EXIT_SUCCESS);
-	} else if (*argv[i] == '-') {
+	} else if (opts && (*argv[i] == '-')) {
 #ifdef VMS
 	    *argv[i] = '/';
 #endif /*VMS*/

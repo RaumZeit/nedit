@@ -1,3 +1,57 @@
+2001-11-25 23:03  edg
+
+	* source/file.c (1.37): Crash fix: avoid closing windows twice when
+	user destroys the window of a file that could not be opened instead
+	of closing the error dialog.
+
+2001-11-25 22:05  edg
+
+	* source/textBuf.c (1.14): Small fix: tighter buffer boundary check
+	when accessing characters.
+
+2001-11-24 11:57  amai
+
+	* source/file.c (1.36): Patch from Thorsten Haude for SF Bug [
+	#484870 ] Double Mnemonic
+
+2001-11-24 11:41  amai
+
+	* makefiles/Makefile.qnx (1.1): Add Makefile for QNX as posted on
+	develop@ mailinglist
+
+2001-11-22 21:01  amai
+
+	* source/interpret.c (1.19), source/preferences.c (1.40),
+	source/textBuf.c (1.13), source/textBuf.h (1.6), util/printUtils.c
+	(1.14), util/printUtils.h (1.5): Another small const patch
+
+2001-11-21 16:36  amai
+
+	* util/misc.c (1.35): Patch SF [#483505 ] Fix warning on DEC Not
+	literally, I extended the comment a bit.
+
+2001-11-20 15:53  amai
+
+	* README (1.19): Sorry, another "dummy" commit, to check for the
+	commit messages :-)
+
+2001-11-20 15:36  amai
+
+	* ReleaseNotes (1.11): Switch to "5.2+" ...
+
+2001-11-20 15:31  amai
+
+	* README (1.18): Start list of 5.2+ features/changes
+
+2001-11-20 13:25  amai
+
+	* source/selection.c (1.14), util/system.h (1.9): Add Intel's
+	icc/ecc to our list of known compilers (and fix a compiler warning)
+
+2001-11-18 19:53  amai
+
+	* ChangeLog (1.13): Update
+
 2001-11-18 19:02  arnef
 
 	* source/Makefile.common (1.9), source/Makefile.dependencies

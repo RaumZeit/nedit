@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.63 2001/11/18 19:02:57 arnef Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.64 2001/11/26 17:17:22 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -2053,7 +2053,7 @@ o  Upper case words with possible punctuation.\n\
     [-font font] [-lm languagemode] [-geometry geometry]\n\
     [-iconic] [-noiconic] [-display [host]:server[.screen]\n\
     [-xrm resourcestring] [-svrname name] [-import file]\n\
-    [-background color] [-foreground color] [file...]\n\
+    [-background color] [-foreground color] [--] [file...]\n\
 \n\
     -read -- Open the file Read Only regardless of\n\
     	the actual file protection.\n\
@@ -2161,7 +2161,11 @@ o  Upper case words with possible punctuation.\n\
 	modes, and highlight patterns and styles written\n\
 	by other users, run nedit with -import <file>, then\n\
 	re-save your .nedit file with Preferences -> Save\n\
-	Defaults.",
+	Defaults.\n\
+\n\
+    --  -- Treats all subsequent arguments as file names,\n\
+        even if they start with a dash.  This is so you can\n\
+        handle files with names beginning with a dash.",
 #else
 "Command Format:\n\
 \n\

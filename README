@@ -1,6 +1,6 @@
                     NEdit Version 5.2+ beta,  November 2001
 
-$Id: README,v 1.19 2001/11/20 15:53:04 amai Exp $
+$Id: README,v 1.20 2001/11/26 17:17:22 amai Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -52,6 +52,8 @@ Version 5.2+ offers some new features and lots of bug fixes.
 The most significant enhancements in this release are:
 
  - Goto Line & Column
+ - Fix some rare crashes
+ - Customizable Window Titles
  - ...
 
  

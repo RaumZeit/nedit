@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.13 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.14 2001/11/26 17:17:22 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -69,7 +69,7 @@ static const char cmdLineHelp[] =
 #ifndef VMS
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
-           [-geometry geometry] [-iconic] [file...]\n";
+           [-geometry geometry] [-iconic] [--] [file...]\n";
 #else
 "";
 #endif /*VMS*/
@@ -369,7 +369,7 @@ static char *parseCommandLine(int argc, char **argv)
     char *toDoCommand = "", *langMode = "", *geometry = "";
     char *commandString, *outPtr;
     int lineNum = 0, read = 0, create = 0, iconic = 0, length = 0;
-    int i, lineArg, nRead, charsWritten;
+    int i, lineArg, nRead, charsWritten, opts = True;
     
     /* Allocate a string for output, for the maximum possible length.  The
        maximum length is calculated by assuming every argument is a file,
@@ -381,40 +381,47 @@ static char *parseCommandLine(int argc, char **argv)
     /* Parse the arguments and write the output string */
     outPtr = commandString;
     for (i=1; i<argc; i++) {
-	if (!strcmp(argv[i], "-do")) {
+        if (opts && !strcmp(argv[i], "--")) { 
+    	    opts = False; /* treat all remaining arguments as filenames */
+	    continue;
+	} else if (opts && !strcmp(argv[i], "-do")) {
     	    nextArg(argc, argv, &i);
     	    toDoCommand = argv[i];
-    	} else if (!strcmp(argv[i], "-lm")) {
+    	} else if (opts && !strcmp(argv[i], "-lm")) {
     	    nextArg(argc, argv, &i);
     	    langMode = argv[i];
-    	} else if (!strcmp(argv[i], "-g") || !strcmp(argv[i], "-geometry")) {
+    	} else if (opts && (!strcmp(argv[i], "-g")  || 
+	                    !strcmp(argv[i], "-geometry"))) {
     	    nextArg(argc, argv, &i);
     	    geometry = argv[i];
-    	} else if (!strcmp(argv[i], "-read")) {
+    	} else if (opts && !strcmp(argv[i], "-read")) {
     	    read = 1;
-    	} else if (!strcmp(argv[i], "-create")) {
+    	} else if (opts && !strcmp(argv[i], "-create")) {
     	    create = 1;
-    	} else if (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon")) {
+    	} else if (opts && (!strcmp(argv[i], "-iconic") || 
+	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = 1;
-    	} else if (!strcmp(argv[i], "-line")) {
+    	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineArg);
 	    if (nRead != 1)
     		fprintf(stderr, "nc: argument to line should be a number\n");
     	    else
     	    	lineNum = lineArg;
-    	} else if (*argv[i] == '+') {
+    	} else if (opts && (*argv[i] == '+')) {
     	    nRead = sscanf((argv[i]+1), "%d", &lineArg);
 	    if (nRead != 1)
     		fprintf(stderr, "nc: argument to + should be a number\n");
     	    else
     	    	lineNum = lineArg;
-    	} else if (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noAsk")) {
+    	} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noAsk"))) {
     	    ; /* Ignore resource-based arguments which are processed later */
-    	} else if (!strcmp(argv[i], "-svrname") || !strcmp(argv[i], "-xrm") ||
-		!strcmp(argv[i], "-svrcmd") || !strcmp(argv[i], "-display")) {
+    	} else if (opts && (!strcmp(argv[i], "-svrname") || 
+	                    !strcmp(argv[i], "-xrm") ||
+		            !strcmp(argv[i], "-svrcmd") || 
+	                    !strcmp(argv[i], "-display"))) {
     	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
-    	} else if (*argv[i] == '-') {
+    	} else if (opts && (*argv[i] == '-')) {
 #ifdef VMS
 	    *argv[i] = '/';
 #endif /*VMS*/
