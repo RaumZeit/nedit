@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.113 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.114 2004/03/04 00:49:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -282,6 +282,7 @@ static struct prefData {
     XFontStruct *boldFontStruct;
     XFontStruct *italicFontStruct;
     XFontStruct *boldItalicFontStruct;
+    int sortTabs;		/* sort tabs alphabetically */
     int repositionDialogs;	/* w. to reposition dialogs under the pointer */
     int sortOpenPrevMenu;   	/* whether to sort the "Open Previous" menu */
     int appendLF;       /* Whether to append LF at the end of each file */
@@ -787,6 +788,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.statsLine, NULL, True},
     {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False",
     	&PrefData.iSearchLine, NULL, True},
+    {"sortTabs", "SortTabs", PREF_BOOLEAN, "False",
+    	&PrefData.sortTabs, NULL, False},
     {"tabBar", "TabBar", PREF_BOOLEAN, "True",
     	&PrefData.tabBar, NULL, True},
     {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True",
@@ -1525,6 +1528,16 @@ void SetPrefISearchLine(int state)
 int GetPrefISearchLine(void)
 {
     return PrefData.iSearchLine;
+}
+
+void SetPrefSortTabs(int state)
+{
+    setIntPref(&PrefData.sortTabs, state);
+}
+
+int GetPrefSortTabs(void)
+{
+    return PrefData.sortTabs;
 }
 
 void SetPrefTabBar(int state)

@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.18 2004/03/03 07:06:01 tksoh Exp $ */
+/* $Id: window.h,v 1.19 2004/03/04 00:49:46 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -75,6 +75,7 @@ void RefreshMenuToggleStates(WindowInfo *window);
 void RefreshWindowStates(WindowInfo *window);
 void AllWindowsBusy(const char* message);
 void AllWindowsUnbusy(void);
+void SortTabBar(WindowInfo *window);
 void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);
 void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, 
         Boolean notify);

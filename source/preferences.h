@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.39 2004/02/16 01:02:38 tksoh Exp $ */
+/* $Id: preferences.h,v 1.40 2004/03/04 00:49:46 tksoh Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -46,6 +46,8 @@ void SetPrefISearchLine(int state);
 int GetPrefISearchLine(void);
 void SetPrefTabBar(int state);
 int GetPrefTabBar(void);
+void SetPrefSortTabs(int state);
+int GetPrefSortTabs(void);
 void SetPrefTabBarHideOne(int state);
 int GetPrefTabBarHideOne(void);
 void SetPrefGlobalTabNavigate(int state);

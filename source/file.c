@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.78 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.79 2004/03/04 00:49:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -140,6 +140,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     else
         RaiseDocumentWindow(window);
 	
+    SortTabBar(window);
     return window;
 }
 
@@ -228,7 +229,8 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     if(GetPrefAlwaysCheckRelTagsSpecs())
       	AddRelTagsFile(GetPrefTagFile(), path, TAG);
     AddToPrevOpenMenu(fullname);
-    
+    SortTabBar(window);
+
     return window;
 }
 
@@ -842,6 +844,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     /* Update the stats line with the new filename */
     UpdateStatsLine(window);
 
+    SortTabBar(window);
     return retVal;
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.125 2004/03/02 08:15:13 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.126 2004/03/04 00:49:46 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -137,6 +137,7 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin);
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
+static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
 static void setTabCloseButtonImage(Widget button);
 static Widget manageToolBars(Widget toolBarsForm);
@@ -815,6 +816,67 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
     return tab;
 }
 	    
+/*
+** Comparison function for sorting windows by title.
+** Windows are sorted by alphabetically by filename and then 
+** alphabetically by path.
+*/
+static int compareWindowNames(const void *windowA, const void *windowB)
+{
+    int rc;
+    const WindowInfo *a = *((WindowInfo**)windowA);
+    const WindowInfo *b = *((WindowInfo**)windowB);
+
+    rc = strcmp(a->filename, b->filename);
+    if (rc != 0)
+	 return rc;
+    rc = strcmp(a->path, b->path);
+    return rc;
+}
+
+/*
+** Sort tabs in the tab bar alphabetically, if demanded so.
+*/
+void SortTabBar(WindowInfo *window)
+{
+    WindowInfo *w;
+    WindowInfo **windows;
+    WidgetList tabList;
+    int i, nDoc;
+
+    if (!GetPrefSortTabs())
+    	return;
+	
+    /* need more than one tab to sort */
+    nDoc = NDocuments(window);
+    if (nDoc < 2)
+        return;
+
+    /* first sort the documents */
+    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
+    for (w=WindowList, i=0; w!=NULL; w=w->next) {
+    	if (window->shell == w->shell)
+    	    windows[i++] = w;
+    }
+    qsort(windows, nDoc, sizeof(WindowInfo *), compareWindowNames);
+
+    /* assign tabs to documents in sorted order */
+    XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, NULL);
+    for (i=0; i<nDoc; i++) {
+    	if (windows[i]->tab == tabList[i])
+	    continue;
+	    
+    	/* set tab as active */
+    	if (IsTopDocument(windows[i]))
+            XmLFolderSetActiveTab(window->tabBar, i, False);
+	    
+    	windows[i]->tab = tabList[i];
+    	RefreshTabState(windows[i]);
+    }
+    
+    XtFree((char *)windows);
+}
+
 /*
 ** return the tab next to the closing tab.
 **
@@ -4204,6 +4266,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
     /* this should keep the new document window fresh */
     RefreshWindowStates(cloneWin);
     RefreshTabState(cloneWin);
+    SortTabBar(cloneWin);
 
     return cloneWin;
 }
@@ -4246,6 +4309,7 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
     /* this should keep the new document window fresh */
     RaiseDocumentWindow(cloneWin);
     RefreshTabState(cloneWin);
+    SortTabBar(cloneWin);
     
     return cloneWin;
 }
