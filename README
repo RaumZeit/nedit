@@ -1,7 +1,8 @@
                     NEdit Version 5.3,  February 2002
 
-$Id: README,v 1.22 2002/02/13 23:10:23 edg Exp $
+$Id: README,v 1.23 2002/02/14 20:24:04 amai Exp $
 	     
+
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
 and stability required by users who edit text eight hours a day.  It provides
@@ -9,9 +10,16 @@ intensive support for development in a wide variety of languages, text
 processors, and other tools, but at the same time can be used productively by
 just about anyone who needs to edit text.
 
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
 As of version 5.1, NEdit may be freely distributed under the terms of the GNU
 General Public License (see the file COPYRIGHT which is also part of this
 distribution).
+
+NEdit sources, executables, additional documentation, and contributed software
+are available from the NEdit web site at http://nedit.org.
+
 
 AUTHORS
 
@@ -27,23 +35,11 @@ Toronto.
 Syntax highlighting patterns and smart indent macros were contributed
 by: Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk,
 Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr,
-Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, Max
-Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, Michael
-Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike
-Duigou, Seak Teng-Fong, Joor Loohuis, Mark Jones, and
-Niek van den Berg.
+Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, Max Vohlken, 
+Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, Michael Turomsha, 
+John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou, 
+Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.
 
-NEdit sources, executables, additional documentation, and contributed software
-are available from the NEdit web site at http://nedit.org.
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License below for more details.
 
 VERSION 5.3
 
@@ -52,7 +48,7 @@ Version 5.3 is mainly a bug fix release but also offers some new features.
 The most significant enhancements in this release are:
 
  - A revamped Help system with hyperlinked cross-references.
- - Support for Exuberant ctags.
+ - Enhanced support for Exuberant ctags.
  - Goto Line also accepts Column numbers.
  
 There are also several smaller improvements and bug fixes, see the
@@ -81,7 +77,7 @@ The requirements to build NEdit from the sources are:
  
 Optionally one may use:
  
- - yacc (bison)
+ - yacc (or GNU bison)
 
 
 The two directories called 'source' and 'util' contain the sources for NEdit.
@@ -240,6 +236,7 @@ missing, NEdit will spew screenfulls of messages about translation table syntax
 errors, and many keys won't work.  You can obtain a copy of the XKeysymDB file
 from the contrib sub-directory of the NEdit distribution directory.  
 
+
 SGI Systems
 
 Beginning with IRIX 6.3, SGI is distributing a customized version of NEdit
@@ -259,6 +256,7 @@ named simply 'NEdit'.
 No additional installation or resource settings are necessary on IRIX systems
 before 6.3
 
+
 HP-UX Systems
 
 If you are using HPVUE and have trouble setting colors, for example part
@@ -266,10 +264,12 @@ of the menu bar stubornly remains at whatever HPVUE's default is, try setting:
 
    nedit*useColorObj: False
 
+   
 IBM AIX Systems
 
 Due to an optimizer bug in IBM's C compiler, the file, textDisp.c, must be
 compiled without optimization on some AIX systems.
+
 
 Solaris (SunOS 5.3 and beyond) Systems
 

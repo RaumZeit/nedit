@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.3, February 2002
 
 
-$Id: ReleaseNotes,v 1.12 2002/02/13 23:10:23 edg Exp $
+$Id: ReleaseNotes,v 1.13 2002/02/14 20:24:04 amai Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,7 +22,7 @@ New Features in 5.3
   - The built-in Help system was revamped. Most notably, a hyperlink
     mechanism was added for following cross-references.
 
-  - Exuberant ctags support (SF #491109).
+  - Enhanced Exuberant ctags support (SF #491109).
 
   - Line numbers are available in shell commands (SF #434451).
 
