@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.24 2001/04/18 17:10:41 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.25 2001/06/19 20:00:18 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -426,10 +426,16 @@ void RegisterMacroSubroutines(void)
     	    	noValue);
 }
 
+#define MAX_LEARN_MSG_LEN ((2 * MAX_ACCEL_LEN) + 60)
 void BeginLearn(WindowInfo *window)
 {
     WindowInfo *win;
     XmString s;
+    XmString xmFinish;
+    XmString xmCancel;
+    char *cFinish;
+    char *cCancel;
+    char message[MAX_LEARN_MSG_LEN];
     
     /* If we're already in learn mode, return */
     if (MacroRecordActionHook != 0)
@@ -454,10 +460,53 @@ void BeginLearn(WindowInfo *window)
     MacroRecordActionHook =
     	    XtAppAddActionHook(XtWidgetToApplicationContext(window->shell),
     	    learnActionHook, window);
-    
+
+    /* Extract accelerator texts from menu PushButtons */
+    XtVaGetValues(window->finishLearnItem, XmNacceleratorText, &xmFinish, NULL);
+    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
+
+    /* Translate Motif strings to char* */
+    cFinish = GetXmStringText(xmFinish);
+    cCancel = GetXmStringText(xmCancel);
+
+    /* Free Motif Strings */
+    XmStringFree(xmFinish);
+    XmStringFree(xmCancel);
+
+    /* Create message */
+    if (cFinish[0] == '\0') {
+        if (cCancel[0] == '\0') {
+            strncpy(message, "Learn Mode -- Use menu to finish or cancel",
+                MAX_LEARN_MSG_LEN);
+            message[MAX_LEARN_MSG_LEN - 1] = '\0';
+        }
+        else {
+            snprintf(message, MAX_LEARN_MSG_LEN,
+                "Learn Mode -- Use menu to finish, press %s to cancel",
+                cCancel);
+        }
+    }
+    else {
+        if (cCancel[0] == '\0') {
+            snprintf(message, MAX_LEARN_MSG_LEN,
+                "Learn Mode -- Press %s to finish, use menu to cancel",
+                cFinish);
+
+        }
+        else {
+            snprintf(message, MAX_LEARN_MSG_LEN,
+                "Learn Mode -- Press %s to finish, %s to cancel",
+                cFinish,
+                cCancel);
+        }
+    }
+
+    /* Free C-strings */
+    XtFree(cFinish);
+    XtFree(cCancel);
+
     /* Put up the learn-mode banner */
-    SetModeMessage(window,
-    	    "Learn Mode -- Press Alt+K to finish, Ctrl+. to cancel");
+    SetModeMessage(window, message);    
 }
 
 void AddLastCommandActionHook(XtAppContext context)
@@ -1425,14 +1474,41 @@ static int isIgnoredAction(char *action)
 ** Timer proc for putting up the "Macro Command in Progress" banner if
 ** the process is taking too long.
 */
+#define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = window->macroCmdData;
+    XmString xmCancel;
+    char *cCancel;
+    char message[MAX_TIMEOUT_MSG_LEN];
     
     cmdData->bannerIsUp = True;
-    SetModeMessage(window,
-    	    "Macro Command in Progress -- Press Ctrl+. to Cancel");
+
+    /* Extract accelerator text from menu PushButtons */
+    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
+
+    /* Translate Motif string to char* */
+    cCancel = GetXmStringText(xmCancel);
+
+    /* Free Motif String */
+    XmStringFree(xmCancel);
+
+    /* Create message */
+    if (cCancel[0] == '\0') {
+        strncpy(message, "Macro Command in Progress", MAX_TIMEOUT_MSG_LEN);
+        message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
+    }
+    else {
+        snprintf(message, MAX_TIMEOUT_MSG_LEN,
+            "Macro Command in Progress -- Press %s to Cancel",
+            cCancel);
+    }
+
+    /* Free C-string */
+    XtFree(cCancel);
+
+    SetModeMessage(window, message);
     cmdData->bannerTimeoutID = 0;
 }
 
