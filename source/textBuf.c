@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.17 2002/02/05 18:16:58 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.18 2002/02/24 21:16:30 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -152,8 +152,9 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->modifyProcs = NULL;
     buf->cbArgs = NULL;
     buf->nModifyProcs = 0;
-    buf->preDeleteProc = NULL;
-    buf->preDeleteCbArg = NULL;
+    buf->preDeleteProcs = NULL;
+    buf->preDeleteCbArgs = NULL;
+    buf->nPreDeleteProcs = 0;
     buf->nullSubsChar = '\0';
 #ifdef PURIFY
     {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
@@ -170,6 +171,10 @@ void BufFree(textBuffer *buf)
     if (buf->nModifyProcs != 0) {
     	XtFree((char *)buf->modifyProcs);
     	XtFree((char *)buf->cbArgs);
+    }
+    if (buf->nPreDeleteProcs != 0) {
+    	XtFree((char *)buf->preDeleteProcs);
+    	XtFree((char *)buf->preDeleteCbArgs);
     }
     XtFree((char *)buf);
 }
@@ -398,7 +403,7 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     insertCol(buf, column, lineStartPos, text, &insertDeleted, &nInserted,
     	    &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
-    	fprintf(stderr, "internal consistency check ins1 failed");
+    	fprintf(stderr, "NEdit internal consistency check ins1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
     XtFree(deletedText);
     if (charsInserted != NULL)
@@ -431,7 +436,7 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     overlayRect(buf, lineStartPos, rectStart, rectEnd, text, &insertDeleted,
     	    &nInserted, &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
-    	fprintf(stderr, "internal consistency check ovly1 failed");
+    	fprintf(stderr, "NEdit internal consistency check ovly1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
     XtFree(deletedText);
     if (charsInserted != NULL)
@@ -787,7 +792,7 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     	}
     }
     if (toRemove == -1) {
-    	fprintf(stderr, "Internal Error: Can't find modify CB to remove\n");
+    	fprintf(stderr, "NEdit Internal Error: Can't find modify CB to remove\n");
     	return;
     }
     
@@ -827,26 +832,76 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
 void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
 	void *cbArg)
 {
-    /* Currently only one callback is supported (because only one 
-       is needed in a special case). Extend this if ever needed. */
-    if (buf->preDeleteProc != NULL) {
-	fprintf(stderr, "Internal Error: trying to install more than one"
-		"pre-delete CB\n");
-	return;
+    bufPreDeleteCallbackProc *newPreDeleteProcs;
+    void **newCBArgs;
+    int i;
+    
+    newPreDeleteProcs = (bufPreDeleteCallbackProc *)
+    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs+1));
+    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
+    for (i=0; i<buf->nPreDeleteProcs; i++) {
+    	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
+    	newCBArgs[i] = buf->preDeleteCbArgs[i];
     }
-    buf->preDeleteProc = bufPreDeleteCB;
-    buf->preDeleteCbArg = cbArg;
+    if (buf->nPreDeleteProcs != 0) {
+	XtFree((char *)buf->preDeleteProcs);
+	XtFree((char *)buf->preDeleteCbArgs);
+    }
+    newPreDeleteProcs[buf->nPreDeleteProcs] =  bufPreDeleteCB;
+    newCBArgs[buf->nPreDeleteProcs] = cbArg;
+    buf->nPreDeleteProcs++;
+    buf->preDeleteProcs = newPreDeleteProcs;
+    buf->preDeleteCbArgs = newCBArgs;
 }
 
 void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
 	void *cbArg)
 {
-    if (buf->preDeleteProc != bufPreDeleteCB) {
-	fprintf(stderr, "Internal Error: can't find pre-delete CB\n");
+    int i, toRemove = -1;
+    bufPreDeleteCallbackProc *newPreDeleteProcs;
+    void **newCBArgs;
+
+    /* find the matching callback to remove */
+    for (i=0; i<buf->nPreDeleteProcs; i++) {
+    	if (buf->preDeleteProcs[i] == bufPreDeleteCB && 
+	    buf->preDeleteCbArgs[i] == cbArg) {
+    	    toRemove = i;
+    	    break;
+    	}
+    }
+    if (toRemove == -1) {
+    	fprintf(stderr, "NEdit Internal Error: Can't find pre-delete CB to remove\n");
+    	return;
+    }
+    
+    /* Allocate new lists for remaining callback procs and args (if
+       any are left) */
+    buf->nPreDeleteProcs--;
+    if (buf->nPreDeleteProcs == 0) {
+    	buf->nPreDeleteProcs = 0;
+    	XtFree((char *)buf->preDeleteProcs);
+    	buf->preDeleteProcs = NULL;
+	XtFree((char *)buf->preDeleteCbArgs);
+	buf->preDeleteCbArgs = NULL;
 	return;
     }
-    buf->preDeleteProc = NULL;
-    buf->preDeleteCbArg = NULL;
+    newPreDeleteProcs = (bufPreDeleteCallbackProc *)
+    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs));
+    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
+    
+    /* copy out the remaining members and free the old lists */
+    for (i=0; i<toRemove; i++) {
+    	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
+    	newCBArgs[i] = buf->preDeleteCbArgs[i];
+    }
+    for (; i<buf->nPreDeleteProcs; i++) {
+	newPreDeleteProcs[i] = buf->preDeleteProcs[i+1];
+    	newCBArgs[i] = buf->preDeleteCbArgs[i+1];
+    }
+    XtFree((char *)buf->preDeleteProcs);
+    XtFree((char *)buf->preDeleteCbArgs);
+    buf->preDeleteProcs = newPreDeleteProcs;
+    buf->preDeleteCbArgs = newCBArgs;
 }
 
 /*
@@ -1937,10 +1992,10 @@ static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
 */
 static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted)
 {
-    /* Currently, only one pre-delete procedure is supported (needed only
-       under special circumstances). */
-    if (buf->preDeleteProc)
-       (*buf->preDeleteProc)(pos, nDeleted, buf->preDeleteCbArg);
+    int i;
+    
+    for (i=0; i<buf->nPreDeleteProcs; i++)
+    	(*buf->preDeleteProcs[i])(pos, nDeleted, buf->preDeleteCbArgs[i]);
 }
 
 /*

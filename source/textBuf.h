@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.7 2002/02/03 16:41:06 edg Exp $ */
+/* $Id: textBuf.h,v 1.8 2002/02/24 21:16:30 edg Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -33,9 +33,10 @@ typedef struct _textBuffer {
     bufModifyCallbackProc	/* procedures to call when buffer is */
     	    *modifyProcs;	/*    modified to redisplay contents */
     void **cbArgs;		/* caller arguments for modifyProcs above */
+    int nPreDeleteProcs;	/* number of pre-delete procs attached */
     bufPreDeleteCallbackProc	/* procedure to call before text is deleted */
-	 preDeleteProc;		/* from the buffer; at most one is supported. */
-    void *preDeleteCbArg;	/* caller argument for pre-delete proc above */
+	 *preDeleteProcs;	/* from the buffer; at most one is supported. */
+    void **preDeleteCbArgs;	/* caller argument for pre-delete proc above */
     int cursorPosHint;		/* hint for reasonable cursor position after
     				   a buffer modification operation */
     char nullSubsChar;	    	/* NEdit is based on C null-terminated strings,
