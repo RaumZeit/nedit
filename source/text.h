@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.15 2003/04/18 01:07:38 n8gray Exp $ */
+/* $Id: text.h,v 1.16 2003/05/16 15:11:53 tringali Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
@@ -141,11 +141,5 @@ int TextLastVisiblePos(Widget w);
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
-
-#ifdef VMS /* VMS linker doesn't like long names (>31 chars) */
-#define HandleAllPendingGraphicsExposeNoExposeEvents HandlePendingExpNoExpEvents
-#endif /* VMS */
-
-void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 
 #endif /* NEDIT_TEXT_H_INCLUDED */

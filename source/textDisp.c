@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.51 2003/05/05 16:25:56 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.52 2003/05/16 15:11:53 tringali Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -140,6 +140,8 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void redrawLineNumbers(textDisp *textD, int clearAll);
+static void visibilityEH(Widget w, XtPointer data, XEvent *event,
+	Boolean *continueDispatch);
 static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
 static int max(int i1, int i2);
@@ -212,6 +214,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->absTopLineNum = 1;
     textD->needAbsTopLineNum = False;
     textD->horizOffset = 0;
+    textD->visibility = VisibilityUnobscured;
     textD->hScrollBar = hScrollBar;
     textD->vScrollBar = vScrollBar;
     textD->fontStruct = fontStruct;
@@ -257,7 +260,11 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->nLinesDeleted = 0;
     textD->modifyingTabDist = 0;
     textD->pointerHidden = False;
-    textD->graphicsExposeQueue = NULL;
+    
+    /* Attach an event handler to the widget so we can know the visibility
+       (used for choosing the fastest drawing method) */
+    XtAddEventHandler(widget, VisibilityChangeMask, False,
+    	    visibilityEH, textD);
     
     /* Attach the callback to the text buffer for receiving modification
        information */
@@ -310,8 +317,6 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->styleGC);
     releaseGC(textD->w, textD->lineNumGC);
     XtFree((char *)textD->lineStarts);
-    while (TextDPopGraphicExposeQueueEntry(textD)) {
-    }
     XtFree((char *)textD->bgClassPixel);
     XtFree((char *)textD->bgClass);
     XtFree((char *)textD);
@@ -1722,14 +1727,6 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     if (visLineNum < 0 || visLineNum >= textD->nVisibleLines)
     	return;
 
-    /* Shrink the clipping range to the active display area */
-    leftClip = max(textD->left, leftClip);
-    rightClip = min(rightClip, textD->left + textD->width);
-    
-    if (leftClip > rightClip) {
-        return;
-    }
-
     /* Calculate y coordinate of the string to draw */
     fontHeight = textD->ascent + textD->descent;
     y = textD->top + visLineNum * fontHeight;
@@ -1755,6 +1752,10 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     	XtFree(lineStr);
     	return;
     }
+    
+    /* Shrink the clipping range to the active display area */
+    leftClip = max(textD->left, leftClip);
+    rightClip = min(rightClip, textD->left + textD->width);
     
     /* Rectangular selections are based on "real" line starts (after a newline
        or start of buffer).  Calculate the difference between the last newline
@@ -2535,55 +2536,6 @@ static void calcLastChar(textDisp *textD)
     	    TextDEndOfLine(textD, textD->lineStarts[i], True);
 }
 
-void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset)
-{
-    if (textD->graphicsExposeQueue) {
-        graphicExposeTranslationEntry *thisGEQEntry = textD->graphicsExposeQueue->next;
-        if (thisGEQEntry) {
-            *xOffset += thisGEQEntry->horizontal;
-            *yOffset += thisGEQEntry->vertical;
-        }
-    }
-}
-
-Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD)
-{
-    graphicExposeTranslationEntry *removedGEQEntry = textD->graphicsExposeQueue;
-
-    if (removedGEQEntry) {
-        textD->graphicsExposeQueue = removedGEQEntry->next;
-        XtFree((char *)removedGEQEntry);
-    }
-    return(removedGEQEntry?True:False);
-}
-
-void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry)
-{
-    graphicExposeTranslationEntry *newGEQEntry = NULL;
-    if (appendEntry) {
-        newGEQEntry = (graphicExposeTranslationEntry *)XtMalloc(sizeof(graphicExposeTranslationEntry));
-        newGEQEntry->next = NULL;
-        newGEQEntry->horizontal = xOffset;
-        newGEQEntry->vertical = yOffset;
-    }
-    if (textD->graphicsExposeQueue) {
-        graphicExposeTranslationEntry *iter = textD->graphicsExposeQueue;
-        while (iter->next) {
-            iter->next->horizontal += xOffset;
-            iter->next->vertical += yOffset;
-            iter = iter->next;
-        }
-        if (appendEntry) {
-            iter->next = (struct graphicExposeTranslationEntry *)newGEQEntry;
-        }
-    }
-    else {
-        if (appendEntry) {
-            textD->graphicsExposeQueue = newGEQEntry;
-        }
-    }
-}
-
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	int updateVScrollBar, int updateHScrollBar)
 {
@@ -2625,10 +2577,13 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
        if there's nothing to recover because the scroll distance is large */
     xOffset = origHOffset - textD->horizOffset;
     yOffset = lineDelta * fontHeight;
-    if (abs(xOffset) > textD->width || abs(yOffset) > exactHeight) {
-        TextDTranlateGraphicExposeQueue(textD, xOffset, yOffset, False);
+    if (textD->visibility != VisibilityUnobscured ||
+    	    abs(xOffset) > textD->width || abs(yOffset) > exactHeight) {
     	TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
     		textD->height);
+    
+    /* If the window is not obscured, paint most of the window using XCopyArea
+       from existing displayed text, and redraw only what's necessary */
     } else {
 	/* Recover the useable window areas by moving to the proper location */
 	srcX = textD->left + (xOffset >= 0 ? 0 : -xOffset);
@@ -2638,7 +2593,6 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	dstY = textD->top + (yOffset >= 0 ? yOffset : 0);
 	height = exactHeight - abs(yOffset);
 	resetClipRectangles(textD);
-        TextDTranlateGraphicExposeQueue(textD, xOffset, yOffset, True);
 	XCopyArea(XtDisplay(textD->w), XtWindow(textD->w), XtWindow(textD->w),
     		textD->gc, srcX, srcY, width, height, dstX, dstY);
 	/* redraw the un-recoverable parts */
@@ -2664,8 +2618,6 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	redrawLineNumbers(textD, False);
         TextDRedrawCalltip(textD, 0);
     }
-
-    HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, NULL);
 }
 
 /*
@@ -2834,6 +2786,15 @@ static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData)
     if (newValue == textD->horizOffset)
         return;
     setScroll(textD, textD->topLineNum, newValue, False, False);
+}
+
+static void visibilityEH(Widget w, XtPointer data, XEvent *event,
+	Boolean *continueDispatch)
+{
+    /* Record whether the window is fully visible or not.  This information
+       is used for choosing the scrolling methodology for optimal performance,
+       if the window is partially obscured, XCopyArea may not work */
+    ((textDisp *)data)->visibility = event->xvisibility.state;
 }
 
 static int max(int i1, int i2)
