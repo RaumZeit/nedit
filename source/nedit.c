@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.15 2001/08/07 01:12:51 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.16 2001/08/09 20:58:09 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -78,22 +78,24 @@ Display *TheDisplay;
 char *ArgV0;
 Boolean IsServer = False;
 
+#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-12-*-*-*-*-iso8859-*"
+#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-12-*-*-*-*-iso8859-*"
+
 static char *fallbackResources[] = {
     "*menuBar.marginHeight: 0",
     "*menuBar.shadowThickness: 1",
     "*pane.sashHeight: 11",
     "*pane.sashWidth: 11",
     "*text.selectionArrayCount: 3",
-    "*fontList:-adobe-helvetica-medium-r-normal-*-12-*-*-*-*-*-*",
-    "*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
-    "*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "nedit*fontList: " NEDIT_DEFAULT_FONT,
+    "nedit*XmList.fontList: " NEDIT_FIXED_FONT,
     /* This should not be necessary, but some default in LessTif is
        overriding the resource above, and specifying the app-name fixes it */
-    "nedit*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "nedit*XmText.fontList: " NEDIT_FIXED_FONT,
     /* Same with this, both Solaris Motif and LessTif seem to have some
        very specific defaults for file selection box fonts */
-    "nedit*FileSelect*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
-    "*XmTextField.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "nedit*XmFileSelectionBox*XmList.fontList: " NEDIT_FIXED_FONT,
+    "nedit*XmTextField.fontList: " NEDIT_FIXED_FONT,
     "nedit*background: #b3b3b3",
     "nedit*foreground: black",
     "nedit*text.lineNumForeground: #777777",
@@ -107,7 +109,7 @@ static char *fallbackResources[] = {
     "nedit*helpText.foreground: black",
     "nedit*helpText.selectBackground: #b3b3b3",
     "nedit*statsLine.background: #b3b3b3",
-    "*helpText.font: -adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
+    "nedit*helpText.font: " NEDIT_FIXED_FONT,
     "*XmText.translations: #override \
 Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\
 Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n\
@@ -281,7 +283,7 @@ int main(int argc, char **argv)
     
     /* Save the command which was used to invoke nedit for restart command */
     ArgV0 = argv[0];
-    
+
     /* Set locale for C library, X, and Motif input functions. 
        Reverts to "C" if requested locale not available. */
     XtSetLanguageProc(NULL, NULL, NULL);
