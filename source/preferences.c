@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.135 2005/02/15 01:10:15 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.136 2005/02/23 03:00:52 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -743,7 +743,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Matlab:Default", &TempStringPrefs.smartIndent, NULL, True},
     {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_ALLOC_STRING,
         "Default", &TempStringPrefs.smartIndentCommon, NULL, True},
-    {"autoWrap", "AutoWrap", PREF_ENUM, "Newline",
+    {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous",
     	&PrefData.wrapStyle, AutoWrapTypes, True},
     {"wrapMargin", "WrapMargin", PREF_INT, "0",
     	&PrefData.wrapMargin, NULL, True},
@@ -1287,7 +1287,7 @@ static void translatePrefFormats(int convertOld, int fileVer)
     /* For compatability with older (4.0.3 and before) versions, the autoWrap
        and autoIndent resources can accept values of True and False.  Translate
        them into acceptable wrap and indent styles */
-    if (PrefData.wrapStyle == 3) PrefData.wrapStyle = NEWLINE_WRAP;
+    if (PrefData.wrapStyle == 3) PrefData.wrapStyle = CONTINUOUS_WRAP;
     if (PrefData.wrapStyle == 4) PrefData.wrapStyle = NO_WRAP;
     if (PrefData.autoIndent == 3) PrefData.autoIndent = AUTO_INDENT;
     if (PrefData.autoIndent == 4) PrefData.autoIndent = NO_AUTO_INDENT;
