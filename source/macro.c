@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.74 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.75 2003/12/19 23:23:30 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2522,13 +2522,13 @@ static int readSearchArgs(DataValue *argList, int nArgs, int *searchDirection,
 	int *searchType, int *wrap, char **errMsg)
 {
     int i;
-    char *argStr, stringStorage[9][TYPE_INT_STR_SIZE(int)];
+    char *argStr, stringStorage[TYPE_INT_STR_SIZE(int)];
     
     *wrap = False;
     *searchDirection = SEARCH_FORWARD;
     *searchType = SEARCH_LITERAL;
     for (i=0; i<nArgs; i++) {
-    	if (!readStringArg(argList[i], &argStr, stringStorage[i], errMsg))
+    	if (!readStringArg(argList[i], &argStr, stringStorage, errMsg))
     	    return False;
     	else if (!strcmp(argStr, "wrap"))
     	    *wrap = True;
@@ -2731,7 +2731,9 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)], *btnLabels[8], *message;
+    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
+    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char *message;
     Arg al[20];
     int ac;
     Widget dialog, btn;
@@ -2755,6 +2757,10 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs == 0) {
     	*errMsg = "%s subroutine called with no arguments";
     	return False;
+    }
+    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return False;
     }
     if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
 	return False;
@@ -2887,7 +2893,9 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)], *btnLabels[8], *message;
+    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
+    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char *message;
     Widget dialog, btn;
     int i, nBtns;
     XmString s1, s2;
@@ -2911,6 +2919,10 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs == 0) {
     	*errMsg = "%s subroutine called with no arguments";
     	return False;
+    }
+    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return False;
     }
     if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))
 	return False;
@@ -3220,7 +3232,9 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char stringStorage[9][TYPE_INT_STR_SIZE(int)], *btnLabels[8], *message, *text;
+    char stringStorage[9][TYPE_INT_STR_SIZE(int)];
+    char *btnLabels[sizeof(stringStorage)/sizeof(*stringStorage)];
+    char *message, *text;
     Widget dialog, btn;
     int i, nBtns;
     XmString s1, s2;
@@ -3251,6 +3265,10 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs < 2) {
       *errMsg = "%s subroutine called with no message, string or arguments";
       return False;
+    }
+    if (nArgs > sizeof(stringStorage)/sizeof(*stringStorage)) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return False;
     }
 
     if (!readStringArg(argList[0], &message, stringStorage[0], errMsg))

@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.26 2003/05/14 19:08:41 n8gray Exp $ */
+/* $Id: parse.y,v 1.27 2003/12/19 23:23:31 slobasso Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -38,7 +38,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.26 2003/05/14 19:08:41 n8gray Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.27 2003/12/19 23:23:31 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -60,6 +60,7 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
     int nArgs;
 }
 %token <sym> NUMBER STRING SYMBOL
+%token DELETE ARG_LOOKUP
 %token IF WHILE ELSE FOR BREAK CONTINUE RETURN
 %type <nArgs> arglist
 %type <inst> cond comastmts for while else and or arrayexpr
@@ -68,7 +69,7 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 %nonassoc IF_NO_ELSE
 %nonassoc ELSE
 
-%nonassoc SYMBOL
+%nonassoc SYMBOL ARG_LOOKUP
 %right    '=' ADDEQ SUBEQ MULEQ DIVEQ MODEQ ANDEQ OREQ
 %left     CONCAT
 %left     OR
@@ -320,6 +321,15 @@ numexpr:    NUMBER {
                 ADD_OP(OP_FETCH_RET_VAL);
             }
             | '(' expr ')'
+            | ARG_LOOKUP '[' numexpr ']' {
+               ADD_OP(OP_PUSH_ARG);
+            }
+            | ARG_LOOKUP '[' ']' {
+               ADD_OP(OP_PUSH_ARG_COUNT);
+            }
+            | ARG_LOOKUP {
+               ADD_OP(OP_PUSH_ARG_ARRAY);
+            }
             | numexpr '[' arglist ']' {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
             }
@@ -535,15 +545,16 @@ static int yylex(void)
             if (!strcmp(symName, "break")) return BREAK;
             if (!strcmp(symName, "continue")) return CONTINUE;
             if (!strcmp(symName, "return")) return RETURN;
-        if (!strcmp(symName, "in")) return IN;
-        if (!strcmp(symName, "delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
+            if (!strcmp(symName, "in")) return IN;
+            if (!strcmp(symName, "$args")) return ARG_LOOKUP;
+            if (!strcmp(symName, "delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
             if (!strcmp(symName, "define")) {
                 InPtr -= 6;
                 return 0;
             }
             if ((s=LookupSymbol(symName)) == NULL) {
                 s = InstallSymbol(symName, symName[0]=='$' ?
-                        (isdigit((unsigned char)symName[1]) ?
+                        (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ?
                         ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
                 s->value.tag = NO_TAG;
             }

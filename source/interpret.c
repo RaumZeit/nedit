@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.34 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.35 2003/12/19 23:23:30 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -83,6 +83,9 @@ static int returnNoVal(void);
 static int returnVal(void);
 static int returnValOrNone(int valOnStack);
 static int pushSymVal(void);
+static int pushArgVal(void);
+static int pushArgCount(void);
+static int pushArgArray(void);
 static int pushArraySymVal(void);
 static int dupStack(void);
 static int add(void);
@@ -202,7 +205,23 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal, pushSymVal, dupStack,
     assign, callSubroutine, fetchRetVal, branch, branchTrue, branchFalse,
     branchNever, arrayRef, arrayAssign, beginArrayIter, arrayIter, inArray,
     deleteArrayElement, pushArraySymVal,
-    arrayRefAndAssignSetup};
+    arrayRefAndAssignSetup, pushArgVal, pushArgCount, pushArgArray};
+
+/* Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
+#define FP_ARG_ARRAY_CACHE_INDEX (-1)
+#define FP_ARG_COUNT_INDEX (-2)
+#define FP_OLD_FP_INDEX (-3)
+#define FP_RET_PC_INDEX (-4)
+#define FP_TO_ARGS_DIST (4) /* should be 0 - (above index) */
+#define FP_GET_ITEM(xFrameP,xIndex) (*(xFrameP + xIndex))
+#define FP_GET_ARG_ARRAY_CACHE(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_ARRAY_CACHE_INDEX))
+#define FP_GET_ARG_COUNT(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX).val.n)
+#define FP_GET_OLD_FP(xFrameP) ((FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX)).val.dataval)
+#define FP_GET_RET_PC(xFrameP) ((FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX)).val.inst)
+#define FP_ARG_START_INDEX(xFrameP) (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
+#define FP_GET_ARG_N(xFrameP,xN) (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
+#define FP_GET_SYM_N(xFrameP,xN) (FP_GET_ITEM(xFrameP, xN))
+#define FP_GET_SYM_VAL(xFrameP,xSym) (FP_GET_SYM_N(xFrameP, xSym->value.val.n))
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -461,18 +480,24 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
     /* Push arguments and call information onto the stack */
     for (i=0; i<nArgs; i++)
     	*(context->stackP++) = args[i];
-    context->stackP->val.subr = NULL;
+
+    context->stackP->val.subr = NULL; /* return PC */
     context->stackP->tag = NO_TAG;
     context->stackP++;
-    *(context->stackP++) = noValue;
-    context->stackP->tag = NO_TAG;
+    
+    *(context->stackP++) = noValue; /* old FrameP */
+    
+    context->stackP->tag = NO_TAG; /* nArgs */
     context->stackP->val.n = nArgs;
     context->stackP++;
+    
+    *(context->stackP++) = noValue; /* cached arg array */
+    
     context->frameP = context->stackP;
     
     /* Initialize and make room on the stack for local variables */
     for (s = prog->localSymList; s != NULL; s = s->next) {
-    	*(context->frameP + s->value.val.n) = noValue;
+    	FP_GET_SYM_VAL(context->frameP, s) = noValue;
     	context->stackP++;
     }
     
@@ -554,18 +579,23 @@ void RunMacroAsSubrCall(Program *prog)
     /* See subroutine "callSubroutine" for a description of the stack frame
        for a subroutine call */
     StackP->tag = NO_TAG;
-    StackP->val.inst = PC;
+    StackP->val.inst = PC; /* return PC */
     StackP++;
+    
     StackP->tag = NO_TAG;
-    StackP->val.dataval = FrameP;
+    StackP->val.dataval = FrameP; /* old FrameP */
     StackP++;
-    StackP->tag = NO_TAG;
+    
+    StackP->tag = NO_TAG; /* nArgs */
     StackP->val.n = 0;
     StackP++;
+    
+    *(StackP++) = noValue; /* cached arg array */
+    
     FrameP = StackP;
     PC = prog->code;
     for (s = prog->localSymList; s != NULL; s = s->next) {
-	*(FrameP + s->value.val.n) = noValue;
+	FP_GET_SYM_VAL(FrameP, s) = noValue;
 	StackP++;
     }
 }
@@ -629,13 +659,14 @@ void SetMacroFocusWindow(WindowInfo *window)
 ** install an array iteration symbol
 ** it is tagged as an integer but holds an array node pointer
 */
+#define ARRAY_ITER_SYM_PREFIX "aryiter "
 Symbol *InstallIteratorSymbol()
 {
-    char symbolName[10 + TYPE_INT_STR_SIZE(int)];
+    char symbolName[sizeof(ARRAY_ITER_SYM_PREFIX) + TYPE_INT_STR_SIZE(int)];
     DataValue value;
     static int interatorNameIndex = 0;
 
-    sprintf(symbolName, "aryiter #%d", interatorNameIndex);
+    sprintf(symbolName, ARRAY_ITER_SYM_PREFIX "#%d", interatorNameIndex);
     ++interatorNameIndex;
     value.tag = INT_TAG;
     value.val.arrayPtr = NULL;
@@ -1055,33 +1086,95 @@ static int pushSymVal(void)
 
     s = (Symbol *)*PC++;
     if (s->type == LOCAL_SYM) {
-    	*StackP = *(FrameP + s->value.val.n);
+    	*StackP = FP_GET_SYM_VAL(FrameP, s);
     } else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
     	*StackP = s->value;
     } else if (s->type == ARG_SYM) {
-    	nArgs = (FrameP-1)->val.n;
+    	nArgs = FP_GET_ARG_COUNT(FrameP);
     	argNum = s->value.val.n;
-    	if (argNum >= nArgs)
+    	if (argNum >= nArgs) {
     	    return execError("referenced undefined argument: %s",  s->name);
+        }
     	if (argNum == N_ARGS_ARG_SYM) {
     	    StackP->tag = INT_TAG;
     	    StackP->val.n = nArgs;
-    	} else
-    	    *StackP = *(FrameP + argNum - nArgs - 3);
+    	}
+        else {
+    	    *StackP = FP_GET_ARG_N(FrameP, argNum);
+        }
     } else if (s->type == PROC_VALUE_SYM) {
 	DataValue result;
 	char *errMsg;
 	if (!(s->value.val.subr)(FocusWindow, NULL, 0,
-	    	&result, &errMsg))
+	    	&result, &errMsg)) {
 	    return execError(errMsg, s->name);
+        }
     	*StackP = result;
     } else
     	return execError("reading non-variable: %s", s->name);
-    if (StackP->tag == NO_TAG)
+    if (StackP->tag == NO_TAG) {
     	return execError("variable not set: %s", s->name);
+    }
     StackP++;
-    if (StackP >= &Stack[STACK_SIZE])
+    if (StackP >= &Stack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
+    }
+    return STAT_OK;
+}
+
+static int pushArgVal(void)
+{
+    int nArgs, argNum;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(1, 3);
+
+    POP_INT(argNum)
+    --argNum;
+    nArgs = FP_GET_ARG_COUNT(FrameP);
+    if (argNum >= nArgs || argNum < 0) {
+        char argStr[TYPE_INT_STR_SIZE(argNum)];
+        sprintf(argStr, "%d", argNum + 1);
+    	return execError("referenced undefined argument: $args[%s]", argStr);
+    }
+    PUSH(FP_GET_ARG_N(FrameP, argNum));
+    return STAT_OK;
+}
+
+static int pushArgCount(void)
+{
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(0, 3);
+
+    PUSH_INT(FP_GET_ARG_COUNT(FrameP));
+    return STAT_OK;
+}
+
+static int pushArgArray(void)
+{
+    int nArgs, argNum;
+    DataValue argVal, *resultArray;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(0, 3);
+
+    nArgs = FP_GET_ARG_COUNT(FrameP);
+    resultArray = &FP_GET_ARG_ARRAY_CACHE(FrameP);
+    if (resultArray->tag != ARRAY_TAG) {
+        resultArray->tag = ARRAY_TAG;
+        resultArray->val.arrayPtr = ArrayNew();
+
+        for (argNum = 0; argNum < nArgs; ++argNum) {
+            char intStr[TYPE_INT_STR_SIZE(argNum)];
+
+            sprintf(intStr, "%d", argNum + 1);
+            argVal = FP_GET_ARG_N(FrameP, argNum);
+            if (!ArrayInsert(resultArray, AllocStringCpy(intStr), &argVal)) {
+                return(execError("array insertion failure", NULL));
+            }
+        }
+    }
+    PUSH(*resultArray);
     return STAT_OK;
 }
 
@@ -1109,10 +1202,12 @@ static int pushArraySymVal(void)
     PC++;
     
     if (sym->type == LOCAL_SYM) {
-    	dataPtr = FrameP + sym->value.val.n;
-    } else if (sym->type == GLOBAL_SYM) {
+    	dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
+    }
+    else if (sym->type == GLOBAL_SYM) {
     	dataPtr = &sym->value;
-    } else {
+    }
+    else {
     	return execError("assigning to non-lvalue array or non-array: %s", sym->name);
     }
 
@@ -1131,7 +1226,7 @@ static int pushArraySymVal(void)
     if (StackP >= &Stack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
     }
-    return(STAT_OK);
+    return STAT_OK;
 }
 
 /*
@@ -1152,20 +1247,26 @@ static int assign(void)
 
     sym = (Symbol *)(*PC++);
     if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
-        if (sym->type == ARG_SYM)
+        if (sym->type == ARG_SYM) {
             return execError("assignment to function argument: %s",  sym->name);
-        else if (sym->type == PROC_VALUE_SYM)
+        }
+        else if (sym->type == PROC_VALUE_SYM) {
             return execError("assignment to read-only variable: %s", sym->name);
-        else
+        }
+        else {
             return execError("assignment to non-variable: %s", sym->name);
+        }
     }
-    if (StackP == Stack)
+    if (StackP == Stack) {
         return execError(StackUnderflowMsg, "");
+    }
     --StackP;
-    if (sym->type == LOCAL_SYM)
-        dataPtr = (FrameP + sym->value.val.n);
-    else
+    if (sym->type == LOCAL_SYM) {
+        dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
+    }
+    else {
         dataPtr = &sym->value;
+    }
     if (StackP->tag == ARRAY_TAG) {
         ArrayCopy(dataPtr, StackP);
     }
@@ -1185,8 +1286,9 @@ static int dupStack(void)
     DISASM_RT(PC-1, 1);
     STACKDUMP(1, 3);
 
-    if (StackP >= &Stack[STACK_SIZE])
+    if (StackP >= &Stack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
+    }
     *StackP = *(StackP - 1);
     StackP++;
     return STAT_OK;
@@ -1696,7 +1798,7 @@ static int concat(void)
 ** After:  Prog->  next, ...            -- (built-in called subr)
 **         Stack-> retVal?, next, ...
 **    or:  Prog->  (in called)next, ... -- (macro code called subr)
-**         Stack-> symN-sym1(FP), nArgs, oldFP, retPC, argN-arg1, next, ...
+**         Stack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
 static int callSubroutine(void)
 {
@@ -1712,10 +1814,6 @@ static int callSubroutine(void)
     DISASM_RT(PC-3, 3);
     STACKDUMP(nArgs, 3);
 
-    if (nArgs > MAX_ARGS)
-    	return execError("too many arguments to subroutine %s (max 9)",
-    	    	sym->name);
-    
     /*
     ** If the subroutine is built-in, call the built-in routine
     */
@@ -1731,8 +1829,9 @@ static int callSubroutine(void)
 	    	nArgs, &result, &errMsg))
 	    return execError(errMsg, sym->name);
     	if (*PC == fetchRetVal) {
-    	    if (result.tag == NO_TAG)
+    	    if (result.tag == NO_TAG) {
     	    	return execError("%s does not return a value", sym->name);
+            }
     	    PUSH(result);
 	    PC++;
     	}
@@ -1747,20 +1846,25 @@ static int callSubroutine(void)
     ** values which are already there.
     */
     if (sym->type == MACRO_FUNCTION_SYM) {
-    	StackP->tag = NO_TAG;
+    	StackP->tag = NO_TAG; /* return PC */
     	StackP->val.inst = PC;
     	StackP++;
-    	StackP->tag = NO_TAG;
+        
+    	StackP->tag = NO_TAG; /* old FrameP */
     	StackP->val.dataval = FrameP;
     	StackP++;
-    	StackP->tag = NO_TAG;
+        
+    	StackP->tag = NO_TAG; /* nArgs */
     	StackP->val.n = nArgs;
     	StackP++;
+        
+        *(StackP++) = noValue; /* cached arg array */
+        
     	FrameP = StackP;
     	prog = (Program *)sym->value.val.str;
     	PC = prog->code;
 	for (s = prog->localSymList; s != NULL; s = s->next) {
-	    *(FrameP + s->value.val.n) = noValue;
+	    FP_GET_SYM_VAL(FrameP, s) = noValue;
 	    StackP++;
 	}
    	return STAT_OK;
@@ -1801,8 +1905,9 @@ static int callSubroutine(void)
     	PreemptRequest = False;
     	sym->value.val.xtproc(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
-    	if (*PC == fetchRetVal)
+    	if (*PC == fetchRetVal) {
     	    return execError("%s does not return a value", sym->name);
+        }
     	return PreemptRequest ? STAT_PREEMPT : STAT_OK;
     }
 
@@ -1833,7 +1938,7 @@ static int returnVal(void)
 /*
 ** Return from a subroutine call
 ** Before: Prog->  [next], ...
-**         Stack-> retVal?, ...(FP), nArgs, oldFP, retPC, argN-arg1, next, ...
+**         Stack-> retVal?, ...(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 ** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
 **         Stack-> retVal?, next, ...
 */
@@ -1841,26 +1946,27 @@ static int returnValOrNone(int valOnStack)
 {
     DataValue retVal;
     static DataValue noValue = {NO_TAG, {0}};
+    DataValue *newFrameP;
     int nArgs;
     
     DISASM_RT(PC-1, 1);
-    STACKDUMP(StackP - FrameP + FrameP[-1].val.n + 3, 3);
+    STACKDUMP(StackP - FrameP + FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST, 3);
 
     /* return value is on the stack */
     if (valOnStack) {
     	POP(retVal);
     }
     
+    /* get stored return information */
+    nArgs = FP_GET_ARG_COUNT(FrameP);
+    newFrameP = FP_GET_OLD_FP(FrameP);
+    PC = FP_GET_RET_PC(FrameP);
+    
     /* pop past local variables */
     StackP = FrameP;
-    
-    /* get stored return information */
-    nArgs = (--StackP)->val.n;
-    FrameP = (--StackP)->val.dataval;
-    PC = (--StackP)->val.inst;
-    
     /* pop past function arguments */
-    StackP -= nArgs;
+    StackP -= (FP_TO_ARGS_DIST + nArgs);
+    FrameP = newFrameP;
     
     /* push returned value, if requsted */
     if (PC == NULL) {
@@ -2004,7 +2110,6 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray)
 static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams)
 {
     DataValue tmpVal;
-    int maxIntDigits = (sizeof(tmpVal.val.n) * 3) + 1;
     int sepLen = strlen(ARRAY_DIM_SEP);
     int keyLength = 0;
     int i;
@@ -2013,7 +2118,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams)
     for (i = nArgs - 1; i >= 0; --i) {
         PEEK(tmpVal, i)
         if (tmpVal.tag == INT_TAG) {
-            keyLength += maxIntDigits;
+            keyLength += TYPE_INT_STR_SIZE(tmpVal.val.n);
         }
         else if (tmpVal.tag == STRING_TAG) {
             keyLength += strlen(tmpVal.val.str);
@@ -2421,7 +2526,7 @@ static int beginArrayIter(void)
     POP(arrayVal)
     
     if (iterator->type == LOCAL_SYM) {
-        iteratorValPtr = (FrameP + iterator->value.val.n);
+        iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
     }
     else {
         return(execError("bad temporary iterator: %s",  iterator->name));
@@ -2478,7 +2583,7 @@ static int arrayIter(void)
     PC++;
 
     if (item->type == LOCAL_SYM) {
-        itemValPtr = (FrameP + item->value.val.n);
+        itemValPtr = &FP_GET_SYM_VAL(FrameP, item);
     }
     else if (item->type == GLOBAL_SYM) {
         itemValPtr = &(item->value);
@@ -2489,7 +2594,7 @@ static int arrayIter(void)
     itemValPtr->tag = NO_TAG;
 
     if (iterator->type == LOCAL_SYM) {
-        iteratorValPtr = (FrameP + iterator->value.val.n);
+        iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
     }
     else {
         return(execError("bad temporary iterator: %s",  iterator->name));
@@ -2743,14 +2848,17 @@ static void disasm(Inst *inst, int nInstr)
         "IN_ARRAY",                     /* inArray */
         "ARRAY_DELETE",                 /* deleteArrayElement */
         "PUSH_ARRAY_SYM",               /* pushArraySymVal */
-        "ARRAY_REF_ASSIGN_SETUP"        /* arrayRefAndAssignSetup */
+        "ARRAY_REF_ASSIGN_SETUP",       /* arrayRefAndAssignSetup */
+        "PUSH_ARG",                     /* $arg[expr] */
+        "PUSH_ARG_COUNT",               /* $arg[] */
+        "PUSH_ARG_ARRAY"                /* $arg */
     };
     int i, j;
     
     printf("\n");
-    for (i=0; i<nInstr; i++) {
+    for (i = 0; i < nInstr; ++i) {
         printf("Prog %8p ", &inst[i]);
-        for (j=0; j<N_OPS; j++) {
+        for (j = 0; j < N_OPS; ++j) {
             if (inst[i] == OpFns[j]) {
                 printf("%22s ", opNames[j]);
                 if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
@@ -2761,38 +2869,45 @@ static void disasm(Inst *inst, int nInstr)
                         dumpVal(sym->value);
                     }
                     ++i;
-                } else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
+                }
+                else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
                         j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
                     printf("to=(%d) %x", (int)inst[i+1],
                             (int)(&inst[i+1] + (int)inst[i+1]));
                     ++i;
-                } else if (j == OP_SUBR_CALL) {
+                }
+                else if (j == OP_SUBR_CALL) {
                     printf("%s (%d arg)", ((Symbol *)inst[i+1])->name,
                             (int)inst[i+2]);
                     i += 2;
-                } else if (j == OP_BEGIN_ARRAY_ITER) {
+                }
+                else if (j == OP_BEGIN_ARRAY_ITER) {
                     printf("%s in",
                             ((Symbol *)inst[i+1])->name);
                     ++i;
-                } else if (j == OP_ARRAY_ITER) {
+                }
+                else if (j == OP_ARRAY_ITER) {
                     printf("%s = %s++ end-loop=(%d) %x",
                             ((Symbol *)inst[i+1])->name,
                             ((Symbol *)inst[i+2])->name,
                             (int)inst[i+3],
                             (int)(&inst[i+3] + (int)inst[i+3]));
                     i += 3;
-                } else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
+                }
+                else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
                             j == OP_ARRAY_ASSIGN) {
                     printf("nDim=%d",
                             ((int)inst[i+1]));
                     ++i;
-                } else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
+                }
+                else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
                     printf("binOp=%s ",
                             ((int)inst[i+1]) ? "true" : "false");
                     printf("nDim=%d",
                             ((int)inst[i+2]));
                     i += 2;
-                } else if (j == OP_PUSH_ARRAY_SYM) {
+                }
+                else if (j == OP_PUSH_ARRAY_SYM) {
                     printf("%s", ((Symbol *)inst[++i])->name);
                     printf(" %s",
                             (int)inst[i+1] ? "createAndRef" : "refOnly");
@@ -2803,19 +2918,21 @@ static void disasm(Inst *inst, int nInstr)
                 break;
             }
         }
-        if (j == N_OPS)
+        if (j == N_OPS) {
             printf("%x\n", (int)inst[i]);
+        }
     }
 }
 #endif /* #ifdef DEBUG_DISASSEMBLER */
 
 #ifdef DEBUG_STACK  /* for run-time stack dumping */
+#define STACK_DUMP_ARG_PREFIX "Arg"
 static void stackdump(int n, int extra)
 {
-    /* Stack-> symN-sym1(FP), nArgs, oldFP, retPC, argN-arg1, next, ... */
-    int nArgs = FrameP[-1].val.n;
+    /* Stack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
+    int nArgs = FP_GET_ARG_COUNT(FrameP);
     int i, offset;
-    char buffer[20];
+    char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
     printf("Stack ----->\n");
     for (i = 0; i < n + extra; i++) {
         char *pos = "";
@@ -2829,13 +2946,14 @@ static void stackdump(int n, int extra)
         printf("%4.4s", i < n ? ">>>>" : "");
         printf("%8p ", dv);
         switch (offset) {
-            case 0:     pos = "FrameP"; break;  /* first local symbol value */
-            case -1:    pos = "NArgs";  break;  /* number of arguments */
-            case -2:    pos = "OldFP";  break;
-            case -3:    pos = "RetPC";  break;
+            case 0:                         pos = "FrameP"; break;  /* first local symbol value */
+            case FP_ARG_ARRAY_CACHE_INDEX:  pos = "args";  break;  /* number of arguments */
+            case FP_ARG_COUNT_INDEX:        pos = "NArgs";  break;  /* number of arguments */
+            case FP_OLD_FP_INDEX:           pos = "OldFP";  break;
+            case FP_RET_PC_INDEX:           pos = "RetPC";  break;
             default:
-                if (offset < -3 && offset >= -3 - nArgs) {
-                    sprintf(pos = buffer, "Arg%d", offset + 4 + nArgs);
+                if (offset < -FP_TO_ARGS_DIST && offset >= -FP_TO_ARGS_DIST - nArgs) {
+                    sprintf(pos = buffer, STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
                 }
                 break;
         }
