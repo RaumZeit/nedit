@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.21 2004/10/07 22:34:11 yooden Exp $ */
+/* $Id: text.h,v 1.22 2004/10/08 21:55:51 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * text.h -- Nirvana Editor Text Widget Header File                            *
@@ -167,6 +167,7 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
 const char *GetDefaultTranslations(void);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
+void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 
 #ifdef VMS /* VMS linker doesn't like long names (>31 chars) */
 #define HandleAllPendingGraphicsExposeNoExposeEvents HandlePendingExpNoExpEvents

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.178 2004/10/08 11:24:38 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.179 2004/10/08 21:55:51 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -2257,6 +2257,8 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
 
 static void movedCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
+    TextWidget textWidget = (TextWidget) w;
+
     if (window->ignoreModify)
         return;
 
@@ -2268,6 +2270,9 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData)
     
     /* Check for changes to read-only status and/or file modifications */
     CheckForChangesToFile(window);
+
+    /*  Start blinking the caret again.  */
+    ResetCursorBlink(textWidget, False);
 }
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,

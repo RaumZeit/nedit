@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.50 2004/10/07 22:34:11 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.51 2004/10/08 21:55:51 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -4121,6 +4121,34 @@ static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id)
     w->text.cursorBlinkProcID = XtAppAddTimeOut(
     	    XtWidgetToApplicationContext((Widget)w),
     	    w->text.cursorBlinkRate, cursorBlinkTimerProc, w);
+}
+
+/*
+**  Sets the caret to on or off and restart the caret blink timer.
+**  This could be used by other modules to modify the caret's blinking.
+*/
+void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked)
+{
+    if (0 != textWidget->text.cursorBlinkRate)
+    {
+        if (0 != textWidget->text.cursorBlinkProcID)
+        {
+            XtRemoveTimeOut(textWidget->text.cursorBlinkProcID);
+        }
+
+        if (startsBlanked)
+        {
+            TextDBlankCursor(textWidget->text.textD);
+        } else
+        {
+            TextDUnblankCursor(textWidget->text.textD);
+        }
+
+        textWidget->text.cursorBlinkProcID
+                = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget) textWidget),
+                    textWidget->text.cursorBlinkRate, cursorBlinkTimerProc,
+                    textWidget);
+    }
 }
 
 /*
