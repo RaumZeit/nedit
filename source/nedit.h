@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.55 2004/04/28 01:54:19 tksoh Exp $ */
+/* $Id: nedit.h,v 1.56 2004/06/11 10:16:45 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -54,10 +54,6 @@
 #define MIN_LINE_NUM_COLS 4 	/* Min. # of columns in line number display */
 #define APP_NAME "nedit"	/* application name for loading resources */
 #define APP_CLASS "NEdit"	/* application class for loading resources */
-#ifdef SGI_CUSTOM
-#define SGI_WINDOW_TITLE "nedit: " /* part of window title string for sgi */
-#define SGI_WINDOW_TITLE_LEN 7     /* length of SGI_WINDOW_TITLE */
-#endif
 
 /* The accumulated list of undo operations can potentially consume huge
    amounts of memory.  These tuning parameters determine how much undo infor-
@@ -78,7 +74,7 @@
 #define UNDO_OP_TRIMTO 200	  /* size undo list is normally trimmed to
 				     when it exceeds UNDO_OP_TRIMTO in length */
 #ifdef SGI_CUSTOM
-#define MAX_SHORTENED_ITEMS 80    /* max. number of items excluded in short- */
+#define MAX_SHORTENED_ITEMS 100   /* max. number of items excluded in short- */
 #endif	    	    	    	  /*     menus mode */
 
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};

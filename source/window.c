@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.158 2004/06/09 17:52:58 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.159 2004/06/11 10:16:45 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -211,9 +211,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     int ac;
     XmString s1;
     WindowInfo *win;
-#ifdef SGI_CUSTOM
-    char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
-#endif
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
     int x = 0, y = 0, bitmask, showTabBar, state;
@@ -358,18 +355,15 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     /* Create a new toplevel shell to hold the window */
     ac = 0;
-#ifdef SGI_CUSTOM
-    strcat(sgi_title, name);
-    XtSetArg(al[ac], XmNtitle, sgi_title); ac++;
+    XtSetArg(al[ac], XmNtitle, name); ac++;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
+#ifdef SGI_CUSTOM
     if (strncmp(name, "Untitled", 8) == 0) { 
         XtSetArg(al[ac], XmNiconName, APP_NAME); ac++;
     } else {
         XtSetArg(al[ac], XmNiconName, name); ac++;
     }
 #else
-    XtSetArg(al[ac], XmNtitle, name); ac++;
-    XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
     XtSetArg(al[ac], XmNiconName, name); ac++;
 #endif
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
@@ -3297,10 +3291,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     WindowInfo *window;
     int nCols, nRows;
     
-#ifdef SGI_CUSTOM
-    char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
-#endif
-
     /* Allocate some memory for the new window data structure */
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     

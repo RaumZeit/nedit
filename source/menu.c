@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.104 2004/05/06 08:39:56 jlous Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.105 2004/06/11 10:16:44 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4464,12 +4464,6 @@ void AddToPrevOpenMenu(const char *filename)
 static char* getWindowsMenuEntry(const WindowInfo* window)
 {
     static char fullTitle[MAXPATHLEN * 2 + 3+ 1];
-    const char *title;
-
-    XtVaGetValues(window->shell, XmNiconName, &title, NULL);    
-#ifdef SGI_CUSTOM
-    title = title + SGI_WINDOW_TITLE_LEN;
-#endif
 
     sprintf(fullTitle, "%s%s", window->filename, 
 	  window->fileChanged? "*" : "");
