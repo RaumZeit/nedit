@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.24 2002/07/27 08:55:06 yooden Exp $ */
+/* $Id: preferences.h,v 1.25 2002/08/10 23:53:45 tringali Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -155,6 +155,12 @@ int GetPrefReplaceDefScope(void);
 #endif
 void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
+void SetPrefUndoModifiesSelection(Boolean);
+void SetPrefWindowBufferMode(int state);
+int GetPrefWindowBufferMode(void);
+void SetPrefWindowBufferMode(int state);
+int GetPrefWindowBufferMode(void);
+Boolean GetPrefUndoModifiesSelection(void);
 int GetPrefOverrideVirtKeyBindings(void);
 
 #endif /* NEDIT_PREFERENCES_H_INCLUDED */
