@@ -216,8 +216,8 @@ int main() {
     fprintf(stderr, "%s\n", vs);
     tif = "Open Motif";
     
-    /* Check for Open Motif 2.1.30 */
-    if (!force_bad && XmVERSION == 2 && XmREVISION == 1 && XmUPDATE_LEVEL == 30)
+    /* Check for Open Motif 2.1 */
+    if (!force_bad && XmVERSION == 2 && XmREVISION == 1)
         exit(0);
     
     /* Check for the dreaded Open Motif 2.2.2 */
