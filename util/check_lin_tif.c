@@ -250,9 +250,12 @@ int main() {
             exit(0);
         }
 
-        /* Check for the dreaded Open Motif 2.2.2 */
+        /* Check for the dreaded Open Motif 2.2.2 (some variants of which
+           claim to be 2.2.3, but the version string gives them away). */
         if (force_bad || 
-                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 3)) {
+                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 2)  ||
+                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL == 3 &&
+                 strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0)) {
             fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
             fprintf(stderr, 
                 "\nThis version of Open Motif is known to be broken and is\n"
