@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.29 2004/10/08 21:55:51 yooden Exp $
+$Id: ReleaseNotes,v 1.30 2004/10/08 22:26:40 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -17,6 +17,8 @@ Bugs fixed in $NEXT_VERSION
 
   - The text insertion cursor does no longer blink while typing
     (SF bug #906878).
+
+  - The status bar reflects a changed keybinding in the shell command banner.
 
 
 New features in 5.5 

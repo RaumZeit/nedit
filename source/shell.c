@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.35 2004/09/02 08:49:56 edg Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.36 2004/10/08 22:26:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -695,14 +695,42 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 ** Timer proc for putting up the "Shell Command in Progress" banner if
 ** the process is taking too long.
 */
+#define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = window->shellCmdData;
+    XmString xmCancel;
+    char* cCancel;
+    char message[MAX_TIMEOUT_MSG_LEN];
     
     cmdData->bannerIsUp = True;
-    SetModeMessage(window,
-    	    "Shell Command in Progress -- Press Ctrl+. to Cancel");
+
+    /* Extract accelerator text from menu PushButtons */
+    XtVaGetValues(window->cancelShellItem, XmNacceleratorText, &xmCancel, NULL);
+
+    /* Translate Motif string to char* */
+    cCancel = GetXmStringText(xmCancel);
+
+    /* Free Motif String */
+    XmStringFree(xmCancel);
+
+    /* Create message */
+    if ('\0' == cCancel[0])
+    {
+        strncpy(message, "Shell Command in Progress", MAX_TIMEOUT_MSG_LEN);
+        message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
+    } else
+    {
+        sprintf(message,
+                "Shell Command in Progress -- Press %s to Cancel",
+                cCancel);
+    }
+
+    /* Free C-string */
+    XtFree(cCancel);
+
+    SetModeMessage(window, message);
     cmdData->bannerTimeoutID = 0;
 }
 
