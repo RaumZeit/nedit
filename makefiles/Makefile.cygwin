@@ -1,4 +1,4 @@
-# $Id: Makefile.cygwin,v 1.5 2002/09/26 10:01:33 ajhood Exp $
+# $Id: Makefile.cygwin,v 1.6 2003/05/05 14:19:38 edg Exp $
 CC=gcc
 AR=ar
 
@@ -10,8 +10,8 @@ AR=ar
 # To test if the Motif library exports the runtime version
 # add -DHAVE__XMVERSIONSTRING to CFLAGS
 #
-CFLAGS=-O -I/usr/X11R6.4/include -DDONT_HAVE_GLOB -DCYGWIN -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DNO_XMIM
+CFLAGS=-O -I/usr/X11R6/include -DDONT_HAVE_GLOB -DCYGWIN -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DNO_XMIM
 ARFLAGS=-urs
-LIBS= -L/usr/X11R6.4/lib -lXm -lXpm -lXext -lXt -lSM -lICE -lX11
+LIBS= -L/usr/X11R6/lib -lXm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
