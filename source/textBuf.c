@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.8 2001/04/16 14:04:22 amai Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.9 2001/07/25 14:36:43 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -1146,8 +1146,10 @@ int BufSubstituteNullChars(char *string, int length, textBuffer *buf)
 	bufString = BufGetAll(buf);
 	histogramCharacters(bufString, buf->length, histogram, False);
 	newSubsChar = chooseNullSubsChar(histogram);
-	if (newSubsChar == '\0')
+	if (newSubsChar == '\0') {
+	    XtFree(bufString);
 	    return False;
+        }
 	subsChars(bufString, buf->length, buf->nullSubsChar, newSubsChar);
 	delete(buf, 0, buf->length);
 	insert(buf, 0, bufString);
