@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.41 2002/01/13 16:01:10 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.42 2002/01/15 17:05:23 tringali Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -78,7 +78,6 @@ static const char CVSID[] = "$Id: window.c,v 1.41 2002/01/13 16:01:10 yooden Exp
 #include "macro.h"
 #include "highlight.h"
 #include "smartIndent.h"
-#include "tags.h"
 #include "userCmds.h"
 #include "nedit.bm"
 #include "n.bm"
@@ -1531,18 +1530,17 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     
     /* Check and dim/undim selection related menu items */
     if ((window->wasSelected && !selected) ||
-        (!window->wasSelected && selected))
-    {
-        window->wasSelected = selected;
-        XtSetSensitive(window->printSelItem, selected);
-        XtSetSensitive(window->cutItem, selected);
-        XtSetSensitive(window->copyItem, selected);
-        XtSetSensitive(window->gotoSelItem, selected);
+        (!window->wasSelected && selected)) {
+    	window->wasSelected = selected;
+    	XtSetSensitive(window->printSelItem, selected);
+    	XtSetSensitive(window->cutItem, selected);
+    	XtSetSensitive(window->copyItem, selected);
         XtSetSensitive(window->delItem, selected);
-        XtSetSensitive(window->lowerItem, selected);
-        XtSetSensitive(window->upperItem, selected);
-        XtSetSensitive(window->findDefItem, (TagsFileList != NULL)
-                && window->wasSelected);
+        /* Note we don't change the selection for items like
+           "Open Selected" and "Find Selected".  That's because
+           it works on selections in external applications.
+           Desensitizing it if there's no NEdit selection 
+           disables this feature. */
 #ifndef VMS
         XtSetSensitive(window->filterItem, selected);
 #endif

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.49 2002/01/13 16:01:10 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.50 2002/01/15 17:05:23 tringali Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -644,10 +644,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "shiftRightShift", shiftRightCB, window);
     window->lowerItem=createMenuItem(menuPane, "lowerCase", "Lower-case", 'w',
     	    doActionCB, "lowercase", SHORT);
-    XtSetSensitive(window->lowerItem, window->wasSelected);
     window->upperItem=createMenuItem(menuPane, "upperCase", "Upper-case", 'e',
     	    doActionCB, "uppercase", SHORT);
-    XtSetSensitive(window->upperItem, window->wasSelected);
     createMenuItem(menuPane, "fillParagraph", "Fill Paragraph", 'F',
     	    doActionCB, "fill_paragraph", SHORT);
     createMenuSeparator(menuPane, "sep3", FULL);
@@ -695,7 +693,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    doActionCB, "goto_line_number_dialog", FULL);
     window->gotoSelItem=createMenuItem(menuPane, "gotoSelected", "Goto Selected", 'G',
     	    doActionCB, "goto_selected", FULL);
-    XtSetSensitive(window->gotoSelItem, window->wasSelected);
     createMenuSeparator(menuPane, "sep2", FULL);
     createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
     createMenuItem(menuPane, "gotoMark", "Goto Mark", 'o', gotoMarkCB, window,
@@ -707,7 +704,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
     window->findDefItem = createMenuItem(menuPane, "findDefinition",
     	    "Find Definition", 'D', doActionCB, "find_definition", FULL);
-    XtSetSensitive(window->findDefItem, (TagsFileList != NULL)&&window->wasSelected);
+    XtSetSensitive(window->findDefItem, TagsFileList != NULL);
     
     /*
     ** Preferences menu, Default Settings sub menu
