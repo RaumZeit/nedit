@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.19 2002/11/28 23:22:29 yooden Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.20 2003/04/10 18:37:27 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -137,13 +137,17 @@ const char
     
     passwdEntry = getpwuid(getuid());
     if (!passwdEntry) {
-       /* This is really serious, so just exit. */
-       perror("nedit: getpwuid() failed ");
-       exit(EXIT_FAILURE);
+       /* This is really serious, but sometimes username service
+          is misconfigured through no fault of the user.  Be nice
+          and let the user start nc anyway. */
+       perror("nedit: getpwuid() failed - reverting to $USER");
+       return getenv("USER");
     }
-    userName=malloc(strlen(passwdEntry->pw_name)+1);
-    strcpy(userName, passwdEntry->pw_name);
-    return userName;
+    else {
+       userName=malloc(strlen(passwdEntry->pw_name)+1);
+       strcpy(userName, passwdEntry->pw_name);
+       return userName;
+    }
 #endif /* VMS */
 }
 
