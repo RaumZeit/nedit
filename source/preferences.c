@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.81 2003/03/07 19:52:29 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.82 2003/03/14 22:27:53 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5636,7 +5636,7 @@ void ChooseColors(WindowInfo *window, int forWindow)
             lineNoFgModifiedCB, cd );
 
     /* The right column (backgrounds) */
-    tmpW = addColorGroup( form, "textBg", 'T', "Plain Text Background",
+    tmpW = addColorGroup( form, "textBg", 'T', "Text Area Background",
             &(cd->textBgW), &(cd->textBgErrW), topW, 51, 99, 
             textBgModifiedCB, cd );
     tmpW = addColorGroup( form, "selectBg", 'B', "Selection Background",
@@ -5649,12 +5649,28 @@ void ChooseColors(WindowInfo *window, int forWindow)
             &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 51, 99, 
             cursorFgModifiedCB, cd );
 
-    /* The OK, Apply, and Cancel buttons */
-    okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-          XmNlabelString, s1=XmStringCreateSimple("OK"),
+    tmpW = XtVaCreateManagedWidget("infoLbl",
+            xmLabelGadgetClass, form,
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, tmpW,
             XmNtopOffset, MARGIN_SPACING,
+            XmNleftAttachment, XmATTACH_POSITION,
+            XmNleftPosition, 1,
+            XmNrightAttachment, XmATTACH_POSITION,
+            XmNrightPosition, 99,
+            XmNalignment, XmALIGNMENT_CENTER,
+            XmNlabelString, s1 = XmStringCreateLtoR(
+                "NOTE: Foreground colors only apply when syntax highlighting "
+                "is DISABLED.\n", XmFONTLIST_DEFAULT_TAG),
+            NULL);
+    XmStringFree(s1);
+    
+    /* The OK, Apply, and Cancel buttons */
+    okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
+          XmNlabelString, s1=XmStringCreateSimple("OK"),
+          XmNtopAttachment, XmATTACH_WIDGET,
+          XmNtopWidget, tmpW,
+          /* XmNtopOffset, MARGIN_SPACING, */
           XmNleftAttachment, XmATTACH_POSITION,
           XmNleftPosition, 10,
           XmNrightAttachment, XmATTACH_POSITION,
@@ -5668,9 +5684,9 @@ void ChooseColors(WindowInfo *window, int forWindow)
         applyBtn = XtVaCreateManagedWidget(
                 "apply", xmPushButtonWidgetClass, form,
               XmNlabelString, s1=XmStringCreateSimple("Apply"),
-                XmNtopAttachment, XmATTACH_WIDGET,
-                XmNtopWidget, tmpW,
-                XmNtopOffset, MARGIN_SPACING,
+              XmNtopAttachment, XmATTACH_WIDGET,
+              XmNtopWidget, tmpW,
+              /* XmNtopOffset, MARGIN_SPACING, */
               XmNmnemonic, 'A',
               XmNleftAttachment, XmATTACH_POSITION,
               XmNleftPosition, 40,
@@ -5685,9 +5701,9 @@ void ChooseColors(WindowInfo *window, int forWindow)
     dismissBtn = XtVaCreateManagedWidget(
             "dismiss", xmPushButtonWidgetClass, form,
           XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
-            XmNtopAttachment, XmATTACH_WIDGET,
-            XmNtopWidget, tmpW,
-            XmNtopOffset, MARGIN_SPACING,
+          XmNtopAttachment, XmATTACH_WIDGET,
+          XmNtopWidget, tmpW,
+          /* XmNtopOffset, MARGIN_SPACING, */
           XmNleftAttachment, XmATTACH_POSITION,
           XmNleftPosition, 70,
           XmNrightAttachment, XmATTACH_POSITION,

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Mar 6, 2003 (Do NOT edit!)
+                 Generated on Mar 14, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -3316,12 +3316,16 @@ static char * htxt_preferences [] = {
 "information. ",
 "\n\n",
 "\01A\01BColors...\01A\n",
-"\01IChange the colors used to display text.  Note that syntax hilighting styles ",
-"and backlighting will override the colors set in the \"Plain Text\" fields. ",
-"(For information on changing syntax highlighting styles and patterns use see ",
-"Help -> Features for Programming -> \01QSyntax Highlighting\01I.)  The ",
-"\"Matching (..)\" fields change the colors that matching parens, brackets ",
-"and braces are flashed when the \"Show Matching (..)\" option is enabled. ",
+"\01I\n",
+"Change the colors used to display text.  The \"Matching (..)\" fields change ",
+"the colors that matching parens, brackets and braces are flashed when the ",
+"\"Show Matching (..)\" option is enabled.  Note that the foreground colors for ",
+"plain text, selected text, and matching paren flashing only apply when syntax ",
+"highlighting is disabled.  When syntax highlighting is enabled, text (even ",
+"text that appears plain) will always be colored according to its ",
+"highlighting style. (For information on changing syntax highlighting styles ",
+"and matching patterns use see  Help -> Features for Programming -> ",
+"\01QSyntax Highlighting\01I.) ",
 "\n\n",
 "\01A\01BHighlight Syntax\01A\n",
 "\01IIf NEdit recognizes the language being edited, and highlighting patterns are ",
@@ -5261,4 +5265,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Mar  5, 2003\n";
+static const char * NEditVersion = "NEdit release of Mar 14, 2003\n";
