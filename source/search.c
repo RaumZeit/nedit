@@ -1150,8 +1150,11 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
 	if (compiledRE == NULL) {
    	    DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
    	    	   "Please respecify the search string:\n%s", "OK", compileMsg);
+	    XtFree(replaceText);
+	    XtFree(replaceWithText);
  	    return FALSE;
  	}
+        free((char*)compiledRE);
     }
     
     /* Return strings */
@@ -2071,6 +2074,8 @@ int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
     newFileString = ReplaceAllInString(fileString, searchString, replaceString,
 	    searchType, &copyStart, &copyEnd, &replacementLen,
 	    GetWindowDelimiters(window));
+    XtFree(fileString);
+    
     if (newFileString == NULL) {
     	if (GetPrefSearchDlogs()) {
     	    if (window->findDlog && XtIsManaged(window->findDlog) &&
@@ -2084,7 +2089,6 @@ int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
     	    XBell(TheDisplay, 0);
 	return FALSE;
     }
-    XtFree(fileString);
     
     /* replace the contents of the text widget with the substituted text */
     BufReplace(window->buffer, copyStart, copyEnd, newFileString);

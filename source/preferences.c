@@ -35,6 +35,7 @@
 #endif /*VMS*/
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
