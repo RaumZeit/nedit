@@ -1,6 +1,6 @@
                      NEdit Version 5.2, August, 2001
 
-$Id: nedit.doc,v 1.5 2001/08/28 23:18:57 slobasso Exp $
+$Id: nedit.doc,v 1.6 2001/10/21 15:13:07 tringali Exp $
 
 NEdit is a standard GUI (Graphical User Interface) style text editor for
 programs and plain-text files.  Users of Macintosh and MS Windows based text
@@ -3470,7 +3470,7 @@ command line.  The -do macro is executed only once, on the next file on the
 line.  -do without a file following it on the command line, executes the macro
 on the first available window (presumably when you give a -do command without a
 corresponding file or window, you intend it to do something independent of the
-window in which it happens execute).
+window in which it happens to execute).
 
 nc also accepts one command line option of its own, -noask (or -ask), which
 instructs it whether to automatically start a server if one is not available.
@@ -3484,7 +3484,7 @@ start, and communicate with, separate named servers.  A named server responds
 only to requests with the corresponding -svrname argument.
 
 Communication between nc and nedit is through the X display.  So as long as X
-windows is set up and working properly, nc will will work properly as well.  nc
+windows is set up and working properly, nc will work properly as well.  nc
 uses the DISPLAY environment variable, the machine name and your user name to
 find the appropriate server, meaning, if you have several machines sharing a
 common file system, nc will not be able to find a server that is running on a
@@ -3501,7 +3501,7 @@ If a system crash, network failure, X server crash, or program error should
 happen while you are editing a file, you can easily recover most of your work.
 NEdit maintains a backup file which it updates periodically (every 8 editing
 operations or 30 characters typed under Unix, or 80 characters under VMS).
-This file is has the same name as the file that you are editing, but with the
+This file has the same name as the file that you are editing, but with the
 character "~" (tilde) on Unix or "_" (underscore) on VMS prefixed to the name.
 To recover a file after a crash, simply rename the file to remove the tilde
 or underscore character, replacing the older version of the file.  Because

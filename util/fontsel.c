@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.11 2001/08/23 14:11:22 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.12 2001/10/21 15:13:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.56 2001/10/04 09:44:27 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.57 2001/10/21 15:13:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -35,6 +35,7 @@ static const char CVSID[] = "$Id: help.c,v 1.56 2001/10/04 09:44:27 amai Exp $";
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
 #include <Xm/ScrolledW.h>
@@ -93,24 +94,28 @@ static const char *const HelpTitles[NUM_TOPICS] = {
 "Distribution Policy",
 "Tabs Dialog"};
 
-/* The policy for credit so far is this:
+/*
+   The policy for credit so far is this:
 
    You get "written by" credit if you have write access to the CVS
    repository and have contributed.
 
    You get a syntax/indent credit if your pattern is compiled into the
    binary.
+
+   Please leave the date out of the header until release; it generates
+   lots and lots of useless deltas in the CVS file.  Or, put it back
+   in but leave it alone until release.
  */
 
 static const char *const HelpText[NUM_TOPICS] = {
-"NEdit Version 5.2+ DEVELOPMENT version\n"
-"(October 2001)\n"
-"\n"
-"     Built on: %s, %s, %s\n"
-"     Built at: %s, %s\n"
-"   With Motif: %d [%s]\n"
-"Running Motif: %d\n"
-"\n\
+"NEdit Version 5.2+ DEVELOPMENT version\n\n\
+     Built on: %s, %s, %s\n\
+     Built at: %s, %s\n\
+   With Motif: %d [%s]\n\
+Running Motif: %d\n\
+       Server: %s %d\n\
+\n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max \
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve \
@@ -1146,7 +1151,7 @@ you are only using the built-in patterns.",
 "If a system crash, network failure, X server crash, or program error should \
 happen while you are editing a file, you can still recover most of your work.  \
 NEdit maintains a backup file which it updates periodically (every 8 editing \
-operations or 80 characters typed).  This file is has the same name as the \
+operations or 80 characters typed).  This file has the same name as the \
 file that you are editing, but with the character \"~\" (tilde) on Unix or \
 \"_\" (underscore) on VMS prefixed \
 to the name.  To recover a file after a crash, simply rename the file to \
@@ -2291,7 +2296,7 @@ the command line.  The -do macro is executed only once, on the next file on \
 the line.  -do without a file following it on the command line, executes \
 the macro on the first available window (presumably when you give a -do \
 command without a corresponding file or window, you intend it to do something \
-independent of the window in which it happens execute).\n\
+independent of the window in which it happens to execute).\n\
 \n\
 nc also accepts one command line option of its own, -noask (or -ask), \
 which instructs it whether to automatically start a server if one is not \
@@ -2307,7 +2312,7 @@ a ClearCase view, the server name will default to the name of the view (based \
 on the value of the CLEARCASE_ROOT environment variable).\n\
 \n\
 Communication between nc and nedit is through the X display. So as long as X \
-windows is set up and working properly, nc will will work \
+windows is set up and working properly, nc will work \
 properly as well.  nc uses the DISPLAY environment variable, the machine name \
 and your user name to find the appropriate server, meaning, if you have several \
 machines sharing a common file system, nc will not be able to find a server \
@@ -4777,7 +4782,9 @@ static Widget createHelpPanel(Widget parent, int topic)
                 COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
                 __DATE__, __TIME__,
                 XmVersion, XmVERSION_STRING,
-                xmUseVersion);
+                xmUseVersion,
+                ServerVendor(TheDisplay),
+                VendorRelease(TheDisplay));
 
         BufSetAll(TextGetBuffer(HelpTextPanes[topic]), text);
         XtFree(text);
@@ -4925,6 +4932,16 @@ static int findTopicFromShellWidget(Widget shellWidget)
     return -1;
 }
 
+#if XmVersion == 2000
+/* amai: This function may be called before the Motif part
+         is being initialized. The following, public interface
+         is known to initialize at least xmUseVersion.
+	 That interface is declared in <Xm/Xm.h> in Motif 1.2 only.
+	 As for Motif 2.1 we don't need this call anymore.
+	 This also holds for the Motif 2.1 version of LessTif
+	 releases > 0.93.0. */
+extern void XmRegisterConverters(void);
+#endif
 
 /* Print version info to stdout */
 void PrintVersion(void) {
@@ -4932,10 +4949,9 @@ void PrintVersion(void) {
     int topic=HELP_VERSION;
     char *text;
   
-    /* amai: This function may be called before the Motif part
-             is being initialized. The following, public interface
-             is known to initialize at least xmUseVersion ! */
-    XmRegisterConverters();
+#if XmVersion < 2001
+    XmRegisterConverters();  /* see comment above */
+#endif
 
     text = (char *)malloc(strlen(HelpText[topic]) + 1024);
     if (text==NULL) {
@@ -4945,8 +4961,10 @@ void PrintVersion(void) {
     sprintf(text, HelpText[topic], 
                   COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
                   __DATE__, __TIME__,
-                XmVersion, XmVERSION_STRING,
-                xmUseVersion);
+                  XmVersion, XmVERSION_STRING,
+                  xmUseVersion,
+                  ServerVendor(TheDisplay),
+                  VendorRelease(TheDisplay));
     puts(text);
     free(text);
 }

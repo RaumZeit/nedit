@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.7 2001/08/14 08:37:16 jlous Exp $ */
+/* $Id: system.h,v 1.8 2001/10/21 15:13:07 tringali Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -26,7 +26,8 @@
 *									       *
 *******************************************************************************/
 
-/* Determine which machine we were compiled with.  This isn't as accurate
+/*
+   Determine which machine we were compiled with.  This isn't as accurate
    as calling uname(), which is preferred.  However, this gets us very close
    for a majority of the machines out there, and doesn't require any games
    with make.
@@ -53,13 +54,14 @@
 #   define COMPILE_MACHINE "PowerPC"
 #elif defined(__ia64)
 #   define COMPILE_MACHINE "IA64"
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86)
+#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86) || defined(__i386)
 #   define COMPILE_MACHINE "x86"
 #elif defined(__VAX)
 #   define COMPILE_MACHINE "VAX"        /* Untested, please verify */
 #else	
 #   define COMPILE_MACHINE "Unknown"
 #endif
+
 
 #if defined(__digital__) && defined(__unix__)
 #   define COMPILE_OS "Tru64/Digital Unix"
@@ -89,11 +91,12 @@
 #   define COMPILE_OS "BSDI"
 #elif defined(__ultrix)                 /* Untested, please verify */
 #   define COMPILE_OS "Ultrix"
-#elif defined(__EMX__)                  /* Might be used on Win ... */
+#elif defined(__EMX__)                  /* Might be used on non-OS/2, too */
 #   define COMPILE_OS "OS/2"
 #else
 #   define COMPILE_OS "Unknown"
 #endif
+
 
 /* Some of the info below derived from this excellent reference: 
    http://www.fortran-2000.com/ArnaudRecipes/Version.html */
@@ -107,7 +110,9 @@
 #elif defined (__APOGEE)
 #   define COMPILE_COMPILER "Apogee"
 #elif defined (__SUNPRO_C)
-#   define COMPILE_COMPILER "Forte C"       /* aka Sun WorkShop Pro */
+#   define COMPILE_COMPILER "Forte C"         /* aka Sun WorkShop Pro */
+#elif defined (__SUNPRO_CC)
+#   define COMPILE_COMPILER "Forte C++"       /* aka Sun WorkShop Pro */
 #elif defined (__LCC__)
 #   define COMPILE_COMPILER "LCC"
 #elif defined (_MSC_VER)
@@ -116,14 +121,18 @@
 #   define COMPILE_COMPILER "Borland C"
 #elif defined (__sgi) && defined (_COMPILER_VERSION)
 #   define COMPILE_COMPILER "SGI MipsPro"
-#elif defined (__xlC__) || defined (__IBMC__)
+#elif defined (__xlC__)                       /* un*x versions of __IBMC__ !? */
 #   define COMPILE_COMPILER "IBM xlC"
+#elif defined (__IBMC__)
+#   define COMPILE_COMPILER "IBM C"           /* PC (OS/2, Windows) versions */
 #elif defined (__HP_aCC)
 #   define COMPILE_COMPILER "HP aCC"
 #elif defined (__KCC)
 #   define COMPILE_COMPILER "KAI C++"
 #elif defined (__MWERKS__)
 #   define COMPILE_COMPILER "Metrowerks CodeWarrior"
+#elif defined (__WATCOMC__)
+#   define COMPILE_COMPILER "Watcom C/C++"
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif

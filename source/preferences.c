@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.34 2001/09/05 11:44:25 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.35 2001/10/21 15:13:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -69,6 +69,9 @@ static const char CVSID[] = "$Id: preferences.c,v 1.34 2001/09/05 11:44:25 amai 
 #include "smartIndent.h"
 
 #define PREF_FILE_NAME ".nedit"
+
+/* New styles added in 5.2 for auto-upgrade */
+#define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
 
 /* maximum number of word delimiters allowed (256 allows whole character set) */
 #define MAX_WORD_DELIMITERS 256
@@ -628,10 +631,9 @@ static PrefDescripRec PrefDescrip[] = {
     	Text Arg1:SteelBlue4:Bold\n\
 	Text Arg2:RoyalBlue4:Plain\n\
     	Text Escape:gray30:Bold\n\
-	LaTeX Math:darkGreen:Plain\n\
-	Pointer:#660000:Bold\n\
-	Regex:#009944:Bold\n\
-	Warning:brown2:Italic", &TempStringPrefs.styles, NULL, True},
+	LaTeX Math:darkGreen:Plain\n"
+        ADD_5_2_STYLES,
+	&TempStringPrefs.styles, NULL, True},
     {"smartIndentInit", "SmartIndentInit", PREF_ALLOC_STRING,
         "C:Default\n\
 	C++:Default\n\
@@ -715,8 +717,8 @@ static PrefDescripRec PrefDescrip[] = {
     	PrefData.boldItalicFontString,
     	(void *)sizeof(PrefData.boldItalicFontString), True},
     {"shell", "Shell", PREF_STRING,
-#ifdef __MVS__
-    	"/bin/sh"
+#if defined(__MVS__) || defined(__EMX__)
+    	"/bin/sh",
 #else
         "/bin/csh",
 #endif
@@ -865,7 +867,8 @@ static void lmFreeItemCB(void *item);
 static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
-static void spliceString(char **intoString, char *insertString, char *atExpr);
+static void updatePatternsTo5dot2(void);
+static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
 	const char *replaceWith);
@@ -893,11 +896,19 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     requiresConversion = PrefData.prefFileRead &&
     	    PrefData.fileVersion[0] == '\0';
     if (requiresConversion) {
-	fprintf(stderr, "NEdit: Converting .nedit file from old version.\n"
-		"    To update, use Preferences -> Save Defaults\n");
+	fprintf(stderr, "NEdit: Converting .nedit file from pre-5.1 version.\n"
+		"    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot1();
     }
-     
+    
+    if (PrefData.prefFileRead &&
+        (PrefData.fileVersion[0] == '\0' ||
+        atof(PrefData.fileVersion) < 5.2)) {
+        fprintf(stderr, "NEdit: Converting .nedit file from pre-5.2 version.\n"
+                "    To keep, use Preferences -> Save Defaults\n");
+	updatePatternsTo5dot2();
+    }
+ 
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
        in which nedit stores and uses.  If the preferences file was
@@ -1010,7 +1021,7 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
     TempStringPrefs.styles = WriteStylesString();
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
-    strcpy(PrefData.fileVersion, "5.1");
+    strcpy(PrefData.fileVersion, "5.2");
     if (!SavePreferences(XtDisplay(parent), PREF_FILE_NAME, HeaderText,
     	    PrefDescrip, XtNumber(PrefDescrip)))
     	DialogF(DF_WARN, parent, 1,
@@ -4350,13 +4361,113 @@ static void updatePatternsTo5dot1(void)
     }
 }
 
+static void updatePatternsTo5dot2(void)
+{
+#ifdef VMS
+    const char *cppLm5dot1 =
+	"^[ \t]*C\\+\\+:\\.CC \\.HH \\.I::::::\"\\.,/\\\\`'!\\|@#%\\^&\\*\\(\\)-=\\+\\{\\}\\[\\]\"\":;\\<\\>\\?~\"";
+    const char *perlLm5dot1 =
+	"^[ \t]*Perl:\\.PL \\.PM \\.P5:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\.\\*perl\":::::";
+    const char *psLm5dot1 =
+        "^[ \t]*PostScript:\\.ps \\.PS \\.eps \\.EPS \\.epsf \\.epsi:\"\\^%!\":::::\"/%\\(\\)\\{\\}\\[\\]\\<\\>\"";
+    const char *tclLm5dot1 = "^[ \t]*Tcl:\\.TCL::::::";
+
+    const char *cppLm5dot2 =
+        "C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"";
+    const char *perlLm5dot2 =
+        "Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"";
+    const char *psLm5dot2 =
+        "PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"";
+    const char *tclLm5dot2 =
+        "Tcl:.TCL::Smart:None:::";
+#else
+    const char *cppLm5dot1 =
+	"^[ \t]*C\\+\\+:\\.cc \\.hh \\.C \\.H \\.i \\.cxx \\.hxx::::::\"\\.,/\\\\`'!\\|@#%\\^&\\*\\(\\)-=\\+\\{\\}\\[\\]\"\":;\\<\\>\\?~\"";
+    const char *perlLm5dot1 =
+	"^[ \t]*Perl:\\.pl \\.pm \\.p5:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\.\\*perl\":::::";
+    const char *psLm5dot1 =
+        "^[ \t]*PostScript:\\.ps \\.PS \\.eps \\.EPS \\.epsf \\.epsi:\"\\^%!\":::::\"/%\\(\\)\\{\\}\\[\\]\\<\\>\"";
+    const char *shLm5dot1 =
+        "^[ \t]*Sh Ksh Bash:\\.sh \\.bash \\.ksh \\.profile:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ \\\\t\\]\\*/bin/\\(sh\\|ksh\\|bash\\)\":::::";
+    const char *tclLm5dot1 = "^[ \t]*Tcl:\\.tcl::::::";
+
+    const char *cppLm5dot2 =
+        "C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"";
+    const char *perlLm5dot2 =
+        "Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"";
+    const char *psLm5dot2 =
+        "PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"";
+    const char *shLm5dot2 =
+        "Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::";
+    const char *tclLm5dot2 =
+        "Tcl:.tcl .tk .itcl .itk::Smart:None:::";
+#endif /* VMS */
+
+    const char *cssLm5dot2 =
+        "CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"";
+    const char *reLm5dot2 =
+        "Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::";
+    const char *xmlLm5dot2 =
+        "XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"";
+    
+    const char *cssHl5dot2 = "CSS:Default";
+    const char *reHl5dot2 =  "Regex:Default";
+    const char *xmlHl5dot2 = "XML:Default";
+    
+    const char *ptrStyle = "Pointer:#660000:Bold";
+    const char *reStyle = "Regex:#009944:Bold";
+    const char *wrnStyle = "Warning:brown2:Italic";
+
+    /* First upgrade modified language modes, only if the user hasn't
+       altered the default 5.1 definitions. */
+    if (regexFind(TempStringPrefs.language, cppLm5dot1))
+	regexReplace(&TempStringPrefs.language, cppLm5dot1, cppLm5dot2);
+    if (regexFind(TempStringPrefs.language, perlLm5dot1))
+	regexReplace(&TempStringPrefs.language, perlLm5dot1, perlLm5dot2);
+    if (regexFind(TempStringPrefs.language, psLm5dot1))
+	regexReplace(&TempStringPrefs.language, psLm5dot1, psLm5dot2);
+#ifndef VMS
+    if (regexFind(TempStringPrefs.language, shLm5dot1))
+	regexReplace(&TempStringPrefs.language, shLm5dot1, shLm5dot2);
+#endif
+    if (regexFind(TempStringPrefs.language, tclLm5dot1))
+	regexReplace(&TempStringPrefs.language, tclLm5dot1, tclLm5dot2);
+
+    /* Then append the new modes (trying to keep them in alphabetical order
+       makes no sense, since 5.1 didn't use alphabetical order). */
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*CSS:"))
+	spliceString(&TempStringPrefs.language, cssLm5dot2, NULL);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*Regex:"))
+	spliceString(&TempStringPrefs.language, reLm5dot2, NULL);
+    if (!regexFind(TempStringPrefs.language, "^[ \t]*XML:"))
+	spliceString(&TempStringPrefs.language, xmlLm5dot2, NULL);
+    
+    /* Enable default highlighting patterns for these modes, unless already
+       present */
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*CSS:"))
+	spliceString(&TempStringPrefs.highlight, cssHl5dot2, NULL);
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Regex:"))
+	spliceString(&TempStringPrefs.highlight, reHl5dot2, NULL);
+    if (!regexFind(TempStringPrefs.highlight, "^[ \t]*XML:"))
+	spliceString(&TempStringPrefs.highlight, xmlHl5dot2, NULL);
+
+    /* Finally, append the new highlight styles */
+
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Warning:"))
+	spliceString(&TempStringPrefs.styles, wrnStyle, NULL);
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Regex:"))
+	spliceString(&TempStringPrefs.styles, reStyle, "^[ \t]*Warning:");
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Pointer:"))
+	spliceString(&TempStringPrefs.styles, ptrStyle, "^[ \t]*Regex:");
+}
+
 /*
 ** Inserts a string into intoString, reallocating it with XtMalloc.  If
 ** regular expression atExpr is found, inserts the string before atExpr
 ** followed by a newline.  If atExpr is not found, inserts insertString
 ** at the end, PRECEDED by a newline.
 */
-static void spliceString(char **intoString, char *insertString, char *atExpr)
+static void spliceString(char **intoString, const char *insertString, const char *atExpr)
 {
     int beginPos, endPos;
     int intoLen = strlen(*intoString);

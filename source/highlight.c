@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.19 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.20 2001/10/21 15:13:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1707,7 +1707,9 @@ static int patternIsParsable(highlightDataRec *pattern)
 static int findSafeParseRestartPos(textBuffer *buf,
     	windowHighlightData *highlightData, int *pos)
 {
-    int style, startStyle, checkBackTo, safeParseStart, i;
+    int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
+    char *parentStyles = highlightData->parentStyles;
+    highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
     reparseContext *context = &highlightData->contextRequirements;
     
     /* We must begin at least one context distance back from the change */
@@ -1735,14 +1737,14 @@ static int findSafeParseRestartPos(textBuffer *buf,
     ** (unfortunately, abutting styles can produce false runs so we're not
     ** really ensuring it, just making it likely).
     */ 
-    if (patternIsParsable(
-    	    patternOfStyle(highlightData->pass1Patterns, startStyle))) {
+    if (patternIsParsable(patternOfStyle(pass1Patterns, startStyle))) {
     	safeParseStart = backwardOneContext(buf, context, *pos);
     	checkBackTo = backwardOneContext(buf, context, safeParseStart);
     } else {
 	safeParseStart = 0;
 	checkBackTo = 0;
     }
+    runningStyle = startStyle;
     for (i = *pos-1; ; i--) {
     	
     	/* The start of the buffer is certainly a safe place to parse from */
@@ -1752,33 +1754,79 @@ static int findSafeParseRestartPos(textBuffer *buf,
     	}
     	
     	/* If the style is preceded by a parent style, it's safe to parse
-	   with the parent style. */
+	   with the parent style, provided that the parent is parsable. */
     	style = BufGetCharacter(highlightData->styleBuffer, i);
-	if (isParentStyle(highlightData->parentStyles, style, startStyle)) {
-    	    *pos = i + 1;
-    	    return style;
+	if (isParentStyle(parentStyles, style, runningStyle)) {
+	    if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
+		*pos = i + 1;
+		return style;
+	    } else {
+		/* The parent is not parsable, so well have to continue
+		   searching. The parent now becomes the running style. */
+	    	runningStyle = style;
+	    }
     	}
 	
 	/* If the style is preceded by a child style, it's safe to resume
-	   parsing with the original style */
-    	if (isParentStyle(highlightData->parentStyles, startStyle, style)) {
-	    *pos = i + 1;
-    	    return startStyle;
+	   parsing with the running style, provided that the running
+	   style is parsable. */
+    	else if (isParentStyle(parentStyles, runningStyle, style)) {
+	    if (patternIsParsable
+		   (patternOfStyle(pass1Patterns, runningStyle))) {
+		*pos = i + 1;
+		return runningStyle;
+	    }
+	    /* Else: keep searching; it's no use switching to the child style
+	       because even the running one is not parsable. */
     	}
 	
+	/* If the style is preceded by a sibling style, it's safe to resume
+	   parsing with the common ancestor style, provided that the ancestor
+	   is parsable. Checking for siblings is very hard; checking whether
+	   the style has the same parent will probably catch 99% of the cases
+	   in practice. */
+	else if (runningStyle != style &&
+	    isParentStyle(parentStyles,
+			  parentStyleOf(parentStyles, runningStyle), style)) {
+	    int parentStyle = parentStyleOf(parentStyles, runningStyle);
+	    if (patternIsParsable(patternOfStyle(pass1Patterns, parentStyle))) {
+		*pos = i + 1;
+		return parentStyle;
+	    } else {
+		/* Switch to the new style */
+		runningStyle = style;
+	    }
+    	}
+
 	/* If the style is preceded by an unrelated style, it's safe to
-	   resume parsing with PLAIN_STYLE */
-	if (startStyle != style) {
+	   resume parsing with PLAIN_STYLE. (Actually, it isn't, because
+	   we didn't really check for all possible sibling relations; but
+	   it will be ok in practice.) */
+	else if (runningStyle != style) {
 	    *pos = i + 1;
     	    return PLAIN_STYLE;
     	}
 	
 	/* If the style is parsable and didn't change for one whole context
 	   distance on either side of safeParseStart, safeParseStart is a
-	   reasonable guess at a place to start parsing. */
+	   reasonable guess at a place to start parsing.
+	   Note: No 'else' here! We may come from one of the 'fall-through
+	   cases' above. */
     	if (i == checkBackTo) {
     	    *pos = safeParseStart;
-    	    return startStyle;
+
+	    /* We should never return a non-parsable style, because it will
+	       result in an internal error. If the current style is not
+	       parsable, the pattern set most probably contains a context
+	       distance violation. In that case we can only avoid internal
+	       errors (by climbing the pattern hierarchy till we find a
+	       parsable ancestor) and hope that the highlighting errors are
+	       minor. */
+	    while (!patternIsParsable
+			(patternOfStyle(pass1Patterns, runningStyle)))
+	       runningStyle = parentStyleOf(parentStyles, runningStyle);
+
+    	    return runningStyle;
     	}
     }
 }

@@ -1,11 +1,12 @@
-          Release Notes for NEdit Version 5.2 Beta, August 2001
+          Release Notes for NEdit Version 5.2, October 2001
 
-$Id: ReleaseNotes,v 1.9 2001/08/07 01:53:37 tringali Exp $
+$Id: ReleaseNotes,v 1.10 2001/10/21 15:13:07 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
-kits.  It also contains change information, for users who are interested in what
-bugs have been fixed, and what features have been added in the current version.
+kits.  It also contains change information, for users who are interested in
+what bugs have been fixed, and what features have been added in the current 
+version.
 
 If you are upgrading NEdit from a version prior to 5.0, please see the notes in
 the README file which came with the (source or executable) distribution kit,
@@ -13,12 +14,6 @@ about updating macros and font settings in your .nedit file.
 
 
 New Features in 5.2
-
- NOTE: These features are currently in beta, and are being considered for
- release.  They may or may not be delivered in the next official release.  As
- of this time, these features may be incomplete and have bugs.  Please report
- bugs to http://sourceforge.net/bugs/?group_id=11005, or send mail to
- develop@nedit.org.
 
  - Added built-in patterns for CSS, XML, and regular expressions (Regex).
    Many other pattern updates.
@@ -30,13 +25,13 @@ New Features in 5.2
  - New features in the Find and Replace dialogs:
  
    o Replacement across multiple windows in a session.
-   o Case senstivity may be set independently of regular expressions.
+   o Case sensitivity may be set independently of regular expressions.
    o Add "Replace and Find" command, which saves keystrokes when doing
-     a large-scale search replace.
+     a large-scale find & replace.
 
  - ClearCase version-extended pathnames.
 
- - Many new macro subroutines.
+ - Many new macro subroutines and variables.
 
  - Array support in macros.
 
@@ -46,8 +41,15 @@ New Features in 5.2
  
  - Support for wheel mouse scrolling on servers that support it (XFree86). 
  
- - Insert Control Code dialog accepts value in any valid C notation
+ - Improved accelerator key handling.
 
+ - Insert Control Code dialog accepts value in any valid C notation
+ 
+ - Optional beeping when search operations wrap.
+
+ - Additional default search styles.
+
+ - Optional displaying of path names in the window list menu.
 
 
 Bug Fixes in 5.2
@@ -489,4 +491,3 @@ Bug Fixes and Enhancements to Existing Features in 5.0
 
  - Wrap margin and emulated tab distance preferences are properly
    transferred to new panes in split window mode
-

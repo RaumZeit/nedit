@@ -2,20 +2,106 @@
 
 <!DOCTYPE faq SYSTEM "faq.dtd" >
 
+<!-- $Header: /home/bertw/cvsroot/nedit/nedit/doc/faq.xml,v 1.3 2001/10/21 15:13:07 tringali Exp $ -->
+
+
+<!--
+
+
+A quick note on the syntax of this file 
+========================================
+
+This XML file is based on the DTD specified in "faq.dtd". See "faq.dtd" for
+a rigourous definition; a simple overview is given here, to help in making
+quick additions and modifications.
+
+The FAQ is composed of two parts : a <head> and a <body>. The <head>
+contains the title (in our case, "NEdit Frequently Asked Questions"), the
+list of <maintainers>, a <summary> which gets displayed ahead of all
+questions, a section showing how to download the FAQ (<download>) and
+other, less important stuff.
+
+The <body> part is composed of many FAQ <section>s. A section has a title
+and groups several FAQ entries. A particular section exists, called
+<about-section>, which contains the description of the FAQ itself.
+
+A section is generally composed of several "Question 'N' Answer" entries
+(<qna>). A <qna> contains a question (<q>) and the answer to that question
+(<a>). An identifier must be given to each <qna>, via the attribute "id". A
+longer version of the question may be specified via <long-q> as another
+element of <qna>; in this case, the <q> is displayed in a table of
+questions, while the longer and more complete version, <long-q>, is
+displayed along with the answer.
+
+The <long-q> and <a> elements contain text paragraphs. The <q> doesn't
+contain paragraphs and behaves like a single paragraph itself.
+
+A text paragraph is indicated by one of the elements <p>, <blockquote>,
+<ul>, <ol> and <pre> (which, in the DTD, are collectively referred to as
+%paragraph-styles;).
+
+   The <p> denotes a basic paragraph and contains text.
+
+   The <blockquote> indicates an indent, and it contains other paragraphs
+   inside. A nested <blockquote> will indent relative to the previous one.
+
+   The <ul> and <ol> indicate respectively an unnumbered and a numbered
+   list. Both <ul> and <ol> contain one or many <li> elements. A <li>
+   element contains text.
+
+   The <pre> indicates a preformatted piece of text, which will be output
+   with no further modifications.
+
+Paragraphs of type <p> and <li>, as well as <q> and a few other elements of
+the <head>, contain text. Text is composed of free text and style elements.
+The style elements are the following :
+
+   <email> indicates an e-mail address.
+   
+   <img> indicates an image. It has a required attribute "src" which must
+   be a URL referring to the image, and a "alt" attribute containing
+   alternate text, used for non-image-capable formats.
+
+   <site> indicates a web site. The text between <site> and </site> must be
+   a URL.
+
+   <link> indicates a HTTP hyperlink. Its required attribute "href" must be
+   the URL to link to. An attribute "alt" may contain alternate text.
+   
+   <em> stands for emphasized text.
+   
+   <strong> stands for strong text.
+   
+   <tt> is used for terminal output and for the contents of configuration
+   files.
+
+   <code> is used for command names, when included inline within text.
+   Generally, <pre> paragraphs are used for several lines of code.
+
+The distinction between <tt> and <code> and furthermore <pre> is not so
+clear. A clearer and better definition is needed.
+
+
+
+========================================
+
+ -->
+
+
 <faq>
 
 <head>
 
 <title>NEdit Frequently Asked Questions</title>
 
-<version>3/20/00</version>
+<version>2001/10/01</version>
 
 
 <maintainers>
 <!-- several maintainers can be added -->
 <maintainer>
     <name>Florian Xhumari</name>
-    <email>Florian.Xhumari@MailAndNews.com</email>
+    <email>Florian.Xhumari@free.fr</email>
     <subject>NEdit FAQ</subject>
 </maintainer>
 </maintainers>
@@ -68,10 +154,8 @@ discuss@nedit.org. This information is also available from:</p>
     <p>This FAQ is written in XML and translated to HTML using
     an XSL stylesheet. The XML source is processed using
     <link href="http://www.jclark.com/">James Clark's</link> XSLT processor
-    <link href="http://www.jclark.com/xml/xt.html">XT</link>.
-    The XML parser
-    used is IBM's <link href="http://www.alphaworks.ibm.com/tech/xml4j">XML
-    Parser for Java</link>.
+    <link href="http://www.jclark.com/xml/xt.html">XT</link> and
+	XML parser <link href="http://www.jclark.com/xml/xp">XP</link>.
     </p>
     
 	<p>The XSL stylesheet used to generate the HTML version is
@@ -87,7 +171,7 @@ discuss@nedit.org. This information is also available from:</p>
 	    
     <p>For any questions about or contributions to the FAQ, please
     send a mail to the
-    <link href="mailto:Florian.Xhumari@MailAndNews.com">maintainers</link>.
+    <link href="mailto:Florian.Xhumari@free.fr">maintainers</link>.
     </p>
 </about-section>
 
@@ -109,9 +193,19 @@ discuss@nedit.org. This information is also available from:</p>
 
 <blockquote><p><site>http://nedit.org</site></p></blockquote>
 
+<p>and it is mirrored in Australia at:</p>
+
+<blockquote><p><site>http://www.au.nedit.org/</site></p></blockquote>
+
+
 <p>The primary ftp site for NEdit is:</p>
 
 <blockquote><p><site>ftp://ftp.nedit.org/pub</site></p></blockquote>
+
+<p>which has a mirror in The Netherlands:</p>
+
+<blockquote><p><site>ftp://ftp.nl.nedit.org/pub/mirror/NEdit</site></p></blockquote>
+
 
 <p>The NEdit ftp site has executables for most Unix and VMS
 systems, sources, documentation, and contributed software.</p>
@@ -169,7 +263,7 @@ user community, send the report to <email>discuss@nedit.org</email>. If it's
 something obvious and boring, like we misspelled "anemometer" in the
 on-line help, send it to <email>develop@nedit.org</email>.</p>
 
-<p>Please do not cross post to both lists.</p>
+<p>Please do not cross post to both lists!</p>
 
 
 
@@ -216,7 +310,7 @@ section</link> in the NEdit site.</p>
 
 
 <qna id="N44">
-<q>Where could I get binaries / executables for machines other than
+<q>Where can I get binaries / executables for machines other than
 those available at NEdit site?</q>
 
 <a>
@@ -224,10 +318,9 @@ those available at NEdit site?</q>
 <p>In past versions, we separated "supported" and "unsupported" executables
 and divided them between the binary and contrib directories.  With more
 supported systems, you're less likely to find executables in the contrib
-directory, but it's
-worth a peek, anyhow.  If you can't find anything appropriate,
-you can try asking in a usenet
-news group appropriate to your system.  Other places to try are, the
+directory, but it's worth a peek, anyhow.  If you can't find anything
+appropriate, you can try asking in a usenet news group appropriate to your
+system.  Other places to try are, the
 <email>discuss@nedit.org</email> mailing list, or
 <site>news:comp.windows.x.apps</site>
 or <site>news:comp.editors</site>.</p>
@@ -268,12 +361,15 @@ to an ongoing development project, we'd love to hear from you.</p>
 
 <a>
 
-<p>If you have a problem which is not covered in the on-line help, in
-this FAQ, or in the README file specific to your system, and want to
-report it to <email>discuss@nedit.org</email> or,
-<email>develop@nedit.org</email>, below are some
-suggestions for information you can provide to help in diagnosing
-your problem.</p>
+<p>If you have a problem which is not covered in the on-line help, in this FAQ,
+or in the README file specific to your system, you can report it to
+<email>discuss@nedit.org</email> (usage questions) or,
+<email>develop@nedit.org</email> (error reports). Note that these lists only
+allow members to post, and if you are not a member, your post will probably de
+delayed in reaching the list. Alternatively you can use the bug tracker on
+Sourceforge (<site>http://sourceforge.net/projects/nedit/</site>) to report
+bugs and make feature requests. Below are some suggestions for information you
+can provide to help in diagnosing your problem.</p>
 
 <p>Because NEdit runs on a large number of different platforms and environments,
 many problems are platform-specific.  It's always helpful to know what kind of
@@ -281,13 +377,14 @@ system it's being run on.  Sometimes, strange behavior can also be traced to
 the X server software or window manager, so you may want to include information
 on these as well.</p>
 
-<p>The origin of the NEdit executable is often important,
-particularly, whether it came from the NEdit site
-(<site>nedit.org</site>), was built locally, or came from some
-other ftp server or freeware distribution CD.  Despite the fact that
-Motif appears on almost all Unix platforms, the Motif libraries still
-vary from one machine to another.  Be sure to mention whether you're
-using Lesstif or Motif.</p>
+<p>The origin of the NEdit executable is often important, particularly, whether
+it came from the NEdit site (<site>http://www.nedit.org</site>), was built
+locally, or came from some other ftp server or freeware distribution CD. 
+Despite the fact that Motif appears on almost all Unix platforms, the Motif
+libraries still vary from one machine to another.  Be sure to mention whether
+you're using Lesstif or Motif. As of version 5.2 a summary with build
+information is present under 'Version' in the Help menu.</p>
+
 
 <p>If you are having configuration or appearance problems, you should probably
 look at the output from the command:</p>
@@ -367,7 +464,7 @@ include files and libXm.a</q>
 
 <p>Xm means Motif, which is an important part of NEdit's GUI interface.  Motif
 is standard on commercial Unix workstations, but not on free Unix platforms
-like Linux and FreeBSD.  On these systems, you can now use Lesstif, the
+like Linux and FreeBSD.  On these systems, you can now use LessTif, the
 GPL clone of Motif, or purchase a copy of Motif, which is usually relatively
 inexpensive, but not free.  You can find a list of companies selling Motif
 for Linux at:</p>
@@ -378,7 +475,7 @@ for Linux at:</p>
 </p>
 </blockquote>
 
-<p>As of this writing Lesstif is very close to being a fully reliable and
+<p>As of this writing LessTif is very close to being a fully reliable and
 complete replacement for Motif, so it's definitely worth trying before
 shelling out any money for a commercial copy.  Also remember that in most
 cases, you don't really need Motif libraries to use NEdit.  There
@@ -417,16 +514,73 @@ editor!</q>
 
 <a>
 
-<p>Several of the Linux distributions began including Lesstif (a free
+<p>Several of the Linux distributions began including LessTif (a free
 version of the Motif GUI library) before it was really ready for
 general use (particularly for something which needs to be as reliable
-as a text editor).  If you have a version of Lesstif prior to .89.4,
+as a text editor).  If you have a version of Lesstif prior to 0.92.26,
 you have to upgrade it, before it will support NEdit reliably.  To get
 the newest version, go to <site>http://lesstif.org</site>.  Alternatively,
 you can get pre-built, statically linked, executables from
 <site>ftp://ftp.nedit.org/pub/</site>&lt;current-version&gt;/executables.</p>
 
 </a>
+</qna>
+
+
+
+<qna id='tmpnam'>
+<author><name>Thorsten Haude</name></author>
+
+<q> While compiling NEdit on Linux, I get a warning about
+<code>tmpnam</code> being dangerous. </q>
+
+<long-q>
+<p>While compiling NEdit on Linux, I get the following warning:</p>
+
+<pre>
+    file.o: In function `PrintString':
+    file.o(.text+0x17b7): the use of `tmpnam' is dangerous, better use `mkstemp'
+</pre>
+
+<p>Is NEdit insecure?</p>
+
+</long-q>
+
+<a>
+
+<p>Not if you are using the glibc. The algorithm of mkstemp(3) consists of
+two parts: the first part is the one used in tmpnam(3) -- this is what
+NEdit accomplishes by calling tmpnam(3); the second part is done directly
+in NEdit. </p>
+</a>
+</qna>
+
+
+
+<qna id='Xp'>
+<author><name>Joor Loohuis</name></author>
+
+<q>NEdit fails to build on Linux, with messages about `XpGetDocumentData'</q>
+
+<long-q>
+<p>NEdit fails to build on Linux, with messages</p>
+
+<pre>
+   undefined reference to `XpGetDocumentData'
+   undefined reference to `XpGetPageDimensions'
+   ...
+</pre>
+
+</long-q>
+
+<a>
+
+<p>Edit makefiles/Makefile.Linux, and add '-lXp' to the line starting with
+'LIB', right before '-lXext'. At this time we are not sure whether libXp
+(the X print library) is installed on all Linux systems.</p>
+
+</a>
+
 </qna>
 
 </section>
@@ -519,11 +673,10 @@ work from there.</p>
 
 <p>How you set X resources depends on local system conventions.  You
 usually put them in the .Xdefaults or .Xresources file in your home
-directory.  You may also need to
-run xrdb to install them in the server.  It depends on how your local
-system has been configured, so it's best to talk to the person who
-configured your system.  If you're not sure whether your resources
-are set up correctly, the command:</p>
+directory.  You may also need to run xrdb to install them in the server.
+It depends on how your local system has been configured, so it's best
+to talk to the person who configured your system.  If you're not sure
+whether your resources are set up correctly, the command:</p>
 
 <pre>
     appres NEdit nedit
@@ -615,10 +768,6 @@ don't have to worry about clashes between simultaneous ispell sessions:</p>
   ispell -S /tmp/ispell.$$; cat /tmp/ispell.$$; rm /tmp/ispell.$$
 </pre>
 
-<p>Also, if your copy of NEdit is older than version 4.0.1, you should upgrade,
-otherwise you get the annoying "Waiting for shell command to complete"
-dialog interfering with the ispell window.</p>
-
 </a>
 </qna>
 
@@ -653,12 +802,12 @@ to the file selection box widget.</p>
 
 <qna id="N437">
 
-<q>Why, in the 'save file as' dialog, there is no text field where to
+<q>Why, in the 'open file' dialog, there is no text field where to
 type in the file name?</q>
 
 <long-q>
 <p>Most Motif applications allow you to type in the file name in a separate
-text field (as in the 'save file as' dialog).  Why doesn't NEdit?  Can
+text field (as in the 'open file' dialog).  Why doesn't NEdit?  Can
 I make it do that?</p>
 </long-q>
 
@@ -682,15 +831,15 @@ bar to a block.  I seem to lose it sometimes in my text.</p>
 
 <a>
 
-<p>The block cursor in NEdit is used to indicate overstrike mode, but in NEdit
-4.0 and beyond, you can turn on a resource to make the cursor thicker:</p>
+<p>The block cursor in NEdit is used to indicate overstrike mode, but
+you can turn on a resource to make the cursor thicker:</p>
 
 <blockquote>
   <p><tt>nedit*text.heavyCursor: true</tt></p>
 </blockquote>
 
 <p>The only way to get a permanent block cursor, though is to hack the source
-code.  This shouldn't be too dificult, since the code for drawing a block
+code.  This shouldn't be too difficult, since the code for drawing a block
 cursor is already there.</p>
 
 </a>
@@ -864,17 +1013,16 @@ is compatible with all of your highlighting colors.</p>
 <title>Features</title>
 
 <qna id="N578">
-<q>Why NEdit does not support any more drag and drop?</q>
+<q>Why NEdit does not support drag and drop?</q>
 
 <long-q>
-<p>I'm a little confused about what happend to drag and drop.  Why was it lost
-between NEdit 3.1.1 and 4.0?  I thought drag-N-drop was supported by the
-Motif library.</p>
+<p>I'm a little confused about what happend to drag and drop.
+I thought drag-N-drop was supported by the Motif library.</p>
 </long-q>
 
 <a>
 
-<p>NEdit 4.0 no longer uses the Motif text widget, so all of the functionality
+<p>NEdit no longer uses the Motif text widget, so all of the functionality
 had to be duplicated in the new widget.  Drag and drop between windows got
 left off due to time pressure of getting out the new release, but it will
 be back some day.</p>
@@ -900,6 +1048,9 @@ don't particularly agree with.  Mostly, I want to do a lot of testing to
 make sure the changes are safe on all platforms, and I just don't have
 time right now.  (Mark Edel)</p>
 
+<p><strong>Update as of NEdit version 5.2RC1:</strong> The forthcoming
+NEdit version 5.2 contains several functionalities of Max's patches.</p>
+
 </a>
 </qna>
 
@@ -914,22 +1065,9 @@ instead of word or notepad.  Is this possible?</p>
 
 <a>
 
-<p>There is an NT version of NEdit (one of Max Vohlken's versions)
-which requires a separate X server.  The separate server application,
-of course, makes it kind of klunky, but if you need the server anyhow
-for other work with X systems, you might want to give it a try. It's
-available in:</p>
-
-<blockquote>
-	<p><site>ftp://ftp.nedit.org/pub/</site>v5_0_2/contrib/max/5.0.1/</p>
-</blockquote>
-
-<p>For now, try PFE (the Programmer's File Editor).  It's free, and
-it's not too bad.  There's a web page for it at:
-<site>http://www.lancs.ac.uk/people/cpaap/pfe/</site> </p>
-
-<p>Another possibility is TextPad: <site>http://www.textpad.com</site>
-</p>
+<p>There is an NT version of NEdit, available at
+<site>http://nedit.org/download/win32.shtml</site>. A mini-FAQ is also
+available.</p>
 
 </a>
 </qna>
@@ -1034,7 +1172,7 @@ outside of the window.</q>
 
 <a>
 
-<p>NEdit version 4.0.2 introduced proportional auto-scrolling, where the
+<p>NEdit features proportional auto-scrolling, where the
 speed is controlled by how far your mouse is beyond the edge of the
 window.  If you want it to scroll slower, bring the mouse back closer
 to the text.</p>
@@ -1158,8 +1296,8 @@ hole?</p> </long-q>
 <p>Actually, NEdit does check who the user is.  When you use the su
 command, however, several Unix variants return the original user name
 in response to the standard C library calls for getting a user name,
-rather than the name to which you have su'd.  Version 5.1 uses a
-different mechanism for getting this information, so you shouldn't
+rather than the name to which you have su'd.  Starting with version 5.1,
+a different mechanism is used for getting this information, so you shouldn't
 see this problem any more.</p>
 
 <p>In your case, my guess is that you used su to become root, then
@@ -1171,7 +1309,7 @@ requests from both you as root and you as you.</p>
 <p>The security of an nedit session, depends upon the security of your X
 server.  Only those with access to your screen can send commands to an
 nedit server, but they can also send keystrokes to any nedit, or a shell
-window, etc..  Anyhow, just upgrade to NEdit 5.1</p>
+window, etc...  Anyhow, just upgrade to the latest NEdit version.</p>
 
 </a>
 </qna>
@@ -1210,6 +1348,17 @@ between the cursor (or an existing selection) and the mouse.</p>
      the cursor and the mouse</li>
 </ul>
 
+<p>Alternatively, using only keyboard navigation:</p>
+
+<ul>
+  <li>Position the cursor at one end of the desired selection</li>
+  <li>Type Alt-m and a letter to mark the position</li>
+  <li>Use the keyboard to go to the other end of the desired selection</li>
+  <li>Type Shift-Alt-g and the letter you used to mark the first end
+  of the selection</li>
+</ul>
+
+
 </a>
 </qna>
 
@@ -1217,28 +1366,6 @@ between the cursor (or an existing selection) and the mouse.</p>
 <q>How can I select the text between two marks?</q>
 
 <a>
-
-<p>Before version 5.0, you had to:</p>
-
-<ul>
-	<li>
-     Make both marks without a selection (the Mark command records
-     both the cursor position, and the current selection).
-	</li>
-  
-  	<li>
-    Go to one of the marks and begin a selection.  It can be just
-    a single character.
-  	</li>
-	
-	<li>
-     Go to the other mark and shift-left-click on the cursor
-     position.
-	</li>
-</ul>
-
-<p>In 5.0 and beyond it's easier:</p>
-
 <ul>
 	<li>Go to the first mark (Goto Mark).</li>
 	<li>Hold the shift key while selecting Goto Mark or Alt+Shift+G to
@@ -1284,7 +1411,7 @@ overlooked something obvious?</p>
 <p>You haven't overlooked anything, it's a Motif design flaw.  Netscape
 painfully works around this and the Alt/Meta key reversal on Sun
 workstations by internally re-implementing the Motif menu accelerator
-mechanism.  NEdit will likely follow suit with the next major release.</p>
+mechanism.  NEdit will likely follow suit with the release of version 5.2.</p>
 
 <p>Another possibility (writes Peter Daifuku of SGI):</p>
 
@@ -1304,11 +1431,11 @@ mechanism.  NEdit will likely follow suit with the next major release.</p>
 </qna>
 
 <qna id="NumLockBis">
-<q>Sometimes NEdit inserts &lt;soh&gt; instead of saving the
+<q>Sometimes NEdit inserts &lt;dc3&gt; instead of saving the
 file when I type ^S</q>
 
 <long-q>
-<p>Sometimes NEdit inserts &lt;soh&gt; instead of saving the
+<p>Sometimes NEdit inserts &lt;dc3&gt; instead of saving the
 file when I type ^S. Other keyboard shortcuts (accelerator keys) don't
 work either.</p>
 </long-q>
@@ -1319,6 +1446,56 @@ You have probably NumLock or CapsLock ON. See the answer to
 </a>
 
 </qna>
+
+
+
+
+<qna id="Keypad">
+<author><name>Joor Loohuis</name></author>
+<q>I use the numeric keypad really often, so I keep NumLock on.
+But NEdit shortcuts don't work when NumLock is on.</q>
+
+<a>
+<p>The bug is not in NEdit, but in Motif. This is fixed as of NEdit 5.2, but
+that might not help you much. Older versions have the same problem.</p>
+
+<p>Here's how you tell X to interpret the keypad keys as numbers without
+turning NumLock on. Create a file .Xmodmap in your home directory, and put the
+following lines in it:</p>
+
+<pre>
+  keycode  79 = KP_7
+  keycode  80 = KP_8
+  keycode  81 = KP_9
+  keycode  83 = KP_4
+  keycode  84 = KP_5
+  keycode  85 = KP_6
+  keycode  87 = KP_1
+  keycode  88 = KP_2
+  keycode  89 = KP_3
+  keycode  90 = KP_0
+  keycode  91 = KP_Decimal
+</pre>
+
+<p>Then make sure the script that starts your X session parses this file with
+the command:</p>
+<pre>
+  xmodmap -merge ~/.Xmodmap
+</pre>
+
+<p>This script can be ~/.xinitrc (called by startx) or something like Xsession
+if you use xdm/kdm/gdm. Then again, it might be an entirely different script on
+some systems.</p>
+
+<p>Then turn off numlock, and just continue using the keypad. The only thing
+is, you loose the alternate set of functions (cursor/home/pgdown/etc).</p>
+
+
+</a>
+
+</qna>
+
+
 
 
 
@@ -1374,7 +1551,7 @@ just added.</q>
 dialog for that menu item.  If the shell command being executed does
 not take input, but "Command Input" is set to "selection" or "window",
 NEdit tries to write the input anyhow, and fails.  Set "Command Input"
-to "none" to prevent this possibility.  This is fixed in version 5.1</p>
+to "none" to prevent this possibility.  This is fixed in version 5.1 and later.</p>
 
 </a>
 </qna>
@@ -1562,9 +1739,9 @@ Setting this to True will eliminate the delay completely.</p>
 
 <a>
 
-<p>This should be working properly on most systems as of NEdit 5.1.  If it's
+<p>This should be working properly on most systems as of NEdit 5.1 or later.  If it's
 not, try re-building NEdit with -DNO_XMIM.  If it still doesn't work, send
-mail to develop@nedit.org</p>
+mail to <email>develop@nedit.org</email></p>
 
 </a>
 </qna>
@@ -1591,12 +1768,10 @@ mail to develop@nedit.org</p>
 
 <a>
 
-<p>There is another program called <code>nc</code>
-which is installed on some systems.
-In this case, <code>nc</code> is for <code>netcat</code>,
-some kind of network diagnostic tool.
-You can safely rename NEdit's <code>nc</code>
-to something else (we recommend ncl), or put it first in
+<p>There is another program called <code>nc</code> which is installed on
+some systems. In this case, <code>nc</code> is for <code>netcat</code>,
+some kind of network diagnostic tool. You can safely rename NEdit's
+<code>nc</code> to something else (we recommend ncl), or put it first in
 your path before <code>netcat</code>.</p>
 
 </a>
@@ -1894,12 +2069,6 @@ key.</p>
 </qna>
 
 </section>
-
-
-
-
-
-
 
 
 

@@ -227,7 +227,7 @@ for your display:
 .SH "NOTES"
 .IX Header "NOTES"
 Communication between \fBnc\fR and \fBnedit\fR(1) is through the X display. So as
-long as X windows is set up and working properly, \fBnc\fR will will work properly
+long as X windows is set up and working properly, \fBnc\fR will work properly
 as well. \fBnc\fR uses the \f(CW\*(C`DISPLAY\*(C'\fR environment variable, the machine name and
 your user name to find the appropriate server, meaning, if you have several
 machines sharing a common file system, \fBnc\fR will not be able to find a server
