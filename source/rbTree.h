@@ -1,3 +1,4 @@
+/* $Id: rbTree.h,v 1.2 2001/03/06 19:49:47 slobasso Exp $ */
 typedef struct rbTreeNode {
     struct rbTreeNode *left;   /* left child */
     struct rbTreeNode *right;  /* right child */

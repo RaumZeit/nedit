@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.10 2001/03/06 01:00:01 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.11 2001/03/06 19:49:47 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -128,7 +128,7 @@ static char *AllocatedStrings = NULL;
 
 typedef struct {
     SparseArrayEntry 	data; /* LEAVE this as top entry */
-    int inUse;
+    int inUse;              /* we use pointers to the data to refer to the entire struct */
     struct SparseArrayEntryWrapper *next;
 } SparseArrayEntryWrapper;
 
@@ -584,6 +584,10 @@ void SetMacroFocusWindow(WindowInfo *window)
     FocusWindow = window;
 }
 
+/*
+** install an array iteration symbol
+** it is tagged as an integer but holds an array node pointer
+*/
 Symbol *InstallIteratorSymbol()
 {
     char symbolName[10 + (sizeof(int) * 3) + 2];
@@ -1013,6 +1017,12 @@ static int dupStack(void)
     return STAT_OK;
 }
 
+/*
+** if left and right arguments are arrays, then the result is a new array
+** in which all the keys from both the right and left are copied
+** the values from the right array are used in the result array when the
+** keys are the same
+*/
 static int add(void)
 {
     DataValue leftVal, rightVal, resultArray;
@@ -1075,6 +1085,11 @@ static int add(void)
     return(STAT_OK);
 }
 
+/*
+** if left and right arguments are arrays, then the result is a new array
+** in which only the keys which exist in the left array but not in the right
+** are copied
+*/
 static int subtract(void)
 {
     DataValue leftVal, rightVal, resultArray;
@@ -1187,6 +1202,9 @@ static int le(void)
     BINARY_NUMERIC_OPERATION(<=)
 }
 
+/*
+** verify that compares are between integers and/or strings only
+*/
 static int eq(void)
 {
     DataValue v1, v2;
@@ -1231,6 +1249,11 @@ static int ne(void)
     return not();
 }
 
+/*
+** if left and right arguments are arrays, then the result is a new array
+** in which only the keys which exist in both the right or left are copied
+** the values from the right array are used in the result array
+*/
 static int bitAnd(void)
 { 
     DataValue leftVal, rightVal, resultArray;
@@ -1281,6 +1304,11 @@ static int bitAnd(void)
     return(STAT_OK);
 }
 
+/*
+** if left and right arguments are arrays, then the result is a new array
+** in which only the keys which exist in either the right or left but not both
+** are copied
+*/
 static int bitOr(void)
 { 
     DataValue leftVal, rightVal, resultArray;
@@ -1628,6 +1656,11 @@ static int branchNever(void)
     return STAT_OK;
 }
 
+/*
+** recursively copy(duplicate) the sparse array nodes of an array
+** this does not duplicate the key/node data since they are never
+** modified, only replaced
+*/
 int copyArray(DataValue *dstArray, DataValue *srcArray)
 {
     SparseArrayEntry *srcIter;
@@ -1659,6 +1692,14 @@ int copyArray(DataValue *dstArray, DataValue *srcArray)
     return(STAT_OK);
 }
 
+/*
+** creates an allocated string of a single key for all the sub-scripts
+** using ARRAY_DIM_SEP as a separator
+** this function uses the PEEK macros in order to remove most limits on
+** the number of arguments to an array
+** I really need to optimize the size approximation rather than assuming
+** a worst case size for every integer argument
+*/
 static int makeArrayKeyFromArgs(int nArgs, char **keyString)
 {
     DataValue tmpVal;
@@ -1703,11 +1744,24 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString)
     return(STAT_OK);
 }
 
+/*
+** allocate an empty array node, this is used as the root node and never
+** contains any data, only refernces to other nodes
+*/
 static rbTreeNode *arrayEmptyAllocator(void)
 {
-    return((rbTreeNode *)AllocateSparseArrayEntry());
+    SparseArrayEntry *newNode = AllocateSparseArrayEntry();
+    if (newNode) {
+        newNode->key = NULL;
+        newNode->value.tag = NO_TAG;
+    }
+    return((rbTreeNode *)newNode);
 }
 
+/*
+** create and copy array node and copy contents, we merely copy pointers
+** since they are never modified, only replaced
+*/
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src)
 {
     SparseArrayEntry *newNode = AllocateSparseArrayEntry();
@@ -1718,6 +1772,10 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src)
     return((rbTreeNode *)newNode);
 }
 
+/*
+** copy array node data, we merely copy pointers since they are never
+** modified, only replaced
+*/
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src)
 {
     ((SparseArrayEntry *)dst)->key = ((SparseArrayEntry *)src)->key;
@@ -1725,11 +1783,18 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src)
     return(1);
 }
 
+/*
+** compare two array nodes returning an integer value similar to strcmp()
+*/
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right)
 {
     return(strcmp(((SparseArrayEntry *)left)->key, ((SparseArrayEntry *)right)->key));
 }
 
+/*
+** dispose an array node, garbage collection handles this, so we mark it
+** to allow iterators in macro language to determine they have been unlinked
+*/
 static void arrayDisposeNode(rbTreeNode *src)
 {
     /* Let garbage collection handle this but mark it so iterators can tell */
@@ -1739,6 +1804,9 @@ static void arrayDisposeNode(rbTreeNode *src)
     src->color = -1;
 }
 
+/*
+** insert a DataValue into an array, allocate the array in needed
+*/
 int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
 {
     SparseArrayEntry tmpEntry;
@@ -1764,6 +1832,9 @@ int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
     return(0);
 }
 
+/*
+** remove a node from an array whose key matches keyStr
+*/
 void arrayDelete(DataValue *theArray, char *keyStr)
 {
     SparseArrayEntry searchEntry;
@@ -1775,6 +1846,9 @@ void arrayDelete(DataValue *theArray, char *keyStr)
     }
 }
 
+/*
+** remove all nodes from an array
+*/
 void arrayDeleteAll(DataValue *theArray)
 {
     
@@ -1790,6 +1864,9 @@ void arrayDeleteAll(DataValue *theArray)
     }
 }
 
+/*
+** returns the number of elements (nodes containing values) of an array
+*/
 int arraySize(DataValue *theArray)
 {
     if (theArray->val.arrayPtr) {
@@ -1800,6 +1877,10 @@ int arraySize(DataValue *theArray)
     }
 }
 
+/*
+** retrieves an array node whose key matches
+** returns 1 for success 0 for not found
+*/
 int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
 {
     SparseArrayEntry searchEntry;
@@ -1817,6 +1898,9 @@ int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
     return(0);
 }
 
+/*
+** get pointer to start iterating an array
+*/
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray)
 {
     SparseArrayEntry *startPos;
@@ -1829,6 +1913,9 @@ SparseArrayEntry *arrayIterateFirst(DataValue *theArray)
     return(startPos);
 }
 
+/*
+** move iterator to next entry in array
+*/
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator)
 {
     SparseArrayEntry *nextPos;
@@ -1841,6 +1928,9 @@ SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator)
     return(nextPos);
 }
 
+/*
+** evaluate an array element and push the result onto the stack
+*/
 static int arrayRef(void)
 {
     int errNum;
@@ -1881,6 +1971,9 @@ static int arrayRef(void)
     }
 }
 
+/*
+** assign to an array element, make the symbol an array if it isn't already
+*/
 static int arrayAssign(void)
 {
     Symbol *sym;
@@ -1929,6 +2022,9 @@ static int arrayAssign(void)
     return(execError("empty operator []", NULL));
 }
 
+/*
+** setup symbol values for array iteration in interpreter
+*/
 static int beginArrayIter(void)
 {
     Symbol *iterator;
@@ -1980,6 +2076,12 @@ static int beginArrayIter(void)
     return(STAT_OK);
 }
 
+/*
+** copy key to symbol if node is still valid, marked bad by a color of -1
+** then move iterator to next node
+** this allows iterators to progress even if you delete any node in the array
+** except the item just after the current key
+*/
 static int arrayIter(void)
 {
     Symbol *iterator;
@@ -2027,6 +2129,13 @@ static int arrayIter(void)
     return(STAT_OK);
 }
 
+/*
+** deletermine if a key or keys exists in an array
+** if the left argument is a string or integer a single check is performed
+** if the key exists, 1 is pushed onto the stack, otherwise 0
+** if the left argument is an array 1 is pushed onto the stack if every key
+** in the left array exists in the right array, otherwise 0
+*/
 static int inArray(void)
 {
     DataValue theArray, leftArray, theValue;
@@ -2059,6 +2168,9 @@ static int inArray(void)
     return(STAT_OK);
 }
 
+/*
+** remove a given key from an array unless nDim is 0, then all keys are removed
+*/
 static int deleteArrayElement(void)
 {
     Symbol *sym;

@@ -1,3 +1,10 @@
+static const char CVSID[] = "$Id: rbTree.c,v 1.2 2001/03/06 19:49:47 slobasso Exp $";
+/*
+** rbTree is a red-black balanced binary tree
+** the base node holds the leftmost, rightmost and root pointers
+** and a node count
+*/
+
 #include "rbTree.h"
 
 #include <stdlib.h>
@@ -10,6 +17,9 @@
 #define rbTreeNodeRed       0
 #define rbTreeNodeBlack     1
 
+/*
+** rotate a node left
+*/
 static void rotateLeft(rbTreeNode *x, rbTreeNode **root)
 {
     rbTreeNode *y = x->right;
@@ -32,6 +42,9 @@ static void rotateLeft(rbTreeNode *x, rbTreeNode **root)
     x->parent = y;
 }
 
+/*
+** rotate a node right
+*/
 static void rotateRight(rbTreeNode *x, rbTreeNode **root)
 {
     rbTreeNode *y = x->left;
@@ -54,6 +67,9 @@ static void rotateRight(rbTreeNode *x, rbTreeNode **root)
     x->parent = y;
 }
 
+/*
+** balance tree after an insert of node x
+*/
 static void insertBalance(rbTreeNode *x, rbTreeNode **root)
 {
   x->color = rbTreeNodeRed;
@@ -98,16 +114,25 @@ static void insertBalance(rbTreeNode *x, rbTreeNode **root)
   (*root)->color = rbTreeNodeBlack;
 }
 
+/*
+** returns the leftmost node (the beginning of the sorted list)
+*/
 rbTreeNode *rbTreeBegin(rbTreeNode *base)
 {
     return(base->left);
 }
 
+/*
+** returns the rightmost node (the end of the sorted list)
+*/
 rbTreeNode *rbTreeReverseBegin(rbTreeNode *base)
 {
     return(base->right);
 }
 
+/*
+** search for a node and return it's pointer, NULL if not found
+*/
 rbTreeNode *rbTreeFind(rbTreeNode *base, rbTreeNode *searchNode,
                         rbTreeCompareNodeCB compareRecords)
 {
@@ -130,6 +155,11 @@ rbTreeNode *rbTreeFind(rbTreeNode *base, rbTreeNode *searchNode,
     return(foundNode);
 }
 
+/*
+** insert a node into the tree and rebalance it
+** if a duplicate is found copy the new data over it
+** returns the new node
+*/
 rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
                             rbTreeCompareNodeCB compareRecords,
                             rbTreeAllocateNodeCB allocateNode,
@@ -196,6 +226,10 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
     return(x);
 }
 
+/*
+** unlink a node from the tree and rebalance it.
+** returns the removed node pointer
+*/
 rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
 {
     int swapColor;
@@ -358,12 +392,20 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
     return(y);
 }
 
+/*
+** delete an already found node and dispose it
+*/
 void rbTreeDeleteNode(rbTreeNode *base, rbTreeNode *foundNode,
                     rbTreeDisposeNodeCB disposeNode)
 {
     disposeNode(rbTreeUnlinkNode(base, foundNode));
 }
 
+/*
+** search for a node and remove it from the tree
+** disposing the removed node
+** returns 1 if a node was found, otherwise 0
+*/
 int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode,
                     rbTreeCompareNodeCB compareRecords,
                     rbTreeDisposeNodeCB disposeNode)
@@ -379,6 +421,11 @@ int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode,
     return(foundNode);
 }
 
+/*
+** move an iterator foreward one element
+** note that a valid pointer must be passed,
+** passing NULL will result in unpredictable results
+*/
 rbTreeNode *rbTreeNext(rbTreeNode *x)
 {
     if (x->right != NULL) {
@@ -397,6 +444,11 @@ rbTreeNode *rbTreeNext(rbTreeNode *x)
     return(x);
 }
 
+/*
+** move an iterator back one element
+** note that a valid pointer must be passed,
+** passing NULL will result in unpredictable results
+*/
 rbTreeNode *rbTreePrevious(rbTreeNode *x)
 {
     if (x->left != NULL) {
@@ -415,11 +467,18 @@ rbTreeNode *rbTreePrevious(rbTreeNode *x)
     return(x);
 }
 
+/*
+** returns the number of real data nodes in the tree, not counting
+** the base node since it contains no data
+*/
 int rbTreeSize(rbTreeNode *base)
 {
     return(base->color);
 }
 
+/*
+** Allocate a new red-black tree using an empty node to hold pointers
+*/
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode)
 {
     rbTreeNode *rootStorage = allocateEmptyNode();
@@ -432,6 +491,14 @@ rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode)
     return(rootStorage);
 }
 
+/*
+** iterate through all nodes, unlinking and disposing them
+** extra effort is made to maintain all links, the size, and
+** leftmost/rightmost pointers, so that the tree can be dumped
+** when debugging problems. We could probably ifdef some of this
+** since it goes unused most of the time
+** the tree is not kept balanced since all nodes will be removed
+*/
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode)
 {
     rbTreeNode *iter = rbTreeBegin(base);
@@ -466,6 +533,10 @@ void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode)
 
 #ifdef RBTREE_TEST_CODE
 /* ================================================================== */
+
+/*
+** code to test basic stuff of tree routines
+*/
 
 typedef struct TestNode {
     rbTreeNode      nodePointers; /* MUST BE FIRST MEMBER */
