@@ -266,7 +266,7 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
         /* Might want to make this a read-only XmText eventually so that 
             users can copy from it */
         textD->calltipW = XtVaCreateManagedWidget( 
-                "calltipW", xmLabelWidgetClass, textD->calltipShell,
+                "calltip", xmLabelWidgetClass, textD->calltipShell,
                 XmNborderWidth, 1,              /* Thin borders */
                 XmNhighlightThickness, 0,
                 XmNalignment, XmALIGNMENT_BEGINNING,
