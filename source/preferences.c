@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.82 2003/03/14 22:27:53 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.83 2003/03/21 18:22:14 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2968,6 +2968,16 @@ first, in Preferences -> Default Settings ->\n\
 Syntax Highlighting, before proceeding here.", "Dismiss");
 	return False;
     }
+    /* don't allow deletion if data will be lost */
+    if (LMHasSmartIndentMacros(LMDialog.languageModeList[itemIndex]->name)) {
+    	DialogF(DF_WARN, LMDialog.shell, 1,
+"This language mode has smart indent macros\n\
+defined.  Please delete the macros first,\n\
+in Preferences -> Default Settings ->\n\
+Auto Indent -> Program Smart Indent,\n\
+before proceeding here.", "Dismiss");
+	return False;
+    }
     return True;
 }
 
@@ -3011,12 +3021,13 @@ static int updateLMList(void)
     }
     
     /* If there were any name changes, re-name dependent highlight patterns
-       and fix up the weird rename-format names */
+       and smart-indent macros and fix up the weird rename-format names */
     for (i=0; i<LMDialog.nLanguageModes; i++) {
     	if (strchr(LMDialog.languageModeList[i]->name, ':') != NULL) {
     	    char *newName = strrchr(LMDialog.languageModeList[i]->name, ':')+1;
     	    *strchr(LMDialog.languageModeList[i]->name, ':') = '\0';
     	    RenameHighlightPattern(LMDialog.languageModeList[i]->name, newName);
+    	    RenameSmartIndentMacros(LMDialog.languageModeList[i]->name, newName);
     	    memmove(LMDialog.languageModeList[i]->name, newName,
     	    	    strlen(newName) + 1);
     	    ChangeManagedListData(LMDialog.managedListW);
@@ -3056,7 +3067,8 @@ static int updateLMList(void)
     
     /* If a syntax highlighting dialog is up, update its menu */
     UpdateLanguageModeMenu();
-    
+    /* The same for the smart indent macro dialog */
+    UpdateLangModeMenuSmartIndent(); 
     /* Note that preferences have been changed */
     MarkPrefsChanged();
 

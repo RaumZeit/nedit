@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.20 2003/01/06 15:36:28 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.21 2003/03/21 18:22:14 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -111,7 +111,7 @@ static void executeNewlineMacro(WindowInfo *window,smartIndentCBStruct *cbInfo);
 static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(textBuffer *buf, char *macro);
 static int isDefaultIndentSpec(smartIndentRec *indentSpec);
-static smartIndentRec *findIndentSpec(char *modeName);
+static smartIndentRec *findIndentSpec(const char *modeName);
 static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(char *lmName);
 static int siParseError(char *stringStart, char *stoppedAt, char *message);
@@ -2021,7 +2021,7 @@ static int isDefaultIndentSpec(smartIndentRec *indentSpec)
     return False;
 }
     
-static smartIndentRec *findIndentSpec(char *modeName)
+static smartIndentRec *findIndentSpec(const char *modeName)
 {
     int i;
 
@@ -2057,4 +2057,60 @@ static char *ensureNewline(char *string)
     newString[length+1] = '\0';
     XtFree(string);
     return newString;
+}
+
+/*
+** Returns True if there are smart indent macros, or potential macros
+** not yet committed in the smart indent dialog for a language mode,
+*/
+int LMHasSmartIndentMacros(const char *languageMode)
+{
+    if (findIndentSpec(languageMode) != NULL)
+    	return True;
+    return SmartIndentDialog.shell!=NULL && !strcmp(SmartIndentDialog.langModeName,
+    	    languageMode);
+}
+
+/*
+** Change the language mode name of smart indent macro sets for language 
+** "oldName" to "newName" in both the stored macro sets, and the pattern set
+** currently being edited in the dialog.
+*/
+void RenameSmartIndentMacros(const char *oldName, const char *newName)
+{
+    int i;
+
+    for (i=0; i<NSmartIndentSpecs; i++) {
+    	if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
+    	    XtFree(SmartIndentSpecs[i]->lmName);
+    	    SmartIndentSpecs[i]->lmName = XtNewString(newName);
+    	}
+    }
+    if (SmartIndentDialog.shell != NULL) {
+    	if (!strcmp(SmartIndentDialog.langModeName, oldName)) {
+    	    XtFree(SmartIndentDialog.langModeName);
+    	    SmartIndentDialog.langModeName = XtNewString(newName);
+    	}
+    }
+}
+
+/*
+** If a smart indent dialog is up, ask to have the option menu for
+** chosing language mode updated (via a call to CreateLanguageModeMenu)
+*/
+void UpdateLangModeMenuSmartIndent(void)
+{
+    Widget oldMenu;
+
+    if (SmartIndentDialog.shell == NULL)
+    	return;
+
+    oldMenu = SmartIndentDialog.lmPulldown;
+    SmartIndentDialog.lmPulldown = CreateLanguageModeMenu(
+    	    XtParent(XtParent(oldMenu)), langModeCB, NULL);
+    XtVaSetValues(XmOptionButtonGadget(SmartIndentDialog.lmOptMenu),
+    	    XmNsubMenuId, SmartIndentDialog.lmPulldown, NULL);
+    SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
+
+    XtDestroyWidget(oldMenu);
 }

@@ -1,4 +1,4 @@
-/* $Id: smartIndent.h,v 1.5 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: smartIndent.h,v 1.6 2003/03/21 18:22:14 edg Exp $ */
 
 #ifndef NEDIT_SMARTINDENT_H_INCLUDED
 #define NEDIT_SMARTINDENT_H_INCLUDED
@@ -18,5 +18,8 @@ int SmartIndentMacrosAvailable(char *languageMode);
 void EditSmartIndentMacros(WindowInfo *window);
 void EditCommonSmartIndentMacro(void);
 Boolean InSmartIndentMacros(WindowInfo *window);
+int LMHasSmartIndentMacros(const char *languageMode);
+void RenameSmartIndentMacros(const char *oldName, const char *newName);
+void UpdateLangModeMenuSmartIndent(void);
 
 #endif /* NEDIT_SMARTINDENT_H_INCLUDED */
