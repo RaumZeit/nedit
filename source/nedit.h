@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.27 2002/08/08 21:00:18 n8gray Exp $ */
+/* $Id: nedit.h,v 1.28 2002/09/03 01:10:07 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -330,6 +330,7 @@ typedef struct _WindowInfo {
     					   of selection related menu items */
     Boolean	filenameSet;		/* is the window still "Untitled"? */ 
     Boolean	fileChanged;		/* has window been modified? */
+    Boolean     fileMissing;            /* is the window's file gone? */
     int         lockReasons;            /* all ways a file can be locked */
     Boolean	autoSave;		/* is autosave turned on? */
     Boolean	saveOldVersion;		/* keep old version in filename.bck */

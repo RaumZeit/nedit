@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.51 2002/08/27 05:39:27 n8gray Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.52 2002/09/03 01:10:07 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -126,9 +126,6 @@ void EditNewFile(char *geometry, int iconic, const char *languageMode,
     window = CreateWindow(name, geometry, iconic);
     strcpy(window->filename, name);
     strcpy(window->path, defaultPath ? defaultPath : "");
-    window->filenameSet = FALSE;
-    window->fileFormat = UNIX_FILE_FORMAT;
-    window->lastModTime = 0;
     SetWindowModified(window, FALSE);
     CLEAR_ALL_LOCKS(window->lockReasons);
     UpdateWindowReadOnly(window);
@@ -238,9 +235,17 @@ void RevertToSaved(WindowInfo *window)
     ClearUndoList(window);
     openFlags |= IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0;
     if (!doOpen(window, name, path, openFlags)) {
-	/* The user may have destroyed the window instead of closing the 
-	   warning dialog; don't close it twice */
-	safeClose(window);
+	/* This is a bit sketchy.  The only error in doOpen that irreperably
+            damages the window is "too much binary data".  It should be
+            pretty rare to be reverting something that was fine only to find
+            that now it has too much binary data. */
+        if (!window->fileMissing)
+	    safeClose(window);
+        else {
+            /* Treat it like an externally modified file */
+            window->lastModTime=0;
+            window->fileMissing=FALSE;
+        }
     	return;
     }
     UpdateWindowTitle(window);
@@ -291,6 +296,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     strcpy(window->filename, name);
     strcpy(window->path, path);
     window->filenameSet = TRUE;
+    window->fileMissing = TRUE;
 
     /* Get the full name of the file */
     strcpy(fullname, path);
@@ -376,8 +382,6 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     }
 #endif
     fileLen = statbuf.st_size;
-    window->fileMode = statbuf.st_mode;
-    window->lastModTime = statbuf.st_mtime;
     
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
@@ -405,7 +409,13 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 	DialogF(DF_WARN, window->shell, 1, "Unable to close file", "Dismiss");
 	/* we read it successfully, so continue */
     }
-    
+
+    /* Any errors that happen after this point leave the window in a 
+        "broken" state, and thus RevertToSaved will abandon the window if
+        window->fileMissing is FALSE and doOpen fails. */    
+    window->fileMode = statbuf.st_mode;
+    window->lastModTime = statbuf.st_mtime;
+    window->fileMissing = FALSE;
     /* Detect and convert DOS and Macintosh format files */
     window->fileFormat = formatOfFile(fileString);
     if (window->fileFormat == DOS_FILE_FORMAT)
@@ -560,8 +570,13 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse)
     /* Make sure that the window is not in iconified state */
     RaiseShellWindow(window->shell);
 
-    /* if window is modified, ask about saving, otherwise just close */
-    if (!window->fileChanged) {
+    /* if window is a normal & unmodified file or an empty new file then
+       just close it.  Otherwise ask for confirmation first. */
+    if ( !window->fileChanged && 
+            /* Normal File */
+            ((!window->fileMissing && window->lastModTime > 0) || 
+            /* New File*/
+             (window->fileMissing && window->lastModTime == 0)) ){
        CloseWindow(window);
        /* up-to-date windows don't have outstanding backup files to close */
     } else {
@@ -594,23 +609,34 @@ int SaveWindow(WindowInfo *window)
 {
     int stat;
     
-    if (!window->fileChanged || IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons))
+    /* Try to ensure our information is up-to-date */
+    CheckForChangesToFile(window);
+    
+    /* Return success if the file is normal & unchanged or is a
+        read-only file. */
+    if ( (!window->fileChanged && !window->fileMissing && 
+            window->lastModTime > 0) || 
+            IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons))
     	return TRUE;
+    /* Prompt for a filename if this is an Untitled window */
     if (!window->filenameSet)
     	return SaveWindowAs(window, NULL, False);
 
     /* Check for external modifications and warn the user */
     if (GetPrefWarnFileMods() && fileWasModifiedExternally(window)) {
-    	if (DialogF(DF_WARN, window->shell, 2,
-		"%s has been modified by another program.\n\n"
-		"Continuing this operation will overwrite any external\n"
-		"modifications to the file since it was opened in NEdit,\n"
-		"and your work or someone else's may potentially be lost.\n\n"
-		"To preserve the modified file, cancel this operation and\n"
-		"use Save As... to save this file under a different name,\n"
-		"or Revert to Saved to revert to the modified version.",
-		"Continue", "Cancel", window->filename) != 1) {
-	    window->lastModTime = 0;	/* Don't warn again */
+        stat = DialogF(DF_WARN, window->shell, 2,
+	    "%s has been modified by another program.\n\n"
+	    "Continuing this operation will overwrite any external\n"
+	    "modifications to the file since it was opened in NEdit,\n"
+	    "and your work or someone else's may potentially be lost.\n\n"
+	    "To preserve the modified file, cancel this operation and\n"
+	    "use Save As... to save this file under a different name,\n"
+	    "or Revert to Saved to revert to the modified version.",
+	    "Continue", "Cancel", window->filename);
+        if (stat == 2) {
+            /* Cancel and mark file as externally modified */
+            window->lastModTime = 0;
+            window->fileMissing = FALSE;
 	    return FALSE;
 	}
     }
@@ -622,7 +648,8 @@ int SaveWindow(WindowInfo *window)
     if (writeBckVersion(window))
     	return FALSE;
     stat = doSave(window);
-    RemoveBackupFile(window);
+    if (stat) 
+        RemoveBackupFile(window);
 #endif /*VMS*/
     return stat;
 }
@@ -703,7 +730,7 @@ static int doSave(WindowInfo *window)
     char fullname[MAXPATHLEN];
     struct stat statbuf;
     FILE *fp;
-    int fileLen;
+    int fileLen, result;
     
     /* Get the full name of the file */
     strcpy(fullname, window->path);
@@ -721,8 +748,12 @@ static int doSave(WindowInfo *window)
     fp = fopen(fullname, "wb");
 #endif /* VMS */
     if (fp == NULL) {
-    	DialogF(DF_WARN, window->shell, 1, "Unable to save %s:\n%s", "Dismiss",
+    	result = DialogF(DF_WARN, window->shell, 2, 
+                "Unable to save %s:\n%s\n\n"
+                "Save as a new file?", "Save As...", "Dismiss",
 		window->filename, errorString());
+        if (result == 1)
+            return SaveWindowAs(window, NULL, 0);
         return FALSE;
     }
 
@@ -792,12 +823,15 @@ static int doSave(WindowInfo *window)
     SetWindowModified(window, FALSE);
     
     /* update the modification time */
-    if (stat(fullname, &statbuf) == 0)
+    if (stat(fullname, &statbuf) == 0) {
 	window->lastModTime = statbuf.st_mtime;
-    else
+        window->fileMissing = FALSE;
+    } else {
         /* This needs to produce an error message -- the file can't be 
             accessed! */
 	window->lastModTime = 0;
+        window->fileMissing = TRUE;
+    }
 
     return TRUE;
 }
@@ -1027,8 +1061,8 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
     int resp;
 
     resp = DialogF(DF_ERR, window->shell, 3,
-    	    "Couldn't write .bck (last version) file.\n%s: %s",
-    	    "Cancel Save", "Turn off Backups", "Continue", file, errString);
+            "Couldn't write .bck (last version) file.\n%s: %s",
+            "Cancel Save", "Turn off Backups", "Continue", file, errString);
     if (resp == 1)
     	return TRUE;
     if (resp == 2) {
@@ -1321,7 +1355,7 @@ void CheckForChangesToFile(WindowInfo *window)
     struct stat statbuf;
     Time timestamp;
     FILE *fp;
-    int resp;
+    int resp, silent = 0;
     XWindowAttributes winAttr;
     
     if(!window->filenameSet)
@@ -1335,25 +1369,38 @@ void CheckForChangesToFile(WindowInfo *window)
     lastCheckWindow = window;
     lastCheckTime = timestamp;
 
+    /* Update the status, but don't pop up a dialog if we're called
+       from a place where the window might be iconic (e.g., from the
+       replace dialog) or on another desktop.
+       
+       This works, but I bet it costs a round-trip to the server.
+       Might be better to capture MapNotify/Unmap events instead. */
+
+    XGetWindowAttributes(XtDisplay(window->shell),
+                         XtWindow(window->shell),
+                         &winAttr);
+
+    if (winAttr.map_state != IsViewable)
+        silent = 1;
+
     /* Get the file mode and modification time */
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
     if (stat(fullname, &statbuf) != 0) {
+        /* Return if we've already warned the user or we can't warn him now */
+        if (window->fileMissing || silent)
+            return;
         /* Can't stat the file -- maybe it's been deleted.
            The filename is now invalid */
-        window->filenameSet = FALSE;
-        /* The buffer's "modified" since there's no longer a backup on disk */
-        SetWindowModified(window, TRUE);
-        /* Undo should not restore the "Unmodified" property of the window */
-        DisableUnmodified(window);
+        window->fileMissing = TRUE;
+        window->lastModTime = 1;
         /* Warn the user, if they like to be warned (Maybe this should be its
             own preference setting: GetPrefWarnFileDeleted() ) */
-        if (window->lastModTime != 0 && GetPrefWarnFileMods()) {
-            window->lastModTime = 0;
+        if (GetPrefWarnFileMods()) {
             /* See note below about pop-up timing and XUngrabPointer */
             XUngrabPointer(XtDisplay(window->shell), timestamp);
             if( errno == EACCES ) 
-                resp = DialogF( DF_ERR, window->shell, 2, 
+                resp = 1 + DialogF( DF_ERR, window->shell, 2, 
                     "You no longer have access to file \"%s\".\n"
                     "Another program may have changed the permissions one of\n"
                     "its parent directories.\n"
@@ -1361,14 +1408,16 @@ void CheckForChangesToFile(WindowInfo *window)
                     "Save As...", "Dismiss", 
                     window->filename );
             else
-                resp = DialogF( DF_ERR, window->shell, 2, 
+                resp = DialogF( DF_ERR, window->shell, 3, 
                     "Error while checking the status of file \"%s\":\n"
                     "    \"%s\"\n"
                     "Another program may have deleted or moved it.\n"
-                    "Save as a new file?", 
-                    "Save As...", "Dismiss", 
+                    "Re-Save file or Save as a new file?", 
+                    "Re-Save", "Save As...", "Dismiss", 
                     window->filename, errorString() );
             if (resp == 1)
+                SaveWindow(window);
+            else if (resp == 2)
                 SaveWindowAs(window, NULL, 0);
         }
         return;
@@ -1398,20 +1447,6 @@ void CheckForChangesToFile(WindowInfo *window)
         }
     }
 
-    /* Update the status, but don't pop up a dialog if we're called
-       from a place where the window might be iconic (e.g., from the
-       replace dialog) or on another desktop.
-       
-       This works, but I bet it costs a round-trip to the server.
-       Might be better to capture MapNotify/Unmap events instead. */
-
-    XGetWindowAttributes(XtDisplay(window->shell),
-                         XtWindow(window->shell),
-                         &winAttr);
-
-    if (winAttr.map_state != IsViewable)
-        return;
-
     /* Warn the user if the file has been modified, unless checking is
        turned off or the user has already been warned.  Popping up a dialog
        from a focus callback (which is how this routine is usually called)
@@ -1419,9 +1454,14 @@ void CheckForChangesToFile(WindowInfo *window)
        dialog can be left with a still active pointer grab from a Motif menu
        which is still in the process of popping down.  The workaround, below,
        of calling XUngrabPointer is inelegant but seems to fix the problem. */
-    if (window->lastModTime != 0 && window->lastModTime != statbuf.st_mtime &&
-            GetPrefWarnFileMods()) {
+    if (!silent && 
+            ((window->lastModTime != 0 && 
+              window->lastModTime != statbuf.st_mtime) ||
+             window->fileMissing)  ){
         window->lastModTime = 0;        /* Inhibit further warnings */
+        window->fileMissing = FALSE;
+        if (!GetPrefWarnFileMods())
+            return;
         XUngrabPointer(XtDisplay(window->shell), timestamp);
         if (window->fileChanged)
             resp = DialogF(DF_WARN, window->shell, 2,
@@ -1450,8 +1490,8 @@ static int fileWasModifiedExternally(WindowInfo *window)
     
     if(!window->filenameSet)
         return FALSE;
-    if (window->lastModTime == 0)
-	return FALSE;
+    /* if (window->lastModTime == 0)
+	return FALSE; */
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
     if (stat(fullname, &statbuf) != 0)
