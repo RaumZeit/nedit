@@ -1,9 +1,12 @@
-#!/usr/bin/env perl 
-#     to start perl, if it is in the PATH
+:
+eval 'exec perl -S $0 ${1+"$@"}'
+    if $running_under_some_shell;
 
 #-----------------------------------------------------------------------------
 #
 # setext.pl -- Structure Enhanced Text Converter (to HTML or simple text)
+# 
+# $Id: setext,v 1.9 2002/09/26 12:37:38 ajhood Exp $
 # 
 # Copyright (c) 2000 Steven Haehn
 # 

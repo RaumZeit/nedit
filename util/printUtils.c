@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.19 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.20 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -126,7 +126,9 @@ static void setQueueLabelText(void);
 static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags);
 static int fileInPath(const char *filename, unsigned short mode_flags);
 static int flprPresent(void);
+#ifdef USE_LPR_PRINT_CMD
 static void getLprQueueDefault(char *defqueue);
+#endif
 #ifndef USE_LPR_PRINT_CMD
 static void getLpQueueDefault(char *defqueue);
 #endif
@@ -912,11 +914,13 @@ static void getFlprQueueDefault(char *defqueue)
             strcpy(defqueue,"");
 }
 
+#ifdef USE_LPR_PRINT_CMD
 static void getLprQueueDefault(char *defqueue)
 {
     if (!foundEnv("PRINTER",defqueue))
         strcpy(defqueue,"");
 }
+#endif
 
 #ifndef USE_LPR_PRINT_CMD
 static void getLpQueueDefault(char *defqueue)

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.8 2002/07/11 21:18:12 slobasso Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.9 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -114,7 +114,9 @@ static struct {
     int         fileChanged;
     
     int 	suppressFormatUpdate;
-} etDialog = {NULL};
+} etDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+              NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+              NULL,NULL,"","","","",0,0,0,0,0};
 
 
 

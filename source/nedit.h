@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.30 2002/09/25 10:56:15 edg Exp $ */
+/* $Id: nedit.h,v 1.31 2002/09/26 12:37:39 ajhood Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -247,6 +247,8 @@ typedef struct _WindowInfo {
     Widget	matchSyntaxBasedDefItem;
     Widget	highlightOffDefItem;
     Widget	highlightDefItem;
+    Widget	backlightCharsItem;
+    Widget	backlightCharsDefItem;
     Widget	searchDlogsDefItem;
     Widget      beepOnSearchWrapDefItem;
     Widget	keepSearchDlogsDefItem;
@@ -298,7 +300,7 @@ typedef struct _WindowInfo {
 #endif
     char	filename[MAXPATHLEN];	/* name component of file being edited*/
     char	path[MAXPATHLEN];	/* path component of file being edited*/
-    int		fileMode;		/* permissions of file being edited */
+    unsigned	fileMode;		/* permissions of file being edited */
     int     	fileFormat; 	    	/* whether to save the file straight
     	    	    	    	    	   (Unix format), or convert it to
 					   MS DOS style with \r\n line breaks */
@@ -348,6 +350,8 @@ typedef struct _WindowInfo {
     Boolean 	showLineNumbers;    	/* is the line number display shown */
     Boolean 	showPathInWindowsMenu; 	/* is the path shown in windows menu */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
+    Boolean	backlightChars;		/* is char backlighting turned on? */
+    char	*backlightCharTypes;	/* what backlighting to use */
     Boolean	modeMessageDisplayed;	/* special stats line banner for learn
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */

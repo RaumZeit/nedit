@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.68 2002/09/25 10:56:15 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.69 2002/09/26 12:37:39 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -181,7 +181,8 @@ static struct {
     Widget contWrapW;
     languageModeRec **languageModeList;
     int nLanguageModes;
-} LMDialog = {NULL};
+} LMDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+              NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0};
 
 /* Font dialog information */
 typedef struct {
@@ -232,6 +233,8 @@ static struct prefData {
     int alwaysCheckRelativeTagsSpecs; /* for every new opened file of session */
     int stickyCaseSenseBtn;     /* whether Case Word Btn is sticky to Regex Btn */
     int prefFileRead;	    	/* detects whether a .nedit existed */
+    int backlightChars;		/* whether to apply character "backlighting" */
+    char *backlightCharTypes;	/* the backlighting color definitions */
 #ifdef SGI_CUSTOM
     int shortMenus; 	    	/* short menu mode */
 #endif
@@ -706,6 +709,10 @@ static PrefDescripRec PrefDescrip[] = {
  	&PrefData.matchSyntaxBased, NULL, True},
     {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True",
     	&PrefData.highlightSyntax, NULL, True},
+    {"backlightChars", "BacklightChars", PREF_BOOLEAN, "False",
+      &PrefData.backlightChars, NULL, True},
+    {"backlightCharTypes", "BacklightCharTypes", PREF_ALLOC_STRING, "",
+      &PrefData.backlightCharTypes, NULL, True},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.searchDlogs, NULL, True},
     {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False",
@@ -925,6 +932,7 @@ static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
+static void setStringAllocPref(char **pprefDataField, char *newValue);
 static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1549,6 +1557,37 @@ int GetPrefHighlightSyntax(void)
     return PrefData.highlightSyntax;
 }
 
+void SetPrefBacklightChars(int state)
+{
+    setIntPref(&PrefData.backlightChars, state);
+}
+
+int GetPrefBacklightChars(void)
+{
+    return PrefData.backlightChars;
+}
+
+void SetPrefBacklightCharTypes(char *types)
+{
+    setStringAllocPref(&PrefData.backlightCharTypes, types);
+}
+
+char *GetPrefBacklightCharTypes(void)
+{
+    return PrefData.backlightCharTypes;
+}
+
+void BacklightUseCurrentCharTypesAsPref(WindowInfo *window, int quietly)
+{
+    if (!quietly) {
+      if (DialogF(DF_INF, window->shell, 2,
+"The default backlighting specifications will be\n\
+changed to those of the current window.", "OK", "Cancel") == 2)
+          return;
+    }
+    SetPrefBacklightCharTypes(window->backlightCharTypes);
+}
+
 void SetPrefRepositionDialogs(int state)
 {
     setIntPref(&PrefData.repositionDialogs, state);
@@ -1828,6 +1867,37 @@ static void setStringPref(char *prefDataField, const char *newValue)
     strcpy(prefDataField, newValue);
 }
 
+static void setStringAllocPref(char **pprefDataField, char *newValue)
+{
+    char *p_newField;
+
+    /* treat empty strings as nulls */
+    if (newValue && *newValue == '\0')
+      newValue = NULL;
+    if (*pprefDataField && **pprefDataField == '\0')
+      *pprefDataField = NULL;         /* assume statically alloc'ed "" */
+
+    /* check changes */
+    if (!*pprefDataField && !newValue)
+      return;
+    else if (!*pprefDataField && newValue)
+      PrefsHaveChanged = True;
+    else if (*pprefDataField && !newValue)
+      PrefsHaveChanged = True;
+    else if (strcmp(*pprefDataField, newValue))
+      PrefsHaveChanged = True;
+
+    /* get rid of old preference */
+    if (*pprefDataField)
+      XtFree(*pprefDataField);
+
+    /* store new preference */
+    if (newValue) {
+      p_newField = XtMalloc(strlen(newValue) + 1);
+      strcpy(p_newField, newValue);
+    }
+    *pprefDataField = newValue;
+}
 
 /*
 ** Set the language mode for the window, update the menu and trigger language

@@ -1,3 +1,4 @@
+# $Id: faq-txt.awk,v 1.3 2002/09/26 12:37:37 ajhood Exp $
 
 function wrap(line, prefix)
 {

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.15 2002/09/06 19:13:08 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.16 2002/09/26 12:37:40 ajhood Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -7,6 +7,7 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
+#include <Xm/Xm.h>
 
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
@@ -14,6 +15,14 @@ enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 #define NO_HINT -1
 
 typedef struct {
+    char *highlightName;
+    char *styleName;
+    char *colorName;
+    char isBold;
+    char isItalic;
+    unsigned short red;
+    unsigned short green;
+    unsigned short blue;
     Pixel color;
     Boolean underline;
     XFontStruct *font;
@@ -97,6 +106,11 @@ typedef struct _textDisp {
     GC cursorFGGC;			/* GC for drawing the cursor */
     GC styleGC;     	    	    	/* GC with color and font unspecified
     	    	    	    	    	   for drawing colored/styled text */
+    Pixel fgPixel;			/* Foreground colors */
+    Pixel selectFGPixel;		/* Foreground select color */
+    Pixel highlightFGPixel;
+    Pixel *bgClassPixel;		/* table of colors for each BG class */
+    unsigned char *bgClass;		/* obtains index into bgClassPixel[] */
     GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     
     Widget calltipW;                    /* The Label widget for the calltip */
@@ -121,7 +135,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
 	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
 	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
-	int continuousWrap, int wrapMargin);
+      int continuousWrap, int wrapMargin, XmString bgClassString);
 void TextDFree(textDisp *textD);
 void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
 textBuffer *TextDGetBuffer(textDisp *textD);
@@ -167,6 +181,8 @@ int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,
 int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
 int TextDCountLines(textDisp *textD, int startPos, int endPos,
     	int startPosIsLineStart);
+void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
+	unsigned char **pp_bgClass, Pixel bgPixelDefault);
 void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
 	int textLeft);
 void TextDMaintainAbsLineNum(textDisp *textD, int state);

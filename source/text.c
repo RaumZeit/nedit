@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.34 2002/09/06 19:13:08 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.35 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -620,6 +620,8 @@ static XtResource resources[] = {
       XtOffset(TextWidget, text.highlightBGPixel), XmRString, "red"},
     {textNcursorForeground, textCCursorForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.cursorFGPixel), XmRString, "black"},
+    {textNbacklightCharTypes,textCBacklightCharTypes,XmRString,sizeof(XmString),
+      XtOffset(TextWidget, text.backlightCharTypes), XmRString, NULL},
     {textNlineNumForeground, textCLineNumForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.lineNumFGPixel), XmRString, "black"},
     {textNrows, textCRows, XmRInt,sizeof(int),
@@ -801,7 +803,8 @@ static void initialize(TextWidget request, TextWidget new)
 	    new->text.selectBGPixel, new->text.highlightFGPixel,
 	    new->text.highlightBGPixel, new->text.cursorFGPixel,
 	    new->text.lineNumFGPixel,
-	    new->text.continuousWrap, new->text.wrapMargin);
+          new->text.continuousWrap, new->text.wrapMargin,
+          new->text.backlightCharTypes);
 
     /* Add mandatory delimiters blank, tab, and newline to the list of
        delimiters.  The memory use scheme here is that new values are
@@ -1108,19 +1111,31 @@ static Boolean setValues(TextWidget current, TextWidget request,
        show, or change the number of columns of the line number display,
        which requires re-organizing the x coordinates of both the line
        number display and the main text display */
-    if (new->text.lineNumCols != current->text.lineNumCols || reconfigure) {
-	int marginWidth = new->text.marginWidth;
-	int charWidth = new->text.fontStruct->max_bounds.width;
-	int lineNumCols = new->text.lineNumCols;
-	if (lineNumCols == 0) {
-	    TextDSetLineNumberArea(new->text.textD, 0, 0, marginWidth);
-	    new->text.columns = (new->core.width - marginWidth*2) / charWidth;
-	} else {
-	    TextDSetLineNumberArea(new->text.textD, marginWidth, charWidth *
-	    	    lineNumCols, 2*marginWidth + charWidth * lineNumCols);
-    	    new->text.columns = (new->core.width - marginWidth*3 -
-	    	    charWidth * lineNumCols) / charWidth;
-	}
+    if (new->text.lineNumCols != current->text.lineNumCols || reconfigure)
+    {
+        int marginWidth = new->text.marginWidth;
+        int charWidth = new->text.fontStruct->max_bounds.width;
+        int lineNumCols = new->text.lineNumCols;
+        if (lineNumCols == 0)
+        {
+            TextDSetLineNumberArea(new->text.textD, 0, 0, marginWidth);
+            new->text.columns = (new->core.width - marginWidth*2) / charWidth;
+        } else
+        {
+            TextDSetLineNumberArea(new->text.textD, marginWidth,
+                    charWidth * lineNumCols,
+                    2*marginWidth + charWidth * lineNumCols);
+            new->text.columns = (new->core.width - marginWidth*3 - charWidth
+                    * lineNumCols) / charWidth;
+        }
+    }
+
+    if (new->text.backlightCharTypes != current->text.backlightCharTypes)
+    {
+        TextDSetupBGClasses((Widget)new, new->text.backlightCharTypes,
+                &new->text.textD->bgClassPixel, &new->text.textD->bgClass,
+                new->text.textD->bgPixel);
+        redraw = True;
     }
     
     return redraw;

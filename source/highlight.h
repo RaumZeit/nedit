@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.6 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: highlight.h,v 1.7 2002/09/26 12:37:39 ajhood Exp $ */
 
 #ifndef NEDIT_HIGHLIGHT_H_INCLUDED
 #define NEDIT_HIGHLIGHT_H_INCLUDED
@@ -41,7 +41,17 @@ void FreeHighlightingData(WindowInfo *window);
 void RemoveWidgetHighlight(Widget widget);
 void UpdateHighlightStyles(WindowInfo *window);
 int TestHighlightPatterns(patternSet *patSet);
-Pixel AllocColor(Widget w, const char *colorName);
+Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
 void* GetHighlightInfo(WindowInfo *window, int pos);
+highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
+int HighlightCodeOfPos(WindowInfo *window, int pos);
+int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
+char *HighlightNameOfCode(WindowInfo *window, int hCode);
+char *HighlightStyleOfCode(WindowInfo *window, int hCode);
+char *HighlightColorOfCode(WindowInfo *window, int hCode);
+Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
+      int *r, int *g, int *b);
+int HighlightCodeIsBold(WindowInfo *window, int hCode);
+int HighlightCodeIsItalic(WindowInfo *window, int hCode);
 
 #endif /* NEDIT_HIGHLIGHT_H_INCLUDED */

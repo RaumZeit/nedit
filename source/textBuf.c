@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.23 2002/09/25 10:56:15 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.24 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -31,6 +31,7 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.23 2002/09/25 10:56:15 edg Exp $
 #endif
 
 #include "textBuf.h"
+#include "rangeset_fn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,6 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.23 2002/09/25 10:56:15 edg Exp $
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
 
 #define PREFERRED_GAP_SIZE 80	/* Initial size for the buffer gap (empty space
                                    in the buffer where text might be inserted
@@ -131,7 +131,9 @@ static const char *ControlCodeTable[32] = {
 */
 textBuffer *BufCreate(void)
 {
-    return BufCreatePreallocated(0);
+    textBuffer *buf = BufCreatePreallocated(0);
+    BufAddModifyCB(buf, RangesetBufModifiedCB, buf);
+    return buf;
 }
 
 /*
@@ -169,6 +171,7 @@ textBuffer *BufCreatePreallocated(int requestedSize)
 #ifdef PURIFY
     {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
 #endif
+    buf->rangesetTable = NULL;
     return buf;
 }
 
@@ -182,6 +185,8 @@ void BufFree(textBuffer *buf)
     	XtFree((char *)buf->modifyProcs);
     	XtFree((char *)buf->cbArgs);
     }
+    if (buf->rangesetTable)
+	RangesetTableFree(buf->rangesetTable);
     if (buf->nPreDeleteProcs != 0) {
     	XtFree((char *)buf->preDeleteProcs);
     	XtFree((char *)buf->preDeleteCbArgs);
@@ -627,6 +632,12 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
     deletedText = BufGetAll(buf);
     callModifyCBs(buf, 0, buf->length, buf->length, 0, deletedText);
     XtFree(deletedText);
+}
+
+void BufCheckDisplay(textBuffer *buf, int start, int end)
+{
+    /* just to make sure colors in the selected region are up to date */
+    callModifyCBs(buf, start, 0, 0, end-start, NULL);
 }
 
 void BufSelect(textBuffer *buf, int start, int end)
@@ -1503,7 +1514,7 @@ static void insertCol(textBuffer *buf, int column, int startPos,
         paragraph filling, so lets see if it works without it. MWE */
         {
             char *c;
-            for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
+    	    for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
                 len--;
         }
 #endif
@@ -1630,7 +1641,7 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
 		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
     	XtFree(line);
     	XtFree(insLine);
-    	for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
+    	for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
     	    len--;
 	outPtr += len;
 	*outPtr++ = '\n';

@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.10 2002/08/12 21:21:36 tringali Exp $ */
+/* $Id: window.h,v 1.11 2002/09/26 12:37:40 ajhood Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -46,4 +46,5 @@ void SetTabDist(WindowInfo *window, int tabDist);
 void SetEmTabDist(WindowInfo *window, int emTabDist);
 void AllWindowsBusy(const char* message);
 void AllWindowsUnbusy(void);
+void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);
 #endif /* NEDIT_WINDOW_H_INCLUDED */

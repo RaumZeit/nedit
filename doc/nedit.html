@@ -20,9 +20,9 @@
       <A HREF="#Finding_and_Replacing_Text">Finding and Replacing Text</A>          <A HREF="#Learn/Replay">Learn/Replay</A>
       <A HREF="#Cut_and_Paste">Cut and Paste</A>                       <A HREF="#Macro_Language">Macro Language</A>
       <A HREF="#Using_the_Mouse">Using the Mouse</A>                     <A HREF="#Macro_Subroutines">Macro Subroutines</A>
-      <A HREF="#Keyboard_Shortcuts">Keyboard Shortcuts</A>                  <A HREF="#Action_Routines">Action Routines</A>
-      <A HREF="#Shifting_and_Filling">Shifting and Filling</A>
-      <A HREF="#File_Format">File Format</A>
+      <A HREF="#Keyboard_Shortcuts">Keyboard Shortcuts</A>                  <A HREF="#Highlighting_Information">Highlighting Information</A>
+      <A HREF="#Shifting_and_Filling">Shifting and Filling</A>                <A HREF="#Range_Sets">Range Sets</A>
+      <A HREF="#File_Format">File Format</A>                         <A HREF="#Action_Routines">Action Routines</A>
                                         Customizing
     Features for Programming              <A HREF="#Customizing_NEdit">Customizing NEdit</A>
       <A HREF="#Programming_with_NEdit">Programming with NEdit</A>              <A HREF="#Preferences">Preferences</A>
@@ -923,6 +923,24 @@ Settings -&#62; Language Modes....
 <P>
 You can set the language mode manually for a window, by selecting it from the
 menu: Preferences -&#62; Language Modes.
+<P>
+<H3>Backlighting</H3>
+<P>
+Nedit can be made to set the background color of particular classes of
+characters to allow easy identifcation of those characters. This is
+particularly useful if you need to be able to distiguish between tabs
+and spaces in a file where the difference is important. The colors used
+for backlighting are specified by a resource, "nedit*backlightCharTypes"
+but can be changed for a particular window using the macro built-in function
+set_backlight_string(). You can turn backlighting on and off through the
+Preferences -&#62; Apply Backlighting menu entry.
+<P>
+If you prefer to have backlighting turned on for all new windows, use
+the Preferences -&#62; Default Settings -&#62; Backlighting -&#62; Apply Backlighting
+menu entry. If you wish to set the current window's backlighting settings
+for new windows, use Preferences -&#62; Default Settings -&#62; Backlighting -&#62;
+Use Current. These settings will be saved along with other preferences
+using Preferences -&#62; Save Defaults.
 <P>
 <H3>Line Numbers</H3>
 <P>
@@ -2605,6 +2623,13 @@ The right margin in the current window for text wrapping and filling.
 </PRE>
 The current wrap text mode. Values are "none", "auto" or "continuous".
 <P>
+<PRE>
+<B>$backlight_string</B>
+</PRE>
+The current value of the window's backlighting specification. This is empty
+if backlighting is turned off. It can be changed through calls to the
+built-in macro function set_backlight_string().
+<P>
 <H3>Built-in Subroutines</H3>
 <P>
 <PRE>
@@ -2799,6 +2824,16 @@ and confined horizontally to characters displayed between positions "left",
 and "right".
 <P>
 <PRE>
+<B>set_backlight_string( [string] )</B>
+</PRE>
+Applies the given string, which should be in the format of the
+nedit*backlightCharTypes X resource, to the current text window, turning on
+backlighting.  If the value of the string passed is "default", or if no
+parameter is passed, the nedit.backlightCharTypes X resource's own value will
+be used.  If the empty string, "", is passed, backlighting will be turned
+off.
+<P>
+<PRE>
 <B>set_cursor_pos( position )</B>
 </PRE>
 Set the cursor position for the current window.
@@ -2867,6 +2902,269 @@ Return an all upper-case version of string.
 </PRE>
 Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on
 successful write, or 0 if unsuccessful.
+<P><HR>
+<P>
+<A NAME="Range_Sets"</A>
+<H2> Range Sets </H2>
+<P>
+The user can define range sets, identified by an alphabetic character.  A
+range set contains ranges, defined by start and end positions in the text
+buffer.  These ranges are adjusted when modifications are made to the text
+buffer: they shuffle around when characters are added or deleted.  However,
+ranges within a set will coalesce if the characters between them are removed,
+or a new range is added to the set which bridges or overlaps others.
+<P>
+Using range sets allows non-contiguous bits of the text to be identified as a
+group.
+<P>
+Range sets can be assigned a background color: characters within a range of a
+range set will have the background color of the range set. If more than one
+rangeset includes a given character, its background color will be that of the
+most recently created range set which has a color defined.
+<P>
+Warnings: A range set is manipulated ONLY through macro routines. Range sets
+can easily become very large, and may exceed the capacity of the running
+process.  Coloring relies on proper color names or specifications (such as
+the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. 
+Behaviours set using rangeset_set_modify_response() are still experimental.
+<P>
+<H3>Range set read-only variables</H3>
+<P>
+These are set by calls to the range set functions.
+<P>
+<PRE>
+<B>$rangeset_list</B>
+</PRE>
+string of active rangeset letters in reverse order of definition.
+<P>
+<PRE>
+<B>$rangeset_label</B>
+</PRE>
+label of most recently accessed rangeset.
+<P>
+<PRE>
+<B>$rangeset_color</B>
+</PRE>
+color (if any) of most recently accessed rangeset.
+<P>
+<PRE>
+<B>$rangeset_modify_response</B>
+</PRE>
+modify response name of most recently accessed rangeset.
+<P>
+<PRE>
+<B>$rangeset_ranges</B>
+</PRE>
+number of ranges in most recently accessed rangeset.
+<P>
+<PRE>
+<B>$rangeset_range_index</B>
+</PRE>
+most recently accessed range in rangeset (or -1).
+<P>
+<PRE>
+<B>$rangeset_range_start</B>
+</PRE>
+start position of most recently accessed range (or -1).
+<P>
+<PRE>
+<B>$rangeset_range_end</B>
+</PRE>
+end position of most recently accessed range (or -1).
+<P>
+<H3>Range set functions</H3>
+<P>
+<PRE>
+<B>rangeset_defined( r )</B>
+</PRE>
+Returns true if the range identified by the letter r is defined, false if
+not.
+<P>
+<PRE>
+<B>rangeset_inverse( r )</B>
+</PRE>
+Changes the range set r so that it contains all ranges not in r. Returns the
+number of entries if successful.
+<P>
+<PRE>
+<B>rangeset_add( r, [start, end] )</B>
+<B>rangeset_add( r, r0 )</B>
+</PRE>
+Adds to the range set r. The first form adds the range identified by the
+current primary selection to the range set, unless start and end are defined,
+in which case the range they define is added. The second form allows all
+ranges in the range set identified by r0 to be added to the range set r. If r
+has not yet been defined, it will be at this point. Returns the number of
+non-contiguous ranges in r after the addition.
+<P>
+<PRE>
+<B>rangeset_remove( r, [start, end] )</B>
+<B>rangeset_remove( r, r0 )</B>
+</PRE>
+Removes from the range set r. The first form removes the range identified by
+the current primary selection from the range set, unless start and end are
+defined, in which case the range they define is removed. The second form
+allows all ranges in the range set identified by r0 to be removed from the
+range set r. Returns the number of non-contiguous ranges in r after the
+addition.
+<P>
+<PRE>
+<B>rangeset_forget( r )</B>
+</PRE>
+Deletes all information about the range set identified by r. A subsequent
+call to rangeset_defined(r) will return false.
+<P>
+<PRE>
+<B>rangeset_get_count( r )</B>
+</PRE>
+Returns the number of non-contiguous ranges in the range set r.
+<P>
+<PRE>
+<B>rangeset_select( r, [index] )</B>
+</PRE>
+Selects the region starting at the start of the first range in the range set
+r and ending at the end of the last, unless index is supplied, in which case
+the range in the range set identified by the index will be selected. index
+should satisfy the conditions 0 &#60;= index and index &#60; rangeset_get_count(r).
+Returns true if successful.
+<P>
+<PRE>
+<B>rangeset_includes_pos( r, pos )</B>
+</PRE>
+Returns true if there is a range in the range set r which contains pos.
+<P>
+<PRE>
+<B>rangeset_set_color( r, [color] )</B>
+</PRE>
+Removes the coloring of range set r if no color name is supplied, otherwise
+attempts to apply the color as a background color to the ranges of r. No
+check is made regarding the validity of color: if the color is invalid (a bad
+name, or not supported by the hardware) this has no effect. If r is
+undefined, this function will define it with no ranges.
+<P>
+<PRE>
+<B>rangeset_set_modify_response( r, type )</B>
+</PRE>
+Changes the behaviour of the range set r when modifications to the text
+buffer occur.  type can be one of the following: "maintain" (the default),
+"break", "include", "exclude", "ins_del" or "del_ins". (The differences are
+fairly subtle.)"
+<P>
+<A NAME="Highlighting_Information"</A>
+<H2> Highlighting Information </H2>
+<P>
+The user can interrogate the current window to determine the color
+highlighting used on a particular piece of text. The following functions
+provide information on the highlighting pattern against which text at a
+particular position has been matched, its style, color and font attributes
+(whether the font is supposed to be bold and/or italic).
+<P>
+Some other functions allow macros to access style information given the name
+of a highlighting pattern, or a highlighting style name.
+<P>
+These macro functions permit macro writers to generate formatted output which
+allows NEdit highlighting to be reproduced. This is suitable for the
+generation of HTML or Postscript output, for example.
+<P>
+<H3>Highlighting information functions</H3>
+<P>
+<PRE>
+<B>get_style( pos )</B>
+</PRE>
+returns an array containing the attributes of the character at position
+"pos". <B>"style"</B> (name of the highlight style), <B>"color"</B> (name of the
+color), <B>"rgb"</B> (the color expressed in  red, green and blue values as
+#rrggbb), <B>"bold"</B> (true or false) and <B>"italic"</B> (true or false)
+<P>
+<PRE>
+<B>get_pattern( pos )</B>
+</PRE>
+returns an array containing the attributes of the character at position
+"pos". <B>"pattern"</B> (highlight pattern name), <B>"style"</B> (highlight style
+name) and <B>"extension"</B> (the length in the text which uses the same
+highlighting pattern) 
+<P>
+<PRE>
+<B>highlight_pattern_of_pos( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_pattern(pos)["pattern"]</I>
+returns the pattern name for highlighting used at the position in the text.
+If no position is supplied, the current cursor position will be used.
+<P>
+<PRE>
+<B>highlight_style_of_pos( [pos] )</B>
+</PRE>
+<I>Deprecated: use either get_pattern(pos)["style"] or get_style(pos)["style"]</I>
+returns the name of the highlighting style applied at the given position
+(defaults to the cursor position).
+<P>
+<PRE>
+<B>highlight_color_of_pos( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_style(pos)["color"]</I>
+returns the name of the color used by the highlighting style applied at the
+given position (defaults to the cursor position).
+<P>
+<PRE>
+<B>highlight_color_value_of_pos( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_style(pos)["rgb"]</I>
+returns the value of the color by the highlighting style applied at the given
+position (defaults to the cursor position). This is a hexadecimal formatted
+value, preceded by the "#" sign; each of three pairs of hexadecimal digits
+indicate the color value for the red, green and blue components of the color,
+in the range 0 to 255 (0 - 0xFF), for example "#ffff80" is a light yellow
+color.
+<P>
+<PRE>
+<B>highlight_style_of_pos_is_bold( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_style(pos)["bold"]</I>
+returns true (non-zero) if the highlighting style applied at the given
+position (defaults to the cursor position) uses a bold font.
+<P>
+<PRE>
+<B>highlight_style_of_pos_is_italic( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_style(pos)["italic"]</I>
+returns true (non-zero) if the highlighting style applied at the given
+position (defaults to the cursor position) uses an italic font.
+<P>
+<PRE>
+<B>highlight_pattern_extends_from( [pos] )</B>
+</PRE>
+<I>Deprecated: use get_pattern(pos)["extension"]</I>
+returns the length in the text starting at the given position (defaults to
+the cursor position) which uses the same highlighting pattern as that
+position.
+<P>
+<PRE>
+<B>highlight_pattern_style( pat_name )</B>
+</PRE>
+returns the name of the style used by a particular named highlighting
+pattern.
+<P>
+<PRE>
+<B>highlight_style_color( style_name )</B>
+</PRE>
+returns the name of the color used by a particular named highlighting style.
+<P>
+<PRE>
+<B>highlight_style_color_value( style_name )</B>
+</PRE>
+returns the value of the color used by a particular named highlighting style.
+<P>
+<PRE>
+<B>highlight_style_is_bold( style_name )</B>
+</PRE>
+returns true (non-zero) if the particular named highlighting style uses a
+bold font.
+<P>
+<PRE>
+<B>highlight_style_is_italic( style_name )</B>
+</PRE>
+returns true (non-zero) if the particular named highlighting style uses an
+italic font.
 <P><HR>
 <P>
 <A NAME="Action_Routines"</A>
@@ -3916,13 +4214,18 @@ essential for users who users who set their window managers so keyboard focus
 follows the mouse.
 <P>
 <PRE>
-<B>Modification Warnings</B>
+<B>Warnings</B>
 </PRE>
+Options for controlling the popping up of warning dialogs:
+<P>
+<I>File Modified Externally</I> -
 Pop up a warning dialog when files get changed external to NEdit.
 <P>
-<PRE>
-<B>Exit Warnings</B>
-</PRE>
+<I>Check Modified File Contents</I> -
+If external file modification warnings are requested, also check the file
+contents iso. only the modification date.
+<P>
+<I>Exit Warnings</I> -
 Ask before exiting when two or more files are open in an NEdit session.
 <P>
 <PRE>
@@ -4547,6 +4850,25 @@ Font for hyperlinks in the help text
 </PRE>
 <P>
 Color for hyperlinks in the help text
+<P>
+<PRE>
+<B>nedit.backlightCharTypes</B>:  (undefined)
+</PRE>
+<P>
+A string specifying character classes as ranges of ASCII values followed by
+the color to be used as their background colors.  The format is:
+<P>
+low[-high]{,low[-high]}:color{;low-high{,low[-high]}:color}
+<P>
+where low and high are ASCII values.
+<P>
+For example:
+<PRE>
+    32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+</PRE>
+<P>
+The macro built-in function set_backlight_string() allows these strings to be
+set for a particular window.
 <P>
 <PRE>
 <B>nc.autoStart</B>: True 
@@ -5188,8 +5510,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Sep 10, 2002
-Sep 10, 2002
+NEdit release of Sep 26, 2002
+Sep 26, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

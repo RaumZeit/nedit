@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Sep 10, 2002                                               September 10, 2002
+NEdit release of Sep 26, 2002                                               September 26, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -799,6 +799,25 @@ PROGRAMMING WITH NEDIT
 
   You can set the language mode manually for a window, by selecting it from 
   the menu: Preferences -> Language Modes. 
+
+
+  BACKLIGHTING
+
+  Nedit can be made to set the background color of particular classes of 
+  characters to allow easy identifcation of those characters. This is 
+  particularly useful if you need to be able to distiguish between tabs and 
+  spaces in a file where the difference is important. The colors used for 
+  backlighting are specified by a resource, "nedit*backlightCharTypes" but can 
+  be changed for a particular window using the macro built-in function 
+  set_backlight_string(). You can turn backlighting on and off through the 
+  Preferences -> Apply Backlighting menu entry. 
+
+  If you prefer to have backlighting turned on for all new windows, use the 
+  Preferences -> Default Settings -> Backlighting -> Apply Backlighting menu 
+  entry. If you wish to set the current window's backlighting settings for new 
+  windows, use Preferences -> Default Settings -> Backlighting -> Use Current. 
+  These settings will be saved along with other preferences using Preferences 
+  -> Save Defaults. 
 
 
   LINE NUMBERS
@@ -2304,6 +2323,11 @@ $wrap_margin
 $wrap_text
   The current wrap text mode. Values are "none", "auto" or "continuous". 
 
+$backlight_string
+  The current value of the window's backlighting specification. This is empty 
+  if backlighting is turned off. It can be changed through calls to the 
+  built-in macro function set_backlight_string(). 
+
 
   BUILT-IN SUBROUTINES
 
@@ -2452,6 +2476,14 @@ select_rectangle( start, end, left, right )
   and confined horizontally to characters displayed between positions "left", 
   and "right". 
 
+set_backlight_string( [string] )
+  Applies the given string, which should be in the format of the 
+  nedit*backlightCharTypes X resource, to the current text window, turning on 
+  backlighting. If the value of the string passed is "default", or if no 
+  parameter is passed, the nedit.backlightCharTypes X resource's own value 
+  will be used. If the empty string, "", is passed, backlighting will be 
+  turned off. 
+
 set_cursor_pos( position )
   Set the cursor position for the current window. 
 
@@ -2499,6 +2531,209 @@ toupper( string )
 write_file( string, filename )  
   Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on 
   successful write, or 0 if unsuccessful. 
+
+----------
+RANGE SETS
+----------
+
+  The user can define range sets, identified by an alphabetic character. A 
+  range set contains ranges, defined by start and end positions in the text 
+  buffer. These ranges are adjusted when modifications are made to the text 
+  buffer: they shuffle around when characters are added or deleted. However, 
+  ranges within a set will coalesce if the characters between them are 
+  removed, or a new range is added to the set which bridges or overlaps 
+  others. 
+
+  Using range sets allows non-contiguous bits of the text to be identified as 
+  a group. 
+
+  Range sets can be assigned a background color: characters within a range of 
+  a range set will have the background color of the range set. If more than 
+  one rangeset includes a given character, its background color will be that 
+  of the most recently created range set which has a color defined. 
+
+  Warnings: A range set is manipulated ONLY through macro routines. Range sets 
+  can easily become very large, and may exceed the capacity of the running 
+  process. Coloring relies on proper color names or specifications (such as 
+  the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. 
+  Behaviours set using rangeset_set_modify_response() are still experimental. 
+
+
+  RANGE SET READ-ONLY VARIABLES
+
+  These are set by calls to the range set functions. 
+
+$rangeset_list
+  string of active rangeset letters in reverse order of definition. 
+
+$rangeset_label
+  label of most recently accessed rangeset. 
+
+$rangeset_color
+  color (if any) of most recently accessed rangeset. 
+
+$rangeset_modify_response
+  modify response name of most recently accessed rangeset. 
+
+$rangeset_ranges
+  number of ranges in most recently accessed rangeset. 
+
+$rangeset_range_index
+  most recently accessed range in rangeset (or -1). 
+
+$rangeset_range_start
+  start position of most recently accessed range (or -1). 
+
+$rangeset_range_end
+  end position of most recently accessed range (or -1). 
+
+
+  RANGE SET FUNCTIONS
+
+rangeset_defined( r )
+  Returns true if the range identified by the letter r is defined, false if 
+  not. 
+
+rangeset_inverse( r )
+  Changes the range set r so that it contains all ranges not in r. Returns the 
+  number of entries if successful. 
+
+rangeset_add( r, [start, end] )
+rangeset_add( r, r0 )
+  Adds to the range set r. The first form adds the range identified by the 
+  current primary selection to the range set, unless start and end are 
+  defined, in which case the range they define is added. The second form 
+  allows all ranges in the range set identified by r0 to be added to the range 
+  set r. If r has not yet been defined, it will be at this point. Returns the 
+  number of non-contiguous ranges in r after the addition. 
+
+rangeset_remove( r, [start, end] )
+rangeset_remove( r, r0 )
+  Removes from the range set r. The first form removes the range identified by 
+  the current primary selection from the range set, unless start and end are 
+  defined, in which case the range they define is removed. The second form 
+  allows all ranges in the range set identified by r0 to be removed from the 
+  range set r. Returns the number of non-contiguous ranges in r after the 
+  addition. 
+
+rangeset_forget( r )
+  Deletes all information about the range set identified by r. A subsequent 
+  call to rangeset_defined(r) will return false. 
+
+rangeset_get_count( r )
+  Returns the number of non-contiguous ranges in the range set r. 
+
+rangeset_select( r, [index] )
+  Selects the region starting at the start of the first range in the range set 
+  r and ending at the end of the last, unless index is supplied, in which case 
+  the range in the range set identified by the index will be selected. index 
+  should satisfy the conditions 0 <= index and index < rangeset_get_count(r). 
+  Returns true if successful. 
+
+rangeset_includes_pos( r, pos )
+  Returns true if there is a range in the range set r which contains pos. 
+
+rangeset_set_color( r, [color] )
+  Removes the coloring of range set r if no color name is supplied, otherwise 
+  attempts to apply the color as a background color to the ranges of r. No 
+  check is made regarding the validity of color: if the color is invalid (a 
+  bad name, or not supported by the hardware) this has no effect. If r is 
+  undefined, this function will define it with no ranges. 
+
+rangeset_set_modify_response( r, type )
+  Changes the behaviour of the range set r when modifications to the text 
+  buffer occur. type can be one of the following: "maintain" (the default), 
+  "break", "include", "exclude", "ins_del" or "del_ins". (The differences are 
+  fairly subtle.)" 
+
+------------------------
+HIGHLIGHTING INFORMATION
+------------------------
+
+  The user can interrogate the current window to determine the color 
+  highlighting used on a particular piece of text. The following functions 
+  provide information on the highlighting pattern against which text at a 
+  particular position has been matched, its style, color and font attributes 
+  (whether the font is supposed to be bold and/or italic). 
+
+  Some other functions allow macros to access style information given the name 
+  of a highlighting pattern, or a highlighting style name. 
+
+  These macro functions permit macro writers to generate formatted output 
+  which allows NEdit highlighting to be reproduced. This is suitable for the 
+  generation of HTML or Postscript output, for example. 
+
+
+  HIGHLIGHTING INFORMATION FUNCTIONS
+
+get_style( pos )
+  returns an array containing the attributes of the character at position 
+  "pos". "style" (name of the highlight style), "color" (name of the color), 
+  "rgb" (the color expressed in red, green and blue values as #rrggbb), "bold" 
+  (true or false) and "italic" (true or false) 
+
+get_pattern( pos )
+  returns an array containing the attributes of the character at position 
+  "pos". "pattern" (highlight pattern name), "style" (highlight style name) 
+  and "extension" (the length in the text which uses the same highlighting 
+  pattern) 
+
+highlight_pattern_of_pos( [pos] )
+  Deprecated: use get_pattern(pos)["pattern"] returns the pattern name for 
+  highlighting used at the position in the text. If no position is supplied, 
+  the current cursor position will be used. 
+
+highlight_style_of_pos( [pos] )
+  Deprecated: use either get_pattern(pos)["style"] or get_style(pos)["style"] 
+  returns the name of the highlighting style applied at the given position 
+  (defaults to the cursor position). 
+
+highlight_color_of_pos( [pos] )
+  Deprecated: use get_style(pos)["color"] returns the name of the color used 
+  by the highlighting style applied at the given position (defaults to the 
+  cursor position). 
+
+highlight_color_value_of_pos( [pos] )
+  Deprecated: use get_style(pos)["rgb"] returns the value of the color by the 
+  highlighting style applied at the given position (defaults to the cursor 
+  position). This is a hexadecimal formatted value, preceded by the "#" sign; 
+  each of three pairs of hexadecimal digits indicate the color value for the 
+  red, green and blue components of the color, in the range 0 to 255 (0 - 
+  0xFF), for example "#ffff80" is a light yellow color. 
+
+highlight_style_of_pos_is_bold( [pos] )
+  Deprecated: use get_style(pos)["bold"] returns true (non-zero) if the 
+  highlighting style applied at the given position (defaults to the cursor 
+  position) uses a bold font. 
+
+highlight_style_of_pos_is_italic( [pos] )
+  Deprecated: use get_style(pos)["italic"] returns true (non-zero) if the 
+  highlighting style applied at the given position (defaults to the cursor 
+  position) uses an italic font. 
+
+highlight_pattern_extends_from( [pos] )
+  Deprecated: use get_pattern(pos)["extension"] returns the length in the text 
+  starting at the given position (defaults to the cursor position) which uses 
+  the same highlighting pattern as that position. 
+
+highlight_pattern_style( pat_name )
+  returns the name of the style used by a particular named highlighting 
+  pattern. 
+
+highlight_style_color( style_name )
+  returns the name of the color used by a particular named highlighting style. 
+
+highlight_style_color_value( style_name )
+  returns the value of the color used by a particular named highlighting 
+  style. 
+
+highlight_style_is_bold( style_name )
+  returns true (non-zero) if the particular named highlighting style uses a 
+  bold font. 
+
+highlight_style_is_italic( style_name )
+  returns true (non-zero) if the particular named highlighting style uses an 
+  italic font. 
 
 ---------------
 ACTION ROUTINES
@@ -3245,11 +3480,17 @@ Popups Under Pointer
   essential for users who users who set their window managers so keyboard 
   focus follows the mouse. 
 
-Modification Warnings
-  Pop up a warning dialog when files get changed external to NEdit. 
+Warnings
+  Options for controlling the popping up of warning dialogs: 
 
-Exit Warnings
-  Ask before exiting when two or more files are open in an NEdit session. 
+  File Modified Externally - Pop up a warning dialog when files get changed 
+  external to NEdit. 
+
+  Check Modified File Contents - If external file modification warnings are 
+  requested, also check the file contents iso. only the modification date. 
+
+  Exit Warnings - Ask before exiting when two or more files are open in an 
+  NEdit session. 
 
 Initial Window Size
   Default size for new windows. 
@@ -3763,6 +4004,21 @@ nedit.helpLinkFont: helvetica medium 12 points
 nedit.helpLinkColor: #009900
 
   Color for hyperlinks in the help text 
+
+nedit.backlightCharTypes:  (undefined)
+
+  A string specifying character classes as ranges of ASCII values followed by 
+  the color to be used as their background colors. The format is: 
+
+  low[-high]{,low[-high]}:color{;low-high{,low[-high]}:color} 
+
+  where low and high are ASCII values. 
+
+  For example: 
+    32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+
+  The macro built-in function set_backlight_string() allows these strings to 
+  be set for a particular window. 
 
 nc.autoStart: True 
 
@@ -4328,8 +4584,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Sep 10, 2002
-Sep 10, 2002
+NEdit release of Sep 26, 2002
+Sep 26, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

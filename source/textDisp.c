@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.37 2002/09/06 19:13:08 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.38 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -35,6 +35,8 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.37 2002/09/06 19:13:08 n8gray E
 #include "text.h"
 #include "nedit.h"
 #include "calltips.h"
+#include "highlight.h"
+#include "rangeset_fn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +60,6 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.37 2002/09/06 19:13:08 n8gray E
 #include "../debug.h"
 #endif
 
-
 #define TOP_MARGIN 1
 #define BOTTOM_MARGIN 1
 #define LEFT_MARGIN 3
@@ -66,11 +67,38 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.37 2002/09/06 19:13:08 n8gray E
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
-#define FILL_MASK 0x100
-#define SECONDARY_MASK 0x200
-#define PRIMARY_MASK 0x400
-#define HIGHLIGHT_MASK 0x800
-#define STYLE_LOOKUP_MASK 0xff
+#define FILL_SHIFT 8
+#define SECONDARY_SHIFT 9
+#define PRIMARY_SHIFT 10
+#define HIGHLIGHT_SHIFT 11
+#define STYLE_LOOKUP_SHIFT 0
+#define BACKLIGHT_SHIFT 12
+
+#define FILL_MASK (1 << FILL_SHIFT)
+#define SECONDARY_MASK (1 << SECONDARY_SHIFT)
+#define PRIMARY_MASK (1 << PRIMARY_SHIFT)
+#define HIGHLIGHT_MASK (1 << HIGHLIGHT_SHIFT)
+#define STYLE_LOOKUP_MASK (0xff << STYLE_LOOKUP_SHIFT)
+#define BACKLIGHT_MASK  (0xff << BACKLIGHT_SHIFT)
+
+#define RANGESET_SHIFT (20)
+#define RANGESET_MASK (0x1F << RANGESET_SHIFT)
+
+/* If you use both 32-Bit Style mask layout:
+   Bits +----------------+----------------+----------------+----------------+
+    hex |1F1E1D1C1B1A1918|1716151413121110| F E D C B A 9 8| 7 6 5 4 3 2 1 0|
+    dec |3130292827262524|2322212019181716|151413121110 9 8| 7 6 5 4 3 2 1 0|
+        +----------------+----------------+----------------+----------------+
+   Type |               r| r r r r b b b b| b b b b H 1 2 F| s s s s s s s s|
+        +----------------+----------------+----------------+----------------+
+   where: s - style lookup value (8 bits)
+        F - fill (1 bit)
+        2 - secondary selection  (1 bit)
+        1 - primary selection (1 bit)
+        H - highlight (1 bit)
+        b - backlighting index (8 bits)
+        r - rangeset index (5 bits - actual range is limited to 0-26)
+   This leaves 7 "unused" bits */
 
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the
@@ -96,7 +124,7 @@ static void clearRect(textDisp *textD, int style, int x, int y,
     	int width, int height);
 static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos,
-    	int lineLen, int lineIndex, int dispIndex);
+    	int lineLen, int lineIndex, int dispIndex, int thisChar);
 static int stringWidth(textDisp *textD, char *string, int length, int style);
 static int inSelection(selection *sel, int pos, int lineStartPos,
 	int dispIndex);
@@ -146,6 +174,8 @@ static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
 static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
+static Pixel allocBGColor(Widget w, char *colorName, int *ok);
+Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
@@ -153,7 +183,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel,
 	Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel,
 	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
-	int continuousWrap, int wrapMargin)
+      int continuousWrap, int wrapMargin, XmString bgClassString)
 {
     textDisp *textD;
     XGCValues gcValues;
@@ -191,6 +221,9 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->styleTable = NULL;
     textD->nStyles = 0;
     textD->bgPixel = bgPixel;
+    textD->fgPixel = fgPixel;
+    textD->selectFGPixel = selectFGPixel;
+    textD->highlightFGPixel = highlightFGPixel;
     textD->selectBGPixel = selectBGPixel;
     textD->highlightBGPixel = highlightBGPixel;
     textD->lineNumFGPixel = lineNumFGPixel;
@@ -213,6 +246,10 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->calltip.ID = 0;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
+    textD->bgClassPixel = NULL;
+    textD->bgClass = NULL;
+    TextDSetupBGClasses(widget, bgClassString, &textD->bgClassPixel,
+          &textD->bgClass, bgPixel);
     textD->suppressResync = 0;
     textD->nLinesDeleted = 0;
     textD->modifyingTabDist = 0;
@@ -273,6 +310,8 @@ void TextDFree(textDisp *textD)
     XtFree((char *)textD->lineStarts);
     while (TextDPopGraphicExposeQueueEntry(textD)) {
     }
+    XtFree((char *)textD->bgClassPixel);
+    XtFree((char *)textD->bgClass);
     XtFree((char *)textD);
 }
 
@@ -944,7 +983,7 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
     	charLen = BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar,
     		textD->buffer->tabDist, textD->buffer->nullSubsChar);
    	charStyle = styleOfPos(textD, lineStartPos, lineLen, charIndex,
-   	    	outIndex);
+   	    	outIndex, lineStr[charIndex]);
     	xStep += stringWidth(textD, expandedChar, charLen, charStyle);
     	outIndex += charLen;
     }
@@ -1086,13 +1125,13 @@ void TextDMakeInsertPosVisible(textDisp *textD)
     
     if (do_padding) {
         /* Keep the cursor away from the top or bottom of screen. */
-        if (textD->nVisibleLines <= 2*cursorVPadding) {
+        if (textD->nVisibleLines <= 2*(int)cursorVPadding) {
             topLine += (linesFromTop - textD->nVisibleLines/2);
             topLine = max(topLine, 1);
-        } else if (linesFromTop < cursorVPadding) {
+        } else if (linesFromTop < (int)cursorVPadding) {
             topLine -= (cursorVPadding - linesFromTop);
             topLine = max(topLine, 1);
-        } else if (linesFromTop > textD->nVisibleLines-cursorVPadding-1) {
+        } else if (linesFromTop > textD->nVisibleLines-(int)cursorVPadding-1) {
             topLine += (linesFromTop - (textD->nVisibleLines-cursorVPadding-1));
         }
     }
@@ -1638,6 +1677,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     int dispIndexOffset, cursorPos = textD->cursorPos, y_orig;
     char expandedChar[MAX_EXP_CHAR_LEN], outStr[MAX_DISP_LINE_LEN];
     char *lineStr, *outPtr;
+    char baseChar;
     
     /* If line is not displayed, skip it */
     if (visLineNum < 0 || visLineNum >= textD->nVisibleLines)
@@ -1699,11 +1739,12 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     x = textD->left - textD->horizOffset;
     outIndex = 0;
     for(charIndex=0; ; charIndex++) {
+        baseChar = '\0';
     	charLen = charIndex >= lineLen ? 1 :
-    	    	BufExpandCharacter(lineStr[charIndex], outIndex,
+                BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
     	    	expandedChar, buf->tabDist, buf->nullSubsChar);
     	style = styleOfPos(textD, lineStartPos, lineLen, charIndex,
-    	    	outIndex + dispIndexOffset);
+                outIndex + dispIndexOffset, baseChar);
     	charWidth = charIndex >= lineLen ? stdCharWidth :
     	    	stringWidth(textD, expandedChar, charLen, style);
     	if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
@@ -1736,15 +1777,16 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     	    	}
     	    }
     	}
+        baseChar = '\0';
      	charLen = charIndex >= lineLen ? 1 :
-     		BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar,
-    		buf->tabDist, buf->nullSubsChar);
+                BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
+                expandedChar, buf->tabDist, buf->nullSubsChar);
    	charStyle = styleOfPos(textD, lineStartPos, lineLen, charIndex,
-   	    	outIndex + dispIndexOffset);
+                outIndex + dispIndexOffset, baseChar);
    	for (i=0; i<charLen; i++) {
    	    if (i != 0 && charIndex < lineLen && lineStr[charIndex] == '\t')
    		charStyle = styleOfPos(textD, lineStartPos, lineLen,
-   		    	charIndex, outIndex + dispIndexOffset);
+    		    charIndex, outIndex + dispIndexOffset, '\t');
      	    if (charStyle != style) {
     		drawString(textD, style, startX, y, x, outStr, outPtr - outStr);
     		outPtr = outStr;
@@ -1809,6 +1851,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     XGCValues gcValues;
     XFontStruct *fs = textD->fontStruct;
     styleTableEntry *styleRec;
+    Pixel bground = textD->bgPixel;
     int underlineStyle = FALSE;
     
     /* Don't draw if widget isn't realized */
@@ -1834,8 +1877,15 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     	gc = textD->styleGC ;
 	gcValues.font = fs->fid;
 	gcValues.foreground = styleRec->color;
-	gcValues.background = style&PRIMARY_MASK ? textD->selectBGPixel :
-	    	style&HIGHLIGHT_MASK ? textD->highlightBGPixel : textD->bgPixel;
+        if (style&BACKLIGHT_MASK)
+            bground = textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
+        gcValues.background =
+            style&PRIMARY_MASK ? textD->selectBGPixel :
+            style&HIGHLIGHT_MASK ? textD->highlightBGPixel :
+            style&RANGESET_MASK ?
+                getRangesetColor(textD, (style&RANGESET_MASK)>>RANGESET_SHIFT,
+                        bground) :
+            bground;
     	if (gcValues.foreground == gcValues.background) /* B&W kludge */
     	    gcValues.foreground = textD->bgPixel;
     	XChangeGC(XtDisplay(textD->w), gc,
@@ -1844,6 +1894,34 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     	gc = textD->highlightGC;
     else if (style & PRIMARY_MASK)
     	gc = textD->selectGC;
+    else if (style & RANGESET_MASK) {
+        /* Uses the syntax highlighting style GC, changing it as needed. */
+        fs = textD->fontStruct;
+        gc = textD->styleGC;
+        gcValues.font = fs->fid;
+        gcValues.foreground = textD->fgPixel;
+        if (style&BACKLIGHT_MASK)
+            bground = textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
+        gcValues.background = getRangesetColor(textD,
+                                (style&RANGESET_MASK)>>RANGESET_SHIFT, bground);
+        if (gcValues.foreground == gcValues.background) /* B&W kludge */
+            gcValues.foreground = textD->bgPixel;
+        XChangeGC(XtDisplay(textD->w), gc,
+                GCFont | GCForeground | GCBackground, &gcValues);
+    }
+    else if (style & BACKLIGHT_MASK) {
+        /* Uses the syntax highlighting style GC, changing it as needed. */
+        fs = textD->fontStruct;
+        gc = textD->styleGC;
+        gcValues.font = fs->fid;
+        gcValues.foreground = textD->fgPixel;
+        gcValues.background =
+                textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
+        if (gcValues.foreground == gcValues.background) /* B&W kludge */
+            gcValues.foreground = textD->bgPixel;
+        XChangeGC(XtDisplay(textD->w), gc,
+                GCFont | GCForeground | GCBackground, &gcValues);
+    }
     else
     	gc = textD->gc;
 
@@ -1882,6 +1960,17 @@ static void clearRect(textDisp *textD, int style, int x, int y,
     else if (style & PRIMARY_MASK)
     	XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w),
     	    	textD->selectBGGC, x, y, width, height);
+    else if (style & RANGESET_MASK) {
+        /* Uses the syntax highlighting style GC, changing it as needed. */
+        GC gc = textD->styleGC;
+        XGCValues gcValues;
+        gcValues.foreground = getRangesetColor(textD,
+                (style&RANGESET_MASK)>>RANGESET_SHIFT, textD->bgPixel);
+        XChangeGC(XtDisplay(textD->w), gc,
+                GCForeground, &gcValues);
+        XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w),
+                gc, x, y, width, height);
+    }
     else
     	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, y,
     	    	width, height, False);
@@ -1969,7 +2058,7 @@ static void drawCursor(textDisp *textD, int x, int y)
 ** be more appropriate.
 */
 static int styleOfPos(textDisp *textD, int lineStartPos,
-    	int lineLen, int lineIndex, int dispIndex)
+    	int lineLen, int lineIndex, int dispIndex, int thisChar)
 {
     textBuffer *buf = textD->buffer;
     textBuffer *styleBuf = textD->styleBuffer;
@@ -1996,6 +2085,17 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
     	style |= HIGHLIGHT_MASK;
     if (inSelection(&buf->secondary, pos, lineStartPos, dispIndex))
     	style |= SECONDARY_MASK;
+    /* store in the RANGESET_MASK portion of style the rangeset index for pos */
+    if (buf->rangesetTable) {
+        int rangesetIndex = RangesetIndex1ofPos(buf->rangesetTable, pos, True);
+        style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
+    }
+    /* store in the BACKLIGHT_MASK portion of style the background color class
+       of the character thisChar */
+    if (textD->bgClass)
+    {
+        style |= (textD->bgClass[(unsigned char)thisChar]<<BACKLIGHT_SHIFT);
+    }
     return style;
 }
 
@@ -2066,7 +2166,8 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
     for(charIndex=0; charIndex<lineLen; charIndex++) {
     	charLen = BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar,
     		textD->buffer->tabDist, textD->buffer->nullSubsChar);
-   	charStyle = styleOfPos(textD, lineStart, lineLen, charIndex, outIndex);
+   	charStyle = styleOfPos(textD, lineStart, lineLen, charIndex, outIndex,
+				lineStr[charIndex]);
     	charWidth = stringWidth(textD, expandedChar, charLen, charStyle);
     	if (x < xStep + (posType == CURSOR_POS ? charWidth/2 : charWidth)) {
     	    XtFree(lineStr);
@@ -3425,4 +3526,157 @@ static void extendRangeForStyleMods(textDisp *textD, int *start, int *end)
        redraw characters exposed by possible font size changes */
     if (textD->fixedFontWidth == -1 && extended)
     	*end = BufEndOfLine(textD->buffer, *end) + 1;
+}
+
+/**********************  Backlight Functions ******************************/
+/*
+** Allocate a read-only (shareable) colormap cell for a named color, from the
+** the default colormap of the screen on which the widget (w) is displayed. If
+** the colormap is full and there's no suitable substitute, print an error on
+** stderr, and return the widget's background color as a backup.
+*/
+static Pixel allocBGColor(Widget w, char *colorName, int *ok)
+{
+    int r,g,b;
+    *ok = 1;
+    return AllocColor(w, colorName, &r, &g, &b);
+}
+
+Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground)
+{
+    textBuffer *buf;
+    RangesetTable *tab;
+    Pixel color;
+    char *color_name;
+    int valid;
+
+    if (ind > 0) {
+      ind--;
+      buf = textD->buffer;
+      tab = buf->rangesetTable;
+
+      valid = RangesetTableGetColorValid(tab, ind, &color);
+      if (valid == 0) {
+          color_name = RangesetTableGetColorName(tab, ind);
+          if (color_name)
+              color = allocBGColor(textD->w, color_name, &valid);
+          RangesetTableAssignColorPixel(tab, ind, color, valid);
+      }
+      if (valid > 0) {
+          return color;
+      }
+    }
+    return bground;
+}
+
+/*
+** Read the background color class specification string in str, allocating the
+** necessary colors, and allocating and setting up the character->class_no and
+** class_no->pixel map arrays, returned via *pp_bgClass and *pp_bgClassPixel
+** respectively.
+** Note: the allocation of class numbers could be more intelligent: there can
+** never be more than 256 of these (one per character); but I don't think
+** there'll be a pressing need. I suppose the scanning of the specification
+** could be better too, but then, who cares!
+*/
+void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
+      unsigned char **pp_bgClass, Pixel bgPixelDefault)
+{
+    unsigned char bgClass[256];
+    Pixel bgClassPixel[256];
+    int class_no = 0;
+    char *semicol;
+    char *s = (char *)str;
+    size_t was_semicol;
+    int lo, hi, dummy;
+    char *pos;
+    Boolean is_good = True;
+
+    XtFree((char *)*pp_bgClass);
+    XtFree((char *)*pp_bgClassPixel);
+
+    *pp_bgClassPixel = NULL;
+    *pp_bgClass = NULL;
+
+    if (!s)
+      return;
+
+    /* default for all chars is class number zero, for standard background */
+    memset(bgClassPixel, 0, sizeof bgClassPixel);
+    memset(bgClass, 0, sizeof bgClass);
+    bgClassPixel[0] = bgPixelDefault;
+    /* since class no == 0 in a "style" has no set bits in BACKLIGHT_MASK
+       (see styleOfPos()), when drawString() is called for text with a
+       backlight class no of zero, bgClassPixel[0] is never consulted, and
+       the default background color is chosen. */
+
+    /* The format of the class string s is:
+              low[-high]{,low[-high]}:color{;low-high{,low[-high]}:color}
+          eg
+              32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+       where low and high represent a character range between ordinal
+       ASCII values. Using strtol() allows automatic octal, dec and hex
+       reading of low and high. The example format sets backgrounds as follows:
+              char   1 - 8    colored red     (control characters)
+              char   9 - 13   colored #e5e5e5 (isspace() control characters)
+              char  14 - 31   colored red     (control characters)
+              char  32 - 126  colored #f0f0f0
+              char 127        colored red     (delete character)
+              char 128 - 159  colored orange  ("shifted" control characters)
+              char 160 - 255  colored #f0f0f0
+       Notice that some of the later ranges overwrite the class values defined
+       for earlier ones (eg the first clause, 32-255:#f0f0f0 sets the DEL
+       character background color to #f0f0f0; it is then set to red by the
+       clause 1-31,127:red). */
+
+    while (s && class_no < 255) {
+        class_no++;                   /* simple class alloc scheme */
+      was_semicol = 0;
+      is_good = True;
+      if ((semicol = (char *)strchr(s, ';'))) {
+          *semicol = '\0';    /* null-terminate low[-high]:color clause */
+          was_semicol = 1;
+      }
+
+      /* loop over ranges before the color spec, assigning the characters
+         in the ranges to the current class number */
+      for (lo = hi = strtol(s, &pos, 0);
+           is_good;
+           lo = hi = strtol(pos + 1, &pos, 0)) {
+          if (pos && *pos == '-')
+              hi = strtol(pos + 1, &pos, 0);  /* get end of range */
+          is_good = (pos && 0 <= lo && lo <= hi && hi <= 255);
+          if (is_good)
+              while (lo <= hi)
+                  bgClass[lo++] = (unsigned char)class_no;
+          if (*pos != ',')
+              break;
+      }
+      if ((is_good = (is_good && *pos == ':'))) {
+          is_good = (*pos++ != '\0');         /* pos now points to color */
+          bgClassPixel[class_no] = allocBGColor(w, pos, &dummy);
+      }
+      if (!is_good) {
+          /* complain? this class spec clause (in string s) was faulty */
+      }
+
+      /* end of loop iterator clauses */
+      if (was_semicol)
+        *semicol = ';';       /* un-null-terminate low[-high]:color clause */
+      s = semicol + was_semicol;
+    }
+    /* when we get here, we've set up our class table and class-to-pixel table
+       in local variables: now put them into the "real thing" */
+    if (class_no) {
+      class_no++;                     /* bigger than all valid class_nos */
+      *pp_bgClass = (unsigned char *)XtMalloc(256);
+      *pp_bgClassPixel = (Pixel *)XtMalloc(class_no * sizeof (Pixel));
+      if (!*pp_bgClass || !*pp_bgClassPixel) {
+          XtFree((char *)*pp_bgClass);
+          XtFree((char *)*pp_bgClassPixel);
+          return;
+      }
+      memcpy(*pp_bgClass, bgClass, 256);
+      memcpy(*pp_bgClassPixel, bgClassPixel, class_no * sizeof (Pixel));
+    }
 }

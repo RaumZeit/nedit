@@ -1,4 +1,4 @@
-/* $Id: textP.h,v 1.5 2002/08/31 07:24:00 n8gray Exp $ */
+/* $Id: textP.h,v 1.6 2002/09/26 12:37:40 ajhood Exp $ */
 
 #ifndef NEDIT_TEXTP_H_INCLUDED
 #define NEDIT_TEXTP_H_INCLUDED
@@ -106,6 +106,7 @@ typedef struct _TextPart {
     	    	    	    	    	   source text was deleted */
     int dragSourceDeleted;  	    	/* # of chars. deleted "" */
     int dragNLines; 	    	    	/* # of newlines in text being drag'd */
+    XmString backlightCharTypes;	/* background class string to parse */
 } TextPart;
 
 typedef struct _TextRec {

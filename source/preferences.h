@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.26 2002/09/25 10:56:15 edg Exp $ */
+/* $Id: preferences.h,v 1.27 2002/09/26 12:37:40 ajhood Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -78,6 +78,11 @@ void SetPrefMatchSyntaxBased(int state);
 int GetPrefMatchSyntaxBased(void);
 void SetPrefHighlightSyntax(int state);
 int GetPrefHighlightSyntax(void);
+void SetPrefBacklightChars(int state);
+int GetPrefBacklightChars(void);
+void SetPrefBacklightCharTypes(char *types);
+char *GetPrefBacklightCharTypes(void);
+void BacklightUseCurrentCharTypesAsPref(WindowInfo *window, int quietly);
 void SetPrefRepositionDialogs(int state);
 int GetPrefRepositionDialogs(void);
 void SetPrefAppendLF(int state);

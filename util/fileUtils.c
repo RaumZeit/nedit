@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.26 2002/07/20 23:18:40 yooden Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.27 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -150,7 +150,7 @@ ExpandTilde(char *pathname)
     struct passwd *passwdEntry;
     char username[MAXPATHLEN], temp[MAXPATHLEN];
     char *nameEnd;
-    int len_left;
+    unsigned len_left;
     
     if (pathname[0] != '~')
 	return TRUE;

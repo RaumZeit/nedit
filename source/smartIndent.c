@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.17 2002/07/27 08:55:06 yooden Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.18 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -95,13 +95,13 @@ static struct {
     Widget newlineMacro;
     Widget modMacro;
     char *langModeName;
-} SmartIndentDialog = {NULL};
+} SmartIndentDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
 /* Common smart indent macros dialog information */
 static struct {
     Widget shell;
     Widget text;
-} CommonDialog = {NULL};
+} CommonDialog = {NULL,NULL};
 
 static int NSmartIndentSpecs = 0;
 static smartIndentRec *SmartIndentSpecs[MAX_LANGUAGE_MODES];

@@ -1,4 +1,4 @@
-# $Id: Makefile.common,v 1.12 2002/09/11 18:59:48 arnef Exp $
+# $Id: Makefile.common,v 1.13 2002/09/26 12:37:38 ajhood Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #
@@ -7,7 +7,7 @@ OBJS =	nedit.o file.o menu.o window.o selection.o search.o undo.o shift.o \
 	help.o preferences.o tags.o userCmds.o shell.o regularExp.o macro.o \
 	text.o textSel.o textDisp.o textBuf.o textDrag.o server.o highlight.o \
 	highlightData.o interpret.o parse.o smartIndent.o regexConvert.o \
-	rbTree.o windowTitle.o calltips.o server_common.o
+	rbTree.o windowTitle.o calltips.o server_common.o rangeset.o
 
 all: nedit nc
 

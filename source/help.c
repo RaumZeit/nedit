@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.84 2002/09/10 12:10:42 ajhood Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.85 2002/09/26 12:37:38 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -296,6 +296,7 @@ static void initHelpStyles (Widget parent)
 static void loadFontsAndColors(Widget parent, int style)
 {
     XFontStruct *font;
+    int r,g,b;
     if (HelpStyleInfo[style - STYLE_PLAIN].font == NULL) {
 	font = XLoadQueryFont(XtDisplay(parent),
 		GetPrefHelpFontName(StyleFonts[style - STYLE_PLAIN]));
@@ -312,7 +313,7 @@ static void loadFontsAndColors(Widget parent, int style)
 	HelpStyleInfo[style - STYLE_PLAIN].font = font;
 	if (style == STL_NM_LINK)
 	    HelpStyleInfo[style - STYLE_PLAIN].color =
-		    AllocColor(parent, GetPrefHelpLinkColor());
+		    AllocColor(parent, GetPrefHelpLinkColor(), &r, &g, &b);
     }
 }
 

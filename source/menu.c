@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.64 2002/09/25 10:56:15 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.65 2002/09/26 12:37:39 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -117,6 +117,7 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
+static void backlightCharsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -143,6 +144,9 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
+	caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
@@ -889,6 +893,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    'R', highlightingDefCB, window, FULL);
     createMenuItem(subSubPane, "textDrawingStyles", "Text Drawing Styles...", 'T',
     	    stylesDefCB, window, FULL);
+    subSubPane = createMenu(subPane, "backlighting", "Backlighting",
+          'g', NULL, FULL);
+    window->backlightCharsDefItem = createMenuToggle(subSubPane,
+          "backlightChars", "Apply Backlighting", 'g', backlightCharsDefCB,
+          window, GetPrefBacklightChars(), FULL);
+    createMenuItem(subSubPane, "backlightCharTypes", "Use Current",
+          'U', backlightCharTypesDefCB, window, FULL);
 
     window->statsLineDefItem = createMenuToggle(subPane, "statisticsLine",
     	    "Statistics Line", 'S', statsLineDefCB, window, GetPrefStatsLine(),
@@ -1015,6 +1026,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->highlightItem = createMenuToggle(menuPane, "highlightSyntax",
 	    "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax",
 	    GetPrefHighlightSyntax(), SHORT);
+    window->backlightCharsItem = createMenuToggle(menuPane, "backlightChars",
+          "Apply Backlighting", 'g', backlightCharsCB, window,
+          window->backlightChars, FULL);
 #ifndef VMS
     window->saveLastItem = createMenuToggle(menuPane, "makeBackupCopy",
     	    "Make Backup Copy (*.bck)", 'e', preserveCB, window,
@@ -1591,6 +1605,12 @@ static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData)
     WrapMarginDialog(window->shell, window);
 }
 
+static void backlightCharsCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    int applyBacklight = XmToggleButtonGetState(w);
+    SetBacklightChars(window, applyBacklight?GetPrefBacklightCharTypes():NULL);
+}
+
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
@@ -1806,6 +1826,23 @@ static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData
     for (win=WindowList; win!=NULL; win=win->next) {
 	XmToggleButtonSetState(win->matchSyntaxBasedDefItem, state, False);
     }
+}
+
+static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefBacklightChars(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+      XmToggleButtonSetState(win->backlightCharsDefItem, state, False);
+}
+
+static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
+      caddr_t callData)
+{
+    BacklightUseCurrentCharTypesAsPref(window, False);
 }
 
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)

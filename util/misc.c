@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.44 2002/09/23 12:06:06 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.45 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1300,7 +1300,7 @@ void BusyWait(Widget widget)
 {
 #ifdef __unix__
     static const int timeout = 100000;  /* 1/10 sec = 100 ms = 100,000 us */
-    static struct timeval last = { 0 };
+    static struct timeval last = { 0, 0 };
     struct timeval current;
     gettimeofday(&current, NULL);
 

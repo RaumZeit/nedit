@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.70 2002/09/25 10:56:15 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.71 2002/09/26 12:37:40 ajhood Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -223,6 +223,15 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->showLineNumbers = GetPrefLineNums();
     window->showPathInWindowsMenu = GetPrefShowPathInWindowsMenu();
     window->highlightSyntax = GetPrefHighlightSyntax();
+    window->backlightCharTypes = NULL;
+    window->backlightChars = GetPrefBacklightChars();
+    if (window->backlightChars) {
+      char *cTypes = GetPrefBacklightCharTypes();
+      if (cTypes && window->backlightChars) {
+          if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+              strcpy(window->backlightCharTypes, cTypes);
+      }
+    }
     window->modeMessageDisplayed = FALSE;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
@@ -662,7 +671,7 @@ void CloseWindow(WindowInfo *window)
        deallocated when the last text widget is destroyed */
     BufRemoveModifyCB(window->buffer, modifiedCB, window);
     BufRemoveModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
-    
+
 #ifdef ROWCOLPATCH
     patchRowCol(window->menuBar);
 #endif
@@ -672,6 +681,7 @@ void CloseWindow(WindowInfo *window)
     ClearRedoList(window);
     
     /* remove and deallocate all of the widgets associated with window */
+    XtFree(window->backlightCharTypes); /* we made a copy earlier on */
     XtDestroyWidget(window->shell);
     
     /* remove the window from the global window list, update window menus */
@@ -739,7 +749,12 @@ void SplitWindow(WindowInfo *window)
             delimiters, wrapMargin, lineNumCols);
     TextSetBuffer(text, window->buffer);
     if (window->highlightData != NULL)
-        AttachHighlightToWidget(text, window);
+    	AttachHighlightToWidget(text, window);
+    if (window->backlightChars)
+    {
+        XtVaSetValues(text, textNbacklightCharTypes,
+                window->backlightCharTypes, 0);
+    }
     XtManageChild(text);
     window->textPanes[window->nPanes++] = text;
     
@@ -1572,6 +1587,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL,
             XmNrepeatDelay, 10, NULL);
     text = XtVaCreateManagedWidget("text", textWidgetClass, sw,
+            textNbacklightCharTypes, window->backlightCharTypes,
             textNrows, rows, textNcolumns, cols,
             textNlineNumCols, lineNumCols,
             textNemulateTabs, emTabDist,
@@ -2263,6 +2279,33 @@ static void patchedRemoveChild(Widget child)
                 delete_child) (child);
 }
 #endif /* ROWCOLPATCH */
+
+/*
+** Set the backlight character class string
+*/
+void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
+{
+    int i;
+    int is_applied = XmToggleButtonGetState(window->backlightCharsItem) ? 1 : 0;
+    int do_apply = applyBacklightTypes ? 1 : 0;
+
+    window->backlightChars = do_apply;
+
+    XtFree(window->backlightCharTypes);
+    if (window->backlightChars &&
+      (window->backlightCharTypes = XtMalloc(strlen(applyBacklightTypes)+1)))
+      strcpy(window->backlightCharTypes, applyBacklightTypes);
+    else
+      window->backlightCharTypes = NULL;
+
+    XtVaSetValues(window->textArea,
+          textNbacklightCharTypes, window->backlightCharTypes, 0);
+    for (i=0; i<window->nPanes; i++)
+      XtVaSetValues(window->textPanes[i],
+              textNbacklightCharTypes, window->backlightCharTypes, 0);
+    if (is_applied != do_apply)
+      XmToggleButtonSetState(window->backlightCharsItem, do_apply, False);
+}
 
 static int sortAlphabetical(const void* k1, const void* k2)
 {

@@ -1,7 +1,9 @@
-/* $Id: textBuf.h,v 1.10 2002/09/25 10:56:15 edg Exp $ */
+/* $Id: textBuf.h,v 1.11 2002/09/26 12:37:40 ajhood Exp $ */
 
 #ifndef NEDIT_TEXTBUF_H_INCLUDED
 #define NEDIT_TEXTBUF_H_INCLUDED
+
+#include "rangeset.h"
 
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
@@ -48,6 +50,8 @@ typedef struct _textBuffer {
 				   with something else.  This is the else, but
 				   of course, things get quite messy when you
 				   use it */
+    RangesetTable *rangesetTable;
+				/* current range sets */
 } textBuffer;
 
 textBuffer *BufCreate(void);
@@ -76,6 +80,7 @@ void BufClearRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd);
 int BufGetTabDistance(textBuffer *buf);
 void BufSetTabDistance(textBuffer *buf, int tabDist);
+void BufCheckDisplay(textBuffer *buf, int start, int end);
 void BufSelect(textBuffer *buf, int start, int end);
 void BufUnselect(textBuffer *buf);
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart,

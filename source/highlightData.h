@@ -1,4 +1,4 @@
-/* $Id: highlightData.h,v 1.8 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: highlightData.h,v 1.9 2002/09/26 12:37:39 ajhood Exp $ */
 
 #ifndef NEDIT_HIGHLIGHTDATA_H_INCLUDED
 #define NEDIT_HIGHLIGHTDATA_H_INCLUDED
@@ -19,6 +19,8 @@ void EditHighlightPatterns(WindowInfo *window);
 void UpdateLanguageModeMenu(void);
 int LMHasHighlightPatterns(const char *languageMode);
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
+int FontOfNamedStyleIsBold(char *styleName);
+int FontOfNamedStyleIsItalic(char *styleName);
 char *ColorOfNamedStyle(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
 int NamedStyleExists(const char *styleName);

@@ -1,4 +1,4 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.2 2001/10/21 15:09:42 tringali Exp $
+# $Id $
 #
 # This is a _generic_ Makefile to generate a dependency file
 # using GNUmake and gcc.
@@ -51,7 +51,7 @@ all: $(DEPENDFILE)
 # Remove old file, create new one and add CVS info line at top
 new:
 	/bin/rm -f $(DEPENDFILE)
-	echo '# $$Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.2 2001/10/21 15:09:42 tringali Exp $$' >$(DEPENDFILE)
+	echo '# $$Header: /home/bertw/cvsroot/nedit/nedit/makefiles/Makefile.depend,v 1.3 2002/09/26 12:37:38 ajhood Exp $$' >$(DEPENDFILE)
 
 
 $(DEPENDFILE): new $(SRCS) $(HDRS)
