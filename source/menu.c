@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.58 2002/05/08 15:30:32 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.59 2002/05/08 16:19:03 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -1595,8 +1595,6 @@ static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(NO_AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1610,8 +1608,6 @@ static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(AUTO_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1625,8 +1621,6 @@ static void smartIndentDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(SMART_INDENT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1641,8 +1635,6 @@ static void autoSaveDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoSave(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1654,8 +1646,6 @@ static void preserveDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSaveOldVersion(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1673,8 +1663,6 @@ static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NO_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1688,8 +1676,6 @@ static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NEWLINE_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1703,8 +1689,6 @@ static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(CONTINUOUS_WRAP);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1725,8 +1709,6 @@ static void smartTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
 {
     WindowInfo *win;
 	
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefSmartTags(True);
     for (win=WindowList; win!=NULL; win=win->next) {
 	XmToggleButtonSetState(win->smartTagsDefItem, True, False);
@@ -1738,8 +1720,6 @@ static void showAllTagsDefCB(Widget w, XtPointer client_data, XtPointer callData
 {
     WindowInfo *win;
 	
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefSmartTags(False);
     for (win=WindowList; win!=NULL; win=win->next) {
 	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
@@ -1758,8 +1738,6 @@ static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(NO_FLASH);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1773,8 +1751,6 @@ static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callD
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_DELIMIT);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1788,8 +1764,6 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1805,8 +1779,6 @@ static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData
 
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefMatchSyntaxBased(state);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1818,8 +1790,6 @@ static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(False);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1832,8 +1802,6 @@ static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(True);
     for (win=WindowList; win!=NULL; win=win->next) {
@@ -1905,8 +1873,6 @@ static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchDlogs(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1918,8 +1884,6 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefBeepOnSearchWrap(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1931,8 +1895,6 @@ static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefKeepSearchDlogs(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1944,8 +1906,6 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchWraps(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -1957,8 +1917,6 @@ static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     SetPrefAppendLF(state);
     for (win = WindowList; win != NULL; win = win->next)
     {
@@ -1971,8 +1929,6 @@ static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
@@ -1987,8 +1943,6 @@ static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefRepositionDialogs(state);
     SetPointerCenteredDialogs(state);
@@ -2001,8 +1955,6 @@ static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnFileMods(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2014,8 +1966,6 @@ static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnExit(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2027,8 +1977,6 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefStatsLine(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2040,8 +1988,6 @@ static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefISearchLine(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2053,8 +1999,6 @@ static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefLineNums(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2066,8 +2010,6 @@ static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callDat
     WindowInfo *win;
     int state = XmToggleButtonGetState(w);
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowPathInWindowsMenu(state);
     for (win=WindowList; win!=NULL; win=win->next)
@@ -2078,8 +2020,6 @@ static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL);
@@ -2098,8 +2038,6 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE);
@@ -2118,8 +2056,6 @@ static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL_WORD);
@@ -2138,8 +2074,6 @@ static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData
 {
     WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE_WORD);
@@ -2158,8 +2092,6 @@ static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX);
@@ -2178,8 +2110,6 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX_NOCASE);
@@ -2199,8 +2129,6 @@ static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
@@ -2216,8 +2144,6 @@ static void replaceScopeSelectionCB(Widget w, WindowInfo *window, caddr_t callDa
 {
    WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
@@ -2233,8 +2159,6 @@ static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData)
 {
    WindowInfo *win;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
