@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.137 2004/04/01 10:29:57 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.138 2004/04/01 12:48:23 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1424,15 +1424,11 @@ void ShowLineNumbers(WindowInfo *window, int state)
     if (state) {
         UpdateLineNumDisp(window);
     } else {
-	/* resize if there's only _one_ document in the window, to avoid
-	   the growing-window bug */
-    	if (NDocuments(window) == 1) {
-            XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
-            XtVaGetValues(window->textArea,
-	            textNmarginWidth, &marginWidth, NULL);
-            XtVaSetValues(window->shell, XmNwidth,
-                    windowWidth - textD->left + marginWidth, NULL);
-	}
+        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+        XtVaGetValues(window->textArea,
+	        textNmarginWidth, &marginWidth, NULL);
+        XtVaSetValues(window->shell, XmNwidth,
+                windowWidth - textD->left + marginWidth, NULL);
 	
         for (i=0; i<=window->nPanes; i++) {
             text = i==0 ? window->textArea : window->textPanes[i-1];
@@ -2611,19 +2607,16 @@ void UpdateLineNumDisp(WindowInfo *window)
         
     /* Is the width of the line number area sufficient to display all the
        line numbers in the file?  If not, expand line number field, and the
-       window width. But only do so if there's only _one_ document in the
-       window, in order to avoid growing-window bug */
+       window width. */
     XtVaGetValues(window->textArea, textNlineNumCols, &lineNumCols,
             textNmarginWidth, &marginWidth, NULL);
     if (lineNumCols < reqCols) {
-    	if (NDocuments(window) == 1) {
-            fontWidth = textD->fontStruct->max_bounds.width;
-            oldWidth = textD->left - marginWidth;
-            newWidth = reqCols * fontWidth + marginWidth;
-            XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
-            XtVaSetValues(window->shell, XmNwidth,
-                    windowWidth + newWidth-oldWidth, NULL);
-	}
+        fontWidth = textD->fontStruct->max_bounds.width;
+        oldWidth = textD->left - marginWidth;
+        newWidth = reqCols * fontWidth + marginWidth;
+        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+        XtVaSetValues(window->shell, XmNwidth,
+                windowWidth + newWidth-oldWidth, NULL);
 
         UpdateWMSizeHints(window);
         for (i=0; i<=window->nPanes; i++) {
