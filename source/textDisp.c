@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.27 2002/08/13 22:12:20 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.28 2002/08/14 08:42:43 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -3569,9 +3569,8 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
     
     /* Increment the static calltip ID.  Macro variables can only be int, 
         not unsigned, so have to work to keep it > 0 on overflow */
-    if(++StaticCalltipID <= 0) {
-        fprintf(stderr, "resetting global calltip ID\n");
+    if(++StaticCalltipID <= 0)
         StaticCalltipID = 1;
-    }
+    
     return textD->calltipID;
 }
