@@ -12,8 +12,9 @@ all: nedit nc
 nedit: $(OBJS) ../util/libNUtil.a
 	$(CC) $(CFLAGS) $(OBJS) ../util/libNUtil.a $(LIBS) -o $@
 	
-nc: nc.o
+nc: nc.o ../util/libNUtil.a
 	$(CC) $(CFLAGS) nc.o ../util/libNUtil.a $(LIBS) -o $@
+
 	
 help.o: help.c
 	$(CC) $(CFLAGS) $(BIGGER_STRINGS) -c help.c -o $@
