@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.65 2002/09/26 12:37:39 ajhood Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.66 2002/11/08 20:22:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -1842,7 +1842,7 @@ static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
       caddr_t callData)
 {
-    BacklightUseCurrentCharTypesAsPref(window, False);
+    BacklightUseCurrCharTypesAsPref(window, False);
 }
 
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)

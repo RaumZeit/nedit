@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.55 2002/11/08 16:53:36 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.56 2002/11/08 20:22:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -4173,7 +4173,7 @@ static int rangesetModifyResponseMV(WindowInfo *window, DataValue *argList,
     RangesetTable *rangesetTable = window->buffer->rangesetTable;
 
     result->tag = STRING_TAG;
-    str = RangesetTableGetMacroRangeModify(rangesetTable);
+    str = RangesetTableGetMacroRangeMod(rangesetTable);
     result->val.str = AllocString(strlen(str) + 1);
     strcpy(result->val.str, str);
     return True;
@@ -4761,7 +4761,7 @@ static int getColorNameValues(WindowInfo *window, char *colorName,
 **              BgColorOfNamedStyle(), FontOfNamedStyleIsBold(),
 **              FontOfNamedStyleIsItalic(), HighlightCodeOfPos(),
 **              HighlightStyleOfCode(), HighlightColorValueOfCode(),
-**              HighlightBackgroundColorValueOfCode()
+**              GetHighlightBGColorOfCode()
 **
 */
 static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -4882,7 +4882,7 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Prepare array element for background color value */
     key = AllocStringNCpy("back_rgb", 9);
-    pixel = HighlightBackgroundColorValueOfCode(window, styleCode,&r,&g,&b);
+    pixel = GetHighlightBGColorOfCode(window, styleCode,&r,&g,&b);
     sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
     strDV.val.str = AllocStringCpy(colorValue);
     /* Insert array key */

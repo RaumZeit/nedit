@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.31 2002/09/26 12:37:39 ajhood Exp $ */
+/* $Id: nedit.h,v 1.32 2002/11/08 20:22:45 edg Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -14,7 +14,13 @@
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/XmStrDefs.h>
+#ifdef VMS
+#include "../util/VMSparam.h"
+#else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
+#endif /*VMS*/
 
 /* Tuning parameters */
 #define SEARCHMAX 511		/* Maximum length of search/replace strings */

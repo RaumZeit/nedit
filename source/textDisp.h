@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.17 2002/10/15 11:00:42 ajhood Exp $ */
+/* $Id: textDisp.h,v 1.18 2002/11/08 20:22:46 edg Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -193,6 +193,11 @@ void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
 void TextDMaintainAbsLineNum(textDisp *textD, int state);
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
+
+#ifdef VMS /* VMS linker doesn't like long names (>31 chars) */
+#define TextDImposeGraphicsExposeTranslation TextDGraphicsExposeTranslation
+#endif /* VMS */
+
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);

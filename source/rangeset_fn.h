@@ -1,4 +1,4 @@
-/* $Id: rangeset_fn.h,v 1.1 2002/09/26 11:45:32 ajhood Exp $ */
+/* $Id: rangeset_fn.h,v 1.2 2002/11/08 20:22:45 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset_fn.h	 -- Nirvana Editor rangest function header		       *
@@ -63,7 +63,7 @@ int RangesetTableGetMacroRangeEnd(RangesetTable *tab);
 int RangesetTableGetMacroRangeN(RangesetTable *tab);
 char *RangesetTableGetMacroRangeList(RangesetTable *tab);
 char *RangesetTableGetMacroRangeColor(RangesetTable *tab);
-char *RangesetTableGetMacroRangeModify(RangesetTable *tab);
+char *RangesetTableGetMacroRangeMod(RangesetTable *tab);
 void RangesetTableUpdatePos(RangesetTable *tab, int pos, int n_ins, int n_del);
 void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 	char *deletedText, void *cbArg);

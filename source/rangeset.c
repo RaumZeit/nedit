@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.1 2002/09/26 11:45:32 ajhood Exp $ */
+/* $Id: rangeset.c,v 1.2 2002/11/08 20:22:45 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -966,7 +966,7 @@ char *RangesetTableGetMacroRangeColor(RangesetTable *tab)
     return (tab && tab->macro_last_color) ? tab->macro_last_color : "";
 }
 
-char *RangesetTableGetMacroRangeModify(RangesetTable *tab)
+char *RangesetTableGetMacroRangeMod(RangesetTable *tab)
 {
     return (tab && tab->macro_last_modify) ? tab->macro_last_modify : "";
 }

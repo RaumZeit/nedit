@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.72 2002/10/16 17:28:03 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.73 2002/11/08 20:22:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1579,7 +1579,7 @@ char *GetPrefBacklightCharTypes(void)
     return PrefData.backlightCharTypes;
 }
 
-void BacklightUseCurrentCharTypesAsPref(WindowInfo *window, int quietly)
+void BacklightUseCurrCharTypesAsPref(WindowInfo *window, int quietly)
 {
     if (!quietly) {
       if (DialogF(DF_INF, window->shell, 2,
