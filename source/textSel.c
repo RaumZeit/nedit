@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.6 2001/12/02 17:58:43 edg Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.7 2002/01/23 16:53:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -31,6 +31,7 @@ static const char CVSID[] = "$Id: textSel.c,v 1.6 2001/12/02 17:58:43 edg Exp $"
 
 #include <Xm/Xm.h>
 #include <Xm/CutPaste.h>
+#include <Xm/Text.h>
 #include <X11/Xatom.h>
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
@@ -43,10 +44,10 @@ static const char CVSID[] = "$Id: textSel.c,v 1.6 2001/12/02 17:58:43 edg Exp $"
 
 #define N_SELECT_TARGETS 7
 #define N_CLIP_TARGETS 4
-#define N_ATOMS 10
+#define N_ATOMS 11
 enum atomIndex {A_TEXT, A_TARGETS, A_MULTIPLE, A_TIMESTAMP,
 	A_INSERT_SELECTION, A_DELETE, A_CLIPBOARD, A_INSERT_INFO,
-	A_ATOM_PAIR, A_MOTIF_DESTINATION};
+	A_ATOM_PAIR, A_MOTIF_DESTINATION, A_COMPOUND_TEXT};
 
 /* Results passed back to the convert proc processing an INSERT_SELECTION
    request, by getInsertSelection when the selection to insert has been
@@ -562,8 +563,12 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
     int getFmt, result = INSERT_WAITING;
     XEvent nextEvent;
     
-    /* target is text or string */
-    if (*target == XA_STRING || *target == getAtom(display, A_TEXT)) {
+    /* target is text, string, or compound text */
+    if (*target == XA_STRING || *target == getAtom(display, A_TEXT) ||
+        *target == getAtom(display, A_COMPOUND_TEXT)) {
+        /* We really don't directly support COMPOUND_TEXT, but recent
+           versions gnome-terminal incorrectly ask for it, even though
+           don't declare that we do.  Just reply in string format. */
     	*type = XA_STRING;
     	*value = (XtPointer)BufGetSelectionText(buf);
     	*length = strlen((char *)*value);
@@ -841,7 +846,7 @@ static Atom getAtom(Display *display, int atomNum)
     static Atom atomList[N_ATOMS] = {0};
     static char *atomNames[N_ATOMS] = {"TEXT", "TARGETS", "MULTIPLE",
     	    "TIMESTAMP", "INSERT_SELECTION", "DELETE", "CLIPBOARD",
-    	    "INSERT_INFO", "ATOM_PAIR", "MOTIF_DESTINATION"};
+    	    "INSERT_INFO", "ATOM_PAIR", "MOTIF_DESTINATION", "COMPOUND_TEXT"};
     
     if (atomList[atomNum] == 0)
     	atomList[atomNum] = XInternAtom(display, atomNames[atomNum], False);
