@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.3RC1, March 2002
 
 
-$Id: ReleaseNotes,v 1.17 2003/05/06 22:14:38 yooden Exp $
+$Id: ReleaseNotes,v 1.18 2003/05/12 09:38:22 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -15,87 +15,93 @@ about updating macros and font settings in your .nedit file.
 
 New Features in 5.4
 
-  - Calltips
+  - Calltips (SF patch #495286)
 
-  - Rangesets
+  - Rangesets (SF patch #529298, #628933)
 
-  - Backlighting
+  - Backlighting (SF patch #529298)
 
-  - Highlighting information macros
+  - Highlighting information macros (SF patch #529298)
 
-  - Full mouse wheel support
+  - Full mouse wheel support (SF patch #715941)
 
-  - Look-behind matching for Regular Expressions
+  - Look-behind matching for Regular Expressions (SF patch #530308)
 
-  - Regular Expression speed-up
+  - Regular Expression and Syntax Highlighting speed-ups
 
-  - Flexible resource file location
+  - Flexible resource file location (SF patch #484674)
 
-  - Color dialog
+  - Color dialog (SF patch #595330)
 
   - Option to auto-hide mouse pointer while typing
 
   - Option to keep cursor away from top and bottom of the screen
 
+  - Check for real changes of externally modified files (SF patch #602426)
+
+  - Synchronized interaction between nc and nedit (SF patch #403647)
+
   - Several smaller improvements on usability and speed
 
-  - Several smaller improvements to the macro language
+  - Several smaller improvements to the macro language (SF patch #552760, ...)
 
 Bugs Fixed in 5.4
 
-  - Removed regex search bugs (SF #429110, #515120)
+  - Config files didn't accept non-Unix file format (SF bug #411092)
 
-  - Smart-indent macros were unaffected by language mode renames (SF #439867)
+  - Removed regex search bugs (SF bug #429110, #515120)
 
-  - All dialogs have titles now (SF #480960)
+  - Smart-indent macros were unaffected by language mode renames (SF bug #439867)
 
-  - Giving long filenames at startup caused buffer overflows (SF #488412)
+  - All dialogs have titles now (SF bug #480960)
+
+  - Giving long filenames at startup caused buffer overflows (SF bug #488412)
 
   - Made sure that dialogs don't get wider than screen
-    (SF #488593, #489614, #713999)
+    (SF bug #488593, #489614, #713999)
 
-  - Dragging a rectangular selection could delete characters (SF #557225)
+  - Dragging a rectangular selection could delete characters (SF bug #557225)
 
   - Keyboard-based rectangular selections were forgotten if the selection ever
     became zero-width.
 
   - Paths were still shown in current's window Windows menu after global option
-    was changed (SF #564782)
+    was changed (SF bug #564782)
 
-  - Scrolling to searched or undone/redone section stopped short (SF #578551)
+  - Scrolling to searched or undone/redone section stopped short (SF bug #578551)
 
-  - Removed flicker in stats line due to bug prevention (SF #594838)
+  - Removed flicker in stats line due to bug prevention (SF bug #594838)
 
-  - NEdit coredumped while dismissing a resized help window (SF #600175)
+  - NEdit coredumped while dismissing a resized help window (SF bug #600175)
 
-  - Macro functions were evaluated in a wrong order (SF #602336, #628552)
+  - Macro functions were evaluated in a wrong order (SF bug #602336, #628552)
 
-  - Syntax highlighting failures in LaTeX (SF #607072)
+  - Syntax highlighting failures in LaTeX (SF bug #607072)
 
-  - NEdit coredumped with wrong values for -tabs option (SF #608693)
+  - NEdit coredumped with wrong values for -tabs option (SF bug #608693)
 
-  - Macro shortcuts were sensitive to Lock and NumLock? (SF #612558)
+  - Macro shortcuts were sensitive to Lock and NumLock (SF bug #612558)
 
-  - Appendending the terminating line break was not reflected in the buffer
-    (SF #617840)
+  - Appending the terminating line break was not reflected in the buffer
+    (SF bug #617840)
 
-  - A new nc(1) hanged after a server was killed or crashed (SF #619231)
+  - A new nc(1) hanged after a server was killed or crashed (SF bug #619231)
 
-  - Adds (short) list of deprecated macro functions (SF #619236)
+  - Adds (short) list of deprecated macro functions (SF bug #619236)
 
-  - Removed hazardous command shortcut (SF #649442)
+  - Removed hazardous command shortcut (SF bug #649442)
 
-  - Typo in SCO makefile (SF #689808)
+  - Typo in SCO makefile (SF bug #689808)
 
-  - Syntax highlighting routines assumed ASCII encoding (SF #700823)
+  - Syntax highlighting routines assumed ASCII encoding (SF bug #700823)
 
-  - Fixes various bugs about LANG settings (SF #703246, ...)
+  - Fixes various bugs about LANG settings (SF bug #703246, ...)
 
-  - Crash while manipulating highlighting pattern (SF #705495)
+  - Crash while manipulating highlighting pattern (SF bug #705495)
 
-  - Removed flicker in stats line during macro execution (SF #713780)
+  - Removed flicker in stats line during macro execution (SF bug #713780)
 
-  - Macro function goto_line_number() only accepted one argument (SF #726325)
+  - Macro function goto_line_number() only accepted one argument (SF bug #726325)
 
   - Newline macro inserting a string caused a recursive loop when triggered
     through smart indent
