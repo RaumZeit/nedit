@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.37 2003/12/25 06:55:07 tksoh Exp $ */
+/* $Id: preferences.h,v 1.38 2004/01/16 02:59:15 tksoh Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -176,13 +176,13 @@ int GetPrefReplaceDefScope(void);
 void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
 int GetPrefOverrideVirtKeyBindings(void);
-void SetPrefBufferMode(int state);
-int GetPrefBufferMode(void);
+void SetPrefTabbedMode(int state);
+int GetPrefTabbedMode(void);
 void SetPrefUndoModifiesSelection(Boolean);
-void SetPrefBufferMode(int state);
-int GetPrefBufferMode(void);
-void SetPrefBufferMode(int state);
-int GetPrefBufferMode(void);
+void SetPrefTabbedMode(int state);
+int GetPrefTabbedMode(void);
+void SetPrefTabbedMode(int state);
+int GetPrefTabbedMode(void);
 Boolean GetPrefUndoModifiesSelection(void);
 int GetPrefOverrideVirtKeyBindings(void);
 

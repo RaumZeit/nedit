@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.105 2004/01/13 02:45:28 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.106 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -232,7 +232,7 @@ typedef struct {
 
 /* Repository for simple preferences settings */
 static struct prefData {
-    int bufferMode;		/* run nedit in vim/emacs-like buffer mode */
+    int tabbedMode;		/* run nedit in vim/emacs-like tabbed mode */
     int wrapStyle;		/* what kind of wrapping to do */
     int wrapMargin;		/* 0=wrap at window width, other=wrap margin */
     int autoIndent;		/* style for auto-indent */
@@ -746,8 +746,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.autoIndent, AutoIndentTypes, True},
     {"autoSave", "AutoSave", PREF_BOOLEAN, "True",
     	&PrefData.autoSave, NULL, True},
-    {"bufferMode", "BufferMode", PREF_BOOLEAN, "True",
-    	&PrefData.bufferMode, NULL, False},
+    {"tabbedMode", "BufferMode", PREF_BOOLEAN, "True",
+    	&PrefData.tabbedMode, NULL, False},
     {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False",
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
@@ -971,8 +971,8 @@ static XrmOptionDescRec OpTable[] = {
     {"-noautoindent", ".autoIndent", XrmoptionNoArg, (caddr_t)"False"},
     {"-autosave", ".autoSave", XrmoptionNoArg, (caddr_t)"True"},
     {"-noautosave", ".autoSave", XrmoptionNoArg, (caddr_t)"False"},
-    {"-buffers", ".bufferMode", XrmoptionNoArg, (caddr_t)"True"},
-    {"-nobuffers", ".bufferMode", XrmoptionNoArg, (caddr_t)"False"},
+    {"-tabbed", ".tabbedMode", XrmoptionNoArg, (caddr_t)"True"},
+    {"-untabbed", ".tabbedMode", XrmoptionNoArg, (caddr_t)"False"},
     {"-rows", ".textRows", XrmoptionSepArg, (caddr_t)NULL},
     {"-columns", ".textCols", XrmoptionSepArg, (caddr_t)NULL},
     {"-tabs", ".tabDistance", XrmoptionSepArg, (caddr_t)NULL},
@@ -1364,14 +1364,14 @@ void ImportPrefFile(const char *filename, int convertOld)
     }
 }
 
-void SetPrefBufferMode(int state)
+void SetPrefTabbedMode(int state)
 {
-    setIntPref(&PrefData.bufferMode, state);
+    setIntPref(&PrefData.tabbedMode, state);
 }
 
-int GetPrefBufferMode(void)
+int GetPrefTabbedMode(void)
 {
-    return PrefData.bufferMode;
+    return PrefData.tabbedMode;
 }
 
 void SetPrefWrap(int state)
@@ -1529,7 +1529,7 @@ void SetPrefTabBar(int state)
 
 int GetPrefTabBar(void)
 {
-    return PrefData.tabBar && GetPrefBufferMode();
+    return PrefData.tabBar && GetPrefTabbedMode();
 }
 
 void SetPrefTabBarHideOne(int state)
@@ -1539,7 +1539,7 @@ void SetPrefTabBarHideOne(int state)
 
 int GetPrefTabBarHideOne(void)
 {
-    return PrefData.tabBarHideOne && GetPrefBufferMode();
+    return PrefData.tabBarHideOne && GetPrefTabbedMode();
 }
 
 void SetPrefGlobalTabNavigate(int state)
@@ -1549,7 +1549,7 @@ void SetPrefGlobalTabNavigate(int state)
 
 int GetPrefGlobalTabNavigate(void)
 {
-    return PrefData.globalTabNavigate && GetPrefBufferMode();
+    return PrefData.globalTabNavigate && GetPrefTabbedMode();
 }
 
 void SetPrefToolTips(int state)

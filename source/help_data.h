@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Dec 28, 2003 (Do NOT edit!)
+                 Generated on Jan 16, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2003 Mark Edel                                            *
+* Copyright (c) 1999-2004 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -3663,10 +3663,10 @@ static char * htxt_resources [] = {
 "options not settable via the Preferences menu (for preference resource names, ",
 "see your NEdit preference file): ",
 "\n\n",
-"\01A\01Bnedit.bufferMode\01A: True\n",
+"\01A\01Bnedit.tabbedMode\01A: True\n",
 "\01I\n",
-"When set to True, run NEdit in buffer mode. Same as running NEdit with ",
-"the \01K-buffers\01I command line option. ",
+"When set to True, run NEdit in tabbed mode. Same as running NEdit with ",
+"the \01K-tabbed\01I command line option. ",
 "\n\n",
 "\01A\01Bnedit.tagFile\01A: (not defined) \n",
 "\01I\n",
@@ -4309,17 +4309,17 @@ static char * htxt_command_line [] = {
 "      [-\01Biconic\01A] [-\01Bnoiconic\01A] [-\01Bdisplay\01A [host]:server[.screen]\n",
 "      [-\01Bxrm\01A resourcestring] [-\01Bsvrname\01A name] [-\01Bimport\01A file]\n",
 "      [-\01Bbackground\01A color] [-\01Bforeground\01A color] [-\01BV\01A|-\01Bversion\01A]\n",
-"      [-\01Bbuffer\01A] [-\01Bnobuffer\01A] [-\01Bwin\01A file]\n",
+"      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01Bwin\01A file]\n",
 "      [--] [file...]\n",
 "\01I\n",
-"\01A\01B-buffer\01A\n",
-"\01IRun NEdit in buffer mode - allow multiple buffers (files) per window. ",
+"\01A\01B-tabbed\01A\n",
+"\01IRun NEdit in tabbed mode - allow multiple documents (files) per window. ",
 "\n\n",
-"\01A\01B-nobuffer\01A\n",
-"\01IDisable buffer mode, run NEdit in normal (one file per window) mode. ",
+"\01A\01B-untabbed\01A\n",
+"\01IDisable tabbed mode, run NEdit in normal (one file per window) mode. ",
 "\n\n",
 "\01A\01B-win\01A\n",
-"\01IIn \01Kbuffer mode\01I, files are opened as new tabs by default, use -win to ",
+"\01IIn \01Ktabbed mode\01I, files are opened as new tabs by default, use -win to ",
 "open files in new windows. ",
 "\n\n",
 "\01JNote\01I: this option is \01Knon-sticky\01I, i.e. it applies only to the ",
@@ -5383,4 +5383,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Dez 28, 2003\n";
+static const char * NEditVersion = "NEdit release of Jan 16, 2004\n";

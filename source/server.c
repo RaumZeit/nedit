@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.23 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.24 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -302,7 +302,7 @@ static void processServerCommandString(char *string)
     	    CheckCloseDim();
     	} 
 	else {
-	    RaiseBuffer(window);
+	    RaiseDocument(window);
     	    XMapRaised(TheDisplay, XtWindow(window->shell));
     	}
 	return;
@@ -420,7 +420,7 @@ static void processServerCommandString(char *string)
             getFileClosedProperty(window);
 
 	    if (!iconicFlag) {
-		RaiseBuffer(window);
+		RaiseDocument(window);
 		XMapRaised(TheDisplay, XtWindow(window->shell));
 	    }
 	   

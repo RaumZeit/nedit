@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.72 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.73 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -114,8 +114,8 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     UniqueUntitledName(name);
 
     /* create the window/buffer */
-    if (GetPrefBufferMode() && inWindow)
-	window = CreateBuffer(inWindow, name, geometry, iconic);
+    if (GetPrefTabbedMode() && inWindow)
+	window = CreateDocument(inWindow, name, geometry, iconic);
     else 
 	window = CreateWindow(name, geometry, iconic);
 	
@@ -134,9 +134,9 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
 	
     if (iconic && IsIconic(window))
-        RaiseBuffer(window);
+        RaiseDocument(window);
     else
-        RaiseBufferWindow(window);
+        RaiseDocumentWindow(window);
 	
     return window;
 }
@@ -165,7 +165,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     /* first look to see if file is already displayed in a window */
     window = FindWindowWithFile(name, path);
     if (window != NULL) {
-    	RaiseBufferWindow(window);
+    	RaiseDocumentWindow(window);
 	return window;
     }
     
@@ -177,9 +177,9 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     }
     else if (inWindow->filenameSet || inWindow->fileChanged ||
 	    inWindow->macroCmdData != NULL) {
-	if (GetPrefBufferMode()) {
-	    window = CreateBuffer(inWindow, name, geometry, iconic);
-    	    RaiseBuffer(window);
+	if (GetPrefTabbedMode()) {
+	    window = CreateDocument(inWindow, name, geometry, iconic);
+    	    RaiseDocument(window);
     	}
 	else {
 	    window = CreateWindow(name, geometry, iconic);
@@ -191,15 +191,15 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     	strcpy(window->path, path);
     	strcpy(window->filename, name);
         if (!iconic) {
-            RaiseBufferWindow(window);
+            RaiseDocumentWindow(window);
         }
     }
     
     /* Open the file */
     if (!doOpen(window, name, path, flags)) {
 	/* bring back the previous top buffer */
-    	if (NBuffers(window) > 1)
-	    RaiseBuffer(inWindow);
+    	if (NDocuments(window) > 1)
+	    RaiseDocument(inWindow);
 	    
 	/* The user may have destroyed the window instead of closing the 
 	   warning dialog; don't close it twice */
@@ -650,7 +650,7 @@ int CloseAllFilesAndWindows(void)
 {
     while (WindowList->next != NULL || 
     		WindowList->filenameSet || WindowList->fileChanged) {
-    	if (!CloseAllBufferInWindow(WindowList))
+    	if (!CloseAllDocumentInWindow(WindowList))
 	    return False;
     }
 
@@ -663,7 +663,7 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse)
     
     /* Make sure that the window is not in iconified state */
     if (window->fileChanged)
-    	RaiseBufferWindow(window);
+    	RaiseDocumentWindow(window);
 
     /* If the window is a normal & unmodified file or an empty new file, 
        or if the user wants to ignore external modifications then

@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.13 2003/12/25 06:55:08 tksoh Exp $ */
+/* $Id: window.h,v 1.14 2004/01/16 02:59:15 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -37,7 +37,7 @@ void SplitWindow(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void ClosePane(WindowInfo *window);
-void ShowBufferTabBar(WindowInfo *window, int state);
+void ShowTabBar(WindowInfo *window, int state);
 void ShowStatsLine(WindowInfo *window, int state);
 void ShowISearchLine(WindowInfo *window, int state);
 void TempShowISearch(WindowInfo *window, int state);
@@ -48,30 +48,30 @@ WindowInfo *WidgetToWindow(Widget w);
 void AddSmallIcon(Widget shell);
 void SetTabDist(WindowInfo *window, int tabDist);
 void SetEmTabDist(WindowInfo *window, int emTabDist);
-int CloseAllBufferInWindow(WindowInfo *window);
-WindowInfo *CreateBuffer(WindowInfo *shellWindow, const char *name,
+int CloseAllDocumentInWindow(WindowInfo *window);
+WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 	char *geometry, int iconic);
 WindowInfo *TabToWindow(Widget tab);
-void RaiseBuffer(WindowInfo *window);
-void RaiseBufferWindow(WindowInfo *window);
-void DeleteBuffer(WindowInfo *window);
-WindowInfo *MarkLastBuffer(WindowInfo *window);
-WindowInfo *MarkActiveBuffer(WindowInfo *window);
-void NextBuffer(WindowInfo *window);
-void PreviousBuffer(WindowInfo *window);
-void ToggleBuffer(WindowInfo *window);
-int NBuffers(WindowInfo *window);
-WindowInfo *AttachBuffer(WindowInfo *toWindow, WindowInfo *window);
-WindowInfo *DetachBuffer(WindowInfo *window);
-void AttachBufferDialog(Widget parent);
-WindowInfo* GetTopBuffer(Widget w);
-Boolean IsTopBuffer(const WindowInfo *window);
+void RaiseDocument(WindowInfo *window);
+void RaiseDocumentWindow(WindowInfo *window);
+void DeleteDocument(WindowInfo *window);
+WindowInfo *MarkLastDocument(WindowInfo *window);
+WindowInfo *MarkActiveDocument(WindowInfo *window);
+void NextDocument(WindowInfo *window);
+void PreviousDocument(WindowInfo *window);
+void LastDocument(WindowInfo *window);
+int NDocuments(WindowInfo *window);
+WindowInfo *AttachDocument(WindowInfo *toWindow, WindowInfo *window);
+WindowInfo *DetachDocument(WindowInfo *window);
+void AttachDocumentDialog(Widget parent);
+WindowInfo* GetTopDocument(Widget w);
+Boolean IsTopDocument(const WindowInfo *window);
 int IsIconic(WindowInfo *window);
 int IsValidWindow(WindowInfo *window);
 void RefreshTabState(WindowInfo *window);
 void ShowWindowTabBar(WindowInfo *window);
 void RefreshMenuToggleStates(WindowInfo *window);
-void RefreshBufferWindowState(WindowInfo *window);
+void RefreshWindowStates(WindowInfo *window);
 void AllWindowsBusy(const char* message);
 void AllWindowsUnbusy(void);
 void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);

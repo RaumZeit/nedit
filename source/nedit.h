@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.42 2003/12/25 06:55:07 tksoh Exp $ */
+/* $Id: nedit.h,v 1.43 2004/01/16 02:59:15 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -190,8 +190,8 @@ typedef struct _WindowInfo {
     Widget  	iSearchCaseToggle;
     Widget  	iSearchRevToggle;
     Widget	menuBar;    	    	/* the main menu bar */
-    Widget	bufferTabBar;		/* toolbar for tabbed window */
-    Widget	bufferTab;		/* tab for this buffer */
+    Widget	tabBar;		/* toolbar for tabbed window */
+    Widget	tab;		/* tab for this buffer */
     Widget	replaceDlog;		/* replace dialog */
     Widget	replaceText;		/* replace dialog settable widgets... */
     Widget	replaceWithText;
@@ -333,8 +333,8 @@ typedef struct _WindowInfo {
     Widget	repeatItem;
     Widget	splitWindowItem;
     Widget	closePaneItem;
-    Widget	detachBufferItem;
-    Widget	attachBufferItem;
+    Widget	detachDocumentItem;
+    Widget	attachDocumentItem;
     Widget  	bgMenuUndoItem;
     Widget  	bgMenuRedoItem;
 #ifdef SGI_CUSTOM

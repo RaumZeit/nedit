@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.56 2003/12/25 06:55:07 tksoh Exp $
+.. $Id: help.etx,v 1.57 2004/01/16 02:59:15 tksoh Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3862,10 +3862,10 @@ X Resources
   options not settable via the Preferences menu (for preference resource names,
   see your NEdit preference file):
 
-**nedit.bufferMode**: True
+**nedit.tabbedMode**: True
 
-  When set to True, run NEdit in buffer mode. Same as running NEdit with
-  the ~-buffers~ command line option.
+  When set to True, run NEdit in tabbed mode. Same as running NEdit with
+  the ~-tabbed~ command line option.
 
 **nedit.tagFile**: (not defined) 
 
@@ -4517,17 +4517,17 @@ NEdit Command Line
       [-**iconic**] [-**noiconic**] [-**display** [host]:server[.screen]
       [-**xrm** resourcestring] [-**svrname** name] [-**import** file]
       [-**background** color] [-**foreground** color] [-**V**|-**version**]
-      [-**buffer**] [-**nobuffer**] [-**win** file]
+      [-**tabbed**] [-**untabbed**] [-**win** file]
       [--] [file...]
 
-**-buffer**
-  Run NEdit in buffer mode - allow multiple buffers (files) per window.
+**-tabbed**
+  Run NEdit in tabbed mode - allow multiple documents (files) per window.
 
-**-nobuffer**
-  Disable buffer mode, run NEdit in normal (one file per window) mode.
+**-untabbed**
+  Disable tabbed mode, run NEdit in normal (one file per window) mode.
 
 **-win**
-  In ~buffer mode~, files are opened as new tabs by default, use -win to 
+  In ~tabbed mode~, files are opened as new tabs by default, use -win to 
   open files in new windows. 
   
   **Note**: this option is ~non-sticky~, i.e. it applies only to the

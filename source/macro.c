@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.78 2004/01/08 06:19:27 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.79 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1121,14 +1121,14 @@ static void finishMacroCmdExecution(WindowInfo *window)
        with focus_window() may modify the 'shell-level' properties (menus,
        statsline, etc) belong to the top buffer, we refresh these 
        properties in case they did get modified */
-    if (GetPrefBufferMode() && focusShifted) {
+    if (GetPrefTabbedMode() && focusShifted) {
 	WindowInfo *macroRunWindow = cmdData->context->runWindow;
     	WindowInfo *win;
 	
 	for (win=WindowList; win; win=win->next) {
-	    if (win == macroRunWindow && IsTopBuffer(win))
+	    if (win == macroRunWindow && IsTopDocument(win))
 	    	DimSelectionDepUserMenuItems(win, win->wasSelected);
-	    else if (NBuffers(win) > 1 && IsTopBuffer(win))
+	    else if (NDocuments(win) > 1 && IsTopDocument(win))
 	    	RefreshMenuToggleStates(win);
 	}
 	

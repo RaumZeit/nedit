@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.57 2003/12/30 15:32:28 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.58 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -307,12 +307,12 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
-    "*windowsMenu.nextBuffer.accelerator: Ctrl Alt<Key>N",
-    "*windowsMenu.nextBuffer.acceleratorText: Ctrl+Alt+N",
-    "*windowsMenu.prevBuffer.accelerator: Ctrl Alt<Key>P",
-    "*windowsMenu.prevBuffer.acceleratorText: Ctrl+Alt+P",
-    "*windowsMenu.toggleBuffer.accelerator: Ctrl Alt<Key>O",
-    "*windowsMenu.toggleBuffer.acceleratorText: Ctrl+Alt+O",
+    "*windowsMenu.nextDocument.accelerator: Ctrl Alt<Key>N",
+    "*windowsMenu.nextDocument.acceleratorText: Ctrl+Alt+N",
+    "*windowsMenu.prevDocument.accelerator: Ctrl Alt<Key>P",
+    "*windowsMenu.prevDocument.acceleratorText: Ctrl+Alt+P",
+    "*windowsMenu.lastDocument.accelerator: Ctrl Alt<Key>O",
+    "*windowsMenu.lastDocument.acceleratorText: Ctrl+Alt+O",
     "*helpMenu.mnemonic: H",
     "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\
@@ -338,7 +338,7 @@ static const char cmdLineHelp[] =
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
 	      [-import file] [-background color] [-foreground color]\n\
-	      [-V|-version] [-buffers] [-nobuffers] [-win]\n\
+	      [-V|-version] [-tabbed] [-untabbed] [-win]\n\
 	      [--] [file...]\n";
 #else
 "";

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.85 2004/01/06 02:38:48 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.86 2004/01/16 02:59:15 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -293,17 +293,17 @@ static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void splitWindowAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void detachBufferDialogAP(Widget w, XEvent *event, String *args,
+static void detachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void detachBufferAP(Widget w, XEvent *event, String *args,
+static void detachDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void attachBufferDialogAP(Widget w, XEvent *event, String *args,
+static void attachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void nextBufferAP(Widget w, XEvent *event, String *args,
+static void nextDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void prevBufferAP(Widget w, XEvent *event, String *args,
+static void prevDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static void toggleBufferAP(Widget w, XEvent *event, String *args,
+static void lastDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void capitalizeAP(Widget w, XEvent *event, String *args,
@@ -510,12 +510,12 @@ static XtActionsRec Actions[] = {
     {"split_window", splitWindowAP},
     {"close-pane", closePaneAP},
     {"close_pane", closePaneAP},
-    {"detach_buffer", detachBufferAP},
-    {"detach_buffer_dialog", detachBufferDialogAP},
-    {"attach_buffer_dialog", attachBufferDialogAP},
-    {"next_buffer", nextBufferAP},
-    {"previous_buffer", prevBufferAP},
-    {"toggle_buffer", toggleBufferAP},
+    {"detach_document", detachDocumentAP},
+    {"detach_document_dialog", detachDocumentDialogAP},
+    {"attach_document_dialog", attachDocumentDialogAP},
+    {"next_document", nextDocumentAP},
+    {"previous_document", prevDocumentAP},
+    {"last_document", lastDocumentAP},
     {"uppercase", capitalizeAP},
     {"lowercase", lowercaseAP},
     {"fill-paragraph", fillAP},
@@ -932,10 +932,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
           "backlightChars", "Apply Backlighting", 'g', backlightCharsDefCB,
           window, GetPrefBacklightChars(), FULL);
 
-    /* buffer mode sub menu */
-    subSubPane = createMenu(subPane, "bufferModeMenu", "Buffer Mode", 0,
+    /* tabbed mode sub menu */
+    subSubPane = createMenu(subPane, "tabbedModeMenu", "Tabbed Mode", 0,
     	    &cascade, SHORT);
-    XtSetSensitive(cascade, GetPrefBufferMode());
+    XtSetSensitive(cascade, GetPrefTabbedMode());
     window->tabBarDefItem = createMenuToggle(subSubPane, "showTabBar",
     	    "Show Tab Bar", 'B', tabBarDefCB, window,
 	    GetPrefTabBar(), FULL);
@@ -1184,24 +1184,24 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,NULL);
     XtSetSensitive(window->closePaneItem, False);
 
-    if (GetPrefBufferMode()) {
+    if (GetPrefTabbedMode()) {
 	btn = createMenuSeparator(menuPane, "sep01", SHORT);
 	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-	window->detachBufferItem = createMenuItem(menuPane, "detachBuffer",
-    		"Detach Buffer", 'D', doActionCB, "detach_buffer", SHORT);
-    	XtSetSensitive(window->detachBufferItem, False);
+	window->detachDocumentItem = createMenuItem(menuPane, "detachBuffer",
+    		"Detach Tab", 'D', doActionCB, "detach_document", SHORT);
+    	XtSetSensitive(window->detachDocumentItem, False);
 	
-	window->attachBufferItem = createMenuItem(menuPane, "attachBuffer",
-    		"Attach Buffer...", 'A', doActionCB, "attach_buffer_dialog", SHORT);
-    	XtSetSensitive(window->attachBufferItem, False);
+	window->attachDocumentItem = createMenuItem(menuPane, "attachDocument",
+    		"Attach Tab...", 'A', doActionCB, "attach_document_dialog", SHORT);
+    	XtSetSensitive(window->attachDocumentItem, False);
 	btn = createMenuSeparator(menuPane, "sep0", SHORT);
 	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
-	createMenuItem(menuPane, "nextBuffer",
-    		"Next Buffer", 'N', doActionCB, "next_buffer", SHORT);
-	createMenuItem(menuPane, "prevBuffer",
-    		"Previous Buffer", 'P', doActionCB, "previous_buffer", SHORT);
-	createMenuItem(menuPane, "toggleBuffer",
-    		"Toggle Buffer", 'o', doActionCB, "toggle_buffer", SHORT);
+	createMenuItem(menuPane, "nextDocument",
+    		"Next Tab", 'N', doActionCB, "next_document", SHORT);
+	createMenuItem(menuPane, "prevDocument",
+    		"Previous Tab", 'P', doActionCB, "previous_document", SHORT);
+	createMenuItem(menuPane, "lastDocument",
+    		"Last Viewed Tab", 'o', doActionCB, "last_document", SHORT);
     }
 
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
@@ -1505,7 +1505,7 @@ static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"off"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1525,7 +1525,7 @@ static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"on"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1545,7 +1545,7 @@ static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"smart"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1564,7 +1564,7 @@ static void autoSaveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1583,7 +1583,7 @@ static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1603,7 +1603,7 @@ static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {NO_FLASH_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1623,7 +1623,7 @@ static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData
     static char *params[1] = {FLASH_DELIMIT_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1643,7 +1643,7 @@ static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {FLASH_RANGE_STRING};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1662,7 +1662,7 @@ static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1687,7 +1687,7 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"none"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1707,7 +1707,7 @@ static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"auto"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1727,7 +1727,7 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     static char *params[1] = {"continuous"};
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -1771,7 +1771,7 @@ static void statsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     Widget menu = MENU_WIDGET(w);
 
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(menu);
 
 #ifdef SGI_CUSTOM
@@ -2234,7 +2234,7 @@ static void toolTipsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefToolTips(state);
     for (win=WindowList; win!=NULL; win=win->next) {
-    	XtVaSetValues(win->bufferTab, XltNshowBubble, GetPrefToolTips(), NULL);
+    	XtVaSetValues(win->tab, XltNshowBubble, GetPrefToolTips(), NULL);
     	XmToggleButtonSetState(win->toolTipsDefItem, state, False);
     }
 }
@@ -2542,7 +2542,7 @@ static void replayCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->windowMenuValid) {
@@ -2553,7 +2553,7 @@ static void windowMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->macroMenuValid) {
@@ -2564,7 +2564,7 @@ static void macroMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
     
     if (!window->shellMenuValid) {
@@ -2575,7 +2575,7 @@ static void shellMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    /* in case of buffer mode, get the active window data */
+    /* in case of tabbed mode, get the active window data */
     window = WidgetToWindow(MENU_WIDGET(w));
 
     if (!window->prevOpenMenuValid) {
@@ -3309,55 +3309,55 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     XtSetSensitive(window->closePaneItem, window->nPanes > 0);
 }
 
-static void detachBufferDialogAP(Widget w, XEvent *event, String *args,
+static void detachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
     int resp;
     
-    if (NBuffers(window) < 2)
+    if (NDocuments(window) < 2)
     	return;
     
     resp = DialogF(DF_QUES, window->shell, 2, "Detach %s?", 
 	    "Detach", "Cancel", window->filename);
 
     if (resp == 1)
-    	DetachBuffer(window);
+    	DetachDocument(window);
 }
 
-static void detachBufferAP(Widget w, XEvent *event, String *args,
+static void detachDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
     
-    if (NBuffers(window) < 2)
+    if (NDocuments(window) < 2)
     	return;
     
-    DetachBuffer(window);
+    DetachDocument(window);
 }
 
-static void attachBufferDialogAP(Widget w, XEvent *event, String *args,
+static void attachDocumentDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
-    AttachBufferDialog(w);
+    AttachDocumentDialog(w);
 }
 
-static void nextBufferAP(Widget w, XEvent *event, String *args,
+static void nextDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
-    NextBuffer(WidgetToWindow(w));    
+    NextDocument(WidgetToWindow(w));    
 }
 
-static void prevBufferAP(Widget w, XEvent *event, String *args,
+static void prevDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {
-    PreviousBuffer(WidgetToWindow(w));    
+    PreviousDocument(WidgetToWindow(w));    
 }
 
-static void toggleBufferAP(Widget w, XEvent *event, String *args,
+static void lastDocumentAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs)
 {    
-    ToggleBuffer(WidgetToWindow(w));    
+    LastDocument(WidgetToWindow(w));    
 }
 
 static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -3684,7 +3684,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
         }
     }
     if (window != NULL) {
-	RaiseBufferWindow(window);
+	RaiseDocumentWindow(window);
     }
     else {
         XBell(TheDisplay, 0);
@@ -3771,7 +3771,7 @@ static void showTabBarAP(Widget w, XEvent *event, String *args,
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showTabBar, "show_tabs");
 
     XmToggleButtonSetState(window->showTabBarItem, newState, False);
-    ShowBufferTabBar(window, newState);
+    ShowTabBar(window, newState);
 }
 
 static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
@@ -4275,7 +4275,7 @@ void InvalidateMacroMenus(WindowInfo *window)
     /* Mark the macro menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    if (!XmIsMenuShell(XtParent(window->macroMenuPane)) && IsTopBuffer(window))
+    if (!XmIsMenuShell(XtParent(window->macroMenuPane)) && IsTopDocument(window))
     	UpdateMacroMenu(window);
     else
     	window->macroMenuValid = False;
@@ -4286,7 +4286,7 @@ void InvalidateShellMenus(WindowInfo *window)
     /* Mark the shell menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    if (!XmIsMenuShell(XtParent(window->shellMenuPane)) && IsTopBuffer(window))
+    if (!XmIsMenuShell(XtParent(window->shellMenuPane)) && IsTopDocument(window))
     	UpdateShellMenu(window);
     else
     	window->shellMenuValid = False;
@@ -4371,7 +4371,7 @@ static char* getWindowsMenuEntry(const WindowInfo* window)
     title = title + SGI_WINDOW_TITLE_LEN;
 #endif
 
-    /* in buffer mode, put brackets around the filename
+    /* in tabbed mode, put brackets around the filename
        of buffers that don't belong to this window */
     sprintf(fullTitle, "%s%s",
 	  window->filename, 
@@ -4398,7 +4398,7 @@ static void updateWindowMenu(const WindowInfo *window)
     int i, n, nWindows, windowIndex;
     WindowInfo **windows;
     
-    if (!IsTopBuffer(window))
+    if (!IsTopDocument(window))
     	return;
 	
     /* Make a sorted list of windows */
@@ -4924,7 +4924,7 @@ static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    RaiseBufferWindow(window);
+    RaiseDocumentWindow(window);
 }
 
 static void openPrevCB(Widget w, char *name, caddr_t callData)
@@ -5018,7 +5018,7 @@ static int compareWindowShell(const void *windowA, const void *windowB)
 /*
 ** create & return a sorted list of windows
 ** Windows are first sort by their filename then,
-** if in buffer mode, grouped by their shell windows
+** if in tabbed mode, grouped by their shell windows
 **
 ** Note: caller must XtFree the returned window list.
 */
@@ -5035,7 +5035,7 @@ WindowInfo **MakeSortedWindowArray(void)
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
     
     /* group the buffers together by their shell window */
-    if (GetPrefBufferMode())
+    if (GetPrefTabbedMode())
         qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowShell);
 
     return windows;
