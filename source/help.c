@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.75 2002/01/28 10:43:10 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.76 2002/02/20 13:03:34 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -39,7 +39,9 @@ static const char CVSID[] = "$Id: help.c,v 1.75 2002/01/28 10:43:10 amai Exp $";
 #endif /*VMS*/
 
 #include <Xm/Xm.h>
+#include <Xm/XmP.h>         /* These are for applying style info to help text */
 #include <Xm/Form.h>
+#include <Xm/PrimitiveP.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
 #include <Xm/PushB.h>
@@ -47,14 +49,11 @@ static const char CVSID[] = "$Id: help.c,v 1.75 2002/01/28 10:43:10 amai Exp $";
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
+
 #include "textBuf.h"
 #include "text.h"
-
-#include <Xm/XmP.h>         /* These are for applying style info to help text */
-#include <Xm/PrimitiveP.h>
 #include "textDisp.h"
 #include "textP.h"
-
 #include "textSel.h"
 #include "nedit.h"
 #include "search.h"
@@ -167,9 +166,9 @@ static void loadFontsAndColors(Widget parent, int style);
 
 /*
 ** Create a string containing information on the build environment.  Returned
-** string must be freed by caller.
+** string must NOT be freed by caller.
 */
-static char *  getBuildInfo()
+static const char *getBuildInfo(void)
 {
     const char * bldFormat =
         "%s\n"
@@ -179,17 +178,21 @@ static char *  getBuildInfo()
         "Running Motif: %d\n"
         "       Server: %s %d\n"
        ;
-
-    char * bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
-    sprintf(bldInfoString, bldFormat,
+    static char * bldInfoString=NULL;
+    
+    if (bldInfoString==NULL)
+    {
+       bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
+       sprintf(bldInfoString, bldFormat,
             NEditVersion,
             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
             linkdate, linktime,
             XmVersion, XmVERSION_STRING,
             xmUseVersion,
-            ServerVendor(TheDisplay),
-            VendorRelease(TheDisplay));
-
+            ServerVendor(TheDisplay), VendorRelease(TheDisplay)
+            );
+    }
+    
     return bldInfoString;
 }
 
@@ -231,11 +234,10 @@ static void initHelpStyles (Widget parent)
             *--------------------------------------------------*/
             if (strstr (*line, "%s")  != NULL) 
             {
-                char * bldInfo  = getBuildInfo();
+                const char * bldInfo  = getBuildInfo();
                 char * text     = XtMalloc (strlen (*line)  + strlen (bldInfo) );
                 sprintf (text, *line, bldInfo);
                 *line = text;
-                XtFree (bldInfo);
                 break;
             }
         }
@@ -783,15 +785,15 @@ static int findTopicFromShellWidget(Widget shellWidget)
 extern void XmRegisterConverters(void);
 #endif
 
+
 /* Print version info to stdout */
 void PrintVersion(void)
 {
-    char *text;
+    const char *text;
   
 #if XmVersion < 2001
     XmRegisterConverters();  /* see comment above */
 #endif
     text = getBuildInfo();
     puts (text);
-    XtFree (text);
 }
