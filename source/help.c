@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.33 2001/04/16 16:36:30 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.34 2001/04/17 23:40:46 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3383,23 +3383,26 @@ Actions Representing Menu Commands:\n\
     print_selection()	      goto_matching()\n\
     unload_tags_file()        select_to_matching()\n\
     exit()		      find_definition()\n\
- 			      split_window()\n\
-    			      close_pane()\n\
-    Edit Menu		      \n\
-    ---------------------     Shell Menu\n\
-    undo()		      -----------------------\n\
-    redo()		      filter_selection_dialog()\n\
-    delete_selection()        filter_selection()\n\
-    select_all()	      execute_command()\n\
-    shift_left()	      execute_command_dialog()\n\
-    shift_left_by_tab()       execute_command_line()\n\
-    shift_right()	      shell_menu_command()\n\
-    shift_right_by_tab()      \n\
-    uppercase() 	      Macro Menu\n\
-    lowercase() 	      -----------------------\n\
-    fill_paragraph()	      macro_menu_command()\n\
-    control_code_dialog()     repeat_macro()\n\
-   			      repeat_dialog()\n\
+    \n\
+    Edit Menu                 Shell Menu\n\
+    ---------------------     -----------------------\n\
+    undo()		      filter_selection_dialog()\n\
+    redo()		      filter_selection()\n\
+    delete_selection()        execute_command()\n\
+    select_all()	      execute_command_dialog()\n\
+    shift_left()	      execute_command_line()\n\
+    shift_left_by_tab()       shell_menu_command()\n\
+    shift_right()	      \n\
+    shift_right_by_tab()      Macro Menu\n\
+    uppercase() 	      -----------------------\n\
+    lowercase() 	      macro_menu_command()\n\
+    fill_paragraph()	      repeat_macro()\n\
+    control_code_dialog()     repeat_dialog()\n\
+\n\
+   			      Windows Menu\n\
+                              -----------------------\n\
+                              split_window()\n\
+ 			      close_pane()\n\
 \n\
 The actions representing menu commands are named the same as the menu item \
 with punctuation removed, all lower case, and underscores \
@@ -3472,10 +3475,10 @@ Some notes on argument types above:\n\
  		    \n\
   search-direction  Either \"forward\" or \"backward\"\n\
 \n\
-  search-type	    Either \"literal\", \"case\", \"word\", \
+  search-type	    Either \"literal\", \"case\", \"word\",\n\
 	            \"caseWord\", \"regex\", or \"regexNoCase\"\n\
 \n\
-  non-regex-search-type	 Either \"literal\". \"case\", \"word\", \
+  non-regex-search-type	 Either \"literal\". \"case\", \"word\",\n\
 	                 or \"caseWord\"\n\
 \n\
   search-wrap	    Either \"wrap\" or \"nowrap\"\n\
