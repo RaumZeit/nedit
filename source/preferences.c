@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.104 2003/12/28 17:25:55 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.105 2004/01/13 02:45:28 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -85,6 +85,12 @@ static const char CVSID[] = "$Id: preferences.c,v 1.104 2003/12/28 17:25:55 yood
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
+#endif
+
+#if XmVersion >= 1002
+#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
+#else
+#define MENU_WIDGET(w) (w)
 #endif
 
 #define PREF_FILE_VERSION "5.4"
@@ -4893,7 +4899,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
 
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    WindowInfo *window = WidgetToWindow(w);
+    WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
     char *params[1];
     void *mode;
     
