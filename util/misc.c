@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.54 2003/05/03 09:15:00 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.55 2003/05/16 13:47:28 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -259,9 +259,9 @@ void SetWindowGroup(Widget shell) {
     }
 
     /* Set the window group hint for this shell's window */
-    wmHints = XAllocWMHints();
+    wmHints = XGetWMHints(display, XtWindow(shell));
     wmHints->window_group = groupLeader;
-    wmHints->flags = WindowGroupHint;
+    wmHints->flags |= WindowGroupHint;
     XSetWMHints(display, XtWindow(shell), wmHints);
 }
 
@@ -2008,7 +2008,7 @@ void AddMouseWheelSupport(Widget w)
 {
     if (XmIsScrolledWindow(XtParent(w))) 
     {
-        static char scrollTranslations[] =
+        static const char scrollTranslations[] =
            "Shift<Btn4Down>,<Btn4Up>: scrolled-window-scroll-up(1)\n"
            "Shift<Btn5Down>,<Btn5Up>: scrolled-window-scroll-down(1)\n"
            "Ctrl<Btn4Down>,<Btn4Up>:  scrolled-window-page-up()\n"
