@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.49 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.50 2002/03/14 17:41:03 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -90,6 +90,11 @@ static const char CVSID[] = "$Id: window.c,v 1.49 2002/03/14 01:25:24 amai Exp $
 #include "nedit.bm"
 #include "n.bm"
 #include "windowTitle.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.15 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.16 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -50,7 +50,11 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.15 2002/03/14 01:25:24 amai Exp 
 #include "misc.h"
 #include "fontsel.h"
 
-#define	MAX_ARGS			20
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
+#define MAX_ARGS			20
 #define MAX_NUM_FONTS   		32767
 #define MAX_FONT_NAME_LEN		256
 #define MAX_ENTRIES_IN_LIST		5000

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.16 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.17 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -76,6 +76,10 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.16 2002/03/14 01:25:24 amai E
 #include "misc.h"
 #include "prefFile.h"
 #include "printUtils.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /* Separator between directory references in PATH environmental variable */
 #ifdef __EMX__  /* For OS/2 */

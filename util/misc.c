@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.37 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.38 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -66,6 +66,9 @@ static const char CVSID[] = "$Id: misc.c,v 1.37 2002/03/14 01:25:24 amai Exp $";
 #include "DialogF.h"
 #include "misc.h"
 
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 /* structure for passing history-recall data to callbacks */
 typedef struct {

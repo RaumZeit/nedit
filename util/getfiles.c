@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.19 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.20 2002/03/14 17:41:04 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -68,6 +68,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.19 2002/03/14 01:25:24 amai Exp
 #endif
 #endif /*VMS*/
 #include <sys/stat.h>
+
 #include <X11/keysym.h>
 #include <Xm/Xm.h>
 #include <Xm/PushBG.h>
@@ -80,6 +81,10 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.19 2002/03/14 01:25:24 amai Exp
 #include "fileUtils.h"
 #include "misc.h"
 #include "getfiles.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 #define MAX_ARGS 20			/* Maximum number of X arguments */
 #define PERMS 0666     			/* UNIX file permission, RW for owner,

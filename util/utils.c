@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.11 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.12 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -48,6 +48,10 @@ static const char CVSID[] = "$Id: utils.c,v 1.11 2002/03/14 01:25:24 amai Exp $"
 #include <X11/Xlib.h>
 
 #include "utils.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 
 extern const char

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.24 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.25 2002/03/14 17:41:02 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -70,6 +70,11 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.24 2002/03/14 01:25:24 amai Exp
 #include "interpret.h"
 #include "parse.h"
 #include "userCmds.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 /* max number of user programmable menu commands allowed per each of the
    macro, shell, and bacground menus */

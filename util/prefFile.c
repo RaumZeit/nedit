@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.13 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.14 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -43,7 +43,11 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.13 2002/03/14 01:25:24 amai Exp
 #include <Xm/Xm.h>
 
 #include "prefFile.h"
-#include "../util/utils.h"
+#include "utils.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 #define N_BOOLEAN_STRINGS 13
 static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",

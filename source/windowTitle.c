@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.5 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.6 2002/03/14 17:41:03 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -68,6 +68,11 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.5 2002/03/14 01:25:24 amai E
 #include "windowTitle.h"
 #include "preferences.h"
 #include "help.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
+
 
 #define WINDOWTITLE_MAX_LEN 500
 

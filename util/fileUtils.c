@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.22 2002/03/14 01:25:24 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.23 2002/03/14 17:41:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -53,7 +53,11 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.22 2002/03/14 01:25:24 amai Ex
 #endif /*VMS*/
 
 #include "fileUtils.h"
-#include "../util/utils.h"
+#include "utils.h"
+
+#ifdef HAVE_DEBUG_H
+#include "../debug.h"
+#endif
 
 #ifndef MAXSYMLINKS  /* should be defined in <sys/param.h> */
 #define MAXSYMLINKS 20
