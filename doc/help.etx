@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.46 2003/05/04 13:20:46 yooden Exp $
+.. $Id: help.etx,v 1.47 2003/05/19 08:03:02 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1090,13 +1090,12 @@ Auto/Smart Indent
   Programmers who use structured languages usually require some form of
   automatic indent, so that they don't have to continually re-type the
   sequences of tabs and/or spaces needed to maintain lengthy running indents. 
-  Version 5.0 of NEdit is the first release of NEdit to offer "smart" indent,
-  at least experimentally, in addition to the traditional automatic indent
-  which simply lines up the cursor position with the previous line.
+  NEdit therefore offers "smart" indent, in addition to the traditional
+  automatic indent which simply lines up the cursor position with the previous
+  line.
 
 3>Smart Indent
 
-  Smart Indent in this release must still be considered somewhat experimental. 
   Smart indent macros are only available by default for C and C++, and while
   these can easily be configured for different default indentation distances,
   they may not conform to everyone's exact C programming style.  Smart indent
@@ -2925,6 +2924,8 @@ Action Routines
        
     **replace_again**( [~search-direction~] [, ~search-wrap~] )
     
+    **replace_all**( search-string, replace-string [, ~search-type~] )
+
     **replace_dialog**( [~search-direction~] [, ~search-type~]
        [, ~keep-dialog~] )
     

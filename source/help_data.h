@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 7, 2003 (Do NOT edit!)
+                 Generated on May 19, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -943,13 +943,12 @@ static char * htxt_indent [] = {
 "\01IProgrammers who use structured languages usually require some form of ",
 "automatic indent, so that they don't have to continually re-type the ",
 "sequences of tabs and/or spaces needed to maintain lengthy running indents. ",
-"Version 5.0 of NEdit is the first release of NEdit to offer \"smart\" indent, ",
-"at least experimentally, in addition to the traditional automatic indent ",
-"which simply lines up the cursor position with the previous line. ",
+"NEdit therefore offers \"smart\" indent, in addition to the traditional ",
+"automatic indent which simply lines up the cursor position with the previous ",
+"line. ",
 "\n\n",
 "\01RSmart Indent\01I",
 "\n\n",
-"Smart Indent in this release must still be considered somewhat experimental. ",
 "Smart indent macros are only available by default for C and C++, and while ",
 "these can easily be configured for different default indentation distances, ",
 "they may not conform to everyone's exact C programming style.  Smart indent ",
@@ -2746,6 +2745,8 @@ static char * htxt_actions [] = {
 "       [, \01Csearch-direction\01A] [, \01Csearch-type\01A] [, \01Csearch-wrap\01A] )\n",
 "\01I\n",
 "\01A    \01Breplace_again\01A( [\01Csearch-direction\01A] [, \01Csearch-wrap\01A] )\n",
+"\01I\n",
+"\01A    \01Breplace_all\01A( search-string, replace-string [, \01Csearch-type\01A] )\n",
 "\01I\n",
 "\01A    \01Breplace_dialog\01A( [\01Csearch-direction\01A] [, \01Csearch-type\01A]\n",
 "       [, \01Ckeep-dialog\01A] )\n",
@@ -5241,4 +5242,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.4DEV\nMay 7, 2003\n";
+static const char * NEditVersion = "NEdit release of May 19, 2003\n";
