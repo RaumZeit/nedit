@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.34 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.35 2004/01/06 02:38:48 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -69,6 +69,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.34 2003/12/25 06:55:08 tksoh Ex
 #include <Xm/SelectioB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeB.h>
+#include <Xm/MenuShell.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -1143,6 +1144,13 @@ static void updateMenu(WindowInfo *window, int menuType)
     	nListItems = NBGMenuItems;
     }
     
+    /* if the menu is torn off, unmanage the menu pane
+       before updating it to prevent the tear-off menu
+       from shrinking and expanding as the menu entries
+       are added */
+    if (!XmIsMenuShell(XtParent(menuPane)))
+    	XtUnmanageChild(menuPane);
+    
     /* Remove all of the existing user commands from the menu */
     removeMenuItems(menuPane);
     
@@ -1229,6 +1237,20 @@ static void updateMenu(WindowInfo *window, int menuType)
     SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
     SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
     DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
+
+    /* if the menu is torn off, we need to manually adjust the
+       dimension of the menuShell _before_ re-managing the menu
+       pane, to either expose the hidden menu entries or remove
+       the empty space */
+    if (!XmIsMenuShell(XtParent(menuPane))) {
+    	Dimension width, height;
+	
+	XtVaGetValues(menuPane, XmNwidth, &width,
+	        XmNheight, &height, NULL);
+	XtVaSetValues(XtParent(menuPane), XmNwidth, width,
+	        XmNheight, height, NULL);
+        XtManageChild(menuPane);
+    }
 }
 
 /*

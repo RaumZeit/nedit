@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.95 2004/01/02 10:32:31 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.96 2004/01/06 02:38:48 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -858,18 +858,6 @@ void CloseWindow(WindowInfo *window)
     char name[MAXPATHLEN];
     WindowInfo *win, *topBuf = NULL, *nextBuf = NULL;
 
-    /* turn off the tear-off menus for Shell & Macro to
-       minimized visual disturbance if these menus get
-       updated somehow, especial when CloseWindow() is
-       called from within macros. */
-    if (IsTopBuffer(window)) {
-	if (!XmIsMenuShell(XtParent(window->macroMenuPane)))
-    	    XtPopdown(XtParent(window->macroMenuPane));
-
-	if (!XmIsMenuShell(XtParent(window->shellMenuPane)))
-    	    XtPopdown(XtParent(window->shellMenuPane));
-    }
-        
     /* Free smart indent macro programs */
     EndSmartIndent(window);
     
@@ -3631,9 +3619,9 @@ static void refreshBufferMenuBar(WindowInfo *window)
     
     /* Add/remove language specific menu items */
 #ifndef VMS
-    UpdateShellMenu(window);
+    InvalidateShellMenus(window);
 #endif
-    UpdateMacroMenu(window);
+    InvalidateMacroMenus(window);
     UpdateBGMenu(window);
     
     /* refresh selection-sensitive menus */

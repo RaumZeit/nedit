@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.84 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.85 2004/01/06 02:38:48 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4409,6 +4409,13 @@ static void updateWindowMenu(const WindowInfo *window)
     	windows[i] = w;
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
 
+    /* if the menu is torn off, unmanage the menu pane
+       before updating it to prevent the tear-off menu
+       from shrinking/expanding as the menu entries
+       are added */
+    if (!XmIsMenuShell(XtParent(window->windowMenuPane)))
+    	XtUnmanageChild(window->windowMenuPane);
+
     /* While it is not possible on some systems (ibm at least) to substitute
        a new menu pane, it is possible to substitute menu items, as long as
        at least one remains in the menu at all times. This routine assumes
@@ -4458,6 +4465,20 @@ static void updateWindowMenu(const WindowInfo *window)
     	XmStringFree(st1);
     }
     XtFree((char *)windows);
+
+    /* if the menu is torn off, we need to manually adjust the
+       dimension of the menuShell _before_ re-managing the menu
+       pane, to either expose the hidden menu entries or remove
+       the empty space */
+    if (!XmIsMenuShell(XtParent(window->windowMenuPane))) {
+    	Dimension width, height;
+	
+	XtVaGetValues(window->windowMenuPane, XmNwidth, &width,
+	        XmNheight, &height, NULL);
+	XtVaSetValues(XtParent(window->windowMenuPane), XmNwidth, width,
+	        XmNheight, height, NULL);
+        XtManageChild(window->windowMenuPane);
+    }
 }
 
 /*
