@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.5 2001/10/26 20:17:04 amai Exp $
+# $Id: Makefile.generic,v 1.6 2001/11/08 16:05:11 amai Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -81,11 +81,6 @@ AR=ar
 # 		    set input routines in the nedit text widget.  Turn this on
 #		    if you see crashes in routines beginning with XmIm.  Such
 #		    bugs exist in IRIX 6.5 and some older Motif versions.
-#
-# WRITES_DOS_TEXT     Used on non-unix platforms to ensure that non-native
-#                   textformats are written properly. Actually it should be
-#                   safe to use this on any platform which has proper ANSI C 
-#                   support.
 #
 # REPLACE_SCOPE     Currently, two alternative (but functionally equivalent)
 #                   Replace/Find dialog box layouts are available. By default,

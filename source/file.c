@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.34 2001/11/02 12:17:39 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.35 2001/11/08 16:05:12 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -273,18 +273,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     	    if(access(fullname, W_OK) != 0)
                 SET_PERM_LOCKED(window->lockReasons, TRUE);
 #else
-#ifdef WRITES_DOS_TEXT
     fp = fopen(fullname, "rb+");
-#else
-    fp = fopen(fullname, "r+");
-#endif
     if (fp == NULL) {
     	/* Error opening file or file is not writeable */
-#ifdef WRITES_DOS_TEXT
 	fp = fopen(fullname, "rb");
-#else
-	fp = fopen(fullname, "r");
-#endif
 	if (fp != NULL) {
 	    /* File is read only */
             SET_PERM_LOCKED(window->lockReasons, TRUE);
@@ -434,11 +426,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     FILE *fp = NULL;
 
     /* Open the file */
-#ifdef WRITES_DOS_TEXT
     fp = fopen(name, "rb");
-#else
-    fp = fopen(name, "r");
-#endif
     if (fp == NULL) {
 	DialogF(DF_ERR, window->shell, 1, "Could not open %s:\n%s",
 	    	"Dismiss", name, errorString());
@@ -680,11 +668,7 @@ static int doSave(WindowInfo *window)
 #ifdef VMS
     fp = fopen(fullname, "w", "rfm = stmlf");
 #else
-#ifdef WRITES_DOS_TEXT
     fp = fopen(fullname, "wb");
-#else
-    fp = fopen(fullname, "w");
-#endif /* WRITES_DOS_TEXT */
 #endif /* VMS */
     if (fp == NULL) {
     	DialogF(DF_WARN, window->shell, 1, "Unable to save %s:\n%s", "Dismiss",
@@ -909,11 +893,7 @@ static int writeBckVersion(WindowInfo *window)
 
     /* open the file being edited.  If there are problems with the
        old file, don't bother the user, just skip the backup */
-#ifdef WRITES_DOS_TEXT
     inFP = fopen(fullname, "rb");
-#else
-    inFP = fopen(fullname, "r");
-#endif
     if (inFP == NULL) {
     	return FALSE;
     }
@@ -929,11 +909,7 @@ static int writeBckVersion(WindowInfo *window)
     if ((outFP = fopen(bckname, "w", "rfm = stmlf")) == NULL) {
 #else
     if ((fd = open(bckname, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
-#ifdef WRITES_DOS_TEXT
         || (outFP = fdopen(fd, "wb")) == NULL) {
-#else
-        || (outFP = fdopen(fd, "w")) == NULL) {
-#endif /* WRITES_DOS_TEXT */
 #endif /* VMS */
     	fclose(inFP);
         return bckError(window, "Error open backup file", bckname);

@@ -1,4 +1,4 @@
-# $Id: Makefile.os2,v 1.7 2001/10/26 20:17:05 amai Exp $
+# $Id: Makefile.os2,v 1.8 2001/11/08 16:05:12 amai Exp $
 #
 # Makefile for NEdit with XFree86 OS/2
 #
@@ -36,12 +36,12 @@ AR=ar
 # To evaluate an alternative layout for the Replace/Find dialog, add
 # -DREPLACE_SCOPE to the CFLAGS. See the README file for more information.
 #
-DEFINES = -DWRITES_DOS_TEXT -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES
+DEFINES = -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES
 CFLAGS=-Zmt -O5 -mpentium -g -Wall -Wno-unused -W -I$(X11ROOT)/XFree86/include $(DEFINES)
 ARFLAGS=-urs
-# An additional -lXp (just before -lXext) is required if using LessTif's
-# Motif-2.1 compatible libXm
-LIBS= -Zmtd -Zexe -s -Zbsd-signals -L$(X11ROOT)/XFree86/lib -lXm -lXext -lXt -lXmu -lSM -lICE -lX11
+# The additional -lXp (just before -lXext) is only required
+# if using LessTif's Motif-2.1 compatible libXm
+LIBS= -Zmtd -Zexe -s -Zbsd-signals -L$(X11ROOT)/XFree86/lib -lXm -lXp -lXext -lXt -lXmu -lSM -lICE -lX11
 
 
 ifeq ($(BUILD),1)
