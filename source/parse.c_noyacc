@@ -266,12 +266,14 @@ static int yylex(void)
 	}
 	*p = '\0';
 	InPtr++;
-	value.val.str = AllocString(p-string+1);
-	strcpy(value.val.str, string);
-	value.tag = STRING_TAG;
-	sprintf(stringName, "string #%d", stringConstIndex++);
-	yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
-        return STRING;
+	if ((yylval.sym = LookupStringConstSymbol(string)) == NULL) {
+		value.val.str = AllocString(p-string+1);
+		strcpy(value.val.str, string);
+		value.tag = STRING_TAG;
+		sprintf(stringName, "string #%d", stringConstIndex++);
+		yylval.sym = InstallSymbol(stringName, CONST_SYM, value);
+	}
+    return STRING;
     }
     
     /* process remaining two character tokens or return single char as token */

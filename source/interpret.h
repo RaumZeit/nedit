@@ -65,6 +65,7 @@ int AddSym(Symbol *sym, char **msg);
 int AddImmediate(void *value, char **msg);
 int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
+Symbol *LookupStringConstSymbol(char *value);
 Symbol *LookupSymbol(char *name);
 Symbol *InstallSymbol(char *name, int type, DataValue value);
 Program *FinishCreatingProgram(void);

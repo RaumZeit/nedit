@@ -558,6 +558,24 @@ void SetMacroFocusWindow(WindowInfo *window)
 }
 
 /*
+** Lookup a constant string by it's value. This allows reuse of string
+** constants and fixing a leak in the interpreter.
+*/
+Symbol *LookupStringConstSymbol(char *value)
+{
+    Symbol *s;
+
+    for (s = GlobalSymList; s != NULL; s = s->next) {
+        if (s->type == CONST_SYM &&
+            s->value.tag == STRING_TAG &&
+            !strcmp(s->value.val.str, value)) {
+            return(s);
+        }
+    }
+    return(NULL);
+}
+
+/*
 ** find a symbol in the symbol table
 */
 Symbol *LookupSymbol(char *name)
