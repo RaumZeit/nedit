@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDrag.c,v 1.10 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: textDrag.c,v 1.11 2005/02/02 09:15:31 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDrag.c - Text Dragging routines for NEdit text widget		       *
@@ -179,7 +179,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     int nLines = tw->text.dragNLines;
     int insLineNum, insLineStart, insRectStart, insRectEnd, insStart;
     char *repText, *text, *insText;
-    int modRangeStart = -1, tempModRangeEnd, bufModRangeEnd;
+    int modRangeStart = -1, tempModRangeEnd = -1, bufModRangeEnd = -1;
     int referenceLine, referencePos, tempStart, tempEnd, origSelLen;
     int insertInserted, insertDeleted, row, column;
     int origSelLineStart, origSelLineEnd;
