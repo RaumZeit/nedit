@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Oct 1, 2002 (Do NOT edit!)
+                 Generated on Oct 3, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -966,9 +966,10 @@ static char * htxt_indent [] = {
 "\n\n",
 "With Indent set to Auto (the default), NEdit keeps a running indent.  When ",
 "you press the Return or Enter key, spaces and tabs are inserted to line up ",
-"the insert point under the start of the previous line.  Ctrl+Return in ",
-"auto-indent mode acts like a normal Return, With auto-indent turned off, ",
-"Ctrl+Return does indentation. ",
+"the insert point under the start of the previous line. ",
+"\n\n",
+"Regardless of indent-mode, Ctrl+Return always does the automatic indent; ",
+"Shift+Return always does a return without indent. ",
 "\n\n",
 "\01RBlock Indentation Adjustment\01I",
 "\n\n",
@@ -5271,4 +5272,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Sep  6, 2002\n";
+static const char * NEditVersion = "NEdit release of Okt  3, 2002\n";

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.31 2002/10/01 23:45:58 n8gray Exp $
+.. $Id: help.etx,v 1.32 2002/10/12 13:33:47 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1113,9 +1113,10 @@ Auto/Smart Indent
 
   With Indent set to Auto (the default), NEdit keeps a running indent.  When
   you press the Return or Enter key, spaces and tabs are inserted to line up
-  the insert point under the start of the previous line.  Ctrl+Return in
-  auto-indent mode acts like a normal Return, With auto-indent turned off,
-  Ctrl+Return does indentation.
+  the insert point under the start of the previous line.
+
+  Regardless of indent-mode, Ctrl+Return always does the automatic indent;
+  Shift+Return always does a return without indent.
 
 3>Block Indentation Adjustment
 

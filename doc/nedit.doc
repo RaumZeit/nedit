@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Sep  6, 2002                                               October 1, 2002
+NEdit release of Okt  3, 2002                                               October 3, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -969,9 +969,10 @@ AUTO/SMART INDENT
 
   With Indent set to Auto (the default), NEdit keeps a running indent. When 
   you press the Return or Enter key, spaces and tabs are inserted to line up 
-  the insert point under the start of the previous line. Ctrl+Return in 
-  auto-indent mode acts like a normal Return, With auto-indent turned off, 
-  Ctrl+Return does indentation. 
+  the insert point under the start of the previous line. 
+
+  Regardless of indent-mode, Ctrl+Return always does the automatic indent; 
+  Shift+Return always does a return without indent. 
 
 
   BLOCK INDENTATION ADJUSTMENT
@@ -4590,8 +4591,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Sep  6, 2002
-Oct 1, 2002
+NEdit release of Okt  3, 2002
+Oct 3, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
