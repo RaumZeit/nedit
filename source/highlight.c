@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.50 2004/08/01 10:06:10 yooden Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.51 2004/11/26 18:25:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -151,10 +151,10 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
         const char *delimiters);
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters, const char* lookBehindTo);
+    	const char *delimiters, const char* lookBehindTo, const char* match_till);
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters, const char* lookBehindTo);
+    	const char *delimiters, const char* lookBehindTo, const char* match_till);
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
     	char style, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
@@ -287,7 +287,7 @@ void StartHighlighting(WindowInfo *window, int warn)
 	stringPtr = bufString = BufGetAll(window->buffer);
 	parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr,
     		window->buffer->length, &prevChar, False,
-    		GetWindowDelimiters(window), bufString);
+    		GetWindowDelimiters(window), bufString, NULL);
 	XtFree(bufString);
     }
     *stylePtr = '\0';
@@ -1035,7 +1035,7 @@ static void freePatterns(highlightDataRec *patterns)
     	if (patterns[i].endRE != NULL)
     	    free((char *)patterns[i].endRE);
     	if (patterns[i].errorRE != NULL)
-    	    XtFree((char *)patterns[i].errorRE);
+    	    free((char *)patterns[i].errorRE);
     	if (patterns[i].subPatternRE != NULL)
     	    free((char *)patterns[i].subPatternRE);
     }
@@ -1362,7 +1362,7 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
     /* Parse it with pass 2 patterns */
     prevChar = getPrevChar(buf, beginSafety);
     parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety,
-    	    &prevChar, False, GetWindowDelimiters(window), string);
+    	    &prevChar, False, GetWindowDelimiters(window), string, NULL);
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
@@ -1533,7 +1533,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     stringPtr = &string[beginParse-beginSafety];
     stylePtr = &styleString[beginParse-beginSafety];
     parseString(pass1Patterns, &stringPtr, &stylePtr, endParse-beginParse,
-    	    &prevChar, False, delimiters, string);
+    	    &prevChar, False, delimiters, string, NULL);
 
     /* On non top-level patterns, parsing can end early */
     endParse = min(endParse, stringPtr-string + beginSafety);
@@ -1570,14 +1570,16 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	prevChar = getPrevChar(buf, beginSafety);
 	if (endPass2Safety == endSafety) {
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	endParse - beginSafety, &prevChar, False, delimiters, string);
+	    	endParse - beginSafety, &prevChar, False, delimiters, string,
+                NULL);
 	    goto parseDone;
 	} else {
 	    tempLen = endPass2Safety - modStart;
 	    temp = XtMalloc(tempLen);
 	    strncpy(temp, &styleString[modStart-beginSafety], tempLen);
 	    passTwoParseString(pass2Patterns, string, styleString,
-		    modStart - beginSafety, &prevChar, False, delimiters, string);
+		    modStart - beginSafety, &prevChar, False, delimiters,
+                    string, NULL);
 	    strncpy(&styleString[modStart-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1590,7 +1592,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	if (beginSafety > modEnd) {
 	    prevChar = getPrevChar(buf, beginSafety);
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	    endParse - beginSafety, &prevChar, False, delimiters, string);
+	    	    endParse - beginSafety, &prevChar, False, delimiters,
+                    string, NULL);
 	} else {
 	    startPass2Safety = max(beginSafety,
 	    	    backwardOneContext(buf, contextRequirements, modEnd));
@@ -1601,7 +1604,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	    passTwoParseString(pass2Patterns,
 	    	    &string[startPass2Safety-beginSafety],
 	    	    &styleString[startPass2Safety-beginSafety],
-	    	    endParse-startPass2Safety, &prevChar, False, delimiters, string);
+	    	    endParse-startPass2Safety, &prevChar, False, delimiters,
+                    string, NULL);
 	    strncpy(&styleString[startPass2Safety-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1632,18 +1636,27 @@ parseDone:
 ** far the string should be searched, and "length" the part which is actually
 ** required (the string may or may not be parsed beyond "length").
 **
+** "lookBehindTo" indicates the boundary till where look-behind patterns may
+** look back. If NULL, the start of the string is assumed to be the boundary.
+**
+** "match_till" indicates the boundary till where matches may extend. If NULL,
+** it is assumed that the terminating \0 indicates the boundary. Note that
+** look-ahead patterns can peek beyond the boundary, if supplied.
+**
 ** Returns True if parsing was done and the parse succeeded.  Returns False if
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters, const char* lookBehindTo)
+    	const char *delimiters, const char* lookBehindTo, 
+    	const char* match_till)
 {
     int i, subExecuted, subIndex;
     char *stringPtr, *stylePtr, *startingStringPtr, *savedStartPtr;
     signed char *subExpr;
     char savedPrevChar;
+    char succChar = match_till ? (*match_till) : '\0';
     highlightDataRec *subPat = NULL, *subSubPat;
     
     if (length <= 0)
@@ -1653,7 +1666,8 @@ static int parseString(highlightDataRec *pattern, char **string,
     stylePtr = *styleString;
     
     while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
-	    *string+length+1, False, *prevChar, '\0', delimiters, lookBehindTo)) {
+	    *string+length+1, False, *prevChar, succChar, delimiters,
+            lookBehindTo, match_till)) {
 	/* Beware of the case where only one real branch exists, but that 
 	   branch has sub-branches itself. In that case the top_branch refers 
 	   to the matching sub-branch and must be ignored. */
@@ -1685,7 +1699,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 			if (!subExecuted) { 
 			    if (!ExecRE(pattern->endRE, NULL, savedStartPtr,
 				savedStartPtr+1, False, savedPrevChar, 
-				'\0', delimiters, lookBehindTo)) {
+				succChar, delimiters, lookBehindTo, match_till)) {
 				fprintf(stderr, "Internal error, failed to "
 					"recover end match in parseString\n");
 				return False;
@@ -1734,17 +1748,31 @@ static int parseString(highlightDataRec *pattern, char **string,
     	    	    subPat->style, prevChar);
     	
     	/* Parse the remainder of the sub-pattern */	    
-    	} else {
-    	    
+    	} else if (subPat->endRE != NULL) {
+            /* The pattern is a starting/ending type of pattern, proceed with
+               the regular hierarchical parsing. */
+           
     	    /* If parsing should start after the start pattern, advance
-    	       to that point */
+    	       to that point (this is currently always the case) */
     	    if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
     		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
 			subPat->style, prevChar);
 
    	    /* Parse to the end of the subPattern */
    	    parseString(subPat, &stringPtr, &stylePtr, length -
-   	    	    (stringPtr - *string), prevChar, False, delimiters, lookBehindTo);
+   	    	    (stringPtr - *string), prevChar, False, delimiters,
+                    lookBehindTo, match_till);
+    	} else {
+    	    /* If the parent pattern is not a start/end pattern, the
+               sub-pattern can between the boundaries of the parent's 
+               match. Note that we must limit the recursive matches such
+               that they do not exceed the parent's ending boundary. 
+               Without that restriction, matching becomes unstable. */
+           
+   	    /* Parse to the end of the subPattern */
+   	    parseString(subPat, &stringPtr, &stylePtr, 
+                pattern->subPatternRE->endp[0]-stringPtr, prevChar, False, 
+                delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
     	}
     	
     	/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -1755,8 +1783,8 @@ static int parseString(highlightDataRec *pattern, char **string,
 	    if (subSubPat->colorOnly) {
 		if (!subExecuted) { 
 		    if (!ExecRE(subPat->startRE, NULL, savedStartPtr, 
-			savedStartPtr+1, False, savedPrevChar, '\0',
-			delimiters, lookBehindTo)) {
+			savedStartPtr+1, False, savedPrevChar, succChar,
+			delimiters, lookBehindTo, match_till)) {
 			fprintf(stderr, "Internal error, failed to recover "
 					"start match in parseString\n");
 			return False;
@@ -1806,7 +1834,8 @@ static int parseString(highlightDataRec *pattern, char **string,
 */
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters, const char *lookBehindTo)
+    	const char *delimiters, const char *lookBehindTo,
+        const char *match_till)
 {
     int inParseRegion = False;
     char *stylePtr, *stringPtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
@@ -1831,7 +1860,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	    /* printf("pass2 parsing %d chars\n", strlen(stringPtr)); */
     	    parseString(pattern, &stringPtr, &stylePtr,
     	    	    min(parseEnd - parseStart, length - (parseStart - string)),
-    	    	    prevChar, False, delimiters, lookBehindTo);
+    	    	    prevChar, False, delimiters, lookBehindTo, match_till);
     	    *parseEnd = temp;
     	    inParseRegion = False;
     	}

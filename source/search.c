@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.73 2004/10/07 22:34:11 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.74 2004/11/26 18:25:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4387,7 +4387,8 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 
     /* search from beginPos to end of string */
     if (ExecRE(compiledRE, NULL, string + beginPos, NULL, FALSE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string)) {
+    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string,
+            NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4406,7 +4407,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
     
     /* search from the beginning of the string to beginPos */
     if (ExecRE(compiledRE, NULL, string, string + beginPos, FALSE, '\0',
-	    string[beginPos], delimiters, string)) {
+	    string[beginPos], delimiters, string, NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4438,7 +4439,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     /* says begin searching from the far end of the file.		*/
     if (beginPos >= 0) {
 	if (ExecRE(compiledRE, NULL, string, string + beginPos, TRUE, '\0',
-		'\0', delimiters, string)) {
+		'\0', delimiters, string, NULL)) {
 	    *startPos = compiledRE->startp[0] - string;
 	    *endPos = compiledRE->endp[0] - string;
 	    if (searchExtentFW != NULL)
@@ -4461,7 +4462,8 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     	beginPos = 0;
     length = strlen(string); /* sadly, this means scanning entire string */
     if (ExecRE(compiledRE, NULL, string + beginPos, string + length, TRUE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string)) {
+    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string,
+            NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4609,7 +4611,7 @@ static void replaceUsingRE(const char *searchStr, const char *replaceStr,
     
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
     ExecRE(compiledRE, NULL, sourceStr+beginPos, NULL, False, prevChar,
-   	   '\0', delimiters, sourceStr);
+   	   '\0', delimiters, sourceStr, NULL);
     SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
     free((char *)compiledRE);
 }

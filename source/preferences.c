@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.131 2004/10/15 18:04:21 arnef Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.132 2004/11/26 18:25:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3949,7 +3949,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
        doesn't match, we can't generate highlight font names, so return */
     compiledRE = CompileRE(searchString, &errMsg, REDFLT_STANDARD);
     primaryName = XmTextGetString(fd->primaryW);
-    if (!ExecRE(compiledRE, NULL, primaryName, NULL, False, '\0', '\0', NULL, NULL)) {
+    if (!ExecRE(compiledRE, NULL, primaryName, NULL, False, '\0', '\0', NULL, NULL, NULL)) {
     	XBell(XtDisplay(fd->shell), 0);
     	free(compiledRE);
     	XtFree(primaryName);

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.81 2004/10/18 15:54:07 yooden Exp $
+.. $Id: help.etx,v 1.82 2004/11/26 18:25:47 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1623,13 +1623,6 @@ Parenthetical Constructs
   lower bound on the matching size.  The smaller the difference, the better the
   performance.  This is especially important for regular expressions used in
   highlight patterns.
-  
-  Another (minor) restriction is the fact that look-**ahead** patterns, nor
-  any construct that requires look-ahead information (such as word boundaries)
-  are supported at the end of a look-behind pattern (no error is raised, but
-  matching behaviour is unspecified). It is always possible to place these
-  look-ahead patterns immediately after the look-behind pattern, where they
-  will work as expected.
   
   Positive look-behind has similar applications as positive look-ahead.
   
@@ -4518,22 +4511,46 @@ Highlighting Patterns
   fields could color the brackets differently from the intervening text.  A
   quick shortcut to typing in pattern names in the Parent Pattern field is to
   use the middle mouse button to drag them from the Patterns list.
+  
+  In some cases, there can be interference between coloring sub-patterns and
+  hierarchical sub-patterns (disscussed next). How this is resolved, is
+  explained below.
 
 4>Hierarchical Patterns
 
   A hierarchical sub-pattern, is identical to a top level pattern, but is
-  invoked only between the beginning and ending expression matches of its
-  parent pattern.  Like the sub-expression coloring patterns discussed above,
-  it is associated with a parent pattern using the Parent Pattern field in the
-  pattern specification.  Pattern names can be dragged from the pattern list
-  with the middle mouse button to the Parent Pattern field.
-
-  After the start expression of the parent pattern matches, the syntax
-  highlighting parser searches for either the parent's end pattern or a
-  matching sub-pattern.  When a sub-pattern matches, control is not returned to
-  the parent pattern until the entire sub-pattern has been parsed, regardless
-  of whether the parent's end pattern appears in the text matched by the
-  sub-pattern.
+  invoked only between the starting and ending expression matches of its
+  parent pattern or, in case the parent pattern consists of a single
+  expression, inside the text area matching that expression.  Like the 
+  sub-expression coloring patterns discussed above, it is associated with a
+  parent pattern using the Parent Pattern field in the pattern specification.
+  Pattern names can be dragged from the pattern list with the middle mouse
+  button to the Parent Pattern field.
+  
+  The matching behaviour for sub-patterns is slightly different, depending on
+  whether the parent pattern consists of a single expression or has both a
+  starting and an ending expression.
+  
+  In case the parent pattern consists of a single expression, and the syntax
+  highlighting parser finds a match for that expression, sub-patterns are
+  matched between the start and the end of the parent match.  Sub-patterns
+  cannot extend beyond the boundaries of the parent's match nor can they
+  affect those boundaries (the latter can happen for starting/ending parent
+  patterns, see below). Note that sub-patterns can ~peek~ beyond the
+  parent's matching boundaries by means of look-ahead or look-behind
+  expressions.
+  
+  In case the parent pattern is a starting/ending style pattern, after the
+  start expression of the parent pattern matches, the syntax highlighting
+  parser searches for either the parent's end pattern or a matching
+  sub-pattern.  When a sub-pattern matches, control is not returned to the
+  parent pattern until the entire sub-pattern has been parsed, regardless of
+  whether the parent's end pattern appears in the text matched by the
+  sub-pattern.  In this way, matching of the parent's ending pattern can be
+  postponed, in contrast to the case where the parent pattern consists of a
+  single expression. Note that, in this case, parsing of sub-patterns starts
+  **after** the match of the parent pattern's starting expression, also in
+  contrast to the single-expression case.
 
   The most common use for this capability is for coloring sub-structure of
   language constructs (smaller patterns embedded in larger patterns). 
@@ -4552,6 +4569,17 @@ Highlighting Patterns
   goal is not to completely cover the language syntax, but to generate
   colorings that are useful to the programmer.  Simpler patterns are usually
   more efficient and also more robust when applied to incorrect code.
+  
+  Note that in case of a single-expression parent pattern, there is a
+  potential for conflicts between coloring-only sub-patterns and hierarchical
+  sub-patterns (which cannot happen for starting/ending type of patterns,
+  because sub-patterns are matched **between** the starting and ending pattern
+  (not included)).  Due to the different nature of these two kinds of
+  sub-patterns, it is technically infeasible to follow the standard matching
+  precedence rules, where a sub-pattern has precedence over the sub-patterns
+  following it.  Instead, coloring-only sub-patterns are always colored last,
+  ie., they may override the coloring for overlapping sibling sub-patterns in
+  the overlapping parts of the matches.
 
 4>Deferred (Pass-2) Parsing
 

@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.12 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: regularExp.h,v 1.13 2004/11/26 18:25:51 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * regularExp.h -- Nirvana Editor Regular Expression Package Header File        *
@@ -84,8 +84,11 @@ int ExecRE (
    char    succ_char,           /* Character immediately after `end'.  Set
                                    to '\n' or '\0' if true beginning of text. */
    const char   *delimiters,    /* Word delimiters to use (NULL for default) */
-   const char   *look_behind_to); /* Boundary for look-behind; defaults to
-                                    "string" if NULL */
+   const char   *look_behind_to,/* Boundary for look-behind; defaults to
+                                   "string" if NULL */
+   const char   *match_till);   /* Boundary to where match can extend.
+                                   \0 is assumed to be the boundary if not
+                                   set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
 
