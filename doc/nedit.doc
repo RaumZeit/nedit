@@ -1,6 +1,6 @@
-                    NEdit Version 5.1.1, March 17, 2000
+                     NEdit Version 5.2, August, 2001
 
-$Id: nedit.doc,v 1.1 2001/07/07 09:48:03 amai Exp $
+$Id: nedit.doc,v 1.2 2001/08/06 20:38:51 tringali Exp $
 
 NEdit is a standard GUI (Graphical User Interface) style text editor for
 programs and plain-text files.  Users of Macintosh and MS Windows based text
@@ -27,17 +27,17 @@ GETTING STARTED
 Help sections of interest to new users are listed under the "Basic Operation"
 heading in the top-level Help menu:
 
-	Selecting Text
-	Finding and Replacing Text
-	Cut and Paste
-	Using the Mouse
-	Keyboard Shortcuts
-	Shifting and Filling
+    Selecting Text
+    Finding and Replacing Text
+    Cut and Paste
+    Using the Mouse
+    Keyboard Shortcuts
+    Shifting and Filling
 
 Programmers should also read the introductory section under the "Features for
 Programming" section:
 
-	Programming with NEdit
+    Programming with NEdit
 
 If you get into trouble, the Undo command in the Edit menu can reverse any
 modifications that you make.  NEdit does not change the file you are editing
@@ -65,7 +65,7 @@ running as long as at least one editor window is open.
 Creating a New File
 
 If you already have an empty (Untitled) window displayed, just begin typing in
-the window.  To create a new Untitled window, choose New from the File menu. 
+the window.  To create a new Untitled window, choose New from the File menu.
 To give the file a name and save its contents to the disk, choose Save or Save
 As... from the File menu.
 
@@ -89,7 +89,7 @@ mouse.
 Dialogs are also streamlined so you can enter information quickly and without
 using the mouse.  To move the keyboard focus around a dialog, use the tab and
 arrow keys.  One of the buttons in a dialog is usually drawn with a thick,
-indented, outline.  This button can be activated by pressing Return or Enter. 
+indented, outline.  This button can be activated by pressing Return or Enter.
 The Cancel or Dismiss button can be activated by pressing escape.  For example,
 to replace the string "thing" with "things" type:
 
@@ -116,7 +116,7 @@ with the pointer at one end of the text you want to select, and drag it to the
 other end.  The text will become highlighted.  To select a whole word, double
 click (click twice quickly in succession).  Double clicking and then dragging
 the mouse will select a number of words.  Similarly, you can select a whole line
-or a number of lines by triple clicking or triple clicking and dragging. 
+or a number of lines by triple clicking or triple clicking and dragging.
 Quadruple clicking selects the whole file.  After releasing the mouse button,
 you can still adjust a selection by holding down the shift key and dragging on
 either end of the selection.  To delete the selected text, press delete or
@@ -126,7 +126,7 @@ To select a rectangle or column of text, hold the Ctrl key while dragging the
 mouse.  Rectangular selections can be used in any context that normal selections
 can be used, including cutting and pasting, filling, shifting, dragging, and
 searching.  Operations on rectangular selections automatically fill in tabs and
-spaces to maintain alignment of text within and to the right of the selection. 
+spaces to maintain alignment of text within and to the right of the selection.
 Note that the interpretation of rectangular selections by Fill Paragraph is
 slightly different from that of other commands, the section titled "Shifting and
 Filling" has details.
@@ -147,7 +147,7 @@ selected text, leaving the original text in place.  Holding the control key will
 drag the text in overlay mode.
 
 Normally, dragging moves text by removing it from the selected position at the
-start of the drag, and inserting it at a new position relative to to the mouse. 
+start of the drag, and inserting it at a new position relative to to the mouse.
 Dragging a block of text over existing characters, displaces the characters to
 the end of the selection.  In overlay mode, characters which are occluded by
 blocks of text being dragged are simply removed.  When dragging non-rectangular
@@ -162,7 +162,7 @@ commands, see "Keyboard Shortcuts".
 CUTTING and PASTING
 
 The easiest way to copy and move text around in your file or between windows, is
-to use the clipboard, an imaginary area that temporarily stores text and data. 
+to use the clipboard, an imaginary area that temporarily stores text and data.
 The Cut command removes the selected text (see SELECTING TEXT) from your file
 and places it in the clipboard.  Once text is in the clipboard, the Paste
 command will copy it to the insert position in the current window.  For example,
@@ -256,26 +256,25 @@ The general meaning of mouse buttons and modifier keys is as follows:
 
     Buttons
 
-      Button 1 (left)    Cursor position and primary selection
+        Button 1 (left)     Cursor position and primary selection
 
-      Button 2 (middle)  Secondary selections, and dragging and
-                	 copying primary selection
-  
-      Button 3 (right)   Quick-access programmable menu and pan
-                         scrolling
+        Button 2 (middle)   Secondary selections, and dragging and
+                            copying primary selection
+
+        Button 3 (right)    Quick-access programmable menu and pan scrolling
 
     Modifier keys
 
-      Shift   On primary selections, (left mouse button):
-        	 Extends selection to the mouse pointer
-              On secondary and copy operations, (middle):
-        	 Toggles between move and copy
+        Shift   On primary selections, (left mouse button):
+                    Extends selection to the mouse pointer
+                On secondary and copy operations, (middle):
+                    Toggles between move and copy
 
-      Ctrl    Makes selection rectangular or insertion
-              columnar
+        Ctrl    Makes selection rectangular or insertion
+                columnar
 
-      Alt*    (on release) Exchange primary and secondary
-              selections.
+        Alt*    (on release) Exchange primary and secondary
+                selections.
 
 
 Left Mouse Button
@@ -283,26 +282,26 @@ Left Mouse Button
     The left mouse button is used to position the cursor and to make primary
     selections.
 
-      Click 	    	Moves the cursor
+    Click               Moves the cursor
 
-      Double Click	Selects a whole word
+    Double Click        Selects a whole word
 
-      Triple Click	Selects a whole line
+    Triple Click        Selects a whole line
 
-      Quadruple Click	Selects the whole file
+    Quadruple Click     Selects the whole file
 
-      Shift Click	Adjusts (extends or shrinks) the selection,
-      	    	    	or if there is no existing selection, begins a
-      	    	    	new selection between the cursor and the mouse.
+    Shift Click         Adjusts (extends or shrinks) the selection, or if there
+                        is no existing selection, begins a new selection between
+                        the cursor and the mouse.
 
-      Ctrl+Shift+Click	Adjusts (extends or shrinks) the selection
-      	 	    	rectangularly.
+    Ctrl+Shift+Click    Adjusts (extends or shrinks) the selection
+                        rectangularly.
 
-      Drag		Selects text between where the mouse was pressed
-      	    	    	and where it was released.
+    Drag                Selects text between where the mouse was pressed and
+                        where it was released.
 
-      Ctrl+Drag     	Selects rectangle between where the mouse was
-      	    	    	pressed and where it was released.
+    Ctrl+Drag           Selects rectangle between where the mouse was pressed
+                        and where it was released.
 
 
 Right Mouse Button
@@ -310,58 +309,56 @@ Right Mouse Button
     The right mouse button posts a programmable menu for frequently used
     commands.
 
-      Click/Drag	Pops up the background menu (programmed from
- 			Preferences -> Default Settings -> Customize
- 			Menus -> Window Background).
+    Click/Drag  Pops up the background menu (programmed from Preferences ->
+                Default Settings -> Customize Menus -> Window Background).
 
-      Ctrl+Drag 	Pan scrolling.  Scrolls the window both
- 			vertically and horizontally, as if you had
- 			grabbed it with your mouse.
+    Ctrl+Drag   Pan scrolling.  Scrolls the window both vertically and
+                horizontally, as if you had grabbed it with your mouse.
 
 
 Middle Mouse Button
 
-   The middle mouse button is for making secondary selections, and copying
-   and dragging the primary selection
+    The middle mouse button is for making secondary selections, and copying and
+    dragging the primary selection.
 
-      Click	   Copies the primary selection to the clicked position.
+    Click       Copies the primary selection to the clicked position.
 
-      Shift+Click  Moves the primary selection to the clicked position,
- 		   deleting it from its original position.
+    Shift+Click Moves the primary selection to the clicked position, deleting it
+                from its original position.
 
-      Drag	   1) Outside of the primary selection:
- 		         Begins a secondary selection.
- 		   2) Inside of the primary selection:
- 		         Moves the entire selection by dragging.
+    Drag        1) Outside of the primary selection:
+                    Begins a secondary selection.
+                2) Inside of the primary selection:
+                    Moves the entire selection by dragging.
 
-      Ctrl+Drag    1) Outside of the primary selection:
- 		         Begins a rectangular secondary selection.
- 		   2) Inside of the primary selection:
- 		         Drags the selection in overlay mode (see below).
+    Ctrl+Drag   1) Outside of the primary selection:
+                    Begins a rectangular secondary selection.
+                2) Inside of the primary selection:
+                    Drags the selection in overlay mode (see below).
 
 When the mouse button is released after creating a secondary selection:
 
-   No Modifiers  If there is a primary selection, replaces it with the
-   		 secondary selection.  Otherwise, inserts the secondary
-   		 selection at the cursor position.
- 
-   Shift	 Move the secondary selection, deleting it from its
-   		 original position.  If there is a primary selection,
-   		 the move will replace the primary selection with the
-   		 secondary selection. Otherwise, moves the secondary
-   		 selection to to the cursor position.
+    No Modifiers    If there is a primary selection, replaces it with the
+                    secondary selection.  Otherwise, inserts the secondary
+                    selection at the cursor position.
 
-   Alt* 	 Exchange the primary and secondary selections.
+    Shift           Move the secondary selection, deleting it from its original
+                    position.  If there is a primary selection, the move will
+                    replace the primary selection with the secondary selection.
+                    Otherwise, moves the secondary selection to to the cursor
+                    position.
+
+    Alt*            Exchange the primary and secondary selections.
 
 
 While moving the primary selection by dragging with the middle mouse button:
 
-   Shift   Leaves a copy of the original selection in place rather than
-   	   removing it or blanking the area.
- 
-   Ctrl    Changes from insert mode to overlay mode (see below).
+    Shift   Leaves a copy of the original selection in place rather than 
+            removing it or blanking the area.
 
-   Escape  Cancels drag in progress.
+    Ctrl    Changes from insert mode to overlay mode (see below).
+
+    Escape  Cancels drag in progress.
 
 Overlay Mode: Normally, dragging moves text by removing it from the selected
 position at the start of the drag, and inserting it at a new position relative
@@ -370,7 +367,7 @@ existing characters are displaced to the end of the selection.  In overlay
 mode, characters which are occluded by blocks of text being dragged are simply
 removed.  When dragging non-rectangular selections, overlay mode also converts
 the selection to rectangular form, allowing it to be dragged outside of the
-bounds of the existing text. 
+bounds of the existing text.
 
 * The Alt key may be labeled Meta or Compose-Character on some keyboards.  Some
 window managers, including default configurations of mwm, bind combinations of
@@ -410,17 +407,17 @@ items, and the space or enter keys to activate them.
 
 Keyboard Shortcuts within Dialogs
 
-One button in a dialog is usually marked with a thick indented outline. 
+One button in a dialog is usually marked with a thick indented outline.
 Pressing the Return or Enter key activates this button.
 
 All dialogs have either a Cancel or Dismiss button.  This button can be
 activated by pressing the Escape (or Esc) key.
 
-Pressing the tab key moves the keyboard focus to the next item in a dialog. 
+Pressing the tab key moves the keyboard focus to the next item in a dialog.
 Within an associated group of buttons, the arrow keys move the focus among the
 buttons.  Shift+Tab moves backward through the items.
 
-Most items in dialogs have an underline under one character in their name. 
+Most items in dialogs have an underline under one character in their name.
 Pressing the Alt key along with this character, activates a button as if you
 had pressed it with the mouse, or moves the keyboard focus to the associated
 text field or list.
@@ -431,22 +428,22 @@ and space to select.
 In file selection dialogs, you can type the beginning characters of the file
 name or directory in the list to select files
 
-Labeled Function Keys 
+Labeled Function Keys
 
 The labeled function keys on standard workstation and PC keyboards, like the
 arrows, and page-up and page-down, are active in NEdit, though not shown in the
-pull-down menus. 
+pull-down menus.
 
 Holding down the control key while pressing a named key extends the scope of
 the action that it performs.  For example, Home normally moves the insert
 cursor the beginning of a line.  Ctrl+Home moves it to the beginning of the
-file. Backspace deletes one character, Ctrl+Backspace deletes one word. 
+file. Backspace deletes one character, Ctrl+Backspace deletes one word.
 
 Holding down the shift key while pressing a named key begins or extends a
 selection.  Combining the shift and control keys combines their actions.  For
 example, to select a word without using the mouse, position the cursor at the
 beginning of the word and press Ctrl+Shift+RightArrow.  The Alt key modifies
-selection commands to make the selection rectangular. 
+selection commands to make the selection rectangular.
 
 Under X and Motif, there are several levels of translation between keyboard
 keys and the actions they perform in a program.  The "KEY BINDING", and "X
@@ -457,114 +454,114 @@ defaults listed below.
 
 Modifier Keys (in general)
 
-  Ctrl	 Extends the scope of the action that the key would otherwise
- 	 perform.  For example, Home normally moves the insert cursor the
- 	 beginning of a line. Ctrl+Home moves it to the beginning of the
- 	 file.  Backspace deletes one character, Ctrl+ Backspace deletes
- 	 one word.
+    Ctrl    Extends the scope of the action that the key would otherwise
+            perform.  For example, Home normally moves the insert cursor the
+            beginning of a line. Ctrl+Home moves it to the beginning of the
+            file.  Backspace deletes one character, Ctrl+ Backspace deletes one
+            word.
 
-  Shift  Extends the selection to the cursor position. If there's no
- 	 selection, begins one between the old and new cursor positions.
- 
-  Alt	 When modifying a selection, makes the selection rectangular.
+    Shift   Extends the selection to the cursor position. If there's no
+            selection, begins one between the old and new cursor positions.
+
+    Alt     When modifying a selection, makes the selection rectangular.
 
 (For the effects of modifier keys on mouse button presses, see the section
 titled "Using the Mouse")
 
 All Keyboards
 
-  Escape	Cancels operation in progress: menu selection, drag,
-  		selection, etc.  Also equivalent to cancel button in
-  		dialogs.
+    Escape          Cancels operation in progress: menu selection, drag,
+                    selection, etc.  Also equivalent to cancel button in
+                    dialogs.
 
-  Backspace	Delete the character before the cursor
+    Backspace       Delete the character before the cursor
 
-  Ctrl+BS	Delete the word before the cursor
+    Ctrl+BS         Delete the word before the cursor
 
-  Arrows
+    Arrows:
 
-    Left	Move the cursor to the left one character
+        Left            Move the cursor to the left one character
 
-    Ctrl+Left   Move the cursor backward one word (Word delimiters
-    		are settable, see CUSTOMIZATION)
+        Ctrl+Left       Move the cursor backward one word (Word delimiters are
+                        settable, see CUSTOMIZATION)
 
-    Right	Move the cursor to the right one character
+        Right           Move the cursor to the right one character
 
-    Ctrl+Right  Move the cursor forward one word
+        Ctrl+Right      Move the cursor forward one word
 
-    Up  	Move the cursor up one line
+        Up              Move the cursor up one line
 
-    Ctrl+Up	Move the cursor up one paragraph.  (Paragraphs are
-    	    	delimited by blank lines.)
+        Ctrl+Up         Move the cursor up one paragraph.  (Paragraphs are
+                        delimited by blank lines.)
 
-    Down	Move the cursor down one line.
+        Down            Move the cursor down one line.
 
-    Ctrl+Down	Move the cursor down one paragraph.
+        Ctrl+Down       Move the cursor down one paragraph.
 
-  Ctrl+Return	Return with automatic indent, regardless of the setting
-    	    	of Auto Indent.
+    Ctrl+Return     Return with automatic indent, regardless of the setting of
+                    Auto Indent.
 
-  Shift+Return	Return without automatic indent, regardless of the
-  		setting of Auto Indent.
+    Shift+Return    Return without automatic indent, regardless of the
+                    setting of Auto Indent.
 
-  Ctrl+Tab	Insert an ascii tab character, without processing
-  		emulated tabs.
+    Ctrl+Tab        Insert an ascii tab character, without processing
+                    emulated tabs.
 
-  Alt+Ctrl+<c>	Insert the control-code equivalent of a key <c>
+    Alt+Ctrl+<c>    Insert the control-code equivalent of a key <c>
 
-  Ctrl+/	Select everything (same as Select All menu item or ^A)
+    Ctrl+/          Select everything (same as Select All menu item or ^A)
 
-  Ctrl+\	Unselect
+    Ctrl+\          Unselect
 
-  Ctrl+U	Delete to start of line
+    Ctrl+U          Delete to start of line
 
 PC Standard Keyboard
 
-  Ctrl+Insert	Copy the primary selection to the clipboard (same as
- 		Copy menu item or ^C) for compatibility with Motif
- 		standard key binding
- 
-  Shift+Ctrl+
-  Insert	Copy the primary selection to the cursor location.
+    Ctrl+Insert     Copy the primary selection to the clipboard (same as Copy
+                    menu item or ^C) for compatibility with Motif standard key
+                    binding
 
-  Delete	Delete the character before the cursor. (Can be
- 		configured to delete the character after the cursor,
- 		see CUSTOMIZATION, and X RESOURCES)
- 
+    Shift+Ctrl+Insert
+                    Copy the primary selection to the cursor location.
 
-  Ctrl+Delete	Delete to end of line.
+    Delete          Delete the character before the cursor. (Can be configured
+                    to delete the character after the cursor, see CUSTOMIZATION,
+                    and X RESOURCES)
 
-  Shift+Delete	Cut, remove the currently selected text and place it
- 		in the clipboard. (same as Cut menu item or ^X) for
- 		compatibility with Motif standard key binding.
- 
-  Shift+Ctrl+
-  Delete	Cut the primary selection to the cursor location.
 
-  Home		Move the cursor to the beginning of the line.
+    Ctrl+Delete     Delete to end of line.
 
-  Ctrl+Home	Move the cursor to the beginning of the file.
+    Shift+Delete    Cut, remove the currently selected text and place it in the
+                    clipboard. (same as Cut menu item or ^X) for compatibility
+                    with Motif standard key binding.
 
-  End		Move the cursor to the end of the line.
+    Shift+Ctrl+Delete
+                    Cut the primary selection to the cursor location.
 
-  Ctrl+End	Move the cursor to the end of the file.
+    Home            Move the cursor to the beginning of the line.
 
-  PageUp	Scroll and move the cursor up by one page.
+    Ctrl+Home       Move the cursor to the beginning of the file.
 
-  Ctrl+PageUp   Scroll and move the cursor left by one page.
-  
-  PageDown	Scroll and move the cursor down by one page.
+    End             Move the cursor to the end of the line.
 
-  Ctrl+PageDown Scroll and move the cursor right by one page.
+    Ctrl+End        Move the cursor to the end of the file.
 
-  F10		Make the menu bar active for keyboard input (Arrow
-  		Keys, Return, Escape, and the Space Bar)
- 
+    PageUp          Scroll and move the cursor up by one page.
 
-Specialty Keyboards 
+    Ctrl+PageUp     Scroll and move the cursor left by one page.
+
+    PageDown        Scroll and move the cursor down by one page.
+
+    Ctrl+PageDown   Scroll and move the cursor right by one page.
+
+    F10             Make the menu bar active for keyboard input (Arrow Keys,
+                    Return, Escape, and the Space Bar)
+
+
+Specialty Keyboards
 
 On machines with different styles of keyboards, generally, text editing actions
-are properly matched to the labeled keys, such as Remove, Next-screen, etc.. 
+are properly matched to the labeled keys, such as Remove, Next-screen, etc..
 If you prefer different key bindings, see the heading titled "Binding Keys to
 Actions" in the X RESOURCES section below.
 
@@ -585,26 +582,26 @@ individual lines.
 
 In continuous wrap mode, lines automatically wrap and unwrap themselves to
 line up properly at the right margin.  In this mode, you simply omit the
-newlines within paragraphs and let NEdit make the line breaks as needed. 
+newlines within paragraphs and let NEdit make the line breaks as needed.
 Unfortunately, continuous wrap mode is not appropriate in the majority of
 situations, because files with extremely long lines are not common under Unix
 and may not be compatible with all tools, and because you can't achieve
 effects like indented sections, columns, or program comments, and still take
 advantage of the automatic wrapping.
 
-Without continuous wrapping, paragraph filling is not entirely automatic. 
+Without continuous wrapping, paragraph filling is not entirely automatic.
 Auto-Newline wrapping keeps paragraphs lined up as you type, but once entered,
 NEdit can no longer distinguish newlines which join wrapped text, and newlines
 which must be preserved.  Therefore, editing in the middle of a paragraph will
 often leave the right margin messy and uneven.
 
 Since NEdit can't act automatically to keep your text lined up, you need to
-tell it explicitly where to operate, and that is what Fill Paragraph is for. 
+tell it explicitly where to operate, and that is what Fill Paragraph is for.
 It arranges lines to fill the space between two margins, wrapping the lines
 neatly at word boundaries.  Normally, the left margin for filling is inferred
 from the text being filled.  The first line of each paragraph is considered
 special, and its left indentation is maintained separately from the remaining
-lines (for leading indents, bullet points, numbered paragraphs, etc.). 
+lines (for leading indents, bullet points, numbered paragraphs, etc.).
 Otherwise, the left margin is determined by the furthest left non-whitespace
 character.  The right margin is either the Wrap Margin, set in the preferences
 menu (by default, the right edge of the window), or can also be chosen on the
@@ -624,7 +621,7 @@ paragraphs and filled individually, respecting leading indents and blank lines.
 The third, and most versitile, way to use Fill Paragraph is with a rectangular
 selection.  Fill Paragraph treats rectangular selections differently from other
 commands.  Instead of simply filling the text inside the rectangular selection,
-NEdit interprets the right edge of the selection as the requested wrap margin. 
+NEdit interprets the right edge of the selection as the requested wrap margin.
 Text to the left of the selection is not disturbed (the usual interpretation of
 a rectangular selection), but text to the right of the selection is included in
 the operation and is pulled in to the selected region.  This method enables you
@@ -636,7 +633,7 @@ SHIFT LEFT, SHIFT RIGHT
 
 While shifting blocks of text is most important for programmers (See FEATURES
 FOR PROGRAMMING), it is also useful for other tasks, such as creating indented
-paragraphs. 
+paragraphs.
 
 To shift a block of text one tab stop to the right, select the text, then
 choose Shift Right from the Edit menu.  Note that the accelerator keys for
@@ -684,7 +681,7 @@ this kind of file properly in NEdit, you have to select the wrap style called
 Continuous.  Wrapping modes are discussed in the sections: Customizing ->
 Preferences, and Basic Operation -> Shifting and Filling.
 
-The last and most minute of format differences is the terminating newline. 
+The last and most minute of format differences is the terminating newline.
 NEdit, like vi and approximately half of Unix editors, enforces a final
 terminating newline on all of the files that it writes.  NEdit does this
 because some Unix compilers and utilities require it, and fail in various ways
@@ -699,7 +696,7 @@ and are at the core of Color Syntax Highlighting patterns.  To specify a
 regular expression in a search dialog, simply click on the `Regular Expression'
 radio button in the dialog.
 
-A regex is a specification of a pattern to be matched in the searched text. 
+A regex is a specification of a pattern to be matched in the searched text.
 This pattern consists of a sequence of tokens, each being able to match a
 single character or a sequence of characters in the text, or assert that a
 specific position within the text has been reached (the latter is called an
@@ -800,7 +797,7 @@ comma, e.g. `{3}' is short for the `{min,min}' construct, or to match exactly
 `min' number of times.
 
 The quantifiers `{1}' and `{1,1}' are accepted by the syntax, but are optimized
-away since they mean to match exactly once, which is redundant information. 
+away since they mean to match exactly once, which is redundant information.
 Also, for efficiency, certain combinations of `min' and `max' are converted to
 either `*', `+', or `?' as follows:
 
@@ -821,7 +818,7 @@ A series of alternative patterns to match can be specified by separating them
 with vertical pipes, `|'.  An example of alternation would be `a|be|sea'.  This
 will match `a', or `be', or `sea'.  Each alternative can be an arbitrarily
 complex regular expression.  The alternatives are attempted in the order
-specified.  An empty alternative can be specified if desired, e.g. `a|b|'. 
+specified.  An empty alternative can be specified if desired, e.g. `a|b|'.
 Since an empty alternative can match nothingness (the empty string), this
 guarantees that the expression will match.
 
@@ -837,7 +834,7 @@ sequences.
 Special Control Characters
 
 In a regex, most ordinary characters match themselves.  For example, `ab%'
-would match anywhere `a' followed by `b' followed by `%' appeared in the text. 
+would match anywhere `a' followed by `b' followed by `%' appeared in the text.
 However, there are some special characters that are difficult or impossible to
 type.  Many of these characters have escape sequences (simple characters
 preceded by `\') assigned to represent them.  NEdit recognizes the following
@@ -871,7 +868,7 @@ Octal and Hex Escape Sequences
 
 Any ASCII (or EBCDIC) character, except null, can be specified by using either
 an octal escape or a hexadecimal escape, each beginning with \0 or \x (or \X)
-respectively.  For example, \052 and \X2A both specify the `*' character. 
+respectively.  For example, \052 and \X2A both specify the `*' character.
 Escapes for null (\00 or \x0) are not valid and will generate an error
 message.  Also, any escape that exceeds \0377 or \xFF will either cause an
 error or have any additional character(s) interpreted literally. For example,
@@ -1085,7 +1082,7 @@ the `b*' must match its last possibility, the empty string, since it must
 respect the earlier choice.
 
 In the particular case where no `|'s are present and there is only one `*',
-`+', or `?', the net effect is that the longest possible match will be chosen. 
+`+', or `?', the net effect is that the longest possible match will be chosen.
 So `ab*', presented with `xabbbby', will match `abbbb'.  Note that if `ab*' is
 tried against `xabyabbbz', it will match `ab' just after `x', due to the
 begins-earliest rule.  (In effect, the decision on where to start the match is
@@ -1135,15 +1132,15 @@ o  Case insensitive double words across line breaks.
 o  Upper case words with possible punctuation.
 
   <[A-Z][^a-z\s]*>
-  
+
 References
 
 An excellent book on the care and feeding of regular expressions is
 
-	"Mastering Regular Expressions"
-	Jeffrey E. F. Friedl
-	(c) 1997, O'Reilly & Associates
-	ISBN 1-56592-257-3
+    "Mastering Regular Expressions"
+    Jeffrey E. F. Friedl
+    (c) 1997, O'Reilly & Associates
+    ISBN 1-56592-257-3
 
 
 FEATURES FOR PROGRAMMERS
@@ -1186,9 +1183,11 @@ To help you inspect nested parentheses, brackets, braces, quotes, and other
 characters, NEdit has both an automatic parenthesis matching mode, and a Find
 Matching command.  Automatic parenthesis matching is activated when you type,
 or move the insertion cursor after a parenthesis, bracket, or brace.  It
-momentarily highlights the matching character if that character is visible in
-the window.  To find a matching character anywhere in the file, select it or
-position the cursor after it, and choose Find Matching from the Search menu. 
+momentarily highlights either the opposite character ('Delimiter') or the entire
+expression ('Range') if the opposite character is visible in the window.
+
+To find a matching character anywhere in the file, select it or
+position the cursor after it, and choose Find Matching from the Search menu.
 If the character matches itself, such as a quote or slash, select the first
 character of the pair.  NEdit will match {, (, [, <, ", ', `, /, and \.
 
@@ -1272,7 +1271,7 @@ cursor position with the previous line.
 
 Smart Indent
 
-Smart Indent in this release must still be considered somewhat experimental. 
+Smart Indent in this release must still be considered somewhat experimental.
 Smart indent macros are only available by default for C and C++, and while
 these can easily be configured for different default indentation distances,
 they may not conform to everyone's exact C programming style.  Smart indent is
@@ -1310,7 +1309,7 @@ RIGHT" above has details.
 SYNTAX HIGHLIGHTING
 
 Syntax Highlighting means using colors and fonts to help distinguish language
-elements in programming languages and other types of structured files. 
+elements in programming languages and other types of structured files.
 Programmers use syntax highlighting to understand code faster and better, and
 to spot many kinds of syntax errors more quickly.
 
@@ -1369,7 +1368,7 @@ command line:
 
     nedit -tags tags
 
-NEdit can also be set to load a tags file automatically when it starts up. 
+NEdit can also be set to load a tags file automatically when it starts up.
 Setting the X resource nedit.tagFile to the name of a tag file tells NEdit to
 look for that file at startup time (see Customizing NEdit).  The file name can
 be either a complete path name, in which case NEdit will always load the same
@@ -1382,7 +1381,7 @@ that ctags uses.
 
 To unload a tags file, select "Un-load Tags File" from the File menu and choose
 from the list of tags files.  NEdit will keep track of tags file updates by
-checking the timestamp on the files, and automatically update the tags cache. 
+checking the timestamp on the files, and automatically update the tags cache.
 
 To find the definition of a function or data structure once a tags file is
 loaded, select the name anywhere it appears in your program (see Selecting
@@ -1440,7 +1439,7 @@ REPEATING ACTIONS AND LEARN/REPLAY SEQUENCES
 You can repeat the last (keyboard-based) command, or learn/replay sequence with
 the Repeat... command in the Macro menu.  To repeat an action, first do the
 action (i.e. insert a character, do a search, move the cursor), then select
-Repeat..., decide how or how many times you want it repeated, and click OK. 
+Repeat..., decide how or how many times you want it repeated, and click OK.
 For example, to move down 30 lines through a file, you could type: <Down Arrow>
 Ctrl+, 29 <Return>.  To repeat a learn/replay sequence, first learn it, then
 select Repeat..., click on Learn/Replay and how you want it repeated, then
@@ -1499,13 +1498,15 @@ be continued.
 
 Data Types
 
-The NEdit macro language recognizes only two data types, dynamic character
-strings, and integer values.  In general strings and integers can be used
-interchangeably.  If a string represents an integer value, it can be used as an
-integer.  Integers can be compared and concatenated with strings.
+The NEdit macro language recognizes only three data types: dynamic character
+strings, integer values and associative arrays.
+
+In general strings and integers can be used interchangeably.  If a string
+represents an integer value, it can be used as an integer.  Integers can be
+compared and concatenated with strings.
 
 Integer Constants:
-Integers are non-fractional numbers in the range of -2147483647 to 2147483647. 
+Integers are non-fractional numbers in the range of -2147483647 to 2147483647.
 Integer constants must be in decimal.  For example:
 
   a = -1
@@ -1519,9 +1520,9 @@ Character string constants are enclosed in double quotes.  For example:
 
 Strings may also include C-language style escape sequences:
 
-   \\ Backslash      \t Tab		  \f Form feed
-   \" Double quote   \b Backspace	  \a Alert
-   \n Newline	     \r Carriage return   \v Vertical tab
+    \\ Backslash        \t Tab              \f Form feed
+    \" Double quote     \b Backspace        \a Alert
+    \n Newline          \r Carriage return  \v Vertical tab
 
 For example, to send output to the terminal from which NEdit was started, a
 newline character is neccessary because, like printf, t_print requires explicit
@@ -1610,19 +1611,19 @@ which raises a number to a power (y^x means y to the x power), rather than
 bitwise exclusive OR.  The table below lists operators in decreasing order of
 precedence.
 
-   Operators		    Associativity
-   ()
-   ^			    right to left
-   - ! ++ --		    (unary)
-   * / %		    left to right
-   + -  		    left to right
-   > >= < <= == !=	    left to right
-   &			    left to right
-   |			    left to right
-   &&			    left to right
-   ||			    left to right
-   (concatenation)	    left to right
-   = += -= *= /= %=, &= |=  right to left
+    Operators                Associativity
+    ()
+    ^                        right to left
+    - ! ++ --                (unary)
+    * / %                    left to right
+    + -                      left to right
+    > >= < <= == !=          left to right
+    &                        left to right
+    |                        left to right
+    &&                       left to right
+    ||                       left to right
+    (concatenation)          left to right
+    = += -= *= /= %=, &= |=  right to left
 
 The order in which operands are evaluated in an expression is undefined, except
 for && and ||, which like C, evaluate operands left to right, but stop when
@@ -1661,7 +1662,7 @@ and comparison operators allowed in the NEdit macro language are listed below:
    != not equal (integers and/or strings)
 
 Character String Operators:
-The "operator" for concatenating two strings is the absence of an operator. 
+The "operator" for concatenating two strings is the absence of an operator.
 Adjoining character strings with no operator in between means concatenation:
 
    d = a b "string" c
@@ -1720,190 +1721,267 @@ of the loop.
 
 BUILT IN VARIABLES
 
-   $cursor -- Position of the cursor in the current window.
+    $active_pane -- Index of the current pane.
 
-   $column -- Column number of the cursor position in the current window.
+    $auto_indent -- Contains the current preference for auto indent. Can be
+        "off", "on" or "auto".
 
-   $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of the
-      Preferences menu, value is the distance between emulated tab stops.  If
-      tab emulation is turned off, value is -1.
-      
-   $file_name -- Name of the file being edited in the current window, stripped
-      of directory component.
+    $cursor -- Position of the cursor in the current window.
 
-   $file_path -- Directory component of file being edited in the current
-      window.
+    $column -- Column number of the cursor position in the current window.
 
-   $language_mode -- Name of language mode set in the current window.
+    $display_width -- Width of the current pane in pixels.
 
-   $line -- Line number of the cursor position in the current window.
+    $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of the
+        Preferences menu, value is the distance between emulated tab stops.  If tab
+        emulation is turned off, value is -1.
 
-   $modified -- True if the file in the current window has been modified and
-      the modifications have not yet been saved.
+    $empty_array -- An array with no elements. This can be used to initialize an
+        array to an empty state.
 
-   $selection_start, $selection_end -- Beginning and ending positions of the
-      primary selection in the current window, or -1 if there is no text
-      selected in the current window.
+    $file_format -- Current newline format that the file will be saved with. Can
+        be "unix", "dos" or "macintosh".
 
-   $selection_left, $selection_right -- Left and right character offsets of
-      the rectangular (primary) selection in the current window, or -1 if
-      there is no selection or it is not rectangular.
+    $file_name -- Name of the file being edited in the current window, stripped
+        of directory component.
 
-   $tab_dist -- The distance between tab stops for a hardware tab character,
-      as set in the Tabs... dialog of the Preferences menu.
+    $file_path -- Directory component of file being edited in the current
+        window.
 
-   $text_length -- The length of the text in the current window.
+    $font_name -- Contains the current plain text font name.
 
-   $use_tabs -- Whether the user is allowing the NEdit to insert tab
-      characters to maintain spacing in tab emulation and rectangular dragging
-      operations. (The setting of the "Use tab characters in padding and
-      emulated tabs" button in the Tabs... dialog of the Preferences menu.)
+    $font_name_bold -- Contains the current bold text font name.
 
-   $wrap_margin -- The right margin in the current window for text wrapping
-      and filling.
+    $font_name_bold_italic -- Contains the current bold-italic text font name.
+
+    $font_name_italic -- Contains the current italic text font name.
+
+    $highlight_syntax -- Whether syntax highlighting is turned on.
+
+    $incremental_backup -- Contains 1 if incremental auto saving is on,
+        otherwise 0.
+
+    $incremental_search_line -- Has a value of 1 if the preference is selected
+        to always show the incremental search line, otherwise 0.
+
+    $language_mode -- Name of language mode set in the current window.
+
+    $line -- Line number of the cursor position in the current window.
+
+    $locked -- True if the file has been locked by the user.
+
+    $make_backup_copy -- Has a value of 1 if original file is kept in a backup file on save, otherwise 0.
+
+    $max_font_width -- The maximum font width of all the active styles. Syntax
+        highlighting styles are only considered if syntax highlighting is turned
+        on.
+
+    $min_font_width -- The minimum font width of all the active styles. Syntax
+    highlighting styles are only considered if syntax highlighting is turned on.
+
+    $modified -- True if the file in the current window has been modified and
+        the modifications have not yet been saved.
+
+    $n_display_lines -- The number of lines visible in the currently active
+        pane.
+
+    $n_panes -- The number of panes in the current window.
+
+    $overtype_mode -- True if in Overtype mode.
+
+    $read_only -- True if the file is read only.
+
+    $selection_left, $selection_right -- Left and right character offsets of the
+        rectangular (primary) selection in the current window, or -1 if there is
+        no selection or it is not rectangular.
+
+    $selection_start, $selection_end -- Beginning and ending positions of the
+        primary selection in the current window, or -1 if there is no text
+        selected in the current window.
+
+    $server_name -- Name of the current NEdit server.
+
+    $show_line_numbers -- Whether line numbers are shown next to the text.
+
+    $show_matching -- Contains the current preference for showing matching
+        pairs, such as "[]" and "{}" pairs. Can be "off", "delimiter", or
+        "range".
+
+    $statistics_line -- Has a value of 1 if the statistics line is shown,
+        otherwise 0.
+
+    $sub_sep -- Contains the value of the array sub-script separation string.
+
+    $tab_dist -- The distance between tab stops for a hardware tab character,
+        as set in the Tabs... dialog of the Preferences menu.
+
+    $text_length -- The length of the text in the current window.
+
+    $top_line -- The line number of the top line of the currently active pane.
+
+    $use_tabs -- Whether the user is allowing the NEdit to insert tab
+        characters to maintain spacing in tab emulation and rectangular dragging
+        operations. (The setting of the "Use tab characters in padding and
+        emulated tabs" button in the Tabs... dialog of the Preferences menu.)
+
+    $wrap_margin -- The right margin in the current window for text wrapping 
+        and filling.
+
+    $wrap_text -- The current wrap text mode. Values are "none", "auto" or
+        "continuous".
 
 
 BUILT-IN SUBROUTINES
 
-   append_file(string, filename) -- Appends a string to a named file.  Returns
-      1 on successful write, or 0 if unsuccessful.
+    append_file(string, filename) -- Appends a string to a named file.  Returns
+        1 on successful write, or 0 if unsuccessful.
 
-   beep() -- Ring the bell
+    beep() -- Ring the bell
 
-   clipboard_to_string() -- Returns the contents of the clipboard as a macro
-      string.  Returns empty string on error.
+    clipboard_to_string() -- Returns the contents of the clipboard as a macro
+        string.  Returns empty string on error.
 
-   dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
-      querying and presenting information to the user.  First argument is a
-      string to show in the message area of the dialog.  Up to nine additional
-      optional arguments represent labels for buttons to appear along the
-      bottom of the dialog.  Returns the number of the button pressed (the
-      first button is number 1), or 0 if the user closed the dialog via the
-      window close box.
+    dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
+        querying and presenting information to the user.  First argument is a
+        string to show in the message area of the dialog.  Up to nine additional
+        optional arguments represent labels for buttons to appear along the
+        bottom of the dialog.  Returns the number of the button pressed (the
+        first button is number 1), or 0 if the user closed the dialog via the
+        window close box.
 
-   focus_window(window_name) -- Sets the window on which subsequent macro
-      commands operate.  window_name can be either a fully qualified file name,
-      or one of "last" for the last window created, or "next" for the next
-      window in the chain from the currently focused window (the first window
-      being the one returned from calling focus_window("last").  Returns the
-      name of the newly-focused window, or an empty string if the requested
-      window was not found.
+    focus_window(window_name) -- Sets the window on which subsequent macro
+        commands operate.  window_name can be either a fully qualified file name,
+        or one of "last" for the last window created, or "next" for the next
+        window in the chain from the currently focused window (the first window
+        being the one returned from calling focus_window("last").  Returns the
+        name of the newly-focused window, or an empty string if the requested
+        window was not found.
 
-   get_character(position) -- Returns the single character at the position
-      indicated by the first argument to the routine from the current window.
+    get_character(position) -- Returns the single character at the position
+        indicated by the first argument to the routine from the current window.
 
-   get_range(start, end) -- Returns the text between a starting and ending
-      position from the current window.
+    get_range(start, end) -- Returns the text between a starting and ending
+        position from the current window.
 
-   get_selection() -- Returns a string containing the text currently selected
-      by the primary selection either from the current window (no keyword), or
-      from anywhere on the screen (keyword "any").
+    get_selection() -- Returns a string containing the text currently selected
+        by the primary selection either from the current window (no keyword), or
+        from anywhere on the screen (keyword "any").
 
-   getenv(name) -- Gets the value of an environment variable.
+    getenv(name) -- Gets the value of an environment variable.
 
-   length(string) -- Returns the length of a string
+    length(string) -- Returns the length of a string
 
-   list_dialog(message, text, btn_1_label, btn_2_label, ...) -- Pop up a dialog
-      for prompting the user to choose a line from the given text string.  The
-      first argument is a message string to be used as a title for the fixed
-      text describing the list.  The second string provides the list data: this
-      is a text string in which list entries are separated by newline
-      characters.  Up to seven additional optional arguments represent labels
-      for buttons to appear along the bottom of the dialog.  Returns the line
-      of text selected by the user as the function value (without any newline
-      separator) or the empty string if none was selected, and number of the
-      button pressed (the first button is number 1), in $list_dialog_button. 
-      If the user closes the dialog via the window close box, the function
-      returns the empty string, and $list_dialog_button returns 0.
+    list_dialog(message, text, btn_1_label, btn_2_label, ...) -- Pop up a dialog
+        for prompting the user to choose a line from the given text string.  The
+        first argument is a message string to be used as a title for the fixed
+        text describing the list.  The second string provides the list data:
+        this is a text string in which list entries are separated by newline
+        characters.  Up to seven additional optional arguments represent labels
+        for buttons to appear along the bottom of the dialog.  Returns the line
+        of text selected by the user as the function value (without any newline
+        separator) or the empty string if none was selected, and number of the
+        button pressed (the first button is number 1), in $list_dialog_button.
+        If the user closes the dialog via the window close box, the function
+        returns the empty string, and $list_dialog_button returns 0.
 
-   max(n1, n2, ...) -- Returns the maximum value of all of its arguments
+    max(n1, n2, ...) -- Returns the maximum value of all of its arguments
 
-   min(n1, n2, ...) -- Returns the minimum value of all of its arguments
+    min(n1, n2, ...) -- Returns the minimum value of all of its arguments
 
-   read_file(filename) -- Reads the contents of a text file into a string.  On
-      success, returns 1 in $read_status, and the contents of the file as a
-      string in the subroutine return value.  On failure, returns the empty
-      string "" and an 0 $read_status.
+    read_file(filename) -- Reads the contents of a text file into a string.  On
+        success, returns 1 in $read_status, and the contents of the file as a
+        string in the subroutine return value.  On failure, returns the empty
+        string "" and an 0 $read_status.
 
-   replace_in_string(string, search_for, replace_with, [type]) -- Replaces all
-      occurrences of a search string in a string with a replacement string. 
-      Arguments are 1: string to search in, 2: string to search for, 3:
-      replacement string.  Argument 4 is an optional search type, one of
-      "literal", "case" or "regex".  The default search type is "literal". 
-      Returns a new string with all of the replacements done, or an empty
-      string ("") if no occurrences were found.
+    replace_in_string(string, search_for, replace_with, [type]) -- Replaces all
+        occurrences of a search string in a string with a replacement string.
+        Arguments are 1: string to search in, 2: string to search for, 3:
+        replacement string.  Argument 4 is an optional search type, one of
+        "literal", "case" or "regex".  The default search type is "literal".
+        Returns a new string with all of the replacements done, or an empty
+        string ("") if no occurrences were found.
 
-   replace_range(start, end, string) -- Replaces all of the text in the current
-      window between two positions.
+    replace_range(start, end, string) -- Replaces all of the text in the current
+        window between two positions.
 
-   replace_selection(string) -- Replaces the primary-selection selected text in
-      the current window.
+    replace_selection(string) -- Replaces the primary-selection selected text in
+        the current window.
 
-   replace_substring(string, start, end, replace_with) -- Replacing a substring
-      between two positions in a string within another string.
+    replace_substring(string, start, end, replace_with) -- Replacing a substring
+        between two positions in a string within another string.
 
-   search(search_for, start, [search_type, wrap, direction]) -- Searches
-      silently in a window without dialogs, beeps, or changes to the
-      selection.  Arguments are: 1: string to search for, 2: starting position.
-      Optional arguments may include the strings: "wrap" to make the search
-      wrap around the beginning or end of the string, "backward" or "forward"
-      to change the search direction ("forward" is the default), "literal",
-      "case" or "regex" to change the search type (default is "literal").
-      Returns the starting position of the match, or -1 if nothing matched.
-      also returns the ending position of the match in search_end
+    search(search_for, start, [search_type, wrap, direction]) -- Searches
+        silently in a window without dialogs, beeps, or changes to the
+        selection.  Arguments are: 1: string to search for, 2: starting
+        position.  Optional arguments may include the strings: "wrap" to make
+        the search wrap around the beginning or end of the string, "backward" or
+        "forward" to change the search direction ("forward" is the default),
+        "literal", "case" or "regex" to change the search type (default is
+        "literal").  Returns the starting position of the match, or -1 if
+        nothing matched.  also returns the ending position of the match in
+        search_end.
 
-   search_string(string, search_for, start, [search_type, direction]) --
-      Built-in macro subroutine for searching a string.  Arguments are 1:
-      string to search in, 2: string to search for, 3: starting position.
-      Optional arguments may include the strings: "wrap" to make the search
-      wrap around the beginning or end of the string, "backward" or "forward"
-      to change the search direction ("forward" is the default), "literal",
-      "case" or "regex" to change the search type (default is "literal").
-      Returns the starting position of the match, or -1 if nothing matched.
-      Also returns the ending position of the match in $search_end
+    search_string(string, search_for, start, [search_type, direction]) --
+        Built-in macro subroutine for searching a string.  Arguments are 1:
+        string to search in, 2: string to search for, 3: starting position.
+        Optional arguments may include the strings: "wrap" to make the search
+        wrap around the beginning or end of the string, "backward" or "forward"
+        to change the search direction ("forward" is the default), "literal",
+        "case" or "regex" to change the search type (default is "literal").
+        Returns the starting position of the match, or -1 if nothing matched.
+        Also returns the ending position of the match in $search_end
 
-   select(start, end) -- Selects (with the primary selection) text in the
-      current buffer between a starting and ending position.
+    select(start, end) -- Selects (with the primary selection) text in the
+        current buffer between a starting and ending position.
 
-   select_rectangle(start, end, left, right) -- Selects a rectangular area of
-      text between a starting and ending position, and confined horizontally to
-      characters displayed between positions "left", and "right".
+    select_rectangle(start, end, left, right) -- Selects a rectangular area of
+        text between a starting and ending position, and confined horizontally
+        to characters displayed between positions "left", and "right".
 
-   set_cursor_pos(pos) -- Set the cursor position for the current window.
+    set_cursor_pos(pos) -- Set the cursor position for the current window.
 
-   set_language_mode(mode) -- Change language mode for the current window.
+    shell_command(command, input_string) -- executes a shell command, feeding it
+        input from input_string.  On completion, output from the command is
+        returned as the function value, and the command's exit status is
+        returned in the global variable $shell_cmd_status.
 
-   shell_command(command, input_string) -- executes a shell command, feeding it
-      input from input_string.  On completion, output from the command is
-      returned as the function value, and the command's exit status is returned
-      in the global variable $shell_cmd_status.
+    split(string, separation_string [, search_type]) -- Splits a string using the
+        separator specified. Optionally the search_type argument can specify how the
+        separation_string is interpreted. The default is "literal". The returned value
+        is an array with keys beginning at 0.
 
-   string_dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
-      prompting the user to enter information.  The first argument is a string
-      to show in the message area of the dialog.  Up to nine additional
-      optional arguments represent labels for buttons to appear along the
-      bottom of the dialog.  Returns the string entered by the user as the
-      function value, and number of the button pressed (the first button is
-      number 1), in $string_dialog_button.  If the user closes the dialog via
-      the window close box, the function returns the empty string, and
-      $string_dialog_button returns 0.
+    string_dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
+        prompting the user to enter information.  The first argument is a string
+        to show in the message area of the dialog.  Up to nine additional
+        optional arguments represent labels for buttons to appear along the
+        bottom of the dialog.  Returns the string entered by the user as the
+        function value, and number of the button pressed (the first button is
+        number 1), in $string_dialog_button.  If the user closes the dialog via
+        the window close box, the function returns the empty string, and
+        $string_dialog_button returns 0.
 
-   string_to_clipboard(string) -- Copy the contents of a macro string to the
-      clipboard.
+    string_compare(string1, string2 [, consider-case]) -- Compare two strings
+        and return 0 if they are equal, -1 if string1 is less than string2 or 1 if
+        string1 is greater than string2. The default is to do a case sensitive
+        comparison. Optionally a "nocase" argument can be supplied to force the
+        comparison to ingore case differences.
 
-   substring(string, start, end) -- Returns the portion of a string between a
-      starting and ending position.
+    string_to_clipboard(string) -- Copy the contents of a macro string to the
+        clipboard.
 
-   t_print(string1, string2, ...) -- Writes strings to the terminal (stdout)
-      from which NEdit was started.
+    substring(string, start, end) -- Returns the portion of a string between a
+        starting and ending position.
 
-   tolower(string) -- Return an all lower-case version of string.
+    t_print(string1, string2, ...) -- Writes strings to the terminal (stdout)
+        from which NEdit was started.
 
-   toupper(string) -- Return an all upper-case version of string.
+    tolower(string) -- Return an all lower-case version of string.
 
-   write_file(string, filename) -- Writes a string (parameter 1) to a file
-      named in parameter 2.  Returns 1 on successful write, or 0 if
-      unsuccessful.
+    toupper(string) -- Return an all upper-case version of string.
+
+    write_file(string, filename) -- Writes a string (parameter 1) to a file
+        named in parameter 2.  Returns 1 on successful write, or 0 if
+        unsuccessful.
 
 
 ACTION ROUTINES
@@ -1915,43 +1993,47 @@ translation table entries (see KEY BINDING below).
 
 Actions Representing Menu Commands:
 
-    File Menu		      Search Menu
+    File Menu                      Search Menu
     ---------------------     -----------------------
-    new()		      find()
-    open()		      find_dialog()
-    open_dialog()	      find_again()
-    open_selected()	      find_selection()
-    close()		      replace()
-    save()		      replace_dialog()
-    save_as()		      replace_all()
-    save_as_dialog()	      replace_in_selection()
-    revert_to_saved()	      replace_again()
-    include_file()	      goto_line_number()
-    include_file_dialog ()    goto_line_number_dialog()
-    load_tags_file()	      goto_selected()
-    load_tags_file_dialog()   mark()
-    load_macro_file()         mark_dialog()
-    load_macro_file_dialog()  goto_mark()
-    print()		      goto_mark_dialog()
-    print_selection()	      match()
-    unload_tags_file()        find_definition()
-    exit()		      split_window()
-    			      close_pane()
-    Edit Menu		      
-    ---------------------     Shell Menu
-    undo()		      -----------------------
-    redo()		      filter_selection_dialog()
-    delete()		      filter_selection()
-    select_all()	      execute_command()
-    shift_left()	      execute_command_dialog()
-    shift_left_by_tab()       execute_command_line()
-    shift_right()	      shell_menu_command()
-    shift_right_by_tab()      
-    uppercase() 	      Macro Menu
-    lowercase() 	      -----------------------
-    fill_paragraph()	      macro_menu_command()
-    control_code_dialog()     repeat_macro()
-    			      repeat_dialog()
+    new()                     find()
+    open()                    find_dialog()
+    open_dialog()             find_again()
+    open_selected()           find_selection()
+    close()                   replace()
+    save()                    replace_dialog()
+    save_as()                 replace_all()
+    save_as_dialog()          replace_in_selection()
+    revert_to_saved()         replace_again()
+    include_file()            goto_line_number()
+    include_file_dialog()     goto_line_number_dialog()
+    load_macro_file()         goto_selected()
+    load_macro_file_dialog()  mark()
+    load_tags_file()          mark_dialog()
+    load_tags_file_dialog()   goto_mark()
+    unload_tags_file()        goto_mark_dialog()
+    print()                   goto_matching()
+    print_selection()         select_to_matching()
+    exit()                    find_definition()
+
+    Edit Menu                 Shell Menu
+    ---------------------     -----------------------
+    undo()                    execute_command()
+    redo()                    execute_command_dialog()
+    delete_selection()        execute_command_line()
+    select_all()              filter_selection()
+    shift_left()              filter_selection_dialog()
+    shift_left_by_tab()       shell_menu_command()
+    shift_right()
+    shift_right_by_tab()      Macro Menu
+    uppercase()               -----------------------
+    lowercase()               repeat_macro()
+    fill_paragraph()          repeat_dialog()
+    control_code_dialog()     macro_menu_command()
+
+                              Windows Menu
+                              -----------------------
+                              split_window()
+                              close_pane()
 
 The actions representing menu commands are named the same as the menu item with
 punctuation removed, all lower case, and underscores replacing spaces.  Without
@@ -1965,284 +2047,400 @@ Menu Action Routine Arguments:
 Arguments are text strings enclosed in quotes.  Below are the menu action
 routines which take arguments.  Optional arguments are inclosed in [].
 
-  open(filename)
+    open(filename)
 
-  save_as(filename)
+    close(["prompt" | "save" | "nosave"])
 
-  include(filename)
+    save_as(filename)
 
-  load_tags_file(filename)
+    include_file(filename)
 
-  find_dialog([search_direction])
+    load_tags_file(filename)
 
-  find(search_string [, search-direction], [search-type])
+    unload_tags_file(filename)
 
-  find_again([search-direction])
+    find_dialog([search_direction] [, search-type] [, keep-dialog])
 
-  find_selection([search-direction])
+    find(search_string [, search-direction] [, search-type] [, search-wrap])
 
-  replace_dialog([search-direction])
+    find_again([search-direction] [, search-wrap])
 
-  replace(search-string, replace-string,
-	  [, search-direction] [, search-type])
+    find_selection([search-direction] [, search-wrap] [, non-regex-search-type])
 
-  replace_in_selection(search-string, replace-string
-	  [, search-type])
+    replace_dialog([search-direction] [, search-type] [, keep-dialog])
 
-  replace_again([search-direction])
+    replace(search-string, replace-string [, search-direction] [, search-type]
+            [, search-wrap])
 
-  goto_line_number([line-number])
+    replace_in_selection(search-string, replace-string [, search-type])
 
-  mark(mark-letter)
+    replace_again([search-direction] [, search-wrap])
 
-  goto_mark(mark-letter)
+    goto_line_number([line-number])
 
-  filter_selection(shell-command)
+    mark(mark-letter)
 
-  execute_command(shell-command)
+    goto_mark(mark-letter)
 
-  shell_menu_command(shell-menu-item-name)
+    find_definition([tag-name])
 
-  macro_menu_command(macro-menu-item-name)
+    filter_selection(shell-command)
+
+    execute_command(shell-command)
+
+    shell_menu_command(shell-menu-item-name)
+
+    macro_menu_command(macro-menu-item-name)
 
 Some notes on argument types above:
 
-  filename	    Path names are interpreted relative
- 		    to the directory from which NEdit was
- 		    started, wildcards and ~ are not
- 		    expanded.
- 		    
-  search-direction  Either "forward" or "backward"
+    filename            Path names are interpreted relative to the directory
+                        from which NEdit was started, wildcards and ~ are not
+                        expanded.
 
-  search-type	    Either "literal", "case", or "regex"
+    search-direction    Either "forward" or "backward"
 
-  mark-letter	    The mark command limits users to
- 		    single letters.  Inside of macros,
- 		    numeric marks are allowed, which won't
- 		    interfere with marks set by the user.
+    search-type         Either "literal", "case", "word", "caseWord", "regex",
+                        or "regexNoCase"
 
-  (macro or shell)  Name of the command exactly as
-  -menu-item-name   specified in the Shell Menu or
- 		    Macro Menu dialogs
+    non-regex-search-type   Either "literal". "case", "word", or "caseWord"
+
+    search-wrap         Either "wrap" or "nowrap"
+
+    consider-case       Either "case" or "nocase"
+
+    keep-dialog         Either "keep" or "nokeep"
+
+    mark-letter         The mark command limits users to single letters.  Inside
+                        of macros, numeric marks are allowed, which won't
+                        interfere with marks set by the user.
+
+    (macro or shell)    Name of the command exactly as specified in the Shell
+    -menu-item-name     Menu or Macro Menu dialogs
+
+
+Window Preferences Actions
+
+    set_auto_indent("off" | "on" | "smart") -- Set auto indent mode for the
+        current window.
+
+    set_em_tab_dist(em-tab-distance) -- Set the emulated tab size. An
+        em-tab-distance value of 0 or -1 translates to no emulated tabs.
+        Em-tab-distance must be smaller than 1000.
+
+    set_fonts(font-name, italic-font-name, bold-font-name,
+        bold-italic-font-name) -- Set all the fonts used for the current window.
+        
+    set_highlight_syntax([0 | 1]) -- Set syntax highlighting mode for the
+        current window.  A value of 0 turns it off and a value of 1 turns it on.
+        If no parameters are supplied the option is toggled.
+
+    set_incremental_backup([0 | 1]) -- Set incremental backup mode for the
+        current window.  A value of 0 turns it off and a value of 1 turns it on.
+        If no parameters are supplied the option is toggled.
+
+    set_incremental_search_line([0 | 1]) -- Show or hide the incremental search
+        line for the current window.  A value of 0 turns it off and a value of 1
+        turns it on.  If no parameters are supplied the option is toggled.
+
+    set_language_mode(language-mode) -- Set the language mode for the current
+        window. If the language mode is "" or unrecognized, it will be set to
+        Plain.
+
+    set_locked([0 | 1]) -- This only affects the locked status of a file, not
+        it's read-only status. Permissions are NOT changed.  A value of 0 turns
+        it off and a value of 1 turns it on. If no parameters are supplied the
+        option is toggled.
+
+    set_make_backup_copy([0 | 1]) -- Set whether backup copies are made during
+        saves for the current window.  A value of 0 turns it off and a value of
+        1 turns it on.  If no parameters are supplied the option is toggled.
+
+    set_overtype_mode([0 | 1]) -- Set overtype mode for the current window.  A
+        value of 0 turns it off and a value of 1 turns it on.  If no parameters
+        are supplied the option is toggled.
+
+    set_show_line_numbers([0 | 1]) -- Show or hide line numbers for the current
+        window.  A value of 0 turns it off and a value of 1 turns it on.  If no
+        parameters are supplied the option is toggled.
+
+    set_show_matching("off" | "delimiter" | "range") -- Set show matching (...)
+        mode for the current window.
+
+    set_statistics_line([0 | 1]) -- Show or hide the statistics line for the
+        current window.  A value of 0 turns it off and a value of 1 turns it on.
+        If no parameters are supplied the option is toggled.
+
+    set_tab_dist(tab-distance) -- Set the size of hardware tab spacing.
+        Tab-distance must must be a value greater than 0 and no greater than
+        20.
+
+    set_use_tabs([0 | 1]) -- Set whether tabs are used for the current window. 
+        A value of 0 turns it off and a value of 1 turns it on.  If no
+        parameters are supplied the option is toggled.
+
+    set_wrap_margin(wrap-width) -- Set the wrap width for text wrapping of the
+        current window. A value of 0 means to wrap at window width.
+
+    set_wrap_text("none" | "auto" | "continuous") -- Set wrap text mode for the
+        current window.
 
 
 Keyboard-Only Actions
 
-   backward_character() -- Moves the cursor one character to the left.
+    backward_character(["nobell"]) -- Moves the cursor one character to the
+        left.
 
-   backward_paragraph() -- Moves the cursor to the beginning of the paragraph,
-      or if the cursor is already at the beginning of a paragraph, moves the
-      cursor to the beginning of the previous paragraph.  Paragraphs are
-      defined as regions of text delimited by one or more blank lines.
+    backward_paragraph(["nobell"]) -- Moves the cursor to the beginning of the
+        paragraph, or if the cursor is already at the beginning of a paragraph,
+        moves the cursor to the beginning of the previous paragraph.  Paragraphs
+        are defined as regions of text delimited by one or more blank lines.
 
-   backward_word() -- Moves the cursor to the beginning of a word, or, if the
-      cursor is already at the beginning of a word, moves the cursor to the
-      beginning of the previous word.  Word delimiters are user-settable, and
-      defined by the X resource wordDelimiters.
+    backward_word(["nobell"]) -- Moves the cursor to the beginning of a word,
+        or, if the cursor is already at the beginning of a word, moves the
+        cursor to the beginning of the previous word.  Word delimiters are
+        user-settable, and defined by the X resource wordDelimiters.
 
-   beginning_of_file() -- Moves the cursor to the beginning of the file.
+    beginning_of_file(["scrollbar"]) -- Moves the cursor to the beginning of the
+        file.
 
-   beginning_of_line() -- Moves the cursor to the beginning of the line.
+    beginning_of_line() -- Moves the cursor to the beginning of the line.
 
-   beginning_of_selection() -- Moves the cursor to the beginning of the
-      selection without disturbing the selection.
+    beginning_of_selection() -- Moves the cursor to the beginning of the
+        selection without disturbing the selection.
 
-   copy_clipboard() -- Copies the current selection to the clipboard.
+    copy_clipboard() -- Copies the current selection to the clipboard.
 
-   copy_primary() -- Copies the primary selection to the cursor.
+    copy_primary() -- Copies the primary selection to the cursor.
 
-   copy_to() -- If a secondary selection exists, copies the secondary selection
-      to the cursor.  If no secondary selection exists, copies the primary
-      selection to the pointer location.
+    copy_to() -- If a secondary selection exists, copies the secondary selection
+        to the cursor.  If no secondary selection exists, copies the primary
+        selection to the pointer location.
 
-   copy_to_or_end_drag() -- Completes either a secondary selection operation,
-      or a primary drag.  If the user is dragging the mouse to adjust a
-      secondary selection, the selection is copied and either inserted at the
-      cursor location, or, if pending-delete is on and a primary selection
-      exists in the window, replaces the primary selection.  If the user is
-      dragging a block of text (primary selection), completes the drag
-      operation and leaves the text at it's current location.
+    copy_to_or_end_drag() -- Completes either a secondary selection operation,
+        or a primary drag.  If the user is dragging the mouse to adjust a
+        secondary selection, the selection is copied and either inserted at the
+        cursor location, or, if pending-delete is on and a primary selection
+        exists in the window, replaces the primary selection.  If the user is
+        dragging a block of text (primary selection), completes the drag
+        operation and leaves the text at it's current location.
 
-   cut_clipboard() -- Deletes the text in the primary selection and places it
-      in the clipboard.
+    cut_clipboard() -- Deletes the text in the primary selection and places it
+        in the clipboard.
 
-   cut_primary() -- Copies the primary selection to the cursor and deletes it
-      at its original location.
+    cut_primary() -- Copies the primary selection to the cursor and deletes it
+        at its original location.
 
-   delete_selection() -- Deletes the contents of the primary selection.
+    delete_selection() -- Deletes the contents of the primary selection.
 
-   delete_next_character() -- If a primary selection exists, deletes its
-      contents. Otherwise, deletes the character following the cursor.
+    delete_next_character(["nobell"]) -- If a primary selection exists, deletes
+        its contents.  Otherwise, deletes the character following the cursor.
 
-   delete_previous_character() -- If a primary selection exists, deletes its
-      contents.  Otherwise, deletes the character before the cursor.
+    delete_previous_character(["nobell"]) -- If a primary selection exists,
+        deletes its contents.  Otherwise, deletes the character before the
+        cursor.
 
-   delete_next_word() -- If a primary selection exists, deletes its contents.
-      Otherwise, deletes the word following the cursor.
+    delete_next_word(["nobell"]) -- If a primary selection exists, deletes its
+        contents. Otherwise, deletes the word following the cursor.
 
-   delete_previous_word() -- If a primary selection exists, deletes its
-      contents. Otherwise, deletes the word before the cursor.
+    delete_previous_word(["nobell"]) -- If a primary selection exists, deletes
+        its contents. Otherwise, deletes the word before the cursor.
 
-   delete_to_start_of_line() -- If a primary selection exists, deletes its
-      contents. Otherwise, deletes the characters between the cursor and the
-      start of the line.
+    delete_to_start_of_line(["nobell"]) -- If a primary selection exists,
+        deletes its contents. Otherwise, deletes the characters between the
+        cursor and the start of the line.
 
-   delete_to_end_of_line() -- If a primary selection exists, deletes its
-      contents. Otherwise, deletes the characters between the cursor and the
-      end of the line.
+    delete_to_end_of_line(["nobell"]) -- If a primary selection exists, deletes
+        its contents. Otherwise, deletes the characters between the cursor and
+        the end of the line.
 
-   deselect_all() -- De-selects the primary selection.
+    deselect_all() -- De-selects the primary selection.
 
-   end_of_file() -- Moves the cursor to the end of the file.
+    end_of_file(["scrollbar"]) -- Moves the cursor to the end of the file.
 
-   end_of_line() -- Moves the cursor to the end of the line.
+    end_of_line() -- Moves the cursor to the end of the line.
 
-   end_of_selection() -- Moves the cursor to the end of the selection without
-      disturbing the selection.
+    end_of_selection() -- Moves the cursor to the end of the selection without
+        disturbing the selection.
 
-   exchange() -- Exchange the primary and secondary selections.
+    exchange(["nobell"]) -- Exchange the primary and secondary selections.
 
-   extend_adjust() -- Attached mouse-movement events to begin a selection
-      between the cursor and the mouse, or extend the primary selection to the
-      mouse position.
+    extend_adjust() -- Attached mouse-movement events to begin a selection
+        between the cursor and the mouse, or extend the primary selection to the
+        mouse position.
 
-   extend_end() -- Completes a primary drag-selection operation.
+    extend_end() -- Completes a primary drag-selection operation.
 
-   extend_start() -- Begins a selection between the cursor and the mouse.  A
-      drag-selection operation can be started with either extend_start or
-      grab_focus.
+    extend_start() -- Begins a selection between the cursor and the mouse.  A
+        drag-selection operation can be started with either extend_start or
+        grab_focus.
 
-   forward_character() -- Moves the cursor one character to the right.
+    focus_pane([relative-pane] | [positive-index] | [negative-index]) -- Move
+        the focus to the requested pane.  Possible arguments are:
 
-   forward_paragraph() -- Moves the cursor to the beginning of the next
-      paragraph. Paragraphs are defined as regions of text delimited by one or
-      more blank lines.
+        relative-pane is one of "first", "last", "next", "previous".
+        positive-index are numbers greater than 0. 1 is the same as "first".
+        negative-index are numbers less than 0. -1 is the as "last".
 
-   forward_word() -- Moves the cursor to the beginning of the next word.  Word
-      delimiters are user-settable, and defined by the X resource
-      wordDelimiters.
+    forward_character(["nobell"]) -- Moves the cursor one character to the
+        right.
 
-   grab_focus() -- Moves the cursor to the mouse pointer location, and prepares
-      for a possible drag-selection operation (bound to extend_adjust), or
-      multi-click operation (a further grab_focus action).  If a second
-      invocation of grab focus follows immediately, it selects a whole word, or
-      a third, a whole line.
+    forward_paragraph(["nobell"]) -- Moves the cursor to the beginning of the
+        next paragraph. Paragraphs are defined as regions of text delimited by
+        one or more blank lines.
 
-   insert_string("string")  If pending delete is on and the cursor is inside
-      the selection, replaces the selection with "string".  Otherwise, inserts
-      "string" at the cursor location.
+    forward_word(["tail"] ["nobell"]) -- Moves the cursor to the beginning of
+        the next word.  Word delimiters are user-settable, and defined by the X
+        resource wordDelimiters.  If the "tail" argument is supplied the cursor
+        will be moved to the end of the current word or the end of the next
+        word, if the cursor is between words.
 
-   key_select("direction") Moves the cursor one character in "direction"
-      ("left", "right", "up", or "down") and extends the selection.  Same as
-      forward/backward-character("extend"), or process-up/down("extend"), for
-      compatibility with previous versions.
+    grab_focus() -- Moves the cursor to the mouse pointer location, and prepares
+        for a possible drag-selection operation (bound to extend_adjust), or
+        multi-click operation (a further grab_focus action).  If a second
+        invocation of grab focus follows immediately, it selects a whole word,
+        or a third, a whole line.
 
-   move-destination() -- Moves the cursor to the pointer location without
-      disturbing the selection.  (This is an unusual way of working.  We left
-      it in for compatibility with previous versions, but if you actually use
-      this capability, please send us some mail, otherwise it is likely to
-      disappear in the future.
+    insert_string("string") -- If pending delete is on and the cursor is inside
+        the selection, replaces the selection with "string".  Otherwise, inserts
+        "string" at the cursor location.
 
-   move_to() -- If a secondary selection exists, deletes the contents of the
-      secondary selection and inserts it at the cursor, or if pending-delete is
-      on and there is a primary selection, replaces the primary selection.  If
-      no secondary selection exists, moves the primary selection to the pointer
-      location, deleting it from its original position.
+    key_select("direction" [, "nobell"]) -- Moves the cursor one character in
+        "direction" ("left", "right", "up", or "down") and extends the
+        selection.  Same as forward/backward-character("extend"), or
+        process-up/down("extend"), for compatibility with previous versions.
 
-   move_to_or_end_drag() -- Completes either a secondary selection operation,
-      or a primary drag.  If the user is dragging the mouse to adjust a
-      secondary selection, the selection is deleted and either inserted at the
-      cursor location, or, if pending-delete is on and a primary selection
-      exists in the window, replaces the primary selection.  If the user is
-      dragging a block of text (primary selection), completes the drag
-      operation and deletes the text from it's current location.
+    move-destination() -- Moves the cursor to the pointer location without
+        disturbing the selection.  (This is an unusual way of working.  We left
+        it in for compatibility with previous versions, but if you actually use
+        this capability, please send us some mail, otherwise it is likely to
+        disappear in the future.
 
-   newline() -- Inserts a newline character.  If Auto Indent is on, lines up
-      the indentation of the cursor with the current line.
+    move_to() -- If a secondary selection exists, deletes the contents of the
+        secondary selection and inserts it at the cursor, or if pending-delete
+        is on and there is a primary selection, replaces the primary selection. 
+        If no secondary selection exists, moves the primary selection to the
+        pointer location, deleting it from its original position.
 
-   newline_and_indent() -- Inserts a newline character and lines up the
-      indentation of the cursor with the current line, regardless of the
-      setting of Auto Indent.
+    move_to_or_end_drag() -- Completes either a secondary selection operation,
+        or a primary drag.  If the user is dragging the mouse to adjust a
+        secondary selection, the selection is deleted and either inserted at the
+        cursor location, or, if pending-delete is on and a primary selection
+        exists in the window, replaces the primary selection.  If the user is
+        dragging a block of text (primary selection), completes the drag
+        operation and deletes the text from it's current location.
 
-   newline_no_indent() -- Inserts a newline character, without automatic
-      indentation, regardless of the setting of Auto Indent.
+    newline() -- Inserts a newline character.  If Auto Indent is on, lines up
+        the indentation of the cursor with the current line.
 
-   next_page() -- Moves the cursor and scroll forward one page.
+    newline_and_indent() -- Inserts a newline character and lines up the
+        indentation of the cursor with the current line, regardless of the
+        setting of Auto Indent.
 
-   page_left() -- Move the cursor and scroll left one page.
+    newline_no_indent() -- Inserts a newline character, without automatic
+        indentation, regardless of the setting of Auto Indent.
 
-   page_right() -- Move the cursor and scroll right one page.
+    next_page(["stutter"] ["column"] ["scrollbar"] ["nobell"]) -- Moves the
+        cursor and scroll forward one page.  The paramater "stutter" moves the
+        cursor to the bottom of the display,unless it is already there,
+        otherwise it will page down.  The parameter "column" will maintain the
+        preferred column whilemoving the cursor. 
 
-   paste_clipboard() -- Insert the contents of the clipboard at the cursor, or
-      if pending delete is on, replace the primary selection with the contents
-      of the clipboard.
+    page_left(["scrollbar"] ["nobell"]) -- Move the cursor and scroll left one
+        page.
 
-   previous_page() -- Moves the cursor and scroll backward one page.
+    page_right(["scrollbar"] ["nobell"]) -- Move the cursor and scroll right one
+        page.
 
-   process_bdrag() -- Same as secondary_or_drag_start for compatibility with
-      previous versions.
+    paste_clipboard() -- Insert the contents of the clipboard at the cursor, or
+        if pending delete is on, replace the primary selection with the contents
+        of the clipboard.
 
-   process_cancel() -- Cancels the current extend_adjust, secondary_adjust, or
-      secondary_or_drag_adjust in progress.
+    previous_page(["stutter"] ["column"] ["scrollbar"] ["nobell"]) -- Moves the
+        cursor and scroll backward one page.The paramater "stutter" moves the
+        cursor to the top of the display,unless it is already there, otherwise
+        it will page up.The parameter "column" will maintain the preferred
+        column whilemoving the cursor.
 
-   process_down() -- Moves the cursor down one line.
+    process_bdrag() -- Same as secondary_or_drag_start for compatibility with
+        previous versions.
 
-   process_return() -- Same as newline for compatibility with previous
-      versions.
+    process_cancel() -- Cancels the current extend_adjust, secondary_adjust, or
+        secondary_or_drag_adjust in progress.
 
-   process_shift_down() -- Same as process_down("extend") for compatibility
-      with previous versions.
+    process_down(["nobell"]) -- Moves the cursor down one line.
 
-   process_shift_up() -- Same as process_up("extend") for compatibility with
-      previous versions.
+    process_return() -- Same as newline for compatibility with previous
+        versions.
 
-   process_tab() -- If tab emulation is turned on, inserts an emulated tab,
-      otherwise inserts a tab character.
+    process_shift_down(["nobell"]) -- Same as process_down("extend") for
+        compatibility with previous versions.
 
-   process_up() -- Moves the cursor up one line.
+    process_shift_up(["nobell"]) -- Same as process_up("extend") for
+        compatibility with previous versions.
 
-   scroll_down(nLines) Scroll the display down (towards the end of the file) by
-      nLines.
+    process_tab() -- If tab emulation is turned on, inserts an emulated tab,
+        otherwise inserts a tab character.
 
-   scroll_up(nLines) Scroll the display up (towards the beginning of the file)
-      by nLines.
+    process_up(["nobell"]) -- Moves the cursor up one line.
 
-   scroll_to_line(lineNum) Scroll to position line number lineNum at the top of
-      the pane.  The first line of a file is line 1.
+    raise_window([relative-window] | [positive-index] | [negative-index]) --
+        Raise the current focused window to the front if no argument is
+        supplied.  Possible arguments are:
 
-   secondary_adjust() -- Attached mouse-movement events to extend the secondary
-      selection to the mouse position.
+        relative-pane is one of "first", "last", "next", "previous".
+        positive-index are numbers greater than 0. 1 is the same as "first".
+        negative-index are numbers less than 0. -1 is the as "last".
 
-   secondary_or_drag_adjust() -- Attached mouse-movement events to extend the
-      secondary selection, or reposition the primary text being dragged.  Takes
-      two optional arguments, "copy", and "overlay".  "copy" leaves a copy of
-      the dragged text at the site at which the drag began.  "overlay" does the
-      drag in overlay mode, meaning the dragged text is laid on top of the
-      existing text, obscuring and ultimately deleting it when the drag is
-      complete.
+    scroll_down(nLines) Scroll the display down (towards the end of the file) by
+        nLines.
 
-   secondary_or_drag_start() -- To be attached to a mouse down event.  Begins
-      drag selecting a secondary selection, or dragging the contents of the
-      primary selection, depending on whether the mouse is pressed inside of an
-      existing primary selection.
+    scroll_left(nPixels) -- Scroll the display left by nPixels.
 
-   secondary_start() -- To be attached to a mouse down event.  Begin drag
-      selecting a secondary selection.
+    scroll_right(nPixels) -- Scroll the display right by nPixels.
 
-   select_all() -- Select the entire file.
+    scroll_up(nLines) -- Scroll the display up (towards the beginning of the
+        file) by nLines.
 
-   self_insert() -- To be attached to a key-press event, inserts the character
-      equivalent of the key pressed.
-      
-Arguments to Keyboard Action Routines 
+    scroll_to_line(lineNum) -- Scroll to position line number lineNum at the top
+        of the pane.  The first line of a file is line 1.
+
+    secondary_adjust() -- Attached mouse-movement events to extend the secondary
+        selection to the mouse position.
+
+    secondary_or_drag_adjust() -- Attached mouse-movement events to extend the
+        secondary selection, or reposition the primary text being dragged. 
+        Takes two optional arguments, "copy", and "overlay".  "copy" leaves a
+        copy of the dragged text at the site at which the drag began.  "overlay"
+        does the drag in overlay mode, meaning the dragged text is laid on top
+        of the existing text, obscuring and ultimately deleting it when the drag
+        is complete.
+
+    secondary_or_drag_start() -- To be attached to a mouse down event.  Begins
+        drag selecting a secondary selection, or dragging the contents of the
+        primary selection, depending on whether the mouse is pressed inside of
+        an existing primary selection.
+
+    secondary_start() -- To be attached to a mouse down event.  Begin drag
+        selecting a secondary selection.
+
+    select_all() -- Select the entire file.
+
+    self_insert() -- To be attached to a key-press event, inserts the character
+        equivalent of the key pressed.
+
+Arguments to Keyboard Action Routines
 
 In addition to the arguments listed in the call descriptions, any routine
 involving cursor movement can take the argument "extend", meaning, adjust the
-primary selection to the new cursor position.  Routines which take the "extend"
-argument as well as mouse dragging operations for both primary and secondary
-selections can take the optional keyword "rect", meaning, make the selection
-rectangular.
-	
+primary selection to the new cursor position.
+Routines which take the "extend" argument as well as mouse dragging operations
+for both primary and secondary selections can take the optional keyword "rect",
+meaning, make the selection rectangular.
+Any routine that accepts the "scrollbar" argument will move the display but not
+the cursor or selection.
+Routines that accept the "nobell" argument will fail silently without beeping,
+if that argument is supplied.
 
 CUSTOMIZATION
 
@@ -2276,7 +2474,7 @@ PREFERENCES
 The Preferences menu allows you to set options for both the current editing
 window, and default values for newly created windows and future NEdit
 sessions.  Options in the Preferences menu itself (not in the Default Settings
-sub-menu) take effect immediately and refer to the current window only. 
+sub-menu) take effect immediately and refer to the current window only.
 Options in the Default Settings sub-menu have no effect on the current window,
 but instead provide initial settings for future windows created using the New
 or Open commands.  Preferences set in the Default Settings sub-menu can also be
@@ -2327,8 +2525,8 @@ Preferences Menu
       which it is often the format of choice).
 
       Wrap Margin -- Set margin for Auto Newline Wrap, Continuous Wrap, and
-	 Fill Paragraph.  Lines may, be wrapped at the right margin of the
-	 window, or the margin can be set at a specific column.
+         Fill Paragraph.  Lines may, be wrapped at the right margin of the
+         window, or the margin can be set at a specific column.
 
    Tabs -- Set the tab distance (number of characters between tab stops) for
       tab characters, and control tab emulation and use of tab characters in
@@ -2366,53 +2564,67 @@ Preferences -> Default Settings Menu
 
 Options in the Preferences -> Default Settings menu have the same meaning as
 those in the top-level Preferences menu, except that they apply to future NEdit
-windows and future NEdit sessions if saved with the Save Defaults command. 
+windows and future NEdit sessions if saved with the Save Defaults command.
 Additional options which appear in this menu are:
 
-   Language Modes -- Define language recognition information (for
-      determining language mode from file name or content) and set language
-      specific preferences.
+    Language Modes -- Define language recognition information (for determining
+        language mode from file name or content) and set language specific
+        preferences.
 
-   Tag Collisions -- How to react to multiple tags for the same name.  Tags
-      are described in the section: Features for Programmers -> Finding
-      Declarations (ctags).  In Show All mode, all matching tags are displayed
-      in a dialog.  In Smart mode, if one of the matching tags is in the
-      current window, that tag is chosen, without displaying the dialog.
+    Tag Collisions -- How to react to multiple tags for the same name.  Tags are
+        described in the section: Features for Programmers -> Finding
+        Declarations (ctags).  In Show All mode, all matching tags are displayed
+        in a dialog.  In Smart mode, if one of the matching tags is in the
+        current window, that tag is chosen, without displaying the dialog.
 
-   Customize Menus -- Add/remove items from the Shell, Macro, and window
-      background menus (see below).
+    Customize Menus -- Add/remove items from the Shell, Macro, and window
+        background menus (see below).
 
-   Searching -- Options for controlling the behavior of Find and Replace
-      commands:
+    Searching -- Options for controlling the behavior of Find and Replace
+        commands:
 
-   	 Verbose - Presents search results in dialog form, asks before
-   	    wrapping a search back around the beginning (or end) of the
-   	    file.
+        Verbose - Presents search results in dialog form, asks before wrapping a
+            search back around the beginning (or end) of the file.
 
-   	 Keep Dialogs Up - Don't pop down Replace and Find boxes after
-   	    searching.
+	    Wrap Around - Search and Replace operations wrap
+	        around the beginning (or end) of the file.
 
-   	 Default Search Style - Initial setting for search type in Find and
-   	    Replace dialogs.
- 
-   Syntax Highlighting -- Program and configure enhanced text display for
-      new or supported languages (See SYNTAX HIGHLIGHTING and WRITING SYNTAX
-      HIGHLIGHTING PATTERNS).
+	    Beep On Search Wrap - Beep when Search and Replace operations wrap
+            around the beginning (or end) of the file (only if Wrap Around is
+            turned on).
 
-   Sort Open Prev. Menu -- Option to order the File -> Open Previous menu
-      alphabetically, versus in order of last access.
- 
-   Popups Under Pointer -- Display pop-up dialogs centered on the current
-      mouse position, as opposed to centered on the parent window.  This
-      generally speeds interaction, and is essential for users who users who
-      set their window managers so keyboard focus follows the mouse.
- 
-   Modification Warnings -- Pop up a warning dialog when files get changed
-      external to NEdit.  Checking is done both before a save which might
-      overwrite a modified file, and when changes are made to NEdit's
-      displayed version of the file.
- 
-   Initial Window Size -- Default size for new windows.
+        Keep Dialogs Up - Don't pop down Replace and Find boxes after searching.
+
+        Default Search Style - Initial setting for search type in Find and
+            Replace dialogs.
+
+	    Default Replace Scope - Initial setting for the scope in the
+            Replace/Find dialog, when a selection exists.  It can be either "In
+            Window", "In Selection", or "Smart".  "Smart" results in "In Window"
+            if the size of the selection is smaller than 1 line, and to "In
+            Selection" otherwise.
+
+    Syntax Highlighting -- Program and configure enhanced text display for new
+        or supported languages (See SYNTAX HIGHLIGHTING and WRITING SYNTAX
+        HIGHLIGHTING PATTERNS).
+
+    Sort Open Prev. Menu -- Option to order the File -> Open Previous menu
+        alphabetically, versus in order of last access.
+
+    Popups Under Pointer -- Display pop-up dialogs centered on the current mouse
+        position, as opposed to centered on the parent window.  This generally
+        speeds interaction, and is essential for users who users who set their
+        window managers so keyboard focus follows the mouse.
+
+    Modification Warnings -- Pop up a warning dialog when files get changed
+        external to NEdit.  Checking is done both before a save which might
+        overwrite a modified file, and when changes are made to NEdit's
+        displayed version of the file.
+
+    Exit Warnings -- Ask before exiting when two or more files are open in an
+        NEdit session.
+
+    Initial Window Size -- Default size for new windows.
 
 Changing Font(s)
 
@@ -2476,7 +2688,7 @@ language modes.  The right angle bracket character ">" creates a sub-menu.  The
 name of the item itself should be the last element of the path formed from
 successive sub-menu names joined with ">".  Menu panes are called in to
 existence simply by naming them as part of a Menu Entry name.  To put several
-items in the same sub-menu, repeat the same hierarchical sequence for each. 
+items in the same sub-menu, repeat the same hierarchical sequence for each.
 For example, in the Macro Commands dialog, two items with menu entries: a>b>c
 and a>b>d would create a single sub menu under the macro menu called "a", which
 would contain a single sub-menu, b, holding the actual items, c and d:
@@ -2484,7 +2696,7 @@ would contain a single sub-menu, b, holding the actual items, c and d:
     +---++---++---+
     |a >||b >||c  |
     +---++---+|d  |
-    	      +---+
+              +---+
 
 To qualify a menu entry with a language mode, simply add an at-sign "@" at the
 end of the menu command, followed (no space) by a language mode name.  To make
@@ -2543,13 +2755,13 @@ the patterns, any new styles you added, and language mode information only if
 the patterns are intended to support a new language rather than updating an
 existing one. For example:
 
-   nedit.highlightPatterns:\
-	My Language:1:0{\n\
-		Comment:"#":"$"::Comment::\n\
-		Loop Header:"^[ \\t]*loop:":::Loop::\n\
-	}
-   nedit.languageModes: My Language:.my::::::
-   nedit.styles: Loop:blue:Bold
+    nedit.highlightPatterns:\
+    My Language:1:0{\n\
+        Comment:"#":"$"::Comment::\n\
+        Loop Header:"^[ \\t]*loop:":::Loop::\n\
+        }
+    nedit.languageModes: My Language:.my::::::
+    nedit.styles: Loop:blue:Bold
 
 Resources are in the format of X resource files, but the format of text within
 multiple-item resources like highlight patterns, language modes, macros,
@@ -2567,7 +2779,7 @@ next item.
 
 
 X RESOURCES
-        
+
 NEdit has additional options to those provided in the Preferences menu which
 are set using X resources.  Like most other X programs, NEdit can be customized
 to vastly unnecessary proportions, from initial window positions down to the
@@ -2594,7 +2806,7 @@ resource file would be to keep preferences menu options and resource settable
 options together in one place. Though the files are the same format, additional
 resources should not be added to the .nedit file, they will not be read, and
 NEdit modifies this file by overwriting it completely.  Note also that the
-contents of the .nedit file take precedence over the values of X resources. 
+contents of the .nedit file take precedence over the values of X resources.
 Using Save Defaults after moving the contents of your .nedit file to your
 .Xdefaults file will re-create the .nedit file, interfering with the options
 that you have moved.
@@ -2608,8 +2820,8 @@ see your .nedit file):
     nedit.tagFile: (not defined) -- The name of a file of the type produced
         by the Unix ctags command which NEdit will load at startup time
         (see FINDING SUBROUTINE AND DATA DECLARATIONS above).  The tag file
-	provides a database from which NEdit can automatically open files
-	containing the definition of a particular subroutine or data type.
+        provides a database from which NEdit can automatically open files
+        containing the definition of a particular subroutine or data type.
 
     nedit.shell: /bin/csh -- (Unix systems only) The Unix shell (command
         interpreter) to use for executing commands from the Shell menu
@@ -2628,14 +2840,14 @@ see your .nedit file):
         to False to get back the forward-delete function of the delete key.
 
     nedit.bgMenuButton: ~Shift~Ctrl~Meta~Alt<Btn3Down> -- Specification for
-	mouse button / key combination to post the background menu (in the
-	form of an X translation table event specification).  The event
-	specification should be as specific as possible, since it will
-	override less specific translation table entries.
+        mouse button / key combination to post the background menu (in the
+        form of an X translation table event specification).  The event
+        specification should be as specific as possible, since it will
+        override less specific translation table entries.
 
     nedit.maxPrevOpenFiles: 30 -- Number of files listed in the Open
-	Previous sub-menu of the File menu. Setting this to zero disables
-	the Open Previous menu item and maintenance of the .neditdb file.
+        Previous sub-menu of the File menu. Setting this to zero disables
+        the Open Previous menu item and maintenance of the .neditdb file.
 
     nedit.stdOpenDialog: False -- Setting this resource to True restores the
         standard Motif style of Open dialog.  NEdit file open dialogs are
@@ -2683,8 +2895,8 @@ see your .nedit file):
         program.  Other choices are: BOTTOM_RIGHT, TOP_LEFT, or TOP_RIGHT.
 
     nedit*text.autoWrapPastedText: False -- When Auto- Newline Wrap is turned
-	on, apply automatic wrapping (which normally only applies to typed
-	text) to pasted text as well.
+        on, apply automatic wrapping (which normally only applies to typed
+        text) to pasted text as well.
 
     nedit*text.heavyCursor: False -- For monitors with poor resolution or
         users who have difficulty seeing the cursor, makes the cursor in the
@@ -2696,21 +2908,21 @@ see your .nedit file):
     nedit*text.background: white -- Background color of the text editing area
         of the NEdit window.
 
-    nedit*text.selectForeground: black -- Foreground (text) color for
-    	selections in the text editing area of the NEdit window. 
+    nedit*text.selectForeground: black -- Foreground (text) color for selections
+        in the text editing area of the NEdit window.
 
     nedit*text.selectBackground: gray80 -- Color for selections in the text
-    	editing area of the NEdit window.
+        editing area of the NEdit window.
 
     nedit*text.highlightForeground: white -- Foreground (text) color for
-    	highlights (parenthesis flashing) in the text editing area of the
-    	NEdit window.
+        highlights (parenthesis flashing) in the text editing area of the NEdit
+        window.
 
     nedit*text.highlightBackground: red -- Color for highlights (parenthesis
-    	flashing) in the text editing area of the NEdit window.
+        flashing) in the text editing area of the NEdit window.
 
     nedit*text.cursorForeground: black -- Color for text cursor in the text
-    	editing area of the NEdit window.
+        editing area of the NEdit window.
 
     nedit*text.blinkRate: 600 -- Blink rate of the text insertion cursor in
         milliseconds.  Set to zero to stop blinking.
@@ -2718,13 +2930,13 @@ see your .nedit file):
     nedit*text.Translations: -- Modifies key bindings (see below).
 
     nedit*foreground: black -- Default foreground color for menus, dialogs,
-	scroll bars, etc..
+        scroll bars, etc..
 
     nedit*background: gray70 -- Default background color for menus, dialogs,
-	scroll bars, etc..
+        scroll bars, etc..
 
     nedit*fontList: helvetica-bold-14 -- Default font for menus, dialogs,
-	scroll bars, etc..
+        scroll bars, etc..
 
     nc.autoStart: False -- Whether the nc program should automatically start
         an NEdit server (without prompting the user) if an appropriate server
@@ -2748,7 +2960,7 @@ below, by appending .background, .foreground, .fontList, etc., to these names:
 
     nedit*helpText -- Help window text
 
-    
+
 KEY BINDING
 
 There are several ways to change key bindings in NEdit.  The easiest way to add
@@ -2781,8 +2993,8 @@ table associated with the text widget.  To add a binding to Alt+Y to insert the
 string "Hi!", for example, add lines similar to the following to your X
 resource file:
 
-  NEdit*text.Translations: #override \n\
-    Alt<Key>y: insert_string("Hi!") \n
+    NEdit*text.Translations: #override \n\
+        Alt<Key>y: insert_string("Hi!") \n
 
 The section "ACTION ROUTINES" above lists the actions available to be bound.
 
@@ -2863,7 +3075,7 @@ must be understood before making any any serious effort at pattern writing.
 In its simplest form, a highlight pattern consists of a regular expression to
 match, along with a style representing the font an color for displaying any
 text which matches that expression.  To bold the word, "highlight", wherever it
-appears the text, the regular expression simply would be the word "highlight". 
+appears the text, the regular expression simply would be the word "highlight".
 The style (selected from the menu under the heading of "Highlight Style")
 determines how the text will be drawn.  To bold the text, either select an
 existing style, such as "Keyword", which bolds text, or create a new style and
@@ -2898,7 +3110,7 @@ error expressions must also match within the requested context distance.
 
 Coloring Sub-Expressions
 
-It is also possible to color areas of text within a regular expression match. 
+It is also possible to color areas of text within a regular expression match.
 A pattern of this type associates a style with sub-expressions references of
 the parent pattern (as used in regular expression substitution patterns, see
 the section titled: REGULAR EXPRESSIONS).  Sub-expressions of both the starting
@@ -2926,7 +3138,7 @@ pattern until the entire sub-pattern has been parsed, regardless of whether the
 parent's end pattern appears in the text matched by the sub-pattern.
 
 The most common use for this capability is for coloring sub-structure of
-language constructs (smaller patterns embedded in larger patterns). 
+language constructs (smaller patterns embedded in larger patterns).
 Hierarchical patterns can also simplify parsing by having sub-patterns "hide"
 special syntax from parent patterns, such as special escape sequences or
 internal comments.
@@ -2989,7 +3201,7 @@ keywords in a typical language, without affecting the maximum rate at which
 users can enter text, you may be limited to just a few lines and/or a few
 hundred characters of context.
 
-The default context distance is 1 line, with no minimum character requirement. 
+The default context distance is 1 line, with no minimum character requirement.
 There are several benefits to sticking with this default.  One is simply that
 it is easy to understand and to comply with.  Regular expression notation is
 designed around single line matching.  To span lines in a regular expression,
@@ -3049,97 +3261,91 @@ nedit [-read] [-create] [-line n | +n] [-server] [-do command] [-tags file]
     [-display [host]:server[.screen] [-background color] [-foreground color]
     [-xrm resourcestring] [-import file] [file...]
 
-    -read -- Open the file Read Only regardless of the actual file
-    	protection.
+    -read -- Open the file Read Only regardless of the actual file protection.
 
     -create -- Don't warn about file creation when a file doesn't exist.
 
     -line n (or +n) -- Go to line number n
 
     -server -- Designate this session as an NEdit server, for processing
-        commands from the nc program.  nc can be used to interface NEdit
-        to code development environments, mailers, etc., or just as a
-        quick way to open files from the shell command line without
-        starting a new NEdit session.
+        commands from the nc program.  nc can be used to interface NEdit to code
+        development environments, mailers, etc., or just as a quick way to open
+        files from the shell command line without starting a new NEdit session.
 
-    -do command -- Execute an NEdit macro or action on each file following
-        the -do argument on the command line.  -do is particularly useful
-        from the nc program, where nc -do can remotely execute commands in
-        an nedit -server session.
+    -do command -- Execute an NEdit macro or action on each file following the
+        -do argument on the command line.  -do is particularly useful from the
+        nc program, where nc -do can remotely execute commands in an nedit
+        -server session.
 
-    -tags file -- Load a file of directions for finding definitions of
-        program subroutines and data objects.  The file must be of the
-        format generated by the Unix ctags command.
+    -tags file -- Load a file of directions for finding definitions of program
+        subroutines and data objects.  The file must be of the format generated
+        by the Unix ctags command.
 
     -tabs n -- Set tab stops every n characters.
 
-    -wrap, -nowrap -- Wrap long lines at the right edge of the window
-	rather than continuing them past it.  (Continuous Wrap mode)
-	
-    -autowrap, -noautowrap -- Wrap long lines when the cursor reaches
-	the right edge of the window by inserting newlines at word
-	boundaries.  (Auto Newline Wrap mode)
+    -wrap, -nowrap -- Wrap long lines at the right edge of the window rather
+        than continuing them past it.  (Continuous Wrap mode)
+
+    -autowrap, -noautowrap -- Wrap long lines when the cursor reaches the right
+        edge of the window by inserting newlines at word boundaries.  (Auto
+        Newline Wrap mode)
 
     -autoindent, -noautoindent -- Maintain a running indent.
 
-    -autosave, -noautosave -- Maintain a backup copy of the file being
-        edited under the name ~filename  (on Unix) or _filename (on VMS).
+    -autosave, -noautosave -- Maintain a backup copy of the file being edited
+        under the name ~filename  (on Unix) or _filename (on VMS).
 
     -lm languagemode -- Initial language mode used for editing
-	succeeding files.
+        succeeding files.
 
     -rows n -- Default height in characters for an editing window.
 
     -columns n -- Default width in characters for an editing window.
 
-    -font font (or -fn font) -- Font for text being edited (Font for
-        menus and dialogs can be set with -xrm "*fontList:font").
+    -font font (or -fn font) -- Font for text being edited (Font for menus and
+        dialogs can be set with -xrm "*fontList:font").
 
-    -geometry geometry (or -g geometry) -- The initial size and/or
-        location of editor windows.  The argument has the form:
+    -geometry geometry (or -g geometry) -- The initial size and/or location of
+        editor windows.  The argument has the form:
 
-           [<width>x<height>][+|-][<xoffset>[+|-]<yoffset>]
+            [<width>x<height>][+|-][<xoffset>[+|-]<yoffset>]
 
-        where <width> and <height> are the desired width and height of
-        the window, and <xoffset> and <yoffset> are the distance from the
-        edge of the screen to the window, + for top or left, - for bottom
-        or right. -geometry can be specified for individual files on the
-	command line.
+        where <width> and <height> are the desired width and height of the
+        window, and <xoffset> and <yoffset> are the distance from the edge of
+        the screen to the window, + for top or left, - for bottom or right.
+        -geometry can be specified for individual files on the command line.
 
     -iconic, -noiconic -- Initial window state for succeeding files.
- 
-    -display [host]:server[.screen] -- The name of the X server to use.
-        host specifies the machine, server specifies the display server
-        number, and screen specifies the screen number.  host or screen
-        can be omitted and default to the local machine, and screen 0.
 
-    -background color (or -bg color) -- Background color. (background
-        color for text can be set separately with:
-        -xrm "nedit*text.background: color").
+    -display [host]:server[.screen] -- The name of the X server to use.  host
+        specifies the machine, server specifies the display server number, and
+        screen specifies the screen number.  host or screen can be omitted and
+        default to the local machine, and screen 0.
 
-    -foreground color (or -fg color) -- Foreground color. (foreground
-        color for text can be set separately with:
-         -xrm "nedit*text.foreground: color").
+    -background color (or -bg color) -- Background color. (background color for
+        text can be set separately with: -xrm "nedit*text.background: color").
 
-    -xrm resourcestring -- Set the value of an X resource to override a
-        default value (see CUSTOMIZATION).
+    -foreground color (or -fg color) -- Foreground color.  (foreground color for
+        text can be set separately with: -xrm "nedit*text.foreground: color").
 
-    -svrname name -- When starting NEdit in server mode, name the
-	server, such that it responds to requests only when nc is given
-	a correspoding -svrname argument.  By naming servers, you can
-	run several simultaneously, and direct files and commands
-	specifically to any one.
+    -xrm resourcestring -- Set the value of an X resource to override a default
+        value (see CUSTOMIZATION).
 
-    -import file -- loads an additional preferences file on top of the
-       existing defaults saved in your .nedit file.  To incorporate
-       macros, language modes, and highlight patterns and styles
-       written by other users, run NEdit with -import <file>, then
-       re-save your .nedit file with Preferences -> Save Defaults.
+    -svrname name -- When starting NEdit in server mode, name the server, such
+        that it responds to requests only when nc is given a correspoding
+        -svrname argument.  By naming servers, you can run several
+        simultaneously, and direct files and commands specifically to any one.
+
+    -import file -- loads an additional preferences file on top of the existing
+        defaults saved in your .nedit file.  To incorporate macros, language
+        modes, and highlight patterns and styles written by other users, run
+        NEdit with -import <file>, then re-save your .nedit file with
+        Preferences -> Save Defaults.
 
 
 SERVER MODE AND NC
 
-NEdit can be operated on its own, or as a two-part client/server application. 
+NEdit can be operated on its own, or as a two-part client/server application.
 Client/server mode is useful for integrating NEdit with software development
 environments, mailers, and other programs; or just as a quick way to open files
 from the shell command line without starting a new NEdit session.
@@ -3174,7 +3380,7 @@ corresponding file or window, you intend it to do something independent of the
 window in which it happens execute).
 
 nc also accepts one command line option of its own, -noask (or -ask), which
-instructs it whether to automatically start a server if one is not available. 
+instructs it whether to automatically start a server if one is not available.
 This is also settable via the X resource, nc.autoStart (See X RESOURCES above).
 
 Sometimes it is useful to have more than one NEdit server running, for example
@@ -3204,16 +3410,16 @@ NEdit maintains a backup file which it updates periodically (every 8 editing
 operations or 30 characters typed under Unix, or 80 characters under VMS).
 This file is has the same name as the file that you are editing, but with the
 character "~" (tilde) on Unix or "_" (underscore) on VMS prefixed to the name.
-To recover a file after a crash, simply rename the file to remove the tilde 
-or underscore character, replacing the older version of the file.  Because 
-several of the Unix shells consider the tilde to be a special character, you 
-may have to prefix the character with a "\" (backslash) when you move or 
+To recover a file after a crash, simply rename the file to remove the tilde
+or underscore character, replacing the older version of the file.  Because
+several of the Unix shells consider the tilde to be a special character, you
+may have to prefix the character with a "\" (backslash) when you move or
 delete an NEdit backup file.
 
 Example, to recover the file called "help.c" type the command:
 
     mv \~help.c help.c
-    
+
 A minor caveat, is that if the file you were editing was in MS DOS format, the
 backup file will be in Unix format, and you will need to open the backup file
 in NEdit and change the file format back to MS DOS via the Save As... dialog
@@ -3237,7 +3443,7 @@ S: Be sure the Caps Lock and Num Lock keys are both unlocked.  In Motif
 
 P: Find Again and Replace Again don't continue in the same direction as the
    original Find or Replace.
-S: Find Again and Replace Again don't use the direction of the original search. 
+S: Find Again and Replace Again don't use the direction of the original search.
    The Shift key controls the direction: Ctrl+G means forward, Shift+Ctrl+G
    means backward.
 
@@ -3288,7 +3494,7 @@ S: On many SunOS systems, you have to set up an nls directory before various
    well as a tar file containg a complete nls directory in
    ftp://ftp.nedit.org/pub/v5_0_2/nls.tar.  This contains directions for
    setting up an nls directory, which is required by Motif for handling copy
-   and paste to Motif text fields. 
+   and paste to Motif text fields.
 
 
 KNOWN BUGS
@@ -3329,10 +3535,10 @@ answer other users questions as well.  The lists are:
 
     discuss@nedit.org  -- General discussion, questions and answers among
                           NEdit users and developers.
-			 
+
     announce@nedit.org -- A low-volume mailing list for annoucing new
                           versions.
-			 
+
     develop@nedit.org  -- Communication among and with NEdit developers.
 
             [... List subscription information goes here ...]

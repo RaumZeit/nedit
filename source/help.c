@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.42 2001/08/01 07:40:22 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.43 2001/08/06 20:38:51 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -101,7 +101,6 @@ static const char *const HelpTitles[NUM_TOPICS] = {
 
 static const char *const HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n"
-"(August, 2001)\n"
 "\n"
 "     Built on: %s, %s, %s\n"
 "     Built at: %s, %s\n"
@@ -3382,47 +3381,47 @@ in the X Resources section of the Help menu).\n\
 \n\
 Actions Representing Menu Commands:\n\
 \n\
-    File Menu		      Search Menu\n\
+    File Menu                 Search Menu\n\
     ---------------------     -----------------------\n\
-    new()		      find()\n\
-    open()		      find_dialog()\n\
-    open_dialog()	      find_again()\n\
-    open_selected()	      find_selection()\n\
-    close()		      replace()\n\
-    save()		      replace_dialog()\n\
-    save_as()		      replace_all()\n\
-    save_as_dialog()	      replace_in_selection()\n\
-    revert_to_saved()	      replace_again()\n\
-    include_file()	      goto_line_number()\n\
+    new()                     find()\n\
+    open()                    find_dialog()\n\
+    open_dialog()             find_again()\n\
+    open_selected()           find_selection()\n\
+    close()                   replace()\n\
+    save()                    replace_dialog()\n\
+    save_as()                 replace_all()\n\
+    save_as_dialog()          replace_in_selection()\n\
+    revert_to_saved()         replace_again()\n\
+    include_file()            goto_line_number()\n\
     include_file_dialog()     goto_line_number_dialog()\n\
-    load_tags_file()	      goto_selected()\n\
-    load_tags_file_dialog()   mark()\n\
-    load_macro_file()         mark_dialog()\n\
-    load_macro_file_dialog()  goto_mark()\n\
-    print()		      goto_mark_dialog()\n\
-    print_selection()	      goto_matching()\n\
-    unload_tags_file()        select_to_matching()\n\
-    exit()		      find_definition()\n\
-    \n\
+    load_macro_file()         goto_selected()\n\
+    load_macro_file_dialog()  mark()\n\
+    load_tags_file()          mark_dialog()\n\
+    load_tags_file_dialog()   goto_mark()\n\
+    unload_tags_file()        goto_mark_dialog()\n\
+    print()                   goto_matching()\n\
+    print_selection()         select_to_matching()\n\
+    exit()                    find_definition()\n\
+\n\
     Edit Menu                 Shell Menu\n\
     ---------------------     -----------------------\n\
-    undo()		      filter_selection_dialog()\n\
-    redo()		      filter_selection()\n\
-    delete_selection()        execute_command()\n\
-    select_all()	      execute_command_dialog()\n\
-    shift_left()	      execute_command_line()\n\
+    undo()                    execute_command()\n\
+    redo()                    execute_command_dialog()\n\
+    delete_selection()        execute_command_line()\n\
+    select_all()              filter_selection()\n\
+    shift_left()              filter_selection_dialog()\n\
     shift_left_by_tab()       shell_menu_command()\n\
-    shift_right()	      \n\
+    shift_right()\n\
     shift_right_by_tab()      Macro Menu\n\
-    uppercase() 	      -----------------------\n\
-    lowercase() 	      macro_menu_command()\n\
-    fill_paragraph()	      repeat_macro()\n\
-    control_code_dialog()     repeat_dialog()\n\
+    uppercase()               -----------------------\n\
+    lowercase()               repeat_macro()\n\
+    fill_paragraph()          repeat_dialog()\n\
+    control_code_dialog()     macro_menu_command()\n\
 \n\
-   			      Windows Menu\n\
+                              Windows Menu\n\
                               -----------------------\n\
                               split_window()\n\
- 			      close_pane()\n\
+                              close_pane()\n\
 \n\
 The actions representing menu commands are named the same as the menu item \
 with punctuation removed, all lower case, and underscores \
@@ -3443,7 +3442,7 @@ routines which take arguments.  Optional arguments are enclosed in [].\n\
 \n\
   save_as(filename)\n\
 \n\
-  include(filename)\n\
+  include_file(filename)\n\
 \n\
   load_tags_file(filename)\n\
 \n\
@@ -3463,7 +3462,7 @@ routines which take arguments.  Optional arguments are enclosed in [].\n\
   replace_dialog([search-direction] [, search-type]\n\
 	  [, keep-dialog])\n\
 \n\
-  replace(search-string, replace-string,\n\
+  replace(search-string, replace-string\n\
 	  [, search-direction] [, search-type]\n\
 	  [, search-wrap])\n\
 \n\
