@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.154 2004/04/30 04:06:28 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.155 2004/04/30 11:53:10 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1020,6 +1020,7 @@ void CloseWindow(WindowInfo *window)
     	if (MacroRunWindow() && MacroRunWindow() != window &&
 	    	MacroRunWindow()->shell == window->shell) {
 	    nextBuf = MacroRunWindow();
+    	    RaiseDocument(nextBuf);
 	}
 	else if (IsTopDocument(window)) {
 	    /* need to find a successor before closing a top document */
