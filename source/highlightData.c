@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.44 2003/05/02 18:18:42 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.45 2003/05/02 19:19:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -2709,6 +2709,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
     XtSetArg(args[n], XmNrightPosition, 99); n++;
     HighlightDialog.startW = XmCreateScrolledText(patternsForm, "start",args,n);
+    AddMouseWheelSupport(HighlightDialog.startW);
     XtManageChild(HighlightDialog.startW);
     MakeSingleLineTextW(HighlightDialog.startW);
     RemapDeleteKey(HighlightDialog.startW);

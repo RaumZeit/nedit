@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.24 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.25 2003/05/02 19:19:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1149,6 +1149,7 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
     textW = XmCreateScrolledText(form, "outText", al, ac);
+    AddMouseWheelSupport(textW);
     XtManageChild(textW);
     
     XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", NULL);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.52 2003/04/10 20:28:48 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.53 2003/05/02 19:19:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -70,6 +70,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.52 2003/04/10 20:28:48 edg Exp $";
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
 #include <Xm/FileSB.h>
+#include <Xm/ScrolledW.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -136,6 +137,14 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist,
    Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine,
 	Widget parent, char *name, ArgList arglist, Cardinal  argcount);
+static void scrollDownAP(Widget w, XEvent *event, String *args, 
+	Cardinal *nArgs);
+static void scrollUpAP(Widget w, XEvent *event, String *args, 
+	Cardinal *nArgs);
+static void pageDownAP(Widget w, XEvent *event, String *args, 
+	Cardinal *nArgs);
+static void pageUpAP(Widget w, XEvent *event, String *args, 
+	Cardinal *nArgs);
 
 /*
 ** Set up closeCB to be called when the user selects close from the
@@ -539,8 +548,10 @@ Widget CreatePromptDialog(Widget parent, char *name,
 Widget CreateSelectionDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
-    return addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name,
+    Widget dialog = addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name,
 	    arglist, argcount);
+    AddMouseWheelSupport(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST));
+    return dialog;
 }
 
 
@@ -555,8 +566,11 @@ Widget CreateFormDialog(Widget parent, char *name,
 Widget CreateFileSelectionDialog(Widget parent, char *name,
 	ArgList arglist, Cardinal  argcount)
 {
-    return addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, name,
-	    arglist, argcount);
+    Widget dialog = addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, 
+            name, arglist, argcount);
+    AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_LIST));
+    AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_DIR_LIST));
+    return dialog;
 }
 
 
@@ -1969,4 +1983,101 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 	}
     }
     return FALSE;
+}
+
+/*
+** Global installation of mouse wheel actions for scrolled windows.
+*/
+void InstallMouseWheelActions(XtAppContext context)
+{   
+    static XtActionsRec Actions[] = {
+      	{"scrolled-window-scroll-up",   scrollUpAP},
+      	{"scrolled-window-page-up",     pageUpAP},
+      	{"scrolled-window-scroll-down", scrollDownAP},
+      	{"scrolled-window-page-down",   pageDownAP} 
+    };
+
+    XtAppAddActions(context, Actions, XtNumber(Actions));
+}
+
+/*
+** Add mouse wheel support to a specific widget, which must be the scrollable
+** widget of a ScrolledWindow.
+*/
+void AddMouseWheelSupport(Widget w)
+{
+   if (XmIsScrolledWindow(XtParent(w))) 
+   {
+      static char scrollTranslations[] =
+         "Shift<Btn4Down>,<Btn4Up>: scrolled-window-scroll-up(1)\n"
+         "Shift<Btn5Down>,<Btn5Up>: scrolled-window-scroll-down(1)\n"
+         "Ctrl<Btn4Down>,<Btn4Up>:  scrolled-window-page-up()\n"
+         "Ctrl<Btn5Down>,<Btn5Up>:  scrolled-window-page-down()\n"
+         "<Btn4Down>,<Btn4Up>:      scrolled-window-scroll-up(3)\n"
+         "<Btn5Down>,<Btn5Up>:      scrolled-window-scroll-down(3)\n";
+
+      XtTranslations trans_table;
+      trans_table = XtParseTranslationTable(scrollTranslations);
+      XtOverrideTranslations(w, trans_table);
+   }
+}
+
+static void pageUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    Widget scrolledWindow, scrollBar;
+    String al[1];
+    
+    al[0] = "Up";
+    scrolledWindow = XtParent(w);
+    scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
+    if (scrollBar)
+        XtCallActionProc(scrollBar, "PageUpOrLeft", event, al, 1) ;
+    return;
+}
+
+static void pageDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    Widget scrolledWindow, scrollBar;
+    String al[1];
+    
+    al[0] = "Down";
+    scrolledWindow = XtParent(w);
+    scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
+    if (scrollBar)
+        XtCallActionProc(scrollBar, "PageDownOrRight", event, al, 1) ;
+    return;
+}
+
+static void scrollUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    Widget scrolledWindow, scrollBar;
+    String al[1];
+    int i, nLines;
+    
+    if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
+       return;
+    al[0] = "Up";
+    scrolledWindow = XtParent(w);
+    scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
+    if (scrollBar)
+        for (i=0; i<nLines; i++)
+            XtCallActionProc(scrollBar, "IncrementUpOrLeft", event, al, 1) ;
+    return;
+}
+
+static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    Widget scrolledWindow, scrollBar;
+    String al[1];
+    int i, nLines;
+    
+    if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
+       return;
+    al[0] = "Down";
+    scrolledWindow = XtParent(w);
+    scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
+    if (scrollBar)
+        for (i=0; i<nLines; i++)
+            XtCallActionProc(scrollBar, "IncrementDownOrRight", event, al, 1) ;
+    return;
 }

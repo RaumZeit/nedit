@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.11 2003/03/18 10:58:20 edg Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.12 2003/05/02 19:19:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -148,6 +148,7 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
     listW = XmCreateScrolledList(form, "list", al, ac);
+    AddMouseWheelSupport(listW);
     XtManageChild(listW);
     FreeStringTable(placeholderTable);
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.55 2003/04/07 22:51:40 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.56 2003/05/02 19:19:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1563,6 +1563,7 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
        with the keyboard deselects everything). */
     XtSetArg(args[argcnt], XmNselectionPolicy, XmMULTIPLE_SELECT); argcnt++;
     list = XmCreateScrolledList(form, "list_of_files", args, argcnt);
+    AddMouseWheelSupport(list);
     XtManageChild(list);
     
     /* Traverse: list -> buttons -> path name toggle button */

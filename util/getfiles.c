@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.24 2003/02/15 02:33:27 yooden Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.25 2003/05/02 19:19:03 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -894,6 +894,7 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
     text = XmCreateScrolledText(form, "helpText", al, ac);
+    AddMouseWheelSupport(text);
     XtManageChild(text);
     
     SET_ONE_RSRC(XtParent(form), XmNtitle, title);

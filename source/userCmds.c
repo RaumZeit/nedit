@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.31 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.32 2003/05/02 19:19:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -567,6 +567,7 @@ Select \"New\" to add a new command to the menu."),
     XtSetArg(args[ac], XmNbottomWidget, okBtn); ac++;
     XtSetArg(args[ac], XmNbottomOffset, 5); ac++;
     ucd->cmdTextW = XmCreateScrolledText(form, "name", args, ac);
+    AddMouseWheelSupport(ucd->cmdTextW);
     XtManageChild(ucd->cmdTextW);
     MakeSingleLineTextW(ucd->cmdTextW);
     RemapDeleteKey(ucd->cmdTextW);
@@ -869,6 +870,7 @@ Select \"New\" to add a new command to the menu."),
     XtSetArg(args[ac], XmNbottomWidget, okBtn); ac++;
     XtSetArg(args[ac], XmNbottomOffset, 5); ac++;
     ucd->cmdTextW = XmCreateScrolledText(form, "name", args, ac);
+    AddMouseWheelSupport(ucd->cmdTextW);
     XtManageChild(ucd->cmdTextW);
     RemapDeleteKey(ucd->cmdTextW);
     XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, NULL); /* for mnemonic */

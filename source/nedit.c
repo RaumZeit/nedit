@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.44 2003/04/24 11:47:23 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.45 2003/05/02 19:19:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -407,6 +407,9 @@ int main(int argc, char **argv)
     
     /* Add Actions for following hyperlinks in the help window */
     InstallHelpLinkActions(context);
+    /* Add actions for mouse wheel support in scrolled windows (except text
+       area) */
+    InstallMouseWheelActions(context);
     
     /* Install word delimiters for regular expression matching */
     SetREDefaultWordDelimiters(GetPrefDelimiters());

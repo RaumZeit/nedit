@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.24 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.25 2003/05/02 19:19:03 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * fontsel.c -- Nirvana Font Selector                                           *
@@ -371,6 +371,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNleftWidget, nameLabel); n++;
     XtSetArg(args[n], XmNrightPosition, 52); n++;
     fontList = XmCreateScrolledList(form, "fontlist", args, n);
+    AddMouseWheelSupport(fontList);
     XtManageChild(fontList);
     XtVaSetValues(nameLabel, XmNuserData, fontList, NULL);
 
@@ -387,6 +388,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNbottomWidget, XtParent(fontList)); n++;
     XtSetArg(args[n], XmNrightPosition, 85); n++;
     styleList = XmCreateScrolledList(form, "stylelist", args, n);
+    AddMouseWheelSupport(styleList);
     XtManageChild(styleList);
 
     n = 0;
@@ -414,6 +416,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNleftOffset, 5); n++;
     XtSetArg(args[n], XmNrightPosition, 99); n++;
     sizeList = XmCreateScrolledList(form, "sizelist", args, n);
+    AddMouseWheelSupport(sizeList);
     XtManageChild(sizeList);
 
     n = 0;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.25 2003/04/17 09:03:39 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.26 2003/05/02 19:19:02 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1142,6 +1142,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.initMacro = XmCreateScrolledText(initForm,
     	    "initMacro", args, n);
+    AddMouseWheelSupport(SmartIndentDialog.initMacro);
     XtManageChild(SmartIndentDialog.initMacro);
     RemapDeleteKey(SmartIndentDialog.initMacro);
     XtVaSetValues(initLbl, XmNuserData, SmartIndentDialog.initMacro, NULL);
@@ -1170,6 +1171,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.newlineMacro = XmCreateScrolledText(newlineForm,
     	    "newlineMacro", args, n);
+    AddMouseWheelSupport(SmartIndentDialog.newlineMacro);
     XtManageChild(SmartIndentDialog.newlineMacro);
     RemapDeleteKey(SmartIndentDialog.newlineMacro);
     XtVaSetValues(newlineLbl, XmNuserData, SmartIndentDialog.newlineMacro,NULL);
@@ -1197,6 +1199,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.modMacro = XmCreateScrolledText(modifyForm,
     	    "modifyMacro", args, n);
+    AddMouseWheelSupport(SmartIndentDialog.modMacro);
     XtManageChild(SmartIndentDialog.modMacro);
     RemapDeleteKey(SmartIndentDialog.modMacro);
     XtVaSetValues(modifyLbl, XmNuserData, SmartIndentDialog.modMacro, NULL);
@@ -1610,6 +1613,7 @@ void EditCommonSmartIndentMacro(void)
     XtSetArg(args[n], XmNbottomWidget, okBtn); n++;
     XtSetArg(args[n], XmNbottomOffset, VERT_BORDER); n++;
     CommonDialog.text = XmCreateScrolledText(form, "commonText", args, n);
+    AddMouseWheelSupport(CommonDialog.text);
     XtManageChild(CommonDialog.text);
     RemapDeleteKey(CommonDialog.text);
     XtVaSetValues(topLbl, XmNuserData, CommonDialog.text, NULL);
