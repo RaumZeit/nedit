@@ -1,10 +1,10 @@
-# $Id: Makefile.dependencies,v 1.5 2001/07/03 12:53:30 amai Exp $
-common.o: common.c common.h
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.6 2001/07/25 07:39:12 amai Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h textBuf.h text.h nedit.h \
  window.h preferences.h undo.h menu.h file.h ../util/utils.h
-help.o: help.c ../util/misc.h ../util/DialogF.h textBuf.h text.h \
- textSel.h nedit.h search.h window.h preferences.h help.h file.h
+help.o: help.c ../util/misc.h ../util/DialogF.h ../util/system.h \
+ textBuf.h text.h textSel.h nedit.h search.h window.h preferences.h \
+ help.h file.h
 highlight.o: highlight.c ../util/misc.h ../util/DialogF.h textBuf.h \
  textDisp.h text.h textP.h nedit.h regularExp.h highlight.h \
  highlightData.h preferences.h window.h
@@ -26,6 +26,7 @@ nedit.o: nedit.c ../util/misc.h ../util/printUtils.h \
  ../util/fileUtils.h ../util/getfiles.h textBuf.h nedit.h file.h \
  preferences.h regularExp.h selection.h tags.h menu.h macro.h server.h \
  rbTree.h interpret.h parse.h
+parse.o: parse.c textBuf.h nedit.h rbTree.h interpret.h parse.h
 preferences.o: preferences.c ../util/prefFile.h ../util/misc.h \
  ../util/DialogF.h ../util/managedList.h ../util/fontsel.h textBuf.h \
  nedit.h text.h search.h preferences.h window.h userCmds.h highlight.h \
