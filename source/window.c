@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.172 2004/09/01 13:50:49 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.173 2004/09/01 18:19:55 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4269,8 +4269,6 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 WindowInfo *DetachDocument(WindowInfo *window)
 {
     WindowInfo *win = NULL, *cloneWin;
-    char geometry[MAX_GEOM_STRING_LEN];
-    int rows, cols;
     
     if (NDocuments(window) < 2)
     	return NULL;
