@@ -1,6 +1,6 @@
                     NEdit Version 5.2+ beta,  November 2001
 
-$Id: README,v 1.17 2001/11/08 13:47:25 amai Exp $
+$Id: README,v 1.18 2001/11/20 15:31:12 amai Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -45,31 +45,15 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License below for more details.
 
-VERSION 5.2
+VERSION 5.2+
 
-Version 5.2 offers some new features and lots of bug fixes.
+Version 5.2+ offers some new features and lots of bug fixes.
 
 The most significant enhancements in this release are:
 
- - Added built-in patterns for CSS, XML, and regular expressions (Regex).
-   Many other pattern updates.
+ - Goto Line & Column
+ -
 
- - Support for high- and true-color systems.  NEdit now will automatically
-   select the best visual from your X server.  This reduces the chance of
-   running out of colors.
- 
- - New features in the Find and Replace dialogs:
- 
-   o Replacement across multiple windows in a session.
-   o Case sensitivity may be set independently of regular expressions.
-   o A "Replace and Find" command, which saves keystrokes when doing
-     a large-scale find & replace.
-
- - Many new macro subroutines and variables.
-
- - Multidimensional associative arrays for the macro language.
-
- - Support for wheel mouse scrolling on servers that support it (XFree86). 
  
 There are also several smaller improvements and bug fixes, see the file
 ReleaseNotes for details.
