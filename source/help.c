@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.39 2001/07/03 12:13:38 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.40 2001/07/24 21:54:45 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: help.c,v 1.39 2001/07/03 12:13:38 amai Exp $";
 #include <Xm/PushB.h>
 #include "../util/misc.h"
 #include "../util/DialogF.h"
+#include "../util/system.h"
 #include "textBuf.h"
 #include "text.h"
 #include "textSel.h"
@@ -49,7 +50,7 @@ static const char CVSID[] = "$Id: help.c,v 1.39 2001/07/03 12:13:38 amai Exp $";
 #include "help.h"
 #include "file.h"
 
-static const char *HelpTitles[NUM_TOPICS] = {
+static const char *const HelpTitles[NUM_TOPICS] = {
 "Version",
 "Getting Started",
 "Finding and Replacing Text",
@@ -88,13 +89,26 @@ static const char *HelpTitles[NUM_TOPICS] = {
 "Distribution Policy",
 "Tabs Dialog"};
 
-static const char *HelpText[NUM_TOPICS] = {
-"NEdit Version 5.2 DEVELOPMENT version\n\
-July, 2001\n\
-\n\
+/* The policy for credit so far is this:
+
+   You get "written by" credit if you have write access to the CVS
+   repository and have contributed.
+
+   You get a syntax/indent credit if your pattern is compiled into the
+   binary.
+ */
+
+static const char *const HelpText[NUM_TOPICS] = {
+"NEdit Version 5.2 DEVELOPMENT version\n"
+"\n"
+"    Built on: " COMPILE_OS ", " COMPILE_MACHINE ", " COMPILE_COMPILER "\n"
+"    Built at: " __DATE__ ", " __TIME__ "\n"
+"       Motif: " XmVERSION_STRING "\n"
+"\n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
-Jim Clark, Arnulfo Zepeda-Navratil, \
-Suresh Ravoor, Tony Balinski, Max Vohlken, Yunliang Yu, and Donna Reid.\n\
+Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max \
+Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve \
+LoBasso, Alexander Mai, and Scott Tringali.\n\
 \n\
 The regular expression matching routines used in NEdit are adapted (with \
 permission) from original code written by Henry Spencer at the \
@@ -106,7 +120,8 @@ Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr, \
 Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, \
 Max Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, \
 Michael Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, \
-Mike Duigou, and Seak, Teng-Fong.\n\
+Mike Duigou, Seak Teng-Fong, Joor Loohuis, Thorsten Haude, Mark Jones, \
+and Niek van den Berg.\n\
 \n\
 NEdit sources, executables, additional documentation, and contributed \
 software are available from the NEdit web site at http://nedit.org.\n\
@@ -3288,7 +3303,7 @@ is the default), \"literal\", \"case\", \"word\", \"caseWord\",\
 \"regex\", or \"regexNoCase\" to change the search  type \
 (default is \"literal\").  Returns the starting position of the \
 match, or -1 if nothing matched. also returns the ending position \
-of the match in search_end\n\
+of the match in $search_end\n\
 \n\
 search_string(string, search_for, start, [search_type, direction]) \
 -- Built-in macro subroutine for searching a string.  Arguments are \

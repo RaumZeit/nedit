@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.11 2001/03/25 08:42:20 arnef Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.12 2001/07/24 21:54:45 tringali Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -61,6 +61,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.11 2001/03/25 08:42:20 arnef Exp $"
 
 #define STRSAVE(a)  ((a)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
  
+ 
 enum searchDirection {FORWARD, BACKWARD};
 
 static int loadTagsFile(char *tagSpec, int index);
@@ -69,10 +70,10 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 static void setTag(tag *t, char *name, char *file, char *searchString);
 static int fakeRegExSearch(WindowInfo *window, char *searchString, 
     int *start, int *end);
-static unsigned hashAddr(char *key);
+static unsigned hashAddr(const char *key);
 static int addTag(char *name,char *file,char *search,char *path,int index);
 static int delTag(char *name,char *file,char *search,int index);
-static tag *getTag(char *name);
+static tag *getTag(const char *name);
 static void findAllDialogAP(Widget dialogParent, char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, char *name, char *label,int nArgs, char *args[]);
@@ -89,11 +90,13 @@ static char *tagName;
 static WindowInfo *currentWindow;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
+static const char *rcs_strdup(const char *str);
+static void rcs_free(const char *str);
 
 tagFile *TagsFileList = NULL;       /* list of loaded tags files */
 
 /*	Compute hash address from a string key */
-static unsigned hashAddr(char *key)
+static unsigned hashAddr(const char *key)
 {
     unsigned s=strlen(key);
     unsigned a=0,x=0,i;
@@ -110,7 +113,7 @@ static unsigned hashAddr(char *key)
 }
 
 /*	Retrieve a tag structure from the hash table */
-static tag *getTag(char *name)
+static tag *getTag(const char *name)
 {
     static char lastName[MAXLINE];
     static tag *t;
@@ -197,9 +200,9 @@ static int delTag(char *name,char *file,char *search,int index)
 		last->next = t->next;
 	    else
 		Tags[i] = t->next;
-	    free(t->name);
-	    free(t->file);
-	    free(t->searchString);
+	    rcs_free(t->name);
+	    rcs_free(t->file);
+	    rcs_free(t->searchString);
 	    free(t);
 	    t = NULL;
 	    del++;
@@ -252,7 +255,7 @@ int AddTagsFile(char *tagSpec)
 
 /*	Un-manage a tags file */
 int DeleteTagsFile(char *filename)
-{           
+{   
     tagFile *t, *last;
 
     for (last=NULL,t = TagsFileList; t; last = t,t = t->next) {
@@ -266,6 +269,7 @@ int DeleteTagsFile(char *filename)
 	free(t);
 	return TRUE;
     }
+    
     return FALSE;
 }
 
@@ -321,7 +325,8 @@ static int loadTagsFile(char *tagSpec, int index)
 ** Given a name, lookup a file, search string.  Returned strings are pointers
 ** to internal storage which are valid until the next loadTagsFile call.
 */
-int LookupTag(char *name, char **file, char **searchString,char **path)
+int LookupTag(const char *name, const char **file, 
+              const char **searchString, const char **path)
 {
     tag *t;
     tagFile *tf;
@@ -407,12 +412,9 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 /*	store all of the info into a pre-allocated tags struct */
 static void setTag(tag *t, char *name, char *file, char *searchString)
 {
-    t->name = (char *)malloc(sizeof(char) * strlen(name) + 1);
-    strcpy(t->name, name);
-    t->file = (char *)malloc(sizeof(char) * strlen(file) + 1);
-    strcpy(t->file, file);
-    t->searchString = (char *)malloc(sizeof(char) * strlen(searchString) + 1);
-    strcpy(t->searchString, searchString);
+    t->name         = rcs_strdup(name);
+    t->file         = rcs_strdup(file);
+    t->searchString = rcs_strdup(searchString);
 }
 
 /*
@@ -496,7 +498,8 @@ static int fakeRegExSearch(WindowInfo *window, char *searchString,
 static void findAllDialogAP(Widget dialogParent, char *string)
 {
     char filename[MAXPATHLEN], pathname[MAXPATHLEN], temp[MAXPATHLEN];
-    char *fileToSearch, *searchString, *tagPath,**dupTagsList,*eptr;
+    const char *fileToSearch, *searchString, *tagPath;
+    char **dupTagsList,*eptr;
     int startPos, endPos, lineNum, rows, i,nTag=0,samePath=0;
     WindowInfo *windowToSearch;
 
@@ -747,4 +750,149 @@ static char *normalizePathname(char *str)
     }
     *r = '\0';
     return strcpy(str,result);
+}
+
+
+/*--------------------------------------------------------------------------
+
+   Reference-counted string hack; SJT 4/2000
+
+   This stuff isn't specific to tags, so it should be in it's own file.
+   However, I'm leaving it in here for now to reduce the diffs.
+   
+   This could really benefit from using a real hash table.
+*/
+
+#define RCS_SIZE 10000
+
+struct rcs;
+
+struct rcs_stats
+{
+    int talloc, tshar, tgiveup, tbytes, tbyteshared;
+};
+
+struct rcs
+{
+    struct rcs *next;
+    char       *string;
+    int         usage;
+};
+
+static struct rcs       *Rcs[RCS_SIZE];
+static struct rcs_stats  RcsStats;
+
+/*
+** Take a normal string, create a shared string from it if need be,
+** and return pointer to that shared string.
+**
+** Returned strings are const because they are shared.  Do not modify them!
+*/
+
+static const char *rcs_strdup(const char *str)
+{
+    int bucket = hashAddr(str) % RCS_SIZE;
+    int len = strlen(str);
+    
+    struct rcs *rp;
+    struct rcs *prev = NULL;
+  
+    char *newstr = NULL;
+    
+    RcsStats.talloc++;
+
+#if 0  
+    /* Don't share if it won't save space.
+    
+       Doesn't save anything - if we have lots of small-size objects,
+       it's beneifical to share them.  We don't know until we make a full
+       count.  My tests show that it's better to leave this out.  */
+    if (len <= sizeof(*Rcs))
+    {
+        new_str = strdup(str);
+        RcsStats.tgiveup++;
+        return;
+    }
+#endif
+
+    /* Find it in hash */
+    for (rp = Rcs[bucket]; rp; rp = rp->next)
+    {
+        if (!strcmp(str, rp->string))
+            break;
+        prev = rp;
+    }
+
+    if (rp)  /* It exists, return it and bump ref ct */
+    {
+        rp->usage++;
+        newstr = rp->string;
+
+        RcsStats.tshar++;
+        RcsStats.tbyteshared += len;
+    }
+    else     /* Doesn't exist, conjure up a new one. */
+    {
+        struct rcs *newrcs = malloc(sizeof *Rcs);
+        newrcs->string = malloc(len+1);
+        strcpy(newrcs->string, str);
+        newrcs->usage = 1;
+        newrcs->next = NULL;
+
+        if (Rcs[bucket])
+            prev->next = newrcs;
+        else
+            Rcs[bucket] = newrcs;
+            
+        newstr = newrcs->string;
+    }
+
+    RcsStats.tbytes += len;
+    return newstr;
+}
+
+/*
+** Decrease the reference count on a shared string.  When the reference
+** count reaches zero, free the master string.
+*/
+
+static void rcs_free(const char *rcs_str)
+{
+    int bucket = hashAddr(rcs_str) % RCS_SIZE;
+    struct rcs *rp;
+    struct rcs *prev = NULL;
+
+    /* find it in hash */
+    for (rp = Rcs[bucket]; rp; rp = rp->next)
+    {
+        if (rcs_str == rp->string)
+            break;
+        prev = rp;
+    }
+
+    if (rp)  /* It's a shared string, decrease ref count */
+    {
+        rp->usage--;
+        
+        if (rp->usage < 0) /* D'OH! */
+        {
+            fprintf(stderr, "NEdit: internal error deallocating shared string.");
+            return;
+        }
+
+        if (rp->usage == 0)  /* Last one- free the storage */
+        {
+            free(rp->string);
+            if (prev)
+                prev->next = rp->next;
+            else
+                Rcs[bucket] = rp->next;
+            free(rp);
+        }
+    }
+    else    /* Doesn't appear to be a shared string */
+    {
+        fprintf(stderr, "NEdit: attempt to free a non-shared string.");
+        return;
+    }
 }

@@ -1,10 +1,10 @@
-/* $Id: tags.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: tags.h,v 1.4 2001/07/24 21:54:45 tringali Exp $ */
 typedef struct _tag {
     struct _tag *next;
-    char *path;
-    char *name;
-    char *file;
-    char *searchString;
+    const char *path;
+    const char *name;
+    const char *file;
+    const char *searchString;
     short index;
 } tag;
 
@@ -20,5 +20,5 @@ extern tagFile *TagsFileList;         /* list of loaded tags files */
 
 int AddTagsFile(char *tagSpec);
 int DeleteTagsFile(char *filename);
-int LookupTag(char *name, char **file, char **searchString,char **tagPath);
+int LookupTag(const char *name, const char **file, const char **searchString, const char **tagPath);
 void FindDefinition(WindowInfo *window, Time time, char *arg);
