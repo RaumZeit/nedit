@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.8 2001/03/11 02:31:18 slobasso Exp $ */
+/* $Id: nedit.h,v 1.9 2001/04/02 20:52:09 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -108,32 +108,34 @@ typedef struct _WindowInfo {
     Widget	statsLine;		/* file stats information display */
     Widget  	iSearchForm;	    	/* incremental search line widgets */
     Widget  	iSearchText;
-    Widget  	iSearchREToggle;
+    Widget  	iSearchRegexToggle;
     Widget  	iSearchCaseToggle;
-    Widget  	iSearchLiteralToggle;
     Widget  	iSearchRevToggle;
     Widget	menuBar;    	    	/* the main menu bar */
     Widget	replaceDlog;		/* replace dialog */
     Widget	replaceText;		/* replace dialog settable widgets... */
     Widget	replaceWithText;
-    Widget	replaceLiteralBtn;
-    Widget	replaceCaseBtn;
-    Widget	replaceRegExpBtn;
-    Widget	replaceFwdBtn;
-    Widget	replaceRevBtn;
+    Widget    	replaceCaseToggle;
+    Widget	replaceWordToggle;    
+    Widget	replaceRegexToggle;    
+    Widget	replaceRevToggle;
     Widget	replaceKeepBtn;
     Widget	replaceBtns;
     Widget	replaceBtn;
+#ifdef REPLACE_SCOPE
+    Widget	replaceAllBtn;
+#else
     Widget	replaceInSelBtn;
+#endif
     Widget	replaceSearchTypeBox;
     Widget	replaceFindBtn;
+    Widget	replaceAndFindBtn;
     Widget	findDlog;		/* find dialog */
     Widget	findText;		/* find dialog settable widgets... */
-    Widget	findLiteralBtn;
-    Widget	findCaseBtn;
-    Widget	findRegExpBtn;
-    Widget	findFwdBtn;
-    Widget	findRevBtn;
+    Widget      findCaseToggle;
+    Widget      findWordToggle;    
+    Widget      findRegexToggle;    
+    Widget	findRevToggle;
     Widget	findKeepBtn;
     Widget	findBtns;
     Widget	findBtn;
@@ -186,6 +188,7 @@ typedef struct _WindowInfo {
     Widget	highlightOffDefItem;
     Widget	highlightDefItem;
     Widget	searchDlogsDefItem;
+    Widget      beepOnSearchWrapDefItem;
     Widget	keepSearchDlogsDefItem;
     Widget	searchWrapsDefItem;
     Widget	sortOpenPrevDefItem;
@@ -199,6 +202,9 @@ typedef struct _WindowInfo {
     Widget  	exitWarnDefItem;
     Widget	searchLiteralDefItem;
     Widget	searchCaseSenseDefItem;
+    Widget	searchLiteralWordDefItem;
+    Widget	searchCaseSenseWordDefItem;
+    Widget	searchRegexNoCaseDefItem;
     Widget	searchRegexDefItem;
     Widget	size24x80DefItem;
     Widget	size40x80DefItem;
@@ -297,6 +303,21 @@ typedef struct _WindowInfo {
 					   during multi-file replacements */
     Bool 	replaceFailed;		/* flags replacements failures during
 					   multi-file replacements */
+    Bool	replaceLastRegexCase;   /* last state of the case sense button
+                                           in regex mode for replace dialog */
+    Bool	replaceLastLiteralCase; /* idem, for literal mode */
+    Bool	iSearchLastRegexCase;   /* idem, for regex mode in 
+                                           incremental search bar */
+    Bool	iSearchLastLiteralCase; /* idem, for literal mode */
+    Bool	findLastRegexCase; 	/* idem, for regex mode in find dialog */
+    Bool	findLastLiteralCase;    /* idem, for literal mode */
+    
+#ifdef REPLACE_SCOPE
+    int		replaceScope;		/* Current scope for replace dialog */
+    Widget	replaceScopeWinToggle;	/* Scope for replace = window */
+    Widget	replaceScopeSelToggle;	/* Scope for replace = selection */
+    Widget	replaceScopeMultiToggle;/* Scope for replace = multiple files */
+#endif
 } WindowInfo;
 
 extern WindowInfo *WindowList;

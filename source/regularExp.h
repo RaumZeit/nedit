@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: regularExp.h,v 1.4 2001/04/02 20:52:09 edg Exp $ */
 /*----------------------------------------------------------------------*
  *  This is regularExp.h: NEdit Regular Expression Package Header File
  *----------------------------------------------------------------------*/
@@ -21,11 +21,20 @@ typedef struct regexp {
    char  program [1];       /* Unwarranted chumminess with compiler. */
 } regexp;
 
+/* Flags for CompileRE default settings (Markus Schwarzenberg) */
+
+typedef enum {
+  REDFLT_STANDARD         = 0,
+  REDFLT_CASE_INSENSITIVE = 1
+  /* REDFLT_MATCH_NEWLINE = 2    Currently not used. */ 
+} RE_DEFAULT_FLAG;
+
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 
 regexp * CompileRE (
-   char  *exp,        /* String containing the regex specification. */
-   char **errorText); /* Text of any error message produced. */
+   char  *exp,         /* String containing the regex specification. */
+   char **errorText,   /* Text of any error message produced. */
+   int  defaultFlags); /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */
 

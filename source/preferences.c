@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.17 2001/03/12 15:15:14 slobasso Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.18 2001/04/02 20:52:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -79,8 +79,16 @@ static const char CVSID[] = "$Id: preferences.c,v 1.17 2001/03/12 15:15:14 sloba
 /* Return values for checkFontStatus */
 enum fontStatus {GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING};
 
-/* enumerated type preference strings */
-static char *SearchMethodStrings[] = {"Literal", "CaseSense", "RegExp", NULL};
+/* enumerated type preference strings 
+** The order of the elements in this array must be exactly the same
+** as the order of the coresponding integers of the enum SearchType
+** defined in search.h (!!)
+*/
+static char *SearchMethodStrings[] = {
+  	"Literal", "CaseSense", "RegExp", 
+	"LiteralWord", "CaseSenseWord", "RegexNoCase", 
+	NULL
+};
 #define N_WRAP_STYLES 3
 static char *AutoWrapTypes[N_WRAP_STYLES+3] = {"None", "Newline", "Continuous",
     	"True", "False", NULL};
@@ -155,6 +163,7 @@ static struct prefData {
     int autoSave;		/* whether automatic backup feature is on */
     int saveOldVersion;		/* whether to preserve a copy of last version */
     int searchDlogs;		/* whether to show explanatory search dialogs */
+    int searchWrapBeep;     	/* 1=beep when search restarts at begin/end */
     int keepSearchDlogs;	/* whether to retain find and replace dialogs */
     int searchWraps;	/* whether to attempt search again if reach bof or eof */
     int statsLine;		/* whether to show the statistics line */
@@ -171,6 +180,7 @@ static struct prefData {
     int showMatching;		/* whether to flash matching parenthesis */
     int highlightSyntax;    	/* whether to highlight syntax by default */
     int smartTags;  	    	/* look for tag in current window first */
+    int stickyCaseSenseBtn;     /* whether Case Word Btn is sticky to Regex Btn */
     int prefFileRead;	    	/* detects whether a .nedit existed */
 #ifdef SGI_CUSTOM
     int shortMenus; 	    	/* short menu mode */
@@ -602,10 +612,14 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.highlightSyntax, NULL, True},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.searchDlogs, NULL, True},
+    {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False",
+      &PrefData.searchWrapBeep, NULL, True},
     {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.keepSearchDlogs, NULL, True},
     {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True",
     	&PrefData.searchWraps, NULL, True},
+    {"stickyCaseSenseButton", "StickyCaseSenseButton", PREF_BOOLEAN, "True",
+    	&PrefData.stickyCaseSenseBtn, NULL, True},
 #if XmVersion < 1002 /* Flashing is annoying in 1.1 versions */
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "False",
     	&PrefData.repositionDialogs, NULL, True},
@@ -1066,6 +1080,16 @@ int GetPrefSearchDlogs(void)
     return PrefData.searchDlogs;
 }
 
+void SetPrefBeepOnSearchWrap(int state)
+{
+    setIntPref(&PrefData.searchWrapBeep, state);
+}
+
+int GetPrefBeepOnSearchWrap(void)
+{
+    return PrefData.searchWrapBeep;
+}
+
 void SetPrefKeepSearchDlogs(int state)
 {
     setIntPref(&PrefData.keepSearchDlogs, state);
@@ -1079,6 +1103,11 @@ int GetPrefKeepSearchDlogs(void)
 void SetPrefSearchWraps(int state)
 {
     setIntPref(&PrefData.searchWraps, state);
+}
+
+int GetPrefStickyCaseSenseBtn(void)
+{
+    return PrefData.stickyCaseSenseBtn;
 }
 
 int GetPrefSearchWraps(void)
@@ -2665,7 +2694,7 @@ static languageModeRec *readLMDialogFields(int silent)
     	XtFree(lm->recognitionExpr);
     	lm->recognitionExpr = NULL;
     } else {
-	compiledRE = CompileRE(lm->recognitionExpr, &compileMsg);
+	compiledRE = CompileRE(lm->recognitionExpr, &compileMsg, REDFLT_STANDARD);
 	if (compiledRE == NULL) {
    	    if (!silent) {
    		DialogF(DF_WARN, LMDialog.shell, 1, "Recognition expression:\n%s",
@@ -3108,7 +3137,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
 
     /* Match the primary font agains RE pattern for font names.  If it
        doesn't match, we can't generate highlight font names, so return */
-    compiledRE = CompileRE(searchString, &errMsg);
+    compiledRE = CompileRE(searchString, &errMsg, REDFLT_STANDARD);
     primaryName = XmTextGetString(fd->primaryW);
     if (!ExecRE(compiledRE, NULL, primaryName, NULL, False, '\0', '\0', NULL)) {
     	XBell(XtDisplay(fd->shell), 0);

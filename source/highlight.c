@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.12 2001/03/19 16:30:06 slobasso Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.13 2001/04/02 20:52:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -883,7 +883,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	}
 	*(ptr-1) = '\0';
 	compiledPats[patternNum].subPatternRE = CompileRE(bigPattern,
-	    	&compileMsg);
+	    	&compileMsg, REDFLT_STANDARD);
 	if (compiledPats[patternNum].subPatternRE == NULL) {
     	    fprintf(stderr, "Error compiling syntax highlight patterns:\n%s",
     	    	    compileMsg);
@@ -1630,7 +1630,7 @@ static regexp *compileREAndWarn(Widget parent, char *re)
     regexp *compiledRE;
     char *compileMsg;
     
-    compiledRE = CompileRE(re, &compileMsg);
+    compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
     if (compiledRE == NULL) {
    	DialogF(DF_WARN, parent, 1,
    	       "Error in syntax highlighting regular expression:\n%s\n%s",

@@ -1,5 +1,6 @@
-/* $Id: search.h,v 1.6 2001/03/10 15:37:08 arnef Exp $ */
-enum SearchType {SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX};
+/* $Id: search.h,v 1.7 2001/04/02 20:52:09 edg Exp $ */
+
+
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
 void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
@@ -38,3 +39,44 @@ void FlashMatching(WindowInfo *window, Widget textW);
 void SelectToMatchingCharacter(WindowInfo *window);
 void GotoMatchingCharacter(WindowInfo *window);
 void RemoveFromMultiFileReplaceDialogLists(WindowInfo *window);
+
+/*
+** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE 
+**
+** The order of the integers in this enumeration must be exactly
+** the same as the order of the coressponding strings of the
+** array  SearchMethodStrings defined in preferences.c (!!)
+**
+*/
+enum SearchType {
+      	SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX, 
+	SEARCH_LITERAL_WORD, SEARCH_CASE_SENSE_WORD, SEARCH_REGEX_NOCASE };
+/*
+** Definitions for the search method strings, used as arguments for 
+** macro search subroutines and search action routines
+*/
+#define SEARCH_LITERAL_STRING         	"literal"
+#define SEARCH_CASE_SENSE_STRING	"case"
+#define SEARCH_LITERAL_WORD_STRING	"word"
+#define SEARCH_CASE_SENSE_WORD_STRING	"caseWord"
+#define SEARCH_REGEX_STRING             "regex"
+#define SEARCH_REGEX_NOCASE_STRING	"regexNoCase"
+
+#ifdef REPLACE_SCOPE
+enum ReplaceScope { REPL_SCOPE_WIN, REPL_SCOPE_SEL, REPL_SCOPE_MULTI };
+#endif
+
+/*
+** Returns a pointer to the string describing the search type for search 
+** action routine parameters (see menu.c for processing of action routines)
+** If searchType is invalid defaultRV is returned.
+*/
+const char *SearchTypeArg(int searchType, const char * defaultRV);
+
+/* 
+** Parses a search type description string. If the string contains a valid 
+** search type description, returns TRUE and writes the corresponding 
+** SearchType in searchType. Returns FALSE and leaves searchType untouched 
+** otherwise. 
+*/
+int StringToSearchType(const char * string, int *searchType);

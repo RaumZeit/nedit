@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.18 2001/03/30 17:48:17 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.19 2001/04/02 20:52:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2190,13 +2190,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs == 4) {
 	if (!readStringArg(argList[3], &argStr, stringStorage[2], errMsg))
     	    return False;
-    	if (!strcmp(argStr, "literal"))
-    	    searchType = SEARCH_LITERAL;
-    	else if (!strcmp(argStr, "case"))
-    	    searchType = SEARCH_CASE_SENSE;
-    	else if (!strcmp(argStr, "regex"))
-    	    searchType = SEARCH_REGEX;
-    	else {
+	if (!StringToSearchType(argStr, &searchType)) {
     	    *errMsg = "unrecognized argument to %s";
     	    return False;
     	}
@@ -2242,16 +2236,10 @@ static int readSearchArgs(DataValue *argList, int nArgs, int *searchDirection,
     	    *searchDirection = SEARCH_BACKWARD;
     	else if (!strcmp(argStr, "forward"))
     	    *searchDirection = SEARCH_FORWARD;
-    	else if (!strcmp(argStr, "literal"))
-    	    *searchType = SEARCH_LITERAL;
-    	else if (!strcmp(argStr, "case"))
-    	    *searchType = SEARCH_CASE_SENSE;
-    	else if (!strcmp(argStr, "regex"))
-    	    *searchType = SEARCH_REGEX;
-    	else {
-    	    *errMsg = "unrecognized argument to %s";
-    	    return False;
-    	}
+   	else if (!StringToSearchType(argStr, searchType)) {
+    	    	*errMsg = "unrecognized argument to %s";
+    	    	return False;
+	}
     }
     return True;
 }
@@ -3114,16 +3102,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         return(False);
     }
     if (nArgs > 2 && readStringArg(argList[2], &typeSplitStr, stringStorage[2], errMsg)) {
-    	if (!strcmp(typeSplitStr, "literal")) {
-    	    searchType = SEARCH_LITERAL;
-        }
-    	else if (!strcmp(typeSplitStr, "case")) {
-            searchType = SEARCH_CASE_SENSE;
-        }
-    	else if (!strcmp(typeSplitStr, "regex")) {
-            searchType = SEARCH_REGEX;
-        }
-        else {
+      	if (!StringToSearchType(typeSplitStr, &searchType)) {
             *errMsg = "unrecognized argument to %s";
             return(False);
         }

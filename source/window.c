@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.16 2001/03/21 21:20:06 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.17 2001/04/02 20:52:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -141,17 +141,21 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     
     /* initialize window structure */
+    /* + Schwarzenberg: should a 
+      memset(window, 0, sizeof(WindowInfo));
+         be added here ?
+    */
     window->replaceDlog = NULL;
     window->replaceText = NULL;
     window->replaceWithText = NULL;
-    window->replaceLiteralBtn = NULL;
-    window->replaceCaseBtn = NULL;
-    window->replaceRegExpBtn = NULL;
+    window->replaceWordToggle = NULL;
+    window->replaceCaseToggle = NULL;
+    window->replaceRegexToggle = NULL;
     window->findDlog = NULL;
     window->findText = NULL;
-    window->findLiteralBtn = NULL;
-    window->findCaseBtn = NULL;
-    window->findRegExpBtn = NULL;
+    window->findWordToggle = NULL;
+    window->findCaseToggle = NULL;
+    window->findRegexToggle = NULL;
     window->replaceMultiFileDlog = NULL;
     window->replaceMultiFilePathBtn = NULL;
     window->replaceMultiFileList = NULL;
@@ -208,6 +212,12 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     window->languageMode = PLAIN_LANGUAGE_MODE;
     window->iSearchHistIndex = 0;
     window->iSearchStartPos = -1;
+    window->replaceLastRegexCase   = TRUE;
+    window->replaceLastLiteralCase = FALSE;
+    window->iSearchLastRegexCase   = TRUE;
+    window->iSearchLastLiteralCase = FALSE;
+    window->findLastRegexCase      = TRUE;
+    window->findLastLiteralCase    = FALSE;
     
     /* If window geometry was specified, split it apart into a window position
        component and a window size component.  Create a new geometry string
@@ -309,36 +319,34 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     	    xmRowColumnWidgetClass, window->iSearchForm,
     	    XmNorientation, XmHORIZONTAL,
     	    XmNpacking, XmPACK_TIGHT,
-	    XmNradioBehavior, True,
+	    XmNradioBehavior, False,
 	    XmNmarginHeight, 0,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNrightOffset, 5,
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_FORM, NULL);
-    window->iSearchLiteralToggle=XtVaCreateManagedWidget("iSearchLiteralToggle",
+    
+    window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
       	    xmToggleButtonWidgetClass, iSearchRadioBox,
-	    XmNlabelString, s1=XmStringCreateSimple("Literal"),
-	    XmNset, GetPrefSearch() == SEARCH_LITERAL,
+	    XmNlabelString, s1=XmStringCreateSimple("RegExp"),
+	    XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
+      	    || GetPrefSearch() == SEARCH_REGEX,
 	    XmNmarginHeight, 0, NULL);
     XmStringFree(s1);
-    XtAddCallback(window->iSearchLiteralToggle, XmNvalueChangedCallback,
+    XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)focusToISearchTextCB, window);
+    
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
       	    xmToggleButtonWidgetClass, iSearchRadioBox,
 	    XmNlabelString, s1=XmStringCreateSimple("Case"),
-	    XmNset, GetPrefSearch() == SEARCH_CASE_SENSE,
+	    XmNset, GetPrefSearch() == SEARCH_CASE_SENSE 
+      	    || GetPrefSearch() == SEARCH_REGEX
+      	    || GetPrefSearch() == SEARCH_CASE_SENSE_WORD,
 	    XmNmarginHeight, 0, NULL);
     XmStringFree(s1);
     XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)focusToISearchTextCB, window);
-    window->iSearchREToggle = XtVaCreateManagedWidget("iSearchREToggle",
-      	    xmToggleButtonWidgetClass, iSearchRadioBox,
-	    XmNlabelString, s1=XmStringCreateSimple("RegExp"),
-	    XmNset, GetPrefSearch() == SEARCH_REGEX,
-	    XmNmarginHeight, 0, NULL);
-    XmStringFree(s1);
-    XtAddCallback(window->iSearchREToggle, XmNvalueChangedCallback,
-	    (XtCallbackProc)focusToISearchTextCB, window);
+    
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
       	    xmToggleButtonWidgetClass, window->iSearchForm,
 	    XmNlabelString, s1=XmStringCreateSimple("Rev"),
@@ -352,6 +360,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     XmStringFree(s1);
     XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)focusToISearchTextCB, window);
+    
     window->iSearchText = XtVaCreateManagedWidget("iSearchText",
       	    xmTextWidgetClass, window->iSearchForm,
 	    XmNmarginHeight, 1,
@@ -1494,8 +1503,14 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 #endif
 
 	DimSelectionDepUserMenuItems(window, selected);
+#ifdef REPLACE_SCOPE
+	if (window->replaceDlog != NULL &&
+	    window->replaceScope == REPL_SCOPE_SEL)
+    	    XtSetSensitive(window->replaceAllBtn, selected);
+#else
     	if (window->replaceDlog != NULL)
     	    XtSetSensitive(window->replaceInSelBtn, selected);
+#endif
     }
     
     /* Make sure line number display is sufficient for new data */

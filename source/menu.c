@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.24 2001/03/16 22:24:07 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.25 2001/04/02 20:52:09 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -136,6 +136,7 @@ static void shellDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void macroDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void bgMenuDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -145,6 +146,9 @@ static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData);
+static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData);
+static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData);
+static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData);
 static void size24x80CB(Widget w, WindowInfo *window, caddr_t callData);
 static void size40x80CB(Widget w, WindowInfo *window, caddr_t callData);
@@ -794,6 +798,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->searchWrapsDefItem = createMenuToggle(subSubPane, "wrapAround",
     	    "Wrap Around", 'W', searchWrapsDefCB, window,
     	    GetPrefSearchWraps(), SHORT);
+    window->beepOnSearchWrapDefItem = createMenuToggle(subSubPane,
+	  "beepOnSearchWrap", "Beep On Search Wrap", 'B',
+	  beepOnSearchWrapDefCB, window, GetPrefBeepOnSearchWrap(), SHORT);
     window->keepSearchDlogsDefItem = createMenuToggle(subSubPane,
     	    "keepDialogsUp", "Keep Dialogs Up", 'K',
     	    keepSearchDlogsDefCB, window, GetPrefKeepSearchDlogs(), SHORT);
@@ -804,11 +811,20 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Literal", 'L', searchLiteralCB, window,
     	    GetPrefSearch() == SEARCH_LITERAL, FULL);
     window->searchCaseSenseDefItem = createMenuToggle(subSubSubPane,
-    	    "caseSensitive", "Case Sensitive", 'C', searchCaseSenseCB, window,
+    	    "caseSensitive", "Literal, Case Sensitive", 'C', searchCaseSenseCB, window,
     	    GetPrefSearch() == SEARCH_CASE_SENSE, FULL);
+    window->searchLiteralWordDefItem = createMenuToggle(subSubSubPane, "literalWord",
+    	    "Literal, Whole Word", 'W', searchLiteralWordCB, window,
+    	    GetPrefSearch() == SEARCH_LITERAL_WORD, FULL);
+    window->searchCaseSenseWordDefItem = createMenuToggle(subSubSubPane,
+    	    "caseSensitiveWord", "Literal, Case Sensitive, Whole Word", 't', searchCaseSenseWordCB, window,
+    	    GetPrefSearch() == SEARCH_CASE_SENSE_WORD, FULL);
     window->searchRegexDefItem = createMenuToggle(subSubSubPane,
     	    "regularExpression", "Regular Expression", 'R', searchRegexCB,
     	    window, GetPrefSearch() == SEARCH_REGEX, FULL);
+    window->searchRegexNoCaseDefItem = createMenuToggle(subSubSubPane,
+    	    "regularExpressionNoCase", "Regular Expression, Case Insensitive", 'I', searchRegexNoCaseCB, window,
+    	    GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
 
     /* Syntax Highlighting sub menu */
     subSubPane = createMenu(subPane, "syntaxHighlighting","Syntax Highlighting",
@@ -1622,6 +1638,17 @@ static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     	XmToggleButtonSetState(win->searchDlogsDefItem, state, False);
 }
 
+static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefBeepOnSearchWrap(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->beepOnSearchWrapDefItem, state, False);
+}
+
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
@@ -1735,7 +1762,10 @@ static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
     	for (win=WindowList; win!=NULL; win=win->next){
     	    XmToggleButtonSetState(win->searchLiteralDefItem, True, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, False, False);
     	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, False, False);
     	}
     }
 }
@@ -1750,7 +1780,45 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData)
     	for (win=WindowList; win!=NULL; win=win->next) {
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, True, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, False, False);
     	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, False, False);
+    	}
+    }
+}
+
+static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefSearch(SEARCH_LITERAL_WORD);
+    	for (win=WindowList; win!=NULL; win=win->next){
+    	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, True, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, False, False);
+    	}
+    }
+}
+static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefSearch(SEARCH_CASE_SENSE_WORD);
+    	for (win=WindowList; win!=NULL; win=win->next) {
+    	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, True, False);
+    	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, False, False);
     	}
     }
 }
@@ -1765,7 +1833,28 @@ static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData)
     	for (win=WindowList; win!=NULL; win=win->next){
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
     	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, False, False);
     	    XmToggleButtonSetState(win->searchRegexDefItem, True, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, False, False);
+    	}
+    }
+}
+
+static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+   WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefSearch(SEARCH_REGEX_NOCASE);
+    	for (win=WindowList; win!=NULL; win=win->next){
+    	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchLiteralWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchCaseSenseWordDefItem, False, False);
+    	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
+	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, True, False);
     	}
     }
 }
@@ -3955,15 +4044,11 @@ static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs)
 */
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs)
 {
-    int i;
+    int i, tmpSearchType;
     
     for (i=ignoreArgs; i<*nArgs; i++) {
-    	if (!strCaseCmp(args[i], "literal"))
-    	    return SEARCH_LITERAL;
-    	if (!strCaseCmp(args[i], "case"))
-    	    return SEARCH_CASE_SENSE;
-    	if (!strCaseCmp(args[i], "regex"))
-    	    return SEARCH_REGEX;
+      	if (StringToSearchType(args[i], &tmpSearchType))
+    	    return tmpSearchType;
     }
     return GetPrefSearch();
 }

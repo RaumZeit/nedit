@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.5 2001/03/19 16:30:07 slobasso Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.6 2001/04/02 20:52:09 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -454,11 +454,16 @@ static int             init_ansi_classes  (void);
  * Compiles a regular expression into the internal format used by
  * `ExecRE'.
  *
+ * The default behaviour wrt. case sensitivity and newline matching can
+ * be controlled through the defaultFlags argument (Markus Schwarzenberg). 
+ * Future extensions are possible by using other flag bits.
+ * Note that currently only the case sensitivity flag is effectively used.
+ *
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-regexp * CompileRE (char *exp, char **errorText) {
+regexp * CompileRE (char *exp, char **errorText, int defaultFlags) {
 
    register                regexp *comp_regex = NULL;
    register unsigned char *scan;
@@ -501,10 +506,15 @@ regexp * CompileRE (char *exp, char **errorText) {
        * SECOND PASS: Emit code.                   *
        *-------------------------------------------*/
 
-      Is_Case_Insensitive = 0; /* Case sensitive is the default. */
-
-      Match_Newline = 0;       /* Newlines are NOT matched by default in
-                                  character classes. */
+      /*  Schwarzenberg:
+       *  If defaultFlags = 0 use standard defaults:
+       *    Is_Case_Insensitive: Case sensitive is the default
+       *    Match_Newline:       Newlines are NOT matched by default 
+       *                         in character classes  
+       */
+      Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? 1 : 0);
+      Match_Newline = 0;  /* ((defaultFlags & REDFLT_MATCH_NEWLINE)   ? 1 : 0); 
+                             Currently not used. Uncomment if needed. */
 
       Reg_Parse       = (unsigned char *) exp;
       Total_Paren     = 1;
