@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.95 2003/05/27 15:55:45 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.96 2003/05/27 22:32:21 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -318,24 +318,24 @@ static PrefDescripRec PrefDescrip[] = {
 #ifndef VMS
 #ifdef linux
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
-	cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
-	wc::w:ED:\nset wc=`wc`; echo $wc[1] \"lines,\" $wc[2] \"words,\" $wc[3] \"characters\"\n\
-	sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
-	expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-    	&TempStringPrefs.shellCmds, NULL, True},
+    cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
+    wc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
+    sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
+    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
+    &TempStringPrefs.shellCmds, NULL, True},
 #elif __FreeBSD__
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
-      cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
-      wc::w:ED:\nset wc=`wc`; echo $wc[1] \"words,\" $wc[2] \"lines,\" $wc[3] \"characters\"\n\
-      sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
-      expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-      &TempStringPrefs.shellCmds, NULL, True},
+    cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
+    wc::w:ED:\nwc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n\
+    sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
+    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
+    &TempStringPrefs.shellCmds, NULL, True},
 #else
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:ED:\n\
-    	(cat;echo \"\") | spell\nwc::w:ED:\nset wc=`wc`; echo $wc[1] \"lines,\" $wc[2] \"words,\" $wc[3] \"characters\"\n\
-    	\nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
-	expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-    	&TempStringPrefs.shellCmds, NULL, True},
+    (cat;echo \"\") | spell\nwc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
+    \nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
+    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
+    &TempStringPrefs.shellCmds, NULL, True},
 #endif /* linux, __FreeBSD__ */
 #endif /* VMS */
     {"macroCommands", "MacroCommands", PREF_ALLOC_STRING,
