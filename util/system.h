@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.5 2001/08/04 20:23:54 tringali Exp $ */
+/* $Id: system.h,v 1.6 2001/08/09 18:47:49 amai Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -89,7 +89,7 @@
 #   define COMPILE_OS "BSDI"
 #elif defined(__ultrix)                 /* Untested, please verify */
 #   define COMPILE_OS "Ultrix"
-#elif defined(__EMX__)                  /* In theory people might EMX elsewhere ... */
+#elif defined(__EMX__)                  /* Might be used on Win ... */
 #   define COMPILE_OS "OS/2"
 #else
 #   define COMPILE_OS "Unknown"
@@ -127,4 +127,3 @@
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif
-
