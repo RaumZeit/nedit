@@ -95,7 +95,6 @@ const char *const knownBadLessTif[] = {
 
 static enum MotifStability GetLessTifStability(void)
 {
-    enum MotifStability result = MotifUnknown;
     int i;
     const char *rev = NULL;
     
