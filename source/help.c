@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.20 2001/03/09 22:30:41 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.21 2001/03/10 15:36:56 arnef Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -2467,6 +2467,10 @@ resource names, see your .nedit file):\n\
 	systems (SGI) have hardware support for multiple\n\
 	simultaneous colormaps, and applications with\n\
 	installed colormaps are well behaved.\n\
+\n\
+    nedit.findReplaceUsesSelection: False -- Controls if\n\
+        the Find and Replace dialogs are automatically\n\
+        loaded with the contents of the primary selection.\n\
 \n\
     nedit.multiClickTime: (system specific) -- Maximum\n\
         time in milliseconds allowed between mouse clicks\n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.20 2001/03/09 22:27:04 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.21 2001/03/10 15:36:56 arnef Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -94,6 +94,7 @@ static void findSelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
+static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -259,6 +260,9 @@ static void replaceInSelAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void replaceSameAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
+static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+static void replaceFindSameAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs);
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
@@ -413,6 +417,9 @@ static XtActionsRec Actions[] = {
     {"replace_in_selection", replaceInSelAP},
     {"replace-again", replaceSameAP},
     {"replace_again", replaceSameAP},
+    {"replace_find", replaceFindAP},
+    {"replace_find_same", replaceFindSameAP},
+    {"replace_find_again", replaceFindSameAP},
     {"goto-line-number", gotoAP},
     {"goto_line_number", gotoAP},
     {"goto-line-number-dialog", gotoDialogAP},
@@ -640,6 +647,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "replace", "Replace...", 'R', replaceCB, window,
     	    SHORT);
     createFakeMenuItem(menuPane, "replaceShift", replaceCB, window);
+    createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A',
+    	    replaceFindSameCB, window, SHORT);
+    createFakeMenuItem(menuPane, "replaceFindAgainShift", replaceFindSameCB, window);
     createMenuItem(menuPane, "replaceAgain", "Replace Again", 'p',
     	    replaceSameCB, window, SHORT);
     createFakeMenuItem(menuPane, "replaceAgainShift", replaceSameCB, window);
@@ -1134,6 +1144,13 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer callData)
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "replace_again",
+    	    ((XmAnyCallbackStruct *)callData)->event,
+    	    shiftKeyToDir(callData), 1);
+}
+
+static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    XtCallActionProc(((WindowInfo *)clientData)->lastFocus, "replace_find_same",
     	    ((XmAnyCallbackStruct *)callData)->event,
     	    shiftKeyToDir(callData), 1);
 }
@@ -2302,7 +2319,8 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args,
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs),
-        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs));
+               searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs),
+               event->xbutton.time);
 }
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2356,8 +2374,9 @@ static void replaceDialogAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    DoReplaceDlog(window, searchDirection(0, args, nArgs),
-        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs));
+    DoFindReplaceDlog(window, searchDirection(0, args, nArgs),
+        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs),
+        event->xbutton.time);
 }
 
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2414,6 +2433,31 @@ static void replaceSameAP(Widget w, XEvent *event, String *args,
     if (CheckReadOnly(window))
     	return;
     ReplaceSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
+}
+
+static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    if (CheckReadOnly(window))
+       return;
+    if (*nArgs < 2) {
+       DialogF(DF_WARN, window->shell, 1, "replace_find action requires search and replace string arguments", "OK");
+       return;
+    }
+    ReplaceAndSearch(window, searchDirection(2, args, nArgs),
+                     args[0], args[1], searchType(2, args, nArgs),
+                     searchWrap(0, args, nArgs));
+}
+
+static void replaceFindSameAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    if (CheckReadOnly(window))
+       return;
+    ReplaceFindSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)

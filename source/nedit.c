@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.9 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.10 2001/03/10 15:37:08 arnef Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -195,9 +195,15 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*searchMenu.replace.accelerator: Ctrl<Key>r",
     "*searchMenu.replace.acceleratorText: [Shift]Ctrl+R",
     "*searchMenu.replaceShift.accelerator: Shift Ctrl<Key>r",
-    "*searchMenu.replaceAgain.accelerator: Ctrl<Key>t",
-    "*searchMenu.replaceAgain.acceleratorText: [Shift]Ctrl+T",
-    "*searchMenu.replaceAgainShift.accelerator: Shift Ctrl<Key>t",
+    "*searchMenu.findReplace.accelerator: Ctrl<Key>r",
+    "*searchMenu.findReplace.acceleratorText: [Shift]Ctrl+R",
+    "*searchMenu.findReplaceShift.accelerator: Shift Ctrl<Key>r",
+    "*searchMenu.replaceFindAgain.accelerator: Ctrl<Key>t",
+    "*searchMenu.replaceFindAgain.acceleratorText: [Shift]Ctrl+T",
+    "*searchMenu.replaceFindAgainShift.accelerator: Shift Ctrl<Key>t",
+    "*searchMenu.replaceAgain.accelerator: Alt<Key>t",
+    "*searchMenu.replaceAgain.acceleratorText: [Shift]Alt+T",
+    "*searchMenu.replaceAgainShift.accelerator: Shift Alt<Key>t",
     "*searchMenu.gotoLineNumber.accelerator: Ctrl<Key>l",
     "*searchMenu.gotoLineNumber.acceleratorText: Ctrl+L",
     "*searchMenu.gotoSelected.accelerator: Ctrl<Key>e",

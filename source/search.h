@@ -1,11 +1,11 @@
-/* $Id: search.h,v 1.5 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: search.h,v 1.6 2001/03/10 15:37:08 arnef Exp $ */
 enum SearchType {SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX};
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
-void DoReplaceDlog(WindowInfo *window, int direction, int searchType,
-    int keepDialogs);
+void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
+    int keepDialogs, Time time);
 void DoFindDlog(WindowInfo *window, int direction, int searchType,
-    int keepDialogs);
+    int keepDialogs, Time time);
 int SearchAndSelect(WindowInfo *window, int direction, char *searchString,
 	int searchType, int searchWrap);
 int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);
@@ -15,6 +15,9 @@ void SearchForSelected(WindowInfo *window, int direction, int searchWrap,
     int searchType, Time time);
 int SearchAndReplace(WindowInfo *window, int direction, char *searchString,
 	char *replaceString, int searchType, int searchWrap);
+int ReplaceAndSearch(WindowInfo *window, int direction, char *searchString,
+	char *replaceString, int searchType, int searchWrap);
+int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap);
 int ReplaceSame(WindowInfo *window, int direction, int searchWrap);
 int ReplaceAll(WindowInfo *window, char *searchString, char *replaceString,
 	int searchType);

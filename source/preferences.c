@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.15 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.16 2001/03/10 15:37:08 arnef Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -198,6 +198,8 @@ static struct prefData {
     	    	    	    	      posting of background menu */
     char fileVersion[4]; 	/* Version of nedit which wrote the .nedit
     				   file we're reading */
+    int findReplaceUsesSelection; /* whether the find replace dialog is automatically
+                                     loaded with the primary selection */
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -682,6 +684,8 @@ static PrefDescripRec PrefDescrip[] = {
     {"shortMenus", "ShortMenus", PREF_BOOLEAN, "False", &PrefData.shortMenus,
       NULL, True},
 #endif
+    {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False",
+    	&PrefData.findReplaceUsesSelection, NULL, False},
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -1132,6 +1136,16 @@ void SetPrefWarnExit(int state)
 int GetPrefWarnExit(void)
 {
     return PrefData.warnExit;
+}
+
+void SetPrefFindReplaceUsesSelection(int state)
+{
+    setIntPref(&PrefData.findReplaceUsesSelection, state);
+}
+
+int GetPrefFindReplaceUsesSelection(void)
+{
+    return PrefData.findReplaceUsesSelection;
 }
 
 void SetPrefMapDelete(int state)
