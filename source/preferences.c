@@ -595,7 +595,7 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_BOOLEAN, "True",
     	&PrefData.showMatching, NULL, True},
-    {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "False",
+    {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True",
     	&PrefData.highlightSyntax, NULL, True},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.searchDlogs, NULL, True},
