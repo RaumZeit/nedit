@@ -846,8 +846,8 @@ LayoutTopBottom(XmLFolderWidget f,
   Dimension width, minWidth, borderWidth;
   Dimension co;
   int st, ht;
-  int tabFit, tgtTabWidth = 0;
-  int tabPaddingWidth, tailSpace;
+  int tabFit = 0, tgtTabWidth = 0;
+  int tabPaddingWidth, tailSpace = 0;
   Boolean map, isManaged;
   struct
   {

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.114 2004/02/09 11:02:27 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.115 2004/02/10 22:29:11 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -824,7 +824,7 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
 */
 static WindowInfo *replacementDocument(WindowInfo *window)
 {
-    int n, tabPos, nextPos;
+    int n, tabPos = 0, nextPos;
     WindowInfo **winList, *win;
     int nBuf = NDocuments(window);
     
@@ -845,7 +845,7 @@ static WindowInfo *replacementDocument(WindowInfo *window)
 	}   
     }
     	
-    nextPos = tabPos == nBuf-1? tabPos-1 : tabPos+1;
+    nextPos = tabPos == nBuf-1 ? tabPos-1 : tabPos+1;
     win = winList[nextPos];
     XtFree((char*) winList);
     return win;
@@ -2354,7 +2354,7 @@ int IsIconic(WindowInfo *window)
     int result;
   
     if (wmStateAtom == 0)
-        wmStateAtom = XInternAtom (XtDisplay(window->shell), "WM_STATE", False); 
+        wmStateAtom = XInternAtom(XtDisplay(window->shell), "WM_STATE", False); 
     if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell),
             wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat,
             &nItems, &leftover, (unsigned char **)&property) != Success ||
@@ -3349,7 +3349,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin)
 {
-    int n, tabPos, nextPos;
+    int n, tabPos = 0, nextPos;
     WindowInfo **winList, *win;
     int nBuf = crossWin? NWindows() : NDocuments(window);
     

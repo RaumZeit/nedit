@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.75 2004/02/04 08:44:48 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.76 2004/02/10 22:29:11 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -517,10 +517,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
             {
                 if (*c == '\0')
                 {
-                    *c = 0xfe;
+                    *c = (char) 0xfe;
                 }
             }
-            window->buffer->nullSubsChar = 0xfe;
+            window->buffer->nullSubsChar = (char) 0xfe;
         }
         window->ignoreModify = True;
         BufSetAll(window->buffer, fileString);
