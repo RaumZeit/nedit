@@ -1,6 +1,6 @@
                     NEdit Version 5.5, October 2004
 
-$Id: README,v 1.45 2004/09/30 19:35:33 edg Exp $
+$Id: README,v 1.46 2004/09/30 20:51:05 n8gray Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -86,8 +86,7 @@ most major Unix and VMS systems. Check out the NEdit web page at
 
   http://nedit.org
 
-
-The requirements to build NEdit from the sources are: 
+If you have downloaded a pre-built executable you can skip ahead to the section called INSTALLATION.  Otherwise, the requirements to build NEdit from the sources are: 
 
  - ANSI C89 system (compiler, headers, libraries)
  - make utility (eg, GNU make)
@@ -185,21 +184,22 @@ INSTALLATION
 NEdit consists of a single, stand-alone executable file which does not require
 any special installation.  To install NEdit on Unix systems, simply put the
 nedit executable in your path.  
-On VMS systems, nedit must be defined as a foreign command so that it can
-process command line arguments. For example, if nedit.exe were in the
+
+To use NEdit in client/server mode (which is the recommended way of using it),
+you also need the nedit client program, nc, which, again, needs no special
+installation.  On some systems, the name nc may conflict with the 'netcat'
+program.  In that case, choose a different name for the executable and simply
+rename it.  The recommend alternative is 'ncl'.  Don't forget to put the
+man-pages for nedit and nc into a place where your man command is able to find
+them (e.g. /usr/man/man1/nedit.1), and don't forget to rename nc.man to ncl.man
+if you've renamed nc to ncl.
+
+On VMS systems, nedit and nc must be defined as a foreign commands so that they
+can process command line arguments. For example, if nedit.exe were in the
 directory mydir on the disk called mydev, adding the following line to your
 login.com file would define the nedit command:
 
 	$ ned*it :== $mydev:[mydir]nedit.exe
-
-To use NEdit in client/server mode, you also need the nedit client program, nc,
-which, again, needs no special installation, except in the VMS case, as above.
-On some systems, the name nc may conflict with an existing program.  In that
-case, choose a different name for the executable and simply rename it.  The
-recommend alternative is 'ncl'.
-Don't forget to put the man-pages for nedit and nc into a place where your
-man command is able to find them (e.g. /usr/man/man1/nedit.1)
-
 
 RUNNING NEDIT
 
@@ -387,6 +387,7 @@ Preferences->Syntax Highlighting->Recognition Patterns menu, though.
 Next, some version specific upgrading issues are listed. Note that 
 non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
 
+=======
 * Upgrading from 5.4 to 5.5
   
   - Changes in the widget hierarchy, possibly effecting resource settings

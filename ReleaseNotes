@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.27 2004/09/30 09:30:33 edg Exp $
+$Id: ReleaseNotes,v 1.28 2004/09/30 20:51:05 n8gray Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -38,6 +38,9 @@ New features in 5.5
   - Improved Latex & Python syntax highlighting patterns
   
 Bugs fixed in 5.5
+
+  - If underscore (_) is among the word delimiters for a language mode then
+    word boundary regexes will work as expected.  (SF bug #1008656)
 
   - Problem with writing history file on VMS (SF bug #933146).
   
