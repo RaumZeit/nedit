@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.19 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.20 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -3377,8 +3377,22 @@ static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
-    result->tag = INT_TAG;
-    result->val.n = window->showMatching ? 1 : 0;
+    char *showMatchingStyleStr = "";
+    
+    switch (window->showMatchingStyle) {
+        case NO_FLASH:
+            showMatchingStyleStr = NO_FLASH_STRING;
+        break;
+        case FLASH_DELIMIT:
+            showMatchingStyleStr = FLASH_DELIMIT_STRING;
+        break;
+        case FLASH_RANGE:
+            showMatchingStyleStr = FLASH_RANGE_STRING;
+        break;
+    }
+    result->tag = STRING_TAG;
+    result->val.str = AllocString(strlen(showMatchingStyleStr) + 1);
+    strcpy(result->val.str, showMatchingStyleStr);
     return True;
 }
 

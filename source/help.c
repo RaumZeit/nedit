@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.30 2001/04/09 21:43:21 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.31 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -493,14 +493,15 @@ To help you inspect nested parentheses, brackets, braces, quotes, and other \
 characters, NEdit has both an automatic parenthesis matching mode, and a \
 Goto Matching command.  Automatic parenthesis matching is activated when \
 you type, or move the insertion cursor after a parenthesis, bracket, or \
-brace.  It momentarily highlights the matching character if that character \
-is visible in the window.  To find a matching character anywhere in \
-the file, select it or position the cursor after it, and choose Goto \
-Matching from the Search menu.  If \
+brace.  It momentarily highlights either the opposite character ('Delimiter') \
+or the entire expression ('Range') if the opposite character is visible in the \
+window.\n\
+To find a matching character anywhere in the file, select it or position the \
+cursor after it, and choose Goto Matching from the Search menu.  If \
 the character matches itself, such as a quote or slash, select the first \
 character of the pair.  NEdit will match {, (, [, <, \", \', `, /, and \\. \
 Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by \
-default),will select all of the text between the matching characters.\n\
+default), will select all of the text between the matching characters.\n\
 \n\
 Opening Included Files\n\
 \n\
@@ -1238,9 +1239,12 @@ Preferences Menu\n\
         on Unix or _filename on VMS (see Crash Recovery).\n\
 \n\
     Show Matching (..) -- Momentarily highlight matching\n\
-        parenthesis, brackets, and braces when one of\n\
-        these characters is typed, or when the insertion\n\
-        cursor is positioned after it.\n\
+        parenthesis, brackets, and braces, or the range\n\
+        between them, when one of these characters is typed,\n\
+        or when the insertion cursor is positioned after it.\n\
+        Delimiter only highlights the matching delimiter,\n\
+        while Range highlights the whole range of text\n\
+        between the matching delimiters.\n\
 \n\
     Overtype -- In overtype mode, new characters entered\n\
         replace the characters in front of the insertion\n\
@@ -3156,8 +3160,9 @@ there is no selection or it is not rectangular.\n\
 \n\
 $show_line_numbers -- Whether line numbers are shown next to the text.\n\
 \n\
-$show_matching -- Contains 1 if matching items are highlighted, such as \
-\"[]\" and \"{}\" pairs, otherwise 0.\n\
+$show_matching -- Contains the current preference for showing matching \
+pairs, such as \"[]\" and \"{}\" pairs. Can be \"off\", \"delimiter\", or \
+\"range\".\n\
 \n\
 $statistics_line -- Has a value of 1 if the statistics line is shown, \
 otherwise 0.\n\
@@ -3489,7 +3494,7 @@ Some notes on argument types above:\n\
  		    Macro Menu dialogs\n\
 \n\
 \n\
-Window Preferneces Actions\n\
+Window Preferences Actions\n\
 \n\
 set_auto_indent(\"off\" | \"on\" | \"smart\")\n\
 Set auto indent mode for the current window.\n\
@@ -3542,10 +3547,8 @@ Show or hide line numbers for the current window. \
 A value of 0 turns it off and a value of 1 turns it on. \
 If no parameters are supplied the option is toggled.\n\
 \n\
-set_show_matching([0 | 1])\n\
-Set show matching (...) mode for the current window. \
-A value of 0 turns it off and a value of 1 turns it on. \
-If no parameters are supplied the option is toggled.\n\
+set_show_matching(\"off\" | \"delimiter\" | \"range\")\n\
+Set show matching (...) mode for the current window.\n\
 \n\
 set_statistics_line([0 | 1])\n\
 Show or hide the statistics line for the current window. \

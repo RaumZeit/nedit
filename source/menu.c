@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.27 2001/04/12 15:09:55 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.28 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -108,6 +108,9 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -122,7 +125,9 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData);
-static void showMatchingDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -873,9 +878,20 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->autoSaveDefItem = createMenuToggle(subPane, "incrementalBackup",
     	    "Incremental Backup", 'B', autoSaveDefCB, window, GetPrefAutoSave(),
     	    SHORT);
-    window->showMatchingDefItem = createMenuToggle(subPane, "showMatching",
-    	    "Show Matching (..)", 'M', showMatchingDefCB, window,
-    	    GetPrefShowMatching(), FULL);
+
+    /* Show Matching sub menu */
+    subSubPane = createMenu(subPane, "showMatching", "Show Matching (..)", 'M',
+	    NULL, FULL);
+    window->showMatchingOffDefItem = createMenuRadioToggle(subSubPane, "off",
+	    "Off", 'O', showMatchingOffDefCB, window, 
+            GetPrefShowMatching() == NO_FLASH, SHORT);
+    window->showMatchingDelimitDefItem = createMenuRadioToggle(subSubPane,
+	    "delimiter", "Delimiter", 'D', showMatchingDelimitDefCB, window,
+	    GetPrefShowMatching() == FLASH_DELIMIT, SHORT);
+    window->showMatchingRangeDefItem = createMenuRadioToggle(subSubPane,
+	    "range", "Range", 'R', showMatchingRangeDefCB, window,
+	    GetPrefShowMatching() == FLASH_RANGE, SHORT);
+
     window->sortOpenPrevDefItem = createMenuToggle(subPane, "sortOpenPrevMenu",
     	    "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window,
     	    GetPrefSortOpenPrevMenu(), FULL);
@@ -967,8 +983,19 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->autoSaveItem = createMenuToggle(menuPane, "incrementalBackup",
     	    "Incremental Backup", 'B', autoSaveCB, window, window->autoSave,
     	    SHORT);
-    window->showMatchingItem = createMenuToggle(menuPane, "showMatching", "Show Matching (..)", 'M',
-    	    doActionCB, "set_show_matching", window->showMatching, FULL);
+
+    subPane = createMenu(menuPane, "showMatching", "Show Matching (..)",
+        'M', NULL, FULL);
+    window->showMatchingOffItem = createMenuRadioToggle(subPane, "off", "Off",
+        'O', showMatchingOffCB, window, window->showMatchingStyle == NO_FLASH, 
+        SHORT);
+    window->showMatchingDelimitItem = createMenuRadioToggle(subPane,
+	"delimiter", "Delimiter", 'D', showMatchingDelimitCB, window,
+        window->showMatchingStyle == FLASH_DELIMIT, SHORT);
+    window->showMatchingRangeItem = createMenuRadioToggle(subPane, "range", 
+	"Range", 'R', showMatchingRangeCB, window, 
+	window->showMatchingStyle == FLASH_RANGE, SHORT);
+
 #ifndef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep2", SHORT);
     window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O',
@@ -1350,6 +1377,60 @@ static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
+static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    static char *params[1] = {NO_FLASH_STRING};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
+#ifdef SGI_CUSTOM
+    if (shortPrefAskDefault(window->shell, w, "Show Matching Off")) {
+	showMatchingOffDefCB(w, window, callData);
+	SaveNEditPrefs(window->shell, GetPrefShortMenus());
+    }
+#endif
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+}
+
+static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    static char *params[1] = {FLASH_DELIMIT_STRING};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
+#ifdef SGI_CUSTOM
+    if (shortPrefAskDefault(window->shell, w, "Show Matching Delimiter")) {
+	showMatchingDelimitDefCB(w, window, callData);
+	SaveNEditPrefs(window->shell, GetPrefShortMenus());
+    }
+#endif
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+}
+
+static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    static char *params[1] = {FLASH_RANGE_STRING};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
+#ifdef SGI_CUSTOM
+    if (shortPrefAskDefault(window->shell, w, "Show Matching Range")) {
+	showMatchingRangeDefCB(w, window, callData);
+	SaveNEditPrefs(window->shell, GetPrefShortMenus());
+    }
+#endif
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+}
+
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     ChooseFonts(window, True);
@@ -1574,15 +1655,43 @@ static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     TabsPrefDialog(window->shell, NULL);
 }
 
-static void showMatchingDefCB(Widget w, WindowInfo *window, caddr_t callData)
+static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
-    int state = XmToggleButtonGetState(w);
 
     /* Set the preference and make the other windows' menus agree */
-    SetPrefShowMatching(state);
-    for (win=WindowList; win!=NULL; win=win->next)
-    	XmToggleButtonSetState(win->showMatchingDefItem, state, False);
+    SetPrefShowMatching(NO_FLASH);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->showMatchingOffDefItem, True, False);
+	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingRangeDefItem, False, False);
+    }
+}
+
+static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefShowMatching(FLASH_DELIMIT);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingDelimitDefItem, True, False);
+	XmToggleButtonSetState(win->showMatchingRangeDefItem, False, False);
+    }
+}
+
+static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefShowMatching(FLASH_RANGE);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
+    }
 }
 
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -3323,12 +3432,34 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
-    Boolean newState;
-    
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showMatching, "set_show_matching");
-
-    XmToggleButtonSetState(window->showMatchingItem, newState, False);
-    window->showMatching = newState;
+    if (*nArgs > 0) {
+        if (strcmp(args[0], NO_FLASH_STRING) == 0) {
+            SetShowMatching(window, NO_FLASH);
+        }
+        else if (strcmp(args[0], FLASH_DELIMIT_STRING) == 0) {
+            SetShowMatching(window, FLASH_DELIMIT);
+        }
+        else if (strcmp(args[0], FLASH_RANGE_STRING) == 0) {
+            SetShowMatching(window, FLASH_RANGE);
+        }
+        /* For backward compatibility with pre-5.2 versions, we also
+           accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
+           It is quite unlikely, though, that anyone ever used this 
+           action procedure via the macro language or a key binding,
+           so this can probably be left out safely. */
+        else if (strcmp(args[0], "0") == 0) {
+           SetShowMatching(window, NO_FLASH);
+        }
+        else if (strcmp(args[0], "1") == 0) {
+           SetShowMatching(window, FLASH_DELIMIT);
+        }
+        else {
+            fprintf(stderr, "NEdit: Invalid argument for set_show_matching\n");
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_show_matching requires argument\n");
+    }
 }
 
 static void setOvertypeModeAP(Widget w, XEvent *event, String *args,

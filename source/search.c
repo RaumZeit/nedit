@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.24 2001/04/09 21:38:22 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.25 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2946,9 +2946,10 @@ void FlashMatching(WindowInfo *window, Widget textW)
     	window->flashTimeoutID = 0;
     }
     
-    /* don't do anything if showMatching isn't on */
-    if (!window->showMatching)
-    	return;
+    /* no flashing required */
+    if (window->showMatchingStyle == NO_FLASH) {
+	return;
+    }
 
     /* don't flash matching characters if there's a selection */
     if (window->buffer->primary.selected)
@@ -2986,8 +2987,17 @@ void FlashMatching(WindowInfo *window, Widget textW)
     	    &matchPos))
     	return;
 
-    /* highlight the matched character */
-    BufHighlight(window->buffer, matchPos, matchPos+1);
+    if (window->showMatchingStyle == FLASH_DELIMIT) {
+	/* Highlight either the matching character ... */
+	BufHighlight(window->buffer, matchPos, matchPos+1);
+    } else {
+	/* ... or the whole range. */
+  	if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
+	    BufHighlight(window->buffer, matchPos, pos+1);
+	} else {
+	    BufHighlight(window->buffer, matchPos+1, pos);
+	}
+    }
       
     /* Set up a timer to erase the box after 1.5 seconds */
     window->flashTimeoutID = XtAppAddTimeOut(

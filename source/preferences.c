@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.22 2001/04/06 13:09:54 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.23 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -106,6 +106,15 @@ static char *AutoWrapTypes[N_WRAP_STYLES+3] = {"None", "Newline", "Continuous",
 static char *AutoIndentTypes[N_INDENT_STYLES+3] = {"None", "Auto",
     	"Smart", "True", "False", NULL};
 
+#define N_SHOW_MATCHING_STYLES 3
+/* For backward compatibility, "False" and "True" are still accepted.
+   They are internally converted to "Off" and "Delimiter" respectively. 
+   NOTE: N_SHOW_MATCHING_STYLES must correspond to the number of 
+         _real_ matching styles, not counting False & True. 
+         False and True should also be the last ones in the list. */
+static char *ShowMatchingTypes[] = {"Off", "Delimiter", "Range", 
+	"False", "True", NULL};
+
 /* suplement wrap and indent styles w/ a value meaning "use default" for
    the override fields in the language modes dialog */
 #define DEFAULT_WRAP -1
@@ -190,7 +199,7 @@ static struct prefData {
     int tabDist;		/* number of characters between tab stops */
     int emTabDist;		/* non-zero tab dist. if emulated tabs are on */
     int insertTabs;		/* whether to use tabs for padding */
-    int showMatching;		/* whether to flash matching parenthesis */
+    int showMatchingStyle;	/* how to flash matching parenthesis */
     int highlightSyntax;    	/* whether to highlight syntax by default */
     int smartTags;  	    	/* look for tag in current window first */
     int stickyCaseSenseBtn;     /* whether Case Word Btn is sticky to Regex Btn */
@@ -619,8 +628,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.autoSave, NULL, True},
     {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False",
     	&PrefData.saveOldVersion, NULL, True},
-    {"showMatching", "ShowMatching", PREF_BOOLEAN, "True",
-    	&PrefData.showMatching, NULL, True},
+    {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
+ 	&PrefData.showMatchingStyle, ShowMatchingTypes, True},
     {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True",
     	&PrefData.highlightSyntax, NULL, True},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
@@ -1283,12 +1292,18 @@ int GetPrefInsertTabs(void)
 
 void SetPrefShowMatching(int state)
 {
-    setIntPref(&PrefData.showMatching, state);
+    setIntPref(&PrefData.showMatchingStyle, state);
 }
 
 int GetPrefShowMatching(void)
 {
-    return PrefData.showMatching;
+    /*
+     * For backwards compatibility with pre-5.2 versions, the boolean 
+     * False/True matching behavior is converted to NO_FLASH/FLASH_DELIMIT. 
+     */
+    if (PrefData.showMatchingStyle >= N_SHOW_MATCHING_STYLES) 
+	PrefData.showMatchingStyle -= N_SHOW_MATCHING_STYLES;
+    return PrefData.showMatchingStyle;
 }
 
 void SetPrefHighlightSyntax(int state)

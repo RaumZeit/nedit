@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.17 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.18 2001/04/12 22:02:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -183,7 +183,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     window->saveOldVersion = GetPrefSaveOldVersion();
     window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
     window->overstrike = False;
-    window->showMatching = GetPrefShowMatching();
+    window->showMatchingStyle = GetPrefShowMatching();
     window->showStats = GetPrefStatsLine();
     window->showISearchLine = GetPrefISearchLine();
     window->showLineNumbers = GetPrefLineNums();
@@ -1017,6 +1017,21 @@ void SetAutoIndent(WindowInfo *window, int state)
     XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
     XmToggleButtonSetState(window->autoIndentOffItem, state == NO_AUTO_INDENT,
     	    False);
+}
+
+/*
+** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
+** Update the menu to reflect the change of state.
+*/
+void SetShowMatching(WindowInfo *window, int state)
+{
+    window->showMatchingStyle = state;
+    XmToggleButtonSetState(window->showMatchingOffItem, 
+    	state == NO_FLASH, False);
+    XmToggleButtonSetState(window->showMatchingDelimitItem, 
+    	state == FLASH_DELIMIT, False);
+    XmToggleButtonSetState(window->showMatchingRangeItem, 
+	state == FLASH_RANGE, False);
 }
 
 /*

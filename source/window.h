@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.5 2001/03/12 15:15:14 slobasso Exp $ */
+/* $Id: window.h,v 1.6 2001/04/12 22:02:16 edg Exp $ */
 WindowInfo *CreateWindow(char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
@@ -15,6 +15,7 @@ int GetSimpleSelection(textBuffer *buf, int *left, int *right);
 char *GetTextRange(Widget widget, int left, int right);
 WindowInfo *FindWindowWithFile(char *name, char *path);
 void SetAutoIndent(WindowInfo *window, int state);
+void SetShowMatching(WindowInfo *window, int state);
 void SetFonts(WindowInfo *window, char *fontName, char *italicName,
 	char *boldName, char *boldItalicName);
 void SetOverstrike(WindowInfo *window, int overstrike);

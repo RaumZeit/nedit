@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.11 2001/04/09 21:38:22 edg Exp $ */
+/* $Id: nedit.h,v 1.12 2001/04/12 22:02:16 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -53,6 +53,11 @@
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
 enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT};
+enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
+
+#define NO_FLASH_STRING		"off"
+#define FLASH_DELIMIT_STRING	"delimiter"
+#define FLASH_RANGE_STRING	"range"
 
 #define CHARSET (XmStringCharSet)XmSTRING_DEFAULT_CHARSET
 
@@ -161,12 +166,14 @@ typedef struct _WindowInfo {
     Widget  	noWrapItem;
     Widget  	newlineWrapItem;
     Widget  	continuousWrapItem;
-    Widget  statsLineItem;
-    Widget  iSearchLineItem;
-    Widget  lineNumsItem;
-    Widget  showMatchingItem;
-    Widget  overtypeModeItem;
-    Widget  highlightItem;
+    Widget	statsLineItem;
+    Widget	iSearchLineItem;
+    Widget	lineNumsItem;
+    Widget	showMatchingOffItem;
+    Widget	showMatchingDelimitItem;
+    Widget	showMatchingRangeItem;
+    Widget	overtypeModeItem;
+    Widget	highlightItem;
     Widget	windowMenuPane;
     Widget	shellMenuPane;
     Widget	macroMenuPane;
@@ -184,7 +191,9 @@ typedef struct _WindowInfo {
     Widget	noWrapDefItem;
     Widget	newlineWrapDefItem;
     Widget	contWrapDefItem;
-    Widget	showMatchingDefItem;
+    Widget	showMatchingOffDefItem;
+    Widget	showMatchingDelimitDefItem;
+    Widget	showMatchingRangeDefItem;
     Widget	highlightOffDefItem;
     Widget	highlightDefItem;
     Widget	searchDlogsDefItem;
@@ -276,7 +285,9 @@ typedef struct _WindowInfo {
     char	wrapMode;		/* line wrap style: NO_WRAP,
     	    	    	    	    	   NEWLINE_WRAP or CONTINUOUS_WRAP */
     Boolean	overstrike;		/* is overstrike mode turned on ? */
-    Boolean	showMatching;		/* is paren matching mode on? */
+    char 	showMatchingStyle; 	/* How to show matching parens:
+					   NO_FLASH, FLASH_DELIMIT, or
+					   FLASH_RANGE */
     Boolean	showStats;		/* is stats line supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */
