@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.31 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.32 2001/08/24 08:19:20 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.31 2001/08/14 08:37:16 jlous Exp $
 #endif
 #include <fcntl.h>
 #endif /*VMS*/
+
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/CutPaste.h>
@@ -58,6 +59,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.31 2001/08/14 08:37:16 jlous Exp $
 #include <Xm/PushB.h>
 #include <Xm/Text.h>
 #include <Xm/Separator.h>
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "textBuf.h"
@@ -118,11 +120,11 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
 	XEvent *event, String *params, Cardinal *numParams);
 static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 	XEvent *event, String *params, Cardinal *numParams);
-char *actionToString(char *actionName, XEvent *event, String *params,
+static char *actionToString(char *actionName, XEvent *event, String *params,
 	Cardinal numParams);
-static int isMouseAction(char *action);
-static int isRedundantAction(char *action);
-static int isIgnoredAction(char *action);
+static int isMouseAction(const char *action);
+static int isRedundantAction(const char *action);
+static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, char *string,
 	WindowInfo *runWindow, char *errIn, char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -315,7 +317,7 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
 	tolowerMS, listDialogMS, getenvMS,
     stringCompareMS, splitMS};
-static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
+static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
     	"set_cursor_pos", "get_character", "min", "max", "search",
         "search_string", "substring", "replace_substring", "read_file",
@@ -338,7 +340,7 @@ static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
         minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
         displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
         serverNameMV};
-static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
+static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
 	"$wrap_margin", "$tab_dist", "$em_tab_dist", "$use_tabs",
@@ -357,7 +359,7 @@ static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 #define N_RETURN_GLOBALS 5
 enum retGlobalSyms {STRING_DIALOG_BUTTON, SEARCH_END, READ_STATUS,
 	SHELL_CMD_STATUS, LIST_DIALOG_BUTTON};
-static char *ReturnGlobalNames[N_RETURN_GLOBALS] = {"$string_dialog_button",
+static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {"$string_dialog_button",
     	"$search_end", "$read_status", "$shell_cmd_status",
 	"$list_dialog_button"};
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
@@ -367,7 +369,7 @@ static char* IgnoredActions[] = {"focusIn", "focusOut"};
 
 /* List of actions intended to be attached to mouse buttons, which the user
    must be warned can't be recorded in a learn/replay sequence */
-static char* MouseActions[] = {"grab_focus", "extend_adjust", "extend_start",
+static const char* MouseActions[] = {"grab_focus", "extend_adjust", "extend_start",
 	"extend_end", "secondary_or_drag_adjust", "secondary_adjust",
 	"secondary_or_drag_start", "secondary_start", "move_destination",
 	"move_to", "move_to_or_end_drag", "copy_to", "copy_to_or_end_drag",
@@ -375,7 +377,7 @@ static char* MouseActions[] = {"grab_focus", "extend_adjust", "extend_start",
 
 /* List of actions to not record because they 
    generate further actions, more suitable for recording */
-static char* RedundantActions[] = {"open_dialog", "save_as_dialog",
+static const char* RedundantActions[] = {"open_dialog", "save_as_dialog",
     "revert_to_saved_dialog", "include_file_dialog", "load_macro_file_dialog",
     "load_tags_file_dialog", "find_dialog", "replace_dialog",
     "goto_line_number_dialog", "mark_dialog", "goto_mark_dialog",
@@ -1449,31 +1451,31 @@ char *actionToString(char *actionName, XEvent *event, String *params,
     return outStr;
 }
 
-static int isMouseAction(char *action)
+static int isMouseAction(const char *action)
 {
     int i;
     
-    for (i=0; i<XtNumber(MouseActions); i++)
+    for (i=0; i<(int)XtNumber(MouseActions); i++)
     	if (!strcmp(action, MouseActions[i]))
     	    return True;
     return False;
 }
 
-static int isRedundantAction(char *action)
+static int isRedundantAction(const char *action)
 {
     int i;
     
-    for (i=0; i<XtNumber(RedundantActions); i++)
+    for (i=0; i<(int)XtNumber(RedundantActions); i++)
     	if (!strcmp(action, RedundantActions[i]))
     	    return True;
     return False;
 }
 
-static int isIgnoredAction(char *action)
+static int isIgnoredAction(const char *action)
 {
     int i;
     
-    for (i=0; i<XtNumber(IgnoredActions); i++)
+    for (i=0; i<(int)XtNumber(IgnoredActions); i++)
     	if (!strcmp(action, IgnoredActions[i]))
     	    return True;
     return False;
