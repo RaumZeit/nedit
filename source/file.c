@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.61 2003/04/09 14:53:49 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.62 2003/04/09 14:56:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -210,7 +210,7 @@ void RevertToSaved(WindowInfo *window)
     /* Can't revert untitled windows */
     if (!window->filenameSet)
     {
-        DialogF(DF_WARN, window->shell, 1, "Error"
+        DialogF(DF_WARN, window->shell, 1, "Error",
                 "Window was never saved, can't re-read", "Dismiss");
         return;
     }
@@ -746,7 +746,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     otherWindow = FindWindowWithFile(filename, pathname);
     if (otherWindow != NULL)
     {
-        response = DialogF(DF_WARN, window->shell, 2, "File open"
+        response = DialogF(DF_WARN, window->shell, 2, "File open",
         "%s is open in another NEdit window", "Cancel",
         "Close Other Window", filename);
 
