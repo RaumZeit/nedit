@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.36 2001/11/24 11:57:12 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.37 2001/11/25 23:03:06 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -83,6 +83,7 @@ static const char CVSID[] = "$Id: file.c,v 1.36 2001/11/24 11:57:12 amai Exp $";
 #define MOD_CHECK_INTERVAL 3000
 
 static int doSave(WindowInfo *window);
+static void safeClose(WindowInfo *window);
 static int doOpen(WindowInfo *window, const char *name, const char *path,
      int flags);
 static void backupFileName(WindowInfo *window, char *name);
@@ -172,7 +173,9 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     	
     /* Open the file */
     if (!doOpen(window, name, path, flags)) {
-    	CloseWindow(window);
+	/* The user may have destroyed the window instead of closing the 
+	   warning dialog; don't close it twice */
+	safeClose(window);
     	return NULL;
     }
     
@@ -227,7 +230,9 @@ void RevertToSaved(WindowInfo *window)
     ClearUndoList(window);
     openFlags |= IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0;
     if (!doOpen(window, name, path, openFlags)) {
-    	CloseWindow(window);
+	/* The user may have destroyed the window instead of closing the 
+	   warning dialog; don't close it twice */
+	safeClose(window);
     	return;
     }
     UpdateWindowTitle(window);
@@ -238,6 +243,25 @@ void RevertToSaved(WindowInfo *window)
     	text = i==0 ? window->textArea : window->textPanes[i-1];
 	TextSetCursorPos(text, insertPositions[i]);
 	TextSetScroll(text, topLines[i], horizOffsets[i]);
+    }
+}
+
+/*
+** Checks whether a window is still alive, and closes it only if so.
+** Intended to be used when the file could not be opened for some reason.
+** Normally the window is still alive, but the user may have closed the 
+** window instead of the error dialog. In that case, we shouldn't close the 
+** window a second time.
+*/
+static void safeClose(WindowInfo *window)
+{
+    WindowInfo* p = WindowList;
+    while(p) {
+        if (p == window) {
+	    CloseWindow(window);
+            return;
+        }
+        p = p->next;
     }
 }
 
