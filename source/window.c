@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.107 2004/02/04 08:45:01 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.108 2004/02/05 07:29:50 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3623,8 +3623,10 @@ static void refreshMenuBar(WindowInfo *window)
     	UpdateShellMenu(window);
 #endif
     	UpdateMacroMenu(window);
-    	UpdateBGMenu(window);
     }
+    
+    /* BG menu belongs to text pane, so always update */
+    UpdateBGMenu(window);
     
     /* refresh selection-sensitive menus */
     DimSelectionDepUserMenuItems(window, window->wasSelected);
