@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.4 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.5 2001/07/31 07:46:42 amai Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -352,27 +352,27 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     managedListData *ml = (managedListData *)clientData;
-    int i, index, listPos;
+    int i, ind, listPos;
         
     /* get the selected list position and the item to be deleted */
     listPos = selectedListPosition(ml);
-    index = listPos-2;
+    ind = listPos-2;
     
     /* if there's a delete confirmation callback, call it first, and allow
        it to request that the operation be aborted */
     if (ml->deleteConfirmCB != NULL)
-    	if (!(*ml->deleteConfirmCB)(index, ml->deleteConfirmArg))
+    	if (!(*ml->deleteConfirmCB)(ind, ml->deleteConfirmArg))
     	    return;
 
     /* free the item and remove it from the list */
-    (*ml->freeItemCB)(ml->itemList[index]);
-    for (i=index; i<*ml->nItems-1; i++)
+    (*ml->freeItemCB)(ml->itemList[ind]);
+    for (i=ind; i<*ml->nItems-1; i++)
     	ml->itemList[i] = ml->itemList[i+1];
     (*ml->nItems)--;
     
     /* update the list widget and move the selection to the previous item
        in the list and display the fields appropriate  for that entry */
-    updateDialogFromList(ml, index-1);
+    updateDialogFromList(ml, ind-1);
 }
 
 static void copyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -413,12 +413,12 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData)
 static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     managedListData *ml = (managedListData *)clientData;
-    int index, listPos;
+    int ind, listPos;
     void *temp;
         
     /* get the item index currently selected in the menu item list */
     listPos = selectedListPosition(ml);
-    index = listPos-2;
+    ind = listPos-2;
      
     /* Bring the item up to date with the dialog fields (It would be better
        if this could be avoided, because user errors will be flagged here,
@@ -427,23 +427,23 @@ static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
      
     /* shuffle the item up in the menu item list */
-    temp = ml->itemList[index];
-    ml->itemList[index] = ml->itemList[index-1];
-    ml->itemList[index-1] = temp;
+    temp = ml->itemList[ind];
+    ml->itemList[ind] = ml->itemList[ind-1];
+    ml->itemList[ind-1] = temp;
     
     /* update the list widget and keep the selection on moved item */
-    updateDialogFromList(ml, index-1);
+    updateDialogFromList(ml, ind-1);
 }
 
 static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     managedListData *ml = (managedListData *)clientData;
-    int index, listPos;
+    int ind, listPos;
     void *temp;
         
     /* get the item index currently selected in the menu item list */
     listPos = selectedListPosition(ml);
-    index = listPos-2;
+    ind = listPos-2;
 
     /* Bring the item up to date with the dialog fields (I wish this could
        be avoided) */
@@ -451,12 +451,12 @@ static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
      
     /* shuffle the item down in the menu item list */
-    temp = ml->itemList[index];
-    ml->itemList[index] = ml->itemList[index+1];
-    ml->itemList[index+1] = temp;
+    temp = ml->itemList[ind];
+    ml->itemList[ind] = ml->itemList[ind+1];
+    ml->itemList[ind+1] = temp;
     
     /* update the list widget and keep the selection on moved item */
-    updateDialogFromList(ml, index+1);
+    updateDialogFromList(ml, ind+1);
 }
 
 /*
@@ -465,7 +465,7 @@ static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData)
 static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     managedListData *ml = (managedListData *)clientData;
-    int index, listPos = ((XmListCallbackStruct *)callData)->item_position;
+    int ind, listPos = ((XmListCallbackStruct *)callData)->item_position;
     
     /* Save the current dialog fields before overwriting them.  If there's an
        error, force the user to go back to the old selection and fix it
@@ -496,11 +496,11 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData)
     }
         
     /* get the index of the item currently selected in the item list */
-    index = listPos - 2;
+    ind = listPos - 2;
     
     /* tell the caller to show the new item */
     if (ml->setDialogDataCB != NULL)
-    	(*ml->setDialogDataCB)(listPos==1 ? NULL : ml->itemList[index],
+    	(*ml->setDialogDataCB)(listPos==1 ? NULL : ml->itemList[ind],
     	    	ml->setDialogDataArg);
 }
 
