@@ -355,6 +355,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
 {
     Boolean   done_with_dialog=False; /* ok to destroy dialog flag	   */
     char      *fileString;            /* C string for file selected        */
+    char      *dirString;             /* C string for dir of file selected */
     XmString  cFileString;            /* compound string for file selected */
     XmString  cDir;	              /* compound directory selected	   */
     XmString  cPattern;               /* compound filter pattern	   */
@@ -427,7 +428,23 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
 	DefaultDirectory = cDir;
 	DefaultPattern = cPattern;
 	XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
-	strcpy(filename, fileString);
+        /* Motif 2.x seem to contain a bug that causes it to return only 
+           the relative name of the file in XmNdirSpec when XmNpathMode is set
+           to XmPATH_MODE_RELATIVE (through X resources), although the man
+           page states that it always returns the full path name. We can
+           easily work around this by checking that the first character of the
+           file name is a `/'. */
+	if (fileString[0] == '/') {
+	    /* The directory name is already present in the file name or
+	       the user entered a full path name. */
+	    strcpy(filename, fileString);
+	} else {
+	    /* Concatenate the directory name and the file name */
+   	    XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
+	    strcpy(filename, dirString);
+	    strcat(filename, fileString);
+  	    XtFree(dirString);
+	}
 	XmStringFree(cFileString);
 	XtFree(fileString);
     }
@@ -533,6 +550,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
     XmString  cDir;	              /* compound directory selected	   */
     XmString  cPattern;               /* compound filter pattern	   */
     char      *fileString;            /* C string for file selected        */
+    char      *dirString;             /* C string for dir of file selected */
 #if XmVersion < 1002
     int       i;
 #endif
@@ -610,7 +628,18 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 	DefaultDirectory = cDir;
 	DefaultPattern = cPattern;
 	XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
-	strcpy(filename, fileString);
+	/* See note in existing file routines about Motif 2.x bug. */
+	if (fileString[0] == '/') {
+	    /* The directory name is already present in the file name or
+	       the user entered a full path name. */
+	    strcpy(filename, fileString);
+	} else {
+	    /* Concatenate the directory name and the file name */
+   	    XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
+	    strcpy(filename, dirString);
+	    strcat(filename, fileString);
+  	    XtFree(dirString);
+	}
 	XmStringFree(cFileString);
 	XtFree(fileString);
     }
