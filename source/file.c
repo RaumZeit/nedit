@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.88 2004/08/24 09:37:24 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.89 2004/10/01 08:06:50 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -85,6 +85,8 @@ static const char CVSID[] = "$Id: file.c,v 1.88 2004/08/24 09:37:24 edg Exp $";
    system which is slow to process stat requests (which I'm not sure exists) */
 #define MOD_CHECK_INTERVAL 3000
 
+#define MAX_ARGS 20         /* Maximum number of X arguments */
+
 static int doSave(WindowInfo *window);
 static void safeClose(WindowInfo *window);
 static int doOpen(WindowInfo *window, const char *name, const char *path,
@@ -99,6 +101,8 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
 static int min(int i1, int i2);
+static void hiddenFilesCB(Widget widget, XtPointer client_data,
+        XtPointer call_data);
 
 #ifdef VMS
 void removeVersionNumber(char *fileName);
@@ -1386,20 +1390,93 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 */
 int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
 {
-    char *savedDefaultDir;
-    int retVal;
-    
+    char*     savedDefaultDir;
+    int       retVal;
+    int       n;                        /* number of arguments              */
+    Arg       args[MAX_ARGS];           /* arg list                         */
+    Widget    existFileSB;              /* widget file select box           */
+
+    Widget    utilForm;                 /* form containing utility widgets  */
+    Widget    hiddenFilesCheckBox;      /* (un)displaying hidden files      */
+    Widget    hiddenFilesToggleButton;  /* (un)displaying hidden files      */
+
+    XmString  titleString;              /* compound string for dialog title */
+    XmString  hiddenFilesLabel;         /* ToggleButton label               */
+    fsbUserDataStruct userData;
+
     /* Temporarily set default directory to window->path, prompt for file,
        then, if the call was unsuccessful, restore the original default
        directory */
     savedDefaultDir = GetFileDialogDefaultDirectory();
     if (*window->path != '\0')
     	SetFileDialogDefaultDirectory(window->path);
-    retVal = GetExistingFilename(window->shell, prompt, fullname);
+
+    n = 0;
+    titleString = XmStringCreateSimple(prompt);
+    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
+    XtSetArg(args[n], XmNdialogTitle, titleString); n++;
+    XtSetArg(args[n], XmNresizePolicy, XmRESIZE_GROW); n++;
+    existFileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
+    XmStringFree(titleString);
+#ifndef SGI_CUSTOM
+    if (!GetPrefStdOpenDialog())
+        XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT)); 
+    XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_SELECTION_LABEL));
+
+    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_LABEL),
+            XmNmnemonic, 'l',
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST_LABEL),
+            XmNmnemonic, 'D',
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
+            XmNmnemonic, prompt[strspn(prompt, "lD")],
+            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST),
+            NULL);
+
+    /*  Creates a Form containing additional widgets */
+    utilForm = XtVaCreateManagedWidget("utilForm",
+            xmFormWidgetClass,
+            existFileSB,
+            NULL);
+
+    /*  Creates a RowColumn containing a ToggleButton to show/hide
+        hidden files in the file lists. It is attached to either
+        the format buttons or the wrap button.                  */
+    hiddenFilesCheckBox = XtVaCreateManagedWidget("hiddenFilesCheckBox",
+            xmRowColumnWidgetClass,
+            utilForm,
+            NULL);
+    hiddenFilesLabel = XmStringCreateLocalized("Show hidden Files");
+    hiddenFilesToggleButton = XtVaCreateManagedWidget("hiddenFilesToggleButton",
+            xmToggleButtonWidgetClass,
+            hiddenFilesCheckBox,
+            XmNmnemonic, 'h',
+            XmNlabelString, hiddenFilesLabel,
+            XmNset, GetPrefShowHiddenFiles(),
+            NULL);
+    XmStringFree(hiddenFilesLabel);
+    XtAddCallback(hiddenFilesToggleButton,
+            XmNvalueChangedCallback,
+            hiddenFilesCB,
+            &existFileSB);
+    userData.showHidden = GetPrefShowHiddenFiles();
+    XtVaSetValues(existFileSB, XmNuserData, &userData, NULL);
+
+    AddDialogMnemonicHandler(existFileSB, FALSE);
+    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT));
+    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT));
+#endif
+
+    retVal = HandleCustomExistFileSB(existFileSB, fullname);
+
     if (retVal != GFN_OK)
-    	SetFileDialogDefaultDirectory(savedDefaultDir);
+        SetFileDialogDefaultDirectory(savedDefaultDir);
     if (savedDefaultDir != NULL)
-    	XtFree(savedDefaultDir);
+        XtFree(savedDefaultDir);
+
     return retVal;
 }
 
@@ -1414,9 +1491,15 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     int n, retVal;
     Arg args[20];
     XmString s1, s2;
-    Widget fileSB, wrapToggle;
+    Widget fileSB, wrapToggle = NULL;
     Widget formatForm, formatBtns, unixFormat, dosFormat, macFormat;
+
+    Widget    hiddenFilesCheckBox;      /* (un)displaying hidden files      */
+    Widget    hiddenFilesToggleButton;  /* (un)displaying hidden files      */
+    XmString  hiddenFilesLabel;         /* ToggleButton label               */
+
     char *savedDefaultDir;
+    fsbUserDataStruct userData;
     
     *fileFormat = window->fileFormat;
     
@@ -1440,6 +1523,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
+
     formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass,
 	    fileSB, NULL);
     formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
@@ -1482,6 +1566,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XmStringFree(s1);
     XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
+
     if (window->wrapMode == CONTINUOUS_WRAP) {
 	wrapToggle = XtVaCreateManagedWidget("addWrap",
 	    	xmToggleButtonWidgetClass, formatForm, XmNlabelString,
@@ -1509,9 +1594,40 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
     	    prompt[strspn(prompt, "lFD")], XmNuserData,
     	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), NULL);
+
+    /*  Creates a RowColumn containing a ToggleButton to show/hide
+        hidden files in the file lists. It is attached to either
+        the format buttons or the wrap button.                  */
+    hiddenFilesCheckBox = XtVaCreateManagedWidget("hiddenFilesCheckBox",
+            xmRowColumnWidgetClass,
+            formatForm,
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, (wrapToggle == NULL ? formatBtns : wrapToggle),
+            XmNbottomAttachment, XmATTACH_FORM,
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNrightAttachment, XmATTACH_FORM,
+            NULL);
+
+    hiddenFilesLabel = XmStringCreateLocalized("Show hidden Files");
+    hiddenFilesToggleButton = XtVaCreateManagedWidget("hiddenFilesToggleButton",
+            xmToggleButtonWidgetClass,
+            hiddenFilesCheckBox,
+            XmNmnemonic, 'h',
+            XmNlabelString, hiddenFilesLabel,
+            XmNset, GetPrefShowHiddenFiles(),
+            NULL);
+    XmStringFree(hiddenFilesLabel);
+    XtAddCallback(hiddenFilesToggleButton,
+            XmNvalueChangedCallback,
+            hiddenFilesCB,
+            &fileSB);
+    userData.showHidden = GetPrefShowHiddenFiles();
+    XtVaSetValues(fileSB, XmNuserData, &userData, NULL);
+
     AddDialogMnemonicHandler(fileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
+
     retVal = HandleCustomNewFileSB(fileSB, fullname,
     	    window->filenameSet ? window->filename : NULL);
 
@@ -1843,6 +1959,29 @@ static void addWrapNewlines(WindowInfo *window)
        Continuous Wrap mode */
     SetToggleButtonState(window, window->continuousWrapItem, False, True);
 }
+
+/*
+**  Callback for hiddenFilesToggleButton
+**  The ToggleButton's state is saved in the FileSelectionBox' XmNuserData
+**  field, so that it can be used in the XmN*searchProcs.
+*/
+static void hiddenFilesCB(Widget widget,
+        XtPointer client_data,
+        XtPointer call_data)
+{
+    XmToggleButtonCallbackStruct* state =
+            (XmToggleButtonCallbackStruct *) call_data;
+    Widget* fsbParent = (Widget*) client_data;
+    fsbUserDataStruct* userData;
+ 
+    /* Remember the button's setting for the sort routines */
+    XtVaGetValues(*fsbParent, XmNuserData, &userData, NULL);
+    userData->showHidden = state->set;
+
+    /* Reinitialize lists */
+    XmFileSelectionDoSearch(*fsbParent, NULL);
+}
+
 
 /* 
  * Number of bytes read at once by cmpWinAgainstFile

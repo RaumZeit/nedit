@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.77 2004/10/01 07:50:54 yooden Exp $
+.. $Id: help.etx,v 1.78 2004/10/01 08:06:49 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -128,6 +128,9 @@ Getting Started
   in the window.  To create a new Untitled window, choose New Window or New Tab
   from the File menu.   To give the file a name and save its contents to the
   disk, choose Save or Save As... from the File menu.
+
+  In both Open and Save File Dialogs you can choose whether hidden files and
+  directories are shown in the lists. Just check/uncheck the toggle button.
 
 3>Backup Files
 
@@ -3775,6 +3778,9 @@ Preferences
 **Terminate with Line Break on Save**
   Some UNIX tools expect that files end with a line feed. If this option is
   activated, NEdit will append one if required.
+
+**Show hidden Files**
+  Show hidden files by default in file selection boxes.
 
 **Sort Open Prev. Menu**
   Option to order the File -> Open Previous menu alphabetically, versus in

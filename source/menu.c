@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.116 2004/10/01 07:50:55 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.117 2004/10/01 08:06:50 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -172,6 +172,7 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void showHiddenFilesCB(Widget w, WindowInfo* window, caddr_t callData);
 static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -811,6 +812,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /*
     ** Preferences menu, Default Settings sub menu
+    **
+    ** Mnemonics:   L, A, W, C, T, F, u, d, g, H, S, i, N, e, B, M, o, P, r, z
+    **              A, B, C, d, e, F, g, H, i, L, M, N, o, P, r, S, T, u, W, z
     */
     menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, NULL,
     	    SHORT);
@@ -997,13 +1001,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Show Matching sub menu */
     subSubPane = createMenu(subPane, "showMatching", "Show Matching (..)", 'M',
-	    NULL, FULL);
+        NULL, FULL);
     window->showMatchingOffDefItem = createMenuRadioToggle(subSubPane, "off",
-	    "Off", 'O', showMatchingOffDefCB, window, 
-            GetPrefShowMatching() == NO_FLASH, SHORT);
+        "Off", 'O', showMatchingOffDefCB, window, 
+        GetPrefShowMatching() == NO_FLASH, SHORT);
     window->showMatchingDelimitDefItem = createMenuRadioToggle(subSubPane,
-	    "delimiter", "Delimiter", 'D', showMatchingDelimitDefCB, window,
-	    GetPrefShowMatching() == FLASH_DELIMIT, SHORT);
+        "delimiter", "Delimiter", 'D', showMatchingDelimitDefCB, window,
+        GetPrefShowMatching() == FLASH_DELIMIT, SHORT);
     window->showMatchingRangeDefItem = createMenuRadioToggle(subSubPane,
 	    "range", "Range", 'R', showMatchingRangeDefCB, window,
 	    GetPrefShowMatching() == FLASH_RANGE, SHORT);
@@ -1011,6 +1015,11 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->matchSyntaxBasedDefItem = createMenuToggle(subSubPane, 
 	   "matchSyntax", "Syntax Based", 'S', matchSyntaxBasedDefCB, window,
 	    GetPrefMatchSyntaxBased(), SHORT);
+
+    /* Show Hidden Files */
+    window->showHiddenFilesItem = createMenuToggle(subPane,
+            "showHiddenFilesItem", "Show hidden Files", 'y', showHiddenFilesCB,
+            NULL, GetPrefShowHiddenFiles(), FULL);
 
     /* Append LF at end of files on save */
     window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
@@ -1988,12 +1997,15 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
-    for (win=WindowList; win!=NULL; win=win->next) {
-    	if (!IsTopDocument(win))
-	    continue;
-	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
-	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
-	XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
+    for (win=WindowList; win!=NULL; win=win->next)
+    {
+        if (!IsTopDocument(win))
+        {
+            continue;
+        }
+        XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
+        XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
+        XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
     }
 }
 
@@ -2161,6 +2173,18 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     for (win=WindowList; win!=NULL; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
+    }
+}
+
+static void showHiddenFilesCB(Widget w, WindowInfo* window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    SetPrefShowHiddenFiles(state);
+    for (win = WindowList; win != NULL; win = win->next)
+    {
+        XmToggleButtonSetState(win->showHiddenFilesItem, state, False);
     }
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.30 2004/08/01 10:06:12 yooden Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.31 2004/10/01 08:06:51 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -37,11 +37,6 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.30 2004/08/01 10:06:12 yooden E
 *                          set initial focus to filename list                  *
 *          6/25/93 by JMK: Fix memory leaks found by Purify.                   *
 *                                                                              *
-* Included are two routines written using Motif for accessing files:           *
-*                                                                              *
-* GetExistingFilename  presents a FileSelectionBox dialog where users can      *
-*                      choose an existing file to open.                        *
-*                                                                              *
 *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -73,10 +68,15 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.30 2004/08/01 10:06:12 yooden E
 
 #include <X11/keysym.h>
 #include <Xm/Xm.h>
-#include <Xm/PushBG.h>
 #include <Xm/FileSB.h>
 #include <Xm/Form.h>
+#include <Xm/List.h>
+#include <Xm/MessageB.h>
+#include <Xm/PushBG.h>
+#include <Xm/RowColumn.h>
 #include <Xm/Text.h>
+#include <Xm/ToggleB.h>
+
 #include <Xm/MessageB.h>
 #include <Xm/List.h>
 
@@ -107,9 +107,9 @@ enum yesNoValues {ynNone, ynYes, ynNo};
 static XmString DefaultDirectory = NULL;
 static XmString DefaultPattern = NULL;
 
-/* User settable option for leaving the file name text field in
-   GetExistingFilename dialogs.  Off by default so new users will get
-   used to typing in the list rather than in the text field */
+/* User settable option for leaving the file name text field in file
+   dialogs.  Off by default so new users will get used to typing in the
+   list rather than in the text field */
 static int RemoveRedundantTextField = True;
 
 /* Text for help button help display */
@@ -132,7 +132,10 @@ you don't, the name after the last \"/\" is interpreted as the file name to \
 match.  When you leave off the file name or trailing \"/\", you won't see \
 any files to open in the list \
 because the filter specification matched the directory file itself, rather \
-than the files in the directory.";
+than the files in the directory.\n"
+"\n"
+"Hidden files and directories (those whose names begin with a dot) will only "
+"be shown if the 'Show hidden Files' button is activated.";
 
 static const char *HelpNew = 
 "This dialog allows you to create a new file, or to save the current file \
@@ -152,7 +155,10 @@ directory names in the list, or selecting them and pressing the \
 in the directory tree, double \
 click on the directory entry ending in \"..\".  You can also move directly \
 to a directory by typing the file specification of the path in the \"Filter\" \
-field and pressing the \"Filter\" button.";
+field and pressing the \"Filter\" button."
+"\n"
+"Hidden files and directories (those whose names begins with a dot) will only "
+"be shown if the 'Show hidden Files' button is activated.";
 
 #else /* SGI_CUSTOM */
 static const char *HelpExist =
@@ -176,7 +182,10 @@ directories.\n\
 \n\
 The \"Filter\" button allows you to narrow down the list of files and \
 directories shown in the \"File to Edit:\" field.  The default filter of \
-\"*\" allows all files to be listed.";
+\"*\" allows all files to be listed."
+"\n"
+"Hidden files and directories (those whose names begins with a dot) will only "
+"be shown if the 'Show hidden Files' button is activated.";
 
 static const char *HelpNew = 
 "This dialog allows you to create a new file or to save the current file \
@@ -207,7 +216,11 @@ directories.\n\
 \n\
 The \"Filter\" button allows you to narrow down the list of files and \
 directories shown in the \"Files\" field.  The default filter of \
-\"*\" allows all files to be listed.";
+\"*\" allows all files to be listed."
+"\n"
+"Hidden files and directories (those whose names begins with a dot) will only "
+"be shown if the 'Show hidden Files' button is activated.";
+
 #endif /* SGI_CUSTOM */
 
 /*                    Local Callback Routines and variables                */
@@ -237,6 +250,9 @@ static void replacementDirSearchProc(Widget w, XtPointer searchData);
 static void replacementFileSearchProc(Widget w, XtPointer searchData);
 static void sortWidgetList(Widget listWidget);
 static int compareXmStrings(const void *string1, const void *string2);
+static unsigned removeHiddenFiles(Widget listWidget);
+static Boolean removeDotEntry(Widget listWidget);
+static int isHiddenFile(const char* filename);
 
 static int  SelectResult = GFN_CANCEL;  /*  Initialize results as cancel   */
 static Widget YesNoDialog;		/* "Overwrite?" dialog widget	   */
@@ -245,66 +261,7 @@ static Widget ErrorDialog;		/* Dialog widget for error msgs	   */
 static int ErrorDone;			/* Flag to mark dialog completed   */
 static void (*OrigDirSearchProc)();	/* Built in Motif directory search */
 static void (*OrigFileSearchProc)();	/* Built in Motif file search proc */
-		
-
-/*  GetExistingFilename				  	                   */
-/*									   */
-/*  This routine will popup a file selection box so that the user can      */
-/*  select an existing file from the scrollable list.  The user is         */
-/*  prevented from entering a new filename because the edittable text      */
-/*  area of the file selection box widget is unmanaged.  After the user    */
-/*  selects a file, GetExistingFilename returns the selected filename and  */
-/*  GFN_OK, indicating that the OK button was pressed.  If the user        */
-/*  pressed the cancel button, the return value is GFN_CANCEL, and the     */
-/*  filename character string supplied in the call is not altered.	   */
-/*									   */
-/*  Arguments:								   */
-/*									   */
-/*	Widget  parent	      - parent widget id			   */
-/*	char *  promptString  - prompt string				   */
-/*	char *  filename      - a string to receive the selected filename  */
-/*				(this string will not be altered if the    */
-/*				user pressed the cancel button)		   */
-/*									   */
-/*  Returns:	GFN_OK	      - file was selected and OK button pressed	   */
-/*		GFN_CANCEL    - Cancel button pressed and no returned file */
-/*									   */
-int GetExistingFilename (Widget parent, char *promptString, char *filename) 
-{
-    int       n;                      /* number of arguments               */
-    Arg	      args[MAX_ARGS];	      /* arg list	                   */
-    Widget    existFileSB;	      /* widget file select box 	   */
-    XmString  titleString;	      /* compound string for dialog title  */
-
-    n = 0;
-    titleString = XmStringCreateSimple(promptString);
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-    XtSetArg(args[n], XmNdialogTitle, titleString); n++;
-    existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
-    XmStringFree(titleString);
-#ifndef SGI_CUSTOM
-    if (RemoveRedundantTextField)
-        XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT)); 
-    XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_SELECTION_LABEL));
-
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_LABEL),
-            XmNmnemonic, 'l',
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT),
-            NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST_LABEL),
-            XmNmnemonic, 'D',
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST),
-            NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
-            XmNmnemonic, promptString[strspn(promptString, "lD")],
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST),
-            NULL);
-    AddDialogMnemonicHandler(existFileSB, FALSE);
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT));
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT));
-#endif
-    return HandleCustomExistFileSB(existFileSB, filename);
-}
+static void freeFileList(char** list);
 
 /*
 ** HandleCustomExistFileSB
@@ -335,6 +292,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
     XmString  cDir;	              /* compound directory selected	   */
     XmString  cPattern;               /* compound filter pattern	   */
     Widget    help;		      /* help window form dialog	   */
+    fsbUserDataStruct* userData;
 #if XmVersion < 1002
     int       i;
 #endif
@@ -360,6 +318,12 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
     	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST)), NULL);
 #endif
 #endif
+
+    XtVaGetValues(existFileSB, XmNuserData, &userData, NULL);
+    userData->cachedDirList = NULL;
+    userData->cachedFileList = NULL;
+    XtVaSetValues(existFileSB, XmNuserData, userData, NULL);
+
     ManageDialogCenteredOnPointer(existFileSB);
 
 #ifndef SGI_CUSTOM
@@ -435,6 +399,10 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
        messes up the grab cascades and leaves new windows without grabs, such
        that they appear to be frozen. */
     XtDestroyWidget(XtParent(existFileSB));
+
+    freeFileList(userData->cachedDirList);
+    freeFileList(userData->cachedFileList);
+
     return SelectResult;
 }
 
@@ -466,6 +434,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
     XmString  cPattern;               /* compound filter pattern	   */
     char      *fileString;            /* C string for file selected        */
     char      *dirString;             /* C string for dir of file selected */
+    fsbUserDataStruct* userData;
 #if XmVersion < 1002
     int       i;
 #endif
@@ -502,6 +471,12 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
     }
 #endif
 #endif
+
+    XtVaGetValues(newFileSB, XmNuserData, &userData, NULL);
+    userData->cachedDirList = NULL;
+    userData->cachedFileList = NULL;
+    XtVaSetValues(newFileSB, XmNuserData, userData, NULL);
+
     ManageDialogCenteredOnPointer(newFileSB);
 
 #ifndef SGI_CUSTOM
@@ -565,6 +540,10 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 	XtFree(fileString);
     }
     XtDestroyWidget(newFileSB);
+
+    freeFileList(userData->cachedDirList);
+    freeFileList(userData->cachedFileList);
+
     return SelectResult;
 }
 
@@ -625,7 +604,7 @@ void SetFileDialogDefaultPattern(char *pattern)
 }
 
 /*
-** Turn on or off the text fiend in the GetExistingFilename file selection
+** Turn on or off the text field in the GetExistingFilename file selection
 ** box, where users can enter the filename by typing.  This is redundant
 ** with typing in the list, and leads users who are new to nedit to miss
 ** the more powerful feature in favor of changing the focus and typing
@@ -1028,36 +1007,121 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
 ** not allow us to free lists that we pass in, and most Motif versions
 ** don't clean it up properly.
 */
-static void replacementDirSearchProc(Widget w, XtPointer searchData)
+
+static int restorePreviousList(Widget list, char** prevList)
 {
-    Boolean updated;
-    
-    /* Call the original search procedure to do the actual search */
-    (*OrigDirSearchProc)(w, searchData);
-    /* Refreshing a list clears the keystroke history, even if no update. */
-    nKeystrokes = 0;
-    XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
-    if (!updated)
-    	return;
-    	
-    /* Sort the items in the list */
-    sortWidgetList(XmFileSelectionBoxGetChild(w, XmDIALOG_DIR_LIST));
+    int count = 0, i;
+
+    while (prevList[count])
+    {
+        ++count;
+    }
+    XmListDeleteAllItems(list);
+
+    for (i = 0; i < count; ++i)
+    {
+        XmString s;
+        XmListAddItem(list, s = XmStringCreateSimple(prevList[i]), i + 1);
+        XtFree(prevList[i]);
+        XmStringFree(s);
+    }
+    XtFree((char*) prevList);
+    return count;
 }
 
-static void replacementFileSearchProc(Widget w, XtPointer searchData)
+static int saveCurrentList(Widget list, char*** saveList)
 {
-    Boolean updated;
-    
+    XmString *items;
+    int nItems, i;
+
+    XtVaGetValues(list, XmNitems, &items, XmNitemCount, &nItems, NULL);
+    *saveList = (char**) XtMalloc(sizeof(char*) * (nItems + 1));
+
+    for (i = 0; i < nItems; ++i)
+    {
+        char* s;
+        XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &s);
+        (*saveList)[i] = s;
+    }
+
+    (*saveList)[nItems] = 0;
+    return nItems;
+}
+
+static void replacementDirSearchProc(Widget fileSB, XtPointer searchData)
+{
+    int fileCount, newFileCount;
+    fsbUserDataStruct* userData;
+
+    XtVaGetValues(fileSB, XmNuserData, &userData, NULL);
+
+    if (userData->cachedDirList)
+    {
+       restorePreviousList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST),
+                           userData->cachedDirList);
+       userData->cachedDirList = NULL;
+    }
+       
     /* Call the original search procedure to do the actual search */
-    (*OrigFileSearchProc)(w, searchData);
-    /* Refreshing a list clears the keystroke history, even if no update. */
+    (*OrigDirSearchProc)(fileSB, searchData);
     nKeystrokes = 0;
-    XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
-    if (!updated)
-    	return;
-    	
+    
+    fileCount = saveCurrentList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST),
+                                &userData->cachedDirList);
+    
+    if (userData->showHidden)
+    {
+        /* Remove '.' entry */
+        if (removeDotEntry(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST)))
+        {
+           newFileCount = fileCount -1;
+        }
+        else
+        {
+           newFileCount = fileCount;
+        }
+
+    } else
+    {
+        /* Remove hidden files from list */
+        removeHiddenFiles(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST));
+    }
+    XtVaSetValues(fileSB, XmNlistUpdated, True, NULL);
+
     /* Sort the items in the list */
-    sortWidgetList(XmFileSelectionBoxGetChild(w, XmDIALOG_LIST));
+    sortWidgetList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST));
+}
+
+static void replacementFileSearchProc(Widget fileSB, XtPointer searchData)
+{
+    int fileCount;
+    fsbUserDataStruct* userData;
+
+    XtVaGetValues(fileSB, XmNuserData, &userData, NULL);
+
+    if (userData->cachedFileList)
+    {
+        restorePreviousList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST),
+                userData->cachedFileList);
+        userData->cachedFileList = NULL;
+    }
+       
+    /* Call the original search procedure to do the actual search */
+    (*OrigFileSearchProc)(fileSB, searchData);
+    nKeystrokes = 0;
+
+    fileCount = saveCurrentList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST),
+                                &userData->cachedFileList);
+
+    if (!userData->showHidden)
+    {
+        /* Remove hidden files from list */
+        removeHiddenFiles(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST));
+    }
+    XtVaSetValues(fileSB, XmNlistUpdated, True, NULL);
+
+    /* Sort the items in the list */
+    sortWidgetList(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST));
 }
 
 /*
@@ -1093,4 +1157,168 @@ static int compareXmStrings(const void *string1, const void *string2)
     XtFree(s1);
     XtFree(s2);
     return result;
+}
+
+/*
+**  Removes the '.' entry from a listWidget 
+**
+**  Preconditions:
+**      listWidget is an XmList containing filenames
+**
+**  Postcondition:
+**      first dotEntry in listWidget is removed
+*/
+static Boolean removeDotEntry(Widget listWidget)
+{
+    /*  Items currently in the listWidget */
+    XmString* items;
+    int nItems;
+
+    int i;
+
+    /*  read values in List into array. */
+    XtVaGetValues(listWidget,
+            XmNitems, &items,
+            XmNitemCount, &nItems,
+            NULL);
+    
+    /*  Traverse over items; for every item, check whether it's the dotfile;
+        if yes, delete it and return True. */
+    for (i = 0; i < nItems; i++)
+    {
+        /* C string of current list item */
+        char* filename;
+
+        /* basename of current list item */
+        char basename[MAXPATHLEN + 1];
+
+        /* Convert Motif compound string to C string */
+        XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &filename);
+
+        /* Get basename from list item */
+        ParseFilename(filename, basename, NULL);
+
+        /* Free C string, allocated by XmStringGetLtoR(). */
+        XtFree(filename);
+
+        /* if this is the dotEntry... */
+        if (strcmp(basename, ".") == 0)
+        {
+            /* ...delete it and break. */
+            XmListDeletePos(listWidget, i + 1);
+            return True;
+        }
+    }
+    
+    return False;
+}
+
+/*
+**  Removes hidden files from an XmList. Hidden files are all list entries
+**  which are recognized as such by isHiddenFile().
+**
+**  Preconditions:
+**      listWidget is an XmList containing filenames
+**      'int isHiddenFile(const char* fullname)' exists and works.
+**
+**  Postcondition:
+**      Hidden files in listWidget are removed
+**
+**  Returns
+**      number of hidden files removed
+*/
+static unsigned removeHiddenFiles(Widget listWidget)
+{
+    /*  Items currently in the listWidget */
+    XmString* items;
+    int nItems;
+
+    /*  Array holding list positions of hidden files. It is allocated based
+        on the current number of items in the List. */
+    int* hiddenFilePositions;
+    
+    /*  Number of hidden files found */
+    unsigned hiddenFileCount = 0;
+
+    int i;
+
+    /*  read values in List into array. */
+    XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, NULL);
+    
+    /*  Allocate array based on number of items in List. */
+    hiddenFilePositions = (int*) XtMalloc(sizeof(int*) * nItems);
+    
+    /*  Traverse over items; for every item, check whether it's a hidden file;
+        if yes, put it in hiddenFilePositions[]. */
+    for (i = 0; i < nItems; i++)
+    {
+        char* filename;
+        XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &filename);
+        if (isHiddenFile(filename))
+        {
+            /*  Add one because XmListDeletePositions expects values > 0. */
+            hiddenFilePositions[hiddenFileCount++] = i + 1;
+        }
+        XtFree(filename);
+    }
+    
+    /* Do the removal. */
+    XmListDeletePositions(listWidget, hiddenFilePositions, hiddenFileCount);
+    
+    /* Free array of positions. */
+    XtFree((char*) hiddenFilePositions);
+
+    return hiddenFileCount;
+}
+
+/*
+**  Checks whether fullname is a dotfile, ie. starts with a '.'
+**
+**  Preconditions:
+**      fullname < MAXPATHLEN
+**      'void ParseFilename(fullname, filename, NULL)' exists and works
+**
+**  Postcondition:
+**      Returns False for '..' and non-dotfiles, True for other dotfiles.
+*/
+static int isHiddenFile(const char* fullname)
+{
+    /* array to hold basename */
+    char basename[MAXPATHLEN + 1];
+
+    /* Extract basename from full filename */
+    ParseFilename(fullname, basename, NULL);
+
+    if (strcmp(basename, "..") == 0)
+    {
+        /* Return False for parent directory */
+        return False;
+    } else
+    {
+        /* Return True for dotfiles, False for other files */
+        return (basename[0] == '.');
+    }
+}
+
+static void freeFileList(char** list)
+{
+    int count = 0;
+    int i;
+
+    if (!list)
+    {
+        return;
+    }
+
+    while (list[count])
+    {
+        ++count;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        XtFree(list[i]);
+    }
+
+    XtFree((char*) list);
 }

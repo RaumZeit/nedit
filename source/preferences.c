@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.127 2004/10/01 07:50:56 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.128 2004/10/01 08:06:50 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -288,6 +288,7 @@ static struct prefData {
     int autoScroll;             /* w. to autoscroll near top/bottom of screen */
     int autoScrollVPadding;     /* how close to get before autoscrolling */
     int sortOpenPrevMenu;   	/* whether to sort the "Open Previous" menu */
+    int showHiddenFiles;         /* whether to show hidden files in the FSBs */
     int appendLF;       /* Whether to append LF at the end of each file */
     int mapDelete;		/* whether to map delete to backspace */
     int stdOpenDialog;		/* w. to retain redundant text field in Open */
@@ -783,6 +784,8 @@ static PrefDescripRec PrefDescrip[] = {
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True",
     	&PrefData.repositionDialogs, NULL, True},
 #endif
+    {"showHiddenFiles", "ShowHiddenFiles", PREF_BOOLEAN, "True",
+        &PrefData.showHiddenFiles, NULL, True},
     {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False",
     	&PrefData.autoScroll, NULL, True},
     {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4",
@@ -1799,6 +1802,16 @@ void SetPrefRepositionDialogs(int state)
 int GetPrefRepositionDialogs(void)
 {
     return PrefData.repositionDialogs;
+}
+
+void SetPrefShowHiddenFiles(int state)
+{
+    setIntPref(&PrefData.showHiddenFiles, state);
+}
+
+int GetPrefShowHiddenFiles(void)
+{
+    return PrefData.showHiddenFiles;
 }
 
 void SetPrefAutoScroll(int state)
