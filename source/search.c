@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.50 2002/09/18 20:17:37 arnef Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.51 2002/10/07 16:19:27 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2528,6 +2528,20 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
 	SEARCH_BACKWARD : SEARCH_FORWARD;
     
     /* Return strings */
+    if (strlen(replaceText) >= SEARCHMAX) {
+	DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+   	    	 "Search string too long.", "OK");
+	XtFree(replaceText);
+	XtFree(replaceWithText);
+	return FALSE;
+    }
+    if (strlen(replaceWithText) >= SEARCHMAX) {
+	DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+   	    	 "Replace string too long.", "OK");
+	XtFree(replaceText);
+	XtFree(replaceWithText);
+	return FALSE;
+    }
     strcpy(searchString, replaceText);
     strcpy(replaceString, replaceWithText);
     XtFree(replaceText);
@@ -2592,6 +2606,12 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
     }
 
     /* Return the search string */
+    if (strlen(findText) >= SEARCHMAX) {
+	DialogF(DF_WARN, XtParent(window->findDlog), 1,
+   	    	 "Search string too long.", "OK");
+	XtFree(findText);
+	return FALSE;
+    }
     strcpy(searchString, findText);
     XtFree(findText);
     return TRUE;
