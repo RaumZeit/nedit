@@ -1,6 +1,6 @@
                     NEdit Version 5.1.1, March 17, 2000
 
-$Id: nedit.doc,v 1.4 2001/02/26 23:38:02 edg Exp $
+$Id: nedit.doc,v 1.5 2001/04/25 19:03:01 amai Exp $
 
 NEdit is a standard GUI (Graphical User Interface) style text editor for
 programs and plain-text files.  Users of Macintosh and MS Windows based text
@@ -18,7 +18,7 @@ INSTALLING NEDIT
 NEdit is a single stand-alone executable file which can be installed by simply
 copying the appropriate executable "nedit" for your system.  Both sources and
 executables are available from http://nedit.org.  The optional "nc" (NEdit
-Client) program is also available for users who want to run nedit in
+Client) program is also available for users who want to run NEdit in
 client/server mode.
 
 
@@ -659,10 +659,10 @@ system to system.  Plain-text files can differ in character set, line
 termination, and wrapping.
 
 While character set differences are the most obvious and pose the most
-challenge to portability, they affect nedit only indirectly via the same font
+challenge to portability, they affect NEdit only indirectly via the same font
 and localization mechanisms common to all X applications.  If your system is
 set up properly, you will probably never see character-set related problems in
-nedit.  NEdit can not display Unicode text files, or any multi-byte character
+NEdit.  NEdit can not display Unicode text files, or any multi-byte character
 set.
 
 The primary difference between an MS DOS format file and a Unix format file, is
@@ -672,7 +672,7 @@ formats, but internally, it uses the single character Unix standard.  NEdit
 auto-detects MS DOS format files based on the line termination at the start of
 the file.  Files are judged to be DOS format if all of the first five line
 terminators, within a maximum range, are DOS-style.  To change the format in
-which nedit writes a file from DOS to Unix or visa versa, use the Save As...
+which NEdit writes a file from DOS to Unix or visa versa, use the Save As...
 command and check or un-check the MS DOS Format button.
 
 Wrapping within text files can vary among individual users, as well as from
@@ -1155,7 +1155,7 @@ and FINDING SUBROUTINE AND DATA DECLARATIONS (CTAGS).
 
 Language Modes
 
-When nedit initially reads a file, it attempts to determine whether the file is
+When NEdit initially reads a file, it attempts to determine whether the file is
 in one of the computer languages that it knows about.  Knowing what language a
 file is written in allows NEdit to assign highlight patterns and smart indent
 macros, and to set language specific preferences like word delimiters, tab
@@ -1523,7 +1523,7 @@ Strings may also include C-language style escape sequences:
    \" Double quote   \b Backspace	  \a Alert
    \n Newline	     \r Carriage return   \v Vertical tab
 
-For example, to send output to the terminal from which nedit was started, a
+For example, to send output to the terminal from which NEdit was started, a
 newline character is neccessary because, like printf, t_print requires explicit
 newlines, and also buffers its output on a per-line basis:
 
@@ -2408,8 +2408,8 @@ Additional options which appear in this menu are:
       set their window managers so keyboard focus follows the mouse.
  
    Modification Warnings -- Pop up a warning dialog when files get changed
-      external to nedit.  Checking is done both before a save which might
-      overwrite a modified file, and when changes are made to nedit's
+      external to NEdit.  Checking is done both before a save which might
+      overwrite a modified file, and when changes are made to NEdit's
       displayed version of the file.
  
    Initial Window Size -- Default size for new windows.
@@ -2522,15 +2522,15 @@ Sharing Customizations with Other NEdit Users
 
 If you have written macro or shell menu commands, highlight patterns, or smart-
 indent macros that you want to share with other NEdit users, you can make a
-file which they can load into their nedit environment.
+file which they can load into their NEdit environment.
 
-To load such a file, start nedit with the command:
+To load such a file, start NEdit with the command:
 
    nedit -import <file>
 
-In the new nedit session, verify that the imported patterns or macros do what
+In the new NEdit session, verify that the imported patterns or macros do what
 you want, then select Preferences -> Save Defaults.  Saving incorporates the
-changes into your own .nedit file, so the next time you run nedit, you will not
+changes into your own .nedit file, so the next time you run NEdit, you will not
 have to import the distribution file.
 
 Loading a customization file is automated, but creating one is not.  To produce
@@ -3124,7 +3124,7 @@ nedit [-read] [-create] [-line n | +n] [-server] [-do command] [-tags file]
     -xrm resourcestring -- Set the value of an X resource to override a
         default value (see CUSTOMIZATION).
 
-    -svrname name -- When starting nedit in server mode, name the
+    -svrname name -- When starting NEdit in server mode, name the
 	server, such that it responds to requests only when nc is given
 	a correspoding -svrname argument.  By naming servers, you can
 	run several simultaneously, and direct files and commands
@@ -3133,7 +3133,7 @@ nedit [-read] [-create] [-line n | +n] [-server] [-do command] [-tags file]
     -import file -- loads an additional preferences file on top of the
        existing defaults saved in your .nedit file.  To incorporate
        macros, language modes, and highlight patterns and styles
-       written by other users, run nedit with -import <file>, then
+       written by other users, run NEdit with -import <file>, then
        re-save your .nedit file with Preferences -> Save Defaults.
 
 
@@ -3223,7 +3223,7 @@ in NEdit and change the file format back to MS DOS via the Save As... dialog
 SOLUTIONS TO COMMON PROBLEMS
 
 For a much more comprehensive list of common problems and solutions, see the
-NEdit FAQ.  The latest version of the FAQ can always be found on the nedit web
+NEdit FAQ.  The latest version of the FAQ can always be found on the NEdit web
 site at: http://nedit.org.
 
 P: No files are shown in the "Files" list in the Open... dialog.
@@ -3295,9 +3295,7 @@ KNOWN BUGS
 
 Below is the list of known bugs which affect NEdit.  The bugs your copy of
 NEdit will exhibit depend on which system you are running and with which Motif
-libraries it was built.  Note that there are now Motif 1.2 and/or 2.0 libraries
-available on ALL supported platforms, and as you can see below there are far
-fewer bugs in Motif 1.2, so it is in your best interest to upgrade your system.
+libraries it was built.
 
 BUG: Operations between rectangular selections on overlapping lines do nothing.
 WORKAROUND: None.  These operations are very complicated and you probably
@@ -3312,9 +3310,9 @@ WORKAROUND: Use selection copy (middle mouse button click) for transferring
 
 REPORTING BUGS
 
-The nedit developers subscribe to both discuss@nedit.org and develop@nedit.org,
+The NEdit developers subscribe to both discuss@nedit.org and develop@nedit.org,
 either of which may be used for reporting bugs.  If you're not sure, or you
-think the report might be of interest to the general nedit user community, send
+think the report might be of interest to the general NEdit user community, send
 the report to discuss@nedit.org.  If it's something obvious and boring, like we
 misspelled "anemometer" in the on-line help, send it to develop.  If you don't
 want to subscribe to these lists, please add a note to your mail about cc'ing
@@ -3323,21 +3321,23 @@ you on responses.
 
 MAILING LISTS
 
-There are two separate mailing lists for nedit users, and one for developers.
+There are two separate mailing lists for NEdit users, and one for developers.
 Users may post to the developer mailing list to report bugs and communicate
-with the nedit developers.  Remember that nedit is entirely a volunteer effort,
+with the developers.  Remember that NEdit is entirely a volunteer effort,
 so please ask questions first to the discussion list, and do your share to
 answer other users questions as well.  The lists are:
 
     discuss@nedit.org  -- General discussion, questions and answers among
-                          nedit users and developers.
+                          NEdit users and developers.
 			 
-    announce@nedit.org -- A lov-volume mailing list for annoumcing new
+    announce@nedit.org -- A low-volume mailing list for annoucing new
                           versions.
 			 
-    develop@nedit.org  -- Communication among and with nedit developers.
+    develop@nedit.org  -- Communication among and with NEdit developers.
 
             [... List subscription information goes here ...]
+
+
 
 GNU GENERAL PUBLIC LICENSE
 
