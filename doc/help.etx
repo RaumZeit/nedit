@@ -3420,6 +3420,23 @@ X Resources
   very hard to configure. If you've given up and are using a backspace key
   halfway off the keyboard because you can't figure out the bindings, set this
   to True.
+  
+**nedit.overrideDefaultVirtualKeyBindings**: Auto
+
+  Motif uses a virtual key binding mechanism that shares the bindings between
+  different Motif applications. When a first Motif application is started, it
+  installs some default virtual key bindings and any other Motif application 
+  that runs afterwards, simply reuses them. Obviously, if the first
+  application installs an invalid set, all others applications may have 
+  problems.
+  
+  In the past, NEdit has been the victim of invalid bindings installed by other 
+  applications several times. Through this resource, NEdit can be instructed
+  to ignore the bindings installed by other applications, and use its own
+  private bindings. By default, NEdit tries to detect invalid bindings
+  and ignore them automatically (Auto). Optionally, NEdit can be told to
+  always keep the installed bindings (Never), or to always override them
+  (Always).
 
 **nedit.stdOpenDialog**: False
   

@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.18 2002/03/02 17:02:22 yooden Exp $ */
+/* $Id: preferences.h,v 1.19 2002/03/06 22:04:53 edg Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -142,3 +142,4 @@ int GetPrefReplaceDefScope(void);
 #endif
 void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
+int GetPrefOverrideVirtKeyBindings(void);

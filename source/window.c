@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.45 2002/02/27 14:44:07 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.46 2002/03/06 22:04:53 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: window.c,v 1.45 2002/02/27 14:44:07 edg Exp $"
 #endif /*VMS*/
 #include <limits.h>
 #include <math.h>
+#include <ctype.h>
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -121,6 +122,10 @@ static void getGeometryString(WindowInfo *window, char *geomString);
 static void patchRowCol(Widget w);
 static void patchedRemoveChild(Widget child);
 #endif
+static unsigned char* sanitizeVirtualKeyBindings();
+static int sortAlphabetical(const void* k1, const void* k2);
+static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
+static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 
 /*
 ** Create a new editor window
@@ -140,7 +145,15 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     unsigned int rows, cols;
     int x, y, bitmask;
     static Atom wmpAtom, syAtom = 0;
+    static int firstTime = True;
+    unsigned char* invalidBindings = NULL;
 
+    if (firstTime) 
+    {
+        invalidBindings = sanitizeVirtualKeyBindings();
+        firstTime = False;
+    }
+    
     /* Allocate some memory for the new window data structure */
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     
@@ -506,6 +519,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     /* Set the minimum pane height for the initial text pane */
     UpdateMinPaneHeights(window);
+    
+    restoreInsaneVirtualKeyBindings(invalidBindings);
     
     return window;
 }
@@ -2086,3 +2101,130 @@ static void patchedRemoveChild(Widget child)
                 delete_child) (child);
 }
 #endif /* ROWCOLPATCH */
+
+static int sortAlphabetical(const void* k1, const void* k2)
+{
+    const char* key1 = *(const char**)k1;
+    const char* key2 = *(const char**)k2;
+    return strcmp(key1, key2);
+}
+
+/*
+ * Checks whether a given virtual key binding string is invalid. 
+ * A binding is considered invalid if there are duplicate key entries.
+ */
+static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
+{
+    int count = 1, i;
+    const char* pos = (const char*)bindings;
+    char* copy;
+    char* pos2;
+    char** keys;
+    /* First count the number of bindings; bindings are separated by \n
+       strings. The number of bindings equals the number of \n + 1 */
+    while ((pos = strstr(pos, "\n"))) { ++pos; ++count; }
+    
+    if (count == 1) return False; /* One binding is always ok */
+    
+    keys = (char**)malloc(count*sizeof(char*));
+    copy = strdup((const char*)bindings);
+    i = 0;
+    pos2 = copy;
+    while (i<count)
+    {
+	while (isspace(*pos2)) ++pos2;
+	keys[i++] = pos2;
+	pos2 = strstr(pos2, ":");
+	if (pos2) 
+	{
+            *pos2++ = 0; /* Cut the string */
+    	    pos2 = strstr(pos2, "\n");
+	    if (pos2) ++pos2;
+	}
+    }
+    
+    /* Sort the keys and look for duplicates */
+    qsort((void*)keys, count, sizeof(const char*), sortAlphabetical);
+    for (i=1; i<count; ++i)
+    {
+	if (!strcmp(keys[i-1], keys[i]))
+	{
+            /* Duplicate detected */
+	    free(keys);
+	    free(copy);
+	    return True;
+	}
+    }
+    free(keys);
+    free(copy);
+    return False;
+}
+
+/*
+ * Optionally sanitizes the Motif default virtual key bindings. 
+ * Some applications install invalid bindings (attached to the root window),
+ * which cause certain keys to malfunction in NEdit.
+ * Through an X-resource, users can choose whether they want
+ *   - to always keep the existing bindings
+ *   - to override the bindings only if they are invalid
+ *   - to always override the existing bindings.
+ */
+
+static Atom virtKeyAtom;
+
+static unsigned char* sanitizeVirtualKeyBindings()
+{
+    int overrideBindings = GetPrefOverrideVirtKeyBindings();
+    Window rootWindow;
+    const char *virtKeyPropName = "_MOTIF_DEFAULT_BINDINGS";
+    Atom dummyAtom;
+    int getFmt;
+    unsigned long dummyULong, nItems;
+    unsigned char *insaneVirtKeyBindings = NULL;
+    
+    if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER) return NULL;
+    
+    virtKeyAtom =  XInternAtom(TheDisplay, virtKeyPropName, False);
+    rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+
+    /* Remove the property, if it exists; we'll restore it later again */
+    if (XGetWindowProperty(TheDisplay, rootWindow, virtKeyAtom, 0, INT_MAX, 
+                           True, XA_STRING, &dummyAtom, &getFmt, &nItems, 
+                           &dummyULong, &insaneVirtKeyBindings) != Success 
+        || nItems == 0) 
+    {
+        return NULL; /* No binding yet; nothing to do */
+    }
+    
+    if (overrideBindings == VIRT_KEY_OVERRIDE_AUTO)
+    {   
+	if (!virtKeyBindingsAreInvalid(insaneVirtKeyBindings))
+        {
+            /* Restore the property immediately; it seems valid */
+            XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
+                            PropModeReplace, insaneVirtKeyBindings, 
+                            strlen((const char*)insaneVirtKeyBindings));
+            free(insaneVirtKeyBindings);
+            return NULL; /* Prevent restoration */
+        }
+    }
+    return insaneVirtKeyBindings;
+}
+
+/*
+ * NEdit should not mess with the bindings installed by other apps, so we
+ * just restore whatever was installed, if necessary
+ */
+static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings)
+{
+   if (insaneVirtKeyBindings)
+   {
+      Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+      /* Restore the root window atom, such that we don't affect 
+         other apps. */
+      XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
+                      PropModeReplace, insaneVirtKeyBindings, 
+                      strlen((const char*)insaneVirtKeyBindings));
+      free(insaneVirtKeyBindings);
+   }
+}

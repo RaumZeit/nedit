@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.47 2002/03/02 17:02:22 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.48 2002/03/06 22:04:53 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -110,6 +110,9 @@ static char *AutoWrapTypes[N_WRAP_STYLES+3] = {"None", "Newline", "Continuous",
 #define N_INDENT_STYLES 3
 static char *AutoIndentTypes[N_INDENT_STYLES+3] = {"None", "Auto",
     	"Smart", "True", "False", NULL};
+#define N_VIRTKEY_OVERRIDE_MODES 3
+static char *VirtKeyOverrideModes[N_VIRTKEY_OVERRIDE_MODES+1] = { "Never",
+	"Auto", "Always", NULL};
 
 #define N_SHOW_MATCHING_STYLES 3
 /* For backward compatibility, "False" and "True" are still accepted.
@@ -240,6 +243,8 @@ static struct prefData {
     				   file we're reading */
     int findReplaceUsesSelection; /* whether the find replace dialog is automatically
                                      loaded with the primary selection */
+    int virtKeyOverride;	/* Override Motif default virtual key bindings
+				   never, if invalid, or always */
     char titleFormat[MAX_TITLE_FORMAT_LEN];
     char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN];/* fonts for help system */
     char helpLinkColor[30];    	/* Color for hyperlinks in the help system */
@@ -812,6 +817,8 @@ static PrefDescripRec PrefDescrip[] = {
 #endif
     {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False",
     	&PrefData.findReplaceUsesSelection, NULL, False},
+    {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", 
+      PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, False},
     {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d",
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
 };
@@ -1334,7 +1341,7 @@ int GetPrefWarnExit(void)
     return PrefData.warnExit;
 }
 
-void SetPrefFindReplaceUsesSelection(int state)
+void SetPrefv(int state)
 {
     setIntPref(&PrefData.findReplaceUsesSelection, state);
 }
@@ -1650,6 +1657,11 @@ void SetPrefTitleFormat(const char* format)
 const char* GetPrefTitleFormat(void)
 {
     return(PrefData.titleFormat);
+}
+
+int GetPrefOverrideVirtKeyBindings(void)
+{
+    return PrefData.virtKeyOverride;
 }
 
 /*

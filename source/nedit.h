@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.21 2002/03/02 17:02:22 yooden Exp $ */
+/* $Id: nedit.h,v 1.22 2002/03/06 22:04:53 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -54,6 +54,8 @@ enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
 enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT};
 enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
+enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
+                       VIRT_KEY_OVERRIDE_ALWAYS };
 
 #define NO_FLASH_STRING		"off"
 #define FLASH_DELIMIT_STRING	"delimiter"
