@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.7 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.8 2001/04/16 14:04:22 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -430,7 +430,7 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
 void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd, const char *text)
 {
-    char *deletedText, *insPtr;
+    char *deletedText;
     char *insText=NULL;
     int i, nInsertedLines, nDeletedLines, insLen, hint;
     int insertDeleted, insertInserted, deleteInserted;
@@ -450,6 +450,8 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     nInsertedLines = countLines(text);
     nDeletedLines = BufCountLines(buf, start, end);
     if (nInsertedLines < nDeletedLines) {
+        char *insPtr;
+
     	insLen = strlen(text);
     	insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
     	strcpy(insText, text);
@@ -461,18 +463,19 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     	linesPadded = nInsertedLines-nDeletedLines;
     	for (i=0; i<linesPadded; i++)
     	    insert(buf, end, "\n");
-	/* insText = text; */
-    } else /* nDeletedLines == nInsertedLines */
-	/* insText = text; */
+    } else /* nDeletedLines == nInsertedLines */ {
+    }
     
     /* Save a copy of the text which will be modified for the modify CBs */
     deletedText = BufGetRange(buf, start, end);
     	  
     /* Delete then insert */
     deleteRect(buf, start, end, rectStart, rectEnd, &deleteInserted, &hint);
-    if (insText)
+    if (insText) {
     	insertCol(buf, rectStart, start, insText, &insertDeleted, &insertInserted,
     		    &buf->cursorPosHint);
+        XtFree(insText);
+    }
     else
     	insertCol(buf, rectStart, start, text, &insertDeleted, &insertInserted,
     		    &buf->cursorPosHint);
@@ -482,8 +485,6 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     	fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
     callModifyCBs(buf, start, end-start, insertInserted, 0, deletedText);
     XtFree(deletedText);
-    if (insText)
-    	XtFree(insText);
 }
 
 /*
