@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.51 2001/08/28 22:24:20 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.52 2001/08/28 23:18:57 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -2663,7 +2663,7 @@ Routines\" lists the actions available to be bound.\n\
 \n\
 Translation tables map key and mouse presses, \
 window operations, and other kinds of events, to actions.   \
-The syntax for translation tables is simplified here, and you.  \
+The syntax for translation tables is simplified here, and you \
 may need to refer to a book on the X window system for more detailed \
 information.\n\
 \n\
@@ -3144,6 +3144,8 @@ control to the end of the loop.",
 
 "Built in Variables\n\
 \n\
+These variables are read-only and can not be changed.\n\
+\n\
 $active_pane -- Index of the current pane.\n\
 \n\
 $auto_indent -- Contains the current preference for auto indent. Can be \
@@ -3353,7 +3355,7 @@ make the search wrap around the beginning or end of the string, \
 is the default), \"literal\", \"case\", \"word\", \"caseWord\",\
 \"regex\", or \"regexNoCase\" to change the search  type \
 (default is \"literal\").  Returns the starting position of the \
-match, or -1 if nothing matched. also returns the ending position \
+match, or -1 if nothing matched. Also returns the ending position \
 of the match in $search_end\n\
 \n\
 search_string(string, search_for, start, [search_type, direction]) \

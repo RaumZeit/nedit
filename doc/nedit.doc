@@ -1,6 +1,6 @@
                      NEdit Version 5.2, August, 2001
 
-$Id: nedit.doc,v 1.4 2001/08/13 09:55:48 amai Exp $
+$Id: nedit.doc,v 1.5 2001/08/28 23:18:57 slobasso Exp $
 
 NEdit is a standard GUI (Graphical User Interface) style text editor for
 programs and plain-text files.  Users of Macintosh and MS Windows based text
@@ -154,7 +154,7 @@ blocks of text being dragged are simply removed.  When dragging non-rectangular
 selections, overlay mode also converts the selection to rectangular form,
 allowing it to be dragged outside of the bounds of the existing text.
 
-The section "Using the Mouse" sumarizes the mouse commands for making primary
+The section "Using the Mouse" summarizes the mouse commands for making primary
 and secondary selections.  Primary selections can also be made via keyboard
 commands, see "Keyboard Shortcuts".
 
@@ -507,7 +507,7 @@ All Keyboards
     Shift+Return    Return without automatic indent, regardless of the
                     setting of Auto Indent.
 
-    Ctrl+Tab        Insert an ascii tab character, without processing
+    Ctrl+Tab        Insert an ASCII tab character, without processing
                     emulated tabs.
 
     Alt+Ctrl+<c>    Insert the control-code equivalent of a key <c>
@@ -621,7 +621,7 @@ range of text and then chose Fill Paragraph, all of the text in the selection
 will be filled.  Again, continuous text between blank lines is interpreted as
 paragraphs and filled individually, respecting leading indents and blank lines.
 
-The third, and most versitile, way to use Fill Paragraph is with a rectangular
+The third, and most versatile, way to use Fill Paragraph is with a rectangular
 selection.  Fill Paragraph treats rectangular selections differently from other
 commands.  Instead of simply filling the text inside the rectangular selection,
 NEdit interprets the right edge of the selection as the requested wrap margin.
@@ -1528,7 +1528,7 @@ Strings may also include C-language style escape sequences:
     \n Newline          \r Carriage return  \v Vertical tab
 
 For example, to send output to the terminal from which NEdit was started, a
-newline character is neccessary because, like printf, t_print requires explicit
+newline character is necessary because, like printf, t_print requires explicit
 newlines, and also buffers its output on a per-line basis:
 
    t_print("a = " a "\n")
@@ -1646,7 +1646,7 @@ The numeric operators supported by the NEdit macro language are listed below:
 
 Increment (++) and decrement (--) operators can also be appended or prepended
 to variables within an expression.  Prepended increment/decrement operators act
-before the variable is evaulated.  Appended increment/decrement operators act
+before the variable is evaluated.  Appended increment/decrement operators act
 after the variable is evaluated.
 
 Logical and Comparison Operators:
@@ -1680,26 +1680,22 @@ Arrays and Array Operators
 
 Arrays may contain either strings, integers, or other arrays. Arrays are
 associative, which means that they relate two pieces of information, the key and
-the value.  The key is always a string, although you can use integers and
-strings, they are always converted to strings.  Array keys can also contain
-multiple sub-scripts:
+the value. The key is always a string; if you use integers they are converted to
+strings.
 
-    x[1,2,3] = "string"
-    x[1 $sub_sep 2 $sub_sep 3] = "string"
-    x["1" $sub_sep "2" $sub_sep "3"] = "string"
+To determine if a given key is in an array, use the in keyword.
 
-The sub-scripts are concatenated with $sub_sep. The above assignments are
-eqivalent.  To determine if a given key is in an array, use the in keyword.
-
-    if ("6" in x) <body>
+    if ("6" in x)
+        <body>
 
 If the left side of the in keyword is an array, the result is true if every key
-in the left array is in the right array.  Array values are not compared.
+in the left array is in the right array. Array values are not compared.
 
 To iterate through all the keys of an array use the for looping construct. Keys
-are not guarranteed in any particular order:
+are not guaranteed in any particular order:
 
-    for (aKey in x) <body>
+    for (aKey in x)
+        <body>
 
 Elements can be removed from an array using the delete command:
 
@@ -1707,22 +1703,64 @@ Elements can be removed from an array using the delete command:
     delete x[]  # deletes all elements
 
 The number of elements in an array can be determined by referencing the array
-with no sub-scripts:
+with no indices:
 
-    dialog("array x has " x[] " elements")
+    dialog("array x has " x[] " elements", "OK")
 
 Arrays can be combined with some operators. All the following operators only
 compare the keys of the arrays.
 
-   + merge arrays
-   - remove keys
-   & common keys
-   | all keys that are not shared
+    result = x + y
+        Merge arrays: 'result' is a new array containing keys from both x and y.
+        If duplicates are present values from y are used.
+    result = x - y
+        Remove keys: 'result' is a new array containing all keys from x that are
+        not in y.
+    result = x & y
+        Common keys: 'result' is a new array containing all keys which are in
+        both x and y. The values from y are used.
+    result = x | y
+        Unique keys: 'result' is a new array containing keys which exist in
+        either x or y, but not both.
 
-When duplicate keys are encountered using the + and & operators, the values from
-the array on the right side of the operators are used for the result.  All of
-the above operators are array only, meaning both the left and right sides of the
-operator must be arrays.  The results are also arrays.
+When duplicate keys are encountered using the + and & operators, the values
+from the array on the right side of the operators are used for the result. All
+of the above operators are array only, meaning both the left and right sides of
+the operator must be arrays. The results are also arrays.
+
+Array keys can also contain multiple dimensions:
+x[1, 1, 1] = "string"
+These are used in the expected way, e.g.:
+    for (i = 1; i < 3; i++)
+    {
+        for (j = 1; j < 3; j++)
+        {
+            x[i, j] = k++
+        }
+    }
+gives the following array:
+    x[1, 1] = 0
+    x[1, 2] = 1
+    x[2, 1] = 2
+    x[2, 2] = 3
+
+Internally all indices are part of one string, separated by the string
+$sub_sep (ASCII 0x18). The first key in the above example is in fact
+    ["1" $sub_sep "1"]
+
+If you need to extract one of the keys, you can use split(), using
+$sub_sep as the separator.
+
+You can also check for the existence of multi-dimensional array by
+looking for $sub_sep in the key.
+
+Last, you need $sub_sep if you want to use the 'in' keyword.
+    if ((1,2) in myArray)
+    {..}
+doesn't work, but
+    if (("1" $sub_sep "2") in myArray)
+    {..}
+does work.
 
 
 Looping and Conditionals
@@ -1772,6 +1810,8 @@ of the loop.
 
 
 BUILT IN VARIABLES
+
+These variables are read-only and can not be changed.
 
     $active_pane -- Index of the current pane.
 
@@ -1958,7 +1998,7 @@ BUILT-IN SUBROUTINES
 
     replace_selection(string) -- Replaces the primary-selection selected text in
         the current window with string.  If string is empty, the
-		primary-selected text will be deleted.
+        primary-selected text will be deleted.
 
     replace_substring(string, start, end, replace_with) -- Replacing a substring
         between two positions in a string within another string.
@@ -1971,7 +2011,7 @@ BUILT-IN SUBROUTINES
         "forward" to change the search direction ("forward" is the default),
         "literal", "case" or "regex" to change the search type (default is
         "literal").  Returns the starting position of the match, or -1 if
-        nothing matched.  also returns the ending position of the match in
+        nothing matched.  Also returns the ending position of the match in
         search_end.
 
     search_string(string, search_for, start, [search_type, direction]) --
@@ -2017,7 +2057,7 @@ BUILT-IN SUBROUTINES
         and return 0 if they are equal, -1 if string1 is less than string2 or 1 if
         string1 is greater than string2. The default is to do a case sensitive
         comparison. Optionally a "nocase" argument can be supplied to force the
-        comparison to ingore case differences.
+        comparison to ignore case differences.
 
     string_to_clipboard(string) -- Copy the contents of a macro string to the
         clipboard.
@@ -2394,10 +2434,10 @@ Keyboard-Only Actions
         indentation, regardless of the setting of Auto Indent.
 
     next_page(["stutter"] ["column"] ["scrollbar"] ["nobell"]) -- Moves the
-        cursor and scroll forward one page.  The paramater "stutter" moves the
+        cursor and scroll forward one page.  The parameter "stutter" moves the
         cursor to the bottom of the display,unless it is already there,
         otherwise it will page down.  The parameter "column" will maintain the
-        preferred column whilemoving the cursor. 
+        preferred column while moving the cursor. 
 
     page_left(["scrollbar"] ["nobell"]) -- Move the cursor and scroll left one
         page.
@@ -2410,10 +2450,10 @@ Keyboard-Only Actions
         of the clipboard.
 
     previous_page(["stutter"] ["column"] ["scrollbar"] ["nobell"]) -- Moves the
-        cursor and scroll backward one page.The paramater "stutter" moves the
+        cursor and scroll backward one page. The parameter "stutter" moves the
         cursor to the top of the display,unless it is already there, otherwise
         it will page up.The parameter "column" will maintain the preferred
-        column whilemoving the cursor.
+        column while moving the cursor.
 
     process_bdrag() -- Same as secondary_or_drag_start for compatibility with
         previous versions.
@@ -2571,7 +2611,7 @@ Preferences Menu
       right margin, by replacing the space or tab at the last word boundary
       with a newline character.  Continuous Wrap wraps long lines which
       extend past the right margin. Continuous Wrap mode is typically used to
-      produce files where newlines are ommitted within paragraphs, to make
+      produce files where newlines are omitted within paragraphs, to make
       text filling automatic (a kind of poor-man's word processor).  Text of
       this style is common on Macs and PCs but is not necessarily supported
       very well under Unix (except in programs which deal with e-mail, for
@@ -2611,7 +2651,7 @@ Preferences Menu
 
    Read Only -- Lock the file against accidental modification.  This
       temporarily prevents the file from being modified in this NEdit
-      session. Note that this is diferent from setting the file protection.
+      session. Note that this is different from setting the file protection.
 
 Preferences -> Default Settings Menu
 
@@ -2639,10 +2679,10 @@ Additional options which appear in this menu are:
         Verbose - Presents search results in dialog form, asks before wrapping a
             search back around the beginning (or end) of the file.
 
-	    Wrap Around - Search and Replace operations wrap
-	        around the beginning (or end) of the file.
+        Wrap Around - Search and Replace operations wrap
+            around the beginning (or end) of the file.
 
-	    Beep On Search Wrap - Beep when Search and Replace operations wrap
+        Beep On Search Wrap - Beep when Search and Replace operations wrap
             around the beginning (or end) of the file (only if Wrap Around is
             turned on).
 
@@ -2651,7 +2691,7 @@ Additional options which appear in this menu are:
         Default Search Style - Initial setting for search type in Find and
             Replace dialogs.
 
-	    Default Replace Scope - Initial setting for the scope in the
+        Default Replace Scope - Initial setting for the scope in the
             Replace/Find dialog, when a selection exists.  It can be either "In
             Window", "In Selection", or "Smart".  "Smart" results in "In Window"
             if the size of the selection is smaller than 1 line, and to "In
@@ -3053,7 +3093,7 @@ The section "ACTION ROUTINES" above lists the actions available to be bound.
 
 Translation tables map key and mouse presses, window operations, and other
 kinds of events, to actions.  The syntax for translation tables is simplified
-here, and you.  may need to refer to a book on the X window system for more
+here, and you may need to refer to a book on the X window system for more
 detailed information.
 
 Note that accelerator resources (discussed below) override translations, and
@@ -3385,7 +3425,7 @@ nedit [-read] [-create] [-line n | +n] [-server] [-do command] [-tags file]
         value (see CUSTOMIZATION).
 
     -svrname name -- When starting NEdit in server mode, name the server, such
-        that it responds to requests only when nc is given a correspoding
+        that it responds to requests only when nc is given a corresponding
         -svrname argument.  By naming servers, you can run several
         simultaneously, and direct files and commands specifically to any one.
 
@@ -3544,7 +3584,7 @@ P: NEdit crashes when I try to paste text in to a text field in a dialog (like
 S: On many SunOS systems, you have to set up an nls directory before various
    inter-client communication features of Motif will function properly.  There
    are instructions in ftp://ftp.nedit.org/pub/v5_0_2/individual/README.sun, as
-   well as a tar file containg a complete nls directory in
+   well as a tar file containing a complete nls directory in
    ftp://ftp.nedit.org/pub/v5_0_2/nls.tar.  This contains directions for
    setting up an nls directory, which is required by Motif for handling copy
    and paste to Motif text fields.
@@ -3589,7 +3629,7 @@ answer other users questions as well.  The lists are:
     discuss@nedit.org  -- General discussion, questions and answers among
                           NEdit users and developers.
 
-    announce@nedit.org -- A low-volume mailing list for annoucing new
+    announce@nedit.org -- A low-volume mailing list for announcing new
                           versions.
 
     develop@nedit.org  -- Communication among and with NEdit developers.
