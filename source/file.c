@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.87 2004/08/12 09:06:47 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.88 2004/08/24 09:37:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: file.c,v 1.87 2004/08/12 09:06:47 edg Exp $";
 #include "menu.h"
 #include "tags.h"
 #include "server.h"
+#include "interpret.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
@@ -665,8 +666,25 @@ int CloseAllFilesAndWindows(void)
 {
     while (WindowList->next != NULL || 
     		WindowList->filenameSet || WindowList->fileChanged) {
-    	if (!CloseAllDocumentInWindow(WindowList))
-	    return False;
+        /*
+         * When we're exiting through a macro, the document running the 
+         * macro does not disappear from the list, so we could get stuck
+         * in an endless loop if we try to close it. Therefore, we close
+         * other documents first. (Note that the document running the macro
+         * may get closed because it is in the same window as another 
+         * document that gets closed, but it won't disappear; it becomes
+         * Untitled.)
+         */
+        if (WindowList == MacroRunWindow() && WindowList->next != NULL) {
+            if (!CloseAllDocumentInWindow(WindowList->next)) {
+                return False;
+            }
+        }
+        else {
+            if (!CloseAllDocumentInWindow(WindowList)) {
+                return False;
+            }
+        }
     }
 
     return TRUE;
