@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.9 2001/04/25 07:52:10 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.10 2001/04/25 16:48:49 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -147,7 +147,7 @@ static int normalizePathname(char *pathname)
 	   don't add a second '/' character as this may break things
 	   on non-un*x systems */
         len=strlen(pathname); /* GetCurrentDir() returns non-NULL value */
-	if (pathname[len] != '/') {
+	if (pathname[len-1] != '/') {
 	   strcat(pathname, "/");
 	}
 	strcat(pathname, oldPathname);
