@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.123 2004/12/05 01:15:03 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.124 2004/12/23 22:25:45 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3775,6 +3775,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
     WindowInfo *nextWindow;
     WindowInfo *tmpWindow;
     int windowIndex;
+    Boolean focus = GetPrefFocusOnRaise();
 
     if (*nArgs > 0) {
         if (strcmp(args[0], "last") == 0) {
@@ -3843,9 +3844,18 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
                 window = NULL;
             }
         }
+
+        if (*nArgs > 1) {
+            if (strcmp(args[1], "focus") == 0) {
+                focus = True;
+            }
+            else if (strcmp(args[1], "nofocus") == 0) {
+                focus = False;
+            }
+        }
     }
     if (window != NULL) {
-	RaiseDocumentWindow(window);
+        RaiseFocusDocumentWindow(window, focus);
     }
     else {
         XBell(TheDisplay, 0);
@@ -5072,7 +5082,7 @@ static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    RaiseDocumentWindow(window);
+    RaiseFocusDocumentWindow(window, True /* always focus */);
 }
 
 static void openPrevCB(Widget w, char *name, caddr_t callData)

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.181 2004/12/17 11:54:20 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.182 2004/12/23 22:25:46 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3725,7 +3725,7 @@ void NextDocument(WindowInfo *window)
     if (window->shell == win->shell)
 	RaiseDocument(win);
     else
-    	RaiseDocumentWindow(win);
+    	RaiseFocusDocumentWindow(win, True);
 }
 
 /*
@@ -3745,7 +3745,7 @@ void PreviousDocument(WindowInfo *window)
     if (window->shell == win->shell)
 	RaiseDocument(win);
     else
-    	RaiseDocumentWindow(win);
+    	RaiseFocusDocumentWindow(win, True);
 }
 
 /*
@@ -3765,7 +3765,7 @@ void LastDocument(WindowInfo *window)
     if (window->shell == win->shell)
 	RaiseDocument(win);
     else
-    	RaiseDocumentWindow(win);
+    	RaiseFocusDocumentWindow(win, True);
 	
 }
 
@@ -3785,7 +3785,7 @@ int IsValidWindow(WindowInfo *window)
 }
 
 /*
-** raise the document and its shell window
+** raise the document and its shell window and focus depending on pref.
 */
 void RaiseDocumentWindow(WindowInfo *window)
 {
@@ -3793,7 +3793,19 @@ void RaiseDocumentWindow(WindowInfo *window)
     	return;
 	
     RaiseDocument(window);
-    RaiseShellWindow(window->shell);
+    RaiseShellWindow(window->shell, GetPrefFocusOnRaise());
+}
+
+/*
+** raise the document and its shell window and optionally focus.
+*/
+void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus)
+{
+    if (!window)
+    	return;
+	
+    RaiseDocument(window);
+    RaiseShellWindow(window->shell, focus);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.26 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: misc.h,v 1.27 2004/12/23 22:25:47 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -55,8 +55,9 @@ void SetDeleteRemap(int state);
 void RealizeWithoutForcingPosition(Widget shell);
 void ManageDialogCenteredOnPointer(Widget dialogChild);
 void SetPointerCenteredDialogs(int state);
-void RaiseShellWindow(Widget shell);
-void RaiseWindow(Display *display, Window w);
+void RaiseDialogWindow(Widget shell);
+void RaiseShellWindow(Widget shell, Boolean focus);
+void RaiseWindow(Display *display, Window w, Boolean focus);
 void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo);
 void RemoveDialogMnemonicHandler(Widget dialog);
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);

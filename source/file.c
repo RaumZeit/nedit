@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.92 2004/12/05 01:23:48 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.93 2004/12/23 22:25:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -372,7 +372,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 	    if (!(flags & SUPPRESS_CREATE_WARN)) {
                 /* on Solaris 2.6, and possibly other OSes, dialog won't 
 		   show if parent window is iconized. */
-                RaiseShellWindow(window->shell);
+                RaiseShellWindow(window->shell, False);
 
                 /* ask user for next action if file not found */
                 if (WindowList == window && window->next == NULL) {

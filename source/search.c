@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.75 2004/12/17 11:54:10 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.76 2004/12/23 22:25:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -451,7 +451,7 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs,
 
     /* If the window is already up, just pop it to the top */
     if (XtIsManaged(window->replaceDlog)) {
-	RaiseShellWindow(XtParent(window->replaceDlog));
+	RaiseDialogWindow(XtParent(window->replaceDlog));
 	return;
     }
     	
@@ -597,7 +597,7 @@ void DoFindDlog(WindowInfo *window, int direction, int keepDialogs,
 
     /* If the window is already up, just pop it to the top */
     if (XtIsManaged(window->findDlog)) {
-	RaiseShellWindow(XtParent(window->findDlog));
+	RaiseDialogWindow(XtParent(window->findDlog));
 	return;
     }
 

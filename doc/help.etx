@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.82 2004/11/26 18:25:47 edg Exp $
+.. $Id: help.etx,v 1.83 2004/12/23 22:25:44 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3469,12 +3469,17 @@ Action Routines
   Moves the cursor up one line.  If "absolute" is given, always moves to the 
   previous line in the text buffer, regardless of wrapping.
 
-**raise_window([relative-window] | [positive-index] | [negative-index])**
+**raise_window([relative-window] | [positive-index] | [negative-index] [, "focus" | "nofocus"])**
   Raise the current focused window to the front if no argument is supplied.
   Arguments can be specified in the form of a relative-window 
   ("first", "last", "next", "previous"), a positive-index 
   (numbers greater than 0, 1 is the same as "last") or a
-  negative-index (numbers less than 0, -1 is the same as "first").
+  negative-index (numbers less than 0, -1 is the same as "first"). 
+  
+  Moreover, it can be specified whether or not the raised window should
+  request the X input focus. By default, it depends on the setting of the
+  nedit.focusOnRaise resource (see the section "X_Resources_") whether or not
+  the input focus is requested.
   
 **scroll_down( nUnits, ["lines" | "pages"] )**
   Scroll the display down (towards the end of the file) by a given
@@ -4297,6 +4302,15 @@ X Resources
 
   For example:
     32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+
+**nedit.focusOnRaise**: False
+
+  This resource determines whether new text windows and text windows that are 
+  raised, should also request the input focus.  Conventionally, it is the task
+  of the window manager to decide on which window gets the input focus.
+  Therefore, NEdit's default behaviour is not to request the input focus
+  explicitly.
+  
 
 .. DISABLED for 5.4
 ..  The macro built-in function set_backlight_string() allows these strings to be

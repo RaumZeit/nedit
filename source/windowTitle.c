@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.14 2004/11/09 21:58:45 yooden Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.15 2004/12/23 22:25:47 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -1483,7 +1483,7 @@ void EditCustomTitleFormat(WindowInfo *window)
         /* If the window is already up, just pop it to the top */
         if (XtIsManaged(etDialog.form)) {
            
-	    RaiseShellWindow(XtParent(etDialog.form));
+	    RaiseDialogWindow(XtParent(etDialog.form));
 
             /* force update of the dialog */
             setToggleButtons();

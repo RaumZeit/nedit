@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Nov 26, 2004 (Do NOT edit!)
+                 Generated on Dec 23, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -3284,12 +3284,17 @@ static char * htxt_actions [] = {
 "\01IMoves the cursor up one line.  If \"absolute\" is given, always moves to the ",
 "previous line in the text buffer, regardless of wrapping. ",
 "\n\n",
-"\01A\01Braise_window([relative-window] | [positive-index] | [negative-index])\01A\n",
+"\01A\01Braise_window([relative-window] | [positive-index] | [negative-index] [, \"focus\" | \"nofocus\"])\01A\n",
 "\01IRaise the current focused window to the front if no argument is supplied. ",
 "Arguments can be specified in the form of a relative-window ",
 "(\"first\", \"last\", \"next\", \"previous\"), a positive-index ",
 "(numbers greater than 0, 1 is the same as \"last\") or a ",
 "negative-index (numbers less than 0, -1 is the same as \"first\"). ",
+"\n\n",
+"Moreover, it can be specified whether or not the raised window should ",
+"request the X input focus. By default, it depends on the setting of the ",
+"nedit.focusOnRaise resource (see the section \"\01QX Resources\01I\") whether or not ",
+"the input focus is requested. ",
 "\n\n",
 "\01A\01Bscroll_down( nUnits, [\"lines\" | \"pages\"] )\01A\n",
 "\01IScroll the display down (towards the end of the file) by a given ",
@@ -4107,6 +4112,14 @@ static char * htxt_resources [] = {
 "For example: ",
 "\01A    32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5\n",
 "\01I\n",
+"\01A\01Bnedit.focusOnRaise\01A: False\n",
+"\01I\n",
+"This resource determines whether new text windows and text windows that are ",
+"raised, should also request the input focus.  Conventionally, it is the task ",
+"of the window manager to decide on which window gets the input focus. ",
+"Therefore, NEdit's default behaviour is not to request the input focus ",
+"explicitly. ",
+"\n\n",
 "\01A\01Bnc.autoStart\01A: True \n",
 "\01I\n",
 "Whether the nc program should automatically start an NEdit server (without ",
@@ -5595,4 +5608,4 @@ Href H_R [] =
     { NULL,       5625, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Nov 26, 2004\n";
+static const char * NEditVersion = "NEdit release of dec 23, 2004\n";

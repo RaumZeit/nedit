@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.51 2004/10/15 18:04:22 arnef Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.52 2004/12/23 22:25:46 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -340,7 +340,7 @@ void EditShellMenu(WindowInfo *window)
 
     /* if the dialog is already displayed, just pop it to the top and return */
     if (ShellCmdDialog != NULL) {
-    	RaiseShellWindow(ShellCmdDialog);
+    	RaiseDialogWindow(ShellCmdDialog);
     	return;
     }
 
@@ -748,11 +748,11 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 
     /* if the dialog is already displayed, just pop it to the top and return */
     if (dialogType == MACRO_CMDS && MacroCmdDialog != NULL) {
-    	RaiseShellWindow(MacroCmdDialog);
+    	RaiseDialogWindow(MacroCmdDialog);
     	return;
     }
     if (dialogType == BG_MENU_CMDS && BGMenuCmdDialog != NULL) {
-    	RaiseShellWindow(BGMenuCmdDialog);
+    	RaiseDialogWindow(BGMenuCmdDialog);
     	return;
     }
 

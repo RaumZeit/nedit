@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.62 2004/10/18 19:27:24 arnef Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.63 2004/12/23 22:25:46 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1455,6 +1455,7 @@ static void editTaggedLocation( Widget parent, int i )
 
     /* select the matched string */
     BufSelect(windowToSearch->buffer, startPos, endPos);
+    RaiseFocusDocumentWindow(windowToSearch, True);
 
     /* Position it nicely in the window, 
        about 1/4 of the way down from the top */

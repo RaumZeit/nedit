@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.132 2004/11/26 18:25:51 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.133 2004/12/23 22:25:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -313,6 +313,7 @@ static struct prefData {
     char colorNames[NUM_COLORS][MAX_COLOR_LEN];
     char tooltipBgColor[MAX_COLOR_LEN];
     int  undoModifiesSelection;
+    int  focusOnRaise;
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -970,6 +971,8 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
     {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN,
         "True", &PrefData.undoModifiesSelection, NULL, False},
+    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN,
+        "False", &PrefData.focusOnRaise, NULL, False}
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -2047,6 +2050,16 @@ Boolean GetPrefUndoModifiesSelection(void)
     return (Boolean)PrefData.undoModifiesSelection;
 }
 
+void SetPrefFocusOnRaise(Boolean value)
+{
+    setIntPref(&PrefData.focusOnRaise, value);
+}
+
+Boolean GetPrefFocusOnRaise(void)
+{
+    return (Boolean)PrefData.focusOnRaise;
+}
+
 int GetPrefOverrideVirtKeyBindings(void)
 {
     return PrefData.virtKeyOverride;
@@ -2699,7 +2712,7 @@ void EditLanguageModes(void)
 
     /* if the dialog is already displayed, just pop it to the top and return */
     if (LMDialog.shell != NULL) {
-    	RaiseShellWindow(LMDialog.shell);
+    	RaiseDialogWindow(LMDialog.shell);
     	return;
     }
     
@@ -3612,7 +3625,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     /* if the dialog is already displayed, just pop it to the top and return */
     if (window->fontDialog != NULL) {
-    	RaiseShellWindow(((fontDialog *)window->fontDialog)->shell);
+    	RaiseDialogWindow(((fontDialog *)window->fontDialog)->shell);
     	return;
     }
     
@@ -5896,7 +5909,7 @@ void ChooseColors(WindowInfo *window)
     
     /* if the dialog is already displayed, just pop it to the top and return */
     if (window->colorDialog != NULL) {
-      RaiseShellWindow(((colorDialog *)window->colorDialog)->shell);
+      RaiseDialogWindow(((colorDialog *)window->colorDialog)->shell);
       return;
     }
     

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.69 2004/10/08 22:58:04 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.70 2004/12/23 22:25:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1709,7 +1709,7 @@ void EditHighlightStyles(const char *initialStyle)
     if (HSDialog.shell != NULL) {
 	if (initialStyle != NULL)
 	    setStyleByName(initialStyle);
-    	RaiseShellWindow(HSDialog.shell);
+    	RaiseDialogWindow(HSDialog.shell);
     	return;
     }
     
@@ -2276,7 +2276,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     /* if the dialog is already displayed, just pop it to the top and return */
     if (HighlightDialog.shell != NULL) {
-    	RaiseShellWindow(HighlightDialog.shell);
+    	RaiseDialogWindow(HighlightDialog.shell);
     	return;
     }
     

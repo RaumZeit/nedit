@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.72 2004/11/26 17:54:33 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.73 2004/12/23 22:25:47 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -835,19 +835,25 @@ void SetPointerCenteredDialogs(int state)
 ** window is still invisible, causing a subtle crash potential if
 ** XSetInputFocus is used.
 */
-void RaiseShellWindow(Widget shell)
+void RaiseDialogWindow(Widget shell)
 {
-    RaiseWindow(XtDisplay(shell), XtWindow(shell));
+    RaiseWindow(XtDisplay(shell), XtWindow(shell), True);
 }
 
-
-void RaiseWindow(Display *display, Window w)
+void RaiseShellWindow(Widget shell, Boolean focus)
 {
-    XWindowAttributes winAttr;
+    RaiseWindow(XtDisplay(shell), XtWindow(shell), focus);
+}
 
-    XGetWindowAttributes(display, w, &winAttr);
-    if (winAttr.map_state == IsViewable)
-        XSetInputFocus(display, w, RevertToParent, CurrentTime);	
+void RaiseWindow(Display *display, Window w, Boolean focus)
+{
+    if (focus) {
+        XWindowAttributes winAttr;
+
+        XGetWindowAttributes(display, w, &winAttr);
+        if (winAttr.map_state == IsViewable)
+            XSetInputFocus(display, w, RevertToParent, CurrentTime);	
+    }
 
     XMapRaised(display, w);
 }
