@@ -1,19 +1,299 @@
-2004-10-08 13:24  edg
+2005-01-31 14:34  edg
+
+	* source/: preferences.c (1.134), userCmds.c (1.53), userCmds.h
+	  (1.11): Fix for SF bug #1113183: lang. mode seq. change - user
+	  menu LM dependency not update. (Patch by Uwe Lehnert)
+
+2005-01-29 01:57  ajbj
+
+	* source/rangeset.c (1.13): Fix for SF bug 1111849: the calculation
+	  of maxpos in rangesets should give the valid text length in the
+	  text buffer. It doesn't, since it adds in the size of the
+	  buffer's gap!
+
+2005-01-18 20:58  n8gray
+
+	* source/nedit.c (1.87): Adds bindings for Ctrl-f/g to the help
+	  system.
+
+2005-01-06 06:23  ajbj
+
+	* source/macro.c (1.94): The previous focus window filename fixes
+	  did not cope with pathless documents such as the initial Untitled
+	  window. This patch does a simple name search before attempting a
+	  search using normalized names.
+
+2005-01-06 06:09  ajbj
+
+	* util/misc.c (1.74): Fix for bug 1096970: the patch fixes focus
+	  change problems in RadioButtonChangeState() by saving the widget
+	  with focus then restoring focus after the button has been
+	  properly set (only required for some buggy Motifs).
+
+2004-12-24 13:05  tksoh
+
+	* source/window.c (1.183): Fixed a bug where rangesets do not get
+	  highlighted (colored) properly when the host document is
+	  detached/attached, if syntax highlighting is on.
+
+2004-12-23 22:25  edg
+
+	* doc/help.etx (1.83), source/file.c (1.93), source/help.c (1.103),
+	  source/help_data.h (1.76), source/help_topic.h (1.65),
+	  source/highlightData.c (1.70), source/menu.c (1.124),
+	  source/preferences.c (1.133), source/preferences.h (1.48),
+	  source/search.c (1.76), source/smartIndent.c (1.37),
+	  source/tags.c (1.63), source/userCmds.c (1.52), source/window.c
+	  (1.182), source/window.h (1.29), source/windowTitle.c (1.15),
+	  util/misc.c (1.73), util/misc.h (1.27): Fix for SF bug #1067619:
+	  focus on raise. By default, NEdit no longer requests the input
+	  focus when a window is raised. This default can be overridden by
+	  setting the X-resource "nedit.focusOnRaise" to True.	The
+	  raise_window() action routine also accepts an optional extra
+	  argument: 'focus' or 'nofocus', which can be used to override the
+	  focus behaviour determined by the resource.
+
+2004-12-17 11:54  edg
+
+	* source/: search.c (1.75), search.h (1.26), window.c (1.181): Fix
+	  for SF bug #1086664: Repeatable crash closing window.  Closing a
+	  window while a modal dialog is up, triggered from a find or
+	  replace dialog button action routine, is virtually impossible.
+	  We can prevent illegal accesses to destroyed windows (which is
+	  the reason for the crash), but we cannot avoid that Motif
+	  accesses structures that get destroyed in the process.
+	  Therefore, it is now no longer possible to close a window via the
+	  window manager during the execution of a search dialog button
+	  action routine in that window.
+
+2004-12-05 01:23  tksoh
+
+	* source/file.c (1.92): Fix for SF Bug #1063542: On some systems,
+	  such as Solaris 2.6, the "New File" dialog does not appear when
+	  trying to open a non-existing file with nc, while the NEdit
+	  window is iconized.
+
+2004-12-05 01:15  tksoh
+
+	* source/menu.c (1.123): Fix for SF Bug #1076412: "Unload Tags
+	  File" menu tear-offs not refreshed after unloading tags files.
+
+	  Tear-offs will be closed when all tags files are unloaded.
+
+2004-11-26 18:25  edg
+
+	* doc/help.etx (1.82), source/help_data.h (1.75),
+	  source/help_topic.h (1.64), source/highlight.c (1.51),
+	  source/preferences.c (1.132), source/regularExp.c (1.26),
+	  source/regularExp.h (1.13), source/search.c (1.74): Fix for SF
+	  bug #1067402: Error in syntax highlighting with sub-pattern.	For
+	  this, the regular expression needed to be extended such that it
+	  allows imposing a boundary on the matching (instead of letting
+	  matches extend till the terminating \0). This also enabled me to
+	  lift a minor limitation of the look-behind matching. Also fixed 5
+	  probably very old bugs in the regex engine that could easily
+	  result in crashes (try replacing \y+ with abc in an empty
+	  document for an instant crash).
+
+2004-11-26 17:54  edg
+
+	* util/misc.c (1.72): Minor leak fix.
+
+2004-11-23 14:37  tringali
+
+	* source/interpret.c (1.43): Remove sprintf call - this won't
+	  compile on many platforms.
+
+2004-11-21 16:53  yooden
+
+	* source/interpret.c (1.42): Makes error message construction a
+	  little more robust by replacing sprintf() with snprintf(). There
+	  is a constant already in use for this (MAX_ERR_MSG_LEN), so we
+	  should use it to prevent mishaps.
+
+2004-11-09 21:58  yooden
+
+	* doc/setext (1.13), source/calltips.h (1.4), source/file.h (1.15),
+	  source/highlight.h (1.14), source/highlightData.h (1.13),
+	  source/interpret.h (1.18), source/macro.h (1.8), source/menu.h
+	  (1.13), source/nedit.h (1.63), source/parse.h (1.7),
+	  source/preferences.h (1.47), source/rbTree.h (1.5),
+	  source/regexConvert.h (1.7), source/regularExp.h (1.12),
+	  source/search.h (1.25), source/selection.h (1.7), source/server.h
+	  (1.7), source/server_common.c (1.6), source/server_common.h
+	  (1.3), source/shell.h (1.9), source/shift.h (1.6),
+	  source/smartIndent.h (1.8), source/tags.h (1.15), source/text.h
+	  (1.23), source/textBuf.h (1.17), source/textDisp.h (1.28),
+	  source/textDrag.h (1.5), source/textP.h (1.12), source/textSel.h
+	  (1.6), source/undo.h (1.8), source/userCmds.h (1.10),
+	  source/window.h (1.28), source/windowTitle.c (1.14),
+	  source/windowTitle.h (1.5), util/DialogF.h (1.11),
+	  util/clearcase.c (1.6), util/clearcase.h (1.5), util/fileUtils.h
+	  (1.12), util/fontsel.h (1.11), util/getfiles.h (1.10),
+	  util/managedList.h (1.7), util/misc.h (1.26), util/prefFile.h
+	  (1.8), util/printUtils.h (1.9), util/utils.h (1.13),
+	  util/vmsParam.h (1.6), util/vmsUtils.h (1.7): A large number of
+	  files carried a pointer to the wrong licence (LGPL), probably
+	  introduced by a pasting error during the licence clarification.
+	  This was changed to point to the GPL.
+
+2004-11-09 19:37  yooden
+
+	* source/: macro.c (1.93), menu.c (1.122): Two problems with
+	  potentially too long pathnames are fixed: 1. The open() action
+	  procedure handled the results of ParseFilename wrong:    It was
+	  only checked for each single component whether it's > MAXPATHLEN,
+	  not for the combination. This is fixed now.  2. If the
+	  pathname given to focus_window() is > MAXPATHLEN, the function
+	  returns with an error now.
+
+2004-11-07 20:03  edg
+
+	* source/macro.c (1.92): Fix for my "fix" for SF bug #1060749:
+	  truncate the string to MAXPATHLEN + other improvements suggested
+	  by Tony.
+
+2004-11-05 08:44  edg
+
+	* source/macro.c (1.91): Fix for SF bug #1060749: focusWindowMS
+	  (macro.c) causes crash.
+
+2004-11-02 12:55  edg
+
+	* source/shell.c (1.37): Enabled the navigation keys (arrows,
+	  page-up/down, ...) for shell output dialogs.
+
+2004-10-18 19:27  arnef
+
+	* source/calltips.c (1.9), source/rangeset.c (1.12), source/tags.c
+	  (1.62), source/textDisp.c (1.61), source/window.c (1.180),
+	  util/check_lin_tif.c (1.11), util/misc.c (1.71), util/utils.c
+	  (1.23): Added missing 'static'.  Changed to initial lower case
+	  letter on two static functions.
+
+2004-10-18 16:05  yooden
+
+	* makefiles/Makefile.linux (1.13): Reverts accidental checkin of
+	  Linux makefile.
+
+2004-10-18 15:54  yooden
+
+	* doc/help.etx (1.81), makefiles/Makefile.linux (1.12),
+	  source/file.c (1.91), source/macro.c (1.90), source/menu.c
+	  (1.121), source/nedit.c (1.86), source/tags.c (1.61),
+	  util/fileUtils.c (1.33), util/utils.c (1.22): This fixes two
+	  bugs: 1. SF#873188 2. focus_window() didn't work if the pathname
+	  had extra slashes.
+
+	  Both items were affected by pathname creation quirks in
+	  source/file.c and util/fileUtils.c and there is the
+	  straightforward focus_window change in macro.c. Changes in other
+	  files are documentation or cleanups.
+
+	  I don't have access to OS/2 or Cygwin systems, so please have a
+	  close look on these two. VMS should not be affected.
+
+2004-10-15 18:04  arnef
+
+	* source/: interpret.c (1.41), interpret.h (1.17), nedit.c (1.85),
+	  preferences.c (1.131), preferences.h (1.46), tags.c (1.60),
+	  userCmds.c (1.51), userCmds.h (1.9): Added missing void in
+	  declarations and definitions (continuation of work done by edg
+	  04/10/14 14:53:25)
+
+2004-10-15 13:57  edg
+
+	* source/nedit.c (1.84), util/misc.c (1.70): This should fix the
+	  problems that we have with drag icons when using non-default
+	  visuals (especially on Solaris). All shells that Motif creates
+	  beyond our control should now inherit the proper (non-default)
+	  visual etc.  via the resource database. An exception is made for
+	  Lesstif, which seems to be able to deal with non-default visuals
+	  on its own (and which doesn't like us to impose visuals).
+	  Drag-and-drop operations are now enabled under all circumstances
+	  as they should no longer result in crashes (opening the path for
+	  patches that rely on d&d).
+
+2004-10-14 21:55  edg
+
+	* source/server.c (1.32): Added missing initialization (Arne
+	  Førlie).
+
+2004-10-14 21:53  edg
+
+	* source/userCmds.h (1.8): Added missing void in declaration (Arne
+	  Førlie)
+
+2004-10-13 17:38  tringali
+
+	* util/system.h (1.17): Guess compiler for older SGI boxes.
+
+2004-10-08 22:58  yooden
+
+	* ReleaseNotes (1.31), source/highlightData.c (1.69): Adds a
+	  pattern for nested command substitution in the shell pattern set.
+
+2004-10-08 22:26  yooden
+
+	* ReleaseNotes (1.30), source/shell.c (1.36): The status bar
+	  reflects a changed keybinding in the shell command banner. This
+	  is brought over from the similar code for macros.
+
+2004-10-08 21:55  yooden
+
+	* ReleaseNotes (1.29), source/text.c (1.51), source/text.h (1.22),
+	  source/window.c (1.179): Fixes SF#906878 (Cursor blinks while
+	  typing) by introducing the new function ResetCursorBlink() which
+	  can be used to reset the caret blink timer.
+
+2004-10-08 11:35  edg
+
+	* ChangeLog (1.41): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
+2004-10-08 11:24  edg
 
 	* source/window.c (1.178): Fix for replace dialog buttons not being
 	updated when switching tabs, possibly resulting in temporarily
 	inconsistent button states.  Candidate fix for 5.5.1.
 
-2004-10-08 00:34  yooden
+2004-10-07 22:34  yooden
 
 	* doc/help.etx (1.80), source/file.c (1.90), source/menu.c (1.120),
-	source/nedit.h (1.62), source/preferences.c (1.130),
-	source/preferences.h (1.45), source/search.c (1.73),
-	source/search.h (1.24), source/text.c (1.50), source/text.h (1.21),
-	source/textDisp.c (1.60), source/textDisp.h (1.27), source/textP.h
-	(1.11), source/window.c (1.177), source/window.h (1.27),
-	util/getfiles.c (1.32), util/getfiles.h (1.9), util/prefFile.c
-	(1.25): /*	      */
+	  source/nedit.h (1.62), source/preferences.c (1.130),
+	  source/preferences.h (1.45), source/search.c (1.73),
+	  source/search.h (1.24), source/text.c (1.50), source/text.h
+	  (1.21), source/textDisp.c (1.60), source/textDisp.h (1.27),
+	  source/textP.h (1.11), source/window.c (1.177), source/window.h
+	  (1.27), util/getfiles.c (1.32), util/getfiles.h (1.9),
+	  util/prefFile.c (1.25): I was asked to elaborate on this commit.
+	  So here goes:
+
+	  This commit is a mistake because the codebase is made worse by
+	  it. The code removed is of higher quality than the average
+	  commit, is of use to many users of NEdit and would have been the
+	  basis for even more improvements in code quality and usability.
+
+	  Ironically, this commit is the result of all the things it
+	  claimed to heal: That one developer considers the repository his
+	  personal playground and forces his view onto others. While there
+	  is no basis for the original complaint, the aggressive tone,
+	  stubborn insistence and insulting nature of the comeback makes it
+	  clear that this something much different than honest care about
+	  the community process. What could have been a minor nuisance was
+	  blown out of all proportation and made to a personal vendetta.
+
+	  At the same time, any attempts to get to a closure were not
+	  ignored, but actively impeded, any calming voice was shouted
+	  down.
+
+	  Despite all this, I figured the commit would put an end to the
+	  unpleasant situation and would offer the opportunity to restart.
+	  Despite the attempts to prevent this, I'd still rather work on
+	  NEdit than defend against personal attacks.
+
+	  So with this commit I take back the added features Hidden Files
+	  (SF#502840), Wrap Hairline (SF#701337 variant) and Smart Case
+	  Search (SF#685618) committed on 2004-10-01.
 
 2004-10-07 10:27  edg
 
