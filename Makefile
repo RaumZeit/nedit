@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2003/11/22 13:03:38 edg Exp $
+# $Id: Makefile,v 1.13 2003/12/25 07:09:55 tksoh Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor
@@ -19,13 +19,20 @@ all:
 	@(cd makefiles && ls -C Makefile* | sed -e 's/Makefile.//g')
 
 .DEFAULT:
+	@- (cd Microline/XmL;   if [ -f ../../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
+	   then ln -s ../../makefiles/Makefile.$@ .; fi)
+	@- (cd Xlt;   if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
+	   then ln -s ../makefiles/Makefile.$@ .; fi)
 	@- (cd util;   if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
 	@- (cd source; if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
+
 	(cd util; \
 	    $(MAKE) -f Makefile.$@ verify_config && \
 	    $(MAKE) -f Makefile.$@ libNUtil.a)
+	(cd Xlt;    $(MAKE) -f Makefile.$@ libXlt.a)
+	(cd Microline/XmL;    $(MAKE) -f Makefile.$@ libXmL.a)
 	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
 
 # This should not be in the default build, as users may not have Perl
@@ -39,6 +46,8 @@ docs:
 
 clean:
 	(cd util;   $(MAKE) -f Makefile.common clean)
+	(cd Xlt;    $(MAKE) -f Makefile.common clean)
+	(cd Microline/XmL;    $(MAKE) -f Makefile.common clean)
 	(cd source; $(MAKE) -f Makefile.common clean)
 
 realclean: clean
