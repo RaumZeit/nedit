@@ -118,16 +118,14 @@ void DeleteServerFileAtoms(const char* serverName, Window rootWindow)
     int nProperties;
     Atom* atoms = XListProperties(TheDisplay, rootWindow, &nProperties);
     if (atoms != NULL) {
-        char** namesArray = (char **)XtMalloc(nProperties * sizeof(char*));
-        if (XGetAtomNames(TheDisplay, atoms, nProperties, namesArray) != 0) {
-            int i;
-            for (i = 0; i < nProperties; i++) {
-                if (strncmp(propNamePrefix,  namesArray[i], length) == 0) {
-                    XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
-                }
+        int i;
+        for (i = 0; i < nProperties; i++) {
+            /* XGetAtomNames() is more efficient, but doesn't exist in X11R5. */
+            char *name = XGetAtomName(TheDisplay, atoms[i]);
+            if (name != NULL && strncmp(propNamePrefix, name, length) == 0) {
+                XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
             }
         }
-        XtFree((char*)namesArray);
         XtFree((char*)atoms);
     }
 }    
