@@ -860,7 +860,7 @@ int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
     }
     
     /* Convert ASCII (and EBCDIC in the __MVS__ (OS/390) case) control
-    /* codes to readable character sequences */
+       codes to readable character sequences */
     if (c == nullSubsChar) {
 	sprintf(outStr, "<nul>");
     	return 5;
