@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.85 2004/10/15 18:04:21 arnef Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.86 2004/10/18 15:54:12 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.85 2004/10/15 18:04:21 arnef Exp $
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -600,7 +600,7 @@ int main(int argc, char **argv)
 #ifdef VMS
 	    *argv[i] = '/';
 #endif /*VMS*/
-    	    fprintf(stderr, "NEdit: Unrecognized option %s\n%s", argv[i],
+    	    fprintf(stderr, "nedit: Unrecognized option %s\n%s", argv[i],
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {

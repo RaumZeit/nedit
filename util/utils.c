@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.21 2004/07/21 11:32:07 yooden Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.22 2004/10/18 15:54:12 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.21 2004/07/21 11:32:07 yooden Exp 
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -71,7 +71,7 @@ extern const char
   static char curdir[MAXPATHLEN];
 
   if (!getcwd(curdir, MAXPATHLEN)) {
-     perror("NEdit: getcwd() fails");
+     perror("nedit: getcwd() fails");
      strcpy(curdir, ".");
   }
   return (curdir);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.120 2004/10/07 22:34:10 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.121 2004/10/18 15:54:11 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.120 2004/10/07 22:34:10 yooden Exp 
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -2834,7 +2834,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
     XtCallActionProc(window->lastFocus, "save_as", event, params, addWrap?2:1);
 }
 
-static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (*nArgs == 0) {
     	fprintf(stderr, "nedit: save_as action requires file argument\n");
@@ -4600,7 +4600,7 @@ static void updateWindowMenu(const WindowInfo *window)
 
 /*
 ** Update the Previously Opened Files menu of a single window to reflect the
-** current state of the list as retrieved from GetPrevOpenFiles.
+** current state of the list as retrieved from FIXME.
 ** Thanks to Markus Schwarzenberg for the sorting part.
 */
 static void updatePrevOpenMenu(WindowInfo *window)

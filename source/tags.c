@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.60 2004/10/15 18:04:22 arnef Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.61 2004/10/18 15:54:12 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.60 2004/10/15 18:04:22 arnef Exp $"
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -255,7 +255,6 @@ static int addTag(const char *name, const char *file, int lang,
         sprintf(newfile,"%s%s", path, file);
     
     NormalizePathname(newfile);
-    CompressPathname(newfile);
         
     for (t = table[addr]; t; t = t->next) {
         if (strcmp(name,t->name)) continue;
@@ -267,7 +266,6 @@ static int addTag(const char *name, const char *file, int lang,
             char tmpfile[MAXPATHLEN];
             sprintf(tmpfile, "%s%s", t->path, t->file);
             NormalizePathname(tmpfile);
-            CompressPathname(tmpfile);
             if (strcmp(newfile, tmpfile)) continue;
         }
         return 0;
@@ -368,7 +366,6 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
         strcat(pathName, "/");
         strcat(pathName, filename);
         NormalizePathname(pathName);
-        CompressPathname(pathName);
 
         for (t = FileList; t && strcmp(t->filename, pathName); t = t->next);
         if (t) {
@@ -437,7 +434,6 @@ int AddTagsFile(const char *tagSpec, int file_type)
             strcpy(pathName,filename);
         }
         NormalizePathname(pathName);
-        CompressPathname(pathName);
 
         for (t = FileList; t && strcmp(t->filename,pathName); t = t->next);
         if (t) {
@@ -502,7 +498,6 @@ int DeleteTagsFile(const char *tagSpec, int file_type)
             strcpy(pathName,filename);
         }
         NormalizePathname(pathName);
-        CompressPathname(pathName);
 
         for (last=NULL,t = FileList; t; last = t,t = t->next) {
             if (strcmp(t->filename, pathName))

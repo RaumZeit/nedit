@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.32 2004/07/21 11:32:07 yooden Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.33 2004/10/18 15:54:12 yooden Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.32 2004/07/21 11:32:07 yooden 
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -145,7 +145,7 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     }
 #endif
     
-    if (filename && pathname && (pathLen + 1 + fileLen) >= MAXPATHLEN) {
+    if (filename && pathname && ((pathLen + 1 + fileLen) >= MAXPATHLEN)) {
 	return 1; /* pathname + filename too long */
     }
     return 0;
@@ -280,11 +280,13 @@ ResolvePath(const char * pathIn, char * pathResolved)
 
 
 /*
-** Return 0 if everything's fine. In fact it always return 0 ...
+** Return 0 if everything's fine. In fact it always return 0... (No it doesn't)
 ** Capable to handle arbitrary path length (>MAXPATHLEN)!
+**
+**  FIXME: Documentation
+**  FIXME: Change return value to False and True.
 */
-int
-NormalizePathname(char *pathname)
+int NormalizePathname(char *pathname)
 {
     /* if this is a relative pathname, prepend current directory */
 #ifdef __EMX__
@@ -301,13 +303,20 @@ NormalizePathname(char *pathname)
 	strcpy(oldPathname, pathname);
 	/* get the working directory and prepend to the path */
 	strcpy(pathname, GetCurrentDir());
+
 	/* check for trailing slash, or pathname being root dir "/":
 	   don't add a second '/' character as this may break things
 	   on non-un*x systems */
-	len=strlen(pathname); /* GetCurrentDir() returns non-NULL value */
-	if ( len==0 ? 1 : pathname[len-1] != '/' ) {
-	   strcat(pathname, "/");
-	}
+        len = strlen(pathname); /* GetCurrentDir() returns non-NULL value */
+
+        /*  Apart from the fact that people putting conditional expressions in
+            ifs should be caned: How should len ever become 0 if GetCurrentDir()
+            always returns a useful value?
+            FIXME: Check and document GetCurrentDir() return behaviour.  */
+        if (0 == len ? 1 : pathname[len-1] != '/')
+        {
+            strcat(pathname, "/");
+        }
 	strcat(pathname, oldPathname);
 	free(oldPathname);
     }
@@ -319,26 +328,37 @@ NormalizePathname(char *pathname)
 
 /*
 ** Return 0 if everything's fine, 1 else.
+**
+**  FIXME: Documentation
+**  FIXME: Change return value to False and True.
 */
-int
-CompressPathname(char *pathname)
+int CompressPathname(char *pathname)
 {
     char *buf, *inPtr, *outPtr;
     struct stat statbuf;
 
     /* (Added by schwarzenberg)
     ** replace multiple slashes by a single slash 
+    **  (added by yooden)
+    **  Except for the first slash. From the Single UNIX Spec: "A pathname
+    **  that begins with two successive slashes may be interpreted in an
+    **  implementation-dependent manner"
     */
-    inPtr=pathname;
-    buf=(char *)malloc(strlen(pathname)+2);
-    outPtr=buf;
-    while (*inPtr) {
-      	*outPtr=*inPtr++;
-      	if(*outPtr=='/') {
-	    while(*inPtr=='/')
-	      	inPtr++;
-      	}
-      	outPtr++;
+    inPtr = pathname;
+    buf = (char*) malloc(strlen(pathname) + 2);
+    outPtr = buf;
+    *outPtr++ = *inPtr++;
+    while (*inPtr)
+    {
+        *outPtr = *inPtr++;
+        if ('/' == *outPtr)
+        {
+            while ('/' == *inPtr)
+            {
+                inPtr++;
+            }
+        }
+        outPtr++;
     }
     *outPtr=0;
     strcpy(pathname, buf);
@@ -378,7 +398,7 @@ CompressPathname(char *pathname)
     }
     /* updated pathname with the new value */
     if (strlen(buf)>MAXPATHLEN) {
-       fprintf(stderr, "NEdit: CompressPathname(): file name too long %s\n",
+       fprintf(stderr, "nedit: CompressPathname(): file name too long %s\n",
                pathname);
        free(buf);
        return 1;

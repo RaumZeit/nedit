@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.90 2004/10/07 22:34:10 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.91 2004/10/18 15:54:11 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -8,7 +8,7 @@ static const char CVSID[] = "$Id: file.c,v 1.90 2004/10/07 22:34:10 yooden Exp $
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 * 									       *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -811,16 +811,24 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     	    return FALSE;
 	window->fileFormat = fileFormat;
     } else
-    	strcpy(fullname, newName);
+    {
+        strcpy(fullname, newName);
+    }
+
+    if (1 == NormalizePathname(fullname))
+    {
+        return False;
+    }
     
     /* Add newlines if requested */
     if (addWrap)
     	addWrapNewlines(window);
     
-    /* If the requested file is this file, just save it and return */
     if (ParseFilename(fullname, filename, pathname) != 0) {
        return FALSE;
     }
+
+    /* If the requested file is this file, just save it and return */
     if (!strcmp(window->filename, filename) &&
     	    !strcmp(window->path, pathname)) {
 	if (writeBckVersion(window))

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.89 2004/08/01 10:06:10 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.90 2004/10/18 15:54:11 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -9,7 +9,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.89 2004/08/01 10:06:10 yooden Exp 
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -1831,6 +1831,12 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     else {
 	for (w=WindowList; w != NULL; w = w->next) {
 	    sprintf(fullname, "%s%s", w->path, w->filename);
+            if (1 == NormalizePathname(string))
+            {
+                /*  Something is broken with the input pathname. */
+                *errMsg = "Pathname too long in focus_window()";
+                return False;
+            }
 	    if (!strcmp(string, fullname))
 		break;
 	}

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.80 2004/10/07 22:34:10 yooden Exp $
+.. $Id: help.etx,v 1.81 2004/10/18 15:54:07 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2524,8 +2524,9 @@ Macro Subroutines
 
 **focus_window( window_name )**  
   Sets the window on which subsequent macro commands operate. window_name can
-  be either a fully qualified file name, or one of "last" for the last window
-  created, or "next" for the next window in the chain from the currently
+  be either a fully qualified file name, or a relative filename (which will
+  be completed from NEdit's working directory) or one of "last" for the last
+  window created, or "next" for the next window in the chain from the currently
   focused window (the first window being the one returned from calling
   focus_window("last"). Returns the name of the newly-focused window, or an
   empty string if the requested window was not found.
