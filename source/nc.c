@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.18 2001/12/31 14:34:13 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.19 2002/01/11 18:21:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -333,22 +333,27 @@ static int startServer(const char *message, const char *commandLineArgs)
     /* Unfortunately system() calls a shell determined by the environment
        variables COMSPEC and EMXSHELL. We have to figure out which one. */
     {
-    char *sh, *base;
+    char *sh_spec, *sh, *base;
+    char *CMD_EXE="cmd.exe";
+
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
-	   strlen(commandLineArgs) + 12);
+	   strlen(commandLineArgs) + 15);
     sh = getenv ("EMXSHELL");
     if (sh == NULL)
       sh = getenv ("COMSPEC");
     if (sh == NULL)
-      sh = strdup("cmd.exe");
-    base=_getname(strdup(sh));
+      sh = CMD_EXE;
+    sh_spec=XtNewString(sh);
+    base=_getname(sh_spec);
     _remext(base);
-    if (stricmp (base, "cmd") == 0 || stricmp (base, "4os2") == 0)
-       sprintf(commandLine, "start /MIN %s %s",
+    if (stricmp (base, "cmd") == 0 || stricmp (base, "4os2") == 0) {
+       sprintf(commandLine, "start /C /MIN %s %s",
                Preferences.serverCmd, commandLineArgs);
-    else
+    } else {
        sprintf(commandLine, "%s %s &", 
                Preferences.serverCmd, commandLineArgs);
+    }
+    XtFree(sh_spec);
     }
 #else /* Unix */
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
