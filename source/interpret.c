@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.12 2001/03/26 15:46:48 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.13 2001/04/06 13:03:31 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -605,7 +605,7 @@ Symbol *InstallIteratorSymbol()
 ** Lookup a constant string by it's value. This allows reuse of string
 ** constants and fixing a leak in the interpreter.
 */
-Symbol *LookupStringConstSymbol(char *value)
+Symbol *LookupStringConstSymbol(const char *value)
 {
     Symbol *s;
 
@@ -622,7 +622,7 @@ Symbol *LookupStringConstSymbol(char *value)
 /*
 ** find a symbol in the symbol table
 */
-Symbol *LookupSymbol(char *name)
+Symbol *LookupSymbol(const char *name)
 {
     Symbol *s;
 
@@ -638,7 +638,7 @@ Symbol *LookupSymbol(char *name)
 /*
 ** install s in symbol table
 */
-Symbol *InstallSymbol(char *name, int type, DataValue value)
+Symbol *InstallSymbol(const char *name, int type, DataValue value)
 {
     Symbol *s;
 

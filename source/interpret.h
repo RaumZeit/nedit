@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.5 2001/03/26 15:46:48 slobasso Exp $ */
+/* $Id: interpret.h,v 1.6 2001/04/06 13:03:31 amai Exp $ */
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
@@ -88,9 +88,9 @@ int AddImmediate(void *value, char **msg);
 int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
 Symbol *InstallIteratorSymbol();
-Symbol *LookupStringConstSymbol(char *value);
-Symbol *LookupSymbol(char *name);
-Symbol *InstallSymbol(char *name, int type, DataValue value);
+Symbol *LookupStringConstSymbol(const char *value);
+Symbol *LookupSymbol(const char *name);
+Symbol *InstallSymbol(const char *name, int type, DataValue value);
 Program *FinishCreatingProgram(void);
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 void StartLoopAddrList(void);
