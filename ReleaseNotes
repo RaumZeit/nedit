@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.4beta, May 2003
 
 
-$Id: ReleaseNotes,v 1.20 2003/05/23 10:58:33 edg Exp $
+$Id: ReleaseNotes,v 1.21 2003/05/26 09:07:58 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -114,6 +114,14 @@ Bugs Fixed in 5.4
     through smart indent
 
   - Close pane resize bug (SF bug #715767)
+  
+  - Show Matching Range bug (SF bug #559902)
+  
+  - Workaround for KDE's FONTLIST bug (SF bug #561659)
+  
+  - Workaround for Motif drag icon bug (SF bug #526981: Crash using btn2 on 
+    help window buttons and SF bug #582469: 5.3 crash when selecting stats 
+    line text).
 
 New Features in 5.3
 
