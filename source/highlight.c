@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.44 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.45 2004/01/12 17:09:35 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -962,7 +962,8 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	length = (compiledPats[patternNum].colorOnly ||
 	    	patternSrc[patternNum].endRE == NULL) ? 0 :
 	    	strlen(patternSrc[patternNum].endRE) + 5;
-	length += patternSrc[patternNum].errorRE == NULL ? 0 :
+	length += (compiledPats[patternNum].colorOnly ||
+                   patternSrc[patternNum].errorRE == NULL) ? 0 :
 	    	strlen(patternSrc[patternNum].errorRE) + 5;
 	for (i=0; i<compiledPats[patternNum].nSubPatterns; i++) {
     	    subPatIndex = compiledPats[patternNum].subPatterns[i]-compiledPats;
