@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.135 2004/03/31 15:02:10 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.136 2004/04/01 01:38:09 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3727,9 +3727,6 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
     Widget text;
     selection sel;
     
-    /* old window must disown hilite data */
-    orgWin->highlightData = NULL;
-        
     /* transfer the primary selection */
     memcpy(&sel, &orgWin->buffer->primary, sizeof(selection));
 	    
@@ -4188,11 +4185,11 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 
     SetBacklightChars(window, orgWin->backlightCharTypes);
     
-    /* recycle the hilite data */    
+    /* syntax hilite */    
     window->languageMode = orgWin->languageMode;
-    window->highlightData = orgWin->highlightData;
-    if (window->highlightData != NULL)
-    	AttachHighlightToWidget(window->textArea, window);
+    window->highlightSyntax = orgWin->highlightSyntax;
+    if (window->highlightSyntax)
+    	StartHighlighting(window, False);
 
     /* clone original buffer's states */
     window->filenameSet = orgWin->filenameSet;
@@ -4213,7 +4210,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->overstrike = orgWin->overstrike;
     window->showMatchingStyle = orgWin->showMatchingStyle;
     window->matchSyntaxBased = orgWin->matchSyntaxBased;
-    window->highlightSyntax = orgWin->highlightSyntax;
 #if 0    
     window->showStats = orgWin->showStats;
     window->showISearchLine = orgWin->showISearchLine;
@@ -4364,7 +4360,8 @@ void RefreshWindowStates(WindowInfo *window)
 WindowInfo *DetachDocument(WindowInfo *window)
 {
     WindowInfo *win, *cloneWin;
-    char *dim, geometry[MAX_GEOM_STRING_LEN];
+    char geometry[MAX_GEOM_STRING_LEN];
+    int rows, cols;
     
     if (NDocuments(window) < 2)
     	return NULL;
@@ -4375,9 +4372,9 @@ WindowInfo *DetachDocument(WindowInfo *window)
     
     /* create new window in roughly the size of original window,
        to reduce flicker when the window is resized later */
-    getGeometryString(window, geometry);
-    dim = strtok(geometry, "+-");
-    cloneWin = CreateWindow(window->filename, dim, False);
+    getTextPaneDimension(window, &rows, &cols);
+    sprintf(geometry, "%dx%d", cols, rows);
+    cloneWin = CreateWindow(window->filename, geometry, False);
     
     /* these settings should follow the detached document.
        must be done before cloning window, else the height 
