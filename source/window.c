@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.182 2004/12/23 22:25:46 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.183 2004/12/24 13:05:15 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4187,7 +4187,17 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 
     SetBacklightChars(window, orgWin->backlightCharTypes);
     
-    /* syntax hilite */    
+    /* Clone rangeset info.
+       
+       FIXME: 
+       Cloning of rangesets must be done before syntax highlighting, 
+       else the rangesets do not be highlighted (colored) properly
+       if syntax highlighting is on.
+    */
+    window->buffer->rangesetTable =
+	    RangesetTableClone(orgWin->buffer->rangesetTable, window->buffer);
+
+    /* Syntax highlighting */    
     window->languageMode = orgWin->languageMode;
     window->highlightSyntax = orgWin->highlightSyntax;
     if (window->highlightSyntax)
@@ -4255,10 +4265,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->nMarks = orgWin->nMarks;
     memcpy(&window->markTable, &orgWin->markTable, 
             sizeof(Bookmark)*window->nMarks);
-
-    /* clone rangeset info */
-    window->buffer->rangesetTable =
-	    RangesetTableClone(orgWin->buffer->rangesetTable, window->buffer);
 
     /* kick start the auto-indent engine */
     window->indentStyle = NO_AUTO_INDENT;
