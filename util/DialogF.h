@@ -1,8 +1,10 @@
-/* $Id: DialogF.h,v 1.5 2001/11/12 14:04:27 amai Exp $ */
-/*
- *  To use DialogF, #include <stdarg.h>
- */
- 
+/* $Id: DialogF.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef DIALOGF_H_INCLUDED
+#define DIALOGF_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+
 #define DF_ERR 1			/* Error Dialog       */
 #define DF_INF 2			/* Information Dialog */
 #define DF_MSG 3			/* Message Dialog     */
@@ -16,3 +18,5 @@
 unsigned DialogF(int, Widget, unsigned, const char *, ...);
 				/* variable # arguments */
 void SetDialogFPromptHistory(char **historyList, int nItems);
+
+#endif /* DIALOGF_H_INCLUDED */

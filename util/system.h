@@ -1,4 +1,8 @@
-/* $Id: system.h,v 1.9 2001/11/20 13:25:06 amai Exp $ */
+/* $Id: system.h,v 1.10 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef SYSTEM_H_INCLUDED
+#define SYSTEM_H_INCLUDED
+
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -138,3 +142,5 @@
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif
+
+#endif /* SYSTEM_H_INCLUDED */

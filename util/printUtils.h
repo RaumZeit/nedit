@@ -1,4 +1,10 @@
-/* $Id: printUtils.h,v 1.5 2001/11/22 21:01:05 amai Exp $ */
+/* $Id: printUtils.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef PRINTUTILS_H_INCLUDED
+#define PRINTUTILS_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+
 /* Maximum length of an error returned by IssuePrintCommand() */
 #define MAX_PRINT_ERROR_LENGTH 1024
 
@@ -13,3 +19,5 @@ void PrintFile(Widget parent, const char *PrintFileName, const char *jobName, in
 #else
 void PrintFile(Widget parent, const char *PrintFileName, const char *jobName);
 #endif /*VMS*/
+
+#endif /* PRINTUTILS_H_INCLUDED */

@@ -1,4 +1,10 @@
-/* $Id: managedList.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: managedList.h,v 1.4 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef MANAGEDLIST_H_INCLUDED
+#define MANAGEDLIST_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+
 Widget CreateManagedList(Widget parent, char *name, Arg *args,
     	int argC, void **itemList, int *nItems, int maxItems, int nColumns,
     	void *(*getDialogDataCB)(void *, int, int *, void *),
@@ -16,3 +22,5 @@ void ChangeManagedListData(Widget listW);
 void SelectManagedListItem(Widget listW, int itemIndex);
 void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *),
     	void *deleteConfirmArg);
+
+#endif /* MANAGEDLIST_H_INCLUDED */

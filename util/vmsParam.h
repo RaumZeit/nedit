@@ -1,4 +1,8 @@
-/* $Id: vmsParam.h,v 1.2 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: vmsParam.h,v 1.3 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef VMSPARAM_H_INCLUDED
+#define VMSPARAM_H_INCLUDED
+
 /*******************************************************************************
 *									       *
 * vmsParam.h - Parameter definitions for VMS systems.			       *
@@ -28,3 +32,5 @@
 #define MAXPATHLEN     255
 
 #endif /*VMS*/
+
+#endif /* VMSPARAM_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.20 2002/03/14 17:41:04 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.21 2002/06/26 23:39:21 slobasso Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -50,6 +50,10 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.20 2002/03/14 17:41:04 amai Exp
 #include "../config.h"
 #endif
 
+#include "getfiles.h"
+#include "fileUtils.h"
+#include "misc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,10 +81,6 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.20 2002/03/14 17:41:04 amai Exp
 #include <Xm/Text.h>
 #include <Xm/MessageB.h>
 #include <Xm/List.h>
-
-#include "fileUtils.h"
-#include "misc.h"
-#include "getfiles.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

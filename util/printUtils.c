@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.18 2002/06/08 13:56:52 tringali Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.19 2002/06/26 23:39:21 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -36,6 +36,11 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.18 2002/06/08 13:56:52 tringa
 #include "../config.h"
 #endif
 
+#include "printUtils.h"
+#include "DialogF.h"
+#include "misc.h"
+#include "prefFile.h"
+
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
@@ -71,11 +76,6 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.18 2002/06/08 13:56:52 tringa
 #include <Xm/PushB.h>
 #include <Xm/SeparatoG.h>
 #include <Xm/Text.h>
-
-#include "DialogF.h"
-#include "misc.h"
-#include "prefFile.h"
-#include "printUtils.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

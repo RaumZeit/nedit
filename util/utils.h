@@ -1,6 +1,7 @@
-/* $Id: utils.h,v 1.6 2002/06/08 13:56:52 tringali Exp $ */
-#ifndef _UTILS_H
-#define _UTILS_H
+/* $Id: utils.h,v 1.7 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef UTILS_H_INCLUDED
+#define UTILS_H_INCLUDED
 
 extern const char *GetCurrentDir(void);
 extern const char *GetHomeDir(void);
@@ -25,4 +26,4 @@ extern int Max3(int i1, int i2, int i3);
 #define MAXNODENAMELEN (MAXPATHLEN+2)
 #endif
 
-#endif /* _UTILS_H */
+#endif /* UTILS_H_INCLUDED */

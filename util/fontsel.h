@@ -1,4 +1,10 @@
-/* $Id: fontsel.h,v 1.5 2001/10/21 15:13:07 tringali Exp $ */
+/* $Id: fontsel.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef FONTSEL_H_INCLUDED
+#define FONTSEL_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+
 /*******************************************************************************
 *                                                                              *
 *     FontSel ()                                                               *
@@ -50,3 +56,5 @@
 /* function prototype */
 
 char    *FontSel(Widget parent, int showPropFont, const char *currFont);
+
+#endif /* FONTSEL_H_INCLUDED */

@@ -1,4 +1,8 @@
-/* $Id: vmsUtils.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: vmsUtils.h,v 1.4 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef VMSUTILS_H_INCLUDED
+#define VMSUTILS_H_INCLUDED
+
 #ifdef VMS
 #ifndef __DESCRIP_LOADED
 #include descrip
@@ -20,3 +24,5 @@ void VMSFileScanDone(void);
 int ProcAlive(const unsigned int pID);
 
 #endif /*VMS*/
+
+#endif /* VMSUTILS_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.17 2002/06/08 13:56:52 tringali Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.18 2002/06/26 23:39:21 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -30,6 +30,10 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.17 2002/06/08 13:56:52 tringali 
 #include "../config.h"
 #endif
 
+#include "fontsel.h"
+#include "misc.h"
+#include "DialogF.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,10 +49,6 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.17 2002/06/08 13:56:52 tringali 
 #include <Xm/ToggleB.h>
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
-
-#include "DialogF.h"
-#include "misc.h"
-#include "fontsel.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

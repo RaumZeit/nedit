@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.39 2002/06/08 13:56:52 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.40 2002/06/26 23:39:21 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -29,6 +29,9 @@ static const char CVSID[] = "$Id: misc.c,v 1.39 2002/06/08 13:56:52 tringali Exp
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
+
+#include "misc.h"
+#include "DialogF.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -62,9 +65,6 @@ static const char CVSID[] = "$Id: misc.c,v 1.39 2002/06/08 13:56:52 tringali Exp
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
 #include <Xm/FileSB.h>
-
-#include "DialogF.h"
-#include "misc.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

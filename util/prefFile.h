@@ -1,4 +1,10 @@
-/* $Id: prefFile.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: prefFile.h,v 1.5 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef PREFFILE_H_INCLUDED
+#define PREFFILE_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+
 enum PrefDataTypes {PREF_INT, PREF_BOOLEAN, PREF_ENUM, PREF_STRING,
 	PREF_ALLOC_STRING};
 
@@ -22,3 +28,5 @@ void OverlayPreferences(XrmDatabase prefDB, const char *appName,
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
 int SavePreferences(Display *display, const char *fileName,
         const  char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
+
+#endif /* PREFFILE_H_INCLUDED */

@@ -1,4 +1,11 @@
-/* $Id: misc.h,v 1.11 2001/11/12 14:04:27 amai Exp $ */
+/* $Id: misc.h,v 1.12 2002/06/26 23:39:21 slobasso Exp $ */
+
+#ifndef MISC_H_INCLUDED
+#define MISC_H_INCLUDED
+
+#include <X11/Intrinsic.h>
+#include <Xm/Xm.h>
+
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2
@@ -78,3 +85,5 @@ Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, 
 	WidgetClass class, Display *display, ArgList args, Cardinal nArgs);
+
+#endif /* MISC_H_INCLUDED */
