@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.123 2004/02/26 09:54:35 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.124 2004/02/27 00:53:31 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3584,7 +3584,7 @@ static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
     for (i=0; i<=orgWin->nPanes; i++) {
     	text = i==0 ? orgWin->textArea : orgWin->textPanes[i-1];
     	insertPositions[i] = TextGetCursorPos(text);
-    	XtVaGetValues(XtParent(text), XmNheight, &paneHeights[i], NULL);
+    	XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], NULL);
     	totalHeight += paneHeights[i];
     	TextGetScroll(text, &topLines[i], &horizOffsets[i]);
     	if (text == orgWin->lastFocus)
