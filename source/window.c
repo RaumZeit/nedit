@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.92 2003/12/29 10:58:40 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.93 2003/12/31 01:22:06 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3684,7 +3684,9 @@ void NextBuffer(WindowInfo *window)
     	return;
 
     win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate());
-    
+    if (win == NULL)
+    	return;
+	
     if (window->shell == win->shell)
 	RaiseBuffer(win);
     else
@@ -3702,7 +3704,9 @@ void PreviousBuffer(WindowInfo *window)
     	return;
 
     win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate());
-
+    if (win == NULL)
+    	return;
+	
     if (window->shell == win->shell)
 	RaiseBuffer(win);
     else
