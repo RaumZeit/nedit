@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.55 2003/01/10 15:32:18 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.56 2003/02/15 02:33:27 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1209,7 +1209,7 @@ int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
 }
 
 /*
-** Wrapper for GetNewFilename which uses the current window's path
+** Wrapper for HandleCustomNewFileSB which uses the current window's path
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */

@@ -1,50 +1,47 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.23 2003/01/10 15:29:10 tringali Exp $";
-/******************************************************************************
-*                                                                             *
-* Getfiles.c -- File Interface Routines                                       *
-*                                                                             *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+static const char CVSID[] = "$Id: getfiles.c,v 1.24 2003/02/15 02:33:27 yooden Exp $";
+/*******************************************************************************
+*                                                                              *
+* Getfiles.c -- File Interface Routines                                        *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version.							               *
-* 									       *
+* version.                                                                     *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* May 23, 1991                                                                *
-*                                                                             *
-* Written by Donna Reid                                                       *
-*									      *
-* modified 11/5/91 by JMK: integrated changes made by M. Edel; updated for    *
-*			   destroy widget problem (took out ManageModalDialog *
-*			   call; added comments.			      *
-*	   10/1/92 by MWE: Added help dialog and fixed a few bugs             *
-*	    4/7/93 by DR:  Port to VMS				              *
-*	    6/1/93 by JMK: Integrate Port and changes by MWE to make          *
-*			   directories "sticky" and a fix to prevent opening  *
-*			   a directory when no filename was specified	      *
-*	   6/24/92 by MWE: Made filename list and directory list typeable,    *
-*			   set initial focus to filename list		      *
-*          6/25/93 by JMK: Fix memory leaks found by Purify.                  *
-*						                              *
-* Included are two routines written using Motif for accessing files:          *
-*									      *
-* GetExistingFilename  presents a FileSelectionBox dialog where users can     *
-*                      choose an existing file to open.                       *
-*									      *
-* GetNewFilename       presents a FileSelectionBox dialog to help the user    *
-*                      find a place for a new file.                           *
-*                                                                             *
-******************************************************************************/
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* May 23, 1991                                                                 *
+*                                                                              *
+* Written by Donna Reid                                                        *
+*                                                                              *
+* modified 11/5/91 by JMK: integrated changes made by M. Edel; updated for     *
+*                          destroy widget problem (took out ManageModalDialog  *
+*                          call; added comments.                               *
+*          10/1/92 by MWE: Added help dialog and fixed a few bugs              *
+*           4/7/93 by DR:  Port to VMS                                         *
+*           6/1/93 by JMK: Integrate Port and changes by MWE to make           *
+*                          directories "sticky" and a fix to prevent opening   *
+*                          a directory when no filename was specified          *
+*          6/24/92 by MWE: Made filename list and directory list typeable,     *
+*                          set initial focus to filename list                  *
+*          6/25/93 by JMK: Fix memory leaks found by Purify.                   *
+*                                                                              *
+* Included are two routines written using Motif for accessing files:           *
+*                                                                              *
+* GetExistingFilename  presents a FileSelectionBox dialog where users can      *
+*                      choose an existing file to open.                        *
+*                                                                              *
+*******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -436,76 +433,10 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
 }
 
 
-/*    	GetNewFilename					                   */
-/*									   */
-/*  This routine will popup a file selection box so that the user can      */
-/*  select a file that will be, at a later time in the application,        */
-/*  created and written to.  After the user selects a file, GetNewFilename */
-/*  checks whether the file already exists, and if it does, asks the user  */
-/*  if he/she wants to overwrite the file.  Answering no, allows the user  */
-/*  to select a new filename.  GetNewFilename also checks that the file    */
-/*  name specified by the user can be created, and allows re-entry if not. */
-/*  When the user presses the OK button to a filename satisying the above  */
-/*  criteria, GetNewFilename returns the selected filename and GFN_OK.     */
-/*  If the user presses the cancel button, the return value is GFN_CANCEL, */
-/*  and the filename character string supplied in the call is not altered. */
-/*  									   */
-/*  Arguments:								   */
-/*									   */
-/*	Widget  parent	      - parent widget id			   */
-/*	char *  promptString  - prompt string				   */
-/*	char *  filename      - a string to receive the selected filename  */
-/*				(this string will not be altered if the    */
-/*				user pressed the cancel button)		   */
-/*									   */
-/*  Returns:	GFN_OK	      - file was selected and OK button pressed	   */
-/*		GFN_CANCEL    - Cancel button pressed and no returned file */
-
-int GetNewFilename (Widget parent, char *promptString, char *filename)
-{
-    int       n;                      /* number of arguments               */ 
-    Arg       args[MAX_ARGS];	      /* arg list                          */
-    XmString  labelString;            /* compound string for prompt label  */
-    XmString  titleString;	      /* compound string for dialog title  */
-    Widget    newFileSB;              /* widget file select box for	   */
-    
-    n = 0;
-    labelString = XmStringCreateLtoR (promptString, 
-                  XmSTRING_DEFAULT_CHARSET);
-    titleString = XmStringCreateLtoR (" ", XmSTRING_DEFAULT_CHARSET);
-    XtSetArg(args[n], XmNselectionLabelString, labelString); n++;     
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-    XtSetArg(args[n], XmNdialogTitle, titleString); n++;
-    newFileSB=CreateFileSelectionDialog(parent,"FileSelect",args,n);
-    XmStringFree(labelString);
-    XmStringFree(titleString);
-    XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
-    	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
-    	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
-    	    XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(newFileSB,
-    	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
-    	    promptString[strspn(promptString, "lFD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), NULL);
-    AddDialogMnemonicHandler(newFileSB, FALSE);
-    RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT));
-    RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT));
-    return HandleCustomNewFileSB(newFileSB, filename, NULL);
-}
-
 /*
 ** HandleCustomNewFileSB
 **
 ** Manage a customized file selection box for opening new files.
-** Use this if you want to change the standard file selection dialog
-** from the defaults provided in GetNewFilename, but still
-** want take advantage of the button processing, help messages, and
-** file checking of GetExistingFilename.
 **
 **  Arguments:
 **
@@ -632,9 +563,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 }
 
 /*
-** Return current default directory used by GetExistingFilename and
-** GetNewFilename.  Can return NULL if no default directory has been set
-** (meaning use the application's current working directory) String must
+** Return current default directory used by GetExistingFilename.
+** Can return NULL if no default directory has been set (meaning
+** use the application's current working directory) String must
 ** be freed by the caller using XtFree.
 */
 char *GetFileDialogDefaultDirectory(void)
@@ -648,10 +579,10 @@ char *GetFileDialogDefaultDirectory(void)
 }
 
 /*
-** Return current default match pattern used by GetExistingFilename and
-** GetNewFilename.  Can return NULL if no default pattern has been set
-** (meaning use a pattern matching all files in the directory) String must
-** be freed by the caller using XtFree.
+** Return current default match pattern used by GetExistingFilename.
+** Can return NULL if no default pattern has been set (meaning use
+** a pattern matching all files in the directory) String must be
+** freed by the caller using XtFree.
 */
 char *GetFileDialogDefaultPattern(void)
 {
@@ -664,9 +595,9 @@ char *GetFileDialogDefaultPattern(void)
 }
 
 /*
-** Set the current default directory to be used by GetExistingFilename and
-** GetNewFilename.  "dir" can be passed as NULL to clear the current default
-** directory and use the application's working directory instead.
+** Set the current default directory to be used by GetExistingFilename.
+** "dir" can be passed as NULL to clear the current default directory
+** and use the application's working directory instead.
 */
 void SetFileDialogDefaultDirectory(char *dir)
 {
@@ -676,9 +607,9 @@ void SetFileDialogDefaultDirectory(char *dir)
 }
 
 /*
-** Set the current default match pattern to be used by GetExistingFilename and
-** GetNewFilename.  "pattern" can be passed as NULL as the equivalent a pattern
-** matching all files in the directory.
+** Set the current default match pattern to be used by GetExistingFilename.
+** "pattern" can be passed as NULL as the equivalent a pattern matching
+** all files in the directory.
 */
 void SetFileDialogDefaultPattern(char *pattern)
 {

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.48 2003/01/10 15:29:12 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.49 2003/02/15 02:33:27 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -697,9 +697,9 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
 }
 
 /*
-** Cause dialogs created by libNUtil.a routines (such as DialogF and
-** GetNewFilename), and dialogs which use ManageDialogCenteredOnPointer
-** to pop up over the pointer (state = True), or pop up in their default
+** Cause dialogs created by libNUtil.a routines (such as DialogF),
+** and dialogs which use ManageDialogCenteredOnPointer to pop up
+** over the pointer (state = True), or pop up in their default
 ** positions (state = False)
 */
 void SetPointerCenteredDialogs(int state)
