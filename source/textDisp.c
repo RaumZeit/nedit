@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.55 2004/03/31 15:02:10 tksoh Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.56 2004/04/01 02:50:29 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -2024,7 +2024,7 @@ static void clearRect(textDisp *textD, GC gc, int x, int y,
     	int width, int height)
 {
     /* A width of zero means "clear to end of window" to XClearArea */
-    if (width == 0)
+    if (width == 0 || XtWindow(textD->w) == 0)
     	return;
     
     if (gc == textD->gc) {
