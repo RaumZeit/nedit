@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.90 2003/04/08 23:47:16 yooden Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.91 2003/04/10 20:08:18 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -279,13 +279,15 @@ static void initHelpStyles (Widget parent)
     
     if (! styleTableInitialized) 
     {
-        Pixel black = BlackPixelOfScreen(XtScreen(parent));
+        Pixel fg;
         int   styleIndex;
         char ** line;
 
+        XtVaGetValues(parent, XtNforeground, &fg, NULL);
+
         for (styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++) 
         {
-            HelpStyleInfo[ styleIndex ].color     = black;
+            HelpStyleInfo[ styleIndex ].color     = fg;
             HelpStyleInfo[ styleIndex ].underline = StyleUnderlines[styleIndex];
             HelpStyleInfo[ styleIndex ].font      = NULL;
         }
@@ -687,11 +689,11 @@ static Widget createHelpPanel(Widget parent, int topic)
     	    XmNverticalScrollBar, vScrollBar, NULL);
     
     /* Initialize help style information, if it hasn't already been init'd */
-    initHelpStyles (parent);
+    initHelpStyles (HelpTextPanes[topic]);
     
     /* Put together the text to display and separate it into parallel text
        and style data for display by the widget */
-    helpText = stitch (parent, HelpText[topic], &styleData);
+    helpText = stitch (HelpTextPanes[topic], HelpText[topic], &styleData);
     
     /* Stuff the text into the widget's text buffer */
     BufSetAll (TextGetBuffer (HelpTextPanes[topic]) , helpText);
