@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.34 2001/11/16 16:06:07 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.35 2001/11/21 16:36:01 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -144,12 +144,21 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg)
 }
 
 /*
-** Motif still generates spurrious passive grab warnings on both IBM and SGI
-** This routine suppresses them
+** Motif still generates spurious passive grab warnings on both IBM and SGI
+** This routine suppresses them.
+** (amai, 20011121:)
+** And triggers an annoying message on DEC systems on alpha ->
+** See Xt sources, xc/lib/Xt/Error.c:DefaultMsg()):
+**    actually for some obscure reasons they check for XtError/Warning
+**    handlers being installed when running as a root process!
+** Since this handler doesn't help on non-effected systems we should only
+** use it if necessary.
 */
 void SuppressPassiveGrabWarnings(void)
 {
+#if !defined(__alpha) && !defined(__EMX__)
     XtSetWarningHandler(warnHandlerCB);
+#endif
 }
 
 /*
