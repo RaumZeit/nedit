@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.49 2003/06/05 22:01:48 n8gray Exp $
+.. $Id: help.etx,v 1.50 2003/10/24 10:51:21 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3322,8 +3322,9 @@ Action Routines
   (numbers greater than 0, 1 is the same as "last") or a
   negative-index (numbers less than 0, -1 is the same as "first").
   
-**scroll_down(nLines)**
-  Scroll the display down (towards the end of the file) by nLines.
+**scroll_down( nUnits, ["lines" | "pages"] )**
+  Scroll the display down (towards the end of the file) by a given
+  number of units, units being lines or pages. Default units are lines.
 
 **scroll_left( nPixels )**
   Scroll the display left by nPixels.
@@ -3331,8 +3332,9 @@ Action Routines
 **scroll_right( nPixels )**
   Scroll the display right by nPixels.
 
-**scroll_up( nLines )**
-  Scroll the display up (towards the beginning of the file) by nLines.
+**scroll_up( nUnits, ["lines" | "pages"] )**
+  Scroll the display up (towards the beginning of the file) by a given
+  number of units, units being lines or pages. Default units are lines.
 
 **scroll_to_line( lineNum )**
   Scroll to position line number lineNum at the top of

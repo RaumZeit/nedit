@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.43 2003/05/16 16:47:20 slobasso Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.44 2003/10/24 10:51:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -418,8 +418,8 @@ static char defaultTranslations[] =
     /* Support for mouse wheel in XFree86 */
     "Shift<Btn4Down>,<Btn4Up>: scroll_up(1)\n"
     "Shift<Btn5Down>,<Btn5Up>: scroll_down(1)\n"
-    "Ctrl<Btn4Down>,<Btn4Up>: previous_page()\n"
-    "Ctrl<Btn5Down>,<Btn5Up>: next_page(1)\n"
+    "Ctrl<Btn4Down>,<Btn4Up>: scroll_up(1, pages)\n"
+    "Ctrl<Btn5Down>,<Btn5Up>: scroll_down(1, pages)\n"
     "<Btn4Down>,<Btn4Up>: scroll_up(5)\n"
     "<Btn5Down>,<Btn5Up>: scroll_down(5)\n";
      /* some of the translations from the Motif text widget were not picked up:
@@ -3166,6 +3166,15 @@ static void scrollUpAP(Widget w, XEvent *event, String *args,
 
     if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
     	return;
+    if (*nArgs == 2) {
+        /* Allow both 'page' and 'pages' */
+        if (strncmp(args[1], "page", 4) == 0) 
+            nLines *= textD->nVisibleLines;
+            
+        /* 'line' or 'lines' is the only other valid possibility */
+        else if (strncmp(args[1], "line", 4) != 0)
+            return;
+    }
     TextDGetScroll(textD, &topLineNum, &horizOffset);
     TextDSetScroll(textD, topLineNum-nLines, horizOffset);
 }
@@ -3178,6 +3187,15 @@ static void scrollDownAP(Widget w, XEvent *event, String *args,
     
     if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
     	return;
+    if (*nArgs == 2) {
+        /* Allow both 'page' and 'pages' */
+        if (strncmp(args[1], "page", 4) == 0) 
+            nLines *= textD->nVisibleLines;
+            
+        /* 'line' or 'lines' is the only other valid possibility */
+        else if (strncmp(args[1], "line", 4) != 0)
+            return;
+    }
     TextDGetScroll(textD, &topLineNum, &horizOffset);
     TextDSetScroll(textD, topLineNum+nLines, horizOffset);
 }

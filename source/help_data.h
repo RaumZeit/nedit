@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jun 5, 2003 (Do NOT edit!)
+                 Generated on Oct 24, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -3129,8 +3129,9 @@ static char * htxt_actions [] = {
 "(numbers greater than 0, 1 is the same as \"last\") or a ",
 "negative-index (numbers less than 0, -1 is the same as \"first\"). ",
 "\n\n",
-"\01A\01Bscroll_down(nLines)\01A\n",
-"\01IScroll the display down (towards the end of the file) by nLines. ",
+"\01A\01Bscroll_down( nUnits, [\"lines\" | \"pages\"] )\01A\n",
+"\01IScroll the display down (towards the end of the file) by a given ",
+"number of units, units being lines or pages. Default units are lines. ",
 "\n\n",
 "\01A\01Bscroll_left( nPixels )\01A\n",
 "\01IScroll the display left by nPixels. ",
@@ -3138,8 +3139,9 @@ static char * htxt_actions [] = {
 "\01A\01Bscroll_right( nPixels )\01A\n",
 "\01IScroll the display right by nPixels. ",
 "\n\n",
-"\01A\01Bscroll_up( nLines )\01A\n",
-"\01IScroll the display up (towards the beginning of the file) by nLines. ",
+"\01A\01Bscroll_up( nUnits, [\"lines\" | \"pages\"] )\01A\n",
+"\01IScroll the display up (towards the beginning of the file) by a given ",
+"number of units, units being lines or pages. Default units are lines. ",
 "\n\n",
 "\01A\01Bscroll_to_line( lineNum )\01A\n",
 "\01IScroll to position line number lineNum at the top of ",
@@ -5233,4 +5235,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Mar 14, 2003\n";
+static const char * NEditVersion = "NEdit release of Oct 24, 2003\n";
