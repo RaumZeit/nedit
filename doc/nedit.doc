@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Oct 31, 2002                                               October 31, 2002
+NEdit release of Oct 15, 2002                                               November 12, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -4015,7 +4015,7 @@ nedit.helpLinkColor: #009900
 
   Color for hyperlinks in the help text 
 
-nedit.backlightCharTypes:  (undefined)
+nedit.backlightCharTypes:  0-8,10-31,127:red;9:#dedede;32-126,160-255:#f0f0f0;128-159:orange
 
   A string specifying character classes as ranges of ASCII values followed by 
   the color to be used as their background colors. The format is: 
@@ -4598,8 +4598,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Oct 31, 2002
-Oct 31, 2002
+NEdit release of Oct 15, 2002
+Nov 12, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

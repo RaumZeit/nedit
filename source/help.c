@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.85 2002/09/26 12:37:38 ajhood Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.86 2002/11/12 10:04:29 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -616,6 +616,7 @@ static Widget createHelpPanel(Widget parent, int topic)
     	    XmNrepeatDelay, 10, NULL);
     HelpTextPanes[topic] = XtVaCreateManagedWidget("helpText",
 	    textWidgetClass, sw, textNrows, 30, textNcolumns, 65,
+	    textNbacklightCharTypes, NULL,
     	    textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar,
 	    textNreadOnly, True, textNcontinuousWrap, True,
 	    textNautoShowInsertPos, True, NULL);
