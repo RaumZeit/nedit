@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.140 2004/04/14 00:49:47 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.141 2004/04/14 15:12:11 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -142,7 +142,7 @@ static unsigned char isrcFind_bits[] = {
 /* bitmap data for the isearch-clear button */
 #define isrcClear_width 11
 #define isrcClear_height 11
-static char isrcClear_bits[] = {
+static unsigned char isrcClear_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x84, 0x01, 0xc4, 0x00, 0x64, 0x00,
    0xc4, 0x00, 0x84, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00};
 
