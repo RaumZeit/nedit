@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.12 2001/04/18 16:12:08 slobasso Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.13 2001/04/18 16:51:50 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -515,7 +515,7 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
                     if (!mnemonicUsed[lc])
                     {
                         mnemonicUsed[lc] = TRUE;
-                        XtVaSetValues(child, XmNmnemonic, lc, NULL);
+                        XtVaSetValues(child, XmNmnemonic, label[c], NULL);
                         break;
                     }
                 }
