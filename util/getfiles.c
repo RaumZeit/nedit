@@ -62,11 +62,6 @@
 #endif
 #endif /*VMS*/
 #include <sys/stat.h>
-#ifdef __MVS__
-#include <errno.h>
-#else
-#include <sys/errno.h>
-#endif
 #include <X11/keysym.h>
 #include <Xm/Xm.h>
 #include <Xm/PushBG.h>
@@ -111,7 +106,7 @@ static int RemoveRedundantTextField = True;
 /* ... needs variant for VMS */
 #ifndef SGI_CUSTOM
 #ifndef MOTIF10
-static char *HelpExist =
+static const char *HelpExist =
 "The file open dialog shows a list of directories on the left, and a list \
 of files on the right.  Double clicking on a file name in the list on the \
 right, or selecting it and pressing the OK button, will open that file.  \
@@ -129,7 +124,7 @@ match.  When you leave off the file name or trailing \"/\", you won't see \
 any files to open in the list \
 because the filter specification matched the directory file itself, rather \
 than the files in the directory.";
-static char *HelpNew = 
+static const char *HelpNew = 
 "This dialog allows you to create a new file, or to save the current file \
 under a new name.  To specify a file \
 name in the current directory, complete the name displayed in the \"Save File \
@@ -150,7 +145,7 @@ to a directory by typing the file specification of the path in the \"Filter\" \
 field and pressing the \"Filter\" button.";
 
 #else /* MOTIF 1.0 file dialogs are different */
-static char *HelpExist =
+static const char *HelpExist =
 "The file open dialog initially shows a list of files in the current \
 directory.  Double clicking on a file name in the list, or selecting it \
 and pressing the OK button, will open that file.  \n\
@@ -159,7 +154,7 @@ To open a file outside of the current directory, click on the field labeled \
 \"Filter\", type in a directory specification, and press return, or \
 press the Filter button in the dialog.  The files in that directory will \
 then show up in the file list and you can select one as above.";
-static char *HelpNew = 
+static const char *HelpNew = 
 "The Save As... dialog allows you to save the file you are editing under a \
 new name, or to specify the name for an Untitled file.  To specify a file \
 name in the current directory, complete the name displayed in the \"Save File \
@@ -177,7 +172,7 @@ in the \"File Filter\" field and press the \
 #endif
 
 #else /* SGI_CUSTOM */
-static char *HelpExist =
+static const char *HelpExist =
 "The \"File to Edit:\" field shows a list of directories and files in the \
 current directory.\n\
 \n\
@@ -199,7 +194,7 @@ directories.\n\
 The \"Filter\" button allows you to narrow down the list of files and \
 directories shown in the \"File to Edit:\" field.  The default filter of \
 \"*\" allows all files to be listed.";
-static char *HelpNew = 
+static const char *HelpNew = 
 "This dialog allows you to create a new file or to save the current file \
 under a new name.\n\
 \n\
@@ -240,16 +235,16 @@ static void newFileCancelCB(Widget w, Boolean *client_data, caddr_t
 static void newHelpCB(Widget w, Widget helpPanel, caddr_t call_data);
 static void createYesNoDialog(Widget parent);
 static void createErrorDialog(Widget parent);
-static int doYesNoDialog(char *msg);
-static void doErrorDialog(char *errorString, char *filename);
+static int  doYesNoDialog(const char *msg);
+static void doErrorDialog(const char *errorString, const char *filename);
 static void existOkCB(Widget w, Boolean * client_data,
-	       XmFileSelectionBoxCallbackStruct *call_data);
+	              XmFileSelectionBoxCallbackStruct *call_data);
 static void existCancelCB(Widget w, Boolean * client_data, caddr_t call_data);
 static void existHelpCB(Widget w, Widget helpPanel, caddr_t call_data);
 static void errorOKCB(Widget w, caddr_t client_data, caddr_t call_data);
 static void yesNoOKCB(Widget w, caddr_t client_data, caddr_t call_data);
 static void yesNoCancelCB(Widget w, caddr_t client_data, caddr_t call_data);
-static Widget createPanelHelp(Widget parent, char *text, char *title);
+static Widget createPanelHelp(Widget parent, const char *text, const char *title);
 static void helpDismissCB(Widget w, Widget helpPanel, caddr_t call_data);
 static void makeListTypeable(Widget listW);
 static void listCharEH(Widget w, XtPointer callData, XEvent *event,
@@ -775,7 +770,7 @@ static void createErrorDialog(Widget parent)
     XmStringFree(buttonString);
 }
 
-static int doYesNoDialog(char *filename)
+static int doYesNoDialog(const char *filename)
 {
     char string[255];
     XmString mString;
@@ -806,7 +801,7 @@ static int doYesNoDialog(char *filename)
     return YesNoResult == ynYes;
 }
 
-static void doErrorDialog(char *errorString, char *filename)
+static void doErrorDialog(const char *errorString, const char *filename)
 {
     char string[255];
     XmString mString;
@@ -949,9 +944,9 @@ static void yesNoCancelCB(Widget w, caddr_t client_data, caddr_t call_data)
     YesNoResult = ynNo;
 }
 
-static Widget createPanelHelp(Widget parent, char *helpText, char *title)
+static Widget createPanelHelp(Widget parent, const char *helpText, const char *title)
 {
-    Arg al[50];
+    Arg al[20];
     int ac;
     Widget form, text, button;
     XmString st1;
