@@ -1092,7 +1092,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     	XmListSetPos(w, selectPos-2 > 1 ? selectPos-2 : 1);
     else if (selectPos > topPos+nVisible-1)
     	XmListSetBottomPos(w, selectPos+2 <= nItems ? selectPos+2 : 0);
-    /* For Lesstif .89.9 */
+    /* For LessTif 0.89.9. Obsolete now? */
     XmListSelectPos(w, selectPos, True);
 }
 

@@ -89,7 +89,7 @@ static char *HelpTitles[NUM_TOPICS] = {
 
 static char *HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n\
-March 29, 2000\n\
+December, 2000\n\
 \n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, \

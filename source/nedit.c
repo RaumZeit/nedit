@@ -85,10 +85,10 @@ static char *fallbackResources[] = {
     "*fontList:-adobe-helvetica-medium-r-normal-*-12-*-*-*-*-*-*",
     "*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
     "*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
-    /* This should not be necessary, but some default in lesstif is
+    /* This should not be necessary, but some default in LessTif is
        overriding the resource above, and specifying the app-name fixes it */
     "nedit*XmText.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
-    /* Same with this, both Solaris Motif and Lesstif seem to have some
+    /* Same with this, both Solaris Motif and LessTif seem to have some
        very specific defaults for file selection box fonts */
     "nedit*FileSelect*XmList.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",
     "*XmTextField.fontList:-adobe-courier-medium-r-normal-*-12-*-*-*-*-*-*",

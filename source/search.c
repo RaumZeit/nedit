@@ -222,7 +222,7 @@ void DoReplaceDlog(WindowInfo *window, int direction)
     /* Display the dialog */
     ManageDialogCenteredOnPointer(window->replaceDlog);
     
-    /* Workaround: Lesstif (as of version .89) needs reminding of who had
+    /* Workaround: LessTif (as of version 0.89) needs reminding of who had
        the focus when the dialog was unmanaged.  When re-managed, focus is
        lost and events fall through to the window below. */
     XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);

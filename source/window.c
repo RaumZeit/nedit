@@ -513,7 +513,7 @@ void CloseWindow(WindowInfo *window)
        list of any other window (or even the same one), we must update those
        lists or we end up with dangling references. Normally, there can 
        be only one of those dialogs at the same time (application modal),
-       but Lesstif doesn't even (always) honor application modalness, so
+       but LessTif doesn't even (always) honor application modalness, so
        there can be more than one dialog. */
     RemoveFromMultiFileReplaceDialogLists(window);
 #endif
