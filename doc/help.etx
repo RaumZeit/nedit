@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.73 2004/08/01 07:55:25 yooden Exp $
+.. $Id: help.etx,v 1.74 2004/08/16 10:12:02 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1390,11 +1390,10 @@ Basic Regular Expression Syntax
      \B   Not a word boundary
 
   Note that the \B token ensures that the left and right characters are both
-  delimiter characters, or that both left and right characters are
-  non-delimiter characters.  Currently word anchors check only one character,
-  e.g. the left word anchor `<' only asserts that the left character is a word
-  delimiter character.  Similarly the right word anchor checks the right
-  character.
+  word characters, or that both left and right characters are non-word
+  characters.  The left word anchor checks whether the previous character 
+  is not a word character and the next character is.  The right word anchor
+  works in a similar way.
 
 3>Quantifiers
 
