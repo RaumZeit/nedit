@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.13 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.14 2001/08/17 14:09:00 tringali Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -791,13 +791,18 @@ static struct rcs_stats  RcsStats;
 
 static const char *rcs_strdup(const char *str)
 {
-    int bucket = hashAddr(str) % RCS_SIZE;
-    int len = strlen(str);
-    
+    int bucket;
+    size_t len;
     struct rcs *rp;
     struct rcs *prev = NULL;
   
     char *newstr = NULL;
+    
+    if (str == NULL)
+        return NULL;
+        
+    bucket = hashAddr(str) % RCS_SIZE;
+    len = strlen(str);
     
     RcsStats.talloc++;
 
@@ -807,7 +812,7 @@ static const char *rcs_strdup(const char *str)
        Doesn't save anything - if we have lots of small-size objects,
        it's beneifical to share them.  We don't know until we make a full
        count.  My tests show that it's better to leave this out.  */
-    if (len <= sizeof(*Rcs))
+    if (len <= sizeof(struct rcs))
     {
         new_str = strdup(str);
         RcsStats.tgiveup++;
@@ -833,7 +838,7 @@ static const char *rcs_strdup(const char *str)
     }
     else     /* Doesn't exist, conjure up a new one. */
     {
-        struct rcs *newrcs = malloc(sizeof *Rcs);
+        struct rcs *newrcs = malloc(sizeof(struct rcs));
         newrcs->string = malloc(len+1);
         strcpy(newrcs->string, str);
         newrcs->usage = 1;
@@ -858,9 +863,14 @@ static const char *rcs_strdup(const char *str)
 
 static void rcs_free(const char *rcs_str)
 {
-    int bucket = hashAddr(rcs_str) % RCS_SIZE;
+    int bucket;
     struct rcs *rp;
     struct rcs *prev = NULL;
+
+    if (rcs_str == NULL)
+        return;
+        
+    bucket = hashAddr(rcs_str) % RCS_SIZE;
 
     /* find it in hash */
     for (rp = Rcs[bucket]; rp; rp = rp->next)
