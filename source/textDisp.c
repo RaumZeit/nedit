@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.28 2002/08/14 08:42:43 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.29 2002/08/14 19:20:31 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -3468,7 +3468,7 @@ static char *expandAllTabs( char *text, int tab_width ) {
 
     /* Allocate the new string */
     len = strlen( text ) + ( tab_width - 1 )*nTabs;
-    textCpy = (char*)malloc( len );
+    textCpy = (char*)malloc( len + 1 );
     if( !textCpy ) {
         fprintf(stderr, 
                 "nedit: Out of heap memory in expandAllTabs!\n");
@@ -3510,6 +3510,8 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
     
     /* Expand any tabs in the calltip and make it an XmString */
     textCpy = expandAllTabs( text, BufGetTabDistance(textD->buffer) );
+    if( textCpy == NULL )
+        return 0;       /* Out of memory */
     str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
     if( textCpy != text )
         free( textCpy );
