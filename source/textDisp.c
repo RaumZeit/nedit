@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.38 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.39 2002/10/14 18:41:08 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1511,8 +1511,10 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     	blankCursorProtrusions(textD);
     	TextDRedisplayRect(textD, 0, textD->top, textD->width + textD->left,
 		textD->height);
-    	if (textD->styleBuffer) /* See comments in extendRangeForStyleMods */
+        if (textD->styleBuffer) {/* See comments in extendRangeForStyleMods */
     	    textD->styleBuffer->primary.selected = False;
+            textD->styleBuffer->primary.zeroWidth = False;
+        }
     	return;
     }
     

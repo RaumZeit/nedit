@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.10 2002/07/11 21:18:12 slobasso Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.11 2002/10/14 18:41:09 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -652,8 +652,15 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
 
 static void loseSelectionCB(Widget w, Atom *selType)
 {
-    ((TextWidget)w)->text.selectionOwner = False;
-    BufUnselect(((TextWidget)w)->text.textD->buffer);
+    TextWidget tw = (TextWidget)w;
+    selection *sel = &tw->text.textD->buffer->primary;
+    char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
+    
+    /* For zero width rect. sel. we give up the selection but keep the 
+        zero width tag. */
+    tw->text.selectionOwner = False;
+    BufUnselect(tw->text.textD->buffer);
+    sel->zeroWidth = zeroWidth;
 }
 
 /*

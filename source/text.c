@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.35 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.36 2002/10/14 18:41:04 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -3301,11 +3301,12 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
 	int rectangular)
 {
     XKeyEvent *e = &event->xkey;
-    textDisp *textD = ((TextWidget)w)->text.textD;
+    TextWidget tw = (TextWidget)w;
+    textDisp *textD = tw->text.textD;
     textBuffer *buf = textD->buffer;
     selection *sel = &buf->primary;
     int newPos = TextDGetInsertPosition(textD);
-    int startPos, endPos, col, startCol, endCol, newCol, origCol;
+    int startPos, endPos, startCol, endCol, newCol, origCol;
     int anchor, rectAnchor, anchorLineStart;
 
     /* Moving the cursor does not take the Motif destination, but as soon as
@@ -3314,19 +3315,27 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
        secondary selections actually worked correctly) */
     TakeMotifDestination(w, e->time);
     
-    /* Extend the selection based on original and new selection type */
-    if (sel->selected && sel->rectangular && rectangular) { /* rect -> rect */
-	col = BufCountDispChars(buf, BufStartOfLine(buf, newPos), newPos);
-    	rectAnchor = col < (sel->rectEnd + sel->rectStart) / 2 ?
-    	    	sel->rectEnd : sel->rectStart;
-    	anchorLineStart = BufStartOfLine(buf, newPos <
-    	    	(sel->end + sel->start) / 2 ? sel->end : sel->start);
-    	anchor = BufCountForwardDispChars(buf, anchorLineStart, rectAnchor);
-	startCol = min(rectAnchor, col);
-	endCol = max(rectAnchor, col);
-	startPos = BufStartOfLine(buf, min(anchor, newPos));
-	endPos = BufEndOfLine(buf, max(anchor, newPos));
+    if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) { 
+        /* rect -> rect */
+        newCol = BufCountDispChars(buf, BufStartOfLine(buf, newPos), newPos);
+        startCol = min(tw->text.rectAnchor, newCol);
+        endCol   = max(tw->text.rectAnchor, newCol);
+        startPos = BufStartOfLine(buf, min(tw->text.anchor, newPos));
+        endPos = BufEndOfLine(buf, max(tw->text.anchor, newPos));
 	BufRectSelect(buf, startPos, endPos, startCol, endCol);
+    } else if (sel->selected && rectangular) { /* plain -> rect */
+        newCol = BufCountDispChars(buf, BufStartOfLine(buf, newPos), newPos);
+        if (abs(newPos - sel->start) < abs(newPos - sel->end))
+            anchor = sel->end;
+        else
+            anchor = sel->start;
+        anchorLineStart = BufStartOfLine(buf, anchor);
+        rectAnchor = BufCountDispChars(buf, anchorLineStart, anchor);
+        tw->text.anchor = anchor;
+        tw->text.rectAnchor = rectAnchor;
+        BufRectSelect(buf, BufStartOfLine(buf, min(anchor, newPos)),
+                BufEndOfLine(buf, max(anchor, newPos)),
+                min(rectAnchor, newCol), max(rectAnchor, newCol));
     } else if (sel->selected && sel->rectangular) { /* rect -> plain */
     	startPos = BufCountForwardDispChars(buf,
     		BufStartOfLine(buf, sel->start), sel->rectStart);
@@ -3337,15 +3346,6 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
     	else
     	    anchor = startPos;
     	BufSelect(buf, anchor, newPos);
-    } else if (sel->selected && rectangular) { /* plain -> rect */
-    	startCol = BufCountDispChars(buf,
-    		BufStartOfLine(buf, sel->start), sel->start);
-    	endCol = BufCountDispChars(buf,
-    		BufStartOfLine(buf, sel->end), sel->end);
-	newCol = BufCountDispChars(buf, BufStartOfLine(buf, newPos), newPos);
-	startPos = BufStartOfLine(buf, min(sel->start, newPos));
-	endPos = BufEndOfLine(buf, max(sel->end, newPos));
-	BufRectSelect(buf, startPos, endPos, startCol, endCol);
     } else if (sel->selected) { /* plain -> plain */
         if (abs(origPos - sel->start) < abs(origPos - sel->end))
     	    anchor = sel->end;
@@ -3359,10 +3359,14 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
 	endCol = max(newCol, origCol);
 	startPos = BufStartOfLine(buf, min(origPos, newPos));
 	endPos = BufEndOfLine(buf, max(origPos, newPos));
+        tw->text.anchor = origPos;
+        tw->text.rectAnchor = origCol;
 	BufRectSelect(buf, startPos, endPos, startCol, endCol);
     } else { /* no sel -> plain */
-    	anchor = origPos;
-        BufSelect(buf, anchor, newPos);
+        tw->text.anchor = origPos;
+        tw->text.rectAnchor = BufCountDispChars(buf, 
+                BufStartOfLine(buf, origPos), origPos);
+        BufSelect(buf, tw->text.anchor, newPos);
     }
 }
 

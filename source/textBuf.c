@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.24 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.25 2002/10/14 18:41:05 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -153,12 +153,15 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->tabDist = 8;
     buf->useTabs = True;
     buf->primary.selected = False;
+    buf->primary.zeroWidth = False;
     buf->primary.rectangular = False;
     buf->primary.start = buf->primary.end = 0;
     buf->secondary.selected = False;
+    buf->secondary.zeroWidth = False;
     buf->secondary.start = buf->secondary.end = 0;
     buf->secondary.rectangular = False;
     buf->highlight.selected = False;
+    buf->highlight.zeroWidth = False;
     buf->highlight.start = buf->highlight.end = 0;
     buf->highlight.rectangular = False;
     buf->modifyProcs = NULL;
@@ -653,6 +656,7 @@ void BufUnselect(textBuffer *buf)
     selection oldSelection = buf->primary;
 
     buf->primary.selected = False;
+    buf->primary.zeroWidth = False;
     redisplaySelection(buf, &oldSelection, &buf->primary);
 }
 
@@ -700,6 +704,7 @@ void BufSecondaryUnselect(textBuffer *buf)
     selection oldSelection = buf->secondary;
 
     buf->secondary.selected = False;
+    buf->secondary.zeroWidth = False;
     redisplaySelection(buf, &oldSelection, &buf->secondary);
 }
 
@@ -747,6 +752,7 @@ void BufUnhighlight(textBuffer *buf)
     selection oldSelection = buf->highlight;
 
     buf->highlight.selected = False;
+    buf->highlight.zeroWidth = False;
     redisplaySelection(buf, &oldSelection, &buf->highlight);
 }
 
@@ -1921,6 +1927,7 @@ static void overlayRectInLine(const char *line, const char *insLine,
 static void setSelection(selection *sel, int start, int end)
 {
     sel->selected = start != end;
+    sel->zeroWidth = (start == end) ? 1 : 0;
     sel->rectangular = False;
     sel->start = min(start, end);
     sel->end = max(start, end);
@@ -1930,6 +1937,7 @@ static void setRectSelect(selection *sel, int start, int end,
 	int rectStart, int rectEnd)
 {
     sel->selected = rectStart < rectEnd;
+    sel->zeroWidth = (rectStart == rectEnd) ? 1 : 0;
     sel->rectangular = True;
     sel->start = start;
     sel->end = end;

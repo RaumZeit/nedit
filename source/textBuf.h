@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.11 2002/09/26 12:37:40 ajhood Exp $ */
+/* $Id: textBuf.h,v 1.12 2002/10/14 18:41:07 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTBUF_H_INCLUDED
 #define NEDIT_TEXTBUF_H_INCLUDED
@@ -10,12 +10,17 @@
 #define MAX_EXP_CHAR_LEN 20
 
 typedef struct {
-    char selected;
-    char rectangular;
-    int start;
-    int end;
-    int rectStart;
-    int rectEnd;
+    char selected;          /* True if the selection is active */
+    char rectangular;       /* True if the selection is rectangular */
+    char zeroWidth;         /* Width 0 selections aren't "real" selections, but
+                                they can be useful when creating rectangular
+                                selections from the keyboard. */
+    int start;              /* Pos. of start of selection, or if rectangular
+                                 start of line containing it. */
+    int end;                /* Pos. of end of selection, or if rectangular
+                                 end of line containing it. */
+    int rectStart;          /* Indent of left edge of rect. selection */
+    int rectEnd;            /* Indent of right edge of rect. selection */
 } selection;
 
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted,
