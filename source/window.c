@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.145 2004/04/19 15:46:55 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.146 2004/04/23 00:43:18 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4157,6 +4157,7 @@ void RaiseDocument(WindowInfo *window)
        the back */
     XLowerWindow(TheDisplay, XtWindow(win->splitPane));
     XtUnmanageChild(win->splitPane);
+    RefreshTabState(win);
 
     /* now refresh window state/info. RefreshWindowStates() 
        has a lot of work to do, so we update the screen first so
@@ -4164,8 +4165,6 @@ void RaiseDocument(WindowInfo *window)
     XmUpdateDisplay(window->splitPane);
     RefreshWindowStates(window);
     RefreshTabState(window);
-    if (IsValidWindow(lastwin))
-        RefreshTabState(lastwin);
     
     /* put away the bg menu tearoffs of last active document */
     hideTearOffs(win->bgMenuPane);
