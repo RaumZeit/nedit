@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.19 2001/03/09 16:58:59 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.20 2001/03/09 22:30:41 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3353,7 +3353,7 @@ Actions Representing Menu Commands:\n\
     ---------------------     Shell Menu\n\
     undo()		      -----------------------\n\
     redo()		      filter_selection_dialog()\n\
-    delete()		      filter_selection()\n\
+    delete_selection()        filter_selection()\n\
     select_all()	      execute_command()\n\
     shift_left()	      execute_command_dialog()\n\
     shift_left_by_tab()       execute_command_line()\n\
