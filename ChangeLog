@@ -1,7 +1,99 @@
-2002-01-23 16:54  tringali
+2002-02-13 14:14  edg
 
-	* source/help.c (1.74): Change parenthesis style to match the rest
-	of nedit source code.
+	* source/textDisp.c (1.18): Fix for SF bug #516920: line numbering
+	in continuous wrap mode.
+
+2002-02-13 12:30  edg
+
+	* doc/nedit.doc (1.10), doc/nedit.html (1.3), source/help_data.h
+	(1.5), source/help_topic.h (1.3): Regenerated documentation.
+
+2002-02-13 12:27  edg
+
+	* doc/setext-info.txt (1.1): Added setext format documentation
+	provided by Steven Haehn.
+
+2002-02-13 12:12  edg
+
+	* doc/help.etx (1.6): Minor fixes.
+
+2002-02-11 21:23  arnef
+
+	* source/windowTitle.c (1.2): Fixed reason for crash when window is
+	destroyed.  Removing leading dashes and spaces Checking for array
+	out of bounds when creating title.
+
+2002-02-11 10:45  edg
+
+	* source/highlightData.c (1.27): Upgraded X Resources highlight
+	patterns to improve highlighting performance.  SF bug #481290;
+	patterns provided by Markus Schwarzenberg.
+
+2002-02-08 23:26  tringali
+
+	* source/nedit.c (1.30): Yet another attempted fix for 434383:
+	menus showing up as blocks.
+
+2002-02-07 10:23  edg
+
+	* doc/help.etx (1.5): Updates for SF bug #489601: misprint in
+	help.c.
+
+2002-02-07 10:00  edg
+
+	* doc/help.etx (1.4): Fix for SF bug #432203: Error in regex help
+	for \l and \L.
+
+2002-02-07 09:28  edg
+
+	* doc/setext (1.5): Comment on #! interpreter line is not allowed
+	for every shell.
+
+2002-02-05 22:01  edg
+
+	* source/highlight.c (1.24): Fix for SF bug #512961: NEdit LOCKS
+	UP, and also for a similar bug reported at the discuss mailing list
+	(Philippe Poilbarbe: Infinite Loop).  Yet another char/unsigned
+	char mixup problem.
+
+2002-02-05 20:55  edg
+
+	* source/regularExp.c (1.12): Fixed a char/unsigned char comparison
+	problem that caused crashes when patterns contained characters with
+	ASCII code >= 128.
+
+2002-02-05 18:16  edg
+
+	* source/: textBuf.c (1.17), textDisp.c (1.17), textDisp.h (1.8),
+	window.c (1.43): Bug fix for SF bug #510631: 5.2 segmentation fault
+	on Linux/i386.	Modifying tab distance in continous wrap mode
+	brought the text display widget in an illegal state.
+
+2002-02-05 13:15  edg
+
+	* source/highlight.c (1.23): Bugfix in color allocation (Thomas
+	Schuetzkowski).
+
+2002-02-03 16:41  edg
+
+	* source/: textBuf.c (1.16), textBuf.h (1.7), textDisp.c (1.16),
+	textDisp.h (1.7): Patches for SF bug #485415: Continuous wrap
+	updating bugs.	Continuous wrap mode combined with variable font
+	sizes resulted in wrong text display calculations.
+
+2002-02-01 15:03  edg
+
+	* source/textDisp.c (1.15): Patch for SF bug #510765: Help>Version
+	scrollbar can get corrupted.  The text display widget used wrong
+	style information for wrapping calculations when using variable
+	width fonts.
+
+2002-01-28 10:43  amai
+
+	* ChangeLog (1.20), source/help.c (1.75), source/nedit.c (1.29),
+	source/server.c (1.13), source/tags.c (1.30), source/textDisp.c
+	(1.14), source/textDrag.c (1.5), source/undo.c (1.8): Add some
+	explicit #include <string.h>
 
 2002-01-23 16:53  tringali
 
