@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.33 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.34 2001/11/02 12:17:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -294,11 +294,11 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 	    if (!(flags & SUPPRESS_CREATE_WARN)) {
 		if (WindowList == window && window->next == NULL)
 	    	    resp = DialogF(DF_WARN, window->shell, 3,
-	    	    	    "Can't open %s:\n%s", "Create", "Cancel",
+	    	    	    "Can't open %s:\n%s", "New File", "Cancel",
 	    	    	    "Exit NEdit", fullname, errorString());
 		else
 	    	    resp = DialogF(DF_WARN, window->shell, 2,
-	    	    	    "Can't open %s:\n%s", "Create", "Cancel",
+	    	    	    "Can't open %s:\n%s", "New File", "Cancel",
 	    	    	    fullname, errorString());
 		if (resp == 2)
 	    	    return FALSE;
