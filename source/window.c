@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.73 2002/11/22 17:51:06 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.74 2003/01/10 15:33:51 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -141,6 +141,7 @@ static unsigned char* sanitizeVirtualKeyBindings();
 static int sortAlphabetical(const void* k1, const void* k2);
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
+static Widget containingPane(Widget w);
 
 /*
 ** Create a new editor window
@@ -312,6 +313,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
+
     appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
                 applicationShellWidgetClass, TheDisplay, al, ac);
     window->shell = appShell;
@@ -335,7 +337,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* The statsAreaForm holds the stats line and the I-Search line. */
     statsAreaForm = XtVaCreateWidget("statsAreaForm", 
             xmFormWidgetClass, mainWin,
-            XmNshadowThickness, STAT_SHADOW_THICKNESS,
             XmNmarginWidth, STAT_SHADOW_THICKNESS,
             XmNmarginHeight, STAT_SHADOW_THICKNESS,
             /* XmNautoUnmanage, False, */
@@ -518,7 +519,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     /* Create paned window to manage split window behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
-            XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
+            XmNseparatorOn, False,
             XmNspacing, 3, XmNsashIndent, -2, NULL);
     window->splitPane = pane;
     XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, NULL, NULL, pane);
@@ -591,7 +592,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     UpdateMinPaneHeights(window);
     
     restoreInsaneVirtualKeyBindings(invalidBindings);
-    
+
     return window;
 }
 
@@ -729,7 +730,7 @@ void SplitWindow(WindowInfo *window)
     for (i=0; i<=window->nPanes; i++) {
         text = i==0 ? window->textArea : window->textPanes[i-1];
         insertPositions[i] = TextGetCursorPos(text);
-        XtVaGetValues(XtParent(text), XmNheight, &paneHeights[i], NULL);
+        XtVaGetValues(containingPane(text),XmNheight,&paneHeights[i],NULL);
         totalHeight += paneHeights[i];
         TextGetScroll(text, &topLines[i], &horizOffsets[i]);
         if (text == window->lastFocus)
@@ -772,7 +773,7 @@ void SplitWindow(WindowInfo *window)
     
     for (i=0; i<=window->nPanes; i++) {
         text = i==0 ? window->textArea : window->textPanes[i-1];
-        setPaneDesiredHeight(XtParent(text), paneHeights[i]);
+        setPaneDesiredHeight(containingPane(text), paneHeights[i]);
     }
 
     /* Re-manage panedWindow to recalculate pane heights & reset selection */
@@ -783,7 +784,8 @@ void SplitWindow(WindowInfo *window)
         text = i==0 ? window->textArea : window->textPanes[i-1];
         TextSetCursorPos(text, insertPositions[i]);
         TextSetScroll(text, topLines[i], horizOffsets[i]);
-        setPaneDesiredHeight(XtParent(text), totalHeight/(window->nPanes+1));
+        setPaneDesiredHeight(containingPane(text),
+                            totalHeight/(window->nPanes+1));
     }
     XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
     
@@ -840,7 +842,8 @@ void ClosePane(WindowInfo *window)
     for (i=0; i<=window->nPanes; i++) {
         text = i==0 ? window->textArea : window->textPanes[i-1];
         insertPositions[i] = TextGetCursorPos(text);
-        XtVaGetValues(XtParent(text), XmNheight, &paneHeights[i], NULL);
+        XtVaGetValues(containingPane(text),
+                            XmNheight, &paneHeights[i], NULL);
         totalHeight += paneHeights[i];
         TextGetScroll(text, &topLines[i], &horizOffsets[i]);
         if (text == window->lastFocus)
@@ -851,7 +854,7 @@ void ClosePane(WindowInfo *window)
     XtUnmanageChild(window->splitPane);
     
     /* Destroy last pane, and make sure lastFocus points to an existing pane */
-    XtDestroyWidget(XtParent(window->textPanes[--window->nPanes]));
+    XtDestroyWidget(containingPane(window->textPanes[--window->nPanes]));
     if (window->nPanes == 0)
         window->lastFocus = window->textArea;
     else if (focusPane > window->nPanes)
@@ -870,7 +873,7 @@ void ClosePane(WindowInfo *window)
        recalculate pane heights */
     for (i=0; i<=window->nPanes; i++) {
         text = i==0 ? window->textArea : window->textPanes[i-1];
-        setPaneDesiredHeight(XtParent(text), paneHeights[i]);
+        setPaneDesiredHeight(containingPane(text), paneHeights[i]);
     }
     XtManageChild(window->splitPane);
     
@@ -879,7 +882,8 @@ void ClosePane(WindowInfo *window)
         text = i==0 ? window->textArea : window->textPanes[i-1];
         TextSetCursorPos(text, insertPositions[i]);
         TextSetScroll(text, topLines[i], horizOffsets[i]);
-        setPaneDesiredHeight(XtParent(text), totalHeight/(window->nPanes+1));
+        setPaneDesiredHeight(containingPane(text),
+                                totalHeight/(window->nPanes+1));
     }
     XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
 
@@ -1572,12 +1576,11 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int cols, int emTabDist, char *delimiters, int wrapMargin,
         int lineNumCols)
 {
-    Widget text, sw, hScrollBar, vScrollBar;
-    Pixel troughColor;
+    Widget text, sw, hScrollBar, vScrollBar, frame;
         
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
-            parent, XmNspacing, 0, XmNpaneMaximum, SHRT_MAX,
+            parent, XmNpaneMaximum, SHRT_MAX,
             XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, NULL); 
     hScrollBar = XtVaCreateManagedWidget("textHorScrollBar",
             xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, 
@@ -1585,7 +1588,9 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
     vScrollBar = XtVaCreateManagedWidget("textVertScrollBar",
             xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL,
             XmNrepeatDelay, 10, NULL);
-    text = XtVaCreateManagedWidget("text", textWidgetClass, sw,
+    frame = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw,
+            XmNshadowType, XmSHADOW_IN, NULL);      
+    text = XtVaCreateManagedWidget("text", textWidgetClass, frame,
             textNbacklightCharTypes, window->backlightCharTypes,
             textNrows, rows, textNcolumns, cols,
             textNlineNumCols, lineNumCols,
@@ -1600,7 +1605,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNautoWrap, window->wrapMode == NEWLINE_WRAP,
             textNcontinuousWrap, window->wrapMode == CONTINUOUS_WRAP,
             textNoverstrike, window->overstrike, NULL);
-    XtVaSetValues(sw, XmNworkWindow, text, XmNhorizontalScrollBar, hScrollBar,
+    XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar,
             XmNverticalScrollBar, vScrollBar, NULL);
     
     /* add focus, drag, cursor tracking, and smart indent callbacks */
@@ -1615,12 +1620,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             
     /* This makes sure the text area initially has a the insert point shown
        ... (check if still true with the nedit text widget, probably not) */
-    XmAddTabGroup(XtParent(text));
-
-    /* Set the little square in the corner between the scroll
-       bars to be the same color as the scroll bar interiors  */
-    XtVaGetValues(vScrollBar, XmNtroughColor, &troughColor, NULL);
-    XtVaSetValues(sw, XmNbackground, troughColor, NULL);
+    XmAddTabGroup(containingPane(text));
     
     /* compensate for Motif delete/backspace problem */
     RemapDeleteKey(text);
@@ -2141,23 +2141,26 @@ void UpdateWMSizeHints(WindowInfo *window)
 void UpdateMinPaneHeights(WindowInfo *window)
 {
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
-    Dimension hsbHeight, swMarginHeight;
+    Dimension hsbHeight, swMarginHeight,frameShadowHeight;
     int i, marginHeight, minPaneHeight;
     Widget hScrollBar;
 
     /* find the minimum allowable size for a pane */
     XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, NULL);
-    XtVaGetValues(XtParent(window->textArea),
+    XtVaGetValues(containingPane(window->textArea),
             XmNscrolledWindowMarginHeight, &swMarginHeight, NULL);
+    XtVaGetValues(XtParent(window->textArea),
+            XmNshadowThickness, &frameShadowHeight, NULL);
     XtVaGetValues(window->textArea, textNmarginHeight, &marginHeight, NULL);
     XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, NULL);
     minPaneHeight = textD->ascent + textD->descent + marginHeight*2 +
-            swMarginHeight*2 + hsbHeight;
+            swMarginHeight*2 + hsbHeight + 2*frameShadowHeight;
     
     /* Set it in all of the widgets in the window */
-    setPaneMinHeight(XtParent(window->textArea), minPaneHeight);
+    setPaneMinHeight(containingPane(window->textArea), minPaneHeight);
     for (i=0; i<window->nPanes; i++)
-        setPaneMinHeight(XtParent(window->textPanes[i]), minPaneHeight);
+        setPaneMinHeight(containingPane(window->textPanes[i]),
+                   minPaneHeight);
 }
 
 /* Add an icon to an applicaction shell widget.  addWindowIcon adds a large
@@ -2453,4 +2456,11 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings
                       strlen((const char*)insaneVirtKeyBindings));
       XFree((char*)insaneVirtKeyBindings);
    }
+}
+
+static Widget containingPane(Widget w)
+{
+    /* The containing pane used to simply be the first parent, but with
+       the introduction of an XmFrame, it's the grandparent. */
+    return XtParent(XtParent(w));
 }

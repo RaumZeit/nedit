@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.38 2002/12/09 17:55:34 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.39 2003/01/10 15:33:53 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -134,6 +134,10 @@ static char *fallbackResources[] = {
         "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
 
+    /* Prevent the file selection box from acting stupid. */
+    "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
+    "*XmFileSelectionBox.textAccelerators:",
+
     /* NEdit-specific widgets.  Theses things should probably be manually
        jammed into the database, rather than fallbacks.  We really want
        the accelerators to be there even if someone creates an app-defaults
@@ -144,10 +148,14 @@ static char *fallbackResources[] = {
     "*text.foreground: black",
     "*text.highlightBackground: red",
     "*text.highlightForeground: black",
+    "*textFrame.shadowThickness: 1",
     "*menuBar.marginHeight: 0",
     "*menuBar.shadowThickness: 1",
     "*pane.sashHeight: 11",
     "*pane.sashWidth: 11",
+    "*pane.marginWidth: 0",
+    "*pane.marginHeight: 0",
+    "*scrolledW*spacing: 0",
     "*text.selectionArrayCount: 3",
     "*helpText.background: #cccccc",
     "*helpText.foreground: black",

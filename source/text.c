@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.36 2002/10/14 18:41:04 n8gray Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.37 2003/01/10 15:33:54 tringali Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -35,7 +35,7 @@ static const char CVSID[] = "$Id: text.c,v 1.36 2002/10/14 18:41:04 n8gray Exp $
 #include "textSel.h"
 #include "textDrag.h"
 #include "nedit.h"
-#include "preferences.h"
+#include "preferences.h" /* XXX should not be here! */
 #include "calltips.h"
 
 #include <stdio.h>
@@ -758,9 +758,6 @@ static void initialize(TextWidget request, TextWidget new)
     int charWidth = fs->max_bounds.width;
     int marginWidth = new->text.marginWidth;
     int lineNumCols = new->text.lineNumCols;
-    Pixmap empty_pixmap;
-    XColor black_color;
-    Display *theDisplay;
     
     /* Set the initial window size based on the rows and columns resources */
     if (request->core.width == 0)
@@ -838,7 +835,12 @@ static void initialize(TextWidget request, TextWidget new)
     XtAddEventHandler((Widget)new, GraphicsExpose, True,
             (XtEventHandler)redisplayGE, (Opaque)NULL);
 
+    /* The text widget should not be accessing preferences here.  It should
+       be a resource, and the window code sets it from the preferences. */
     if (GetPrefTypingHidesPointer()) {
+        Display *theDisplay;
+        Pixmap empty_pixmap;
+        XColor black_color;
         /* Set up the empty Cursor */
         if (empty_cursor == 0) {
             theDisplay = XtDisplay((Widget)new);
@@ -1157,8 +1159,7 @@ static void realize(Widget w, XtValueMask *valueMask,
 }
 
 /*
-** Widget query geometry method ... experimental, not fully tested, does
-** nothing in NEdit since paned window ignores children's suggested geometry
+** Widget query geometry method ... unless asked to negotiate a different size simply return current size.
 */
 static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed,
 	XtWidgetGeometry *answer)
@@ -1172,14 +1173,24 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed,
     int propWidth = (proposed->request_mode & CWWidth) ? proposed->width : 0;
     int propHeight = (proposed->request_mode & CWHeight) ? proposed->height : 0;
     
-    /* suggest a height that is an exact multiple of the line height
-       and at least one line high and 10 chars wide */
     answer->request_mode = CWHeight | CWWidth;
-    answer->width = max(fontWidth * 10, propWidth);
-    answer->height = max(1, ((propHeight - 2*marginHeight) / fontHeight)) *
+    
+    if(proposed->request_mode & CWWidth)
+       /* Accept a width no smaller than 10 chars */
+       answer->width = max(fontWidth * 10, proposed->width);
+    else
+       answer->width = curWidth;
+    
+    if(proposed->request_mode & CWHeight)
+       /* Accept a height no smaller than an exact multiple of the line height
+          and at least one line high */
+       answer->height = max(1, ((propHeight - 2*marginHeight) / fontHeight)) *
     	    fontHeight + 2*marginHeight;
-    /* printf("propWidth %d, propHeight %d, ansWidth %d, ansHeight %d\n",
-    	    propWidth, propHeight, answer->width, answer->height); */
+    else
+       answer->height = curHeight;
+    
+    /*printf("propWidth %d, propHeight %d, ansWidth %d, ansHeight %d\n",
+    	    propWidth, propHeight, answer->width, answer->height);*/
     if (propWidth == answer->width && propHeight == answer->height)
     	return XtGeometryYes;
     else if (answer->width == curWidth && answer->height == curHeight)
