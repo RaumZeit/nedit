@@ -1149,4 +1149,14 @@ it by supplying translations for the keysyms that NEdit actually sees,
 binding them to the action routines that you want activated when you press
 that key.
 
-$Id: faq.txt,v 1.3 2002/09/26 12:37:37 ajhood Exp $
+> KP Enter does no longer executes the current line or selected text as a
+> shell command. How can I get this behavior back?
+
+It was considered dangerous to have a commonly used key potentially execute
+arbitrary shell commands unintentionally (think rm -Rf). Therefore the
+shortcut was changed to Ctrl+KP Enter. In case you want the old binding
+back, you can add the following lines to your .Xdefaults or .Xresources
+file:
+
+   nedit*shellMenu.executeCommandLine.accelerator: <Key>KP_Enter",
+   nedit*shellMenu.executeCommandLine.acceleratorText: KP Enter",

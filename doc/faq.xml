@@ -2,7 +2,7 @@
 
 <!DOCTYPE faq SYSTEM "faq.dtd" >
 
-<!-- $Id: faq.xml,v 1.4 2002/09/26 12:37:37 ajhood Exp $ -->
+<!-- $Id: faq.xml,v 1.5 2002/12/13 17:20:25 edg Exp $ -->
 
 
 <!--
@@ -2068,6 +2068,26 @@ key.</p>
 </a>
 </qna>
 
+<qna id="N1319">
+<q>KP Enter does no longer executes the current line or selected text as
+   a shell command. How can I get this behavior back?</q>
+
+<a>
+
+<p>It was considered dangerous to have a commonly used key potentially
+   execute arbitrary shell commands unintentionally (think rm -Rf). Therefore
+   the shortcut was changed to Ctrl+KP Enter.
+   
+   In case you want the old binding back, you can add the following lines
+   to your .Xdefaults or .Xresources file:</p>
+   
+<pre>
+   nedit*shellMenu.executeCommandLine.accelerator: &lt;Key&gt;KP_Enter",
+   nedit*shellMenu.executeCommandLine.acceleratorText: KP Enter",
+</pre>
+
+</a>
+</qna>
 </section>
 
 
