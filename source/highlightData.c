@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.58 2003/12/28 16:26:58 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.59 2003/12/28 17:25:55 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -443,17 +443,17 @@ static char *DefaultPatternSets[] = {
 	Parameter:\"#[0-9]*\":::Text Arg::\n\
 	Special Chars:\"[{}&]\":::Keyword::\n\
 	Escape Chars:\"\\\\[$&%#_{}]\":::Text Escape::\n\
-	Super Sub 1 Char:\"(?:\\^|_)(?:\\\\\\l+|[^{\\\\])\":::Text Arg2::\n\
+	Super Sub 1 Char:\"(?:\\^|_)(?:\\\\\\l+|#\\d|[^{\\\\])\":::Text Arg2::\n\
 	Verbatim Begin End:\"\\\\begin\\{verbatim\\*?}\":\"\\\\end\\{verbatim\\*?}\"::Plain::\n\
 	Verbatim BG Color:\"&\":\"&\"::Keyword:Verbatim Begin End:C\n\
 	Verbatim:\"(\\\\verb\\*?)([^\\l\\s\\*]).*?(\\2)\":::Plain::\n\
 	Verbatim Color:\"\\1\\2\\3\":\"\"::Keyword:Verbatim:C\n\
-	Inline Math:\"\\$|\\\\\\(\":\"\\$|\\\\\\)\":\"\\\\\\(|(?n[^\\\\]%)\":LaTeX Math::\n\
+	Inline Math:\"(?<!#\\d)(?:\\$|\\\\\\()\":\"\\$|\\\\\\)\":\"\\\\\\(|(?n[^\\\\]%)\":LaTeX Math::\n\
 	Math Color:\"&\":\"&\"::Keyword:Inline Math:C\n\
 	Math Escape Chars:\"\\\\\\$\":::Text Escape:Inline Math:\n\
 	No Arg Command:\"\\\\(?:left|right)[\\[\\]{}()]\":::Text Key::\n\
 	Command:\"[_^]|[\\\\@](?:a'|a`|a=|[A-Za-z]+\\*?|\\\\\\*|[-@_='`^\"\"|\\[\\]*:!+<>/~.,\\\\ ])\":\"nevermatch\":\"[^{[(]\":Text Key::\n\
-	Cmd Brace Args:\"\\{\":\"}\":\"(?n[^\\\\]%)\":Text Arg2:Command:\n\
+	Cmd Brace Args:\"\\{\":\"}\":\"(?<=^%)|\\\\]|\\$\\$|\\\\end\\{equation\\}\":Text Arg2:Command:\n\
 	Brace Color:\"&\":\"&\"::Text Arg:Cmd Brace Args:C\n\
 	Cmd Paren Args:\"\\(\":\"\\)\":\"$\":Text Arg2:Command:\n\
 	Paren Color:\"&\":\"&\"::Text Arg:Cmd Paren Args:C\n\

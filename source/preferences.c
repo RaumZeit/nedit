@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.103 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.104 2003/12/28 17:25:55 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -501,6 +501,12 @@ static PrefDescripRec PrefDescrip[] = {
 	Comments>! Uncomment@X Resources:::R: {\n\
 		replace_in_selection(\"(^[ \\\\t]*!)(.*)$\", \"\\\\2\", \"regex\")\n\
 	}\n\
+        Comments>% Comment@LaTeX:::R: {\n\
+                replace_in_selection(\"^.*$\", \"%&\", \"regex\")\n\
+                }\n\
+        Comments>% Uncomment@LaTeX:::R: {\n\
+                replace_in_selection(\"(^[ \\\\t]*%)(.*)$\", \"\\\\2\", \"regex\")\n\
+                }\n\
 	Comments>Bar Comment@C:::R: {\n\
 		if ($selection_left != -1) {\n\
 		    dialog(\"Selection must not be rectangular\")\n\
@@ -639,7 +645,7 @@ static PrefDescripRec PrefDescrip[] = {
         Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
         Fortran:.F .F77 .FOR:::::::\n\
         Java:.JAVA:::::::\n\
-        LaTeX:.TEX .STY .CLS .DTX .INS:::::::\n\
+        LaTeX:.TEX .STY .CLS .LTX .INS:::::::\n\
         Lex:.lex:::::::\n\
         Makefile:MAKEFILE:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
@@ -668,7 +674,7 @@ static PrefDescripRec PrefDescrip[] = {
         Fortran:.f .f77 .for:::::::\n\
         Java:.java:::::::\n\
         JavaScript:.js:::::::\n\
-        LaTeX:.tex .sty .cls .dtx .ins:::::::\n\
+        LaTeX:.tex .sty .cls .ltx .ins:::::::\n\
         Lex:.lex:::::::\n\
         Makefile:Makefile makefile .gmk:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
