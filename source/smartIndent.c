@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.30 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.31 2004/01/29 11:03:39 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1303,6 +1303,7 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
     
     /* pop down and destroy the dialog */
+    CloseAllPopupsFor(SmartIndentDialog.shell);
     XtDestroyWidget(SmartIndentDialog.shell);
 }
 
@@ -1397,6 +1398,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
+    CloseAllPopupsFor(SmartIndentDialog.shell);
     XtDestroyWidget(SmartIndentDialog.shell);
 }
 
