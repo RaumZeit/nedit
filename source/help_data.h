@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 16, 2004 (Do NOT edit!)
+                 Generated on Aug 20, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -1242,10 +1242,10 @@ static char * htxt_basicSyntax [] = {
 "     >    Right word boundary\n",
 "     \\B   Not a word boundary\n",
 "\01I\n",
-"Note that the \\B token ensures that the left and right characters are both ",
-"word characters, or that both left and right characters are non-word ",
-"characters.  The left word anchor checks whether the previous character ",
-"is not a word character and the next character is.  The right word anchor ",
+"Note that the \\B token ensures that neither the left nor the right ",
+"character are delimiters, or that both left and right characters are ",
+"delimiters.  The left word anchor checks whether the previous character ",
+"is a delimiter and the next character is not.  The right word anchor ",
 "works in a similar way. ",
 "\n\n",
 "\01RQuantifiers\01I",
@@ -5495,7 +5495,7 @@ HelpMenu H_M [] =
 Href H_R [] =
 {
     { &H_R[ 1],     54, HELP_TAGS,                "ctag support", "ctags" },
-    { NULL,       5638, HELP_BASICSYNTAX,         "Alternation", "alternation" }
+    { NULL,       5625, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Aug 16, 2004\n";
+static const char * NEditVersion = "NEdit release of Aug 20, 2004\n";
