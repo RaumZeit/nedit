@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.49 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.50 2004/09/02 08:50:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -436,7 +436,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNbottomOffset, 4, NULL);
     ucd->sameOutBtn = XtVaCreateManagedWidget("sameOutBtn",
     	    xmToggleButtonWidgetClass, outBox,
-    	    XmNlabelString, s1=MKSTRING("same window"),
+    	    XmNlabelString, s1=MKSTRING("same document"),
     	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -453,7 +453,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->winOutBtn = XtVaCreateManagedWidget("winOutBtn", xmToggleButtonWidgetClass,
     	    outBox,
-    	    XmNlabelString, s1=MKSTRING("new window"),
+    	    XmNlabelString, s1=MKSTRING("new document"),
     	    XmNmnemonic, 'n',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -492,7 +492,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->winInpBtn = XtVaCreateManagedWidget("winInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
-    	    XmNlabelString, s1=MKSTRING("window"),
+    	    XmNlabelString, s1=MKSTRING("document"),
     	    XmNmnemonic, 'w',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
