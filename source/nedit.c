@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.75 2004/07/15 17:06:01 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.76 2004/07/15 18:30:43 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -90,6 +90,9 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void patchResourcesForVisual(void);
 static void patchResourcesForKDEbug(void);
 static void patchLocaleForMotif(void);
+#ifdef LESSTIF_VERSION
+static void bogusWarningFilter(String);
+#endif
 
 WindowInfo *WindowList = NULL;
 Display *TheDisplay = NULL;
@@ -392,6 +395,11 @@ int main(int argc, char **argv)
     /* Set up a warning handler to trap obnoxious Xt grab warnings */
     SuppressPassiveGrabWarnings();
 
+#ifdef LESSTIF_VERSION
+    /* Set up a handler to suppress bogus Lesstif warning messages */
+    XtAppSetWarningHandler(context, bogusWarningFilter);
+#endif
+    
     /* Set up default resources if no app-defaults file is found */
     XtAppSetFallbackResources(context, fallbackResources);
     
@@ -999,3 +1007,34 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
 
     return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
 }
+
+#ifdef LESSTIF_VERSION
+/*
+** Warning handler that suppresses harmless but annoying warnings generated
+** by non-production Lesstif versions.
+*/
+static void bogusWarningFilter(String message)
+{
+  const char* bogusMessages[] = {
+    "XmFontListCreate() is an obsolete function!",
+    "No type converter registered for 'String' to 'PathMode' conversion.",
+    "XtRemoveGrab asked to remove a widget not on the list",
+    NULL };
+  const char **bogusMessage = &bogusMessages[0]; 
+  
+  while (*bogusMessage) {
+      size_t bogusLen = strlen(*bogusMessage);
+      if (strncmp(message, *bogusMessage, bogusLen) == 0) {
+#ifdef DEBUG_LESSTIF_WARNINGS
+         /* Developers may want to see which messages are suppressed. */
+         fprintf(stderr, "[SUPPRESSED] %s\n", message);
+#endif        
+         return;
+      }
+      ++bogusMessage;
+  }
+  
+  /* An unknown message. Keep it. */
+  fprintf(stderr, "%s\n", message);
+}
+#endif /* LESSTIF_VERSION */
