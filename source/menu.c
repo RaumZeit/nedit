@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.106 2004/06/28 08:23:22 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.107 2004/07/13 11:44:17 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -5175,7 +5175,7 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
 
     n = 0;
     XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
-    menu = XmCreatePopupMenu(parent, "tabContext", args, n);
+    menu = CreatePopupMenu(parent, "tabContext", args, n);
     
     createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new_tab", SHORT);
     createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
