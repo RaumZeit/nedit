@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.7 2003/06/06 18:04:17 edg Exp $ */
+/* $Id: rangeset.c,v 1.8 2003/11/22 13:03:40 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -62,10 +62,11 @@ struct _Rangeset {
     Range *ranges;			/* the ranges table */
     unsigned char label;		/* a number 1-63 */
 
-    int color_set;			/* 0: unset; 1: set; -1: invalid */
+    signed char color_set;              /* 0: unset; 1: set; -1: invalid */
     char *color_name;			/* the name of an assigned color */
     Pixel color;			/* the value of a particular color */
     textBuffer *buf;			/* the text buffer of the rangeset */
+    char *name;                         /* name of rangeset */
 };
 
 struct _RangesetTable {
@@ -229,7 +230,12 @@ void RangesetEmpty(Rangeset *rangeset)
     if (rangeset->color_name)
 	XtFree(rangeset->color_name);
 
+    if (rangeset->name) {
+        XtFree(rangeset->name);
+    }
+
     rangeset->color_name = (char *)0;
+    rangeset->name = (char *)0;
     rangeset->ranges = RangesFree(rangeset->ranges);
 }
 
@@ -239,15 +245,16 @@ void RangesetEmpty(Rangeset *rangeset)
 ** Initialise a new range set.
 */
 
-void RangesetInit(Rangeset *rangeset, unsigned char label, textBuffer *buf)
+void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf)
 {
-    rangeset->label = label;			/* a letter A-Z */
+    rangeset->label = (unsigned char)label;     /* a letter A-Z */
     rangeset->maxpos = 0;			/* text buffer maxpos */
     rangeset->last_index = 0;			/* a place to start looking */
     rangeset->n_ranges = 0;			/* how many ranges in ranges */
     rangeset->ranges = (Range *)0;		/* the ranges table */
 
     rangeset->color_name = (char *)0;
+    rangeset->name = (char *)0;
     rangeset->color_set = 0;
     rangeset->buf = buf;
 
@@ -334,7 +341,8 @@ static int weighted_at_or_before(int *table, int base, int len, int val)
 	return hi;
 
     while (lo <= hi) {
-	mid = lo + (hi - lo) * (max - val) / (max - min);
+        /* Beware of integer overflow when multiplying large numbers! */
+        mid = lo + (int)((hi - lo) * (double)(max - val) / (max - min));
 	/* we won't worry about min == max - values should be unique */
 
 	if (val == table[mid])
@@ -687,21 +695,23 @@ int RangesetGetNRanges(Rangeset *rangeset)
 /* 
 ** Get information about rangeset.
 */
-void RangesetGetInfo(Rangeset *rangeset, int *defined, unsigned char *label, 
-        int *count, char **color, char **mode)
+void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
+        int *count, char **color, char **name, char **mode)
 {
     if (rangeset == NULL) {
         *defined = False;
         *label = 0;
         *count = 0;
         *color = "";
+        *name = "";
         *mode = "";
     }
     else {
         *defined = True;
-        *label = rangeset->label;
+        *label = (int)rangeset->label;
         *count = rangeset->n_ranges;
         *color = rangeset->color_name ? rangeset->color_name : "";
+        *name = rangeset->name ? rangeset->name : "";
         *mode = rangeset->update_name;
     }
 }
@@ -750,7 +760,10 @@ RangesetTable *RangesetTableAlloc(textBuffer *buffer)
     }
 
     table->n_set = 0;
-    BufAddModifyCB(buffer, RangesetBufModifiedCB, table);
+    table->list[0] = '\0';
+    /* Range sets must be updated before the text display callbacks are
+       called to avoid highlighted ranges getting out of sync. */
+    BufAddHighPriorityModifyCB(buffer, RangesetBufModifiedCB, table);
     return table;
 }
 
@@ -771,7 +784,7 @@ RangesetTable *RangesetTableFree(RangesetTable *table)
 ** Find a range set given its label in the table.
 */
 
-int RangesetFindIndex(RangesetTable *table, unsigned char label, int must_be_active)
+int RangesetFindIndex(RangesetTable *table, int label, int must_be_active)
 {
     int i;
     unsigned char *p_label;
@@ -812,7 +825,7 @@ static void RangesetTableListSet(RangesetTable *table)
 
 int RangesetLabelOK(int label)
 {
-    return strchr((char*)rangeset_labels, (char)label) != NULL;
+    return strchr((char*)rangeset_labels, label) != NULL;
 }
 
 /*
@@ -895,20 +908,20 @@ int nRangesetsAvailable(RangesetTable *table)
 
 int RangesetCreate(RangesetTable *table)
 {
-    unsigned char label;
+    int label;
     int setIndex;
     
     size_t firstAvailableIndex = strspn((char*)rangeset_labels, (char*)table->list);
 
     if(firstAvailableIndex >= sizeof(rangeset_labels))
-        return '\0';
+        return 0;
     
     label = rangeset_labels[firstAvailableIndex];
     
     setIndex = RangesetFindIndex(table, label, 0);
 
     if (setIndex < 0)
-	return '\0';
+        return 0;
 
     if (table->active[setIndex])
 	return label;
@@ -926,7 +939,7 @@ int RangesetCreate(RangesetTable *table)
 
 Rangeset *RangesetForget(RangesetTable *table, int label)
 {
-    int set_ind = RangesetFindIndex(table, (unsigned char)label, 1);
+    int set_ind = RangesetFindIndex(table, label, 1);
 
     if (set_ind < 0)
 	return (Rangeset *)0;
@@ -946,7 +959,7 @@ Rangeset *RangesetForget(RangesetTable *table, int label)
 
 Rangeset *RangesetFetch(RangesetTable *table, int label)
 {
-    int rangesetIndex = RangesetFindIndex(table, (unsigned char)label, 0);
+    int rangesetIndex = RangesetFindIndex(table, label, 0);
 
     if (rangesetIndex < 0)
 	return (Rangeset *)NULL;
@@ -984,8 +997,9 @@ void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 	char *deletedText, void *cbArg)
 {
     RangesetTable *table = (RangesetTable *)cbArg;
-
-    RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
+    if ((nInserted != nDeleted) || BufCmp(table->buf, pos, nInserted, deletedText) != 0) {
+        RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1048,6 +1062,36 @@ int RangesetAssignColorName(Rangeset *rangeset, char *color_name)
 }
 
 /*
+** Assign a name to a rangeset via the rangeset table.
+*/
+
+int RangesetAssignName(Rangeset *rangeset, char *name)
+{
+    char *cp;
+
+    if (name && name[0] == '\0')
+        name = (char *)0;
+
+    /* store new name value */
+    if (name) {
+        cp = XtMalloc(strlen(name) + 1);
+        strcpy(cp, name);
+    }
+    else {
+        cp = name;
+    }
+
+    /* free old name value */
+    if (rangeset->name) {
+        XtFree(rangeset->name);
+    }
+
+    rangeset->name = cp;
+
+    return 1;
+}
+
+/*
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
@@ -1067,6 +1111,15 @@ int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok)
 char *RangesetGetColorName(Rangeset *rangeset)
 {
     return rangeset->color_name;
+}
+
+/*
+** Return the name, if any.
+*/
+
+char *RangesetGetName(Rangeset *rangeset)
+{
+    return rangeset->name;
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.50 2003/10/22 20:05:12 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.51 2003/11/22 13:03:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -88,6 +88,7 @@ static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void patchResourcesForVisual(void);
 static void patchResourcesForKDEbug(void);
+static void patchLocaleForMotif(void);
 
 WindowInfo *WindowList = NULL;
 Display *TheDisplay = NULL;
@@ -726,7 +727,7 @@ static void patchResourcesForVisual(void)
 ** invalid entries and silently replaces them with NEdit's default values where
 ** necessary. Without this, NEdit will typically write several warnings to 
 ** the terminal (Cannot convert string "FONTLIST" to type FontStruct etc) and
-** fall back on some really uggly colors and fonts.
+** fall back on some really ugly colors and fonts.
 */
 static void patchResourcesForKDEbug(void)
 {
@@ -801,35 +802,55 @@ static void patchResourcesForKDEbug(void)
 ** versions of Linux distros (e.g., RedHat 8) set the default language to
 ** to have "UTF-8" at the end, so users were seeing these crashes.
 */
-static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
+static void patchLocaleForMotif()
 {
-#define MAX_ENV_LENGTH 1024
-    char newlocale[MAX_ENV_LENGTH];
-    strcpy(newlocale, xnl);
-
 #ifndef LESSTIF_VERSION
+    const char *ctype;
+    char ctypebuf[1024];
+    char *utf_start;
+    
+    /* We have to check LC_CTYPE specifically here, because the system
+       might specify different locales for different categories (why
+       anyone would want to do this is beyond me).  As far as I can
+       tell, only LC_CTYPE causes OSF Motif to crash.  If it turns out
+       others do, we'll have to iterate over a list of locale cateogries
+       and patch every one of them. */
+       
+    ctype = setlocale(LC_CTYPE, NULL);
+    
+    if (!ctype)
+        return;
+
+    strncpy(ctypebuf, ctype, sizeof ctypebuf);
+
+    if ((utf_start = strstr(ctypebuf, ".utf8")) || 
+        (utf_start = strstr(ctypebuf, ".UTF-8")))
     {
-        const char *lang = getenv("LANG");
-
-        if (xnl && *xnl == '\0' && lang)
-        {
-            char *utf_start = 0;
-            strncpy(newlocale, lang, MAX_ENV_LENGTH - 1);
-            newlocale[MAX_ENV_LENGTH - 1] = '\0';
-
-            if ((utf_start = strstr(newlocale, ".utf8")) || 
-                (utf_start = strstr(newlocale, ".UTF-8")))
-            {
-                *utf_start = '\0'; /* Samurai chop */
-                XtWarning("UTF8 locale not supported.");
-            }
-        }
+        *utf_start = '\0'; /* Samurai chop */
+        XtWarning("UTF8 locale not supported.");
+        setlocale(LC_CTYPE, ctypebuf);
     }
 #endif
-        
-    if (! setlocale(LC_ALL, newlocale)) {
+}
+
+
+/*
+** Same as the default X language procedure, except we check if Motif can
+** handle the locale as well.
+*/
+
+static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
+{
+    /* "xnl" will be set if the user passes in a new language via the
+       "-xnllanguage" flag.  If it's empty, then setlocale will get
+       the default locale by some system-dependent means (usually, 
+       reading some environment variables). */
+
+    if (! setlocale(LC_ALL, xnl)) {
         XtWarning("locale not supported by C library, locale unchanged");
     }
+
+    patchLocaleForMotif();
 
     if (! XSupportsLocale()) {
         XtWarning("locale not supported by Xlib, locale set to C");

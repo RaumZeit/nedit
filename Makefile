@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2003/05/20 00:27:55 n8gray Exp $
+# $Id: Makefile,v 1.12 2003/11/22 13:03:38 edg Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor
@@ -24,7 +24,7 @@ all:
 	@- (cd source; if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
 	(cd util; \
-	    $(MAKE) -f Makefile.$@ verify_config; \
+	    $(MAKE) -f Makefile.$@ verify_config && \
 	    $(MAKE) -f Makefile.$@ libNUtil.a)
 	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
 
@@ -47,7 +47,7 @@ realclean: clean
 #
 # The following is for creating binary packages of NEdit.
 #
-RELEASE=nedit-5.4DEV-`uname -s`-`uname -p`
+RELEASE=nedit-5.5DEV-`uname -s`-`uname -p`
 BINDIST-FILES=source/nedit source/nc README COPYRIGHT ReleaseNotes doc/nedit.doc doc/nedit.html doc/nedit.man doc/nc.man doc/faq.txt
 
 dist-bin: $(BINDIST-FILES)

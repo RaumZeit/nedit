@@ -1,4 +1,4 @@
-# $Id: Makefile.bsdi,v 1.5 2003/05/20 00:27:55 n8gray Exp $
+# $Id: Makefile.bsdi,v 1.6 2003/11/22 13:03:39 edg Exp $
 #
 # Makefile for BSD/386
 #
@@ -20,4 +20,4 @@ ARFLAGS=-ur
 
 include Makefile.common
 
-verify_config:
+verify_config: check_tif_rule

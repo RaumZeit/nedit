@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.19 2003/04/03 19:05:37 jlous Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.20 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -170,7 +170,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
     /* If the resource database file existed, add a resource to the database
        which notes this fact, so that programs will know whether the file
        was really ever found or not */
-    if ((fp = fopen(fullName, "r")) != NULL) {
+    if (fullName && (fp = fopen(fullName, "r")) != NULL) {
 	char *rsrcName = (char*)XtMalloc(strlen(appName) + 14);
     	fclose(fp);
 	sprintf(rsrcName, "%s.prefFileRead", appName);

@@ -1,6 +1,6 @@
-                    NEdit Version 5.4beta,  May 2003
+                    NEdit Version 5.5DEV, November 2003
 
-$Id: README,v 1.31 2003/05/12 11:16:05 edg Exp $
+$Id: README,v 1.32 2003/11/22 13:03:38 edg Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -27,7 +27,7 @@ NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
 Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
 Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
 LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
-and Andrew Hood.
+Andrew Hood, and Nathaniel Gray.
 
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the University of
@@ -50,7 +50,7 @@ Version 5.4 offers several new features:
   - Rangesets
   - Backlighting
   - Highlighting information macros
-  - Full mouse wheel support
+  - Full mouse wheel support (on XFree86 servers)
   - Look-behind matching for regular expressions
   - Regular expression and syntax highlighting speed-ups
   - Flexible resource file location
@@ -243,6 +243,12 @@ Known bugs which might show off in NEdit linked with LessTif include:
 
 Linux Systems
 
+Red Hat Linux, as of version 8.0, no longer automatically reads X resources out
+of the ~/.Xdefaults file.  Instead, it reads a file named ~/.Xresources.  Any
+customizations stored in ~/.Xdefaults will not be honored, for all X
+applications.  To fix this, copy the resources into ~/.Xdefaults, or link the
+files together.
+
 The default key bindings for arrow keys in fvwm interfere with some of the
 arrow key bindings in NEdit, particularly, Ctrl+Arrow and Alt+Arrow.  You
 may want to re-bind them either in NEdit (see Customizing -> Key Binding
@@ -253,6 +259,13 @@ file, which is necessary for running Motif programs.  When XKeysymDB is
 missing, NEdit will spew screenfulls of messages about translation table syntax
 errors, and many keys won't work.  You can obtain a copy of the XKeysymDB file
 from the contrib sub-directory of the NEdit distribution directory.  
+
+
+Mac OS X Systems
+
+You will probably need to edit makefiles/Makefile.macosx to point NEdit at
+the correct version of Motif.  There are comments in the makefile to help you
+do this correctly.
 
 
 SGI Systems
@@ -357,6 +370,22 @@ non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
 
 * Upgrading from 5.3 to 5.4
 
+  - Resource syntax
+  
+    Basic colors, like the text foreground and background, are now true
+    preferences.  A new dialog (Preferences > Default Settings > Colors) is
+    provided to change them, previously only changeable from X resources. 
+    Upon starting, NEdit will migrate any custom colors you have set from
+    the old X resources.  Most users will not need to do anything.
+    
+    However, if you used X resources to dynamically change the colors on
+    different invocations, you will need to use the new application-level
+    resources instead.  See the .nedit file for details.
+      
+    In 5.3, color resources needed to be qualified by "nedit*" in order to
+    prevent problems when the deepest color visual was not the default. 
+    This is no longer necessary, and the qualification may be removed.
+    
   - New location of configuration files
   
     The default location and name of NEdit's resource files has been changed.
@@ -372,6 +401,7 @@ non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
     For backward compatibility reasons, NEdit continues to use the old 
     convention when these files are already present. No attempt is made
     to force the user to adopt the new convention. 
+
     Users that would like to migrate to the new setup can do so manually 
     by moving and renaming the files.
     
@@ -387,6 +417,7 @@ non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
     boundary, which is obviously rather unintuitive. This has been corrected 
     in 5.4: the boundary between two characters is a word boundary, only if
     exactly one of them is a word character.
+
     Several of the built-in syntax highlighting patterns (implicitly) relied 
     on the old word boundary interpretation and they have been corrected too.
     
@@ -395,6 +426,7 @@ non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
     them in order not to loose any customizations. It is left up to the user
     to correct his/her customized patterns manually (using the corrected 
     built-in patterns as a guideline). 
+
     The following is a list of all language modes and patterns that have been
     corrected:
     
@@ -443,8 +475,10 @@ non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
   5.2. NEdit will try to insert additional entries for the newly supported
   language modes and syntax highlighting patterns (CSS, Regex, and XML) and
   highlight styles (Pointer, Regex, Warning).
+
   Moreover, the formerly boolean 'showMatching' option will silently be
   converted to a tri-state value.
+
   Users that have customized some of the syntax highlighting patterns may
   consider restoring the default patterns, as many of them have been improved
   considerably.
@@ -497,6 +531,12 @@ on subscribing under Help -> Mailing Lists.
 
 REPORTING BUGS
 
+
+The preferred way to report bugs is to submit an entry on our web-based
+bug tracker at:
+
+  http://sourceforge.net/projects/nedit/
+
 The NEdit developers subscribe to both discuss@nedit.org and develop@nedit.org,
 either of which may be used for reporting bugs.  If you're not sure, or you
 think the report might be of interest to the general NEdit user community,
@@ -504,6 +544,3 @@ send the report to discuss@nedit.org.  If it's something obvious and boring,
 like we misspelled "anemometer" in the on-line help, send it to develop.  If
 you don't want to subscribe to these lists, please add a note to your mail
 about cc'ing you on responses.
-An alternative way to report bugs is to submit an entry on our web-based
-bug tracker at
-  http://sourceforge.net/projects/nedit/

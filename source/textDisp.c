@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.53 2003/05/16 16:47:21 slobasso Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.54 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -232,6 +232,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->selectBGPixel = selectBGPixel;
     textD->highlightBGPixel = highlightBGPixel;
     textD->lineNumFGPixel = lineNumFGPixel;
+    textD->cursorFGPixel = cursorFGPixel;
     textD->wrapMargin = wrapMargin;
     textD->continuousWrap = continuousWrap;
     allocateFixedFontGCs(textD, fontStruct, bgPixel, fgPixel, selectFGPixel,
@@ -395,10 +396,14 @@ void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP,
     Display *d = XtDisplay(textD->w);
     
     /* Update the stored pixels */
-    textD->lineNumFGPixel = lineNoFgP;
+    textD->fgPixel = textFgP;
     textD->bgPixel = textBgP;
+    textD->selectFGPixel = selectFgP;
     textD->selectBGPixel = selectBgP;
+    textD->highlightFGPixel = hiliteFgP;
     textD->highlightBGPixel = hiliteBgP;
+    textD->lineNumFGPixel = lineNoFgP;
+    textD->cursorFGPixel = cursorFgP;
 
     releaseGC(textD->w, textD->gc);
     releaseGC(textD->w, textD->selectGC);

@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.10 2003/03/20 13:02:38 edg Exp $ */
+/* $Id: highlight.h,v 1.11 2003/11/22 13:03:39 edg Exp $ */
 
 #ifndef NEDIT_HIGHLIGHT_H_INCLUDED
 #define NEDIT_HIGHLIGHT_H_INCLUDED
@@ -50,6 +50,7 @@ void* GetHighlightInfo(WindowInfo *window, int pos);
 highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
+int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName);
 char *HighlightNameOfCode(WindowInfo *window, int hCode);
 char *HighlightStyleOfCode(WindowInfo *window, int hCode);
 char *HighlightColorOfCode(WindowInfo *window, int hCode);

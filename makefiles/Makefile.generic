@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.10 2003/05/20 00:27:56 n8gray Exp $
+# $Id: Makefile.generic,v 1.11 2003/11/22 13:03:39 edg Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -53,13 +53,16 @@ AR=ar
 #		    resort default.  You can redefine the print command to be
 #		    whatever you like via X resource settings).
 #
-# USE_ACCESS	    Normally, NEdit determines the accessibility of a file, by
-#		    trying to open it.  However one of the more popular
+# DONT_USE_ACCESS   NEdit used to determine the accessibility of a file by
+#		    trying to open it.  However, one of the more popular
 #		    commercial configuration management tools, ClearCase,
 #		    considers opening a file in read/write mode to be a
-#		    modification, even if no writing is ever done.  Users who
-#		    have trouble with ClearCase thinking their files have been
-#		    modified when they haven't, should add this flag.
+#		    modification, even if no writing is ever done.  This lead
+#		    to users having trouble with ClearCase thinking their
+#		    files had been modified when they hadn't.  NEdit now uses
+#		    access() to determine whether a file is writable (in a
+#		    safe way).  The old behavior can be restored by defining
+#		    DONT_USE_ACCESS.
 #
 # ROWCOLPATCH	    Patches around a problem in several versions the Solaris
 #   	    	    Motif library which can cause crashes when a wiget is

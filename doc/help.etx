@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.51 2003/11/16 13:50:12 yooden Exp $
+.. $Id: help.etx,v 1.52 2003/11/22 13:03:38 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2742,13 +2742,18 @@ Range Sets
   Changes the range set r so that it contains all ranges not in r. Does not
   return a value.
 
+**rangeset_get_by_name( name )**
+  Returns an array of active rangeset identifiers, with integer keys starting at 0,
+  whose name matches name.
+
 **rangeset_info( r )**
   Returns an array containing information about the range set r. The array
   has the following keys: **defined** (whether a range set with identifier
   r is defined), **count** (the number of ranges in the range set), **color**
   (the current background color of the range set, an empty string if the
-  range set has no color), and **mode** (the name of the modify-response
-  mode of the range set).
+  range set has no color), **name** (the user supplied name of the range set,
+  an empty string if the range set has no name), and **mode** (the name of the
+  modify-response mode of the range set).
 
 **rangeset_range( r, [index] )**
   Returns details of a specific range in the range set r.  The range is 
@@ -2771,6 +2776,9 @@ Range Sets
   color is at empty string, removes the coloring of r.  No check is made 
   regarding the validity of color: if the color is invalid (a bad name,
   or not supported by the hardware) this has unpredictable effects.
+
+**rangeset_set_name( r, name )**
+  Apply the name to the range set r.
 
 **rangeset_set_mode( r, type )**
   Changes the behaviour of the range set r when modifications to the text
@@ -2795,21 +2803,45 @@ Highlighting Information
   Note that if any of the functions is used while in Plain mode or while syntax
   highlighting is off, the behaviour is undefined.
 
-**get_pattern( pos )**
-**get_pattern( pattern_name )**
+**get_pattern_by_name( pattern_name )**
+  Returns an array containing the pattern attributes for pattern 'pattern_name'.
+  The elements in this array are:
+
+* **style** -- Highlight style name
+
+  If 'pattern_name' is invalid, an empty array is returned.
+
+**get_pattern_at_pos( pos )**
   Returns an array containing the pattern attributes of the character at
-  position 'pos' or for pattern 'pattern_name'. The elements in this array are:
+  position 'pos'. The elements in this array are:
 
 * **pattern** -- Highlight pattern name
 * **style** -- Highlight style name
-* **extension** -- The length in the text which uses the same highlighting pattern. NOTE: This element is not set if the function's parameter is a pattern name.
+* **extent** -- The length in the text which uses the same highlighting pattern
 
-  If 'position' or 'pattern_name' is invalid, an empty array is returned.
+  The 'extent' value is measured from position 'pos' going right/down (forward
+  in the file) only.
 
-**get_style( pos )**
-**get_style( style_name )**
+  If 'pos' is invalid, an empty array is returned.
+
+**get_style_by_name( style_name )**
+  Returns an array containing the style attributes for style 'style_name'.
+  The elements in this array are:
+
+* **bold** -- '1' if style is bold, '0' otherwise
+* **italic** -- '1' if style is italic, '0' otherwise
+* **color** -- Name of the style's color
+* **background** -- Name of the background color, if any
+
+  The colors use the names specified in the color definitions for the style.
+  These will either be names matching those the X server recognises, or RGB
+  (red/green/black) specifications.
+
+  If 'style_name' is invalid, an empty array is returned.
+
+**get_style_at_pos( pos )**
   Returns an array containing the style attributes of the character at
-  position 'pos' or for style 'style_name'. The elements in this array are:
+  position 'pos'. The elements in this array are:
 
 * **style** -- Name of the highlight style
 * **bold** -- '1' if style is bold, '0' otherwise
@@ -2818,14 +2850,19 @@ Highlighting Information
 * **rgb** -- Color's RGB values ('#rrggbb')
 * **background** -- Name of the background color, if any
 * **back_rgb** -- Background color's RGB values ('#rrggbb')
+* **extent** -- The length in the text which uses the same highlight style
 
-  There are two things to consider with regard to the colors: First, the values
-  for 'color' and/or 'background' are empty if the color values are specified
-  using RGB values. Second, the values for 'rgb' and 'back_rgb' do contain the
-  actual color values as allocated by the X server. This may not be the value
-  listed for your color in rgb.txt.
+  The colors use the names specified in the color definitions for the style.
+  These will either be names matching those the X server recognises, or RGB
+  specifications. The values for 'rgb' and 'back_rgb' contain the actual color
+  values allocated by the X server for the window. If the X server cannot
+  allocate the specified (named) color exactly, the RGB values in these
+  entries may not match the specified ones.
 
-  If 'position' or 'style_name' is invalid, an empty array is returned.
+  The 'extent' value is measured from position 'pos' going right/down (forward
+  in the file) only.
+
+  If 'pos' is invalid, an empty array is returned.
 
    ----------------------------------------------------------------------
 
@@ -3599,7 +3636,7 @@ Preferences
 **Popups Under Pointer**
   Display pop-up dialogs centered on the current mouse position, as opposed to
   centered on the parent window.  This generally speeds interaction, and is
-  essential for users who users who set their window managers so keyboard focus
+  essential for users who set their window managers so keyboard focus
   follows the mouse.
 
 **Warnings**
@@ -4545,12 +4582,12 @@ NEdit Command Line
 
 **-background color (or -bg color)**
   User interface background color. (Background color for text can be set
-  separately with  -xrm "nedit.textFgColor: color" or using the Preferences ->
+  separately with -xrm "nedit.textBgColor: color" or using the Preferences ->
   Colors dialog).
 
 **-foreground color (or -fg color)**
   User interface foreground color. (Foreground color for text can be set
-  separately with -xrm "nedit*text.textBgColor: color" or using the Preferences
+  separately with -xrm "nedit.textFgColor: color" or using the Preferences
   -> Colors dialog).
 
 **-xrm resourcestring** 
@@ -4703,17 +4740,97 @@ Client/Server Mode
 
       nedit -server
 
-  NEdit can also be started in server mode via the Nedit Client (nc) program
-  when no servers are available.
+  NEdit can also be started in server mode via the NEdit Client program
+  (**nc**) when no servers are available.
 
-  The nc program, which is distributed along with NEdit,
-  sends commands to an nedit server to open files, select lines, or execute
-  editor actions.  It accepts a limited set of the nedit command line options:
-  -read, -create, -line (or +n), -do, and a list of file names.  Listing a file
-  on the nc command line means, open it if it is not already open and bring the
-  window to the front.  -read and -create affect only newly opened files, but
-  -line and -do can also be used on files which are already open 
-  (See  "NEdit_Command_Line_" for more information).
+  The nc program, which is distributed along with NEdit, sends commands to
+  an NEdit server to open files or execute editor actions. It can also be
+  used on files that are already opened.
+  
+  Listing a file on the nc command line means: Open it if it is not already
+  open and bring the window to the front.
+
+
+  nc supports the following command line options:
+
+    **nc** [**-read**] [**-create**]
+       [**-line** n | **+**n] [**-do** command] [**-lm** languagemode]
+       [**-svrname** name] [**-svrcmd** command]
+       [**-ask**] [**-noask**] [**-timeout** seconds]
+       [**-geometry** geometry | **-g** geometry] [**-icon** | **-iconic**]
+       [**-wait**]
+       [**-V** | **-version**]
+       [**-xrm** resourcestring] [**-display** [host]:server[.screen]]
+       [**-**-] [file...]
+  
+**-read**
+  Open the file read-only regardless of its actual permissions. There is no
+  effect if the file is already open.
+
+**-create**
+  Don't warn about file creation when a file doesn't exist.
+
+**-line** n, **+**n
+  Go to line number n. This will also affect files which are already open.
+
+**-do** command
+  Execute an NEdit macro or action on the file following the -do argument
+  on the command line. Note that other files mentioned in the command line
+  are not affected.
+
+  If you use this command without a filename, nc would randomly choose one
+  window to focus and execute the macro in.
+
+**-ask**, **-noask**
+  Instructs nc to automatically start a server if one is not available.  This
+  overrides the X resource `nc.autoStart' (see X_Resources_).
+
+**-svrname** name
+  Explicitly instructs nc which server to connect to, an instance of
+  nedit(1) with a corresponding -svrname argument.  By naming servers, you
+  can run several simultaneously, and direct files and commands
+  specifically to any one. 
+
+**-svrcmd** command
+  The command which nc uses to start an NEdit server. It is also settable
+  via the X resource `nc.serverCommand' (see X_Resources_). Defaults to
+  "nedit -server".
+
+**-lm** languagemode
+  Initial language mode used.
+
+**-geometry** geometry, **-g** geometry
+  The initial size and/or location of editor windows. See
+  NEdit_Command_Line_ for details.
+
+**-icon**, **-iconic**
+  Initial window state.
+
+**-display** [<host>]:<server>[.<screen>]
+  The name of the X server to use. See NEdit_Command_Line_ for details.
+
+**-timeout** seconds
+  Basic time-out period used in communication with an NEdit server.  The
+  default is 10 seconds. Also settable via the X resource `nc.timeOut'.
+
+  Under rare conditions (such as a slow connection), it may be necessary to
+  increase the time-out period. In most cases, the default is fine.
+
+**-wait**
+  Instructs nc not to return to the shell until all files given are closed.
+  
+  Normally, nc returns once the files given in its command line are opened
+  by the server. When this option is given, nc returns only after the last
+  file given in this call is closed.
+  
+  Note that this option affects all files in the command line, not only the
+  ones following this option.
+  
+  Note that nc will wait for all files given in the command line, even if
+  the files were already opened.
+
+
+4>Command Line Arguments
 
   In typical Unix style, arguments affect the files which follow them on the
   command line, for example:
@@ -4722,16 +4839,17 @@ Client/Server Mode
       correct:     nc -line 25 file.c
 
   -read, -create, and -line affect all of the files which follow them on the
-  command line.  The -do macro is executed only once, on the next file on the
-  line.  -do without a file following it on the command line, executes the
-  macro on the first available window (presumably when you give a -do command
-  without a corresponding file or window, you intend it to do something
-  independent of the window in which it happens to execute).
+  command line.
+  
+  The -do macro is executed only once, on the next file on the line.  -do
+  without a file following it on the command line, executes the macro on the
+  first available window (presumably when you give a -do command without a
+  corresponding file or window, you intend it to do something independent of
+  the window in which it happens to execute).
+  
+  The -wait option affects all files named in the command line.
 
-  nc also accepts one command line option of its own, -noask (or -ask), which
-  instructs it whether to automatically start a server if one is not
-  available.  This is also settable via the X resource, nc.autoStart 
-  (See "X_Resources_" section).
+4>Multiple Servers
 
   Sometimes it is useful to have more than one NEdit server running, for
   example to keep mail and programming work separate.  The option, -svrname, to
@@ -4741,9 +4859,11 @@ Client/Server Mode
   server name will default to the name of the view (based on the value of the
   CLEARCASE_ROOT environment variable).
 
-  Communication between nc and nedit is through the X display. So as long as
-  the X Window System is set up and working properly, nc will work properly as
-  well. nc uses the DISPLAY environment variable, the machine name and your
+4>Communication
+
+  Communication between nc and nedit is done through the X display. So as long
+  as the X Window System is set up and working properly, nc will work properly
+  as well. nc uses the DISPLAY environment variable, the machine name and your
   user name to find the appropriate server, meaning, if you have several
   machines sharing a common file system, nc will not be able to find a server
   that is running on a machine with a different host name, even though it may
@@ -4807,7 +4927,7 @@ Version
   Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
   Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
   LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
-  and Andrew Hood.
+  Andrew Hood, and Nathaniel Gray.
 
   The regular expression matching routines used in NEdit are adapted (with
   permission) from original code written by Henry Spencer at the

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.23 2003/05/16 16:47:21 slobasso Exp $ */
+/* $Id: textDisp.h,v 1.24 2003/11/22 13:03:40 edg Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -104,18 +104,19 @@ typedef struct _textDisp {
     int fixedFontWidth;			/* Font width if all current fonts are
     					   fixed and match in width, else -1 */
     Widget hScrollBar, vScrollBar;
-    Pixel lineNumFGPixel;   	    	/* Color for drawing line numbers */
-    Pixel bgPixel, selectBGPixel;   	/* Background colors */
-    Pixel highlightBGPixel;
     GC gc, selectGC, highlightGC;	/* GCs for drawing text */
     GC selectBGGC, highlightBGGC;	/* GCs for erasing text */
     GC cursorFGGC;			/* GC for drawing the cursor */
     GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     GC styleGC;     	    	    	/* GC with color and font unspecified
     	    	    	    	    	   for drawing colored/styled text */
-    Pixel fgPixel;			/* Foreground colors */
-    Pixel selectFGPixel;		/* Foreground select color */
-    Pixel highlightFGPixel;
+    Pixel fgPixel, bgPixel;		/* Foreground/Background colors */
+    Pixel selectFGPixel,		/* Foreground select color */
+          selectBGPixel;   		/* Background select color */
+    Pixel highlightFGPixel,             /* Highlight colors are used when */
+          highlightBGPixel;             /*    flashing matching parens    */
+    Pixel lineNumFGPixel;   	    	/* Color for drawing line numbers */
+    Pixel cursorFGPixel;
     Pixel *bgClassPixel;		/* table of colors for each BG class */
     unsigned char *bgClass;		/* obtains index into bgClassPixel[] */
     

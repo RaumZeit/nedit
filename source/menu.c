@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.81 2003/11/18 15:11:59 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.82 2003/11/22 13:03:39 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2759,7 +2759,8 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args,
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs),
-               searchKeepDialogs(0, args, nArgs), event->xbutton.time);
+               searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs),
+               event->xbutton.time);
 }
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2814,7 +2815,8 @@ static void replaceDialogAP(Widget w, XEvent *event, String *args,
     if (CheckReadOnly(window))
     	return;
     DoFindReplaceDlog(window, searchDirection(0, args, nArgs),
-        searchKeepDialogs(0, args, nArgs), event->xbutton.time);
+        searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs),
+        event->xbutton.time);
 }
 
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -4375,7 +4377,7 @@ void ReadNEditDB(void)
     	    continue;
     	lineLen = strlen(line); 			     /* comment */
     	if (line[lineLen-1] != '\n') {
-    	    fprintf(stderr, ".neditdb line too long\n");
+            fprintf(stderr, "nedit: Line too long in history file\n");
     	    fclose(fp);
 	    return;		      /* no newline, probably truncated */
 	}
@@ -4383,7 +4385,7 @@ void ReadNEditDB(void)
     	if (lineLen == 0)
     	    continue;		/* blank line */
 	if ((int)strcspn(line, badFilenameChars) != lineLen) {
-    	    fprintf(stderr, ".neditdb file is corrupted\n");
+            fprintf(stderr, "nedit: History file is corrupted\n");
     	    fclose(fp);
 	    return;			     /* non-filename characters */
 	}

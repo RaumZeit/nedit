@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.69 2003/11/14 23:46:35 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.70 2003/11/22 13:03:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -297,9 +297,12 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     strcat(fullname, name);
     
     /* Open the file */
-#ifdef USE_ACCESS  /* The only advantage of this is if you use clearcase,
+#ifndef DONT_USE_ACCESS  
+                   /* The only advantage of this is if you use clearcase,
     	    	      which messes up the mtime of files opened with r+,
-		      even if they're never actually written. */
+		      even if they're never actually written.
+		      To avoid requiring special builds for clearcase users,
+		      this is now the default. */
     {
 	if ((fp = fopen(fullname, "r")) != NULL) {
     	    if(access(fullname, W_OK) != 0)
@@ -375,16 +378,20 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     if (fstat(fileno(fp), &statbuf) != 0)
     {
         fclose(fp);
+        window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Error opening %s", "Dismiss", name);
+        window->filenameSet = TRUE;
         return FALSE;
     }
 
     if (S_ISDIR(statbuf.st_mode))
     {
         fclose(fp);
+        window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Can't open directory %s", "Dismiss", name);
+        window->filenameSet = TRUE;
         return FALSE;
     }
 
@@ -392,8 +399,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     if (S_ISBLK(statbuf.st_mode))
     {
         fclose(fp);
+        window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Can't open block device %s", "Dismiss", name);
+        window->filenameSet = TRUE;
         return FALSE;
     }
 #endif
@@ -404,8 +413,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     if (fileString == NULL)
     {
         fclose(fp);
+        window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
                 "File is too large to edit", "Dismiss");
+        window->filenameSet = TRUE;
         return FALSE;
     }
 
@@ -414,8 +425,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     if (ferror(fp))
     {
         fclose(fp);
+        window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
                 "Error reading %s:\n%s", "Dismiss", name, errorString());
+        window->filenameSet = TRUE;
         free(fileString);
         return FALSE;
     }
@@ -615,13 +628,16 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse)
     /* Make sure that the window is not in iconified state */
     RaiseShellWindow(window->shell);
 
-    /* if window is a normal & unmodified file or an empty new file then
+    /* If the window is a normal & unmodified file or an empty new file, 
+       or if the user wants to ignore external modifications then
        just close it.  Otherwise ask for confirmation first. */
     if (!window->fileChanged && 
             /* Normal File */
             ((!window->fileMissing && window->lastModTime > 0) || 
             /* New File*/
-             (window->fileMissing && window->lastModTime == 0)))
+             (window->fileMissing && window->lastModTime == 0) ||
+            /* File deleted/modified externally, ignored by user. */
+            !GetPrefWarnFileMods()))
     {
         CloseWindow(window);
         /* up-to-date windows don't have outstanding backup files to close */
@@ -1322,6 +1338,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XtSetArg(args[n],
             XmNselectionLabelString,
             s1 = XmStringCreateLocalized("New File Name:")); n++;
+    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n],
             XmNdialogTitle,
             s2 = XmStringCreateSimple(prompt)); n++;
@@ -1509,6 +1526,10 @@ void CheckForChangesToFile(WindowInfo *window)
             else if (resp == 2)
                 SaveWindowAs(window, NULL, 0);
         }
+        /* A missing or (re-)saved file can't be read-only. */
+        SET_PERM_LOCKED(window->lockReasons, False);
+        UpdateWindowTitle(window);
+        UpdateWindowReadOnly(window);
         return;
     }
     
@@ -1519,7 +1540,7 @@ void CheckForChangesToFile(WindowInfo *window)
         if ((fp = fopen(fullname, "r")) != NULL) {
             int readOnly;
             fclose(fp);
-#ifdef USE_ACCESS
+#ifndef DONT_USE_ACCESS 
             readOnly = access(fullname, W_OK) != 0;
 #else
             if (((fp = fopen(fullname, "r+")) != NULL)) {

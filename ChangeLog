@@ -1,3 +1,495 @@
+2003-11-19 13:44  edg
+
+	* README, ReleaseNotes, doc/nc.man, doc/nedit.man,
+	source/help_data.h, source/help_topic.h (BETA-5-4.[7,5,3,3,9,6]):
+	Bumped version number to 5.4.
+
+2003-11-18 15:11  edg
+
+	* source/menu.c (1.81): Fix for SF bug #844395: SGI_CUSTOM overtype
+	crash.
+
+2003-11-18 12:16  edg
+
+	* util/fileUtils.c (1.31): Decreased the threshold for MAC file
+	format detection to 1 carriage return instead of 2.
+
+2003-11-17 10:13  edg
+
+	* util/prefFile.c (BETA-5-4.1): Fix for nc crash on VMS (Michael
+	Smith).
+
+2003-11-16 13:50  yooden
+
+	* doc/help.etx (1.51): Fixed wrong documentation of $sub_sep,
+	pointed out by Jörg Fischer.
+
+2003-11-14 23:46  yooden
+
+	* source/: file.c (1.69), smartIndent.c (1.29): Fixes two small
+	bugs: Wrong block and wrong argc.
+
+2003-11-14 00:19  n8gray
+
+	* README, makefiles/Makefile.macosx (BETA-5-4.[6,2]): Reworked the
+	OS X makefile and added a note about building on OS X to the
+	README.
+
+2003-11-13 07:09  n8gray
+
+	* util/check_lin_tif.c (BETA-5-4.7): Changed error/warning messages
+	to be non-Linux-centric.
+
+2003-11-08 00:15  yooden
+
+	* source/file.c (1.68): Changes typo in resource name.
+
+2003-11-07 17:27  edg
+
+	* doc/help.etx, source/help_data.h, source/macro.c
+	(BETA-5-4.[9,8,4]): Removed the bogus rgb values from the array
+	returned by get_pattern_by_name().  Prevented the special "top"
+	pattern from showing up in the array returned by
+	get_style_at_pos().  Various minor code cleanups and comment fixes.
+	 (Mostly contributed by Tony Balinski).
+
+2003-11-03 16:31  edg
+
+	* doc/help.etx, source/help_data.h, source/highlight.c,
+	source/highlight.h, source/macro.c (BETA-5-4.[8,7,1,1,3]): Changed
+	the "extension" field returned by get_pattern_at_pos() to "extent"
+	and added an "extent" field to the return value of
+	get_style_at_pos().
+
+2003-10-24 15:29  edg
+
+	* doc/help.etx (BETA-5-4.7): Typo fix (Yury).
+
+2003-10-24 10:51  edg
+
+	* doc/help.etx (1.50), source/help_data.h (1.48), source/text.c
+	(1.44): Extended scroll_down() and scroll_up() such that one can
+	specify a scroll unit (lines or pages, default: lines) and
+	corrected the behaviour for CTRL + mouse wheel (scrolling no longer
+	moves the cursor nor destroys the selection).
+
+2003-10-22 20:05  tringali
+
+	* source/help.c (1.96), source/highlightData.c (1.55),
+	source/nedit.c (1.50), source/nedit.h (1.40), source/preferences.c
+	(1.100), source/smartIndent.c (1.28), source/textSel.c (1.13),
+	source/userCmds.c (1.33), source/window.c (1.86),
+	util/check_lin_tif.c (1.6), util/misc.c (1.59), util/misc.h (1.20):
+	Changed widget hierarchy so we have a single (hidden) top-level
+	application shell.  All the top-level windows (editors, syntax,
+	macros, etc.) are now TopLevelShell children of the application
+	shell.	This is the standard way of structuring multiple-window
+	applications, and we've been standing on our heads trying to work
+	around problems the old approach causes (no visual propogation to
+	children, no way to address types of top-level windows by name in
+	resources, session management bugs, etc).  Some advanced X resource
+	customizations may need to change, but for the better, I think.
+
+2003-10-20 16:38  tringali
+
+	* source/interpret.c (tags: BETA-5-4-RC2) (BETA-5-4.1): Change
+	#define to be in column 0; some compilers will not accept this
+	indented.
+
+2003-10-20 13:59  edg
+
+	* ChangeLog (tags: BETA-5-4-RC2) (BETA-5-4.2): Regenerated
+	(cvs2cl.pl -b -r -t --accum  --gmt).
+
+2003-10-20 08:29  edg
+
+	* doc/nc.man, doc/nedit.man, source/help_data.h,
+	source/help_topic.h (BETA-5-4.[2,2,6,5]) (utags: BETA-5-4-RC2):
+	Regenerated for 5.4RC2.
+
+2003-10-20 08:25  edg
+
+	* doc/Makefile (tags: BETA-5-4-RC2) (BETA-5-4.2): Use double suffix
+	rule for man page generation iso. GNU make extension.
+
+2003-10-15 23:08  yooden
+
+	* doc/help.etx, source/help_data.h, source/help_topic.h,
+	source/nc.c (BETA-5-4.[6,5,4,4]): New documentation for nc.
+
+2003-10-14 10:56  edg
+
+	* doc/: nc.man, nedit.man (BETA-5-4.[1,1]): Regenerated.
+
+2003-10-14 10:54  edg
+
+	* doc/nedit.pod (1.1): file nedit.pod was initially added on branch
+	BETA-5-4.
+
+2003-10-14 10:54  edg
+
+	* doc/nc.pod (1.1): file nc.pod was initially added on branch
+	BETA-5-4.
+
+2003-10-14 10:54  edg
+
+	* doc/: Makefile, nc.pod, nedit.pod (BETA-5-4.[1,1,1]): Added man
+	pages in pod format and automatic pod to man page translation.
+
+2003-10-09 15:29  tringali
+
+	* util/system.h (BETA-5-4.1): Recognize ia64, cygwin, x86-64,
+	win32, unixware.
+
+2003-10-09 09:23  edg
+
+	* source/nc.c (BETA-5-4.3): Fix for SF #820491: nc -ask hangs when
+	the user cancels the server startup.
+
+2003-10-02 07:27  edg
+
+	* doc/setext (BETA-5-4.2): More HTML generation improvements
+	(Steven Haehn).
+
+2003-10-01 11:34  edg
+
+	* doc/setext (BETA-5-4.1): Bug fixes in HTML generation (Andrew
+	Hood).
+
+2003-09-28 15:05  edg
+
+	* Makefile, README, ReleaseNotes (BETA-5-4.[4,5,4]): 5.4RC2
+	updates.
+
+2003-09-28 15:03  edg
+
+	* doc/NEdit.ad (BETA-5-4.2): Removed trailing whitespace.
+
+2003-09-28 15:03  edg
+
+	* makefiles/: Makefile.bsdi, Makefile.freebsd, Makefile.netbsd,
+	Makefile.openbsd (BETA-5-4.[1,1,1,1]): Added Motif/Lesstif version
+	check.
+
+2003-09-28 14:18  edg
+
+	* makefiles/Makefile.ccur, makefiles/Makefile.generic,
+	makefiles/Makefile.solaris, source/file.c (BETA-5-4.[1,1,1,4]):
+	Made USE_ACCESS the default (there's no security risk in the way we
+	use access()). See also SF #782518.
+
+2003-09-28 14:11  edg
+
+	* doc/NEdit.ad (BETA-5-4.1): Updated resources to 5.4.
+
+2003-09-28 14:10  edg
+
+	* source/nc.c (BETA-5-4.2): Typo fix: noAsk -> noask.
+
+2003-09-26 19:45  yooden
+
+	* source/menu.c (BETA-5-4.3): Removes some references to the old
+	NEdit file history file name.
+
+2003-09-12 18:24  tringali
+
+	* README (BETA-5-4.4): Updates for 5.4
+
+2003-09-08 17:08  edg
+
+	* ChangeLog (BETA-5-4.1): Regenerated (cvs2cl.pl -b -r -t --accum
+	--gmt).
+
+2003-09-08 17:03  edg
+
+	* source/rangeset.c (BETA-5-4.5): Fixed integer overflow that
+	caused infinite loops.
+
+2003-08-26 09:59  edg
+
+	* source/rangeset.c (BETA-5-4.4): Crash fix: rangeset name field
+	not initialized.  Other: rangeset table list field not initialized
+	(unpredictable first label).
+
+2003-08-24 20:07  yooden
+
+	* source/highlightData.c (1.54): Fixed small bug in Shell pattern
+	set.
+
+2003-08-24 19:02  yooden
+
+	* source/highlightData.c (BETA-5-4.3): Changed macro pattern from
+	accomodate new highlighting information functions.
+
+2003-08-22 16:24  edg
+
+	* source/file.c (BETA-5-4.3): Fix for SF bug #792447: "modified by
+	external..." and directories.
+
+2003-08-21 10:50  edg
+
+	* source/file.c (BETA-5-4.2): Moved some statements to avoid
+	polluting errno before displaying an error dialog.
+
+2003-08-21 06:41  n8gray
+
+	* doc/help.etx, source/help_data.h, source/help_topic.h
+	(BETA-5-4.[5,4,3]): Fixed help lines WRT -foreground and -background 
+        command-line options.  Also noticed that help text for new rangeset 
+        API was never generated.
+
+2003-08-15 21:58  n8gray
+
+	* source/preferences.c (BETA-5-4.5): Also migrate old colors if
+	there's no config file.
+
+2003-08-14 22:06  slobasso
+
+	* source/menu.c, util/check_lin_tif.c (BETA-5-4.[2,6]): fix
+	warnings
+
+2003-08-13 23:34  slobasso
+
+	* source/nedit.h (BETA-5-4.1): adjust constant for more menu items
+
+2003-08-13 16:22  edg
+
+	* source/text.c (BETA-5-4.2): Make KP_Enter behave as Enter
+	(Execute Command Line used to be bound to KP_Enter but is now bound
+	to Ctrl+KP_Enter).  (I tried to abort my previous commit when I
+	realized there was a potential problem, but I failed. Sorry.)
+
+2003-08-13 16:03  edg
+
+	* source/text.c (BETA-5-4.1): [no log message]
+
+2003-08-13 16:01  edg
+
+	* source/file.c (BETA-5-4.1): Fix for SF bugs #782513: Clicking in
+	text area requires save and #784442: NEdit thinks unchanged windows
+	need save.  Additionally: drop read-only attribute when file goes
+	missing.
+
+2003-08-12 11:47  edg
+
+	* source/server.c (BETA-5-4.2): Last commit was a fix for SF bug
+	#785738: "nc -do ..." creates extra window.
+
+2003-08-12 11:43  edg
+
+	* source/server.c (BETA-5-4.1): Avoid creating extra windows when
+	using "nc -do ..." (Arne).
+
+2003-08-08 16:24  slobasso
+
+	* source/rangeset.c (BETA-5-4.3): Only text changes where the text
+	is actually changed result in ranges being adjusted. This includes
+	changing hardware tab size.
+
+2003-08-08 16:20  slobasso
+
+	* source/window.c (1.85): marks no longer get deleted when hardware
+	tab size is changed.
+
+2003-08-07 04:42  slobasso
+
+	* doc/help.etx, source/macro.c (BETA-5-4.[4,2]): split
+	get_pattern() and get_style() into get_pattern_by_name(),
+	get_pattern_at_pos(), get_style_by_name(), and get_style_at_pos()
+
+2003-08-04 22:32  slobasso
+
+	* doc/help.etx (BETA-5-4.3): Fix mistake with
+	rangeset_get_by_name() parameter list.
+
+2003-08-03 17:38  yooden
+
+	* source/highlightData.c (1.53), source/menu.c (1.80),
+	source/preferences.c (1.99), source/preferences.h (1.36),
+	util/managedList.c (1.13): Removes some unsused functions, function
+	parameters and fixes a typo.
+
+2003-08-02 21:03  yooden
+
+	* source/highlightData.c (BETA-5-4.2): Adds new functions
+	rangeset_get_by_name() and rangeset_set_name() to the NEdit Macro
+	syntax highlighting pattern set.
+
+2003-08-01 01:26  n8gray
+
+	* source/: textDisp.c, textDisp.h, window.c (BETA-5-4.[1,1,1]):
+	This should fix the problem where new panes didn't get the correct
+	colors.  It feels to me like there should be a better way to do
+	this.
+
+2003-07-31 22:35  n8gray
+
+	* source/tags.c (BETA-5-4.1): Fixed error parsing alias blocks in
+	calltips files.
+
+2003-07-29 17:54  slobasso
+
+	* doc/help.etx, source/macro.c, source/rangeset.c,
+	source/rangeset.h (BETA-5-4.[2,1,2,1]): add name to rangesets and
+	fix several int/string implicit conversions
+
+2003-07-27 21:37  edg
+
+	* util/getfiles.c (BETA-5-4.1): Workaround for Lesstif's "frozen
+	windows" bug (new windows opened via File->Open dialog are left
+	without grabs).
+
+2003-07-27 10:03  edg
+
+	* source/macro.c (1.73): Another Lesstif Escape key workaround
+	(list dialog) by Oliver Schmidt.
+
+2003-07-25 14:12  tringali
+
+	* source/preferences.c (BETA-5-4.4): Don't save
+	undoModifiesSelection
+
+2003-07-25 06:50  tksoh
+
+	* source/file.c (1.67), util/getfiles.c (1.26), util/misc.c (1.58):
+	make file-selection dialog modeless when linking to Lesstif, as
+	workaround for Lesstif bug #566315 - window opened with open-file
+	dialog ingores all input.
+
+2003-07-24 06:07  n8gray
+
+	* source/preferences.c (BETA-5-4.3): Added separator in Colors
+	dialog and changed buttons so they resize as expected.
+
+2003-07-24 00:21  tringali
+
+	* source/nc.c (BETA-5-4.1): update version to 5.4
+
+2003-07-18 15:14  edg
+
+	* source/macro.c (1.72), source/shell.c (1.26), util/DialogF.c
+	(1.28): Applied SF patch #771878: Escape cancels all dialogs.
+
+2003-07-17 11:24  edg
+
+	* source/search.c (1.60): Minor Lesstif keyboard focus problem
+	workaround (Oliver Schmidt).
+
+2003-07-11 10:39  edg
+
+	* source/highlightData.c (tags: BETA-5-4-RC1) (BETA-5-4.1):
+	Thorsten's latest revision of the NEdit Macro patterns (I'm only
+	acting as an SF proxy).
+
+2003-07-10 18:21  n8gray
+
+	* util/check_lin_tif.c (tags: BETA-5-4-RC1) (BETA-5-4.5): Added OM
+	2.2.3 and LT 0.93.44 to known-bad versions.
+
+2003-06-27 19:55  n8gray
+
+	* util/check_lin_tif.c (BETA-5-4.4): Removed the Motif 1.2 vs Motif
+	2.1 detection in lesstif.  Also changed message that gets printed
+	when non-lesstif motif is detected to include possibility of OSF
+	Motif.
+
+2003-06-27 17:49  tringali
+
+	* source/nedit.c (tags: BETA-5-4-RC1) (BETA-5-4.1): Stronger locale
+	checking: handle setting of UTF8 by LC_CTYPE, LC_ALL, LANG and/or
+	the language via the -xnllanguage switch.
+
+2003-06-27 07:24  edg
+
+	* util/misc.c (tags: BETA-5-4-RC1) (BETA-5-4.1): Crash fix for
+	OpenMotif radio button bug workaround.
+
+2003-06-23 19:44  n8gray
+
+	* util/check_lin_tif.c (BETA-5-4.3): Adding all versions of Lesstif
+	from 0.93.25 to 0.93.41 to known-bad list.
+
+2003-06-23 05:30  n8gray
+
+	* util/check_lin_tif.c (BETA-5-4.2): Adding Lesstif 0.93.{36,40} to
+	the known-bad versions list.
+
+2003-06-22 00:42  n8gray
+
+	* doc/help.etx, source/help_data.h, source/help_topic.h
+	(BETA-5-4.[1,3,2]) (utags: BETA-5-4-RC1): Put my name in the
+	Written By credits.
+
+2003-06-21 03:02  tringali
+
+	* README, ReleaseNotes (BETA-5-4.[3,3]) (utags: BETA-5-4-RC1):
+	Closed out a pile of bugs.
+
+2003-06-20 21:43  slobasso
+
+	* source/: menu.c, search.c, search.h (BETA-5-4.[1,1,1]) (utags:
+	BETA-5-4-RC1): fixed bug introduced when patch #734202 was merged
+
+2003-06-18 09:54  edg
+
+	* source/: rangeset.c, textBuf.c, textBuf.h (BETA-5-4.[1,1,1])
+	(utags: BETA-5-4-RC1): Fix for rangeset display update bug.
+
+2003-06-16 09:38  edg
+
+	* Makefile (tags: BETA-5-4-RC1) (BETA-5-4.3): Renegerating
+	nedit.doc and nedit.html was a bad idea. Better put them in the
+	source tarball.
+
+2003-06-16 09:12  edg
+
+	* README, ReleaseNotes, source/help_data.h (BETA-5-4.[2,2,2]):
+	5.4beta -> 5.4BETA
+
+2003-06-16 08:57  edg
+
+	* Makefile (BETA-5-4.2): Make sure that nedit.doc and nedit.html
+	are up-to-date for the dist-bin target.
+
+2003-06-16 08:56  edg
+
+	* source/preferences.c (tags: BETA-5-4-RC1) (BETA-5-4.2): Made the
+	5.4 preference migration conditional.
+
+2003-06-16 08:38  edg
+
+	* README, ReleaseNotes (BETA-5-4.[1,1]): Updated time stamps.
+
+2003-06-16 08:38  edg
+
+	* source/: help_data.h, help_topic.h (BETA-5-4.[1,1]): Regenerated
+	to get proper time stamps and 5.4beta label.
+
+2003-06-16 08:36  edg
+
+	* Makefile (BETA-5-4.1): Make the build stop when the verify_config
+	test fails.
+
+2003-06-16 08:35  edg
+
+	* util/check_lin_tif.c (BETA-5-4.1): Warning fixes.
+
+2003-06-12 17:35  edg
+
+	* makefiles/Makefile.macosx (tags: BETA-5-4-RC1) (BETA-5-4.1):
+	Added an alternative set of CFLAGS and LIBS for building with Fink
+	(disabled by default) and added the check_tif rule (Joerg).
+
+2003-06-11 02:45  tksoh
+
+	* source/preferences.c (BETA-5-4.1): fixed title in Save
+	Preferences dialog.
+
+2003-06-08 21:05  edg
+
+	* ChangeLog (1.34, BETA-5-4-RC1): Regenerated (cvs2cl.pl -b -r -t
+	--accum --gmt).
+
 2003-06-06 18:04  edg
 
 	* source/: rangeset.c (1.7), textBuf.c (1.28): Fixed a rangeset

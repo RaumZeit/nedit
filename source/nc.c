@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.34 2003/05/09 17:43:46 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.35 2003/11/22 13:03:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -111,10 +111,15 @@ static const char cmdLineHelp[] =
 #ifdef VMS
 "";
 #else
-"Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
-           [-svrname name] [-svrcmd command] [-lm languagemode]\n\
-           [-geometry geometry] [-iconic] [-timeout seconds] [-wait]\n\
-           [-V|-version] [--] [file...]\n";
+"Usage:  nc [-read] [-create]\n"
+"           [-line n | +n] [-do command] [-lm languagemode]\n"
+"           [-svrname name] [-svrcmd command]\n"
+"           [-ask] [-noask] [-timeout seconds]\n"
+"           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+"           [-wait]\n"
+"           [-V | -version]\n"
+"           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
+"           [--] [file...]";
 #endif /*VMS*/
 
 /* Structure to hold X Resource values */
@@ -423,9 +428,17 @@ static void startNewServer(XtAppContext context,
         strcat(commandLine, " -svrname ");
         strcat(commandLine, Preferences.serverName);
     }
-    if (startServer("No servers available, start one? (y|n)[y]: ", commandLine) != 0) {
-        XtCloseDisplay(TheDisplay);
-        exit(EXIT_FAILURE);
+    switch (startServer("No servers available, start one? (y|n) [y]: ",
+                        commandLine))
+    {
+        case -1: /* Start failed */
+            XtCloseDisplay(TheDisplay);
+            exit(EXIT_FAILURE);
+            break;
+        case -2: /* Start canceled by user */
+            XtCloseDisplay(TheDisplay);
+            exit(EXIT_SUCCESS);
+            break;
     }
 
     /* Set up a timeout proc in case the server is dead.  The standard
@@ -494,7 +507,7 @@ static int startServer(const char *message, const char *commandLineArgs)
     	    c = getc(stdin);
 	} while (c == ' ' || c == '\t');
 	if (c != 'Y' && c != 'y' && c != '\n')
-    	    return 0;
+    	    return (-2);
     }
     
     /* start the server */
@@ -622,8 +635,10 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     	    nextArg(argc, argv, &i);
     	    toDoCommand = argv[i];
     	} else if (opts && !strcmp(argv[i], "-lm")) {
+	    copyCommandLineArg(commandLine, argv[i]);
     	    nextArg(argc, argv, &i);
     	    langMode = argv[i];
+	    copyCommandLineArg(commandLine, argv[i]);
     	} else if (opts && (!strcmp(argv[i], "-g")  || 
 	                    !strcmp(argv[i], "-geometry"))) {
 	    copyCommandLineArg(commandLine, argv[i]);
@@ -651,7 +666,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     		fprintf(stderr, "nc: argument to + should be a number\n");
     	    else
     	    	lineNum = lineArg;
-    	} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noAsk"))) {
+    	} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noask"))) {
     	    ; /* Ignore resource-based arguments which are processed later */
     	} else if (opts && (!strcmp(argv[i], "-svrname") || 
 		            !strcmp(argv[i], "-svrcmd"))) {
@@ -753,16 +768,20 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     /* If there's an un-written -do command,
      * or user has requested iconic state, but not provided a file name,
      * create a server request with an empty file name and requested
-     * iconic state.
+     * iconic state (and optional language mode and geometry).
      */
     if (toDoCommand[0] != '\0' || fileCount == 0) {
-	sprintf(outPtr, "0 0 0 %d 0 %d 0 0\n\n%n", iconic, (int) strlen(toDoCommand),
-		&charsWritten);
+	sprintf(outPtr, "0 0 0 %d 0 %ld %ld %ld\n\n%n", iconic, (long) strlen(toDoCommand),
+		(long) strlen(langMode), (long) strlen(geometry), &charsWritten);
 	outPtr += charsWritten;
 	strcpy(outPtr, toDoCommand);
 	outPtr += strlen(toDoCommand);
 	*outPtr++ = '\n';
+	strcpy(outPtr, langMode);
+	outPtr += strlen(langMode);
 	*outPtr++ = '\n';
+	strcpy(outPtr, geometry);
+	outPtr += strlen(geometry);
 	*outPtr++ = '\n';
     }
     
@@ -936,8 +955,7 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
 /* Print version of 'nc' */
 static void printNcVersion(void ) {
    static const char *const ncHelpText = \
-   "nc (NEdit) Version 5.3 version\n\
-   (July 2002)\n\n\
+   "nc (NEdit) Version 5.4 (November 2003)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
      

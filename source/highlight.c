@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.42 2003/05/09 17:43:45 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.43 2003/11/22 13:03:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -180,6 +180,7 @@ static int findTopLevelParentIndex(highlightPattern *patList, int nPats,
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
 static void updateWindowHeight(WindowInfo *window, int oldFontHeight);
 static int getFontHeight(WindowInfo *window);
+static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -1102,9 +1103,61 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode)
       hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
       if (!hCode)
           return 0;
+      if (hCode == UNFINISHED_STYLE) {
+          /* encountered "unfinished" style, trigger parsing */
+          handleUnparsedRegion(window, highlightData->styleBuffer, pos);
+          hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+      }
       if (*checkCode == 0)
           *checkCode = hCode;
       while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
+          if (hCode == UNFINISHED_STYLE) {
+              /* encountered "unfinished" style, trigger parsing, then loop */
+              handleUnparsedRegion(window, highlightData->styleBuffer, pos);
+              hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+          }
+          else {
+              /* advance the position and get the new code */
+              hCode = (unsigned char)BufGetCharacter(styleBuf, ++pos);
+          }
+      }
+    }
+    return pos - oldPos;
+}
+
+/*
+** Returns the length over which a particular style applies, starting at pos. 
+** If the initial code value *checkCode is zero, the highlight code of pos 
+** is used.
+*/
+int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, 
+                             const char **checkStyleName)
+{
+    windowHighlightData *highlightData =
+          (windowHighlightData *)window->highlightData;
+    textBuffer *styleBuf =
+          highlightData ? highlightData->styleBuffer : NULL;
+    int hCode = 0;
+    int oldPos = pos;
+    styleTableEntry *entry;
+    
+    if (styleBuf != NULL) {
+      hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+      if (!hCode)
+          return 0;
+      if (hCode == UNFINISHED_STYLE) {
+          /* encountered "unfinished" style, trigger parsing */
+          handleUnparsedRegion(window, highlightData->styleBuffer, pos);
+          hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+      }
+      entry = styleTableEntryOfCode(window, hCode);
+      if (entry == NULL) 
+          return 0;
+      if ((*checkStyleName) == NULL)
+          (*checkStyleName) = entry->styleName;
+      while (hCode == UNFINISHED_STYLE ||
+             ((entry = styleTableEntryOfCode(window, hCode)) &&
+                strcmp(entry->styleName, (*checkStyleName)) == 0)) {
           if (hCode == UNFINISHED_STYLE) {
               /* encountered "unfinished" style, trigger parsing, then loop */
               handleUnparsedRegion(window, highlightData->styleBuffer, pos);

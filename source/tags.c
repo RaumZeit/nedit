@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.51 2003/05/09 17:43:48 edg Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.52 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1754,10 +1754,27 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
     dummy1 = searchLine(line, include_regex);
     if( dummy1 || searchLine(line, alias_regex) ) {
         /* INCLUDE or ALIAS block */
-        int incLen, incPos = ftell(fp), i, incLines;
+        int incLen, incPos, i, incLines;
         
-        /* fprintf(stderr, "Starting include\n"); */
-        *blkLine = *currLine + 1;      /* Line of first actual filename */
+        /* fprintf(stderr, "Starting include/alias at line %i\n", *currLine); */
+        if(dummy1)
+            code = TF_INCLUDE;
+        else {
+            code = TF_ALIAS;
+            /* Need to read the header line for an alias */
+            status=fgets(line, MAXLINE, fp);
+            ++(*currLine);
+            if (!status) 
+                return TF_ERROR_EOF;
+            if (lineEmpty( line )) {
+                fprintf( stderr, "nedit: Warning: empty '* alias *' "
+                        "block in calltips file.\n" );
+                return TF_ERROR;
+            }
+            rstrip(header, line);
+        }
+        incPos = ftell(fp);
+        *blkLine = *currLine + 1; /* Line of first actual filename/alias */
         if (incPos < 0) 
             return TF_ERROR;
         /* Figure out how long the block is */
@@ -1771,10 +1788,11 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         /* Correct currLine for the empty line it read at the end */
         --(*currLine);
         if (incLines == 0) {
-            fprintf( stderr, "nedit: Warning: empty '* include *' block in calltips file.\n" );
+            fprintf( stderr, "nedit: Warning: empty '* include *' or"
+                    " '* alias *' block in calltips file.\n" );
             return TF_ERROR;
         }
-        /* Make space for the filenames */
+        /* Make space for the filenames/alias sources */
         *body = (char *)malloc(incLen+1);
         if (!*body) 
             return TF_ERROR;
@@ -1796,11 +1814,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
                 strcat(*body, ":");
             strcat(*body, line);
         }
-        /* fprintf(stderr, "Finished include\n"); */
-        if(dummy1)
-            code = TF_INCLUDE;
-        else
-            code = TF_ALIAS;
+        /* fprintf(stderr, "Finished include/alias at line %i\n", *currLine); */
     }
     
     else if( searchLine(line, language_regex) ) {
@@ -1882,6 +1896,8 @@ typedef struct _alias {
 */
 static tf_alias *new_alias(const char *dest, char *sources) {
     tf_alias *alias;
+    
+    /* fprintf(stderr, "new_alias: %s <- %s\n", dest, sources); */
     /* Allocate the alias */
     alias = (tf_alias *)malloc( sizeof(tf_alias) );
     if(!alias) 

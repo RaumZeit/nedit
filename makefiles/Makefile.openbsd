@@ -1,4 +1,4 @@
-# $Id: Makefile.openbsd,v 1.3 2003/05/20 00:27:56 n8gray Exp $
+# $Id: Makefile.openbsd,v 1.4 2003/11/22 13:03:39 edg Exp $
 CC=cc
 AR=ar
 
@@ -16,4 +16,4 @@ LIBS= -L/usr/X11R6/lib -lXm -lXpm -lXp -lXext -lXt -lSM -lICE -lX11 -lm
 
 include Makefile.common
 
-verify_config:
+verify_config: check_tif_rule

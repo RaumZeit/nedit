@@ -1,4 +1,3 @@
-:
 eval 'exec perl -S $0 ${1+"$@"}'
     if $running_under_some_shell;
 
@@ -6,7 +5,7 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #
 # setext.pl -- Structure Enhanced Text Converter (to HTML or simple text)
 # 
-# $Id: setext,v 1.10 2002/11/15 12:21:14 edg Exp $
+# $Id: setext,v 1.11 2003/11/22 13:03:38 edg Exp $
 # 
 # Copyright (c) 2000 Steven Haehn
 # 
@@ -28,10 +27,9 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #
 # The concept of setext documents is the brain child of Ian Feldman.
 # Some typotag terms used herein were originally implemented in a perl script
-# by Tony Sanders, which is the inspirational source for this work
-# (http://www.bsdi.com/setext). This perl script understands the original
-# typotags, plus extras needed for hypertext links, conditional text, and
-# variables.
+# by Tony Sanders, which is the inspirational source for this work.
+# This perl script understands the original typotags, plus extras needed for 
+# hypertext links, conditional text, and variables.
 #
 # Samples of setext documents are regularly provided to those folks which
 # receive the TidBITS publication from www.tidbits.com in their e-mail.
@@ -57,11 +55,12 @@ eval 'exec perl -S $0 ${1+"$@"}'
 # get_setext                     get_menu_text
 # is_member                      get_newline
 # parse_setext                   get_style
-# recover_extractions            get_style_name
-# replace_underlines             is_known_link
-# show_usage                     locate_menu_text
-# to_state                       make_NEdit_menu_code
-# translate_setext               print_menu
+# preserve_html                  get_style_name
+# recover_extractions            is_known_link
+# replace_underlines             locate_menu_text
+# show_usage                     make_NEdit_menu_code
+# to_state                       print_menu
+# translate_setext               
 #                                
 #                                
 # TYPOTAG TRANSLATION ROUTINES
@@ -76,6 +75,7 @@ eval 'exec perl -S $0 ${1+"$@"}'
 # help_init         text_init           html_init,  html_init_title
 # help_italic_tt    text_italic_tt      html_italic_tt
 # help_line_break   text_line_break     html_line_break
+# help_list_tt      text_list_tt        html_list_tt
 # help_line_tt      text_line_tt        html_line_tt
 # help_quote_tt     text_quote_tt       html_quote_tt
 # help_section_tt   text_section_tt     html_section_tt
@@ -86,9 +86,9 @@ eval 'exec perl -S $0 ${1+"$@"}'
 # help_fixed_styles                     html_enter_list,  html_leave_list
 # help_proportional_styles              html_enter_pre,   html_leave_pre
 # fix_target_tt                         html_enter_quote, html_leave_quote
-#                                       
-#                                       
-#                                       
+#                                       html_emit_header, html_emit_footer
+#                                       getHtmlAttributes
+#
 #-----------------------------------------------------------------------------
 
 use Getopt::Long;   # for parsing the program command line (GetOptions)
@@ -99,8 +99,8 @@ use English;
 
 sub emit_version
 {
-    my $version = "1.6";
-    my $date    = "Feb 14, 2002";
+    my $version = "1.9";
+    my $date    = "Oct 01, 2003"; 
     
     print "$pgm: Version $version, $date.\n";
     exit 0;
@@ -111,8 +111,8 @@ sub emit_version
 sub show_usage
 {
     print "\n";
-    print "Usage: $pgm [ -dhHStTVw ][-c conditional][-v name=value] \\\n";
-    print "              [setext_file [converted_file]]\n";
+    print "Usage: $pgm [ -dhtTVw ][-D directory][-H [hfile]][-S [htmlExt]] \\\n";
+    print "              [-c conditional][-v name=value][setext_file [converted_file]]\n";
     print "\n";
     print "       $pgm {-mp} [-c conditional][-M menuSuffix][-v name=value] setext_file\n";
     print "\n";
@@ -123,12 +123,25 @@ sub show_usage
     print "\n";
     print "  -c conditional text definitions, separated by commas.\n";
     print "  -d do not automatically make titles hypertext references (HTML only)\n";
+    print "  -D specify destination directory for separate HTML files. This also sets\n";
+    print "     the value for the variable HTML_DIR.\n";
     print "  -h show this usage clause.\n";
     print "  -H convert setext_file to HyperText Markup Language (HTML).\n";
+    print "     Optional file parameter specifies file containing HTML header\n";
+    print "     and footer definition overrides. The current defaults are:\n";
+    print "        \$htmlHeader = <HTML>\n";
+    print "                      <TITLE>\$HTML_TITLE</TITLE>\n";
+    print "                      <HEAD></HEAD>\n";
+    print "                      <BODY>\n";
+    print "        \$htmlFooter = </BODY>\n";
+    print "                      </HTML>\n";
+    print "     where \$HTML_TITLE is replaced with an appropriate title.\n\n";
     print "  -m generate NEdit help menu code files.\n";
     print "  -M name NEdit help code files with this suffix.\n";
     print "  -p do option -m and print out NEdit help elements.\n";
     print "  -S convert setext_file into separate HTML files.\n";
+    print "     (the default name extension is '$htmlExt', but it can be\n";
+    print "     changed by specifying it as an argument to this option)\n";
     print "  -t convert setext_file to simple text (default).\n";
     print "  -T emit setext typotag definitions in use.\n";
     print "  -v defines variable name and assigns it the given value.\n";
@@ -234,6 +247,11 @@ Typotags Available
 !    field-tt     |>name[=value]<|  value of name
 !     line-tt ^   ---               horizontal rule
 !------------  -------------------  ------------------
+!     list-tt  .([space]list start  multiple line list
+!                                   element ends with
+!                                   empty line
+!  endlist-tt  .)                   denotes list end
+!------------  -------------------  ------------------
 !     href-tt ^.. \@_word URL         jump to address
 !     note-tt ^.. \@_word Note:("*")  ("cause error")
 !   target-tt     \@_[multi_]word     [multi ]word
@@ -282,6 +300,16 @@ Typotags Available
 !regions is terminated (eg. of illegal nesting
 !A-B-C...C-A-B, where A terminated prior to B.
 
+ Multiple line list-tt are introduced as ".(". Each line
+ belongs to the current list element until an empty line
+ is encountered. Once a list-tt is encountered, line
+ separated paragraphs constitute list elements.  A list-tt
+ is terminated by endlist-tt. The list-tt/endlist-tt
+ typotags are allowed to be nested (unlike the bullet-tt).
+ These typo-tags do not have to start in the first column
+ of a line, but must have leading whitespace if they are
+ indented at all.
+
  Field typotags are used to define and reference values.
  Field definitions can only occur within a suppress-tt.
  For example:  "..  `|>author=Steven Haehn<|`"
@@ -322,9 +350,28 @@ $um          = "\375"; # untouchable marker
 $vm          = "\374"; # variable marker
 $escMrk      = "\33";  # internal escape marker
 $trim_spaces = '(\s*)(.*?)(\s*)$';
+$list_level  = 0;
+$listIndent  = 2;
+@bullet_list = qw( * * o + * o + * o + );
 %variables   = ( date => &date(), Date => &date("D"), year => &date("y") );
 @cond_text_definitions = ();
 $make_title_href = 1;
+
+#---------------------------------------
+# Variables needed for HTML conversions.
+#---------------------------------------
+$lt      = "\376"; # "<" marker
+$gt      = "\377"; # ">" marker
+$amp     = "\373"; # "&" marker
+$htmlExt = "html"; # default HTML file name extension
+
+$htmlHeader =
+     "<HTML>\n<HEAD>\n" .
+     "<TITLE>\$HTML_TITLE</TITLE>\n" .
+     "</HEAD>\n" .
+     "<BODY>\n";
+     
+$htmlFooter = "</BODY>\n</HTML>\n";
 
 #---------------------------------------------------------
 # Look for following options, complain about unknown ones.
@@ -335,12 +382,13 @@ GetOptions(
 
     'c=s',  # conditional text definitions, separated by commas
     'd',    # do not make titles hypertext references (HTML only)
+    'D=s',  # specify destination directory for separate HTML files
     'h',      \&show_usage,
-    'H',    # create HTML from setext input
+    'H:s',  # create HTML from setext input
     'm',    # create NEdit help menu code from setext input
     'M=s',  # name NEdit help code files with this suffix
     'p',    # same as 'm' but with debug printout
-    'S',    # generate separate HTML files for each subsection
+    'S:s',  # generate separate HTML files for each subsection
     't',    # create text from setext input
     'T',    # emit setext typo-tag document
     'v=s',    \&declare_variable,
@@ -354,12 +402,18 @@ GetOptions(
 #-----------------------------------
 $opt_c && (@cond_text_definitions = split( ",", $opt_c ));
 $opt_d && ($make_title_href=0);
+$opt_D && do { $variables{HTML_DIR}=$opt_D; $outputDirectory="$opt_D/" };
 $opt_h && show_usage();
-$opt_H && ($convert_to = "html");
+defined $opt_H && do { $convert_to = "html"; getHtmlAttributes( $opt_H ) };
 $opt_m && do { $make_menu = 1; $convert_to = "help" };
 $opt_M && ($helpSuffix = $opt_M );
 $opt_p && do { $make_menu = 1; $convert_to = "help"; $print_menu = 1 };
-$opt_S && do { $separate_html_files=1; $make_title_href=1 };
+defined $opt_S && do { 
+    $convert_to = "html";
+    $htmlExt = $opt_S if $opt_S; # user can specify file extension
+    $separate_html_files=1; 
+    $make_title_href=1 
+    };
 $opt_t && ($convert_to = "text");
 $opt_T && emit_setext_definition();
 $opt_V && (emit_version());
@@ -372,7 +426,7 @@ $opt_w && ($noWarn = 1);
 # in the state_change hash table required to be initialized
 # by language specific initialization routines (see html_init).
 #--------------------------------------------------------------
-$FMT     = "f";
+$FMT     = "fmt";
 $LIST    = "list";
 $PRE_FMT = "pre";
 $QUOTE   = "quote";
@@ -385,8 +439,10 @@ $bullet_tt     = '^\* ([^ ])';
 $empty_line    = '^\s*$';
 $fld_left      = '\|>';
 $fld_right     = '<\|';
-$field_tt      = "(${fld_left}[^<]+$fld_right)";
-$field_content = "${fld_left}([^<]+)$fld_right";
+$field_tt      = "(${fld_left}.+?$fld_right)";
+$field_content = "${fld_left}(.+?)$fld_right";
+#$field_tt      = "(${fld_left}[^<]+$fld_right)";
+#$field_content = "${fld_left}([^<]+)$fld_right";
 $hot_tt        = '\b([\S]*)_\b';
 $href_tt       = '^\.\.\s+_([\S]*)\s+(.*)\s*';
 $indent_tt     = '^  ([^ ])';
@@ -394,6 +450,7 @@ $intHrefMrk    = "#";
 $internal_href = "^$intHrefMrk(.*)\$";
 $italic_tt     = '~([^~]*)~';
 $line_tt       = '^   ---*$';
+$list_tt       = '^\s*\.([()])';
 $notouch_tt    = '^!';
 $passthru_tt   = '^!!';
 $quote_tt      = '^> ';
@@ -405,7 +462,7 @@ $title_tt      = '^===';
 $twobuck_tt    = '^\s*\$\$\s*$';
 $underline_tt  = '\b_([\S]*)_\b';
 $untouch_tt    = "\\s*(`[^`]+[`'])(?=\\s|\\W|\$)";
-$variable_def  = '\s*(\w+)\s*([^=]*(=(.+)))?'; # $1 = name, $4 = value
+$variable_def  = '\s*(\w+)\s*([^=]*(=(.*)))?'; # $1 = name, $4 = value
 
 $escape_tt     = "@"; # the character escape symbol (need @@ to escape @)
 $needEscaping  = "$escape_tt(.)";
@@ -435,7 +492,15 @@ else  # Global elements for parsing setext
     if( $ARGV[1] ne "" ) 
     { 
         $converted_file = $ARGV[1];
-        $convert_to = "html" if $converted_file =~ /\.html$/; # in case -H forgotten
+        $convert_to = "html" if $converted_file =~ /\.$htmlExt$/; # in case -H forgotten
+        
+        if( $converted_file eq basename( $converted_file ) )
+        {
+            if( $outputDirectory )
+            {
+                $converted_file = "$outputDirectory/$converted_file";
+            }
+        }
     }
 
     open CONVERT, ">$converted_file" or die "Can't create $converted_file, $OS_ERROR";
@@ -528,12 +593,21 @@ sub parse_setext
         
         next if ( /$suppress_tt/ or /$twobuck_tt/ );
 
+        $list_level = 0 if $list_level < 0;  # paranoia protection
+        
         #--------------------------------------------------
         # handle line breaks, only one empty line gets out.
         #--------------------------------------------------
-        if ( /$empty_line/) {
-            to_state( $FMT ); 
-            $fold = &$do_line_break( $fold );
+        if ( /$empty_line/o ) {
+            to_state( $FMT );
+            
+            if( $list_level and not $fold ) {
+                &$do_list_tt();
+                $fold = 1;
+            }
+            else {
+                $fold = &$do_line_break( $fold );
+            }
             next; 
         }
         
@@ -541,13 +615,21 @@ sub parse_setext
 
         /$line_tt/ && do { &$do_line_tt(); next; };
         
-        #------------------
-        # State transitions
-        #------------------
-        if    ( /$quote_tt/o  ) { &to_state( $QUOTE )   }
-        elsif ( /$bullet_tt/o ) { &to_state( $LIST )    }
-        elsif ( /$indent_tt/o ) { &to_state( $FMT )     }
-        else                    { &to_state( $PRE_FMT ) }
+        #-----------------------------------
+        # No change to current state allowed
+        # during list processing.
+        #-----------------------------------
+        if( $list_level == 0 )
+        {
+            #------------------
+            # State transitions
+            #------------------
+            if    ( /$quote_tt/o  ) { &to_state( $QUOTE )   }
+            elsif ( /$bullet_tt/o ) { &to_state( $LIST )    }
+            elsif ( /$indent_tt/o ) { &to_state( $FMT )     }
+            elsif ( /$list_tt/o   ) { &to_state( $FMT )     }
+            else                    { &to_state( $PRE_FMT ) }
+        }
 
         if( /$notouch_tt/o ) { s/$notouch_tt/ /o; }
         else
@@ -568,6 +650,7 @@ sub parse_setext
                 $_ = $front . $um . $back; 
             }
 
+            &$do_list_tt();
             &$do_bullet_tt();
             &$do_quote_tt();
             &$do_bold_tt();
@@ -602,6 +685,7 @@ sub register_tt_translationFunctions
     $do_italic_tt     = "${conversion_type}_italic_tt";
     $do_line_break    = "${conversion_type}_line_break";
     $do_line_tt       = "${conversion_type}_line_tt";
+    $do_list_tt       = "${conversion_type}_list_tt";
     $do_quote_tt      = "${conversion_type}_quote_tt";
     $do_section_tt    = "${conversion_type}_section_tt";
     $do_target_tt     = "${conversion_type}_target_tt";
@@ -714,7 +798,7 @@ sub extract_fields
             #----------------------------------------
             # Is this only a reference to a variable?
             #----------------------------------------
-            if ($v_value eq "") { 
+            if ( ! defined $v_value ) { 
                 #------------------------------------------------
                 # Only put definitions in the list when it is not
                 # part of a comment. (comments are not emitted)
@@ -727,7 +811,8 @@ sub extract_fields
                 # (here $v_value is the value assignment portion)
                 #------------------------------------------------
                 if( /$suppress_tt/o ) {
-                    $variables{ $v_name } = $v_value;
+                    $variables{ $v_name } = 
+                       preserve_html( $v_value, $cond_text_region );
                 } else {
                     push @variable_list, $variable;
                 }
@@ -758,6 +843,18 @@ sub extract_fields
         s/$vm/$value/;
     }
     
+    $_ = preserve_html( $_, $cond_text_region );
+
+    return $_;
+}
+
+#-------------------------------------------------------------------------------
+
+sub preserve_html
+{
+    my $text             = shift;
+    my $cond_text_region = shift;
+
     #--------------------------------------------------------
     # When in a conditional text region that only applies to
     # HTML translation, change the angle brackets to internal
@@ -766,11 +863,12 @@ sub extract_fields
     #--------------------------------------------------------
     if ( $cond_text_region eq "html" )
     {
-        s/</${lt}/go;
-        s/>/${gt}/go;
-        s/\&/${amp}/go;
+        $text =~ s/</${lt}/go;
+        $text =~ s/>/${gt}/go;
+        $text =~ s/\&/${amp}/go;
     }
-    return $_;
+    
+    return $text;
 }
 
 #===================================================================
@@ -1041,7 +1139,7 @@ sub check_target_reference
     }
 
     if( $target ) {
-        print CONVERT "<A NAME=\"$target\"</A>\n";
+        print CONVERT "<A NAME=\"$target\"></A>\n";
         
         # only one target-tt reference of this kind allowed per file.
         ($index = is_member( $target, \@nm_ref )) 
@@ -1142,6 +1240,27 @@ sub emit_paragraph
 }
 
 #-------------------------------------------------------------------------------
+
+# This routine is used to override program defaults for HTML settings.
+# Two variables are expected to be defined; $htmlHeader and $htmlFooter
+
+sub getHtmlAttributes
+{
+    my $attrFile = shift;
+    
+    if( $attrFile )
+    {
+        unless( $return = do $attrFile )
+        {
+            warn "Could not parse $attrFile: $@" if $@;
+            warn "Could not do $attrFile: $!" unless defined $return;
+            warn "Could not run $attrFile" unless $return;
+            exit 1;
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
 #                setext to text conversion call-back routines.
 #                         ( in alphabetical order )
 #-------------------------------------------------------------------------------
@@ -1197,13 +1316,34 @@ sub text_emit_line
     }
     else
     {
-        if( $crnt_state ne $FMT && $text_unfolded_line ne "" )
+        #-----------------------------
+        # Handling nested lists first.
+        #-----------------------------
+        if( $list_level )
+        {
+            my $pad = " " x ($list_level * $listIndent);
+            my $bullet = ($atListStart) ? "$bullet_list[$list_level] " : "  ";
+            s/^\s*/  $pad$bullet/;
+            $atListStart = 0;
+        }
+        elsif( $crnt_state ne $FMT && $text_unfolded_line ne "" )
         {
             emit_paragraph( &text_finishing($text_unfolded_line) );
             $text_unfolded_line = "";
         }
 
-        print CONVERT &text_finishing( $_ ), "\n" unless $_ eq $indentingMode;
+        #-------------------------------------------
+        # This keeps extra newlines from popping out
+        # when a list has been terminated.
+        #-------------------------------------------
+        unless( $terminatedList )
+        {
+            print CONVERT &text_finishing( $_ ), "\n" unless $_ eq $indentingMode;
+        }
+        else
+        {
+            $terminatedList = 0;
+        }
     }
 }
 
@@ -1301,6 +1441,40 @@ sub text_line_break
 #-------------------------------------------------------------------------------
 
 sub text_line_tt      { }
+
+#-------------------------------------------------------------------------------
+
+sub text_list_tt
+{
+    if( /$list_tt/o )
+    {
+        if ( $1 eq '(' )
+        {
+            $list_level++;
+            s/$list_tt\s*//;
+            $atListStart = 1;
+        }
+        else
+        {
+            $list_level--;
+            s/$list_tt//;
+            $terminatedList = 1;
+        }
+    }
+    
+    #-----------------------------------------------------
+    # An empty line terminates a multiple line list entry.
+    #-----------------------------------------------------
+    elsif( /$empty_line/o )
+    {
+        print CONVERT "\n";
+        #text_line_break( 0 );
+        $atListStart = 1 if $list_level;
+    }
+}
+
+#-------------------------------------------------------------------------------
+
 sub text_quote_tt     { }
 
 #-------------------------------------------------------------------------------
@@ -1372,8 +1546,30 @@ sub html_bullet_tt
 
 #-------------------------------------------------------------------------------
 
+sub html_emit_footer
+{
+    print CONVERT "</P>\n$htmlFooter";
+    $closePgf = "";
+}
+
+#-------------------------------------------------------------------------------
+
+sub html_emit_header
+{
+    my $htitle = shift;
+    my $header = $htmlHeader;
+    
+    $header =~ s/\$HTML_TITLE/$htitle/o;
+    print CONVERT $header;
+}
+
+#-------------------------------------------------------------------------------
+
 sub html_emit_line
 {
+    print CONVERT "<LI>" if $atListStart == 1 and not /${lt}LI${gt}/o;
+    $atListStart = 0;
+
     if( /$passthru_tt/ )
     {
         s/$passthru_tt//o;  # remove typotag and pass line out as is.
@@ -1391,18 +1587,18 @@ sub html_emit_line
 sub html_enter_list  { print CONVERT "<UL>\n"  }    # state change activities
 sub html_leave_list  { print CONVERT "</UL>\n" }
 
-sub html_enter_pre   { print CONVERT "<PRE>\n"  }
-sub html_leave_pre   { print CONVERT "</PRE>\n" }
+sub html_enter_pre   { print CONVERT "<PRE>\n";  $insideNoFormatArea = 1 }
+sub html_leave_pre   { print CONVERT "</PRE>\n"; $insideNoFormatArea = 0 }
 
-sub html_enter_quote { print CONVERT "<BLOCKQUOTE><PRE>\n"   }
-sub html_leave_quote { print CONVERT "</PRE></BLOCKQUOTE>\n" }
+sub html_enter_quote { print CONVERT "<BLOCKQUOTE><PRE>\n";   $insideNoFormatArea = 1 }
+sub html_leave_quote { print CONVERT "</PRE></BLOCKQUOTE>\n"; $insideNoFormatArea = 0 }
 
 #-------------------------------------------------------------------------------
 
 sub html_final
 {
     &to_state( $FMT );
-    print CONVERT "</BODY>\n</HTML>\n";
+    html_emit_footer();
 
     #----------------------------------------------------
     # Report on all internal name references not used up.
@@ -1443,15 +1639,19 @@ sub html_finishing {
 
 sub html_hot_tt
 {
-    #--------------------------------------------------
+    #----------------------------------------------------
     # After finding a hot-tt, substitute all underlines
     # with spaces and check to see if the hot-tt had
     # a corresponding hypertext reference. Flag it in
     # bright, bold red when no hypertext record found.
-    #--------------------------------------------------
+    # Allow user to define the variable HTML_DIR as the
+    # destination directory for the HTML code. 
+    # Note, the files may have to actually be placed
+    # in such directory by hand after they are generated.
+    #----------------------------------------------------
     s#$hot_tt#
         $h = $href{$1}; ($text = $1) =~ s,_, ,go;
-        $h ? qq'${lt}A HREF="$h"${gt}$text${lt}/A${gt}' 
+        $h ? qq'${lt}A HREF="$variables{HTML_DIR}$h"${gt}$text${lt}/A${gt}' 
            : "${lt}B${gt}${lt}font color=red${gt}--> $text <-- NO HREF!!${lt}/font${gt}${lt}/B${gt}"; #eg;
 }
 
@@ -1463,16 +1663,9 @@ sub html_indent { s/$indent_tt/$1/ } # get rid of indent-tt characters
 
 sub html_init
 {
-    local $title;
+    local $title, $aTitle;
     my    $target;
     
-    #---------------------------------------
-    # Variables needed for HTML conversions.
-    #---------------------------------------
-    $lt  = "\376"; # "<" marker
-    $gt  = "\377"; # ">" marker
-    $amp = "\373"; # "&" marker
-
     %state_change = (
         
         enter_list  => "html_enter_list",
@@ -1487,8 +1680,6 @@ sub html_init
     
     $veryFirstTime = 1;   # used to force table of content header out
 
-    print CONVERT "<HTML>\n<HEAD>\n";
-
     #------------------------------------------
     # Make a first pass over the data, looking 
     # for hypertext linking information.
@@ -1497,15 +1688,15 @@ sub html_init
     {
         $_ = $data[$i];                 # $_ is default for searches
 
-	#---------------------------------------------------------
-	# This will pick out targets found in the setext not
-	# hidden by a suppress-tt, that is, the href-tt below.
-	# With this check, it is unnecessary to have to include
-	# the href-tt which uses identical text for internal
-	# document references. External references need href-tt.
+        #---------------------------------------------------------
+        # This will pick out targets found in the setext not
+        # hidden by a suppress-tt, that is, the href-tt below.
+        # With this check, it is unnecessary to have to include
+        # the href-tt which uses identical text for internal
+        # document references. External references need href-tt.
         # Have to make sure the match does not pick up elements
         # inside a notouch-tt ( eg. `_do_not_want_this_as_target`)
-	#---------------------------------------------------------
+        #---------------------------------------------------------
         if( /$target_tt/ && substr($`,length($`)-1,1) ne "`" && 
             (not /$suppress_tt/) )
         {
@@ -1538,12 +1729,11 @@ sub html_init
         #---------------------------------------------------------
         # The first title-tt or subhead-tt gets <TITLE>...</TITLE>
         #---------------------------------------------------------
-        /$title_tt/    && do { html_init_title("H1", $i); next; };
-        /$subtitle_tt/ && do { html_init_title("H2", $i); next; };
+        /$title_tt/    && do { $htmlTitle = html_init_title("H1", $i); next; };
+        /$subtitle_tt/ && do { $htmlTitle = html_init_title("H2", $i); next; };
     }
 
-    print CONVERT "</HEAD>\n";
-    print CONVERT "<BODY>\n";
+    html_emit_header( $htmlTitle );
     
     #----------------------------------------------------
     # NOTE: changing original title-tt search pattern
@@ -1574,7 +1764,7 @@ sub html_init_title
         $hyper_ref = $this_title;
         $hyper_ref =~ s/ /_/go;
         $externalReference  =
-           ($separate_html_files) ? substr("$MenuNames{ $hyper_ref }.html", 1) : "";
+           ($separate_html_files) ? substr("$MenuNames{ $hyper_ref }.$htmlExt", 1) : "";
 
         $href{ $hyper_ref } ="$externalReference$intHrefMrk$hyper_ref";
 
@@ -1590,8 +1780,10 @@ sub html_init_title
     #-----------------------------------------------------------------
     # Put out the HTML title and then suppress it for later processing
     #-----------------------------------------------------------------
-    print CONVERT "<TITLE>$this_title</TITLE>\n" unless $title++;
+    $aTitle   = "$this_title" unless $title++;
     $data[$i] = ".. <$head> " . $data[$i] . " </$head>";
+    
+    return $aTitle;
 }
 
 #-------------------------------------------------------------------------------
@@ -1609,7 +1801,9 @@ sub html_italic_tt
 sub html_line_break
 {
     my $fold = shift;
-    print CONVERT "<P>\n" unless $fold++;
+    
+    print CONVERT "$closePgf<P>\n" unless $fold++;
+    $closePgf = "</P>";
     return $fold;
 }
 
@@ -1617,8 +1811,43 @@ sub html_line_break
 
 sub html_line_tt
 {
-    s/$line_tt/${lt}P${gt}${lt}HR${gt}/;
-    print CONVERT html_finishing( $_ ), "\n";
+    if( not $insideNoFormatArea )
+    {
+        s/$line_tt/${lt}P${gt}${lt}HR${gt}/;
+        print CONVERT html_finishing( $_ ), "\n";
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub html_list_tt
+{
+    if( /$list_tt/o )
+    {
+        if ( $1 eq '(' ) # open list level
+        {
+            $list_level++;
+            s/$list_tt/${lt}UL${gt}${lt}LI${gt}/;
+        }
+        else             # close list level
+        {
+            $list_level--;
+            s,$list_tt,${lt}/LI${gt}${lt}/UL${gt},;
+            $atListStart = 2 if $list_level;
+            $terminatedList = 1;
+        }
+    }
+    
+    #-----------------------------------------------------
+    # An empty line terminates a multiple line list entry.
+    #-----------------------------------------------------
+    elsif( /$empty_line/o )
+    {
+        print CONVERT "</LI>\n" unless $terminatedList;
+        print CONVERT "</P><P>\n";
+        $atListStart    = 1 if $list_level;
+        $terminatedList = 0;
+    }
 }
 
 #-------------------------------------------------------------------------------
@@ -1647,15 +1876,6 @@ sub html_target_tt
 
 #-------------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# sub html_title
-# {
-#     to_state( $FMT ); 
-#     check_target_reference( $_ ); 
-#     /$target_tt/ && do { ($a = $4) =~ s,_, ,go; s/$target_tt/$a/; };
-#     /$title_tt/i && do { print CONVERT $1, &html_finishing($2), $3, "\n"; };
-# }
-#-----------------------------------------------------------------------------
 sub html_title
 {
     my $titleHolder = $_;
@@ -1692,13 +1912,14 @@ sub html_title
             {
                 $assocLevel  = substr( $association, 0, 1 );
                 $association = substr( $association, 1 );
+                $newFile     = "$outputDirectory$association.$htmlExt";
             
-                if( $converted_file ne "$association.html" )
+                if( $converted_file ne $newFile )
                 {
                     #-----------------------------
                     # Finish off the current file.
                     #-----------------------------
-                    print CONVERT "</BODY>\n</HTML>\n";
+                    html_emit_footer();
                     close CONVERT;
 
                     #-----------------------------------------------------
@@ -1707,13 +1928,10 @@ sub html_title
                     if ( $assocLevel == 0 ) {
                         $savedTitle = $thisTitle;
                     }
-
-                    $converted_file = "$association.html";
-                    open  CONVERT, ">$converted_file" or die "Can't create $converted_file, $OS_ERROR";
-                    print CONVERT "<HTML>\n<HEAD>\n";
-                    print CONVERT "</HEAD>\n";
-                    print CONVERT "<TITLE>$savedTitle</TITLE>\n";
-                    print CONVERT "<BODY>\n";
+                    
+                    $converted_file = $newFile;
+                    open CONVERT, ">$converted_file" or die "Can't create $converted_file, $OS_ERROR";
+                    html_emit_header( $savedTitle );
                     
                     #--------------------------------------------
                     # This puts target reference in correct file.
@@ -2101,6 +2319,7 @@ sub help_line_break
 #-------------------------------------------------------------------------------
 
 sub help_line_tt       {}
+sub help_list_tt       { text_list_tt() }
 sub help_quote_tt      {}
 
 #-------------------------------------------------------------------------------
@@ -2816,31 +3035,57 @@ Setext - convert Structured Enhanced TEXT into HTML or plain text.
 
 =head1 SYNOPSIS
 
- Usage: setext [ -dhHStTV ][-c conditional]   \
-               [-v name=value][setext_file [converted_file]]
-               
-        setext {-mp} [-c conditional][-M menuSuffix] \
-               [-v name=value] setext_file
+ Usage: setext [ -dhtTVw ][-D directory][-H [hfile]][-S [htmlExt]] \
+               [-c conditional][-v name=value][setext_file [converted_file]]
+
+        setext {-mp} [-c conditional][-M menuSuffix][-v name=value] setext_file
 
   The first form of setext is used to convert Structure Enhanced TEXT
-  documents into HTML or simple text documents. The second form is 
-  specific to generating the Nirvana Editor (NEdit) help menu code 
+  documents into HTML or simple text documents.
+  The second form is specific to generating NEdit help menu code
   from a setext document with Menu and Help directives.
 
   -c conditional text definitions, separated by commas.
   -d do not automatically make titles hypertext references (HTML only)
+  -D specify destination directory for separate HTML files. This also sets
+     the value for the variable HTML_DIR.
   -h show this usage clause.
   -H convert setext_file to HyperText Markup Language (HTML).
+     Optional file parameter specifies file containing HTML header
+     and footer definition overrides. The current defaults are:
+        $htmlHeader = <HTML>
+                      <TITLE>$HTML_TITLE</TITLE>
+                      <HEAD></HEAD>
+                      <BODY>
+        $htmlFooter = </BODY>
+                      </HTML>
+     where $HTML_TITLE is replaced with an appropriate title.
+
   -m generate NEdit help menu code files.
-  -M name NEdit help menu code files using this suffix.
+  -M name NEdit help code files with this suffix.
   -p do option -m and print out NEdit help elements.
   -S convert setext_file into separate HTML files.
+     (the default name extension is 'html', but it can be
+     changed by specifying it as an argument to this option)
   -t convert setext_file to simple text (default).
   -T emit setext typotag definitions in use.
   -v defines variable name and assigns it the given value.
      (more than one occurrence of -v can be made) The variables
      are made available for use within the setext document parsing.
   -V display the version of this setext script.
+  -w do not emit warnings about missing variables.
+
+  When the converted_file argument is missing, STDOUT is used.
+  When the setext_file argument is missing, STDIN is used.
+
+  To get conditional text within a setext document to be displayed,
+  supply a definition tag through the -c option. For example,
+
+          setext -c NEDITDOC help.etx nedit.doc
+
+  would generate a plain text document, nedit.doc, from the source
+  help.etx, including/excluding text marked with 'NEDITDOC'
+  conditional text markers, also known as 'maybe' typotags.
 
 =head1 DESCRIPTION
 
@@ -2862,12 +3107,60 @@ supply a definition tag through the -c option. For example,
 
         setext -c NEDITDOC help.etx nedit.doc
 
-Would generate a plain text document, nedit.doc, from the source
+would generate a plain text document, nedit.doc, from the source
 help.etx, including/excluding text marked with 'NEDITDOC'
 conditional text markers, also known as 'maybe' typotags.
 
 Use the -T option to see the set of typotags supported by this
 converter. Further explanations of typotags occurs there.
+
+=head2 HTML Generation Examples
+
+The simplest form of HTML generation is:
+
+        setext help.etx nedit.html
+        setext -H help.etx nedit.html
+
+The results will be stored in the current directory in the nedit.html
+file.
+
+When the user wants to break up the resulting html file into multiple
+files, with cross references between the files, the -S option should
+be used.
+
+        setext -S help.etx nedit.html
+
+The resulting files are broken up according to titled sections and 
+are placed into the current directory, along with the nedit.html file.
+
+To change the destination of the resulting files, two options are
+supplied, the -D and -S options. For instance,
+
+        setext -S shtml -D help/nedit help.etx nedit.shtml
+
+The -S option allows the name of the file extension to be altered.
+The -D option specifies where the resulting files are going to be
+stored. Thus, in the example, all the files will be placed in the
+help/nedit directory (relative to the current directory) and will
+have ".shtml" as the file extension.
+
+A final nuance has been added to help server side HTML capabilities.
+The -H option can be used to specify a file which contains the
+definitions of $htmlHeader and $htmlFooter. This will be used to
+override that which is supplied by the setext script. For example,
+
+        setext -S shtml -H NEdit.ssd help.etx nedit.html
+
+tells setext to use the file NEdit.ssd (server side definition) 
+to override the HTML header and footer generation. An example of
+the contents of this file follows.
+
+    $htmlHeader = 
+      '<!--#set var="menu" value="documentation" -->' . "\n" .
+      '<!--#include virtual="/head.shtml"-->' . "\n";
+
+    $htmlFooter =  
+       '<!--#include virtual="/tail.shtml"-->' . "\n";
 
 =head2 NEdit Help Menu
 

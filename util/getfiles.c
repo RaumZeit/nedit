@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.26 2003/07/25 06:50:44 tksoh Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.27 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -277,6 +277,7 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
 
     n = 0;
     titleString = XmStringCreateSimple(promptString);
+    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
     XmStringFree(titleString);
@@ -427,7 +428,12 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
 	XmStringFree(cFileString);
 	XtFree(fileString);
     }
-    XtDestroyWidget(existFileSB);
+    /* Destroy the dialog _shell_ iso. the dialog. Normally, this shouldn't
+       be necessary as the shell is destroyed automatically when the dialog
+       is. However, due to a bug in various Lesstif versions, the latter 
+       messes up the grab cascades and leaves new windows without grabs, such
+       that they appear to be frozen. */
+    XtDestroyWidget(XtParent(existFileSB));
     return SelectResult;
 }
 

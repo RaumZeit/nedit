@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.86 2003/10/22 20:05:13 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.87 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -733,6 +733,7 @@ void SplitWindow(WindowInfo *window)
     int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
     char *delimiters;
     Widget text;
+    textDisp *textD, *newTextD;
     
     /* Don't create new panes if we're already at the limit */
     if (window->nPanes >= MAX_PANES)
@@ -771,6 +772,18 @@ void SplitWindow(WindowInfo *window)
     }
     XtManageChild(text);
     window->textPanes[window->nPanes++] = text;
+    
+    /* Fix up the colors */
+    textD = ((TextWidget)window->textArea)->text.textD;
+    newTextD = ((TextWidget)text)->text.textD;
+    XtVaSetValues(text,
+                XmNforeground, textD->fgPixel,
+                XmNbackground, textD->bgPixel,
+                NULL);
+    TextDSetColors( newTextD, textD->fgPixel, textD->bgPixel, 
+            textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel,
+            textD->highlightBGPixel, textD->lineNumFGPixel, 
+            textD->cursorFGPixel );
     
     /* Set the minimum pane height in the new pane */
     UpdateMinPaneHeights(window);

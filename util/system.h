@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.12 2002/08/09 20:48:06 tringali Exp $ */
+/* $Id: system.h,v 1.13 2003/11/22 13:03:40 edg Exp $ */
 
 #ifndef NEDIT_SYSTEM_H_INCLUDED
 #define NEDIT_SYSTEM_H_INCLUDED
@@ -59,7 +59,9 @@
 #   define COMPILE_MACHINE "PA-RISC"
 #elif defined(__PPC__) || defined(_POWER)
 #   define COMPILE_MACHINE "PowerPC"
-#elif defined(__ia64) || defined(_M_IA64)
+#elif defined(__x86_64) || defined(_x86_64)
+#   define COMPILE_MACHINE "x86-64"
+#elif defined(__k6) || defined(__k6__)
 #   define COMPILE_MACHINE "IA64"
 #elif defined(__k6) || defined(__k6__)
 #   define COMPILE_MACHINE "K6"
@@ -88,7 +90,7 @@
 #   define COMPILE_OS "Solaris"
 #elif defined(__hpux)
 #   define COMPILE_OS "HP/UX"
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #   define COMPILE_OS "Win32"
 #elif defined(__sgi)
 #   define COMPILE_OS "IRIX"
@@ -100,7 +102,7 @@
 #   define COMPILE_OS "AIX"
 #elif defined(__VMS)                    /* Untested, please verify */
 #   define COMPILE_OS "VMS"
-#elif defined(__FreeBSD__)              /* Untested, please verify */
+#elif defined(__FreeBSD__)
 #   define COMPILE_OS "FreeBSD"
 #elif defined(__OpenBSD__)              /* Untested, please verify */
 #   define COMPILE_OS "OpenBSD"
@@ -114,6 +116,10 @@
 #   define COMPILE_OS "OS/2"
 #elif defined(__APPLE__) || defined(__MACOSX__)
 #   define COMPILE_OS "MacOS X"
+#elif defined(__UNIXWARE__)
+#   define COMPILE_OS "UnixWare"
+#elif defined(__unix__)                 /* Unknown Unix, next to last */
+#   define COMPILE_OS "Unix"
 #else
 #   define COMPILE_OS "Unknown"
 #endif

@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.19 2003/05/09 17:43:47 edg Exp $ */
+/* $Id: search.h,v 1.20 2003/11/22 13:03:40 edg Exp $ */
 
 #ifndef NEDIT_SEARCH_H_INCLUDED
 #define NEDIT_SEARCH_H_INCLUDED
@@ -11,10 +11,11 @@
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
 void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs,
-        Time time);
+        int searchType, Time time);
 void DoReplaceMultiFileDlog(WindowInfo *window);
 void UpdateReplaceActionButtons(WindowInfo* window);
-void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, Time time);
+void DoFindDlog(WindowInfo *window, int direction, int keepDialogs,
+        int searchType, Time time);
 int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap);
 int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);

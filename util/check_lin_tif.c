@@ -61,7 +61,12 @@
 /* 
  * These are versions of LessTif that are known to be stable with NEdit in
  * Motif 1.2 mode.
- */
+ *
+ * XXX: For the moment, we don't think that there are any bugs that show up 
+ *      in Motif 2.1 mode that don't also show up in Motif 1.2 mode.  Thus
+ *      the code to do different things based on that info is disabled.  If
+ *      we do come across a version of lesstif that works in one mode but not
+ *      the other then we should revive the commented-out code.
 char *good_lesstif_1_2_versions[] = {
     "0.92.32",
     "0.93.0",
@@ -69,6 +74,7 @@ char *good_lesstif_1_2_versions[] = {
     "0.93.18",
     NULL
 };
+ */
 
 /* 
  * These are versions of LessTif that are known to be stable with NEdit in
@@ -85,16 +91,31 @@ char *good_lesstif_2_1_versions[] = {
 /* 
  * These are versions of LessTif that are known NOT to be stable with NEdit in
  * Motif 1.2 mode.
- */
 char *bad_lesstif_1_2_versions[] = {
+    "0.93.25",
+    "0.93.29",
+    "0.93.34"
+    "0.93.36",
+    "0.93.39",
+    "0.93.40",
+    "0.93.41",
     NULL
 };
+ */
 
 /* 
  * These are versions of LessTif that are known NOT to be stable with NEdit in
  * Motif 2.1 mode.
  */
 char *bad_lesstif_2_1_versions[] = {
+    "0.93.25",
+    "0.93.29",
+    "0.93.34"
+    "0.93.36",
+    "0.93.39",
+    "0.93.40",
+    "0.93.41",
+    "0.93.44",
     NULL
 };
 
@@ -102,7 +123,7 @@ char *bad_lesstif_2_1_versions[] = {
 void good_versions() {
     int i;
     fprintf(stderr, "\nNEdit is known to work with LessTif versions:\n");
-    for(i=0; good_lesstif_2_1_versions[i]; i++) {
+    for (i=0; good_lesstif_2_1_versions[i]; i++) {
         fprintf(stderr, "\t%s\n", good_lesstif_2_1_versions[i]);
     }
     fprintf(stderr, 
@@ -132,11 +153,11 @@ char* get_lesstif_rev(char *vs) {
 /* Check to see if the user has overridden our warnings.  If they haven't,
     tell them how to do so if they're brave (or foolish :-). */
 void finish(int exitcode, char *tif) {
-    char buf[2];
     
     good_versions();
     if (exitcode == 1) {
 #ifdef BUILD_BROKEN_NEDIT
+        char buf[2];
         fprintf(stderr,
             "\n========================== WARNING ===========================\n"
             "You have chosen to build NEdit with a known-bad version of %s,\n"
@@ -151,11 +172,13 @@ void finish(int exitcode, char *tif) {
         fprintf(stderr,
             "\nIf you really want to build a known-bad version of NEdit you\n"
             "can override this sanity check by adding -DBUILD_BROKEN_NEDIT\n"
-            "to the CFLAGS variable in makefiles/Makefile.linux\n");
+            "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
+            "makefiles/Makefile.linux)\n");
         exit(1);
 #endif
     } else if (exitcode == 2) {
 #ifdef BUILD_UNTESTED_NEDIT
+        char buf[2];
         fprintf(stderr,
             "\n========================== WARNING ===========================\n"
             "You have chosen to build NEdit with an untested version of %s.\n"
@@ -168,41 +191,45 @@ void finish(int exitcode, char *tif) {
         fprintf(stderr,
             "\nIf you really want to build an untested version of NEdit you\n"
             "can override this sanity check by adding -DBUILD_UNTESTED_NEDIT\n"
-            "to the CFLAGS variable in makefiles/Makefile.linux\n");
+            "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
+            "makefiles/Makefile.linux)\n");
         exit(2);
 #endif
     }
 }
 
 int main() {
-    char *vs = XmVERSION_STRING, *tif, **v_good, **v_bad, *lesstif_rev;
-    int i, force_bad = 0;  /* This is just for debugging */
-    
+    char *vs = XmVERSION_STRING, *tif;
 #ifdef LESSTIF_VERSION
+    char **v_good, **v_bad, *lesstif_rev;
+    int i;
+    
     fprintf(stderr, "LessTif detected.\n");
     fprintf(stderr, "%s\n", vs);
     tif = "LessTif";
     lesstif_rev = get_lesstif_rev(vs);
     
+    /* XXX:  See comments above regarding Lesstif in Motif 1.2 vs. 2.1 mode
     if (XmVersion == 1002) {
         v_good = good_lesstif_1_2_versions;
         v_bad = bad_lesstif_1_2_versions;
-    } else if (XmVersion == 2001) {
+    } else if (XmVersion == 2001) { */
         v_good = good_lesstif_2_1_versions;
         v_bad = bad_lesstif_2_1_versions;
-    } else {
+    /* } else {
         fprintf(stderr, "Unexpected LessTif Version\n");
         finish(2, tif);
-    }
+    } */
     
     /* Check for known good LessTif versions */
-    for(i=0; v_good[i]; i++) {
-        if(!strcmp(lesstif_rev, v_good[i]))
+    for (i=0; v_good[i]; i++) {
+        if (!strcmp(lesstif_rev, v_good[i])) {
             exit(0);
+        }
     }
     /* Check for known bad LessTif versions */
-    for(i=0; v_bad[i]; i++) {
-        if(!strcmp(lesstif_rev, v_bad[i])) {
+    for (i=0; v_bad[i]; i++) {
+        if (!strcmp(lesstif_rev, v_bad[i])) {
             fprintf(stderr,
                 "\nYou are attempting to compile NEdit with a version of "
                 "LessTif that\nis known to interact badly with NEdit.  "
@@ -211,28 +238,32 @@ int main() {
         }
     }
 #else
+    {
+        int force_bad = 0;  /* This is just for debugging */
 
-    fprintf(stderr, "Open Motif detected.\n");
-    fprintf(stderr, "%s\n", vs);
-    tif = "Open Motif";
-    
-    /* Check for Open Motif 2.1 */
-    if (!force_bad && XmVERSION == 2 && XmREVISION == 1)
-        exit(0);
-    
-    /* Check for the dreaded Open Motif 2.2.2 */
-    if (force_bad || 
-            (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 3)) {
-        fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
-        fprintf(stderr, 
-            "\nThis version of Open Motif is known to be broken and is\n"
-            "thus unsupported by the NEdit developers.  It will probably\n"
-            "cause NEdit to crash frequently.  Check these pages for a more\n"
-            "detailed description of the problems with this version:\n"
-            "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
-            "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
-        finish(1, tif);
-    }    
+        fprintf(stderr, "Open Motif or OSF Motif detected.\n");
+        fprintf(stderr, "%s\n", vs);
+        tif = "Open Motif";
+
+        /* Check for Open Motif 2.1 */
+        if (!force_bad && XmVERSION == 2 && XmREVISION == 1) {
+            exit(0);
+        }
+
+        /* Check for the dreaded Open Motif 2.2.2 */
+        if (force_bad || 
+                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 3)) {
+            fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
+            fprintf(stderr, 
+                "\nThis version of Open Motif is known to be broken and is\n"
+                "thus unsupported by the NEdit developers.  It will probably\n"
+                "cause NEdit to crash frequently.  Check these pages for a more\n"
+                "detailed description of the problems with this version:\n"
+                "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
+                "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
+            finish(1, tif);
+        }    
+    }
 #endif
     
     /* This version is neither known-good nor known-bad */
@@ -241,8 +272,9 @@ int main() {
         "You are attempting to build NEdit with a version of %s that\n"
         "has not been verified to work well with NEdit.  This could be fine,\n"
         "but it could also lead to crashes and instability.  Historically, \n"
-        "older versions of Linux Motifs have quite often been more stable\n"
-        "than newer versions when used with NEdit.\n",
+        "older versions of Motif have quite often been more stable\n"
+        "than newer versions when used with NEdit, so don't assume newer\n"
+        "is better.\n",
             tif);
     finish(2, tif);
     return 1;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.59 2003/10/22 20:05:14 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.60 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -571,16 +571,6 @@ Widget CreateFileSelectionDialog(Widget parent, char *name,
 {
     Widget dialog = addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, 
             name, arglist, argcount);
-
-#ifdef LESSTIF_VERSION
-    /* workaround for Lesstif bug #566315:
-       with a few Lesstif versions (try 0.93.46), making the file-sel
-       dialog modal could cause new window opened with open-file
-       dialog to ignore all input. */
-    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_MODELESS, NULL);
-#else
-    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL, NULL);
-#endif
 
     AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_LIST));
     AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_DIR_LIST));
@@ -2132,7 +2122,7 @@ void RadioButtonChangeStateNotified(Widget widget, Boolean state)
    */
 #ifndef LESSTIF_VERSION
 #if XmVersion >= 2000
-    if (state)
+    if (state && XtIsRealized(widget))
     {
         /* 
            Simulate a mouse button click.

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.28 2003/06/06 18:04:17 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.29 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -807,6 +807,35 @@ void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     }
     newModifyProcs[buf->nModifyProcs] = bufModifiedCB;
     newCBArgs[buf->nModifyProcs] = cbArg;
+    buf->nModifyProcs++;
+    buf->modifyProcs = newModifyProcs;
+    buf->cbArgs = newCBArgs;
+}
+
+/*
+** Similar to the above, but makes sure that the callback is called before
+** normal priority callbacks.
+*/
+void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
+	void *cbArg)
+{
+    bufModifyCallbackProc *newModifyProcs;
+    void **newCBArgs;
+    int i;
+    
+    newModifyProcs = (bufModifyCallbackProc *)
+    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
+    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
+    for (i=0; i<buf->nModifyProcs; i++) {
+    	newModifyProcs[i+1] = buf->modifyProcs[i];
+    	newCBArgs[i+1] = buf->cbArgs[i];
+    }
+    if (buf->nModifyProcs != 0) {
+	XtFree((char *)buf->modifyProcs);
+	XtFree((char *)buf->cbArgs);
+    }
+    newModifyProcs[0] = bufModifiedCB;
+    newCBArgs[0] = cbArg;
     buf->nModifyProcs++;
     buf->modifyProcs = newModifyProcs;
     buf->cbArgs = newCBArgs;

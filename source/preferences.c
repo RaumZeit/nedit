@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.100 2003/10/22 20:05:12 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.101 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -927,7 +927,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d",
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
     {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN,
-        "True", &PrefData.undoModifiesSelection, NULL, True},
+        "True", &PrefData.undoModifiesSelection, NULL, False},
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -1148,13 +1148,14 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
            message even if there's no explicit call to upgrade. */
         fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
+        migrateColorResources(prefDB, appDB);
+        updateShellCmdsTo5dot4();
+        updatePatternsTo5dot4();
     }
-    /* XXX: When 5.4 is released we should move the following lines into 
-       the above if stmt.  It's here now for developers who have been using CVS
-       versions and want their colors and patterns migrated. */
-    migrateColorResources(prefDB, appDB);
-    updateShellCmdsTo5dot4();
-    updatePatternsTo5dot4();
+    /* Migrate colors if there's no config file yet */
+    if (!PrefData.prefFileRead) {
+        migrateColorResources(prefDB, appDB);
+    }
    
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
@@ -1259,7 +1260,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
     }
 
     if (!quietly) {
-        if (DialogF(DF_INF, parent, 2, "Save imported Settings",
+        if (DialogF(DF_INF, parent, 2, "Save Preferences",
                 ImportedFile == NULL ?
                 "Default preferences will be saved in the file:\n"
                 "%s\n"
@@ -5820,18 +5821,23 @@ void ChooseColors(WindowInfo *window)
             NULL);
     XmStringFree(s1);
     
+    tmpW = XtVaCreateManagedWidget("sep",
+            xmSeparatorGadgetClass, form,
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, tmpW,
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNrightAttachment, XmATTACH_FORM, NULL);
+    
     /* The OK, Apply, and Cancel buttons */
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
           XmNlabelString, s1=XmStringCreateSimple("OK"),
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, tmpW,
-          /* XmNtopOffset, MARGIN_SPACING, */
+          XmNtopOffset, MARGIN_SPACING,
           XmNleftAttachment, XmATTACH_POSITION,
           XmNleftPosition, 10,
           XmNrightAttachment, XmATTACH_POSITION,
-          XmNrightPosition, 30,
-          XmNbottomAttachment, XmATTACH_POSITION,
-          XmNbottomPosition, 99, NULL);
+          XmNrightPosition, 30, NULL);
     XtAddCallback(okBtn, XmNactivateCallback, colorOkCB, cd);
     XmStringFree(s1);
 
@@ -5840,14 +5846,12 @@ void ChooseColors(WindowInfo *window)
           XmNlabelString, s1=XmStringCreateSimple("Apply"),
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, tmpW,
-          /* XmNtopOffset, MARGIN_SPACING, */
+          XmNtopOffset, MARGIN_SPACING,
           XmNmnemonic, 'A',
           XmNleftAttachment, XmATTACH_POSITION,
           XmNleftPosition, 40,
           XmNrightAttachment, XmATTACH_POSITION,
-          XmNrightPosition, 60,
-          XmNbottomAttachment, XmATTACH_POSITION,
-          XmNbottomPosition, 99, NULL);
+          XmNrightPosition, 60, NULL);
     XtAddCallback(applyBtn, XmNactivateCallback, colorApplyCB, cd);
     XmStringFree(s1);
     
@@ -5856,13 +5860,11 @@ void ChooseColors(WindowInfo *window)
           XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, tmpW,
-          /* XmNtopOffset, MARGIN_SPACING, */
+          XmNtopOffset, MARGIN_SPACING,
           XmNleftAttachment, XmATTACH_POSITION,
           XmNleftPosition, 70,
           XmNrightAttachment, XmATTACH_POSITION,
-          XmNrightPosition, 90,
-          XmNbottomAttachment, XmATTACH_POSITION,
-          XmNbottomPosition, 99, NULL);
+          XmNrightPosition, 90, NULL);
     XtAddCallback(dismissBtn, XmNactivateCallback, colorDismissCB, cd);
     XmStringFree(s1);
  

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.21 2003/02/20 17:30:05 arnef Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.22 2003/11/22 13:03:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -340,16 +340,15 @@ static void processServerCommandString(char *string)
     	    for (window=WindowList; window!=NULL; window=window->next)
     		if (!window->filenameSet && !window->fileChanged)
     	    	    break;
-    	    if (window == NULL) {
-    		EditNewFile(NULL, iconicFlag, NULL, NULL);
-    		CheckCloseDim();
-    	    } else {
-	        if (!iconicFlag) {
-    		    XMapRaised(TheDisplay, XtWindow(window->shell));
-		}
-	    }
-
-	    if (*doCommand != '\0') {
+    	    if (*doCommand == '\0') {
+                if (window == NULL) {
+    		    EditNewFile(NULL, iconicFlag, lmLen==0?NULL:langMode, NULL);
+    	        } else {
+	            if (!iconicFlag) {
+    		        XMapRaised(TheDisplay, XtWindow(window->shell));
+		    }
+	        }
+            } else {
                 WindowInfo *win = WindowList;
 		/* Starting a new command while another one is still running
 		   in the same window is not possible (crashes). */
@@ -359,6 +358,10 @@ static void processServerCommandString(char *string)
 		if (!win) {
 		    XBell(TheDisplay, 0);
 		} else {
+		    /* Raise before -do (macro could close window). */
+		    if (!iconicFlag) {
+			XMapRaised(TheDisplay, XtWindow(win->shell));
+		    }
 		    DoMacro(win, doCommand, "-do macro");
 		}
 	    }

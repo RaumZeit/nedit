@@ -1,4 +1,4 @@
-/* $Id: rangeset.h,v 1.2 2003/05/02 18:18:45 edg Exp $ */
+/* $Id: rangeset.h,v 1.3 2003/11/22 13:03:40 edg Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.h	 -- Nirvana Editor rangest header			       *
@@ -40,7 +40,7 @@ typedef struct _Rangeset Rangeset;
 
 void RangesetRefreshRange(Rangeset *rangeset, int start, int end);
 void RangesetEmpty(Rangeset *rangeset);
-void RangesetInit(Rangeset *rangeset, unsigned char label, textBuffer *buf);
+void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf);
 int RangesetChangeModifyResponse(Rangeset *rangeset, char *name);
 int RangesetFindRangeNo(Rangeset *rangeset, int index, int *start, int *end);
 int RangesetFindRangeOfPos(Rangeset *rangeset, int pos, int incl_end);
@@ -51,12 +51,12 @@ int RangesetAddBetween(Rangeset *rangeset, int start, int end);
 int RangesetRemove(Rangeset *origSet, Rangeset *minusSet);
 int RangesetRemoveBetween(Rangeset *rangeset, int start, int end);
 int RangesetGetNRanges(Rangeset *rangeset);
-void RangesetGetInfo(Rangeset *rangeset, int *defined, unsigned char *label, 
-        int *count, char **color, char **mode);
+void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
+        int *count, char **color, char **name, char **mode);
 void RangesetSetMaxpos(Rangeset *rangeset, int maxpos);
 RangesetTable *RangesetTableAlloc(textBuffer *buf);
 RangesetTable *RangesetTableFree(RangesetTable *table);
-int RangesetFindIndex(RangesetTable *table, unsigned char label, int must_be_active);
+int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
 int RangesetLabelOK(int label);
 int RangesetCreate(RangesetTable *table);
 int nRangesetsAvailable(RangesetTable *table);
@@ -70,6 +70,8 @@ int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
 int RangesetAssignColorName(Rangeset *rangeset, char *color_name);
 int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok);
 char *RangesetGetColorName(Rangeset *rangeset);
+char *RangesetGetName(Rangeset *rangeset);
+int RangesetAssignName(Rangeset *rangeset, char *name);
 int RangesetGetColorValid(Rangeset *rangeset, Pixel *color);
 char *RangesetTableGetColorName(RangesetTable *table, int index);
 int RangesetTableGetColorValid(RangesetTable *table, int index, Pixel *color);

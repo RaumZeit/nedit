@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.4beta, May 2003
+          Release Notes for NEdit Version 5.5DEV, November 2003
 
 
-$Id: ReleaseNotes,v 1.22 2003/06/06 17:06:10 edg Exp $
+$Id: ReleaseNotes,v 1.23 2003/11/22 13:03:38 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -23,7 +23,7 @@ New Features in 5.4
 
   - Highlighting information macros (SF patch #529298)
 
-  - Full mouse wheel support (SF patch #715941)
+  - Full mouse wheel support for XFree86 (SF patch #715941)
 
   - Look-behind matching for regular expressions (SF patch #530308)
 
@@ -87,13 +87,13 @@ Bugs Fixed in 5.4
 
   - Removed flicker in stats line due to bug prevention (SF bug #594838)
 
-  - NEdit coredumped while dismissing a resized help window (SF bug #600175)
+  - Crash while dismissing a resized help window (SF bug #600175)
 
   - Macro functions were evaluated in a wrong order (SF bug #602336, #628552)
 
   - Syntax highlighting failures in LaTeX (SF bug #607072)
 
-  - NEdit coredumped with wrong values for -tabs option (SF bug #608693)
+  - Crash with wrong values for -tabs option (SF bug #608693)
 
   - Macro shortcuts were sensitive to Lock and NumLock (SF bug #612558)
 
@@ -113,7 +113,7 @@ Bugs Fixed in 5.4
 
   - Syntax highlighting routines assumed ASCII encoding (SF bug #700823)
 
-  - Fixes various bugs about LANG settings (SF bug #703246, ...)
+  - Crash when starting up in a UTF-8 locale (SF bug #703246, 621972)
 
   - Crash while manipulating highlighting pattern (SF bug #705495)
 
@@ -123,8 +123,52 @@ Bugs Fixed in 5.4
   
   - Macro function goto_line_number() only accepted one argument (SF bug #726325)
 
-  - Newline macro inserting a string caused a recursive loop when triggered
+  - Newline macro inserting a string caused a crash when triggered
     through smart indent
+
+  - Help text foreground was hard-coded to black (SF bug #723096)
+ 
+  - System default colors from CDE Style Manager were ignored (SF bug #544053)
+  
+Changes since 5.4RC1
+
+  - Panes didn't inherit the right colors (SF bug #780267)
+   
+  - Fixed Rangeset API usability issues and bugs.
+ 
+  - Plain KP Enter now inserts a newline, not <CR> (SF bug #779439).
+ 
+  - Enabled Motif version checking for xBSD.
+ 
+  - SGI: compilation problem (SF bug #780841)
+ 
+  - File modification issues (SF bug #782513, SF bug #784442)
+ 
+  - Documentation updates.
+   
+  - Color dialog button resize problem.
+   
+  - undoModifiesSelection is no longer saved in .nedit/nedit.rc
+ 
+  - Workaround for Lesstif's 'frozen windows' bug.
+ 
+  - Fixed calltip parsing problem (SF bug #779681)
+ 
+  - Macro language HL pattern updates.
+   
+  - nc -do ... no longer creates unwanted windows (SF bug #785738).
+
+  - Improved color resource migration.
+  
+  - File accessibility is now determined with access() (SF bug #782518)
+ 
+Changes since 5.4RC2
+
+  - Nc crash fix on VMS.
+  
+  - Fixes in highlighting information inspection macros.
+  
+  - Nc -lm command line option fix.
 
 New Features in 5.3
 
@@ -146,6 +190,7 @@ New Features in 5.3
  
   - Optional syntax based parenthesis matching (iso. purely character based)
     (SF #513976).
+
 
 Bugs Fixed in 5.3
 

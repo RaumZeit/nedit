@@ -1,10 +1,11 @@
 # Makefile for NEdit text editor documentation
 #
-#  $Id: Makefile,v 1.4 2002/12/13 17:23:41 edg Exp $
+#  $Id: Makefile,v 1.5 2003/11/22 13:03:38 edg Exp $
 #
 #  NEdit help documentation and internal help code using one common
 #  source, help.etx, a Structure Enhanced TEXT document.
 #
+.SUFFIXES: .man .pod
 
 instructions:
 	@ echo ""
@@ -14,11 +15,15 @@ instructions:
 	@ echo "of the NEdit help documentation and internal help code using"
 	@ echo "one common source, help.etx, a Structure Enhanced TEXT document."
 	@ echo ""
+	@ echo "Additionally, it generates the nedit and nc man pages."
+	@ echo "To generate those you need to have perl and pod2man installed."
+	@ echo ""
 	@ echo "The following are the main targets which generate files for"
 	@ echo "NEdit development. They are:"
 	@ echo ""
 	@ echo "  help - generates NEdit help code (help_topic.h, help_data.h)"
 	@ echo "  doc  - generates various forms of NEdit documentation"
+	@ echo "  man  - generates the nedit and nc man pages"
 	@ echo "  all  - generates all the files"
 	@ echo ""
 	@ echo "Remember to specify the VERSION macro on the make command"
@@ -64,9 +69,18 @@ nedit.doc: .version help.etx setext
 	@ echo "Creating NEdit plain text documenation..."
 	@ ./setext -c NEDITDOC -v version="`cat .version`" help.etx nedit.doc
 
+nc.man: .version
+nedit.man: .version
+.pod.man:
+	@ echo "Creating $* man page..."
+	@ which pod2man > /dev/null 2>&1 || ( echo "Sorry, you need pod2man." && exit 1 )
+	@ pod2man --release="`cat .version`" --center="NEdit documentation" $*.pod > $@ 
+
 doc: .version nedit.doc nedit.html html/nedit.html
 
-all: help doc
+man: .version nedit.man nc.man
+
+all: help doc man
 
 clean:
 	@ echo "Removing generated NEdit documentation..."
