@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.138 2004/04/01 12:48:23 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.139 2004/04/14 00:14:52 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -152,7 +152,7 @@ static void hideTooltip(Widget tab);
 static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width,
 	unsigned int height);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
-        int crossWin);
+        int crossWin, int wrap);
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
 static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
@@ -949,42 +949,6 @@ void SortTabBar(WindowInfo *window)
     XtFree((char *)windows);
 }
 
-/*
-** return the tab next to the closing tab.
-**
-** tab close left to right (Mozilla 1.1 behavior), i.e
-** the 'right-hand' tab get the new seat, unless the
-** closing buffer is the right-most tab
-*/
-static WindowInfo *replacementDocument(WindowInfo *window)
-{
-    int n, tabPos = 0, nextPos;
-    WindowInfo **winList, *win;
-    int nBuf = NDocuments(window);
-    
-    if (nBuf <= 1)
-    	return NULL;
-	
-    winList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nBuf);
-    n = nBuf -1;
-    for (win=WindowList; win && n>=0; win=win->next) {
-    	if (win->shell == window->shell)
-	    winList[n--] = win;
-    }
-    
-    for (n=0; n<nBuf; n++) {
-    	if (winList[n] == window) {
-	    tabPos = n;
-	    break;
-	}   
-    }
-    	
-    nextPos = tabPos == nBuf-1 ? tabPos-1 : tabPos+1;
-    win = winList[nextPos];
-    XtFree((char*) winList);
-    return win;
-}
-
 /* 
  * find which buffer/window a tab belongs to
 **/
@@ -1095,7 +1059,7 @@ void CloseWindow(WindowInfo *window)
 	else if (IsTopDocument(window)) {
 	    /* if this is the active buffer, then we need
 	       to find its successor */
-    	    nextBuf = replacementDocument(window);
+    	    nextBuf = getNextTabWindow(window, 1, 0, 0);
 	}
 	else
 	    topBuf = GetTopDocument(window->shell);	    
@@ -3537,9 +3501,14 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
 
 /*
 ** return the next/previous docment on the tab list.
+**
+** If <wrap> is true then the next tab of the rightmost tab will be the
+** second tab from the right, and the the previous tab of the leftmost
+** tab will be the second from the left.  This is useful for getting
+** the next tab after a tab detaches/closes and you don't want to wrap around.
 */
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
-        int crossWin)
+        int crossWin, int wrap)
 {
     WidgetList tabList, tabs;
     WindowInfo *win;
@@ -3596,10 +3565,17 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     
     /* calculate index position of next tab */
     nextPos = tabPos + direction;
-    if (nextPos >= nBuf)
-    	nextPos = 0;
-    else if (nextPos < 0)
-    	nextPos = nBuf - 1;
+    if (nextPos >= nBuf) {
+        if (wrap)
+            nextPos = 0;
+        else
+            nextPos = nBuf - 2; 
+    } else if (nextPos < 0) {
+        if (wrap)
+    	    nextPos = nBuf - 1;
+        else
+            nextPos = 1;
+    }
     
     /* return the document where the next tab belongs to */
     win = TabToWindow(tabs[nextPos]);
@@ -3941,7 +3917,7 @@ void NextDocument(WindowInfo *window)
     if (WindowList->next == NULL)
     	return;
 
-    win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate());
+    win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate(), 1);
     if (win == NULL)
     	return;
 	
@@ -3961,7 +3937,7 @@ void PreviousDocument(WindowInfo *window)
     if (WindowList->next == NULL)
     	return;
 
-    win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate());
+    win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate(), 1);
     if (win == NULL)
     	return;
 	
@@ -4383,7 +4359,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
     	return NULL;
 
     /* raise another document in the same shell window */
-    win = replacementDocument(window);
+    win = getNextTabWindow(window, 1, 0, 0);
     RaiseDocument(win);
     
     /* create new window in roughly the size of original window,
