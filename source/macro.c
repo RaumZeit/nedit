@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.52 2002/10/04 23:21:31 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.53 2002/10/10 22:04:42 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -3935,7 +3935,7 @@ static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
     
     result->tag = STRING_TAG;
     strcpy(&subSepStr[1], ARRAY_DIM_SEP);
-     /* This allows grabage collection to think this is allocated */
+     /* This allows garbage collection to think this is allocated */
      /* but since it isn't, it won't get deleted */
     result->val.str = &subSepStr[1];
     return True;
