@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.141 2004/04/14 15:12:11 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.142 2004/04/14 20:33:22 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3611,9 +3611,20 @@ void RefreshTabState(WindowInfo *win)
 {
     XmString s1, tipString;
     char labelString[MAXPATHLEN];
-    
-    sprintf(labelString, "%s%s", win->fileChanged? "*" : "",
-	    win->filename);
+    unsigned char alignment;
+
+    /* Set tab label to document's filename. Position of
+       "*" (modified) will change per label alignment setting */
+    XtVaGetValues(win->tab, XmNalignment, &alignment, NULL);
+    if (alignment != XmALIGNMENT_END) {
+       sprintf(labelString, "%s%s",
+               win->fileChanged? "*" : "",
+               win->filename);
+    } else {
+       sprintf(labelString, "%s%s",
+               win->filename,
+               win->fileChanged? "*" : "");
+    }
     s1=XmStringCreateSimple(labelString);
 
     if (GetPrefShowPathInWindowsMenu() && win->filenameSet) {
