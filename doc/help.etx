@@ -1383,19 +1383,19 @@ Metacharacters
   NEdit defines some escape sequences that are handy shortcuts for commonly
   used character classes.
 
-     \d  digits            0-9
-     \l  letters           a-z and A-Z
-     \s  whitespace        \t, \r, \v, \f, and space
-     \w  word characters   a-z, A-Z, 0-9, and underscore, `_'
+   \d  digits            0-9
+   \l  letters           a-z, A-Z, and locale dependent letters
+   \s  whitespace        \t, \r, \v, \f, and space
+   \w  word characters   letters, digits, and underscore, `_'
 
   \D, \L, \S, and \W are the same as the lowercase versions except that the
   resulting character class is negated.  For example, \d is equivalent to
   `[0-9]', while \D is equivalent to `[^0-9]'.
 
   These escape sequences can also be used within a character class.  For
-  example, `[\l_]' is the same as `[a-zA-Z_]'.  The escape sequences for
-  special characters, and octal and hexadecimal escapes are also valid within a
-  class.
+  example, `[\l_]' is the same as `[a-zA-Z_]', extended with possible locale 
+  dependent letters. The escape sequences for special characters, and octal
+  and hexadecimal escapes are also valid within a class.
 
 3>Word Delimiter Tokens
 
