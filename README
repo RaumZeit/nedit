@@ -84,10 +84,10 @@ Pre-built executables will be available for most major Unix and VMS systems, so
 check the nedit web page (http://nedit.org), first.  Building NEdit requires
 the Motif GUI library, libXm.a, which is a standard part of commercial Unix
 systems, but which requires separate installation on Linux and other free Unix
-variants.  A free version of Motif, called Lesstif, is now available and stable
+variants.  A free version of Motif, called LessTif, is now available and stable
 enough to run NEdit reasonably well on these systems.  If you are using
-Lesstif, you must have Lesstif .89.4 or greater.  Older versions don't work
-very well.  See the Lesstif section under PLATFORM SPECIFIC ISSUES for details.
+LessTif, you must have LessTif 0.92.0 or greater.  Older versions may not work
+very well.  See the LessTif section under PLATFORM SPECIFIC ISSUES for details.
 
 The two directories called source and util contain the sources for NEdit.  Util
 should be built first, followed by source.  The makefile in this directory can
@@ -178,40 +178,24 @@ line, look under the heading of "NEdit Command Line."
 
 PLATFORM SPECIFIC ISSUES
 
-Systems with Lesstif, rather than Motif libraries
+Systems with LessTif, rather than Motif libraries
 
-As of Lesstif .89.4, NEdit is very stable with Lesstif.  .89.9 gets a bit less
-stable again but is still quite useable.  You can get the latest lesstif
-version from http://lesstif.org.  If you are having trouble building with
-Lesstif, remember there are pre-compiled statically linked executables
-available from http://nedit.org.  Known bugs in NEdit linked with Lesstif are:
+As of Lesstif .91.4, NEdit is very stable with Lesstif. 
+You can get the latest LessTif version from http://www.lesstif.org.
+If you are having trouble building with
+LessTif, remember there are pre-compiled statically linked executables
+available from http://nedit.org.  Known bugs in NEdit linked with LessTif are:
 
-  1) Unlikely but possible: frozen windows which do not take keyboard
-     focus.  (.89.9)
-  
-  2) Some dialogs which are intended to be modal (prevent other activity
+  1) Some dialogs which are intended to be modal (prevent other activity
      while up) are not, and doing other actions while these dialogs are
-     up can cause trouble (.89.9)
+     up can cause trouble (.89.9+)
      
-  3) Switching to continuous wrap mode, sometimes the horizontal scroll
+  2) Switching to continuous wrap mode, sometimes the horizontal scroll
      remains partially drawn after the change, rather than disappearing
-     completely as it should. (.89.9)
+     completely as it should. (.89.9+)
   
-  4) In file selection dialogs, typing filenames in to the alphabetical
-     file and directory lists does not move the list selection cursor
-     beyond the originally displayed range of files, so typing part of
-     a filename and then navigating with arrows doesn't always work well.
-     (fixed as of .89.9)
-     
-  5) Secondary selection operations are not yet supported in text fields.
+  3) Secondary selection operations are not yet supported in text fields.
 
-  6) Menu mnemonics don't work (fixed as of .89.9)
-  
-  7) The escape key accelerator for "Cancel" and "Dismiss" buttons
-     does not work in most dialogs. (fixed as of .89.9)
-     
-  8) The long, unbroken, lines found in some highlight patterns don't
-     wrap properly in the syntax highlighting dialog. (fixed as of .89.9)
 
 Linux Systems
 

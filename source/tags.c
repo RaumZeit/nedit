@@ -29,9 +29,9 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
-#include <unistd.h>
 #else
 #ifndef __MVS__
 #include <sys/param.h>
