@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.11 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.12 2001/06/06 10:00:23 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -124,6 +124,7 @@ match.  When you leave off the file name or trailing \"/\", you won't see \
 any files to open in the list \
 because the filter specification matched the directory file itself, rather \
 than the files in the directory.";
+
 static const char *HelpNew = 
 "This dialog allows you to create a new file, or to save the current file \
 under a new name.  To specify a file \
@@ -167,6 +168,7 @@ directories.\n\
 The \"Filter\" button allows you to narrow down the list of files and \
 directories shown in the \"File to Edit:\" field.  The default filter of \
 \"*\" allows all files to be listed.";
+
 static const char *HelpNew = 
 "This dialog allows you to create a new file or to save the current file \
 under a new name.\n\
@@ -1076,6 +1078,7 @@ static void replacementDirSearchProc(Widget w, XtPointer searchData)
     /* Sort the items in the list */
     sortWidgetList(XmFileSelectionBoxGetChild(w, XmDIALOG_DIR_LIST));
 }
+
 static void replacementFileSearchProc(Widget w, XtPointer searchData)
 {
     Boolean updated;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.8 2001/06/06 10:00:23 amai Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.7 2001/02/26 23:38:03 edg Exp $
 *******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef VMS
 #include "VMSparam.h"
 #else
