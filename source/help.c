@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.99 2004/07/15 21:17:12 n8gray Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.100 2004/07/18 22:30:58 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -174,7 +174,7 @@ static unsigned char AlphabetToAsciiTable[256];
 /*============================================================================*/
 
 static Widget createHelpPanel(enum HelpTopic topic);
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData);
 static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData);
 static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -575,7 +575,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
 {
     Arg al[50];
     int ac;
-    Widget appShell, btn, dismissBtn, form, btnFW;
+    Widget appShell, btn, closeBtn, form, btnFW;
     Widget sw, hScrollBar, vScrollBar;
     XmString st1;
     char * helpText  = NULL;
@@ -633,16 +633,16 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XtAddCallback(btn, XmNactivateCallback, printCB, appShell);
     XmStringFree(st1);
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss",
+    closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Dismiss"),
+            XmNlabelString, st1=XmStringCreateSimple("Close"),
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 75,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 97,
             NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, appShell);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, appShell);
     XmStringFree(st1);
             
     /* Create the next row of buttons (for navigation) */
@@ -650,7 +650,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNlabelString, st1=XmStringCreateSimple("<< Browse"),
             XmNmnemonic, 'o', 
             XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, dismissBtn,
+            XmNbottomWidget, closeBtn,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 51,
             XmNrightAttachment, XmATTACH_POSITION,
@@ -663,7 +663,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNlabelString, st1=XmStringCreateSimple("Browse >>"),
             XmNmnemonic, 'e', 
             XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, dismissBtn,
+            XmNbottomWidget, closeBtn,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 75, 
             XmNrightAttachment, XmATTACH_POSITION,
@@ -676,7 +676,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNlabelString, st1=XmStringCreateSimple("Back"),
             XmNmnemonic, 'B', 
             XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, dismissBtn,
+            XmNbottomWidget, closeBtn,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 3,
             XmNrightAttachment, XmATTACH_POSITION,
@@ -689,7 +689,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNlabelString, st1=XmStringCreateSimple("Forward"),
             XmNmnemonic, 'w', 
             XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, dismissBtn,
+            XmNbottomWidget, closeBtn,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 27,
             XmNrightAttachment, XmATTACH_POSITION,
@@ -763,8 +763,8 @@ static Widget createHelpPanel(enum HelpTopic topic)
     AddDialogMnemonicHandler(form, FALSE);
     
     /* Set the default button */
-    XtVaSetValues(form, XmNdefaultButton, dismissBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* realize all of the widgets in the new window */
     RealizeWithoutForcingPosition(appShell);
@@ -773,7 +773,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmProcessTraversal(HelpTextPanes[topic], XmTRAVERSE_CURRENT);
 
     /* Make close command in window menu gracefully prompt for close */
-    AddMotifCloseCallback(appShell, (XtCallbackProc)dismissCB, appShell);
+    AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, appShell);
     
     /* Initialize navigation information, if it hasn't already been init'd */
     initNavigationHistory();
@@ -807,7 +807,7 @@ static void changeTopicOrRaise(int existingTopic, int newTopic) {
 /*
 ** Callbacks for window controls
 */
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int topic;
     
@@ -1190,7 +1190,7 @@ static void searchHelpText(Widget parent, int parentTopic,
             searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
             return;
         }
-        DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", "Dismiss");
+        DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", " OK ");
         return;
     }
     

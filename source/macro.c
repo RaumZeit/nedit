@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.86 2004/06/10 17:01:26 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.87 2004/07/18 22:30:58 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -781,7 +781,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
         if (errno != ENOENT || warnNotExist)
         {
             DialogF(DF_ERR, window->shell, 1, "Read Macro",
-                    "Error reading macro file %s: %s", "dismiss", fileName,
+                    "Error reading macro file %s: %s", " OK ", fileName,
 #ifdef VMS
                     strerror(errno, vaxc$errno));
 #else
@@ -968,7 +968,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     {
         finishMacroCmdExecution(window);
         DialogF(DF_ERR, window->shell, 1, "Macro Error",
-                "Error executing macro: %s", "Dismiss", errMsg);
+                "Error executing macro: %s", " OK ", errMsg);
         return;
     }
 
@@ -1207,7 +1207,7 @@ void RepeatDialog(WindowInfo *window)
     {
         DialogF(DF_WARN, window->shell, 1, "Repeat Macro",
                 "No previous commands or learn/\nreplay sequences to repeat",
-                "Dismiss");
+                " OK ");
         return;
     }
     
@@ -1345,7 +1345,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
         if (!rd->forWindow->buffer->primary.selected)
         {
             DialogF(DF_WARN, rd->shell, 1, "Repeat Macro",
-                    "No selection in window to repeat within", "Dismiss");
+                    "No selection in window to repeat within", " OK ");
             XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
             return False;
         }
@@ -1683,7 +1683,7 @@ static Boolean continueWorkProc(XtPointer clientData)
     {
         finishMacroCmdExecution(window);
         DialogF(DF_ERR, window->shell, 1, "Macro Error",
-                "Error executing macro: %s", "Dismiss", errMsg);
+                "Error executing macro: %s", " OK ", errMsg);
         return True;
     } else if (stat == MACRO_DONE)
     {
@@ -2788,7 +2788,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    	errMsg))
 	    return False;
     if (nArgs == 1) {
-    	btnLabels[0] = "Dismiss";
+    	btnLabels[0] = " OK ";
     	nBtns = 1;
     } else
     	nBtns = nArgs - 1;
@@ -2950,7 +2950,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    	errMsg))
 	    return False;
     if (nArgs == 1) {
-    	btnLabels[0] = "Dismiss";
+    	btnLabels[0] = " OK ";
     	nBtns = 1;
     } else
     	nBtns = nArgs - 1;
@@ -3306,7 +3306,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
               errMsg))
           return False;
     if (nArgs == 2) {
-      btnLabels[0] = "Dismiss";
+      btnLabels[0] = " OK ";
       nBtns = 1;
     } else
       nBtns = nArgs - 2;

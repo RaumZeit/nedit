@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.65 2004/07/09 07:44:46 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.66 2004/07/18 22:31:01 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1230,12 +1230,12 @@ int GetFloatTextWarn(Widget text, double *value, const char *fieldName,
 
     if (result == TEXT_IS_BLANK)
     {
-        DialogF(DF_ERR, text, 1, "Warning", "Please supply %s value", "Dismiss",
+        DialogF(DF_ERR, text, 1, "Warning", "Please supply %s value", " OK ",
                 fieldName);
     } else /* TEXT_NOT_NUMBER */
     {
         DialogF (DF_ERR, text, 1, "Warning", "Can't read %s value: \"%s\"",
-                "Dismiss", fieldName, valueStr);
+                " OK ", fieldName, valueStr);
     }
 
     XtFree(valueStr);
@@ -1255,11 +1255,11 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
     if (result == TEXT_IS_BLANK)
     {
         DialogF (DF_ERR, text, 1, "Warning", "Please supply a value for %s",
-                "Dismiss", fieldName);
+                " OK ", fieldName);
     } else /* TEXT_NOT_NUMBER */
     {
         DialogF (DF_ERR, text, 1, "Warning",
-                "Can't read integer value \"%s\" in %s", "Dismiss", valueStr,
+                "Can't read integer value \"%s\" in %s", " OK ", valueStr,
                 fieldName);
     }
 

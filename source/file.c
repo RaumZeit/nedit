@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.83 2004/07/15 09:07:16 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.84 2004/07/18 22:30:58 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -256,11 +256,12 @@ void RevertToSaved(WindowInfo *window)
     Widget text;
     
     /* Can't revert untitled windows */
-    if (!window->filenameSet) {
-    	DialogF(DF_WARN, window->shell, 1, "Error",
-    		"Window '%s' was never saved, can't re-read",
-		"Dismiss", window->filename);
-    	return;
+    if (!window->filenameSet)
+    {
+        DialogF(DF_WARN, window->shell, 1, "Error",
+                "Window '%s' was never saved, can't re-read", " OK ",
+                window->filename);
+        return;
     }
     
     /* save insert & scroll positions of all of the panes to restore later */
@@ -393,7 +394,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         if ((fd = creat(fullname, 0666)) == -1)
         {
             DialogF(DF_ERR, window->shell, 1, "Error creating File",
-                    "Can't create %s:\n%s", "Dismiss", fullname, errorString());
+                    "Can't create %s:\n%s", " OK ", fullname, errorString());
             return FALSE;
         } else
         {
@@ -415,7 +416,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         {
             /* A true error */
             DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                    "Could not open %s%s:\n%s", "Dismiss", path, name,
+                    "Could not open %s%s:\n%s", " OK ", path, name,
                     errorString());
             return FALSE;
         }
@@ -428,7 +429,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Error opening %s", "Dismiss", name);
+                "Error opening %s", " OK ", name);
         window->filenameSet = TRUE;
         return FALSE;
     }
@@ -438,7 +439,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Can't open directory %s", "Dismiss", name);
+                "Can't open directory %s", " OK ", name);
         window->filenameSet = TRUE;
         return FALSE;
     }
@@ -449,7 +450,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Can't open block device %s", "Dismiss", name);
+                "Can't open block device %s", " OK ", name);
         window->filenameSet = TRUE;
         return FALSE;
     }
@@ -463,7 +464,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
-                "File is too large to edit", "Dismiss");
+                "File is too large to edit", " OK ");
         window->filenameSet = TRUE;
         return FALSE;
     }
@@ -475,7 +476,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
-                "Error reading %s:\n%s", "Dismiss", name, errorString());
+                "Error reading %s:\n%s", " OK ", name, errorString());
         window->filenameSet = TRUE;
         free(fileString);
         return FALSE;
@@ -487,7 +488,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     {
         /* unlikely error */
         DialogF(DF_WARN, window->shell, 1, "Error while opening File",
-                "Unable to close file", "Dismiss");
+                "Unable to close file", " OK ");
         /* we read it successfully, so continue */
     }
 
@@ -574,7 +575,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (fp == NULL)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Could not open %s:\n%s", "Dismiss", name, errorString());
+                "Could not open %s:\n%s", " OK ", name, errorString());
         return FALSE;
     }
     
@@ -582,7 +583,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (fstat(fileno(fp), &statbuf) != 0)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Error opening %s", "Dismiss", name);
+                "Error opening %s", " OK ", name);
         fclose(fp);
         return FALSE;
     }
@@ -590,7 +591,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (S_ISDIR(statbuf.st_mode))
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Can't open directory %s", "Dismiss", name);
+                "Can't open directory %s", " OK ", name);
         fclose(fp);
         return FALSE;
     }
@@ -601,7 +602,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (fileString == NULL)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "File is too large to include", "Dismiss");
+                "File is too large to include", " OK ");
         fclose(fp);
         return FALSE;
     }
@@ -611,7 +612,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (ferror(fp))
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Error reading %s:\n%s", "Dismiss", name, errorString());
+                "Error reading %s:\n%s", " OK ", name, errorString());
         fclose(fp);
         free(fileString);
         return FALSE;
@@ -630,7 +631,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     if (!BufSubstituteNullChars(fileString, readLen, window->buffer))
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
-                "Too much binary data in file", "Dismiss");
+                "Too much binary data in file", " OK ");
     }
  
     /* close the file */
@@ -638,7 +639,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     {
         /* unlikely error */
         DialogF(DF_WARN, window->shell, 1, "Error opening File",
-                "Unable to close file", "Dismiss");
+                "Unable to close file", " OK ");
         /* we read it successfully, so continue */
     }
     
@@ -917,7 +918,7 @@ static int doSave(WindowInfo *window)
     {
         result = DialogF(DF_WARN, window->shell, 2, "Error saving File",
                 "Unable to save %s:\n%s\n\nSave as a new file?",
-                "Save As...", "Dismiss",
+                "Save As...", "Cancel",
         window->filename, errorString());
 
         if (result == 1)
@@ -945,7 +946,7 @@ static int doSave(WindowInfo *window)
         if (!ConvertToDosFileString(&fileString, &fileLen))
         {
             DialogF(DF_ERR, window->shell, 1, "Out of Memory",
-                    "Out of memory!  Try\nsaving in Unix format", "Dismiss");
+                    "Out of memory!  Try\nsaving in Unix format", " OK ");
             return FALSE;
         }
     } else if (window->fileFormat == MAC_FILE_FORMAT)
@@ -962,7 +963,7 @@ static int doSave(WindowInfo *window)
     if (ferror(fp))
     {
         DialogF(DF_ERR, window->shell, 1, "Error saving File",
-                "%s not saved:\n%s", "Dismiss", window->filename, errorString());
+                "%s not saved:\n%s", " OK ", window->filename, errorString());
         fclose(fp);
         remove(fullname);
         XtFree(fileString);
@@ -973,7 +974,7 @@ static int doSave(WindowInfo *window)
     if (fclose(fp) != 0)
     {
         DialogF(DF_ERR, window->shell, 1, "Error closing File",
-                "Error closing file:\n%s", "Dismiss", errorString());
+                "Error closing file:\n%s", " OK ", errorString());
         XtFree(fileString);
         return FALSE;
     }
@@ -1034,7 +1035,7 @@ int WriteBackupFile(WindowInfo *window)
     {
         DialogF(DF_WARN, window->shell, 1, "Error writing Backup",
                 "Unable to save backup for %s:\n%s\n"
-                "Automatic backup is now off", "Dismiss", window->filename,
+                "Automatic backup is now off", " OK ", window->filename,
                 errorString());
         window->autoSave = FALSE;
         SetToggleButtonState(window, window->autoSaveItem, FALSE, FALSE);
@@ -1067,7 +1068,7 @@ int WriteBackupFile(WindowInfo *window)
     {
         DialogF(DF_ERR, window->shell, 1, "Error saving Backup",
                 "Error while saving backup for %s:\n%s\n"
-                "Automatic backup is now off", "Dismiss", window->filename,
+                "Automatic backup is now off", " OK ", window->filename,
                 errorString());
         fclose(fp);
         remove(name);
@@ -1315,7 +1316,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 #endif /* VMS */
     {
         DialogF(DF_WARN, parent, 1, "Error while Printing",
-                "Unable to write file for printing:\n%s", "Dismiss",
+                "Unable to write file for printing:\n%s", " OK ",
                 errorString());
         return;
     }
@@ -1333,7 +1334,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     if (ferror(fp))
     {
         DialogF(DF_ERR, parent, 1, "Error while Printing",
-                "%s not printed:\n%s", "Dismiss", jobName, errorString());
+                "%s not printed:\n%s", " OK ", jobName, errorString());
         fclose(fp); /* should call close(fd) in turn! */
         remove(tmpFileName);
         return;
@@ -1343,7 +1344,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     if (fclose(fp) != 0)
     {
         DialogF(DF_ERR, parent, 1, "Error while Printing",
-                "Error closing temp. print file:\n%s", "Dismiss",
+                "Error closing temp. print file:\n%s", " OK ",
                 errorString());
         remove(tmpFileName);
         return;
@@ -1587,14 +1588,14 @@ void CheckForChangesToFile(WindowInfo *window)
                         "You no longer have access to file \"%s\".\n"
                         "Another program may have changed the permissions one of\n"
                         "its parent directories.\nSave as a new file?",
-                        "Save As...", "Dismiss", window->filename);
+                        "Save As...", "Cancel", window->filename);
             else
                 resp = DialogF(DF_ERR, window->shell, 3, "File not found",
                         "Error while checking the status of file \"%s\":\n"
                         "    \"%s\"\n"
                         "Another program may have deleted or moved it.\n"
                         "Re-Save file or Save as a new file?", "Re-Save",
-                        "Save As...", "Dismiss", window->filename,
+                        "Save As...", "Cancel", window->filename,
                         errorString());
             if (resp == 1)
                 SaveWindow(window);
@@ -1659,12 +1660,12 @@ void CheckForChangesToFile(WindowInfo *window)
                     "File modified externally",
                     "%s has been modified by another program.  Reload?\n\n"
                     "WARNING: Reloading will discard changes made in this\n"
-                    "editing session!", "Reload", "Dismiss", window->filename);
+                    "editing session!", "Reload", "Cancel", window->filename);
         else
             resp = DialogF(DF_WARN, window->shell, 2,
                     "File modified externally",
                     "%s has been modified by another\nprogram.  Reload?",
-                    "Reload", "Dismiss", window->filename);
+                    "Reload", "Cancel", window->filename);
         if (resp == 1)
             RevertToSaved(window);
     }
@@ -1763,7 +1764,7 @@ static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData)
                 "Continuous Wrap mode Preferences Option.\n\n"
                 "*** This Option is Irreversable ***\n\n"
                 "Once newlines are inserted, continuous wrapping\n"
-                "will no longer work automatically on these lines", "OK",
+                "will no longer work automatically on these lines", " OK ",
                 "Cancel");
         if (resp == 2)
         {

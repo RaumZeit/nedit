@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.22 2003/04/07 22:51:42 yooden Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.23 2004/07/18 22:31:01 yooden Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -716,7 +716,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     if (spawn_sts != SS$_NORMAL)
     {
         DialogF(DF_WARN, widget, 1, "Print Error",
-                "Unable to Print:\n%d - %s\n  spawnFlags = %d\n", "Dismiss",
+                "Unable to Print:\n%d - %s\n  spawnFlags = %d\n", " OK ",
                 spawn_sts, strerror(EVMSERR, spawn_sts), spawnFlags);
         return;
     }
@@ -738,7 +738,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     if (pipe == NULL)
     {
         DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
-                "Dismiss", strerror(errno));
+                " OK ", strerror(errno));
         return;
     }
 
@@ -757,7 +757,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     if (pclose(pipe))
     {
         DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
-                "Dismiss", errorString);
+                " OK ", errorString);
         return;
     }
 #endif /*(VMS)*/
@@ -978,7 +978,7 @@ static void getVmsQueueDefault(char *defqueue)
     if (translate_sts != SS$_NORMAL && translate_sts != SS$_NOLOGNAM){
        fprintf(stderr, "Error return from sys$trnlnm: %d\n", translate_sts);
        DialogF(DF_WARN, Label2, 1, "Error", "Error translating SYS$PRINT",
-               "Dismiss");
+               " OK ");
        defqueue[0] = '\0';
     } else
     {

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 7, 2004 (Do NOT edit!)
+                 Generated on Jul 18, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -1814,7 +1814,7 @@ static char * htxt_macro_lang [] = {
 "Character string constants are enclosed in double quotes.  For example: ",
 "\n\n",
 "\01A     a = \"a string\"\n",
-"     dialog(\"Hi there!\", \"Dismiss\")\n",
+"     dialog(\"Hi there!\", \"OK\")\n",
 "\01I\n",
 "Strings may also include C-language style escape sequences: ",
 "\n\n",
@@ -5478,4 +5478,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.5RC1\nJul 7, 2004\n";
+static const char * NEditVersion = "NEdit 5.5DEV\nJul 18, 2004\n";

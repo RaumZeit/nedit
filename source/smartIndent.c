@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.33 2004/04/30 14:35:16 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.34 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -124,7 +124,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData);
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkSmartIndentDialogData(void);
 static smartIndentRec *getSmartIndentDialogData(void);
@@ -134,7 +134,7 @@ static void comOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData);
 static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static int updateSmartIndentCommonData(void);
 static int checkSmartIndentCommonDialogData(void);
 static int updateSmartIndentData(void);
@@ -699,7 +699,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
                     "No language-specific mode has been set for this file.\n\n"
                     "To use smart indent in this window, please select a\n"
                     "language from the Preferences -> Language Modes menu.",
-                    "Dismiss");
+                    " OK ");
         }
         return;
     }
@@ -715,7 +715,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
                     "You can create new smart indent macros in the\n"
                     "Preferences -> Default Settings -> Smart Indent\n"
                     "dialog, or choose a different language mode from:\n"
-                    "Preferences -> Language Mode.", "Dismiss", modeName);
+                    "Preferences -> Language Mode.", " OK ", modeName);
         }
         return;
     }
@@ -850,7 +850,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
-                "Error in smart indent macro:\n%s", "Dismiss",
+                "Error in smart indent macro:\n%s", " OK ",
                 stat == MACRO_ERROR
                         ? errMsg
                         : "dialogs and shell commands not permitted");
@@ -863,7 +863,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
                 "Smart indent macros must return\ninteger indent distance",
-                "Dismiss");
+                " OK ");
         EndSmartIndent(window);
         return;
     }
@@ -922,7 +922,7 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
-                "Error in smart indent modification macro:\n%s", "Dismiss",
+                "Error in smart indent modification macro:\n%s", " OK ",
                 stat == MACRO_ERROR
                         ? errMsg
                         : "dialogs and shell commands not permitted");
@@ -936,7 +936,7 @@ void EditSmartIndentMacros(WindowInfo *window)
 #define BORDER 4
     Widget form, lmOptMenu, lmForm, lmBtn;
     Widget okBtn, applyBtn, checkBtn, deleteBtn, commonBtn;
-    Widget dismissBtn, helpBtn, restoreBtn, pane;
+    Widget closeBtn, helpBtn, restoreBtn, pane;
     Widget initForm, newlineForm, modifyForm;
     Widget initLbl, newlineLbl, modifyLbl;
     XmString s1;
@@ -953,7 +953,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     if (LanguageModeName(0) == NULL)
     {
         DialogF(DF_WARN, window->shell, 1, "Language Mode",
-                "No Language Modes defined", "Dismiss");
+                "No Language Modes defined", " OK ");
         return;
     }
     
@@ -974,7 +974,7 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    SmartIndentDialog.shell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, NULL);
-    AddMotifCloseCallback(SmartIndentDialog.shell, dismissCB, NULL);
+    AddMotifCloseCallback(SmartIndentDialog.shell, closeCB, NULL);
        
     lmForm = XtVaCreateManagedWidget("lmForm", xmFormWidgetClass,
     	    form,
@@ -1028,7 +1028,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1086,16 +1086,16 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, NULL);
     XmStringFree(s1);
     
-    dismissBtn = XtVaCreateManagedWidget("dismiss", xmPushButtonWidgetClass,
+    closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+            XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 73,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 86,
     	    XmNbottomAttachment, XmATTACH_FORM,
     	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, NULL);
     XmStringFree(s1);
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
@@ -1205,7 +1205,7 @@ void EditSmartIndentMacros(WindowInfo *window)
 
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -1316,7 +1316,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkSmartIndentDialogData())
         DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
-                "Macros compiled without error", "Dismiss");
+                "Macros compiled without error", " OK ");
 }
 	
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1338,7 +1338,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     {
         DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
                 "There are no default indent macros\nfor language mode %s",
-                "Dismiss", SmartIndentDialog.langModeName);
+                " OK ", SmartIndentDialog.langModeName);
         return;
     }
     defaultIS = &DefaultIndentSpecs[i];
@@ -1394,7 +1394,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
     setSmartIndentDialogData(NULL);
 }
 
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget widget, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     CloseAllPopupsFor(SmartIndentDialog.shell);
@@ -1429,7 +1429,7 @@ static int checkSmartIndentDialogData(void)
     if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro))
     {
         DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
-                "Newline macro required", "Dismiss");
+                "Newline macro required", " OK ");
         return False;
     }
 
@@ -1505,7 +1505,7 @@ void EditCommonSmartIndentMacro(void)
 #define VERT_BORDER 4
     Widget form, topLbl;
     Widget okBtn, applyBtn, checkBtn;
-    Widget dismissBtn, restoreBtn;
+    Widget closeBtn, restoreBtn;
     XmString s1;
     Arg args[20];
     int n;
@@ -1528,7 +1528,7 @@ void EditCommonSmartIndentMacro(void)
 	    CommonDialog.shell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, comDestroyCB, NULL);
-    AddMotifCloseCallback(CommonDialog.shell, comDismissCB, NULL);
+    AddMotifCloseCallback(CommonDialog.shell, comCloseCB, NULL);
     
     topLbl = XtVaCreateManagedWidget("topLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple(
@@ -1540,7 +1540,7 @@ void EditCommonSmartIndentMacro(void)
 	    XmNleftPosition, 1, NULL);
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 6,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1587,16 +1587,16 @@ void EditCommonSmartIndentMacro(void)
     XtAddCallback(restoreBtn, XmNactivateCallback, comRestoreCB, NULL);
     XmStringFree(s1);
     
-    dismissBtn = XtVaCreateManagedWidget("dismiss", xmPushButtonWidgetClass,
+    closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 81,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 94,
     	    XmNbottomAttachment, XmATTACH_FORM,
     	    XmNbottomOffset, VERT_BORDER, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, comDismissCB, NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, comCloseCB, NULL);
     XmStringFree(s1);
     
     n = 0;
@@ -1621,7 +1621,7 @@ void EditCommonSmartIndentMacro(void)
 
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -1656,7 +1656,7 @@ static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkSmartIndentCommonDialogData())
     {
         DialogF(DF_INF, CommonDialog.shell, 1, "Macro compiled",
-                "Macros compiled without error", "Dismiss");
+                "Macros compiled without error", " OK ");
     }
 }
 
@@ -1678,7 +1678,7 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
     XmTextSetString(CommonDialog.text, CommonMacros);
 }
 
-static void comDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     XtDestroyWidget(CommonDialog.shell);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.120 2004/07/15 01:47:57 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.121 2004/07/18 22:30:59 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1060,7 +1060,7 @@ static void browseFont(Widget parent, Widget fontTextW);
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void fontDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void fontCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateFonts(fontDialog *fd);
 
 static Boolean checkColorStatus(colorDialog *cd, Widget colorFieldW);
@@ -1071,7 +1071,7 @@ static void updateColors(colorDialog *cd);
 static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void colorOkCB     (Widget w, XtPointer clientData, XtPointer callData);
 static void colorApplyCB  (Widget w, XtPointer clientData, XtPointer callData);
-static void colorDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void colorCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void textFgModifiedCB  (Widget w, XtPointer clientData,
       XtPointer callData);
 static void textBgModifiedCB  (Widget w, XtPointer clientData,
@@ -1101,7 +1101,7 @@ static int modeError(languageModeRec *lm, const char *stringStart,
 static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static int lmDeleteConfirmCB(int itemIndex, void *cbArg);
 static int updateLMList(void);
 static languageModeRec *copyLanguageModeRec(languageModeRec *lm);
@@ -1308,7 +1308,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
             creation of the preference file directory. */
         DialogF(DF_WARN, parent, 1, "Error saving Preferences",
                 "Unable to save preferences: Cannot determine filename.",
-                "Dismiss");
+                " OK ");
         return;
     }
 
@@ -1322,7 +1322,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 "Default preferences will be saved in the file:\n"
                 "%s\n"
                 "SAVING WILL INCORPORATE SETTINGS\n"
-                "FROM FILE: %s", "OK", "Cancel",
+                "FROM FILE: %s", " OK ", "Cancel",
                 prefFileName, ImportedFile) == 2)
         return;
     }    
@@ -1341,7 +1341,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
             PrefDescrip, XtNumber(PrefDescrip)))
     {
         DialogF(DF_WARN, parent, 1, "Save Preferences",
-                "Unable to save preferences in %s", "Dismiss", prefFileName);
+                "Unable to save preferences in %s", " OK ", prefFileName);
     }
 
 #ifndef VMS
@@ -2457,7 +2457,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN)
     {
         DialogF(DF_WARN, TabDistText, 1, "Tab Spacing",
-                "Tab spacing out of range", "Dismiss");
+                "Tab spacing out of range", " OK ");
         return;
     }
 
@@ -2469,7 +2469,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
         if (emTabDist <= 0 || tabDist >= 1000)
         {
             DialogF(DF_WARN, EmTabText, 1, "Tab Spacing",
-                    "Emulated tab spacing out of range", "Dismiss");
+                    "Emulated tab spacing out of range", " OK ");
             return;
         }
     } else
@@ -2633,7 +2633,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
        if (margin <= 0 || margin >= 1000)
        {
            DialogF(DF_WARN, WrapText, 1, "Wrap Margin", 
-                   "Wrap margin out of range", "Dismiss");
+                   "Wrap margin out of range", " OK ");
            return;
        }
 
@@ -2691,7 +2691,7 @@ void EditLanguageModes()
 #define RIGHT_MARGIN_POS 99
 #define H_MARGIN 5
     Widget form, nameLbl, topLbl, extLbl, recogLbl, delimitLbl, defTipsLbl;
-    Widget okBtn, applyBtn, dismissBtn;
+    Widget okBtn, applyBtn, closeBtn;
     Widget overrideFrame, overrideForm, delimitForm;
     Widget tabForm, tabLbl, indentBox, wrapBox;
     XmString s1;
@@ -2722,7 +2722,7 @@ void EditLanguageModes()
 	    LMDialog.shell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, lmDestroyCB, NULL);
-    AddMotifCloseCallback(LMDialog.shell, lmDismissCB, NULL);
+    AddMotifCloseCallback(LMDialog.shell, lmCloseCB, NULL);
     
     topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING(
@@ -2828,7 +2828,7 @@ characters of file to determine type from content)"),
     XtVaSetValues(defTipsLbl, XmNuserData, LMDialog.defTipsW, NULL);
 	    
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2850,15 +2850,15 @@ characters of file to determine type from content)"),
     XtAddCallback(applyBtn, XmNactivateCallback, lmApplyCB, NULL);
     XmStringFree(s1);
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    closeBtn = XtVaCreateManagedWidget("close",xmPushButtonWidgetClass,form,
+            XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 70,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 90,
     	    XmNbottomAttachment, XmATTACH_POSITION,
     	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, lmDismissCB, NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, lmCloseCB, NULL);
     XmStringFree(s1);
 
     overrideFrame = XtVaCreateManagedWidget("overrideFrame",
@@ -2868,7 +2868,7 @@ characters of file to determine type from content)"),
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, dismissBtn,
+            XmNbottomWidget, closeBtn,
 	    XmNbottomOffset, H_MARGIN, NULL);
     overrideForm = XtVaCreateManagedWidget("overrideForm", xmFormWidgetClass,
 	    overrideFrame, NULL);
@@ -3056,7 +3056,7 @@ characters of file to determine type from content)"),
     	
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -3089,7 +3089,7 @@ static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     updateLMList();
 }
 
-static void lmDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     XtDestroyWidget(LMDialog.shell);
@@ -3113,7 +3113,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
                 "This language mode has syntax highlighting\n"
                 "patterns defined.  Please delete the patterns\n"
                 "first, in Preferences -> Default Settings ->\n"
-                "Syntax Highlighting, before proceeding here.", "Dismiss");
+                "Syntax Highlighting, before proceeding here.", " OK ");
         return False;
     }
 
@@ -3125,7 +3125,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
                 "defined.  Please delete the macros first,\n"
                 "in Preferences -> Default Settings ->\n"
                 "Auto Indent -> Program Smart Indent,\n"
-                "before proceeding here.", "Dismiss");
+                "before proceeding here.", " OK ");
         return False;
     }
 
@@ -3437,7 +3437,7 @@ static languageModeRec *readLMDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, LMDialog.shell, 1, "Language Mode Name",
-                    "Please specify a name\nfor the language mode", "Dismiss");
+                    "Please specify a name\nfor the language mode", " OK ");
             XmProcessTraversal(LMDialog.nameW, XmTRAVERSE_CURRENT);
         }
         freeLanguageModeRec(lm);
@@ -3463,7 +3463,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Regex",
-                        "Recognition expression:\n%s", "Dismiss", compileMsg);
+                        "Recognition expression:\n%s", " OK ", compileMsg);
                 XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
             XtFree((char *)compiledRE);
@@ -3487,7 +3487,7 @@ static languageModeRec *readLMDialogFields(int silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Error reading Calltips",
                         "Can't read default calltips file(s):\n  \"%s\"\n",
-                        "Dismiss", lm->defTipsFile);
+                        " OK ", lm->defTipsFile);
                 XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
             freeLanguageModeRec(lm);
@@ -3513,7 +3513,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
-                        "Invalid tab spacing: %d", "Dismiss", lm->tabDist);
+                        "Invalid tab spacing: %d", " OK ", lm->tabDist);
                 XmProcessTraversal(LMDialog.tabW, XmTRAVERSE_CURRENT);
             }
             freeLanguageModeRec(lm);
@@ -3539,7 +3539,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
-                        "Invalid emulated tab spacing: %d", "Dismiss",
+                        "Invalid emulated tab spacing: %d", " OK ",
                         lm->emTabDist);
                 XmProcessTraversal(LMDialog.emTabW, XmTRAVERSE_CURRENT);
             }
@@ -3604,7 +3604,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     Widget form, primaryLbl, primaryBtn, italicLbl, italicBtn;
     Widget boldLbl, boldBtn, boldItalicLbl, boldItalicBtn;
     Widget primaryFrame, primaryForm, highlightFrame, highlightForm;
-    Widget okBtn, applyBtn, dismissBtn;
+    Widget okBtn, applyBtn, cancelBtn;
     fontDialog *fd;
     XmString s1;
     int ac;
@@ -3630,7 +3630,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     fd->shell = XtParent(form);
     XtVaSetValues(fd->shell, XmNtitle, "Text Fonts", NULL);
-    AddMotifCloseCallback(XtParent(form), fontDismissCB, fd);
+    AddMotifCloseCallback(XtParent(form), fontCancelCB, fd);
     XtAddCallback(form, XmNdestroyCallback, fontDestroyCB, fd);
 
     primaryFrame = XtVaCreateManagedWidget("primaryFrame", xmFrameWidgetClass,
@@ -3867,7 +3867,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtVaSetValues(boldItalicLbl, XmNuserData, fd->boldItalicW, NULL);    
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, highlightFrame,
 	    XmNtopOffset, MARGIN_SPACING,
@@ -3893,21 +3893,24 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	XmStringFree(s1);
     }
     
-    dismissBtn = XtVaCreateManagedWidget("dismiss",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    cancelBtn = XtVaCreateManagedWidget("cancel",
+            xmPushButtonWidgetClass, form,
+            XmNlabelString,
+                    s1 = XmStringCreateSimple(forWindow ? "Close" : "Cancel"),
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, highlightFrame,
 	    XmNtopOffset, MARGIN_SPACING,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, forWindow ? 73 : 59,
     	    XmNrightAttachment, XmATTACH_POSITION,
-    	    XmNrightPosition, forWindow ? 87 : 73, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, fontDismissCB, fd);
+    	    XmNrightPosition, forWindow ? 87 : 73,
+            NULL);
+    XtAddCallback(cancelBtn, XmNactivateCallback, fontCancelCB, fd);
     XmStringFree(s1);
  
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
     
     /* Set initial values */
     if (forWindow) {
@@ -4046,7 +4049,7 @@ static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     updateFonts(fd);
 }
 
-static void fontDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void fontCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
 
@@ -4829,7 +4832,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
         {
             *(stringPtr + 1) = '\0';
             DialogF(DF_WARN, textW, 1, "Invalid Character",
-                    "Invalid character \"%s\" in %s", "Dismiss", stringPtr,
+                    "Invalid character \"%s\" in %s", " OK ", stringPtr,
                     fieldName);
             XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
         }
@@ -5051,7 +5054,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
         fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
     } else
     {
-        DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "Dismiss",
+        DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", " OK ",
                 message, errorIn, errorLine);
     }
     XtFree(errorLine);
@@ -5784,7 +5787,7 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
     if(!verifyAllColors(cd))
     {
         DialogF(DF_ERR, w, 1, "Invalid Colors",
-                "All colors must be valid to proceed.", "Dismiss");
+                "All colors must be valid to proceed.", " OK ");
         return;
     }
     updateColors(cd);
@@ -5800,13 +5803,13 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     if(!verifyAllColors(cd))
     {
         DialogF(DF_ERR, w, 1, "Invalid Colors",
-                "All colors must be valid to be applied.", "Dismiss");
+                "All colors must be valid to be applied.", " OK ");
         return;
     }
     updateColors(cd);
 }
 
-static void colorDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void colorCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     colorDialog *cd = (colorDialog *)clientData;
 
@@ -5884,7 +5887,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
 void ChooseColors(WindowInfo *window)
 {
     Widget form, tmpW, topW, infoLbl;
-    Widget okBtn, applyBtn, dismissBtn;
+    Widget okBtn, applyBtn, closeBtn;
     colorDialog *cd;
     XmString s1;
     int ac;
@@ -5909,7 +5912,7 @@ void ChooseColors(WindowInfo *window)
     cd->shell = XtParent(form);
     cd->window = window;
     XtVaSetValues(cd->shell, XmNtitle, "Colors", NULL);
-    AddMotifCloseCallback(XtParent(form), colorDismissCB, cd);
+    AddMotifCloseCallback(XtParent(form), colorCloseCB, cd);
     XtAddCallback(form, XmNdestroyCallback, colorDestroyCB, cd);
     
     /* Information label */
@@ -5984,7 +5987,7 @@ void ChooseColors(WindowInfo *window)
     
     /* The OK, Apply, and Cancel buttons */
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-          XmNlabelString, s1=XmStringCreateSimple("OK"),
+          XmNlabelString, s1=XmStringCreateSimple(" OK "),
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, tmpW,
           XmNtopOffset, MARGIN_SPACING,
@@ -6009,22 +6012,23 @@ void ChooseColors(WindowInfo *window)
     XtAddCallback(applyBtn, XmNactivateCallback, colorApplyCB, cd);
     XmStringFree(s1);
     
-    dismissBtn = XtVaCreateManagedWidget(
-            "dismiss", xmPushButtonWidgetClass, form,
-          XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
-          XmNtopAttachment, XmATTACH_WIDGET,
-          XmNtopWidget, tmpW,
-          XmNtopOffset, MARGIN_SPACING,
-          XmNleftAttachment, XmATTACH_POSITION,
-          XmNleftPosition, 70,
-          XmNrightAttachment, XmATTACH_POSITION,
-          XmNrightPosition, 90, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, colorDismissCB, cd);
+    closeBtn = XtVaCreateManagedWidget("close",
+            xmPushButtonWidgetClass, form,
+            XmNlabelString, s1=XmStringCreateSimple("Close"),
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, tmpW,
+            XmNtopOffset, MARGIN_SPACING,
+            XmNleftAttachment, XmATTACH_POSITION,
+            XmNleftPosition, 70,
+            XmNrightAttachment, XmATTACH_POSITION,
+            XmNrightPosition, 90,
+            NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, colorCloseCB, cd);
     XmStringFree(s1);
  
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Set initial values */
     XmTextSetString(cd->textFgW,   GetPrefColorName(TEXT_FG_COLOR  ));

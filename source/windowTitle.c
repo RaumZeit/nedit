@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.11 2003/05/09 17:43:48 edg Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.12 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -628,7 +628,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
     XtFree(format);
 }
 
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down the dialog */
     XtUnmanageChild(etDialog.form);
@@ -983,7 +983,7 @@ static void createEditTitleDialog(Widget parent)
     Widget buttonForm, formatLbl, previewFrame;
     Widget previewForm, previewBox, selectFrame, selectBox, selectForm;
     Widget testLbl, selectLbl;
-    Widget applyBtn, dismissBtn, restoreBtn, helpBtn;
+    Widget applyBtn, closeBtn, restoreBtn, helpBtn;
     XmString s1;
     XmFontList fontList;
     Arg args[20];
@@ -1387,10 +1387,10 @@ static void createEditTitleDialog(Widget parent)
     XtVaGetValues(applyBtn, XmNshadowThickness, &shadowThickness, NULL);
     defaultBtnOffset = shadowThickness + 4;
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss", xmPushButtonWidgetClass,
+    closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
             buttonForm,
     	    XmNhighlightThickness, 2,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 52,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1398,7 +1398,7 @@ static void createEditTitleDialog(Widget parent)
     	    XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, defaultBtnOffset,
 	    NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, NULL);
     XmStringFree(s1);
 
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass,
@@ -1431,7 +1431,7 @@ static void createEditTitleDialog(Widget parent)
 
     /* Set initial default button */
     XtVaSetValues(etDialog.form, XmNdefaultButton, applyBtn, NULL);
-    XtVaSetValues(etDialog.form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(etDialog.form, XmNcancelButton, closeBtn, NULL);
 
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(etDialog.form, FALSE);

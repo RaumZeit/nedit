@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.69 2004/06/21 07:42:15 edg Exp $
+.. $Id: help.etx,v 1.70 2004/07/18 22:30:57 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1983,7 +1983,7 @@ Macro Language
   Character string constants are enclosed in double quotes.  For example:
 
      a = "a string"
-     dialog("Hi there!", "Dismiss")
+     dialog("Hi there!", "OK")
 
   Strings may also include C-language style escape sequences:
 

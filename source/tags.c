@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.56 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.57 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -882,7 +882,7 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
                 } else
                 {
                     DialogF(DF_WARN, window->textArea, 1, "Tags",
-                            "\"%s\" not found in tags file%s", "OK", tagName,
+                            "\"%s\" not found in tags file%s", " OK ", tagName,
                             (TagsFileList && TagsFileList->next) ? "s" : "");
                 }
             }
@@ -1163,7 +1163,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
         }
         if (++nMatches >= MAXDUPTAGS) {
             DialogF(DF_WARN, dialogParent, 1, "Tags",
-                    "Too many duplicate tags, first %d shown", "OK", MAXDUPTAGS);
+                    "Too many duplicate tags, first %d shown", " OK ", MAXDUPTAGS);
             break;
         }
         /* Tell LookupTag to look for more definitions of the same tag: */
@@ -1314,13 +1314,13 @@ static void showMatchingCalltip( Widget parent, int i )
     fp = fopen(tagFiles[i], "r");
     if (fp == NULL) {
         DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s",
-                "Dismiss", tagFiles[i]);
+                " OK ", tagFiles[i]);
         return;
     }
     if (fstat(fileno(fp), &statbuf) != 0) {
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s",
-                "Dismiss", tagFiles[i]);
+                " OK ", tagFiles[i]);
         return;
     }
 
@@ -1331,7 +1331,7 @@ static void showMatchingCalltip( Widget parent, int i )
     if (fileString == NULL) {
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "File too large",
-                "File is too large to load", "Dismiss");
+                "File is too large to load", " OK ");
         return;
     }
 
@@ -1340,7 +1340,7 @@ static void showMatchingCalltip( Widget parent, int i )
     if (ferror(fp)) {
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "Error reading File", "Error reading %s",
-                "Dismiss", tagFiles[i]);
+                " OK ", tagFiles[i]);
         XtFree(fileString);
         return;
     }
@@ -1350,7 +1350,7 @@ static void showMatchingCalltip( Widget parent, int i )
     if (fclose(fp) != 0) {
         /* unlikely error */
         DialogF(DF_WARN, parent, 1, "Error closing File",
-                "Unable to close file", "Dismiss");
+                "Unable to close file", " OK ");
         /* we read it successfully, so continue */
     }
     
@@ -1360,7 +1360,7 @@ static void showMatchingCalltip( Widget parent, int i )
         if ((moveAheadNLines( fileString, &startPos, tagPosInf[i]-1 )) >= 0) {
             DialogF(DF_ERR, parent, 1, "Tags Error",
                     "%s\n not long enough for definition to be on line %d",
-                    "Dismiss", tagFiles[i], tagPosInf[i]);
+                    " OK ", tagFiles[i], tagPosInf[i]);
             XtFree(fileString);
             return;
         }
@@ -1369,7 +1369,7 @@ static void showMatchingCalltip( Widget parent, int i )
         if(!fakeRegExSearch(WidgetToWindow(parent), fileString, tagSearch[i],
                 &startPos, &endPos)){
             DialogF(DF_WARN, parent, 1, "Tag not found",
-                    "Definition for %s\nnot found in %s", "OK", tagName,
+                    "Definition for %s\nnot found in %s", " OK ", tagName,
                     tagFiles[i]);
             XtFree(fileString);
             return;
@@ -1405,7 +1405,7 @@ static void showMatchingCalltip( Widget parent, int i )
     if (message == NULL)
     {
         DialogF(DF_ERR, parent, 1, "Out of Memory",
-                "Can't allocate memory for calltip message", "Dismiss");
+                "Can't allocate memory for calltip message", " OK ");
         XtFree(fileString);
         return;
     }
@@ -1435,7 +1435,7 @@ static void editTaggedLocation( Widget parent, int i )
     	    NULL, GetPrefOpenInTab(), False);
     windowToSearch = FindWindowWithFile(filename, pathname);
     if (windowToSearch == NULL) {
-        DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK",
+        DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", " OK ",
                 tagFiles[i]);
         return;
     }
@@ -1452,7 +1452,7 @@ static void editTaggedLocation( Widget parent, int i )
     if(!fakeRegExSearch(windowToSearch, NULL, tagSearch[i], &startPos,
             &endPos)){
         DialogF(DF_WARN, windowToSearch->shell, 1, "Tag Error",
-                "Definition for %s\nnot found in %s", "OK", tagName,
+                "Definition for %s\nnot found in %s", " OK ", tagName,
                 tagFiles[i]);
         return;
     }

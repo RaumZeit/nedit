@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.31 2004/06/08 15:08:46 tringali Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.32 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -218,7 +218,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
                 "filename substitutions with '%%' or\n"
-                "line number substitutions with '#'", "OK");
+                "line number substitutions with '#'", " OK ");
         return;
     }
 
@@ -292,7 +292,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
                 "filename substitutions with '%%' or\n"
-                "line number substitutions with '#'", "OK");
+                "line number substitutions with '#'", " OK ");
         return;
     }
 
@@ -341,7 +341,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
                 "filename substitutions with '%%' or\n"
-                "line number substitutions with '#'", "OK");
+                "line number substitutions with '#'", " OK ");
         return;
     }
 
@@ -1006,7 +1006,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     {
         DialogF(DF_ERR, parent, 1, "Shell Command",
                 "Error starting shell command process\n(fork failed)",
-                "Dismiss");
+                " OK ");
     }
 
     /* close the child ends of the pipes */
@@ -1125,11 +1125,11 @@ static void createOutputDialog(Widget parent, char *text)
     form = CreateFormDialog(parent, "shellOutForm", al, ac);
 
     ac = 0;
-    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING("Dismiss")); ac++;
+    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING(" OK ")); ac++;
     XtSetArg(al[ac], XmNhighlightThickness, 0);  ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
-    button = XmCreatePushButtonGadget(form, "dismiss", al, ac);
+    button = XmCreatePushButtonGadget(form, "ok", al, ac);
     XtManageChild(button);
     XtVaSetValues(form, XmNdefaultButton, button, NULL);
     XtVaSetValues(form, XmNcancelButton, button, NULL);

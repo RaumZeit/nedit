@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.65 2004/07/15 01:47:57 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.66 2004/07/18 22:30:58 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -111,7 +111,7 @@ static void setStyleByName(const char *style);
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void hsDismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     	void *cbArg);
@@ -139,7 +139,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData);
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     	void *cbArg);
@@ -1698,7 +1698,7 @@ void EditHighlightStyles(const char *initialStyle)
 #define HS_RIGHT_MARGIN_POS 99
 #define HS_H_MARGIN 10
     Widget form, nameLbl, topLbl, colorLbl, bgColorLbl, fontLbl;
-    Widget fontBox, sep1, okBtn, applyBtn, dismissBtn;
+    Widget fontBox, sep1, okBtn, applyBtn, closeBtn;
     XmString s1;
     int i, ac;
     Arg args[20];
@@ -1732,7 +1732,7 @@ void EditHighlightStyles(const char *initialStyle)
 	    HSDialog.shell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, hsDestroyCB, NULL);
-    AddMotifCloseCallback(HSDialog.shell, hsDismissCB, NULL);
+    AddMotifCloseCallback(HSDialog.shell, hsCloseCB, NULL);
         
     topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING(
@@ -1853,7 +1853,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XmStringFree(s1);
     	    
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1875,15 +1875,17 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtAddCallback(applyBtn, XmNactivateCallback, hsApplyCB, NULL);
     XmStringFree(s1);
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    closeBtn = XtVaCreateManagedWidget("close",
+            xmPushButtonWidgetClass, form,
+    	    XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 70,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 90,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, hsDismissCB, NULL);
+    	    XmNbottomPosition, 99,
+            NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, hsCloseCB, NULL);
     XmStringFree(s1);
     
     sep1 = XtVaCreateManagedWidget("sep1", xmSeparatorGadgetClass, form,
@@ -1893,7 +1895,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNtopOffset, HS_H_MARGIN,
  	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, dismissBtn, 0,
+    	    XmNbottomWidget, closeBtn, 0,
 	    XmNbottomOffset, HS_H_MARGIN, NULL);
     
     ac = 0;
@@ -1915,7 +1917,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
  
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* If there's a suggestion for an initial selection, make it */
     if (initialStyle != NULL)
@@ -1952,7 +1954,7 @@ static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     updateHSList();
 }
 
-static void hsDismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     XtDestroyWidget(HSDialog.shell);
@@ -2067,7 +2069,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style",
-                    "Please specify a name\nfor the highlight style", "Dismiss");
+                    "Please specify a name\nfor the highlight style", " OK ");
             XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
         }
         XtFree(hs->name);
@@ -2089,7 +2091,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Style Color",
                     "Please specify a color\nfor the highlight style",
-                    "Dismiss");
+                    " OK ");
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
         XtFree(hs->name);
@@ -2105,7 +2107,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
-                    "Invalid X color specification: %s\n",  "Dismiss",
+                    "Invalid X color specification: %s\n",  " OK ",
                     hs->color);
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
@@ -2130,7 +2132,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
-                    "Invalid X background color specification: %s\n", "Dismiss",
+                    "Invalid X background color specification: %s\n", " OK ",
                     hs->bgColor);
             XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
         }
@@ -2262,7 +2264,7 @@ void EditHighlightPatterns(WindowInfo *window)
 #define LIST_RIGHT 41
     Widget form, lmOptMenu, patternsForm, patternsFrame, patternsLbl;
     Widget lmForm, contextFrame, contextForm, styleLbl, styleBtn;
-    Widget okBtn, applyBtn, checkBtn, deleteBtn, dismissBtn, helpBtn;
+    Widget okBtn, applyBtn, checkBtn, deleteBtn, closeBtn, helpBtn;
     Widget restoreBtn, nameLbl, typeLbl, typeBox, lmBtn, matchBox;
     patternSet *patSet;
     XmString s1;
@@ -2280,7 +2282,7 @@ void EditHighlightPatterns(WindowInfo *window)
         DialogF(DF_WARN, window->shell, 1, "No Language Modes",
                 "No Language Modes available for syntax highlighting\n"
                 "Add language modes under Preferenses->Language Modes",
-                "Dismiss");
+                " OK ");
         return;
     }
     
@@ -2313,7 +2315,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    HighlightDialog.shell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, NULL);
-    AddMotifCloseCallback(HighlightDialog.shell, dismissCB, NULL);
+    AddMotifCloseCallback(HighlightDialog.shell, closeCB, NULL);
 
     lmForm = XtVaCreateManagedWidget("lmForm", xmFormWidgetClass,
     	    form,
@@ -2358,7 +2360,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("OK"),
+    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2416,16 +2418,16 @@ void EditHighlightPatterns(WindowInfo *window)
     XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, NULL);
     XmStringFree(s1);
     
-    dismissBtn = XtVaCreateManagedWidget("dismiss", xmPushButtonWidgetClass,
+    closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Dismiss"),
+    	    XmNlabelString, s1=XmStringCreateSimple("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 73,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 86,
     	    XmNbottomAttachment, XmATTACH_FORM,
     	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, NULL);
     XmStringFree(s1);
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
@@ -2803,7 +2805,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -2993,7 +2995,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkHighlightDialogData())
     {
         DialogF(DF_INF, HighlightDialog.shell, 1, "Pattern compiled",
-                "Patterns compiled without error", "Dismiss");
+                "Patterns compiled without error", " OK ");
     }
 }
 
@@ -3007,7 +3009,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     {
         DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern",
                 "There is no default pattern set\nfor language mode %s",
-                "Dismiss", HighlightDialog.langModeName);
+                " OK ", HighlightDialog.langModeName);
         return;
     }
     
@@ -3082,7 +3084,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
     ChangeManagedListData(HighlightDialog.managedListW);
 }
 
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     CloseAllPopupsFor(HighlightDialog.shell);
@@ -3329,7 +3331,7 @@ static highlightPattern *readDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name",
-                    "Please specify a name\nfor the pattern", "Dismiss");
+                    "Please specify a name\nfor the pattern", " OK ");
             XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
         }
         XtFree(pat->name);
@@ -3344,7 +3346,7 @@ static highlightPattern *readDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex",
-                    "Please specify a regular\nexpression to match", "Dismiss");
+                    "Please specify a regular\nexpression to match", " OK ");
             XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
         }
         freePatternSrc(pat, True);
@@ -3375,7 +3377,7 @@ static highlightPattern *readDialogFields(int silent)
                         "a parent, must contain only sub-expression references in regular\n"
                         "expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n"
                         "Expressions and Help -> Syntax Highlighting for more information",
-                        "Dismiss");
+                        " OK ");
                 XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
@@ -3392,7 +3394,7 @@ static highlightPattern *readDialogFields(int silent)
             {
                 DialogF(DF_WARN, HighlightDialog.shell, 1,
                         "Specify Parent Pattern",
-                        "Please specify a parent pattern", "Dismiss");
+                        "Please specify a parent pattern", " OK ");
                 XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
@@ -3418,7 +3420,7 @@ static highlightPattern *readDialogFields(int silent)
             {
                 DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex",
                         "Please specify an ending\nregular expression",
-                        "Dismiss");
+                        " OK ");
                 XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);

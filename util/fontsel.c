@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.25 2003/05/02 19:19:03 edg Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.26 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * fontsel.c -- Nirvana Font Selector                                           *
@@ -1138,7 +1138,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk)
     else
     {
         DialogF (DF_ERR, ctrlBlk->form, 1, "Font Specification",
-                "Invalid Font Specification", "Dismiss");
+                "Invalid Font Specification", " OK ");
     }
 }
 
@@ -1208,7 +1208,7 @@ static void okAction(Widget widget, xfselControlBlkType *ctrlBlk,
     if (i != 1)
     {
         DialogF (DF_ERR, ctrlBlk->okButton, 1, "Font Specification",
-                "Invalid Font Specification", "Dismiss");
+                "Invalid Font Specification", " OK ");
         XFreeFontNames(fontName);
     }
     else

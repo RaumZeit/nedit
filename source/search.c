@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.68 2004/07/12 20:08:56 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.69 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -549,7 +549,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
     /* return an empty string if the data is not of the correct format. */
     if (*format != 8) {
         DialogF(DF_WARN, window->shell, 1, "Invalid Format",
-                "NEdit can't handle non 8-bit text", "OK");
+                "NEdit can't handle non 8-bit text", " OK ");
         XtFree(value);
         selectionInfo->selection = 0;
         selectionInfo->done = 1;
@@ -1862,7 +1862,7 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
     if (!nSelected)
     {
         DialogF(DF_INF, XtParent(window->replaceMultiFileDlog), 1, "No Files",
-                "No files selected!", "OK");
+                "No files selected!", " OK ");
        return; /* Give the user another chance */
     }
 
@@ -1937,10 +1937,10 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
 	if (GetPrefSearchDlogs()) {
 	    if (noWritableLeft) {
 		DialogF(DF_INF, window->shell, 1, "Read-only Files",
-			"All selected files have become read-only.", "OK");
+			"All selected files have become read-only.", " OK ");
 	    } else {
 		DialogF(DF_INF, window->shell, 1, "String not found",
-			"String was not found", "OK");
+			"String was not found", " OK ");
             }
 	} else {
            XBell(TheDisplay, 0);
@@ -2582,7 +2582,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
       compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
       if (compiledRE == NULL) {
    	  DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String",
-   	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
+   	    	 "Please respecify the search string:\n%s", " OK ", compileMsg);
 	  XtFree(replaceText);
 	  XtFree(replaceWithText);
  	  return FALSE;
@@ -2608,14 +2608,14 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     /* Return strings */
     if (strlen(replaceText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
-   	    	 "Search string too long.", "OK");
+   	    	 "Search string too long.", " OK ");
 	XtFree(replaceText);
 	XtFree(replaceWithText);
 	return FALSE;
     }
     if (strlen(replaceWithText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
-   	    	 "Replace string too long.", "OK");
+   	    	 "Replace string too long.", " OK ");
 	XtFree(replaceText);
 	XtFree(replaceWithText);
 	return FALSE;
@@ -2659,7 +2659,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
       compiledRE = CompileRE(findText, &compileMsg, regexDefault);
       if (compiledRE == NULL) {
    	  DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error",
-   	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
+   	    	 "Please respecify the search string:\n%s", " OK ", compileMsg);
  	  return FALSE;
       }
       free((char *)compiledRE);
@@ -2686,7 +2686,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
     /* Return the search string */
     if (strlen(findText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->findDlog), 1, "String too long",
-   	    	 "Search string too long.", "OK");
+   	    	 "Search string too long.", " OK ");
 	XtFree(findText);
 	return FALSE;
     }
@@ -2804,7 +2804,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     if (*type == XT_CONVERT_FAIL || value == NULL) {
     	if (GetPrefSearchDlogs())
    	    DialogF(DF_WARN, window->shell, 1, "Wrong Selection",
-   	    	    "Selection not appropriate for searching", "OK");
+   	    	    "Selection not appropriate for searching", " OK ");
     	else
     	    XBell(TheDisplay, 0);
         XtFree(callData);
@@ -2813,7 +2813,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     if (*length > SEARCHMAX) {
     	if (GetPrefSearchDlogs())
    	    DialogF(DF_WARN, window->shell, 1, "Selection too long",
-                    "Selection too long", "OK");
+                    "Selection too long", " OK ");
     	else
     	    XBell(TheDisplay, 0);
 	XtFree(value);
@@ -3793,7 +3793,7 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
     		unmanageReplaceDialogs(window);
    	    DialogF(DF_INF, window->shell, 1, "String not found",
-                "String was not found", "OK");
+                "String was not found", " OK ");
     	} else
     	    XBell(TheDisplay, 0);
  	BufFree(tempBuf);
@@ -3854,7 +3854,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString,
     	    	    !XmToggleButtonGetState(window->replaceKeepBtn))
     		unmanageReplaceDialogs(window);
    	    DialogF(DF_INF, window->shell, 1, "String not found",
-                "String was not found", "OK");
+                "String was not found", " OK ");
     	} else
     	    XBell(TheDisplay, 0);
 	return FALSE;
@@ -4074,7 +4074,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
             if (!found) {
 		if (GetPrefSearchDlogs()) {
 		    DialogF(DF_INF, window->shell, 1, "String not found",
-                    "String was not found","OK");
+                    "String was not found"," OK ");
 		} else {
 		    XBell(TheDisplay, 0);
 		}

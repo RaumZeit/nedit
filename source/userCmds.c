@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.46 2004/06/09 17:52:58 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.47 2004/07/18 22:31:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -266,7 +266,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkMacro(userCmdDialog *ucd);
 static int checkMacroText(char *macro, Widget errorParent, Widget errFocus);
 static int applyDialogChanges(userCmdDialog *ucd);
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event);
@@ -331,7 +331,7 @@ static void freeUserSubMenuList(UserMenuList *list);
 void EditShellMenu(WindowInfo *window)
 {
     Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
-    Widget nameLabel, cmdLabel, okBtn, applyBtn, dismissBtn;
+    Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
     userCmdDialog *ucd;
     XmString s1;
     int ac, i;
@@ -367,7 +367,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     ShellCmdDialog = ucd->dlogShell;
     XtAddCallback(form, XmNdestroyCallback, destroyCB, ucd);
-    AddMotifCloseCallback(ucd->dlogShell, dismissCB, ucd);
+    AddMotifCloseCallback(ucd->dlogShell, closeCB, ucd);
  
     ac = 0;
     XtSetArg(args[ac], XmNtopAttachment, XmATTACH_POSITION); ac++;
@@ -648,7 +648,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING("OK"),
+    	    XmNlabelString, s1=MKSTRING(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -670,15 +670,17 @@ Select \"New\" to add a new command to the menu."),
     XtAddCallback(applyBtn, XmNactivateCallback, applyCB, ucd);
     XmStringFree(s1);
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING("Dismiss"),
+    closeBtn = XtVaCreateManagedWidget("close",
+            xmPushButtonWidgetClass, form,
+            XmNlabelString, s1=MKSTRING("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 71,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 87,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, ucd);
+    	    XmNbottomPosition, 99,
+            NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, ucd);
     XmStringFree(s1);
     
     ac = 0;
@@ -710,7 +712,7 @@ Select \"New\" to add a new command to the menu."),
     
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -735,7 +737,7 @@ void EditBGMenu(WindowInfo *window)
 static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 {   
     Widget form, accLabel, pasteReplayBtn;
-    Widget nameLabel, cmdLabel, okBtn, applyBtn, dismissBtn;
+    Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
     userCmdDialog *ucd;
     char *title;
     XmString s1;
@@ -783,7 +785,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 	    ucd->dlogShell, XmNautoUnmanage, False,
 	    XmNresizePolicy, XmRESIZE_NONE, NULL);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, ucd);
-    AddMotifCloseCallback(ucd->dlogShell, dismissCB, ucd);
+    AddMotifCloseCallback(ucd->dlogShell, closeCB, ucd);
  
     ac = 0;
     XtSetArg(args[ac], XmNtopAttachment, XmATTACH_POSITION); ac++;
@@ -941,7 +943,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING("OK"),
+    	    XmNlabelString, s1=MKSTRING(" OK "),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 8,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -975,15 +977,17 @@ Select \"New\" to add a new command to the menu."),
     XtAddCallback(applyBtn, XmNactivateCallback, checkCB, ucd);
     XmStringFree(s1);
 
-    dismissBtn = XtVaCreateManagedWidget("dismiss",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING("Dismiss"),
+    closeBtn = XtVaCreateManagedWidget("close",
+            xmPushButtonWidgetClass, form,
+            XmNlabelString, s1=MKSTRING("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 77,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 92,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(dismissBtn, XmNactivateCallback, dismissCB, ucd);
+    	    XmNbottomPosition, 99,
+            NULL);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, ucd);
     XmStringFree(s1);
     
     ac = 0;
@@ -1012,7 +1016,7 @@ Select \"New\" to add a new command to the menu."),
       
     /* Set initial default button */
     XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -1980,7 +1984,7 @@ static void deleteMenuItems(Widget menuPane)
     XtFree((char *)items);
 }
 
-static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
@@ -2030,7 +2034,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkMacro(ucd))
     {
         DialogF(DF_INF, ucd->dlogShell, 1, "Macro",
-                "Macro compiled without error", "Dismiss");
+                "Macro compiled without error", " OK ");
     }
 }
 
@@ -2355,7 +2359,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         if (!silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
-                    "Please specify a name\nfor the menu item", "Dismiss");
+                    "Please specify a name\nfor the menu item", " OK ");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
@@ -2368,7 +2372,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
                     "Menu item names may not\ncontain colon (:) characters",
-                    "Dismiss");
+                    " OK ");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
@@ -2381,7 +2385,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         if (!silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Command to Execute",
-                    "Please specify %s to execute", "Dismiss",
+                    "Please specify %s to execute", " OK ",
                     ucd->dialogType == SHELL_CMDS
                             ? "shell command"
                             : "macro command(s)");
