@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.49 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.50 2004/08/01 10:06:10 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -554,7 +554,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
                     "New language modes and syntax highlighting patterns can be\n"
                     "added via Preferences -> Default Settings -> Language Modes,\n"
                     "and Preferences -> Default Settings -> Syntax Highlighting.",
-                    " OK ");
+                    "OK");
     	return NULL;
     }
     
@@ -570,7 +570,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
                     "You can create new syntax highlight patterns in the\n"
                     "Preferences -> Default Settings -> Syntax Highlighting\n"
                     "dialog, or choose a different language mode from:\n"
-                    "Preferences -> Language Mode.", " OK ", modeName);
+                    "Preferences -> Language Mode.", "OK", modeName);
             return NULL;
         }
     }
@@ -610,7 +610,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     if (!NamedStyleExists("Plain"))
     {
         DialogF(DF_WARN, window->shell, 1, "Highlight Style",
-                "Highlight style \"Plain\" is missing", " OK ");
+                "Highlight style \"Plain\" is missing", "OK");
         return NULL;
     }
 
@@ -623,7 +623,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
             DialogF(DF_WARN, window->shell, 1, "Parent Pattern",
                     "Parent field \"%s\" in pattern \"%s\"\n"
                     "does not match any highlight patterns in this set",
-                    " OK ", patternSrc[i].subPatternOf, patternSrc[i].name);
+                    "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
             return NULL;
         }
     }
@@ -634,7 +634,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
         {
             DialogF(DF_WARN, window->shell, 1, "Highlight Style",
                     "Style \"%s\" named in pattern \"%s\"\n"
-                    "does not match any existing style", " OK ",
+                    "does not match any existing style", "OK",
                     patternSrc[i].style, patternSrc[i].name);
             return NULL;
         }
@@ -653,7 +653,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
             if (parentindex==-1)
             {
                 DialogF(DF_WARN, window->shell, 1, "Parent Pattern",
-                        "Pattern \"%s\" does not have valid parent", " OK ",
+                        "Pattern \"%s\" does not have valid parent", "OK",
                         patternSrc[i].name);
                 return NULL;
             }
@@ -890,7 +890,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
         {
             DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern",
                     "Color-only pattern \"%s\" may not have subpatterns", 
-                    " OK ", patternSrc[i].name);
+                    "OK", patternSrc[i].name);
             return NULL;
         }
         nSubExprs = 0;
@@ -2101,7 +2101,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
 
         DialogF(DF_WARN, parent, 1, "Error in Regex",
                 "Error in syntax highlighting regular expression:\n%s\n%s",
-                " OK ", boundedRe, compileMsg);
+                "OK", boundedRe, compileMsg);
         XtFree(boundedRe);
         return NULL;
     }

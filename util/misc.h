@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.24 2004/07/21 11:32:07 yooden Exp $ */
+/* $Id: misc.h,v 1.25 2004/08/01 10:06:12 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -42,6 +42,9 @@
    Which e.g. can be parsed by misc.c:parseAccelString()
    (how many modifier keys can you hold down at once?) */
 #define MAX_ACCEL_LEN 100
+
+/*  button margin width to avoid cramped buttons  */
+#define BUTTON_WIDTH_MARGIN 12
 
 
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);

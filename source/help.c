@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.101 2004/07/21 11:32:04 yooden Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.102 2004/08/01 10:06:10 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -1191,7 +1191,7 @@ static void searchHelpText(Widget parent, int parentTopic,
             searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
             return;
         }
-        DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", " OK ");
+        DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", "OK");
         return;
     }
     

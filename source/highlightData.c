@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.67 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.68 2004/08/01 10:06:10 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1854,7 +1854,8 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XmStringFree(s1);
     	    
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2070,7 +2071,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style",
-                    "Please specify a name\nfor the highlight style", " OK ");
+                    "Please specify a name\nfor the highlight style", "OK");
             XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
         }
         XtFree(hs->name);
@@ -2092,7 +2093,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Style Color",
                     "Please specify a color\nfor the highlight style",
-                    " OK ");
+                    "OK");
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
         XtFree(hs->name);
@@ -2108,7 +2109,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
-                    "Invalid X color specification: %s\n",  " OK ",
+                    "Invalid X color specification: %s\n",  "OK",
                     hs->color);
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
@@ -2133,7 +2134,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color",
-                    "Invalid X background color specification: %s\n", " OK ",
+                    "Invalid X background color specification: %s\n", "OK",
                     hs->bgColor);
             XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
         }
@@ -2283,7 +2284,7 @@ void EditHighlightPatterns(WindowInfo *window)
         DialogF(DF_WARN, window->shell, 1, "No Language Modes",
                 "No Language Modes available for syntax highlighting\n"
                 "Add language modes under Preferenses->Language Modes",
-                " OK ");
+                "OK");
         return;
     }
     
@@ -2312,9 +2313,11 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.shell = CreateWidget(TheAppShell, "syntaxHighlight",
 	    topLevelShellWidgetClass, args, n);
     AddSmallIcon(HighlightDialog.shell);
-    form = XtVaCreateManagedWidget("editHighlightPatterns", xmFormWidgetClass,
-	    HighlightDialog.shell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, NULL);
+    form = XtVaCreateManagedWidget("editHighlightPatterns",
+            xmFormWidgetClass, HighlightDialog.shell,
+            XmNautoUnmanage, False,
+            XmNresizePolicy, XmRESIZE_NONE,
+            NULL);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, NULL);
     AddMotifCloseCallback(HighlightDialog.shell, closeCB, NULL);
 
@@ -2325,7 +2328,8 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 1,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 99, NULL);
+            XmNrightPosition, 99,
+            NULL);
  
     HighlightDialog.lmPulldown = CreateLanguageModeMenu(lmForm, langModeCB,
     	    NULL);
@@ -2361,7 +2365,8 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2996,7 +3001,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkHighlightDialogData())
     {
         DialogF(DF_INF, HighlightDialog.shell, 1, "Pattern compiled",
-                "Patterns compiled without error", " OK ");
+                "Patterns compiled without error", "OK");
     }
 }
 
@@ -3010,7 +3015,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     {
         DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern",
                 "There is no default pattern set\nfor language mode %s",
-                " OK ", HighlightDialog.langModeName);
+                "OK", HighlightDialog.langModeName);
         return;
     }
     
@@ -3332,7 +3337,7 @@ static highlightPattern *readDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name",
-                    "Please specify a name\nfor the pattern", " OK ");
+                    "Please specify a name\nfor the pattern", "OK");
             XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
         }
         XtFree(pat->name);
@@ -3347,7 +3352,7 @@ static highlightPattern *readDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex",
-                    "Please specify a regular\nexpression to match", " OK ");
+                    "Please specify a regular\nexpression to match", "OK");
             XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
         }
         freePatternSrc(pat, True);
@@ -3378,7 +3383,7 @@ static highlightPattern *readDialogFields(int silent)
                         "a parent, must contain only sub-expression references in regular\n"
                         "expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n"
                         "Expressions and Help -> Syntax Highlighting for more information",
-                        " OK ");
+                        "OK");
                 XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
@@ -3395,7 +3400,7 @@ static highlightPattern *readDialogFields(int silent)
             {
                 DialogF(DF_WARN, HighlightDialog.shell, 1,
                         "Specify Parent Pattern",
-                        "Please specify a parent pattern", " OK ");
+                        "Please specify a parent pattern", "OK");
                 XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
@@ -3421,7 +3426,7 @@ static highlightPattern *readDialogFields(int silent)
             {
                 DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex",
                         "Please specify an ending\nregular expression",
-                        " OK ");
+                        "OK");
                 XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);

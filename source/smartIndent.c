@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.35 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.36 2004/08/01 10:06:11 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -700,7 +700,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
                     "No language-specific mode has been set for this file.\n\n"
                     "To use smart indent in this window, please select a\n"
                     "language from the Preferences -> Language Modes menu.",
-                    " OK ");
+                    "OK");
         }
         return;
     }
@@ -716,7 +716,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
                     "You can create new smart indent macros in the\n"
                     "Preferences -> Default Settings -> Smart Indent\n"
                     "dialog, or choose a different language mode from:\n"
-                    "Preferences -> Language Mode.", " OK ", modeName);
+                    "Preferences -> Language Mode.", "OK", modeName);
         }
         return;
     }
@@ -851,7 +851,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
-                "Error in smart indent macro:\n%s", " OK ",
+                "Error in smart indent macro:\n%s", "OK",
                 stat == MACRO_ERROR
                         ? errMsg
                         : "dialogs and shell commands not permitted");
@@ -864,7 +864,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
                 "Smart indent macros must return\ninteger indent distance",
-                " OK ");
+                "OK");
         EndSmartIndent(window);
         return;
     }
@@ -923,7 +923,7 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR)
     {
         DialogF(DF_ERR, window->shell, 1, "Smart Indent",
-                "Error in smart indent modification macro:\n%s", " OK ",
+                "Error in smart indent modification macro:\n%s", "OK",
                 stat == MACRO_ERROR
                         ? errMsg
                         : "dialogs and shell commands not permitted");
@@ -954,7 +954,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     if (LanguageModeName(0) == NULL)
     {
         DialogF(DF_WARN, window->shell, 1, "Language Mode",
-                "No Language Modes defined", " OK ");
+                "No Language Modes defined", "OK");
         return;
     }
     
@@ -1029,7 +1029,8 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1317,7 +1318,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkSmartIndentDialogData())
         DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
-                "Macros compiled without error", " OK ");
+                "Macros compiled without error", "OK");
 }
 	
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1339,7 +1340,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     {
         DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
                 "There are no default indent macros\nfor language mode %s",
-                " OK ", SmartIndentDialog.langModeName);
+                "OK", SmartIndentDialog.langModeName);
         return;
     }
     defaultIS = &DefaultIndentSpecs[i];
@@ -1430,7 +1431,7 @@ static int checkSmartIndentDialogData(void)
     if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro))
     {
         DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent",
-                "Newline macro required", " OK ");
+                "Newline macro required", "OK");
         return False;
     }
 
@@ -1541,7 +1542,8 @@ void EditCommonSmartIndentMacro(void)
 	    XmNleftPosition, 1, NULL);
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 6,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1657,7 +1659,7 @@ static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkSmartIndentCommonDialogData())
     {
         DialogF(DF_INF, CommonDialog.shell, 1, "Macro compiled",
-                "Macros compiled without error", " OK ");
+                "Macros compiled without error", "OK");
     }
 }
 

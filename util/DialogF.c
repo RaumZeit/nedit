@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.30 2004/07/29 13:47:35 tringali Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.31 2004/08/01 10:06:12 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * DialogF -- modal dialog printf routine                                       *
@@ -177,12 +177,31 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 		"Warning",
 		"Prompt"
     };
+
+    static unsigned char selectionButton_id[] =
+    {
+        XmDIALOG_OK_BUTTON,
+        XmDIALOG_APPLY_BUTTON,
+        XmDIALOG_CANCEL_BUTTON,
+        XmDIALOG_HELP_BUTTON
+    };
+    Cardinal N_SELECTION_BUTTONS = XtNumber(selectionButton_id);
+
+    static unsigned char messageButton_id[] =
+    {
+        XmDIALOG_OK_BUTTON,
+        XmDIALOG_CANCEL_BUTTON,
+        XmDIALOG_HELP_BUTTON
+    };
+    Cardinal N_MESSAGE_BUTTONS = XtNumber(messageButton_id);
+
     static char *button_name[] = {		/* Motif button names */
 		XmNokLabelString,
 		XmNapplyLabelString,		/* button #2, if managed */
 		XmNcancelLabelString,
 		XmNhelpLabelString
     };
+
 						/* Validate input parameters */
     if ((dialog_type > NUM_DIALOGS_SUPPORTED) || (dialog_type <= 0)) {
 	printf ("\nError calling DialogF - Unsupported dialog type\n");
@@ -291,6 +310,17 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	    break;
 	}				/* end switch */
 
+        /*  Set margin width to managed buttons.  */
+        for (i = 0; i < N_SELECTION_BUTTONS; i++)
+        {
+            Widget button = XmSelectionBoxGetChild(dialog, selectionButton_id[i]);
+
+            if (XtIsManaged(button))
+            {
+                XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+            }
+        }
+
     	/* If the button labeled cancel or dismiss is not the cancel button, or
     	   if there is no button labeled cancel or dismiss, redirect escape key
     	   events (this is necessary because the XmNcancelButton resource in
@@ -383,6 +413,17 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	default:
 	    break;
 	}
+
+        /*  Set margin width to managed buttons.  */
+        for (i = 0; i < N_MESSAGE_BUTTONS; i++)
+        {
+            Widget button = XmMessageBoxGetChild(dialog, messageButton_id[i]);
+
+            if (XtIsManaged(button))
+            {
+                XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+            }
+        }
 
         /* Try to create some sensible default mnemonics */
         createMnemonics(dialog_shell);

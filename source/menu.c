@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.110 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.111 2004/08/01 10:06:11 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2831,7 +2831,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args,
     if (window->fileChanged)
     {
         b = DialogF(DF_QUES, window->shell, 2, "Discard Changes",
-                "Discard changes to\n%s%s?", " OK ", "Cancel", window->path,
+                "Discard changes to\n%s%s?", "OK", "Cancel", window->path,
                 window->filename);
     } else
     {
@@ -2929,7 +2929,7 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (!AddTagsFile(args[0], TAG))
     {
         DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File",
-                "Error reading ctags file:\n'%s'\ntags not loaded", " OK ",
+                "Error reading ctags file:\n'%s'\ntags not loaded", "OK",
                 args[0]);
     }
 }
@@ -2968,7 +2968,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (!AddTagsFile(args[0], TIP))
     {
         DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File",
-                "Error reading tips file:\n'%s'\ntips not loaded", " OK ",
+                "Error reading tips file:\n'%s'\ntips not loaded", "OK",
                 args[0]);
     }
 }
@@ -3251,7 +3251,7 @@ static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
     {
         DialogF(DF_WARN, window->shell, 1, "Error in replace_find",
                 "replace_find action requires search and replace string arguments",
-                " OK ");
+                "OK");
         return;
     }
 
@@ -3519,7 +3519,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args,
     	return;
 
     response = DialogF(DF_PROMPT, window->shell, 2, "Insert Ctrl Code",
-            "ASCII Character Code:", charCodeText, " OK ", "Cancel");
+            "ASCII Character Code:", charCodeText, "OK", "Cancel");
 
     if (response == 2)
     	return;
@@ -3537,7 +3537,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args,
     if (!BufSubstituteNullChars((char *)charCodeString, 1, window->buffer))
     {
         DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data",
-                " OK ");
+                "OK");
         return;
     }
 
@@ -3565,7 +3565,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args,
 
     resp = DialogF(DF_PROMPT, window->shell, 2, "Filter Selection",
             "Shell command:   (use up arrow key to recall previous)",
-            cmdText, " OK ", "Cancel");
+            cmdText, "OK", "Cancel");
 
     if (resp == 2)
     	return;
@@ -3604,7 +3604,7 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
     resp = DialogF(DF_PROMPT, window->shell, 2, "Execute Command",
             "Shell command:   (use up arrow key to recall previous;\n"
-            "%% expands to current filename, # to line number)", cmdText, " OK ",
+            "%% expands to current filename, # to line number)", cmdText, "OK",
             "Cancel");
 
     if (resp == 2)

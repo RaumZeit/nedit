@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.29 2004/07/21 11:32:07 yooden Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.30 2004/08/01 10:06:12 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -683,8 +683,11 @@ static void createErrorDialog(Widget parent)
     	    NULL);
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_OK_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_HELP_BUTTON));
-    buttonString = XmStringCreateLtoR (" OK ", XmSTRING_DEFAULT_CHARSET);
+    buttonString = XmStringCreateLtoR("OK", XmSTRING_DEFAULT_CHARSET);
     XtVaSetValues(ErrorDialog, XmNcancelLabelString, buttonString, NULL);
+    XtVaSetValues(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_CANCEL_BUTTON),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
+            NULL);
     XmStringFree(buttonString);
 }
 
@@ -875,8 +878,9 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     ac = 0;
     XtSetArg (al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg (al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
-    XtSetArg(al[ac], XmNlabelString, st1=XmStringCreateLtoR (" OK ", 
+    XtSetArg(al[ac], XmNlabelString, st1=XmStringCreateLtoR ("OK", 
                       XmSTRING_DEFAULT_CHARSET)); ac++;
+    XtSetArg (al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN);  ac++;
     button = XmCreatePushButtonGadget(form, "ok", al, ac);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)helpDismissCB,
     	    (char *)form);

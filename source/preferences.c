@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.122 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.123 2004/08/01 10:06:11 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1309,7 +1309,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
             creation of the preference file directory. */
         DialogF(DF_WARN, parent, 1, "Error saving Preferences",
                 "Unable to save preferences: Cannot determine filename.",
-                " OK ");
+                "OK");
         return;
     }
 
@@ -1323,7 +1323,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 "Default preferences will be saved in the file:\n"
                 "%s\n"
                 "SAVING WILL INCORPORATE SETTINGS\n"
-                "FROM FILE: %s", " OK ", "Cancel",
+                "FROM FILE: %s", "OK", "Cancel",
                 prefFileName, ImportedFile) == 2)
         return;
     }    
@@ -1342,7 +1342,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
             PrefDescrip, XtNumber(PrefDescrip)))
     {
         DialogF(DF_WARN, parent, 1, "Save Preferences",
-                "Unable to save preferences in %s", " OK ", prefFileName);
+                "Unable to save preferences in %s", "OK", prefFileName);
     }
 
 #ifndef VMS
@@ -2458,7 +2458,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN)
     {
         DialogF(DF_WARN, TabDistText, 1, "Tab Spacing",
-                "Tab spacing out of range", " OK ");
+                "Tab spacing out of range", "OK");
         return;
     }
 
@@ -2470,7 +2470,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
         if (emTabDist <= 0 || tabDist >= 1000)
         {
             DialogF(DF_WARN, EmTabText, 1, "Tab Spacing",
-                    "Emulated tab spacing out of range", " OK ");
+                    "Emulated tab spacing out of range", "OK");
             return;
         }
     } else
@@ -2634,7 +2634,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
        if (margin <= 0 || margin >= 1000)
        {
            DialogF(DF_WARN, WrapText, 1, "Wrap Margin", 
-                   "Wrap margin out of range", " OK ");
+                   "Wrap margin out of range", "OK");
            return;
        }
 
@@ -2829,7 +2829,8 @@ characters of file to determine type from content)"),
     XtVaSetValues(defTipsLbl, XmNuserData, LMDialog.defTipsW, NULL);
 	    
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -3114,7 +3115,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
                 "This language mode has syntax highlighting\n"
                 "patterns defined.  Please delete the patterns\n"
                 "first, in Preferences -> Default Settings ->\n"
-                "Syntax Highlighting, before proceeding here.", " OK ");
+                "Syntax Highlighting, before proceeding here.", "OK");
         return False;
     }
 
@@ -3126,7 +3127,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
                 "defined.  Please delete the macros first,\n"
                 "in Preferences -> Default Settings ->\n"
                 "Auto Indent -> Program Smart Indent,\n"
-                "before proceeding here.", " OK ");
+                "before proceeding here.", "OK");
         return False;
     }
 
@@ -3438,7 +3439,7 @@ static languageModeRec *readLMDialogFields(int silent)
         if (!silent)
         {
             DialogF(DF_WARN, LMDialog.shell, 1, "Language Mode Name",
-                    "Please specify a name\nfor the language mode", " OK ");
+                    "Please specify a name\nfor the language mode", "OK");
             XmProcessTraversal(LMDialog.nameW, XmTRAVERSE_CURRENT);
         }
         freeLanguageModeRec(lm);
@@ -3464,7 +3465,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Regex",
-                        "Recognition expression:\n%s", " OK ", compileMsg);
+                        "Recognition expression:\n%s", "OK", compileMsg);
                 XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
             XtFree((char *)compiledRE);
@@ -3488,7 +3489,7 @@ static languageModeRec *readLMDialogFields(int silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Error reading Calltips",
                         "Can't read default calltips file(s):\n  \"%s\"\n",
-                        " OK ", lm->defTipsFile);
+                        "OK", lm->defTipsFile);
                 XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
             freeLanguageModeRec(lm);
@@ -3514,7 +3515,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
-                        "Invalid tab spacing: %d", " OK ", lm->tabDist);
+                        "Invalid tab spacing: %d", "OK", lm->tabDist);
                 XmProcessTraversal(LMDialog.tabW, XmTRAVERSE_CURRENT);
             }
             freeLanguageModeRec(lm);
@@ -3540,7 +3541,7 @@ static languageModeRec *readLMDialogFields(int silent)
             if (!silent)
             {
                 DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing",
-                        "Invalid emulated tab spacing: %d", " OK ",
+                        "Invalid emulated tab spacing: %d", "OK",
                         lm->emTabDist);
                 XmProcessTraversal(LMDialog.emTabW, XmTRAVERSE_CURRENT);
             }
@@ -3868,7 +3869,8 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtVaSetValues(boldItalicLbl, XmNuserData, fd->boldItalicW, NULL);    
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(" OK "),
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, highlightFrame,
 	    XmNtopOffset, MARGIN_SPACING,
@@ -4833,7 +4835,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
         {
             *(stringPtr + 1) = '\0';
             DialogF(DF_WARN, textW, 1, "Invalid Character",
-                    "Invalid character \"%s\" in %s", " OK ", stringPtr,
+                    "Invalid character \"%s\" in %s", "OK", stringPtr,
                     fieldName);
             XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
         }
@@ -5055,7 +5057,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
         fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
     } else
     {
-        DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", " OK ",
+        DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "OK",
                 message, errorIn, errorLine);
     }
     XtFree(errorLine);
@@ -5788,7 +5790,7 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
     if(!verifyAllColors(cd))
     {
         DialogF(DF_ERR, w, 1, "Invalid Colors",
-                "All colors must be valid to proceed.", " OK ");
+                "All colors must be valid to proceed.", "OK");
         return;
     }
     updateColors(cd);
@@ -5804,7 +5806,7 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
     if(!verifyAllColors(cd))
     {
         DialogF(DF_ERR, w, 1, "Invalid Colors",
-                "All colors must be valid to be applied.", " OK ");
+                "All colors must be valid to be applied.", "OK");
         return;
     }
     updateColors(cd);
@@ -5987,15 +5989,18 @@ void ChooseColors(WindowInfo *window)
             XmNrightAttachment, XmATTACH_FORM, NULL);
     
     /* The OK, Apply, and Cancel buttons */
-    okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-          XmNlabelString, s1=XmStringCreateSimple(" OK "),
-          XmNtopAttachment, XmATTACH_WIDGET,
-          XmNtopWidget, tmpW,
-          XmNtopOffset, MARGIN_SPACING,
-          XmNleftAttachment, XmATTACH_POSITION,
-          XmNleftPosition, 10,
-          XmNrightAttachment, XmATTACH_POSITION,
-          XmNrightPosition, 30, NULL);
+    okBtn = XtVaCreateManagedWidget("ok",
+            xmPushButtonWidgetClass, form,
+            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
+            XmNtopAttachment, XmATTACH_WIDGET,
+            XmNtopWidget, tmpW,
+            XmNtopOffset, MARGIN_SPACING,
+            XmNleftAttachment, XmATTACH_POSITION,
+            XmNleftPosition, 10,
+            XmNrightAttachment, XmATTACH_POSITION,
+            XmNrightPosition, 30,
+            NULL);
     XtAddCallback(okBtn, XmNactivateCallback, colorOkCB, cd);
     XmStringFree(s1);
 

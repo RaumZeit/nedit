@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.48 2004/07/21 11:32:06 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.49 2004/08/01 10:06:11 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -649,7 +649,8 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING(" OK "),
+            XmNlabelString, s1=MKSTRING("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -944,7 +945,8 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING(" OK "),
+            XmNlabelString, s1=MKSTRING("OK"),
+            XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 8,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2035,7 +2037,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
     if (checkMacro(ucd))
     {
         DialogF(DF_INF, ucd->dlogShell, 1, "Macro",
-                "Macro compiled without error", " OK ");
+                "Macro compiled without error", "OK");
     }
 }
 
@@ -2360,7 +2362,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         if (!silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
-                    "Please specify a name\nfor the menu item", " OK ");
+                    "Please specify a name\nfor the menu item", "OK");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
@@ -2373,7 +2375,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry",
                     "Menu item names may not\ncontain colon (:) characters",
-                    " OK ");
+                    "OK");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
@@ -2386,7 +2388,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         if (!silent)
         {
             DialogF(DF_WARN, ucd->dlogShell, 1, "Command to Execute",
-                    "Please specify %s to execute", " OK ",
+                    "Please specify %s to execute", "OK",
                     ucd->dialogType == SHELL_CMDS
                             ? "shell command"
                             : "macro command(s)");

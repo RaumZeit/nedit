@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.88 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.89 2004/08/01 10:06:10 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -782,7 +782,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
         if (errno != ENOENT || warnNotExist)
         {
             DialogF(DF_ERR, window->shell, 1, "Read Macro",
-                    "Error reading macro file %s: %s", " OK ", fileName,
+                    "Error reading macro file %s: %s", "OK", fileName,
 #ifdef VMS
                     strerror(errno, vaxc$errno));
 #else
@@ -969,7 +969,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     {
         finishMacroCmdExecution(window);
         DialogF(DF_ERR, window->shell, 1, "Macro Error",
-                "Error executing macro: %s", " OK ", errMsg);
+                "Error executing macro: %s", "OK", errMsg);
         return;
     }
 
@@ -1208,7 +1208,7 @@ void RepeatDialog(WindowInfo *window)
     {
         DialogF(DF_WARN, window->shell, 1, "Repeat Macro",
                 "No previous commands or learn/\nreplay sequences to repeat",
-                " OK ");
+                "OK");
         return;
     }
     
@@ -1346,7 +1346,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
         if (!rd->forWindow->buffer->primary.selected)
         {
             DialogF(DF_WARN, rd->shell, 1, "Repeat Macro",
-                    "No selection in window to repeat within", " OK ");
+                    "No selection in window to repeat within", "OK");
             XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
             return False;
         }
@@ -1684,7 +1684,7 @@ static Boolean continueWorkProc(XtPointer clientData)
     {
         finishMacroCmdExecution(window);
         DialogF(DF_ERR, window->shell, 1, "Macro Error",
-                "Error executing macro: %s", " OK ", errMsg);
+                "Error executing macro: %s", "OK", errMsg);
         return True;
     } else if (stat == MACRO_DONE)
     {
@@ -2789,7 +2789,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    	errMsg))
 	    return False;
     if (nArgs == 1) {
-    	btnLabels[0] = " OK ";
+        btnLabels[0] = "OK";
     	nBtns = 1;
     } else
     	nBtns = nArgs - 1;
@@ -2801,6 +2801,14 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
     	    ac++;
     dialog = CreateMessageDialog(window->shell, "macroDialog", al, ac);
+    if (1 == nArgs)
+    {
+        /*  Only set margin width for the default OK button  */
+        XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
+                XmNmarginWidth, BUTTON_WIDTH_MARGIN,
+                NULL);
+    }
+
     XmStringFree(s1);
     XmStringFree(s2);
     AddMotifCloseCallback(XtParent(dialog), dialogCloseCB, window);
@@ -2951,7 +2959,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    	errMsg))
 	    return False;
     if (nArgs == 1) {
-    	btnLabels[0] = " OK ";
+        btnLabels[0] = "OK";
     	nBtns = 1;
     } else
     	nBtns = nArgs - 1;
@@ -2963,6 +2971,14 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0]));
     	    ac++;
     dialog = CreatePromptDialog(window->shell, "macroStringDialog", al, ac);
+    if (1 == nArgs)
+    {
+        /*  Only set margin width for the default OK button  */
+        XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
+                XmNmarginWidth, BUTTON_WIDTH_MARGIN,
+                NULL);
+    }
+
     XmStringFree(s1);
     XmStringFree(s2);
     AddMotifCloseCallback(XtParent(dialog), stringDialogCloseCB, window);
@@ -3307,7 +3323,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
               errMsg))
           return False;
     if (nArgs == 2) {
-      btnLabels[0] = " OK ";
+      btnLabels[0] = "OK";
       nBtns = 1;
     } else
       nBtns = nArgs - 2;
@@ -3395,6 +3411,14 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     XtSetArg(al[ac], XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines); ac++;
     XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple(btnLabels[0])); ac++;
     dialog = CreateSelectionDialog(window->shell, "macroListDialog", al, ac);
+    if (2 == nArgs)
+    {
+        /*  Only set margin width for the default OK button  */
+        XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
+                XmNmarginWidth, BUTTON_WIDTH_MARGIN,
+                NULL);
+    }
+
     AddMotifCloseCallback(XtParent(dialog), listDialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, listDialogBtnCB, window);
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
