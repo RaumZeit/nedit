@@ -1,3 +1,134 @@
+2001-08-15 11:00  amai
+
+	* source/preferences.h, util/misc.c, util/misc.h: Have unique value
+	for MAX_ACCEL_LEN
+
+2001-08-15 10:56  amai
+
+	* source/Makefile.dependencies: Update
+
+2001-08-15 10:56  amai
+
+	* source/: userCmds.c, userCmds.h: Source should include it's own
+	headers for consistency checking.  Add some const to signatures,
+	drop an unused arg from a static interface.
+
+2001-08-14 17:05  slobasso
+
+	* source/rbTree.c: fixed comment spacing
+
+2001-08-14 16:40  slobasso
+
+	* source/rbTree.c: added gnu license
+
+2001-08-14 10:50  jlous
+
+	* README: README credits updated to reflect version dialog
+
+2001-08-14 10:37  jlous
+
+	* source/file.c, source/help.c, source/highlight.c,
+	source/highlightData.c, source/interpret.c, source/macro.c,
+	source/menu.c, source/nc.c, source/nedit.c, source/preferences.c,
+	source/search.c, source/selection.c, source/server.c,
+	source/shell.c, source/shift.c, source/smartIndent.c,
+	source/tags.c, source/text.c, source/textBuf.c, source/textDisp.c,
+	source/textDrag.c, source/textSel.c, source/undo.c,
+	source/userCmds.c, source/window.c, util/DialogF.c,
+	util/fileUtils.c, util/fontsel.c, util/getfiles.c,
+	util/managedList.c, util/misc.c, util/prefFile.c,
+	util/printUtils.c, util/system.h, util/utils.c, util/vmsUtils.c:
+	Fixed license statements to pure GPL
+
+2001-08-13 15:48  tringali
+
+	* doc/: nc.man, nedit.man: manpage updates from Joor.
+
+2001-08-13 11:55  amai
+
+	* doc/nedit.doc, source/help.c: Doc patch from Thorsten Haude
+	posted on Fri Aug 10 2001
+
+2001-08-13 11:51  amai
+
+	* doc/nedit.doc, source/help.c: Patch from Thorsten Haude: Document
+	Arrays within nedit.doc and typo fix in help.c
+
+2001-08-12 17:45  amai
+
+	* makefiles/Makefile.generic, source/comnedit.com: Drop last
+	references to NO_FCHMOD #define
+
+2001-08-11 21:51  edg
+
+	* source/search.c: Fixed SF bug #448006: three beeps; one to many.
+
+2001-08-10 22:36  amai
+
+	* source/highlightData.c: TeX pattern patch from Joerg Fischer
+	<jf505@yahoo.de>
+
+2001-08-10 16:35  amai
+
+	* source/Makefile.dependencies: Update dependency list
+
+2001-08-09 22:58  tringali
+
+	* source/nedit.c: Fix for wrong menu font [#434383]
+
+2001-08-09 20:47  amai
+
+	* util/system.h: Correct a comment :-)
+
+2001-08-09 20:46  amai
+
+	* makefiles/Makefile.os2: Drop -DNO_FCHMOD flag
+
+2001-08-09 20:41  slobasso
+
+	* source/Makefile.common: added parse.c to cleaned files for make
+	clean
+
+2001-08-09 20:39  slobasso
+
+	* source/userCmds.c: removed attachment possibly causing window
+	manager loop
+
+2001-08-09 20:03  slobasso
+
+	* source/: smartIndent.c, smartIndent.h, macro.c: We now keep track
+	if we are in smart indent macros so garbage collection won't remove
+	things from under a macro.
+
+2001-08-09 15:34  amai
+
+	* source/highlight.c, source/highlightData.c, source/interpret.c,
+	source/search.c, source/selection.c, source/shell.c,
+	source/smartIndent.c, source/textBuf.c, source/textSel.c,
+	source/userCmds.c, source/window.c, util/managedList.c: Add lots of
+	missing #include <string.h>
+
+2001-08-09 10:37  amai
+
+	* source/help.c: Add hardcoded timestamp (month) again
+
+2001-08-09 09:37  amai
+
+	* source/.cvsignore: Add entry
+
+2001-08-09 00:31  slobasso
+
+	* source/file.c: remove fchmod calls except when under VMS
+
+2001-08-08 20:29  amai
+
+	* makefiles/Makefile.os2: Update from my private working copy
+
+2001-08-08 10:39  amai
+
+	* ChangeLog: Update (should be done weekly perhaps and could even
+	be done automatically?)
+
 2001-08-08 10:37  amai
 
 	* source/parse.c_noyacc: Re-generate from parse.y.  BTW, yacc from
