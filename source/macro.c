@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.68 2003/05/05 16:25:56 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.69 2003/05/20 05:41:08 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4568,7 +4568,7 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
     rangeset = RangesetFetch(rangesetTable, argList[0].val.n);
     if (rangeset != NULL) {
         if (nArgs == 1) {
-            rangeIndex = RangesetGetNRanges(rangeset);
+            rangeIndex = RangesetGetNRanges(rangeset) - 1;
             ok = RangesetFindRangeNo(rangeset, 0, &start, &dummy);
             ok &= RangesetFindRangeNo(rangeset, rangeIndex, &dummy, &end);
             rangeIndex = -1;
