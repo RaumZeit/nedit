@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.33 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.34 2001/08/23 17:42:04 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4417,7 +4417,7 @@ static char *searchTypeArg(int searchType)
     else if (searchType == SEARCH_REGEX_NOCASE)
     	return SEARCH_REGEX_NOCASE_STRING;
     else /* Fallback: */
-      	return SEARCH_LITERAL;
+      	return SEARCH_LITERAL_STRING;
 }
 
 /*
