@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.13 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.14 2001/08/25 12:09:17 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1094,7 +1094,7 @@ static void measureText(char *text, int wrapWidth, int *rows, int *cols)
 */
 static void truncateString(char *string, int length)
 {
-    if (strlen(string) > length)
+    if ((int)strlen(string) > length)
 	memcpy(&string[length-3], "...", 4);
 }
 

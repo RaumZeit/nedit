@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.17 2001/08/21 14:29:37 tringali Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.18 2001/08/25 12:09:17 amai Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -946,7 +946,7 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
     Cardinal nItems;
     
     XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
 	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
@@ -1338,7 +1338,7 @@ static void removeMenuItems(Widget menuPane)
     memcpy(items, itemList, sizeof(Widget) * nItems);
     
     /* Delete all of the widgets not marked as PERMANENT_MENU_ITEM */
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
 	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {

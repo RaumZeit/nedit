@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.30 2001/08/17 23:02:55 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.31 2001/08/25 12:09:17 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1578,7 +1578,7 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
     /* Select the correct language mode in the sub-menu */
     XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, NULL);
     XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
     	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	XmToggleButtonSetState(items[n], (int)userData == mode, False);
     }
@@ -4101,7 +4101,7 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
     if (nItems == 0)
     	return;
     selectedItem = items[0];
-    for (i=0; i<nItems; i++) {
+    for (i=0; i<(int)nItems; i++) {
     	XtVaGetValues(items[i], XmNuserData, &itemName, NULL);
     	if (!strcmp(itemName, modeName)) {
     	    selectedItem = items[i];

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.20 2001/08/23 14:59:14 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.21 2001/08/25 12:09:17 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1559,7 +1559,7 @@ static patternSet *readDefaultPatternSet(char *langModeName)
     char *strPtr;
     
     modeNameLen = strlen(langModeName);
-    for (i=0; i<XtNumber(DefaultPatternSets); i++) {
+    for (i=0; i<(int)XtNumber(DefaultPatternSets); i++) {
     	if (!strncmp(langModeName, DefaultPatternSets[i], modeNameLen) &&
     	    	DefaultPatternSets[i][modeNameLen] == ':') {
     	    strPtr = DefaultPatternSets[i];
@@ -3072,7 +3072,7 @@ static void setStyleMenu(char *styleName)
     if (nItems == 0)
     	return;
     selectedItem = items[0];
-    for (i=0; i<nItems; i++) {
+    for (i=0; i<(int)nItems; i++) {
     	XtVaGetValues(items[i], XmNuserData, &itemStyle, NULL);
     	if (!strcmp(itemStyle, styleName)) {
     	    selectedItem = items[i];

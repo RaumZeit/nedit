@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.7 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.8 2001/08/25 12:09:17 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -701,7 +701,7 @@ static unsigned char * chunk (int paren, int *flag_param) {
    /* Set a bit in Closed_Parens to let future calls to function `back_ref'
       know that we have closed this set of parentheses. */
 
-   if (paren == PAREN && this_paren <= sizeof (Closed_Parens) * CHAR_BIT) {
+   if (paren == PAREN && this_paren <= (int)sizeof (Closed_Parens) * CHAR_BIT) {
       SET_BIT (Closed_Parens, this_paren);
 
       /* Determine if a parenthesized expression is modified by a quantifier
@@ -731,7 +731,7 @@ static unsigned char * chunk (int paren, int *flag_param) {
    if ((*flag_param & HAS_WIDTH)  &&
         paren == PAREN            &&
         !zero_width               &&
-        this_paren <= sizeof (Paren_Has_Width) * CHAR_BIT) {
+        this_paren <= (int)(sizeof (Paren_Has_Width) * CHAR_BIT)) {
 
       SET_BIT (Paren_Has_Width, this_paren);
    }
@@ -927,7 +927,7 @@ static unsigned char * piece (int *flag_param) {
 
          *flag_param = flags_local;
          return (ret_val);
-      } else if (Num_Braces > UCHAR_MAX) {
+      } else if (Num_Braces > (int)UCHAR_MAX) {
          sprintf (Error_Text, "number of {m,n} constructs > %d", UCHAR_MAX);
          REG_FAIL (Error_Text);
       }
@@ -2683,7 +2683,7 @@ static int init_ansi_classes (void) {
       letter_count = 0;
       space_count  = 0;
 
-      for (i = 1; i < UCHAR_MAX; i++) {
+      for (i = 1; i < (int)UCHAR_MAX; i++) {
          if (isalnum (i) || i == underscore) {
             Word_Char [word_count++] = (unsigned char) i;
          }

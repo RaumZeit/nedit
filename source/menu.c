@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.35 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.36 2001/08/25 12:09:17 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2723,7 +2723,7 @@ static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	fprintf(stderr, "NEdit: find action requires search string argument\n");
     	return;
     }
-    for (i=1; i<*nArgs; i++)
+    for (i=1; i<(int)*nArgs; i++)
     	if (!strCaseCmp(args[i], "continued"))
     	    continued = TRUE;
     SearchAndSelectIncremental(WidgetToWindow(w),
@@ -3910,7 +3910,7 @@ static void updateWindowMenu(const WindowInfo *window)
     XtVaGetValues(window->windowMenuPane, XmNchildren, &items,
     	    XmNnumChildren, &nItems, NULL);
     windowIndex = 0;
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
         XtPointer userData;
     	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData == TEMPORARY_MENU_ITEM) {
@@ -3976,7 +3976,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
     XtVaGetValues(window->prevOpenMenuPane, XmNchildren, &items,
             XmNnumChildren, &nItems, NULL);
     index = 0;
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
         if (index >= NPrevOpen) {
             /* unmanaging before destroying stops parent from displaying */
             XtUnmanageChild(items[n]);
@@ -4028,7 +4028,7 @@ static void updateTagsFileMenu(WindowInfo *window)
     XtVaGetValues(window->unloadTagsMenuPane, XmNchildren, &items,
 	    XmNnumChildren, &nItems, NULL);
     tf = TagsFileList;
-    for (n=0; n<nItems; n++) {
+    for (n=0; n<(int)nItems; n++) {
 	if (!tf) {
 	    /* unmanaging before destroying stops parent from displaying */
 	    XtUnmanageChild(items[n]);
@@ -4165,7 +4165,7 @@ void ReadNEditDB(void)
     	line[--lineLen] = '\0';
     	if (lineLen == 0)
     	    continue;		/* blank line */
-	if (strcspn(line, badFilenameChars) != lineLen) {
+	if ((int)strcspn(line, badFilenameChars) != lineLen) {
     	    fprintf(stderr, ".neditdb file is corrupted\n");
     	    fclose(fp);
 	    return;			     /* non-filename characters */
@@ -4229,7 +4229,7 @@ static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs)
 {
     int i;
     
-    for (i=ignoreArgs; i<*nArgs; i++) {
+    for (i=ignoreArgs; i<(int)*nArgs; i++) {
     	if (!strCaseCmp(args[i], "forward"))
     	    return SEARCH_FORWARD;
     	if (!strCaseCmp(args[i], "backward"))
@@ -4248,7 +4248,7 @@ static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs)
 {
     int i;
     
-    for (i=ignoreArgs; i<*nArgs; i++) {
+    for (i=ignoreArgs; i<(int)*nArgs; i++) {
     	if (!strCaseCmp(args[i], "keep"))
     	    return TRUE;
     	if (!strCaseCmp(args[i], "nokeep"))
@@ -4267,7 +4267,7 @@ static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs)
 {
     int i;
     
-    for (i=ignoreArgs; i<*nArgs; i++) {
+    for (i=ignoreArgs; i<(int)*nArgs; i++) {
     	if (!strCaseCmp(args[i], "wrap"))
     	    return(TRUE);
     	if (!strCaseCmp(args[i], "nowrap"))
@@ -4286,7 +4286,7 @@ static int searchType(int ignoreArgs, String *args, Cardinal *nArgs)
 {
     int i, tmpSearchType;
     
-    for (i=ignoreArgs; i<*nArgs; i++) {
+    for (i=ignoreArgs; i<(int)*nArgs; i++) {
       	if (StringToSearchType(args[i], &tmpSearchType))
     	    return tmpSearchType;
     }
