@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Oct 15, 2002                                               October 15, 2002
+NEdit release of Oct 31, 2002                                               October 31, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -4039,6 +4039,10 @@ nc.serverCommand: nedit -server
 
   Command used by the nc program to start an NEdit server. 
 
+nc.timeOut: 10
+
+  Basic time-out period used in communication with an NEdit server (seconds). 
+
    and other characteristics):
   The following are Selected widget names (to which you may append 
   .background, .foreground, .fontList, etc., to change colors, fonts 
@@ -4594,8 +4598,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Oct 15, 2002
-Oct 15, 2002
+NEdit release of Oct 31, 2002
+Oct 31, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

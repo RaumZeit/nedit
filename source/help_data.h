@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Oct 15, 2002 (Do NOT edit!)
+                 Generated on Oct 31, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -3959,6 +3959,10 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Command used by the nc program to start an NEdit server. ",
 "\n\n",
+"\01A\01Bnc.timeOut\01A: 10\n",
+"\01I\n",
+"Basic time-out period used in communication with an NEdit server (seconds). ",
+"\n\n",
 "\01KThe following are Selected widget names (to which you may append\01I ",
 "\01K.background, .foreground, .fontList, etc., to change colors, fonts\01I ",
 "\01K and other characteristics):\01I ",
@@ -5274,4 +5278,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Oct 15, 2002\n";
+static const char * NEditVersion = "NEdit release of Oct 31, 2002\n";

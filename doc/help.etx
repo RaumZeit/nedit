@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.34 2002/10/15 11:00:39 ajhood Exp $
+.. $Id: help.etx,v 1.35 2002/10/31 16:08:07 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4139,6 +4139,10 @@ X Resources
 **nc.serverCommand**: nedit -server
 
   Command used by the nc program to start an NEdit server.
+
+**nc.timeOut**: 10
+
+  Basic time-out period used in communication with an NEdit server (seconds).
 
    ----------------------------------------------------------------------
   ~The following are Selected widget names (to which you may append~

@@ -147,7 +147,7 @@ nc \- Client program for NEdit text editor
 \&\fBnc\fR [\fB\-read\fR] [\fB\-create\fR] [\fB\-line\fR \fIn\fR | \fB+\fR\fIn\fR] [\fB\-do\fR \fIcommand\fR]
 [\fB\-ask\fR] [\fB\-noask\fR] [\fB\-svrname\fR \fIname\fR] [\fB\-svrcmd\fR \fIcommand\fR] [\fB\-lm\fR
 \&\fIlanguagemode\fR] [\fB\-geometry\fR \fIgeometry\fR]  [\fB\-iconic\fR] [\fB\-display\fR
-\&\fI[host]:server[.screen]\fR] [file...]
+\&\fI[host]:server[.screen]\fR]  [\fB-timeout\fR \fIseconds\fR] [file...]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 \&\fBnc\fR is the client interface to the NEdit text editor. A server can be started
@@ -213,6 +213,13 @@ Initial window state for succeeding files.
 The name of the X server to use. host specifies the machine, server specifies
 the display server number, and screen specifies the screen number.  host or
 screen can be omitted and default to the local machine, and screen 0.
+.Ip "\fB\-timeout\fR" 4
+.IX Item "-timeout"
+Basic time-out period (in seconds) used in communication with an NEdit server.
+Default: 10 seconds. Also settable via the X resource \f(CW\*(C`nc.timeOut\*(C'\fR.
+
+Under rare conditions (such as a slow connection), it may be necessary to
+increase the time-out period. In most cases, the default is fine. 
 .SH "ENVIRONMENT"
 .IX Header "ENVIRONMENT"
 .Ip "\s-1DISPLAY\s0" 4

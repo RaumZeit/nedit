@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.28 2002/10/07 19:39:45 arnef Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.29 2002/10/31 16:08:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -71,10 +71,10 @@ static const char CVSID[] = "$Id: nc.c,v 1.28 2002/10/07 19:39:45 arnef Exp $";
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
 
-#define PROPERTY_CHANGE_TIMEOUT (10 * 1000) /* milliseconds */
-#define SERVER_START_TIMEOUT    (30 * 1000) /* milliseconds */
-#define REQUEST_TIMEOUT         (10 * 1000) /* milliseconds */
-#define FILE_OPEN_TIMEOUT       (30 * 1000) /* milliseconds */
+#define PROPERTY_CHANGE_TIMEOUT (Preferences.timeOut * 1000) /* milliseconds */
+#define SERVER_START_TIMEOUT    (Preferences.timeOut * 3000) /* milliseconds */
+#define REQUEST_TIMEOUT         (Preferences.timeOut * 1000) /* milliseconds */
+#define FILE_OPEN_TIMEOUT       (Preferences.timeOut * 3000) /* milliseconds */
 
 typedef struct
 {
@@ -105,6 +105,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context,
 
 Display *TheDisplay;
 static Atom currentWaitForAtom;
+static Atom noAtom = (Atom)(-1);
 
 static const char cmdLineHelp[] =
 #ifdef VMS
@@ -112,7 +113,8 @@ static const char cmdLineHelp[] =
 #else
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
-           [-geometry geometry] [-iconic] [-wait] [-V|-version] [--] [file...]\n";
+           [-geometry geometry] [-iconic] [-timeout seconds] [-wait]\n\
+           [-V|-version] [--] [file...]\n";
 #endif /*VMS*/
 
 /* Structure to hold X Resource values */
@@ -121,6 +123,7 @@ static struct {
     char serverCmd[2*MAXPATHLEN]; /* holds executable name + flags */
     char serverName[MAXPATHLEN];
     int waitForClose;
+    int timeOut;
 } Preferences;
 
 /* Application resources */
@@ -133,6 +136,8 @@ static PrefDescripRec PrefDescrip[] = {
       (void *)sizeof(Preferences.serverName), False},
     {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False",
       &Preferences.waitForClose, NULL, False},
+    {"timeOut", "TimeOut", PREF_INT, "10",
+      &Preferences.timeOut, NULL, False}
 };
 
 /* Resource related command line options */
@@ -142,6 +147,7 @@ static XrmOptionDescRec OpTable[] = {
     {"-svrname", ".serverName", XrmoptionSepArg, (caddr_t)NULL},
     {"-svrcmd", ".serverCommand", XrmoptionSepArg, (caddr_t)NULL},
     {"-wait", ".waitForClose", XrmoptionNoArg, (caddr_t)"True"},
+    {"-timeout", ".timeOut", XrmoptionSepArg, (caddr_t)NULL}
 };
 
 /* Struct to hold info about files being opened and edited. */
@@ -241,6 +247,14 @@ int main(int argc, char **argv)
     RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME,
     	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
     
+    /* Make sure that the time out unit is at least 1 second and not too
+       large either (overflow!). */
+    if (Preferences.timeOut < 1) {
+	Preferences.timeOut = 1;
+    } else if (Preferences.timeOut > 1000) {
+	Preferences.timeOut = 1000;
+    }
+    
 #ifndef VMS
     /* For Clearcase users who have not set a server name, use the clearcase
        view name.  Clearcase views make files with the same absolute path names
@@ -298,9 +312,10 @@ static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id)
    ** Hence, we generate this (synthetic) event to break the deadlock
    */
     Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-    XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8,
-    	    PropModeReplace, (unsigned char *)"",
-    	    strlen(""));
+    if (currentWaitForAtom != noAtom) {
+	XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 
+	    8, PropModeReplace, (unsigned char *)"", strlen(""));
+    }
 
     /* Flag that the timeout has occurred. */
     *timeOutReturn = True;
@@ -404,6 +419,7 @@ static void startNewServer(XtAppContext context,
                               SERVER_START_TIMEOUT,
                               (XtTimerCallbackProc)timeOutProc,
                               &timeOut);
+    currentWaitForAtom = serverExistsAtom;
 
     /* Wait for the server to start */
     while (!timeOut) {
@@ -431,7 +447,7 @@ static void startNewServer(XtAppContext context,
     }
     /* Exit if the timeout expired. */
     if (timeOut) {
-        fprintf(stderr, "%s: The server failed to start.\n", APP_NAME);
+        fprintf(stderr, "%s: The server failed to start (time-out).\n", APP_NAME);
         XtCloseDisplay(TheDisplay);
         exit(EXIT_FAILURE);
     } else {
@@ -816,6 +832,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context,
        well */
     timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, 
                 (XtTimerCallbackProc)timeOutProc, &timeOut);
+    currentWaitForAtom = noAtom;
 
     /* Wait for all of the windows to be opened by server,
      * and closed if -wait was supplied */
