@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.91 2004/11/05 08:44:31 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.92 2004/11/07 20:03:56 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1830,15 +1830,15 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     else if (!strcmp(string, "next"))
 	w = window->next;
     else {
-	strcpy(&normalizedString[0], string);
+        strncpy(normalizedString, string, MAXPATHLEN);
+        normalizedString[MAXPATHLEN-1] = '\0';
+        if (1 == NormalizePathname(normalizedString)) {
+            /*  Something is broken with the input pathname. */
+            *errMsg = "Pathname too long in focus_window()";
+            return False;
+        }
 	for (w=WindowList; w != NULL; w = w->next) {
 	    sprintf(fullname, "%s%s", w->path, w->filename);
-            if (1 == NormalizePathname(normalizedString))
-            {
-                /*  Something is broken with the input pathname. */
-                *errMsg = "Pathname too long in focus_window()";
-                return False;
-            }
 	    if (!strcmp(normalizedString, fullname))
 		break;
 	}
