@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.59 2004/02/07 02:20:34 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.60 2004/02/10 02:00:52 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -308,12 +308,19 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
-    "*windowsMenu.nextDocument.accelerator: Alt<Key>osfRight",
     "*windowsMenu.nextDocument.acceleratorText: Alt+Right",
-    "*windowsMenu.prevDocument.accelerator: Alt<Key>osfLeft",
     "*windowsMenu.prevDocument.acceleratorText: Alt+Left",
-    "*windowsMenu.lastDocument.accelerator: Alt<Key>osfBeginLine",
     "*windowsMenu.lastDocument.acceleratorText: Alt+Home",
+#ifdef LESSTIF_VERSION
+    /* LessTif doesn't like accelerators on virtual keysyms */
+    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>Left",
+    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>Right",
+    "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>Home",
+#else
+    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfRight",
+    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfLeft",
+    "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfBeginLine",
+#endif
     "*helpMenu.mnemonic: H",
     "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\
