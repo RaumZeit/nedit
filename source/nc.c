@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.35 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.36 2003/12/05 00:01:39 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -119,7 +119,7 @@ static const char cmdLineHelp[] =
 "           [-wait]\n"
 "           [-V | -version]\n"
 "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
-"           [--] [file...]";
+"           [--] [file...]\n";
 #endif /*VMS*/
 
 /* Structure to hold X Resource values */
