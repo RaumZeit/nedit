@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Okt  3, 2002                                               October 3, 2002
+NEdit release of Okt 13, 2002                                               October 13, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -962,7 +962,8 @@ AUTO/SMART INDENT
   typed. 
 
   To type a newline character without invoking smart-indent when operating in 
-  smart-indent mode, hold the Ctrl key while pressing the Return or Enter key. 
+  smart-indent mode, hold the Shift key while pressing the Return or Enter 
+  key. 
 
 
   AUTO-INDENT
@@ -4591,8 +4592,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Okt  3, 2002
-Oct 3, 2002
+NEdit release of Okt 13, 2002
+Oct 13, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

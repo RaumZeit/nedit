@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Oct 3, 2002 (Do NOT edit!)
+                 Generated on Oct 13, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -960,7 +960,7 @@ static char * htxt_indent [] = {
 "auto-wrapping; and for arbitrary type-in to act on specific characters typed. ",
 "\n\n",
 "To type a newline character without invoking smart-indent when operating in ",
-"smart-indent mode, hold the Ctrl key while pressing the Return or Enter key. ",
+"smart-indent mode, hold the Shift key while pressing the Return or Enter key. ",
 "\n\n",
 "\01RAuto-Indent\01I",
 "\n\n",
@@ -5272,4 +5272,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Okt  3, 2002\n";
+static const char * NEditVersion = "NEdit release of Okt 13, 2002\n";

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.32 2002/10/12 13:33:47 yooden Exp $
+.. $Id: help.etx,v 1.33 2002/10/13 15:53:19 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1107,7 +1107,7 @@ Auto/Smart Indent
   auto-wrapping; and for arbitrary type-in to act on specific characters typed.
 
   To type a newline character without invoking smart-indent when operating in
-  smart-indent mode, hold the Ctrl key while pressing the Return or Enter key.
+  smart-indent mode, hold the Shift key while pressing the Return or Enter key.
 
 3>Auto-Indent
 
