@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.36 2002/09/05 23:15:44 slobasso Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.37 2002/11/13 21:57:44 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -97,10 +97,13 @@ Boolean IsServer = False;
    Otherwise Motif puts up garbage (square blocks).
 
    (This of course, is a stupid default because there are far more iso8859
-   apps than Unicode apps.  But the X folks insist it's a client bug.  Hah.) */
+   apps than Unicode apps.  But the X folks insist it's a client bug.  Hah.)
 
-#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-*"
-#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-*"
+   RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
+   and so reverts to "fixed".  Yech. */
+
+#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1"
+#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
 
 static char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
@@ -626,6 +629,13 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
     		argv[i][0] = '-';
 }
 
+/*
+** If we're not using the default visual, then some default resources in
+** the database (colors) are not valid, because they are indexes into the
+** default colormap.  If we used them blindly, then we'd get "random"
+** unreadable colors.  So we inspect the resource list, and use the
+** fallback "grey" color instead if this is the case.
+*/
 static void patchResourcesForVisual(void)
 {
     Cardinal    i;
