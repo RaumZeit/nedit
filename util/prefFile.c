@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.11 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.12 2001/11/27 09:09:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -118,7 +118,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName,
 {
     char fullName[MAXPATHLEN];
     XrmDatabase db;
-    int argcCopy;
+    int argcCopy, len;
     char **argvCopy;
     FILE *fp;
     static XrmOptionDescRec xrmOnlyTable[] =
@@ -129,7 +129,9 @@ XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName,
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", fileName);
 #else
-    sprintf(fullName, "%s/%s", GetHomeDir(), fileName);
+    if (! *PrependHome(fileName, fullName, sizeof(fullName))) {
+       return NULL;
+    }
 #endif /*VMS*/
     db = XrmGetFileDatabase(fullName);
     
@@ -248,14 +250,15 @@ int SavePreferences(Display *display, const char *fileName,
     char fullName[MAXPATHLEN], *appName, *appClass, **enumStrings;
     FILE *fp;
     int type;
-    int i;
+    int i, len;
     
-    /* preferences files reside in the home directory, prepend the contents
-       of the $HOME environment variable (can this be counted on?) */
+    /* preferences files reside in the home directory. */
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", fileName);
 #else
-    sprintf(fullName, "%s/%s", getenv("HOME"), fileName);
+    if (! *PrependHome(fileName, fullName, sizeof(fullName))) {
+       return False;
+    }
 #endif /*VMS*/
 
     /* open the file */

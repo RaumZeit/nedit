@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.40 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.41 2001/11/27 09:09:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -4139,7 +4139,9 @@ void WriteNEditDB(void)
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
 #else
-    sprintf(fullName, "%s/%s", GetHomeDir(), NEDIT_DB_FILE_NAME);
+    if (! *PrependHome(NEDIT_DB_FILE_NAME, fullName, sizeof(fullName))) {
+       return;
+    }
 #endif /*VMS*/
 
     /* open the file */
@@ -4190,7 +4192,9 @@ void ReadNEditDB(void)
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
 #else
-    sprintf(fullName, "%s/%s", GetHomeDir(), NEDIT_DB_FILE_NAME);
+    if (! *PrependHome(NEDIT_DB_FILE_NAME, fullName, sizeof(fullName))) {
+       return;
+    }
 #endif /*VMS*/
 
     /* open the file */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.8 2001/11/26 21:40:35 amai Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.9 2001/11/27 09:09:11 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -62,15 +62,14 @@ extern const char
 
 extern const char
 *GetHomeDir(void)
-/* return a non-NULL value for the user's home directory.
-   We try really hard:
-   environment var, system user database and finally some fallback.
-   The order is correct and allows the user to re-set his HOME
-   directory if necessary. */
+/* return a non-NULL value for the user's home directory,
+   without trailing slash.
+   We try the  environment var and the system user database. */
 {
     const char *ptr;
     static char homedir[MAXPATHLEN]="";
     struct passwd *passwdEntry;
+    int len;
 
     if (*homedir) {
        return homedir;
@@ -86,11 +85,13 @@ extern const char
           exit(EXIT_FAILURE);
        }
     }
-    if (!ptr) {
-       ptr=GetCurrentDir();
-    }
     strncpy(homedir, ptr, sizeof(homedir)-1);
     homedir[sizeof(homedir)-1]='\0';
+    /* Fix trailing slash */
+    len=strlen(homedir);
+    if (len>1 && homedir[len-1]=='/') {
+       homedir[len-1]='\0';
+    }
     return homedir;
 }
 
@@ -173,4 +174,29 @@ const char
         hostnameFound = True;
     }
     return hostname;
+}
+
+
+/*
+** Create a path: $HOME/filename
+** Return "" if it doesn't fit into the buffer
+*/
+char 
+*PrependHome(const char *filename, char *buf, int buflen)
+{
+    const char *homedir;
+    int home_len, file_len;
+    
+    homedir=GetHomeDir();
+    home_len=strlen(homedir);
+    file_len=strlen(filename);
+    if ( (home_len+1+file_len)>=buflen ) {
+       buf[0]='\0';
+    }
+    else {
+       strcpy(buf, homedir);
+       strcat(buf, "/");
+       strcat(buf, filename);
+    }
+    return buf;
 }

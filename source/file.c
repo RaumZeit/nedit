@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.37 2001/11/25 23:03:06 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.38 2001/11/27 09:09:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -86,7 +86,7 @@ static int doSave(WindowInfo *window);
 static void safeClose(WindowInfo *window);
 static int doOpen(WindowInfo *window, const char *name, const char *path,
      int flags);
-static void backupFileName(WindowInfo *window, char *name);
+static void backupFileName(WindowInfo *window, char *name, int len);
 static int writeBckVersion(WindowInfo *window);
 static int bckError(WindowInfo *window, const char *errString, const char *file);
 static int fileWasModifiedExternally(WindowInfo *window);
@@ -784,7 +784,7 @@ int WriteBackupFile(WindowInfo *window)
     int fd, fileLen;
     
     /* Generate a name for the autoSave file */
-    backupFileName(window, name);
+    backupFileName(window, name, sizeof(name));
 
     /* remove the old backup file.
        Well, this might fail - we'll notice later however. */
@@ -859,7 +859,7 @@ void RemoveBackupFile(WindowInfo *window)
 {
     char name[MAXPATHLEN];
     
-    backupFileName(window, name);
+    backupFileName(window, name, sizeof(name));
     remove(name);
 }
 
@@ -867,18 +867,21 @@ void RemoveBackupFile(WindowInfo *window)
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-static void backupFileName(WindowInfo *window, char *name)
+static void backupFileName(WindowInfo *window, char *name, int len)
 {
+    char bckname[MAXPATHLEN];
 #ifdef VMS
     if (window->filenameSet)
     	sprintf(name, "%s_%s", window->path, window->filename);
     else
     	sprintf(name, "%s_%s", "SYS$LOGIN:", window->filename);
 #else
+    strcpy(bckname, "~");
+    strcat(bckname, window->filename);
     if (window->filenameSet)
     	sprintf(name, "%s~%s", window->path, window->filename);
     else
-    	sprintf(name, "%s/~%s", GetHomeDir(), window->filename);
+    	PrependHome(bckname, name, len);
 #endif /*VMS*/
 }
 

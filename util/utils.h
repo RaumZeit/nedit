@@ -1,10 +1,13 @@
-/* $Id: utils.h,v 1.3 2001/11/18 19:02:58 arnef Exp $ */
+/* $Id: utils.h,v 1.4 2001/11/27 09:09:11 amai Exp $ */
 #ifndef _UTILS_H
 #define _UTILS_H
 
 extern const char *GetCurrentDir(void);
-
 extern const char *GetHomeDir(void);
+extern char *PrependHome(const char *filename, char *buf, int buflen);
+const char *GetUserName(void);
+const char *GetHostName(void);
+
 
 /* If anyone knows where to get this from system include files (in a machine
    independent way), please change this (L_cuserid is apparently not ANSI) */
@@ -17,8 +20,5 @@ extern const char *GetHomeDir(void);
 #else
 #define MAXNODENAMELEN (MAXPATHLEN+2)
 #endif
-
-const char *GetUserName(void);
-const char *GetHostName(void);
 
 #endif /* _UTILS_H */
