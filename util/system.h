@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.13 2003/11/22 13:03:40 edg Exp $ */
+/* $Id: system.h,v 1.14 2004/03/19 15:17:43 tringali Exp $ */
 
 #ifndef NEDIT_SYSTEM_H_INCLUDED
 #define NEDIT_SYSTEM_H_INCLUDED
@@ -61,7 +61,7 @@
 #   define COMPILE_MACHINE "PowerPC"
 #elif defined(__x86_64) || defined(_x86_64)
 #   define COMPILE_MACHINE "x86-64"
-#elif defined(__k6) || defined(__k6__)
+#elif defined(__IA64) || defined(__ia64)
 #   define COMPILE_MACHINE "IA64"
 #elif defined(__k6) || defined(__k6__)
 #   define COMPILE_MACHINE "K6"
@@ -128,8 +128,8 @@
 /* Some of the info below derived from this excellent reference: 
    http://www.fortran-2000.com/ArnaudRecipes/Version.html */
 
-#if defined(__GNUC__)
-#   define COMPILE_COMPILER "GNU C"
+#if (defined(__GNUC__) && !defined (__INTEL_COMPILER))
+#   define COMPILE_COMPILER "GNU C"           /* Avoid Intel pretending to be gcc */
 #elif defined (__DECC)
 #   define COMPILE_COMPILER "DEC C"
 #elif defined (__DECCXX)
@@ -148,7 +148,7 @@
 #   define COMPILE_COMPILER "Borland C"
 #elif defined (__sgi) && defined (_COMPILER_VERSION)
 #   define COMPILE_COMPILER "SGI MipsPro"
-#elif defined (__xlC__)                       /* un*x versions of __IBMC__ !? */
+#elif defined (__xlC__)                       /* Unix version of IBM C */
 #   define COMPILE_COMPILER "IBM xlC"
 #elif defined (__IBMC__)
 #   define COMPILE_COMPILER "IBM C"           /* PC (OS/2, Windows) versions */
@@ -162,8 +162,10 @@
 #   define COMPILE_COMPILER "Watcom C/C++"
 #elif defined (__INTEL_COMPILER)
 #   define COMPILE_COMPILER "Intel C++"
+#elif defined (__hpux)                        /* HP has no indentifier, so guessing here */
+#   define COMPILE_COMPILER "HP C [?]"        /* Must be next to last */
 #else
-#   define COMPILE_COMPILER "Unknown"
+#   define COMPILE_COMPILER "Unknown"         /* Must be last */
 #endif
 
 #endif /* NEDIT_SYSTEM_H_INCLUDED */
