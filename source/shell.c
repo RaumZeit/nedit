@@ -822,13 +822,13 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
        returned to the caller, the other half is spliced to stdin, stdout
        and stderr in the child process */
     if (pipe(pipeFDs) != 0) {
-    	perror("Nedit: Internal error (opening stdout pipe)");
+    	perror("NEdit: Internal error (opening stdout pipe)");
         return -1;
     }
     *stdoutFD = pipeFDs[0];
     childStdoutFD = pipeFDs[1];
     if (pipe(pipeFDs) != 0) {
-    	perror("Nedit: Internal error (opening stdin pipe)");
+    	perror("NEdit: Internal error (opening stdin pipe)");
         return -1;
     }
     *stdinFD = pipeFDs[1];
@@ -837,7 +837,7 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
     	childStderrFD = childStdoutFD;
     else {
 	if (pipe(pipeFDs) != 0) {
-    	    perror("Nedit: Internal error (opening stdin pipe)");
+    	    perror("NEdit: Internal error (opening stdin pipe)");
             return -1;
         }
 	*stderrFD = pipeFDs[0];
@@ -890,7 +890,7 @@ static pid_t forkCommand(Widget parent, char *command, char *cmdDir,
 	       perror("chdir to directory of current file failed");
      
 	/* execute the command using the shell specified by preferences */
-	execl(GetPrefShell(), GetPrefShell(), "-c", command, 0);
+	execl(GetPrefShell(), GetPrefShell(), "-c", command, (char *)0);
 
 	/* if we reach here, execl failed */
 	fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
