@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.21 2001/03/10 15:36:56 arnef Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.22 2001/03/11 02:31:18 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -84,7 +84,6 @@ enum menuModes {FULL, SHORT};
 typedef void (*menuCallbackProc)();
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void readOnlyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData); 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -98,8 +97,6 @@ static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
-static void overstrikeCB(Widget w, WindowInfo *window, XtPointer callData);
-static void highlightCB(Widget w, WindowInfo *window, XtPointer callData);
 static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -111,10 +108,7 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void showMatchingCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData);
-static void iSearchCB(Widget w, WindowInfo *window, caddr_t callData);
-static void lineNumsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -346,6 +340,30 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
+static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setShowLineNumbersAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setAutoIndentAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setWrapTextAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setWrapMarginAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setIncrementalBackupAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setShowMatchingAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
+static void setLockedAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
 #ifdef SGI_CUSTOM
 static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
@@ -473,7 +491,21 @@ static XtActionsRec Actions[] = {
     {"repeat_macro", repeatMacroAP},
     {"repeat_dialog", repeatDialogAP},
     {"raise_window", raiseWindowAP},
-    {"focus_pane", focusPaneAP}
+    {"focus_pane", focusPaneAP},
+    {"set_statistics_line", setStatisticsLineAP},
+    {"set_incremental_search_line", setIncrementalSearchLineAP},
+    {"set_show_line_numbers", setShowLineNumbersAP},
+    {"set_auto_indent", setAutoIndentAP},
+    {"set_wrap_text", setWrapTextAP},
+    {"set_wrap_margin", setWrapMarginAP},
+    {"set_highlight_syntax", setHighlightSyntaxAP},
+#ifndef VMS
+    {"set_make_backup_copy", setMakeBackupCopyAP},
+#endif
+    {"set_incremental_backup", setIncrementalBackupAP},
+    {"set_show_matching", setShowMatchingAP},
+    {"set_overtype_mode", setOvertypeModeAP},
+    {"set_locked", setLockedAP}
 };
 
 /* List of previously opened files for File menu */
@@ -624,9 +656,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 #ifdef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep4", SHORT);
     createMenuToggle(menuPane, "overtype", "Overtype", 'O',
-    	    overstrikeCB, window, False, SHORT);
+    	    doActionCB, "set_overtype_mode", False, SHORT);
     window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
-    	    'y', readOnlyCB, window, window->lockWrite, FULL);
+    	    'y', doActionCB, "set_locked", window->lockWrite, FULL);
 #endif
 
     /* 
@@ -839,12 +871,12 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    GetPrefShortMenus(), SHORT);
 #endif
     createMenuSeparator(menuPane, "sep1", SHORT);
-    createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
+    window->statsLineItem = createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
     	    statsCB, window, GetPrefStatsLine(), SHORT);
-    createMenuToggle(menuPane, "incremntalSearchLine","Incremental Search Line",
-	    'I', iSearchCB, window, GetPrefISearchLine(), FULL);
-    createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'N',
-    	    lineNumsCB, window, GetPrefLineNums(), SHORT);
+    window->iSearchLineItem = createMenuToggle(menuPane, "incremntalSearchLine","Incremental Search Line",
+	    'I', doActionCB, "set_incremental_search_line", GetPrefISearchLine(), FULL);
+    window->lineNumsItem = createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'N',
+    	    doActionCB, "set_show_line_numbers", GetPrefLineNums(), SHORT);
     CreateLanguageModeSubMenu(window, menuPane, "languageMode",
     	    "Language Mode", 'L');
     subPane = createMenu(menuPane, "autoIndent", "Auto Indent",
@@ -875,7 +907,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "textFont", "Text Font...", 'F', fontCB, window,
     	    FULL);
     window->highlightItem = createMenuToggle(menuPane, "highlightSyntax",
-	    "Highlight Syntax", 'H', highlightCB, window,
+	    "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax",
 	    GetPrefHighlightSyntax(), SHORT);
 #ifndef VMS
     window->saveLastItem = createMenuToggle(menuPane, "makeBackupCopy",
@@ -885,14 +917,14 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->autoSaveItem = createMenuToggle(menuPane, "incrementalBackup",
     	    "Incremental Backup", 'B', autoSaveCB, window, window->autoSave,
     	    SHORT);
-    createMenuToggle(menuPane, "showMatching", "Show Matching (..)", 'M',
-    	    showMatchingCB, window, window->showMatching, FULL);
+    window->showMatchingItem = createMenuToggle(menuPane, "showMatching", "Show Matching (..)", 'M',
+    	    doActionCB, "set_show_matching", window->showMatching, FULL);
 #ifndef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep2", SHORT);
-    createMenuToggle(menuPane, "overtype", "Overtype", 'O',
-    	    overstrikeCB, window, False, SHORT);
+    window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O',
+    	    doActionCB, "set_overtype_mode", False, SHORT);
     window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
-    	    'y', readOnlyCB, window, window->lockWrite, FULL);
+    	    'y', doActionCB, "set_locked", window->lockWrite, FULL);
 #endif
 
 #ifndef VMS
@@ -1073,15 +1105,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
-static void readOnlyCB(Widget w, XtPointer clientData, XtPointer callData)
-{
-    WindowInfo *window = (WindowInfo *)clientData;
-    
-    window->lockWrite = XmToggleButtonGetState(w);
-    UpdateWindowTitle(window);
-    UpdateWindowReadOnly(window);
-}
-
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) 
 {
     static char *params[1] = {"rect"};
@@ -1188,73 +1211,93 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
     	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
-static void overstrikeCB(Widget w, WindowInfo *window, XtPointer callData)
-{
-    SetOverstrike(window, XmToggleButtonGetState(w));
-}
-
-static void highlightCB(Widget w, WindowInfo *window, XtPointer callData)
-{
-    window->highlightSyntax = XmToggleButtonGetState(w);
-    if (window->highlightSyntax) {
-    	StartHighlighting(window, True);
-    } else
-    	StopHighlighting(window);
-}
-
 static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"off"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Indent Off")) {
 	autoIndentOffDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoIndent(window, NO_AUTO_INDENT);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"on"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Indent")) {
 	autoIndentDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoIndent(window, AUTO_INDENT);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"smart"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Smart Indent")) {
 	smartIndentDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoIndent(window, SMART_INDENT);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void autoSaveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Incremental Backup")) {
 	autoSaveDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    window->autoSave = XmToggleButtonGetState(w);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_incremental_backup",
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
 static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Make Backup Copy")) {
-    	preserveDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
+        preserveDefCB(w, window, callData);
+        SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    window->saveOldVersion = XmToggleButtonGetState(w);
+
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_make_backup_copy",
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1264,45 +1307,61 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"no"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "No Wrap")) {
 	noWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoWrap(window, NO_WRAP);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"auto"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Auto Newline Wrap")) {
 	newlineWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoWrap(window, NEWLINE_WRAP);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+    static char *params[1] = {"continuous"};
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Continuous Wrap")) {
     	contWrapDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    SetAutoWrap(window, CONTINUOUS_WRAP);
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
+    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WrapMarginDialog(window->shell, window);
-}
-
-static void showMatchingCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    window->showMatching = XmToggleButtonGetState(w);
 }
 
 static void tabsCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1312,23 +1371,20 @@ static void tabsCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData)
 {
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
 #ifdef SGI_CUSTOM
     if (shortPrefAskDefault(window->shell, w, "Statistics Line")) {
 	statsLineDefCB(w, window, callData);
 	SaveNEditPrefs(window->shell, GetPrefShortMenus());
     }
 #endif
-    ShowStatsLine(window, XmToggleButtonGetState(w));
-}
 
-static void iSearchCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    ShowISearchLine(window, XmToggleButtonGetState(w));
-}
-
-static void lineNumsCB(Widget w, WindowInfo *window, caddr_t callData)
-{
-    ShowLineNumbers(window, XmToggleButtonGetState(w));
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_statistics_line",
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2922,6 +2978,210 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
     else {
         fprintf(stderr, "NEdit: focus_pane requires argument\n");
     }
+}
+
+#define ACTION_BOOL_PARAM_OR_TOGGLE(newState, numArgs, argvVal, oValue, actionName) \
+    if ((numArgs) > 0) { \
+        int intState; \
+        \
+        if (sscanf(argvVal[0], "%d", &intState) == 1) { \
+            (newState) = (intState != 0); \
+        } \
+        else { \
+            fprintf(stderr, "NEdit: %s requires 0 or 1 argument\n", actionName); \
+            return; \
+        } \
+    } \
+    else { \
+        (newState) = !(oValue); \
+    }
+
+static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats, "set_statistics_line");
+
+    XmToggleButtonSetState(window->statsLineItem, newState, False);
+    ShowStatsLine(window, newState);
+}
+
+static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showISearchLine, "set_incremental_search_line");
+
+    XmToggleButtonSetState(window->iSearchLineItem, newState, False);
+    ShowISearchLine(window, newState);
+}
+
+static void setShowLineNumbersAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showLineNumbers, "set_show_line_numbers");
+
+    XmToggleButtonSetState(window->lineNumsItem, newState, False);
+    ShowLineNumbers(window, newState);
+}
+
+static void setAutoIndentAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    if (*nArgs > 0) {
+        if (strcmp(args[0], "off") == 0) {
+            SetAutoIndent(window, NO_AUTO_INDENT);
+        }
+        else if (strcmp(args[0], "on") == 0) {
+            SetAutoIndent(window, AUTO_INDENT);
+        }
+        else if (strcmp(args[0], "smart") == 0) {
+            SetAutoIndent(window, SMART_INDENT);
+        }
+        else {
+            fprintf(stderr, "NEdit: set_auto_indent invalid argument\n");
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_auto_indent requires argument\n");
+    }
+}
+
+static void setWrapTextAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    if (*nArgs > 0) {
+        if (strcmp(args[0], "none") == 0) {
+            SetAutoWrap(window, NO_WRAP);
+        }
+        else if (strcmp(args[0], "auto") == 0) {
+            SetAutoWrap(window, NEWLINE_WRAP);
+        }
+        else if (strcmp(args[0], "continuous") == 0) {
+            SetAutoWrap(window, CONTINUOUS_WRAP);
+        }
+        else {
+            fprintf(stderr, "NEdit: set_wrap_text invalid argument\n");
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_wrap_text requires argument\n");
+    }
+}
+
+static void setWrapMarginAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    if (*nArgs > 0) {
+        int newMargin = 0;
+        if (sscanf(args[0], "%d", &newMargin) == 1 &&
+            newMargin >= 0 &&
+            newMargin < 1000) {
+            int i;
+            
+            XtVaSetValues(window->textArea, textNwrapMargin, newMargin, NULL);
+            for (i = 0; i < window->nPanes; ++i) {
+                XtVaSetValues(window->textPanes[i], textNwrapMargin, newMargin, NULL);
+            }
+        }
+        else {
+            fprintf(stderr,
+                "NEdit: set_wrap_margin requires integer argument >= 0 and < 1000\n");
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: set_wrap_margin requires argument\n");
+    }
+}
+
+static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->highlightSyntax, "set_highlight_syntax");
+
+    XmToggleButtonSetState(window->highlightItem, newState, False);
+    window->highlightSyntax = newState;
+    if (window->highlightSyntax) {
+        StartHighlighting(window, True);
+    } else {
+        StopHighlighting(window);
+    }
+}
+
+static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->saveOldVersion, "set_make_backup_copy");
+
+    XmToggleButtonSetState(window->saveLastItem, newState, False);
+    window->saveOldVersion = newState;
+}
+
+static void setIncrementalBackupAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->autoSave, "set_incremental_backup");
+
+    XmToggleButtonSetState(window->autoSaveItem, newState, False);
+    window->autoSave = newState;
+}
+
+static void setShowMatchingAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showMatching, "set_show_matching");
+
+    XmToggleButtonSetState(window->showMatchingItem, newState, False);
+    window->showMatching = newState;
+}
+
+static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike, "set_overtype_mode");
+
+    XmToggleButtonSetState(window->overtypeModeItem, newState, False);
+    SetOverstrike(window, newState);
+}
+
+static void setLockedAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->lockWrite, "set_locked");
+    
+    XmToggleButtonSetState(window->readOnlyItem, window->readOnly || newState, False);
+    window->lockWrite = newState;
+    UpdateWindowTitle(window);
+    UpdateWindowReadOnly(window);
 }
 
 /*

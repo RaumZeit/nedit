@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.21 2001/03/10 15:36:56 arnef Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.22 2001/03/11 02:31:18 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3458,6 +3458,66 @@ Some notes on argument types above:\n\
   (macro or shell)  Name of the command exactly as\n\
   -menu-item-name   specified in the Shell Menu or\n\
  		    Macro Menu dialogs\n\
+\n\
+\n\
+Window Preferneces Actions\n\
+\n\
+set_auto_indent(\"off\" | \"on\" | \"smart\")\n\
+Set auto indent mode for the current window.\n\
+\n\
+set_highlight_syntax([0 | 1])\n\
+Set syntax highlighting mode for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_incremental_backup([0 | 1])\n\
+Set incremental backup mode for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_incremental_search_line([0 | 1])\n\
+Show or hide the incremental search line for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_locked([0 | 1])\n\
+This only affects the locked status of a file, not it's read-only \
+status. Permissions are NOT changed. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+\n\
+set_make_backup_copy([0 | 1])\n\
+Set whether backup copies are made during saves for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_overtype_mode([0 | 1])\n\
+Set overtype mode for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_show_line_numbers([0 | 1])\n\
+Show or hide line numbers for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_show_matching([0 | 1])\n\
+Set show matching (...) mode for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_statistics_line([0 | 1])\n\
+Show or hide the statistics line for the current window. \
+A value of 0 turns it off and a value of 1 turns it on. \
+If no parameters are supplied the option is toggled.\n\
+\n\
+set_wrap_margin(wrap-width)\n\
+Set the wrap width for text wrapping of the current window. A value \
+of 0 means to wrap at window width.\n\
+\n\
+set_wrap_text(\"none\" | \"auto\" | \"continuous\")\n\
+Set wrap text mode for the current window.\n\
 \n\
 \n\
 Keyboard-Only Actions\n\

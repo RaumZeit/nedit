@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.7 2001/03/10 15:37:08 arnef Exp $ */
+/* $Id: nedit.h,v 1.8 2001/03/11 02:31:18 slobasso Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -159,7 +159,12 @@ typedef struct _WindowInfo {
     Widget  	noWrapItem;
     Widget  	newlineWrapItem;
     Widget  	continuousWrapItem;
-    Widget  	highlightItem;
+    Widget  statsLineItem;
+    Widget  iSearchLineItem;
+    Widget  lineNumsItem;
+    Widget  showMatchingItem;
+    Widget  overtypeModeItem;
+    Widget  highlightItem;
     Widget	windowMenuPane;
     Widget	shellMenuPane;
     Widget	macroMenuPane;
