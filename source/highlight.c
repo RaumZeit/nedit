@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.23 2002/02/05 13:15:49 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.24 2002/02/05 22:01:52 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1666,7 +1666,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
 
 static int parentStyleOf(const char *parentStyles, int style)
 {
-    return parentStyles[style-'A'];
+    return parentStyles[(unsigned char)style-'A'];
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2)
