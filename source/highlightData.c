@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.70 2004/12/23 22:25:45 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.71 2005/02/24 18:23:27 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -262,6 +262,8 @@ static char *DefaultPatternSets[] = {
 	preprocessor esc chars:\"\\\\(?:.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
 	preproc cplus comment:\"//\":\"$\"::Comment:preprocessor line:\n\
+    	preprocessor string:\"L?\"\"\":\"\"\"\":\"\\n\":Preprocessor1:preprocessor line:\n\
+    	prepr string esc chars:\"\\\\(?:.|\\n)\":::String1:preprocessor string:\n\
 	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"(?<!\\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
@@ -275,6 +277,8 @@ static char *DefaultPatternSets[] = {
     	string escape chars:\"\\\\(?:.|\\n)\":::String1:string:\n\
     	preprocessor esc chars:\"\\\\(?:.|\\n)\":::Preprocessor1:preprocessor line:\n\
     	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
+    	preprocessor string:\"L?\"\"\":\"\"\"\":\"\\n\":Preprocessor1:preprocessor line:\n\
+    	prepr string esc chars:\"\\\\(?:.|\\n)\":::String1:preprocessor string:\n\
 	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"(?<!\\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
@@ -475,12 +479,14 @@ static char *DefaultPatternSets[] = {
 	Sub Esc Chars:\"\\\\[$&%#_{}~^\\\\]\":::Text Arg1:Cmd Brace Args:}",
     "Lex:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
-	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	string:\"L?\"\"\":\"\"\"\":\"\\n\":String::\n\
 	meta string:\"\\\\\"\".*\\\\\"\"\":::String::\n\
 	preprocessor line:\"^\\s*#\\s*(include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
 	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
 	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
+    	preprocessor string:\"L?\"\"\":\"\"\"\":\"\\n\":Preprocessor1:preprocessor line:\n\
+    	prepr string esc chars:\"\\\\(?:.|\\n)\":::String1:preprocessor string:\n\
 	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
@@ -976,11 +982,13 @@ static char *DefaultPatternSets[] = {
 	Free Text:\"^.*$\":::Flag::}",
     "Yacc:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
-	string:\"\"\"\":\"\"\"\":\"\\n\":String::\n\
+	string:\"L?\"\"\":\"\"\"\":\"\\n\":String::\n\
 	preprocessor line:\"^\\s*#\\s*(include|define|if|ifn?def|line|error|else|endif|elif|undef|pragma)>\":\"$\"::Preprocessor::\n\
 	string escape chars:\"\\\\(.|\\n)\":::String1:string:\n\
 	preprocessor esc chars:\"\\\\(.|\\n)\":::Preprocessor1:preprocessor line:\n\
 	preprocessor comment:\"/\\*\":\"\\*/\"::Comment:preprocessor line:\n\
+    	preprocessor string:\"L?\"\"\":\"\"\"\":\"\\n\":Preprocessor1:preprocessor line:\n\
+    	prepr string esc chars:\"\\\\(?:.|\\n)\":::String1:preprocessor string:\n\
 	character constant:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"(?<!\\Y)((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
