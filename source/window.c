@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.156 2004/05/03 11:59:04 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.157 2004/05/16 12:02:34 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3564,7 +3564,8 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
             	XmNtabCount, &tabCount, NULL);
 
     	for (i=0; i< tabCount; i++) {
-	    tabs[tabTotalCount++] = tabList[i];
+	    if (TabToWindow(tabList[i]))    /* make sure tab is valid */
+	    	tabs[tabTotalCount++] = tabList[i];
 	}
     }
     
