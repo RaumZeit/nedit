@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.25 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.26 2001/04/13 15:02:28 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4052,7 +4052,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     }
     
     /* if wrap turned off, we're done */
-    if (!wrap && beginPos >= 0) {
+    if (!wrap) {
     	free((char *)compiledRE);
     	return FALSE;
     }
