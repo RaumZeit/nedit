@@ -1,3 +1,25 @@
+2001-12-31 14:34  amai
+
+	* source/nc.c (1.18): Fix a problem with calling nedit from nc on
+	OS/2 which I introduced recently.  Enlarge Preferences.serverCmd
+	array.
+
+2001-12-24 11:50  amai
+
+	* source/macro.c (1.38): Fix by Gilles J. Seguin for SF Bug [
+	#480966 ] Composed characters in learned sequence
+
+2001-12-24 09:46  amai
+
+	* source/file.c (1.41), source/highlight.c (1.22), source/menu.c
+	(1.46), util/getfiles.c (1.18): Fix for SF Bug [ #480960 ] No
+	titles in some dialog boxes as sent to develop@ from T. Haude
+
+2001-12-24 09:26  amai
+
+	* ChangeLog (1.17), source/parse_noyacc.c (1.2), source/window.c
+	(1.38): Update ChangeLog, parse_noyacc.c. Typo in window.c
+
 2001-12-24 09:18  amai
 
 	* source/: interpret.c (1.21), interpret.h (1.7), parse.y (1.18):

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.12 2001/12/10 04:58:00 edel Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.13 2002/01/04 16:39:09 amai Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -809,7 +809,8 @@ void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row,
 */
 int TextDLineAndColToPos(textDisp *textD, int lineNum, int column)
 {
-    int i, lineStart, lineEnd, charIndex, outIndex, charLen;
+    int i, lineEnd, charIndex, outIndex;
+    int lineStart=0, charLen=0;
     char *lineStr, expandedChar[MAX_EXP_CHAR_LEN];
 
     /* Count lines */
