@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.13 2001/09/17 14:06:24 amai Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.14 2001/11/22 21:01:05 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -232,8 +232,8 @@ void PrintFile(Widget parent, const char *printFile, const char *jobName)
 **			(flpr is a Fermilab utility for printing on
 **			arbitrary systems that support the lpr protocol)
 */
-void LoadPrintPreferences(XrmDatabase prefDB, char *appName, char *appClass,
-	int lookForFlpr)
+void LoadPrintPreferences(XrmDatabase prefDB, const char *appName,
+        const char *appClass, int lookForFlpr)
 {
     static char defaultQueue[MAX_QUEUE_STR], defaultHost[MAX_HOST_STR];
 
@@ -962,4 +962,4 @@ static void getVmsQueueDefault(char *defqueue)
 /*	printf("defqueue = %s, length = %d\n", defqueue, ret_len); */
     }   
 }
-#endif
+#endif /*(VMS)*/

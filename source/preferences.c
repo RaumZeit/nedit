@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.39 2001/11/18 19:02:58 arnef Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.40 2001/11/22 21:01:05 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -26,6 +26,8 @@ static const char CVSID[] = "$Id: preferences.c,v 1.39 2001/11/18 19:02:58 arnef
 *									       *
 *******************************************************************************/
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <ctype.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
@@ -34,8 +36,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.39 2001/11/18 19:02:58 arnef
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include <string.h>
-#include <stdio.h>
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <Xm/Form.h>
@@ -86,7 +86,7 @@ enum fontStatus {GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING};
 
 /* enumerated type preference strings 
 ** The order of the elements in this array must be exactly the same
-** as the order of the coresponding integers of the enum SearchType
+** as the order of the corresponding integers of the enum SearchType
 ** defined in search.h (!!)
 */
 static char *SearchMethodStrings[] = {
@@ -880,7 +880,7 @@ static int regexReplace(char **inString, const char *expr,
 	const char *replaceWith);
 
 #ifdef SGI_CUSTOM
-static int shortPrefToDefault(Widget parent, char *settingName, int *setDefault);
+static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault);
 #endif
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
@@ -1461,11 +1461,13 @@ void SetPrefFont(char *fontName)
     PrefData.fontList = font==NULL ? NULL :
 	    XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
 }
+
 void SetPrefBoldFont(char *fontName)
 {
     setStringPref(PrefData.boldFontString, fontName);
     PrefData.boldFontStruct = XLoadQueryFont(TheDisplay, fontName);
 }
+
 void SetPrefItalicFont(char *fontName)
 {
     setStringPref(PrefData.italicFontString, fontName);
@@ -1481,14 +1483,17 @@ char *GetPrefFontName(void)
 {
     return PrefData.fontString;
 }
+
 char *GetPrefBoldFontName(void)
 {
     return PrefData.boldFontString;
 }
+
 char *GetPrefItalicFontName(void)
 {
     return PrefData.italicFontString;
 }
+
 char *GetPrefBoldItalicFontName(void)
 {
     return PrefData.boldItalicFontString;
@@ -1498,10 +1503,12 @@ XmFontList GetPrefFontList(void)
 {
     return PrefData.fontList;
 }
+
 XFontStruct *GetPrefBoldFont(void)
 {
     return PrefData.boldFontStruct;
 }
+
 XFontStruct *GetPrefItalicFont(void)
 {
     return PrefData.italicFontStruct;
@@ -3275,7 +3282,8 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     	XtPointer callData)
 {
     fontDialog *fd = (fontDialog *)clientData;
-    char *primaryName, *errMsg, modifiedFontName[MAX_FONT_LEN];
+    char *primaryName, *errMsg;
+    char modifiedFontName[MAX_FONT_LEN];
     char *searchString = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
     char *italicReplaceString = "\\1-\\2-o-\\4";
     char *boldReplaceString = "\\1-bold-\\3-\\4";
@@ -4353,8 +4361,8 @@ int AllocatedStringsDiffer(const char *s1, const char *s2)
 
 static void updatePatternsTo5dot1(void)
 {
-    char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
-    char *vhdlAnchorExpr = "^[ \t]*VHDL:";
+    const char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
+    const char *vhdlAnchorExpr = "^[ \t]*VHDL:";
     
     /* Add new patterns if there aren't already existing patterns with
        the same name.  If possible, insert before VHDL in language mode
@@ -4605,7 +4613,7 @@ static int regexReplace(char **inString, const char *expr, const char *replaceWi
 ** Return False (function value) if operation was canceled, return True
 ** in setDefault if requested to reset the default value.
 */
-static int shortPrefToDefault(Widget parent, char *settingName, int *setDefault)
+static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault)
 {
     char msg[100] = "";
     
@@ -4614,7 +4622,7 @@ static int shortPrefToDefault(Widget parent, char *settingName, int *setDefault)
     	return True;
     }
     
-    sprintf(msg, "%s\nSave as default for future windows as well?",settingName);
+    sprintf(msg, "%s\nSave as default for future windows as well?", settingName);
     switch(DialogF (DF_QUES, parent, 3, msg, "Yes", "No", "Cancel")) {
         case 1: /* yes */
             *setDefault = True;

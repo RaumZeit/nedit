@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.12 2001/11/16 09:39:26 amai Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.13 2001/11/22 21:01:05 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -403,7 +403,7 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
 ** in the operation (beginning at startPos) are returned in these arguments.
 */
 void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
-    	int rectEnd, char *text, int *charsInserted, int *charsDeleted)
+    	int rectEnd, const char *text, int *charsInserted, int *charsDeleted)
 {
     int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
     char *deletedText;
@@ -633,7 +633,7 @@ void BufRemoveSelected(textBuffer *buf)
     removeSelected(buf, &buf->primary);
 }
 
-void BufReplaceSelected(textBuffer *buf, char *text)
+void BufReplaceSelected(textBuffer *buf, const char *text)
 {
     replaceSelected(buf, &buf->primary, text);
 }
@@ -680,7 +680,7 @@ void BufRemoveSecSelect(textBuffer *buf)
     removeSelected(buf, &buf->secondary);
 }
 
-void BufReplaceSecSelect(textBuffer *buf, char *text)
+void BufReplaceSecSelect(textBuffer *buf, const char *text)
 {
     replaceSelected(buf, &buf->secondary, text);
 }

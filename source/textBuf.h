@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.5 2001/11/16 09:39:26 amai Exp $ */
+/* $Id: textBuf.h,v 1.6 2001/11/22 21:01:05 amai Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -62,7 +62,7 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
 void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd);
 void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
-    	int rectEnd, char *text, int *charsInserted, int *charsDeleted);
+    	int rectEnd, const char *text, int *charsInserted, int *charsDeleted);
 void BufClearRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd);
 int BufGetTabDistance(textBuffer *buf);
@@ -75,7 +75,7 @@ int BufGetSelectionPos(textBuffer *buf, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
 char *BufGetSelectionText(textBuffer *buf);
 void BufRemoveSelected(textBuffer *buf);
-void BufReplaceSelected(textBuffer *buf, char *text);
+void BufReplaceSelected(textBuffer *buf, const char *text);
 void BufSecondarySelect(textBuffer *buf, int start, int end);
 void BufSecondaryUnselect(textBuffer *buf);
 void BufSecRectSelect(textBuffer *buf, int start, int end,
@@ -84,7 +84,7 @@ int BufGetSecSelectPos(textBuffer *buf, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
 char *BufGetSecSelectText(textBuffer *buf);
 void BufRemoveSecSelect(textBuffer *buf);
-void BufReplaceSecSelect(textBuffer *buf, char *text);
+void BufReplaceSecSelect(textBuffer *buf, const char *text);
 void BufHighlight(textBuffer *buf, int start, int end);
 void BufUnhighlight(textBuffer *buf);
 void BufRectHighlight(textBuffer *buf, int start, int end,

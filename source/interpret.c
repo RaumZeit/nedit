@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.18 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.19 2001/11/22 21:01:05 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -119,7 +119,7 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
 static SparseArrayEntry *allocateSparseArrayEntry(void);
-/*#define DEBUG_ASSEMBLY*/
+/* #define DEBUG_ASSEMBLY */
 #ifdef DEBUG_ASSEMBLY
 static void disasm(Program *prog, int nInstr);
 #endif
@@ -2249,7 +2249,8 @@ static int errCheck(const char *s)
 	return execError("%s argument out of domain", s);
     else if (errno == ERANGE)
 	return execError("%s result out of range", s);
-    return STAT_OK;
+    else
+        return STAT_OK;
 }
 
 /*
@@ -2284,7 +2285,7 @@ static int stringToNum(const char *string, int *number)
 #ifdef DEBUG_ASSEMBLY /* For debugging code generation */
 static void disasm(Program *prog, int nInstr)
 {
-    static char *opNames[N_OPS] = {"returnNoVal", "returnVal", "pushSymVal",
+    static const char *opNames[N_OPS] = {"returnNoVal", "returnVal", "pushSymVal",
     	"dupStack", "add", "subtract", "multiply", "divide", "modulo",
         "negate", "increment", "decrement", "gt", "lt", "ge", "le", "eq",
 	"ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
