@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.45 2004/03/29 14:42:49 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.46 2004/06/09 17:52:58 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1384,9 +1384,11 @@ static void updateMenu(WindowInfo *window, int menuType)
     /* manage user menu items depending on current language mode */
     manageUserMenu(&menu, window);
 
-    /* Set the proper sensitivity of items which may be dimmed */
-    SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
-    SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
+    if (menuType == BG_MENU_CMDS) {
+        /* Set the proper sensitivity of items which may be dimmed */
+        SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
+        SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
+    }
 
     DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
 }

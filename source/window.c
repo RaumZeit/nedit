@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.157 2004/05/16 12:02:34 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.158 2004/06/09 17:52:58 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3397,6 +3397,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->findLastRegexCase      = TRUE;
     window->findLastLiteralCase    = FALSE;
     window->tab = NULL;
+    window->bgMenuUndoItem = NULL;
+    window->bgMenuRedoItem = NULL;
 
     if (window->fontList == NULL)
         XtVaGetValues(shellWindow->statsLine, XmNfontList, 
