@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.82 2004/07/14 13:31:28 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.83 2004/07/15 09:07:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1116,12 +1116,15 @@ static void backupFileName(WindowInfo *window, char *name, int len)
     else
     	sprintf(name, "%s_%s", "SYS$LOGIN:", window->filename);
 #else
-    strcpy(bckname, "~");
-    strcat(bckname, window->filename);
     if (window->filenameSet)
-    	sprintf(name, "%s~%s", window->path, window->filename);
-    else
-    	PrependHome(bckname, name, len);
+    {
+        sprintf(name, "%s~%s", window->path, window->filename);
+    } else
+    {
+        strcpy(bckname, "~");
+        strncat(bckname, window->filename, MAXPATHLEN - 1);
+        PrependHome(bckname, name, len);
+    }
 #endif /*VMS*/
 }
 
