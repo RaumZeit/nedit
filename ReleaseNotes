@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.3, February 2002
 
 
-$Id: ReleaseNotes,v 1.13 2002/02/14 20:24:04 amai Exp $
+$Id: ReleaseNotes,v 1.14 2002/03/11 18:17:03 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -27,10 +27,25 @@ New Features in 5.3
   - Line numbers are available in shell commands (SF #434451).
 
   - Goto Line also accepts column numbers (SF #403435).
+  
+  - Automatic line-feed termination when saving is now optional (SF #503073).
+
+  - A customizable window title (SF #477875/#519092).
 
 
 Bugs Fixed in 5.3
 
+  - Background popup menu could lock up X-server when used with any of 
+    the lock keys on.
+
+  - Very wide windows when starting NEdit under fvwm (SF #496526).
+
+  - Workaround for illegal key bindings installed by other Motif applications,
+    causing PageUp/PageDown and arrow keys to stop responding in NEdit
+    (SF #493421/#525903). This is not an NEdit bug, it just looks like one.
+    
+  - Fix for PageUp/PageDown keys not responding (SF #508961).
+  
   - Crash when running X on 2nd screen (SF #478234, #500353).
 
   - Line number display updating in continous wrap mode (SF #516920).
