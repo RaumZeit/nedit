@@ -1,3 +1,4 @@
+/* $Id: system.h,v 1.3 2001/07/25 18:36:44 tringali Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -51,17 +52,19 @@
 #elif defined(__PPC__) || defined(_POWER)
 #   define COMPILE_MACHINE "PowerPC"
 #elif defined(__ia64)
-#   define COMPILE_MACHINE "Intel IA64"
+#   define COMPILE_MACHINE "IA64"
 #elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
-#   define COMPILE_MACHINE "Intel x86"
+#   define COMPILE_MACHINE "x86"
 #elif defined(__VAX)
 #   define COMPILE_MACHINE "VAX"        /* Untested, please verify */
 #else	
 #   define COMPILE_MACHINE "Unknown"
 #endif
 
-#if defined(__osf__)
-#   define COMPILE_OS "OSF/1"
+#if defined(__digital__) && defined(__unix__)
+#   define COMPILE_OS "Tru64/Digital Unix"
+#elif defined(__osf__)
+#   define COMPILE_OS "OSF/1"           /* Non-digital OSF */
 #elif defined(__sun)
 #   define COMPILE_OS "Solaris"
 #elif defined(__hpux)
