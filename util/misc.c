@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.40 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.41 2002/07/12 11:44:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -145,8 +145,8 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg)
 
     /* add a delete window protocol callback instead */
     if (dwAtom == 0) {
-    	wmpAtom = XmInternAtom(display, "WM_PROTOCOLS", TRUE);
-    	dwAtom = XmInternAtom(display, "WM_DELETE_WINDOW", TRUE);
+    	wmpAtom = XmInternAtom(display, "WM_PROTOCOLS", FALSE);
+    	dwAtom = XmInternAtom(display, "WM_DELETE_WINDOW", FALSE);
     }
     XmAddProtocolCallback(shell, wmpAtom, dwAtom, closeCB, arg);
 }

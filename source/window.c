@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.54 2002/07/11 21:18:12 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.55 2002/07/12 11:44:01 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -550,8 +550,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* Add wm protocol callback for making nedit restartable by session
        managers.  Doesn't yet handle multiple-desktops or iconifying right. */
     if (syAtom == 0) {
-    	wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", TRUE);
-    	syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", TRUE);
+    	wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", FALSE);
+    	syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", FALSE);
     }
     XmAddProtocolCallback(appShell, wmpAtom, syAtom,
 	    (XtCallbackProc)saveYourselfCB, (XtPointer)window);
