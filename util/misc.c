@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.33 2001/11/12 14:04:27 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.34 2001/11/16 16:06:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1479,6 +1479,9 @@ static Modifiers getNumLockModMask(Display *display) {
 static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask) {
     Modifiers numLockMask = getNumLockModMask(XtDisplay(dialog));
 
+    if (keyCode == 0)  /* No anykey grabs, sorry */
+        return;
+
     XtGrabKey(dialog, keyCode, mask, True, GrabModeAsync, GrabModeAsync);
     XtGrabKey(dialog, keyCode, mask|LockMask, True, GrabModeAsync, GrabModeAsync);
     if (numLockMask && numLockMask != LockMask) {
@@ -1624,6 +1627,7 @@ static void addAccelGrab(Widget topWidget, Widget w)
     char *accelString = NULL;
     KeySym keysym;
     unsigned int modifiers;
+    KeyCode code;
     Modifiers numLockMask = getNumLockModMask(XtDisplay(topWidget));
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
@@ -1632,12 +1636,23 @@ static void addAccelGrab(Widget topWidget, Widget w)
     
     if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers))
 	return;
-    XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+
+    /* Check to see if this server has this key mapped.  Some cruddy PC X
+       servers (Xoftware) have terrible default keymaps. If not,
+       XKeysymToKeycode will return 0.  However, it's bad news to pass
+       that to XtGrabKey because 0 is really "AnyKey" which is definitely
+       not what we want!! */
+       
+    code = XKeysymToKeycode(XtDisplay(topWidget), keysym);
+    if (code == 0)
+        return;
+        
+    XtGrabKey(topWidget, code,
 	    modifiers | LockMask, True, GrabModeAsync, GrabModeAsync);
     if (numLockMask && numLockMask != LockMask) {
-        XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+        XtGrabKey(topWidget, code,
 	        modifiers | numLockMask, True, GrabModeAsync, GrabModeAsync);
-        XtGrabKey(topWidget, XKeysymToKeycode(XtDisplay(topWidget), keysym),
+        XtGrabKey(topWidget, code,
 	        modifiers | LockMask | numLockMask, True, GrabModeAsync, GrabModeAsync);
     }
 }
