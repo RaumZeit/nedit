@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.36 2002/04/26 16:06:44 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.37 2002/04/26 16:10:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -729,17 +729,12 @@ void FindDefinition(WindowInfo *window, Time time, const char *arg)
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format)
 {
-    static char tagText[MAX_TAG_LEN + 1];
-    const char *p;
-    int l,ml;
-    
     /* skip if we can't get the selection data, or it's obviously too long */
     if (*type != XT_CONVERT_FAIL && value != NULL) {
         findDef(window, value);
     }
     else {
         XBell(TheDisplay, 0);
-        XtFree(value);
     }
     XtFree(value);
 }
