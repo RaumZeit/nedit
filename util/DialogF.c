@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.14 2001/04/18 19:08:37 slobasso Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.15 2001/04/25 21:37:29 edg Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -51,6 +51,7 @@ struct dfcallbackstruct {
     unsigned button;		/* button pressed by user		     */
     Boolean done_with_dialog;	/* set by callbacks; dialog can be destroyed */
     unsigned apply_up;		/* will = 1 when apply button managed	     */
+    Boolean destroyed;		/* set when dialog is destroyed unexpectedly */
 };
 
 static char **PromptHistory = NULL;
@@ -63,6 +64,8 @@ static void help_callback (Widget w, struct dfcallbackstruct *client_data,
 static void cancel_callback (Widget w, struct dfcallbackstruct *client_data,
 	caddr_t call_data);
 static void ok_callback (Widget w, struct dfcallbackstruct *client_data,
+	caddr_t call_data);
+static void destroy_callback (Widget w, struct dfcallbackstruct *client_data,
 	caddr_t call_data);
 static void focusCB(Widget w, Widget dialog, caddr_t call_data);
 static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df,
@@ -177,6 +180,7 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     }
 
     df.done_with_dialog = False;
+    df.destroyed = False;
     va_start (var, msgstr);
 
     if (prompt) {		      /* Get where to put dialog input string */
@@ -273,6 +277,11 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     	    	(cancel_index == CANCEL_BTN ? cancel_callback :
     	    	(cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
  
+        /* Also add a callback to detect unexpected destruction (eg, because
+           the parent window is destroyed) */
+        XtAddCallback(dialog, XmNdestroyCallback, 
+            (XtCallbackProc)destroy_callback, &df);
+
 	/* A previous call to SetDialogFPromptHistory can request that an
 	   up-arrow history-recall mechanism be attached.  If so, do it here */
 	if (NPromptHistoryItems != -1)
@@ -289,18 +298,23 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
 		    XmTRAVERSE_CURRENT);
 	
 	/* Wait for a response to the dialog */
-	while (!df.done_with_dialog)
+	while (!df.done_with_dialog && !df.destroyed)
 	    XtAppProcessEvent (XtWidgetToApplicationContext(dialog), XtIMAll);
- 
-	argcount = 0;			/* Pass back string user entered */
-	XtSetArg (args[argcount], XmNtextString, &input_string_xms); argcount++;
-	XtGetValues (dialog, args, argcount);
-	XmStringGetLtoR (input_string_xms, XmSTRING_DEFAULT_CHARSET,
+        
+        if (!df.destroyed) {
+	    argcount = 0; /* Pass back string user entered */
+	    XtSetArg (args[argcount], XmNtextString, &input_string_xms); argcount++;
+	    XtGetValues (dialog, args, argcount);
+	    XmStringGetLtoR (input_string_xms, XmSTRING_DEFAULT_CHARSET,
 		&input_string_ptr);
-	strcpy (input_string, input_string_ptr);  /* This step is necessary */
-	XmStringFree(input_string_xms );
-        XtFree(input_string_ptr);
-	XtDestroyWidget(dialog);
+	    strcpy (input_string, input_string_ptr);  /* This step is necessary */
+	    XmStringFree(input_string_xms );
+            XtFree(input_string_ptr);
+             /* Important! Only intercept unexpected destroy events. */
+	    XtRemoveCallback(dialog, XmNdestroyCallback, 
+            	(XtCallbackProc)destroy_callback, &df);
+	    XtDestroyWidget(dialog);
+	}
 	PromptHistory = NULL;
     	NPromptHistoryItems = -1;
     }						  /* End prompt dialog path */
@@ -359,20 +373,38 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     	    	(XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback :
     	    	(cancel_index == CANCEL_BTN ? cancel_callback :
     	    	(cancel_index == HELP_BTN ? help_callback : ok_callback))),&df);
+        
+        /* Also add a callback to detect unexpected destruction (eg, because
+           the parent window is destroyed) */
+        XtAddCallback(dialog_shell, XmNdestroyCallback, 
+	    (XtCallbackProc)destroy_callback, &df);
 
 	/* Pop up the dialog, wait for response*/
 	ManageDialogCenteredOnPointer(dialog);
-	while (!df.done_with_dialog)
+	while (!df.done_with_dialog && !df.destroyed)
 	    XtAppProcessEvent (XtWidgetToApplicationContext(dialog), XtIMAll);
 	
-	XtDestroyWidget(dialog_shell);
+	if (!df.destroyed) {
+             /* Important! Only intercept unexpected destroy events. */
+	    XtRemoveCallback(dialog_shell, XmNdestroyCallback, 
+            	(XtCallbackProc)destroy_callback, &df);
+	    XtDestroyWidget(dialog_shell);
+        }
     }
 
     XmStringFree(msgstr_xms);
     XmStringFree(titstr_xms);
     for (i = 0; i < num_but_lbls; ++i)
 	XmStringFree(but_lbl_xms[i]);
-
+    
+    /* If the dialog was destroyed unexpectedly, the button was not set yet,
+       so we must set the index of the cancel button. */
+    if (df.destroyed) {
+	df.button = cancel_index == APPLY_BTN ? 2 :
+        	(cancel_index == CANCEL_BTN ? 2 + df.apply_up :
+                (cancel_index == HELP_BTN ? 3 + df.apply_up : 1));
+    }
+		
     df.apply_up = 0;			/* default is apply button unmanaged */
 
     return (df.button);
@@ -416,6 +448,12 @@ static void apply_callback (Widget w, struct dfcallbackstruct *client_data,
 {
     client_data->done_with_dialog = True;
     client_data->button = 2;		/* Motif puts between OK and cancel */
+}
+
+static void destroy_callback (Widget w, struct dfcallbackstruct *client_data,
+	caddr_t call_data)
+{
+    client_data->destroyed = True;
 }
 
 /*
