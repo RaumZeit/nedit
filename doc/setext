@@ -2349,7 +2349,7 @@ sub emit_helpText
     #-----------------------------
     $pgmVersion = $variables{ version };
     $pgmVersion .= '\n' . date() if $pgmVersion !~ /$neditDefaultMarker/;
-    print $stream "\nconst char * NEditVersion = \"$pgmVersion\\n\";\n";
+    print $stream "\nstatic const char * NEditVersion = \"$pgmVersion\\n\";\n";
 }
 
 #-------------------------------------------------------------------------------
@@ -2429,7 +2429,7 @@ sub emit_help_menu_text
 
                 push @section, $_ ;
             }
-            print $stream "char * htxt_$helpName [] = {\n";
+            print $stream "static char * htxt_$helpName [] = {\n";
             $styleChanged = $initialStyle; # This forces initial style out
             parse_setext( \@section );
             print $stream "NULL\n};\n\n";
@@ -2923,3 +2923,4 @@ Menu and Help directives.
 .. Help: Tabs Dialog                        # tabs_dialog
 
 =cut
+
