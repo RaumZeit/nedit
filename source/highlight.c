@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.17 2001/08/16 17:24:51 amai Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.18 2001/08/17 21:54:25 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1030,6 +1030,7 @@ static void incrementalReparse(windowHighlightData *highlightData,
     textBuffer *styleBuf = highlightData->styleBuffer;
     highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
     highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
+    highlightDataRec *startPattern;
     reparseContext *context = &highlightData->contextRequirements;
     char *parentStyles = highlightData->parentStyles;
 
@@ -1056,7 +1057,17 @@ static void incrementalReparse(windowHighlightData *highlightData,
 	
 	/* Parse forward from beginParse to one context beyond the end
 	   of the last modification */
-    	endAt = parseBufferRange(patternOfStyle(pass1Patterns, parseInStyle),
+        startPattern = patternOfStyle(pass1Patterns, parseInStyle);
+        /* If there is no pattern matching the style, it must be a pass-2
+           style. It that case, it is (probably) safe to start parsing with
+           the root pass-1 pattern again. Anyway, passing a NULL-pointer to
+           the parse routine would result in a crash; restarting with pass-1 
+           patterns is certainly preferable, even if there is a slight chance 
+           of a faulty coloring. */
+	if (!startPattern) {
+	    startPattern = pass1Patterns;
+	}
+    	endAt = parseBufferRange(startPattern,
     	    	pass2Patterns, buf, styleBuf, context, beginParse, endParse,
 		delimiters);
 	
