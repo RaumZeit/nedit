@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.57 2002/11/28 23:22:28 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.58 2002/12/04 12:30:57 edg Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2386,6 +2386,7 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     int beginPos, wrap, direction, found, foundStart, foundEnd, type;
+    int skipSearch = False, len;
     char stringStorage[2][25], *string, *searchStr;
     
     /* Validate arguments and convert to proper types */
@@ -2400,8 +2401,36 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (!readSearchArgs(&argList[3], nArgs-3, &direction, &type, &wrap, errMsg))
     	return False;
     
-    /* Do the search */
-    found = SearchString(string, searchStr, direction, type, wrap, beginPos,
+    /* This is potentially costly, but it is necessary to protect us from
+       illegal memory accesses if beginPos is too large (or negative). Note:
+       matching at position "len" is allowed: a $ matches end of string. */
+    len = beginPos ? strlen(string) : 0; /* avoid strlen if beginPos == 0 */
+    if (beginPos > len) {
+	if (direction == SEARCH_FORWARD) {
+	    if (wrap) {
+		beginPos = 0; /* Wrap immediately */
+	    } else {
+		found = False;
+		skipSearch = True;
+	    }
+	} else {
+	    beginPos = len;
+	}
+    } else if (beginPos < 0) {
+	if (direction == SEARCH_BACKWARD) {
+	    if (wrap) {
+		beginPos = len; /* Wrap immediately */
+	    } else {
+		found = False;
+		skipSearch = True;
+	    }
+	} else {
+	    beginPos = 0;
+	}
+    }
+    
+    if (!skipSearch) 
+	found = SearchString(string, searchStr, direction, type, wrap, beginPos,
 	    &foundStart, &foundEnd, NULL, NULL, GetWindowDelimiters(window));
     
     /* Return the results */
