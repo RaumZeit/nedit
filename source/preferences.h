@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.28 2002/10/15 11:00:42 ajhood Exp $ */
+/* $Id: preferences.h,v 1.29 2002/10/16 17:28:04 n8gray Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -145,6 +145,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 int AllocatedStringsDiffer(const char *s1, const char *s2);
 void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults);
 int FindLanguageMode(const char *languageName);
+void UnloadLanguageModeTipsFile(WindowInfo *window);
 void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults);
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 	void *cbArg);

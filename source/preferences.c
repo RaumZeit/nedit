@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.71 2002/10/15 11:00:41 ajhood Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.72 2002/10/16 17:28:03 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3935,7 +3935,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
         if (i != PLAIN_LANGUAGE_MODE && LanguageModes[i]->defTipsFile)
             if (AddTagsFile( LanguageModes[i]->defTipsFile, TIP ) == FALSE)
                 fprintf( stderr, "Error loading default calltips file:\n"
-                         "  \"%s\"\n", LanguageModes[mode]->defTipsFile );
+                         "  \"%s\"\n", LanguageModes[i]->defTipsFile );
     }
     
     /* Set delimiters for all text widgets */
@@ -5124,3 +5124,31 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
     return False; /* not reached */
 }
 #endif
+
+/* Unload the default calltips file for this window unless somebody else
+   is using it */
+void UnloadLanguageModeTipsFile(WindowInfo *window) {
+    int mode;
+    WindowInfo *wi;
+    
+    mode = window->languageMode;
+    if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
+        for (wi = WindowList; wi; wi = wi->next)
+            if (wi->languageMode == mode && wi != window) 
+                break;
+        if (!wi) /* If we got to end of WindowList... */
+            DeleteTagsFile( LanguageModes[mode]->defTipsFile, TIP );
+    }
+    
+    /* Make sure we didn't accidentally delete a default calltips file that
+       also belongs to another language mode */
+    for (wi = WindowList; wi; wi = wi->next) {
+        if (wi == window)
+            continue;
+        mode = wi->languageMode;
+        if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile)
+            if (AddTagsFile( LanguageModes[mode]->defTipsFile, TIP ) == FALSE)
+                fprintf( stderr, "Error loading default calltips file:\n"
+                         "  \"%s\"\n", LanguageModes[mode]->defTipsFile );
+    }
+}

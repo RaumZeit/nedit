@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.71 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.72 2002/10/16 17:28:04 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -616,9 +616,8 @@ void CloseWindow(WindowInfo *window)
     AbortShellCommand(window);
 #endif /*VMS*/
     
-    /* Set lang. mode to PLAIN so that default calltips file will be unloaded
-        if necessary */
-    SetLanguageMode(window, PLAIN_LANGUAGE_MODE, True);
+    /* Unload the default tips files for this language mode if necessary */
+    UnloadLanguageModeTipsFile(window);
 
     /* If a window is closed while it is on the multi-file replace dialog
        list of any other window (or even the same one), we must update those
