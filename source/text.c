@@ -3552,5 +3552,10 @@ static int strCaseCmp(char *str1, char *str2)
     for (c1=str1, c2=str2; *c1!='\0' && *c2!='\0'; c1++, c2++)
     	if (toupper((unsigned char)*c1) != toupper((unsigned char)*c2))
     	    return 1;
-    return 0;
+    if (*c1 == *c2) {
+        return(0);
+	 }
+    else {
+        return(1);
+	 }
 }
