@@ -131,7 +131,8 @@ void DeleteServerFileAtoms(const char* serverName, Window rootWindow)
             if (name != NULL && strncmp(propNamePrefix, name, length) == 0) {
                 XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
             }
+            XFree(name);
         }
-        XtFree((char*)atoms);
+        XFree((char*)atoms);
     }
 }    
