@@ -3453,6 +3453,12 @@ X Resources
   halfway off the keyboard because you can't figure out the bindings, set this
   to True.
   
+**nedit.typingHidesPointer**: False
+  
+  Setting this resource to True causes the mouse pointer to be hidden while
+  over the text area. As soon as the mouse pointer is moved, it will reappear.
+  This is useful to stop the mouse pointer from obscuring text.
+  
 **nedit.overrideDefaultVirtualKeyBindings**: Auto
 
   Motif uses a virtual key binding mechanism that shares the bindings between
