@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.48 2002/03/06 22:04:53 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.49 2002/03/11 22:05:11 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -209,6 +209,7 @@ static struct prefData {
     int emTabDist;		/* non-zero tab dist. if emulated tabs are on */
     int insertTabs;		/* whether to use tabs for padding */
     int showMatchingStyle;	/* how to flash matching parenthesis */
+    int matchSyntaxBased;	/* use syntax info to match parenthesis */
     int highlightSyntax;    	/* whether to highlight syntax by default */
     int smartTags;  	    	/* look for tag in current window first */
     int alwaysCheckRelativeTagsSpecs; /* for every new opened file of session */
@@ -664,6 +665,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
  	&PrefData.showMatchingStyle, ShowMatchingTypes, True},
+    {"matchSyntaxBased", "MatchSyntaxBased", PREF_BOOLEAN, "True",
+ 	&PrefData.matchSyntaxBased, NULL, True},
     {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True",
     	&PrefData.highlightSyntax, NULL, True},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
@@ -1441,6 +1444,16 @@ int GetPrefShowMatching(void)
     if (PrefData.showMatchingStyle >= N_SHOW_MATCHING_STYLES) 
 	PrefData.showMatchingStyle -= N_SHOW_MATCHING_STYLES;
     return PrefData.showMatchingStyle;
+}
+
+void SetPrefMatchSyntaxBased(int state)
+{
+    setIntPref(&PrefData.matchSyntaxBased, state);
+}
+
+int GetPrefMatchSyntaxBased(void)
+{
+    return PrefData.matchSyntaxBased;
 }
 
 void SetPrefHighlightSyntax(int state)

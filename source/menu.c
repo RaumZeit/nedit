@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.52 2002/03/07 17:40:53 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.53 2002/03/11 22:05:11 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -112,6 +112,7 @@ static void tabsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData);
+static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void autoIndentDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -131,6 +132,7 @@ static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -342,6 +344,8 @@ static void setIncrementalBackupAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setShowMatchingAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
+static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
 static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setLockedAP(Widget w, XEvent *event, String *args,
@@ -499,6 +503,7 @@ static XtActionsRec Actions[] = {
 #endif
     {"set_incremental_backup", setIncrementalBackupAP},
     {"set_show_matching", setShowMatchingAP},
+    {"set_match_syntax_based", setMatchSyntaxBasedAP},
     {"set_overtype_mode", setOvertypeModeAP},
     {"set_locked", setLockedAP},
     {"set_tab_dist", setTabDistAP},
@@ -872,6 +877,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->showMatchingRangeDefItem = createMenuRadioToggle(subSubPane,
 	    "range", "Range", 'R', showMatchingRangeDefCB, window,
 	    GetPrefShowMatching() == FLASH_RANGE, SHORT);
+    createMenuSeparator(subSubPane, "sep", SHORT);
+    window->matchSyntaxBasedDefItem = createMenuToggle(subSubPane, 
+	   "matchSyntax", "Syntax Based", 'S', matchSyntaxBasedDefCB, window,
+	    GetPrefMatchSyntaxBased(), SHORT);
 
     /* Append LF at end of files on save */
     window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
@@ -981,6 +990,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->showMatchingRangeItem = createMenuRadioToggle(subPane, "range", 
 	"Range", 'R', showMatchingRangeCB, window, 
 	window->showMatchingStyle == FLASH_RANGE, SHORT);
+    createMenuSeparator(subPane, "sep", SHORT);
+    window->matchSyntaxBasedItem = createMenuToggle(subPane, "matchSyntax",
+	    "Syntax Based", 'S', matchSyntaxBasedCB, window,
+	    window->matchSyntaxBased, SHORT);
 
 #ifndef SGI_CUSTOM
     createMenuSeparator(menuPane, "sep2", SHORT);
@@ -1449,6 +1462,23 @@ static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
     	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
+static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+#if XmVersion >= 1002
+    Widget menu = XmGetPostedFromWidget(XtParent(w));
+#else
+    Widget menu = w;
+#endif
+#ifdef SGI_CUSTOM
+    if (shortPrefAskDefault(window->shell, w, "Match Syntax Based")) {
+	matchSyntaxBasedDefCB(w, window, callData);
+	SaveNEditPrefs(window->shell, GetPrefShortMenus());
+    }
+#endif
+    XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_match_syntax_based",
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+}
+
 static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     ChooseFonts(window, True);
@@ -1709,6 +1739,19 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
 	XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
+    }
+}
+
+static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefMatchSyntaxBased(state);
+    for (win=WindowList; win!=NULL; win=win->next) {
+	XmToggleButtonSetState(win->matchSyntaxBasedDefItem, state, False);
     }
 }
 
@@ -3386,6 +3429,18 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args,
     else {
         fprintf(stderr, "NEdit: set_show_matching requires argument\n");
     }
+}
+
+static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Boolean newState;
+    
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->matchSyntaxBased, "set_match_syntax_based");
+
+    XmToggleButtonSetState(window->matchSyntaxBasedItem, newState, False);
+    window->matchSyntaxBased = newState;
 }
 
 static void setOvertypeModeAP(Widget w, XEvent *event, String *args,

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.42 2002/01/05 16:52:36 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.43 2002/03/11 22:05:11 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -61,6 +61,7 @@ static const char CVSID[] = "$Id: search.c,v 1.42 2002/01/05 16:52:36 amai Exp $
 #include "window.h" 
 #include "preferences.h"
 #include "file.h"
+#include "highlight.h"
 #ifdef REPLACE_SCOPE
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
@@ -194,8 +195,9 @@ static void resetFindTabGroup(WindowInfo *window);
 static void resetReplaceTabGroup(WindowInfo *window);
 static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 	int searchType, int *left, int *right, int *searchExtent);
-static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
-	int startLimit, int endLimit, int *matchPos);
+static int findMatchingChar(WindowInfo *window, char toMatch,
+	void *toMatchStyle, int charPos, int startLimit, int endLimit, 
+	int *matchPos);
 static void replaceUsingRE(const char *searchStr, const char *replaceStr,
         const char *sourceStr, char *destStr, int maxDestLen, int prevChar,
 	const char *delimiters, int defaultFlags);
@@ -3074,6 +3076,7 @@ static void iSearchTextKeyEH(Widget w, WindowInfo *window,
 void FlashMatching(WindowInfo *window, Widget textW)
 {
     char c;
+    void *style;
     int pos, matchIndex;
     int startPos, endPos, searchPos, matchPos;
     
@@ -3098,6 +3101,7 @@ void FlashMatching(WindowInfo *window, Widget textW)
     if (pos < 0)
     	return;
     c = BufGetCharacter(window->buffer, pos);
+    style = GetHighlightInfo(window, pos);
     
     /* is the character one we want to flash? */
     for (matchIndex = 0; matchIndex<N_FLASH_CHARS; matchIndex++) {
@@ -3121,8 +3125,8 @@ void FlashMatching(WindowInfo *window, Widget textW)
     }
     
     /* do the search */
-    if (!findMatchingChar(window->buffer, c, searchPos, startPos, endPos,
-    	    &matchPos))
+    if (!findMatchingChar(window, c, style, searchPos, startPos, endPos, 
+        &matchPos))
     	return;
 
     if (window->showMatchingStyle == FLASH_DELIMIT) {
@@ -3169,8 +3173,8 @@ void SelectToMatchingCharacter(WindowInfo *window)
     }
     
     /* Search for it in the buffer */
-    if (!findMatchingChar(buf, BufGetCharacter(buf, selStart), selStart, 0,
-    		buf->length, &matchPos)) {
+    if (!findMatchingChar(window, BufGetCharacter(buf, selStart),
+        GetHighlightInfo(window, selStart), selStart, 0, buf->length, &matchPos)) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -3206,8 +3210,9 @@ void GotoMatchingCharacter(WindowInfo *window)
     }
     
     /* Search for it in the buffer */
-    if (!findMatchingChar(buf, BufGetCharacter(buf, selStart), selStart, 0,
-    		buf->length, &matchPos)) {
+    if (!findMatchingChar(window, BufGetCharacter(buf, selStart),
+	    GetHighlightInfo(window, selStart), selStart, 0, 
+	    buf->length, &matchPos)) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -3223,11 +3228,18 @@ void GotoMatchingCharacter(WindowInfo *window)
     XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, NULL);
 }
 
-static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
-	int startLimit, int endLimit, int *matchPos)
+static int findMatchingChar(WindowInfo *window, char toMatch, 
+    void* styleToMatch, int charPos, int startLimit, int endLimit, 
+    int *matchPos)
 {
     int nestDepth, matchIndex, direction, beginPos, pos;
     char matchChar, c;
+    void *style = NULL;
+    textBuffer *buf = window->buffer;
+    int matchSyntaxBased = window->matchSyntaxBased;
+
+    /* If we don't match syntax based, fake a matching style. */
+    if (!matchSyntaxBased) style = styleToMatch;
     
     /* Look up the matching character and match direction */
     for (matchIndex = 0; matchIndex<N_MATCH_CHARS; matchIndex++) {
@@ -3246,25 +3258,37 @@ static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
     	for (pos=beginPos; pos<endLimit; pos++) {
 	    c=BufGetCharacter(buf, pos);
 	    if (c == matchChar) {
-	    	nestDepth--;
-		if (nestDepth == 0) {
-		    *matchPos = pos;
-		    return TRUE;
+		if (matchSyntaxBased) style = GetHighlightInfo(window, pos);
+		if (style == styleToMatch) {
+		    nestDepth--;
+		    if (nestDepth == 0) {
+			*matchPos = pos;
+			return TRUE;
+		    }
 		}
-	    } else if (c == toMatch)
-	    	nestDepth++;
+	    } else if (c == toMatch) {
+		if (matchSyntaxBased) style = GetHighlightInfo(window, pos);
+		if (style == styleToMatch)
+		    nestDepth++;
+	    }
 	}
     } else { /* SEARCH_BACKWARD */
 	for (pos=beginPos; pos>=startLimit; pos--) {
 	    c=BufGetCharacter(buf, pos);
 	    if (c == matchChar) {
-	    	nestDepth--;
-		if (nestDepth == 0) {
-		    *matchPos = pos;
-		    return TRUE;
+		if (matchSyntaxBased) style = GetHighlightInfo(window, pos);
+		if (style == styleToMatch) {
+		    nestDepth--;
+		    if (nestDepth == 0) {
+			*matchPos = pos;
+			return TRUE;
+		    }
 		}
-	    } else if (c == toMatch)
-	    	nestDepth++;
+	    } else if (c == toMatch) {
+		if (matchSyntaxBased) style = GetHighlightInfo(window, pos);
+		if (style == styleToMatch)
+		    nestDepth++;
+	    }
 	}
     }
     return FALSE;

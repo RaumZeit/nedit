@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.22 2002/03/06 22:04:53 edg Exp $ */
+/* $Id: nedit.h,v 1.23 2002/03/11 22:05:11 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -205,6 +205,7 @@ typedef struct _WindowInfo {
     Widget	showMatchingOffItem;
     Widget	showMatchingDelimitItem;
     Widget	showMatchingRangeItem;
+    Widget	matchSyntaxBasedItem;
     Widget	overtypeModeItem;
     Widget	highlightItem;
     Widget	windowMenuPane;
@@ -227,6 +228,7 @@ typedef struct _WindowInfo {
     Widget	showMatchingOffDefItem;
     Widget	showMatchingDelimitDefItem;
     Widget	showMatchingRangeDefItem;
+    Widget	matchSyntaxBasedDefItem;
     Widget	highlightOffDefItem;
     Widget	highlightDefItem;
     Widget	searchDlogsDefItem;
@@ -322,6 +324,7 @@ typedef struct _WindowInfo {
     char 	showMatchingStyle; 	/* How to show matching parens:
 					   NO_FLASH, FLASH_DELIMIT, or
 					   FLASH_RANGE */
+    char	matchSyntaxBased;	/* Use syntax info to show matching */
     Boolean	showStats;		/* is stats line supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */

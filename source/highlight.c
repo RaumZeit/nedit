@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.24 2002/02/05 22:01:52 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.25 2002/03/11 22:05:11 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -459,6 +459,25 @@ int TestHighlightPatterns(patternSet *patSet)
     return True;
 }
 
+/*
+** Returns the highlight style of the character at a given position of a 
+** window. To avoid breaking encapsulation, the highlight style is converted 
+** to a void* pointer (no other module has to know that characters are used
+** to represent highlight styles; that would complicate future extensions).
+** Returns NULL if the window has highlighting turned off.
+** The only guarantee that this function offers, is that when the same
+** pointer is returned for two positions, the corresponding characters have
+** the same highlight style.
+**/
+void* GetHighlightInfo(WindowInfo *window, int pos)
+{
+    windowHighlightData *highlightData = 
+	(windowHighlightData *)window->highlightData; 
+    if (!highlightData)
+	return NULL;
+    return (void*)(int)BufGetCharacter(highlightData->styleBuffer, pos);
+}
+    
 /*
 ** Free allocated memory associated with highlight data, including compiled
 ** regular expressions, style buffer and style table.  Note: be sure to

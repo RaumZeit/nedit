@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.4 2001/12/10 04:58:00 edel Exp $ */
+/* $Id: highlight.h,v 1.5 2002/03/11 22:05:11 edg Exp $ */
 /* Pattern flags for modifying pattern matching behavior */
 #define PARSE_SUBPATS_FROM_START 1
 #define DEFER_PARSING 2
@@ -34,3 +34,4 @@ void RemoveWidgetHighlight(Widget widget);
 void UpdateHighlightStyles(WindowInfo *window);
 int TestHighlightPatterns(patternSet *patSet);
 Pixel AllocColor(Widget w, const char *colorName);
+void* GetHighlightInfo(WindowInfo *window, int pos);

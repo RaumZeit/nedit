@@ -864,7 +864,12 @@ Programming with NEdit
   character of the pair.  NEdit will match {, (, [, <, ", ', `, /, and \.
   Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by
   default), will select all of the text between the matching characters.
-
+  
+  When syntax highlighting is enabled, the matching routines can optionally
+  make use of the syntax information for improved accuracy. In that case,
+  a brace inside a highlighted string will not match a brace inside a comment,
+  for instance.
+  
 3>Opening Included Files
 
   The Open Selected command in the File menu understands the C preprocessor's
@@ -2255,6 +2260,9 @@ Macro Subroutines
   Contains the current preference for showing matching pairs, 
   such as "[]" and "{}" pairs. Can be "off", "delimiter", or "range".
 
+**$match_syntax_based**
+  Whether pair matching should use syntax information, if available.
+
 **$statistics_line**
   Has a value of 1 if the statistics line is shown, otherwise 0.
 
@@ -2656,6 +2664,9 @@ Action Routines
 
 **set_show_matching( "off" | "delimiter" | "range" )**
   Set show matching (...) mode for the current window.
+
+**set_match_syntax_based( [0 | 1] )**
+  Set whether matching should be syntax based for the current window.
 
 **set_statistics_line( [0 | 1] )**
   Show or hide the statistics line for the current window. 
@@ -3110,6 +3121,10 @@ Preferences
   insertion cursor is positioned after it. Delimiter only highlights the
   matching delimiter, while Range highlights the whole range of text between
   the matching delimiters.
+  
+  Optionally, the matching can make use of syntax information if syntax
+  highlighting is enabled. Alternatively, the matching is purely character
+  based. In general, syntax based matching results in fewer false matches.
 
 **Overtype**
   In overtype mode, new characters entered replace the characters in front of

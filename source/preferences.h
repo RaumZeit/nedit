@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.19 2002/03/06 22:04:53 edg Exp $ */
+/* $Id: preferences.h,v 1.20 2002/03/11 22:05:11 edg Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -61,6 +61,8 @@ void SetPrefInsertTabs(int state);
 int GetPrefInsertTabs(void);
 void SetPrefShowMatching(int state);
 int GetPrefShowMatching(void);
+void SetPrefMatchSyntaxBased(int state);
+int GetPrefMatchSyntaxBased(void);
 void SetPrefHighlightSyntax(int state);
 int GetPrefHighlightSyntax(void);
 void SetPrefRepositionDialogs(int state);
