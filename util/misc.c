@@ -827,15 +827,24 @@ void FreeStringTable(XmString *table)
 */ 
 void SimulateButtonPress(Widget widget)
 {
-    XKeyPressedEvent keyEvent;
+    XEvent keyEvent;
     
     memset((char *)&keyEvent, 0, sizeof(XKeyPressedEvent));
     keyEvent.type = KeyPress;
-    keyEvent.serial = 1;
-    keyEvent.send_event = True;
-    keyEvent.display = XtDisplay(widget);
-    keyEvent.window = XtWindow(widget);
-    XtCallActionProc(widget, "ArmAndActivate", (XEvent *)&keyEvent, NULL, 0);
+    keyEvent.xkey.serial = 1;
+    keyEvent.xkey.send_event = True;
+    keyEvent.xkey.display = XtDisplay(widget);
+    keyEvent.xkey.window = XtWindow(widget);
+
+    if (XtIsSubclass(widget, xmGadgetClass))
+    {
+        XtCallActionProc(XtParent(widget), "ManagerGadgetSelect",
+                         &keyEvent, NULL, 0);
+    }                 
+    else
+    {
+        XtCallActionProc(widget, "ArmAndActivate", &keyEvent, NULL, 0);
+    }
 }
 
 /*
