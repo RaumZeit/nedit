@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.180 2004/10/18 19:27:25 arnef Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.181 2004/12/17 11:54:20 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -2385,6 +2385,9 @@ static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData)
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
     window = WidgetToWindow(w);
+    if (!WindowCanBeClosed(window)) {
+        return;
+    }
     
     CloseDocumentWindow(w, window, callData);
 }

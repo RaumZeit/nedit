@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.25 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: search.h,v 1.26 2004/12/17 11:54:20 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * search.h -- Nirvana Editor Search Header File                                *
@@ -77,6 +77,7 @@ void FlashMatching(WindowInfo *window, Widget textW);
 void SelectToMatchingCharacter(WindowInfo *window);
 void GotoMatchingCharacter(WindowInfo *window);
 void RemoveFromMultiReplaceDialog(WindowInfo *window);
+Boolean WindowCanBeClosed(WindowInfo *window);
 
 /*
 ** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE 
