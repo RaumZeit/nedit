@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.20 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.21 2001/04/03 22:59:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -57,6 +57,13 @@ static const char CVSID[] = "$Id: search.c,v 1.20 2001/04/02 20:52:09 edg Exp $"
 #include "search.h"
 #include "window.h" 
 #include "preferences.h"
+#ifdef REPLACE_SCOPE
+#if XmVersion >= 1002
+#include <Xm/PrimitiveP.h>
+#endif
+#include "textDisp.h"
+#include "textP.h"
+#endif
 
 typedef struct _SelectionInfo {
     int done;
@@ -275,6 +282,65 @@ static void initToggleButtons(int searchType, Widget regexToggle,
     }
 }
 
+#ifdef REPLACE_SCOPE
+/*
+** Checks whether a selection spans multiple lines. Used to decide on the
+** default scope for replace dialogs. 
+** This routine introduces a dependency on textDisp.h, which is not so nice,
+** but I currently don't have a cleaner solution.
+*/
+static int selectionSpansMultipleLines(WindowInfo *window)
+{
+    int selStart, selEnd, isRect, rectStart, rectEnd, lineStartStart,
+        lineStartEnd;
+    int lineWidth;
+    textDisp *textD;
+    
+    if (!BufGetSelectionPos(window->buffer, &selStart, &selEnd, &isRect,
+    	    &rectStart, &rectEnd))
+    	return FALSE;
+
+    /* This is kind of tricky. The perception of a line depends on the
+       line wrap mode being used. So in theory, we should take into 
+       account the layout of the text on the screen. However, the 
+       routine to calculate a line number for a given character position
+       (TextDPosToLineAndCol) only works for displayed lines, so we cannot
+       use it. Therefore, we use this simple heuristic:
+        - If a newline is found between the start and end of the selection,
+	  we obviously have a multi-line selection.
+	- If no newline is found, but the distance between the start and the
+          end of the selection is larger than the number of characters 
+	  displayed on a line, and we're in continuous wrap mode,
+	  we also assume a multi-line selection.
+    */
+     
+    lineStartStart = BufStartOfLine(window->buffer, selStart);
+    lineStartEnd = BufStartOfLine(window->buffer, selEnd);
+    /* If the line starts differ, we have a "\n" in between. */
+    if (lineStartStart != lineStartEnd ) 
+	return TRUE;     
+    
+    if (window->wrapMode != CONTINUOUS_WRAP)
+	return FALSE; /* Same line */
+	    
+    /* Estimate the number of characters on a line */
+    textD = ((TextWidget)window->textArea)->text.textD;
+    if (textD->fontStruct->max_bounds.width > 0)
+	lineWidth = textD->width / textD->fontStruct->max_bounds.width;
+    else
+	lineWidth = 1;
+    if (lineWidth < 1) lineWidth = 1; /* Just in case */
+    
+    /* Estimate the numbers of line breaks from the start of the line to
+       the start and ending positions of the selection and compare.*/
+    if ((selStart-lineStartStart)/lineWidth !=
+        (selEnd-lineStartStart)/lineWidth )
+       return TRUE; /* Spans multiple lines */
+       
+    return FALSE; /* Small selection; probably doesn't span lines */
+}
+#endif
+
 void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
     int keepDialogs, Time time)
 {
@@ -313,7 +379,41 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int searchType,
        NOTE: due to an apparent bug in OpenMotif, the radio buttons may
        get stuck after resetting the scope to "In Window". I currently 
        don't have a workaround. */
-    XmToggleButtonSetState(window->replaceScopeWinToggle, True, True);
+    if (window->wasSelected) {
+	/* If a selection exists, the default scope depends on the preference
+           of the user. */
+	switch(GetPrefReplaceDefScope()) {
+	   case REPL_DEF_SCOPE_SELECTION:
+		/* The user prefers selection scope, no matter what the
+		   size of the selection is. */	   
+		XmToggleButtonSetState(window->replaceScopeSelToggle, 
+		    True, True);
+		break;
+	   case REPL_DEF_SCOPE_SMART:
+		if (selectionSpansMultipleLines(window)) {
+		    /* If the selection spans multiple lines, the user most
+		       likely wants to perform a replacement in the selection */
+		    XmToggleButtonSetState(window->replaceScopeSelToggle, 
+		    	True, True);
+		}
+		else {
+		    /* It's unlikely that the user wants a replacement in a
+		       tiny selection only. */
+		    XmToggleButtonSetState(window->replaceScopeWinToggle, 
+		    	True, True);
+		}
+		break;
+	   default:
+	   	/* The user always wants window scope as default. */
+		XmToggleButtonSetState(window->replaceScopeWinToggle, 
+		   True, True);
+		break;
+	}
+    }
+    else {
+       /* No selection -> always choose "In Window" as default. */
+       XmToggleButtonSetState(window->replaceScopeWinToggle, True, True);
+    }
 #endif
     
     /* Start the search history mechanism at the current history item */
@@ -2209,7 +2309,6 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     char *replaceText, *replaceWithText;
     regexp *compiledRE = NULL;
     char *compileMsg;
-    int regexDefault;
     
     /* Get the search and replace strings, search type, and direction
        from the dialog */
@@ -2217,6 +2316,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     replaceWithText = XmTextGetString(window->replaceWithText);
     
     if(XmToggleButtonGetState(window->replaceRegexToggle)) {
+      int regexDefault;
       if(XmToggleButtonGetState(window->replaceCaseToggle)) {
       	*searchType = SEARCH_REGEX;
 	regexDefault = REDFLT_STANDARD;
@@ -2224,6 +2324,17 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
       	*searchType = SEARCH_REGEX_NOCASE;
 	regexDefault = REDFLT_CASE_INSENSITIVE;
       }
+      /* If the search type is a regular expression, test compile it 
+         immediately and present error messages */
+      compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
+      if (compiledRE == NULL) {
+   	  DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
+   	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
+	  XtFree(replaceText);
+	  XtFree(replaceWithText);
+ 	  return FALSE;
+      }
+      free((char*)compiledRE);
     } else {
       if(XmToggleButtonGetState(window->replaceCaseToggle)) {
       	if(XmToggleButtonGetState(window->replaceWordToggle))
@@ -2240,20 +2351,6 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     
     *direction = XmToggleButtonGetState(window->replaceRevToggle) ? 
 	SEARCH_BACKWARD : SEARCH_FORWARD;
-    
-    /* If the search type is a regular expression, test compile it immediately
-       and present error messages */
-    if (isRegexType(*searchType)) {
-	compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
-	if (compiledRE == NULL) {
-   	    DialogF(DF_WARN, XtParent(window->replaceDlog), 1,
-   	    	   "Please respecify the search string:\n%s", "OK", compileMsg);
-	    XtFree(replaceText);
-	    XtFree(replaceWithText);
- 	    return FALSE;
- 	}
-        free((char*)compiledRE);
-    }
     
     /* Return strings */
     strcpy(searchString, replaceText);
@@ -2277,12 +2374,12 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
     char *findText;
     regexp *compiledRE = NULL;
     char *compileMsg;
-    int regexDefault;
     
     /* Get the search string, search type, and direction from the dialog */
     findText = XmTextGetString(window->findText);
     
     if(XmToggleButtonGetState(window->findRegexToggle)) {
+      int regexDefault;
       if(XmToggleButtonGetState(window->findCaseToggle)) {
       	*searchType = SEARCH_REGEX;
 	regexDefault = REDFLT_STANDARD;
@@ -2290,6 +2387,15 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
       	*searchType = SEARCH_REGEX_NOCASE;
 	regexDefault = REDFLT_CASE_INSENSITIVE;
       }
+      /* If the search type is a regular expression, test compile it 
+         immediately and present error messages */
+      compiledRE = CompileRE(findText, &compileMsg, regexDefault);
+      if (compiledRE == NULL) {
+   	  DialogF(DF_WARN, XtParent(window->findDlog), 1,
+   	    	 "Please respecify the search string:\n%s", "OK", compileMsg);
+ 	  return FALSE;
+      }
+      free((char *)compiledRE);
     } else {
       if(XmToggleButtonGetState(window->findCaseToggle)) {
       	if(XmToggleButtonGetState(window->findWordToggle))
@@ -2307,16 +2413,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
     *direction = XmToggleButtonGetState(window->findRevToggle) ? 
 	SEARCH_BACKWARD : SEARCH_FORWARD;
     
-    /* If the search type is a regular expression, test compile it immediately
-       and present error messages */
     if (isRegexType(*searchType)) {
-	compiledRE = CompileRE(findText, &compileMsg, regexDefault);
-	if (compiledRE == NULL) {
-   	    DialogF(DF_WARN, XtParent(window->findDlog), 1,
-   	    	   "Please respecify the search string:\n%s", "OK", compileMsg);
- 	    return FALSE;
- 	}
- 	XtFree((char *)compiledRE);
     }
 
     /* Return the search string */
@@ -3813,13 +3910,13 @@ static int forwardRegexSearch(char *string, char *searchString, int wrap,
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
 	    *searchExtent = compiledRE->extentp - string;
-	XtFree((char *)compiledRE);
+	free((char *)compiledRE);
 	return TRUE;
     }
     
     /* if wrap turned off, we're done */
     if (!wrap) {
-    	XtFree((char *)compiledRE);
+    	free((char *)compiledRE);
 	return FALSE;
     }
     
@@ -3830,11 +3927,11 @@ static int forwardRegexSearch(char *string, char *searchString, int wrap,
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
 	    *searchExtent = compiledRE->extentp - string;
-	XtFree((char *)compiledRE);
+	free((char *)compiledRE);
 	return TRUE;
     }
 
-    XtFree((char *)compiledRE);
+    free((char *)compiledRE);
     return FALSE;
 }
 
@@ -3860,14 +3957,14 @@ static int backwardRegexSearch(char *string, char *searchString, int wrap,
 	    *endPos = compiledRE->endp[0] - string;
 	    if (searchExtent != NULL)
 		*searchExtent = compiledRE->extentp - string;
-	    XtFree((char *)compiledRE);
+	    free((char *)compiledRE);
 	    return TRUE;
 	}
     }
     
     /* if wrap turned off, we're done */
     if (!wrap && beginPos >= 0) {
-    	XtFree((char *)compiledRE);
+    	free((char *)compiledRE);
     	return FALSE;
     }
     
@@ -3881,10 +3978,10 @@ static int backwardRegexSearch(char *string, char *searchString, int wrap,
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
 	    *searchExtent = compiledRE->extentp - string;
-	XtFree((char *)compiledRE);
+	free((char *)compiledRE);
 	return TRUE;
     }
-    XtFree((char *)compiledRE);
+    free((char *)compiledRE);
     return FALSE;
 }
 
@@ -4010,7 +4107,7 @@ static void replaceUsingRE(char *searchStr, char *replaceStr, char *sourceStr,
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
     ExecRE(compiledRE, NULL, sourceStr, NULL, False, prevChar, '\0',delimiters);
     SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-    XtFree((char *)compiledRE);
+    free((char *)compiledRE);
 }
 
 /*

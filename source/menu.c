@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.25 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.26 2001/04/03 22:59:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -150,6 +150,11 @@ static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData);
+#ifdef REPLACE_SCOPE
+static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData);
+static void replaceScopeSelectionCB(Widget w, WindowInfo *window, caddr_t callData);
+static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData);
+#endif
 static void size24x80CB(Widget w, WindowInfo *window, caddr_t callData);
 static void size40x80CB(Widget w, WindowInfo *window, caddr_t callData);
 static void size60x80CB(Widget w, WindowInfo *window, caddr_t callData);
@@ -825,6 +830,20 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->searchRegexNoCaseDefItem = createMenuToggle(subSubSubPane,
     	    "regularExpressionNoCase", "Regular Expression, Case Insensitive", 'I', searchRegexNoCaseCB, window,
     	    GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
+#ifdef REPLACE_SCOPE
+    subSubSubPane = createMenu(subSubPane, "defaultReplaceScope",
+    	    "Default Replace Scope", 'R', NULL, FULL);
+    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, NULL); 
+    window->replScopeWinDefItem = createMenuToggle(subSubSubPane, "window",
+    	    "In Window", 'W', replaceScopeWindowCB, window,
+    	    GetPrefReplaceDefScope() == REPL_DEF_SCOPE_WINDOW, FULL);
+    window->replScopeSelDefItem = createMenuToggle(subSubSubPane, "selection",
+    	    "In Selection", 'S', replaceScopeSelectionCB, window,
+    	    GetPrefReplaceDefScope() == REPL_DEF_SCOPE_SELECTION, FULL);
+    window->replScopeSmartDefItem = createMenuToggle(subSubSubPane, "window",
+    	    "Smart", 'm', replaceScopeSmartCB, window,
+    	    GetPrefReplaceDefScope() == REPL_DEF_SCOPE_SMART, FULL);
+#endif
 
     /* Syntax Highlighting sub menu */
     subSubPane = createMenu(subPane, "syntaxHighlighting","Syntax Highlighting",
@@ -1858,6 +1877,53 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
     	}
     }
 }
+
+#ifdef REPLACE_SCOPE
+static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+   WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
+    	for (win=WindowList; win!=NULL; win=win->next){
+    	    XmToggleButtonSetState(win->replScopeWinDefItem, True, False);
+    	    XmToggleButtonSetState(win->replScopeSelDefItem, False, False);
+    	    XmToggleButtonSetState(win->replScopeSmartDefItem, False, False);
+    	}
+    }
+}
+
+static void replaceScopeSelectionCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+   WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
+    	for (win=WindowList; win!=NULL; win=win->next){
+    	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
+    	    XmToggleButtonSetState(win->replScopeSelDefItem, True, False);
+    	    XmToggleButtonSetState(win->replScopeSmartDefItem, False, False);
+    	}
+    }
+}
+
+static void replaceScopeSmartCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+   WindowInfo *win;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(w)) {
+    	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
+    	for (win=WindowList; win!=NULL; win=win->next){
+    	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
+    	    XmToggleButtonSetState(win->replScopeSelDefItem, False, False);
+    	    XmToggleButtonSetState(win->replScopeSmartDefItem, True, False);
+    	}
+    }
+}
+#endif
 
 static void size24x80CB(Widget w, WindowInfo *window, caddr_t callData)
 {

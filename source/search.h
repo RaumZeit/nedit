@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.7 2001/04/02 20:52:09 edg Exp $ */
+/* $Id: search.h,v 1.8 2001/04/03 22:59:38 edg Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -63,7 +63,15 @@ enum SearchType {
 #define SEARCH_REGEX_NOCASE_STRING	"regexNoCase"
 
 #ifdef REPLACE_SCOPE
+/* Scope on which the replace operations apply */
 enum ReplaceScope { REPL_SCOPE_WIN, REPL_SCOPE_SEL, REPL_SCOPE_MULTI };
+
+/* Default scope if selection exists when replace dialog pops up.
+   "Smart" means "In Selection" if the selection spans more than
+   one line; "In Window" otherwise. */
+enum ReplaceAllDefaultScope { REPL_DEF_SCOPE_WINDOW,
+			      REPL_DEF_SCOPE_SELECTION,
+			      REPL_DEF_SCOPE_SMART };				  
 #endif
 
 /*

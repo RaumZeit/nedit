@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.6 2001/04/02 20:52:09 edg Exp $ */
+/* $Id: preferences.h,v 1.7 2001/04/03 22:59:38 edg Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -121,3 +121,7 @@ int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);
 void SetPrefBeepOnSearchWrap(int state);
 int GetPrefBeepOnSearchWrap(void);
+#ifdef REPLACE_SCOPE
+void SetPrefReplaceDefScope(int scope);
+int GetPrefReplaceDefScope(void);
+#endif

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.9 2001/04/02 20:52:09 edg Exp $ */
+/* $Id: nedit.h,v 1.10 2001/04/03 22:59:38 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -206,6 +206,11 @@ typedef struct _WindowInfo {
     Widget	searchCaseSenseWordDefItem;
     Widget	searchRegexNoCaseDefItem;
     Widget	searchRegexDefItem;
+#ifdef REPLACE_SCOPE
+    Widget	replScopeWinDefItem;
+    Widget	replScopeSelDefItem;
+    Widget	replScopeSmartDefItem;
+#endif
     Widget	size24x80DefItem;
     Widget	size40x80DefItem;
     Widget	size60x80DefItem;

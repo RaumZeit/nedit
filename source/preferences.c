@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.18 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.19 2001/04/03 22:59:38 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -89,6 +89,16 @@ static char *SearchMethodStrings[] = {
 	"LiteralWord", "CaseSenseWord", "RegexNoCase", 
 	NULL
 };
+
+#ifdef REPLACE_SCOPE
+/* enumerated default scope for replace dialog if a selection exists when
+** the dialog is popped up.
+*/
+static char *ReplaceDefScopeStrings[] = {
+	"Window", "Selection", "Smart", NULL
+};
+#endif
+
 #define N_WRAP_STYLES 3
 static char *AutoWrapTypes[N_WRAP_STYLES+3] = {"None", "Newline", "Continuous",
     	"True", "False", NULL};
@@ -172,6 +182,9 @@ static struct prefData {
     int warnFileMods;	    	/* " warn user if files externally modified */
     int warnExit;	    	/* whether to warn on exit */
     int searchMethod;		/* initial search method as a text string */
+#ifdef REPLACE_SCOPE
+    int replaceDefScope;	/* default replace scope if selection exists */
+#endif
     int textRows;		/* initial window height in characters */
     int textCols;		/* initial window width in characters */
     int tabDist;		/* number of characters between tab stops */
@@ -641,6 +654,10 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.warnExit, NULL, True},
     {"searchMethod", "SearchMethod", PREF_ENUM, "Literal",
     	&PrefData.searchMethod, SearchMethodStrings, True},
+#ifdef REPLACE_SCOPE
+    {"replaceDefaultScope", "ReplaceDefaultAllScope", PREF_ENUM, "Window",
+    	&PrefData.replaceDefScope, ReplaceDefScopeStrings, True},
+#endif
     {"textRows", "TextRows", PREF_INT, "24",
     	&PrefData.textRows, NULL, True},
     {"textCols", "TextCols", PREF_INT, "80",
@@ -1036,6 +1053,18 @@ int GetPrefSearch(void)
 {
     return PrefData.searchMethod;
 }
+
+#ifdef REPLACE_SCOPE
+void SetPrefReplaceDefScope(int scope)
+{
+    setIntPref(&PrefData.replaceDefScope, scope);
+}
+
+int GetPrefReplaceDefScope(void)
+{
+    return PrefData.replaceDefScope;
+}
+#endif
 
 void SetPrefAutoIndent(int state)
 {
