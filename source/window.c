@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.160 2004/06/13 01:08:47 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.161 2004/07/20 01:40:26 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -210,6 +210,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     Arg al[20];
     int ac;
     XmString s1;
+    XmFontList statsFontList;
     WindowInfo *win;
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
@@ -658,6 +659,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightOffset, 3,
             NULL);
     window->statsLine = stats;
+
+    /* Give the statsLine the same font as the statsLineColNo */
+    XtVaGetValues(window->statsLineColNo, XmNfontList, &statsFontList, NULL);
+    XtVaSetValues(window->statsLine, XmNfontList, statsFontList, NULL);
     
     /* Manage the statsLineForm */
     if(window->showStats)
