@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.91 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.92 2004/02/25 02:47:10 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3880,9 +3880,11 @@ static void setStatisticsLineAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats, "set_statistics_line");
-    if (IsTopDocument(window))
-    	XmToggleButtonSetState(window->statsLineItem, newState, False);
+    /* stats line is a shell-level item, so we toggle the button
+       state regardless of it's 'topness' */
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats,
+            "set_statistics_line");
+    XmToggleButtonSetState(window->statsLineItem, newState, False);
     ShowStatsLine(window, newState);
 }
 
@@ -3892,10 +3894,11 @@ static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showISearchLine, "set_incremental_search_line");
-
-    if (IsTopDocument(window))
-    	XmToggleButtonSetState(window->iSearchLineItem, newState, False);
+    /* i-search line is a shell-level item, so we toggle the button
+       state regardless of it's 'topness' */
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args,
+            window->showISearchLine, "set_incremental_search_line");
+    XmToggleButtonSetState(window->iSearchLineItem, newState, False);
     ShowISearchLine(window, newState);
 }
 
@@ -3905,10 +3908,11 @@ static void setShowLineNumbersAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showLineNumbers, "set_show_line_numbers");
-
-    if (IsTopDocument(window))
-    	XmToggleButtonSetState(window->lineNumsItem, newState, False);
+    /* line numbers panel is a shell-level item, so we toggle the button
+       state regardless of it's 'topness' */
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, 
+            window->showLineNumbers, "set_show_line_numbers");
+    XmToggleButtonSetState(window->lineNumsItem, newState, False);
     ShowLineNumbers(window, newState);
 }
 

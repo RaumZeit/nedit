@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.121 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.122 2004/02/25 02:47:10 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -153,6 +153,7 @@ static void showISearch(WindowInfo *window, int state);
 static void showStatsForm(WindowInfo *window, int state);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
+static int requestLineNumCols(textDisp *textD);
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
         char *deletedText, void *cbArg);
@@ -174,7 +175,6 @@ static unsigned char* sanitizeVirtualKeyBindings();
 static int sortAlphabetical(const void* k1, const void* k2);
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
-static void setDocumentSharedPref(WindowInfo *window, WindowInfo *lastwin);
 static void refreshMenuBar(WindowInfo *window);
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin);
@@ -1269,8 +1269,9 @@ void ClosePane(WindowInfo *window)
 void ShowLineNumbers(WindowInfo *window, int state)
 {
     Widget text;
-    int i, marginWidth;
+    int i, marginWidth, reqCols;
     Dimension windowWidth;
+    WindowInfo *win;
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
     
     if (window->showLineNumbers == state)
@@ -1293,7 +1294,22 @@ void ShowLineNumbers(WindowInfo *window, int state)
             XtVaSetValues(text, textNlineNumCols, 0, NULL);
         }
     }
-            
+
+    /* line numbers panel is shell-level, hence other
+       tabbed documents in the window should synch */
+    for (win=WindowList; win; win=win->next) {
+    	if (win->shell != window->shell || win == window)
+	    continue;
+	    
+    	win->showLineNumbers = state;
+
+        reqCols = state? requestLineNumCols(textD) : 0;	    
+        for (i=0; i<=win->nPanes; i++) {
+            text = i==0 ? win->textArea : win->textPanes[i-1];
+            XtVaSetValues(text, textNlineNumCols, reqCols, NULL);
+        }               
+    }
+    
     /* Tell WM that the non-expandable part of the window has changed size */
     UpdateWMSizeHints(window);
 }
@@ -1347,6 +1363,7 @@ void SetEmTabDist(WindowInfo *window, int emTabDist)
 */
 void ShowStatsLine(WindowInfo *window, int state)
 {
+    WindowInfo *win;
     Widget text;
     int i;
     
@@ -1360,6 +1377,14 @@ void ShowStatsLine(WindowInfo *window, int state)
     }
     window->showStats = state;
     showStats(window, state);
+
+    /* i-search line is shell-level, hence other tabbed
+       documents in the window should synch */
+    for (win=WindowList; win; win=win->next) {
+    	if (win->shell != window->shell || win == window)
+	    continue;
+	win->showStats = state;
+    }
 }
 
 /*
@@ -1409,10 +1434,20 @@ void ShowTabBar(WindowInfo *window, int state)
 */
 void ShowISearchLine(WindowInfo *window, int state)
 {
+    WindowInfo *win;
+    
     if (window->showISearchLine == state)
         return;
     window->showISearchLine = state;
     showISearch(window, state);
+
+    /* i-search line is shell-level, hence other tabbed
+       documents in the window should synch */
+    for (win=WindowList; win; win=win->next) {
+    	if (win->shell != window->shell || win == window)
+	    continue;
+	win->showISearchLine = state;
+    }
 }
 
 /*
@@ -2390,6 +2425,23 @@ static void removeFromWindowList(WindowInfo *window)
 }
 
 /*
+** Determine how wide the line number field has to be to 
+** display all possible line numbers in the text area
+*/
+static int requestLineNumCols(textDisp *textD)
+{
+    int reqCols;
+    
+    reqCols = textD->nBufferLines<1 ? 1 : 
+              log10((double)textD->nBufferLines)+1;
+	      
+    if (reqCols < MIN_LINE_NUM_COLS)
+        reqCols = MIN_LINE_NUM_COLS;
+
+    return reqCols;
+}
+
+/*
 ** If necessary, enlarges the window and line number display area
 ** to make room for numbers.
 */
@@ -2406,10 +2458,8 @@ void UpdateLineNumDisp(WindowInfo *window)
     
     /* Decide how wide the line number field has to be to display all
        possible line numbers */
-    reqCols = textD->nBufferLines<1 ? 1 : log10((double)textD->nBufferLines)+1;
-    if (reqCols < MIN_LINE_NUM_COLS)
-        reqCols = MIN_LINE_NUM_COLS;
-     
+    reqCols = requestLineNumCols(textD);
+        
     /* Is the width of the line number area sufficient to display all the
        line numbers in the file?  If not, expand line number field, and the
        window width */
@@ -3149,6 +3199,9 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->replaceMultiFileDlog = NULL;
     window->replaceMultiFilePathBtn = NULL;
     window->replaceMultiFileList = NULL;
+    window->showLineNumbers = GetPrefLineNums();
+    window->showStats = GetPrefStatsLine();
+    window->showISearchLine = GetPrefISearchLine();
 #endif
 
     window->multiFileReplSelected = FALSE;
@@ -3177,9 +3230,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->overstrike = False;
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
-    window->showStats = GetPrefStatsLine();
-    window->showISearchLine = GetPrefISearchLine();
-    window->showLineNumbers = GetPrefLineNums();
     window->highlightSyntax = GetPrefHighlightSyntax();
     window->backlightCharTypes = NULL;
     window->backlightChars = GetPrefBacklightChars();
@@ -3689,12 +3739,6 @@ static void refreshMenuBar(WindowInfo *window)
     DimSelectionDepUserMenuItems(window, window->wasSelected);
 }
 
-static void setDocumentSharedPref(WindowInfo *window, WindowInfo *lastwin)
-{
-    window->showStats = lastwin->showStats;
-    window->showISearchLine = lastwin->showISearchLine;
-}
-
 /*
 ** remember the last active buffer
 */
@@ -3854,9 +3898,6 @@ void RaiseDocument(WindowInfo *window)
 
     if (win == window)
     	return;    
-    
-    /* refresh shared menu items */
-    setDocumentSharedPref(window, win);
     
     /* set the buffer as active */
     XtVaSetValues(window->mainWin, XmNuserData, window, NULL);
