@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.9 2004/01/20 02:48:44 tksoh Exp $ */
+/* $Id: rangeset.c,v 1.10 2004/02/09 09:45:36 tksoh Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -781,9 +781,9 @@ RangesetTable *RangesetTableFree(RangesetTable *table)
 }
 
 /*
-** clone a ranges set table.
+** clone a ranges set.
 */
-static void rangesetClone(Rangeset *srcRangeset, Rangeset *destRangeset)
+static void rangesetClone(Rangeset *destRangeset, Rangeset *srcRangeset)
 {
     destRangeset->update_fn   = srcRangeset->update_fn;
     destRangeset->update_name = srcRangeset->update_name;
@@ -803,28 +803,43 @@ static void rangesetClone(Rangeset *srcRangeset, Rangeset *destRangeset)
 	strcpy(destRangeset->name, srcRangeset->name);
     }
 
-    destRangeset->ranges = RangesNew(srcRangeset->n_ranges);
-    memcpy(destRangeset->ranges, srcRangeset->ranges,
-	    srcRangeset->n_ranges * sizeof(Range));
+    if (srcRangeset->ranges) {
+	destRangeset->ranges = RangesNew(srcRangeset->n_ranges);
+	memcpy(destRangeset->ranges, srcRangeset->ranges,
+		srcRangeset->n_ranges * sizeof(Range));
+    }
 }
 
-RangesetTable *RangesetTableClone(RangesetTable *srcTable)
+/*
+** Create a new rangeset table in the destination buffer
+** by cloning it from the source table.
+**
+** Returns the new table created.
+*/
+RangesetTable *RangesetTableClone(RangesetTable *srcTable,
+        textBuffer *destBuffer)
 {
-    RangesetTable *newTable = srcTable;
+    RangesetTable *newTable = NULL;
     int i;
 
-    if (srcTable) {
-	newTable = RangesetTableAlloc(srcTable->buf);
+    if (srcTable == NULL)
+    	return NULL;
+	
+    newTable = RangesetTableAlloc(destBuffer);
 
-	newTable->n_set = srcTable->n_set;
-	memcpy(newTable->order, srcTable->order, sizeof(unsigned char) *N_RANGESETS);
-	memcpy(newTable->active, srcTable->active, sizeof(unsigned char) *N_RANGESETS);
-	memcpy(newTable->depth, srcTable->depth, sizeof(unsigned char) *N_RANGESETS);
-	memcpy(newTable->list, srcTable->list, sizeof(unsigned char) *(N_RANGESETS + 1));
+    newTable->n_set = srcTable->n_set;
+    memcpy(newTable->order, srcTable->order, 
+	    sizeof(unsigned char) *N_RANGESETS);
+    memcpy(newTable->active, srcTable->active, 
+	    sizeof(unsigned char) *N_RANGESETS);
+    memcpy(newTable->depth, srcTable->depth, 
+	    sizeof(unsigned char) *N_RANGESETS);
+    memcpy(newTable->list, srcTable->list, 
+	    sizeof(unsigned char) *(N_RANGESETS + 1));
 
-	for (i = 0; i < N_RANGESETS; i++)
-	    rangesetClone(&srcTable->set[i], &newTable->set[i]);
-    }
+    for (i = 0; i < N_RANGESETS; i++)
+	rangesetClone(&newTable->set[i], &srcTable->set[i]);
+    
     return newTable;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rangeset.h,v 1.4 2004/01/20 02:48:44 tksoh Exp $ */
+/* $Id: rangeset.h,v 1.5 2004/02/09 09:45:36 tksoh Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.h	 -- Nirvana Editor rangest header			       *
@@ -56,7 +56,8 @@ void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label,
 void RangesetSetMaxpos(Rangeset *rangeset, int maxpos);
 RangesetTable *RangesetTableAlloc(textBuffer *buf);
 RangesetTable *RangesetTableFree(RangesetTable *table);
-RangesetTable *RangesetTableClone(RangesetTable *srcTable);
+RangesetTable *RangesetTableClone(RangesetTable *srcTable,
+        textBuffer *destBuffer);
 int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
 int RangesetLabelOK(int label);
 int RangesetCreate(RangesetTable *table);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.112 2004/02/09 04:16:01 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.113 2004/02/09 09:45:36 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3991,7 +3991,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 
     /* clone rangeset info */
     window->buffer->rangesetTable =
-	    RangesetTableClone(orgWin->buffer->rangesetTable);
+	    RangesetTableClone(orgWin->buffer->rangesetTable, window->buffer);
 
     /* kick start the auto-indent engine */
     window->indentStyle = NO_AUTO_INDENT;
