@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.54 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.55 2002/06/29 13:56:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -412,18 +412,18 @@ static PrefDescripRec PrefDescrip[] = {
 		else\n\
 		    replace_in_selection(\"(^\\\\> )(.*)$\", \"\\\\2\", \"regex\")\n\
 	}\n\
-	C Comments>Comment Out Sel.@C@C++:::R: {\n\
+	Comments>/* Comment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
 		selStart = $selection_start\n\
 		selEnd = $selection_end\n\
 		replace_range(selStart, selEnd, \"/* \" get_selection() \" */\")\n\
 		select(selStart, selEnd + 6)\n\
 	}\n\
-	C Comments>C Uncomment Sel.@C@C++:::R: {\n\
+	Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
 		sel = get_selection()\n\
 		selStart = $selection_start\n\
 		selEnd = $selection_end\n\
 		commentStart = search_string(sel, \"/*\", 0)\n\
-		if (substring(sel, commentStart+2, commentStart+3) == \" \")\n\
+		if (substring(sel, commentStart + 2, commentStart + 3) == \" \")\n\
 		    keepStart = commentStart + 3\n\
 		else\n\
 		    keepStart = commentStart + 2\n\
@@ -436,13 +436,31 @@ static PrefDescripRec PrefDescrip[] = {
 		select(selStart, selEnd - (keepStart-commentStart) - \\\n\
 			(commentEnd - keepEnd))\n\
 	}\n\
-	C Comments>+ C++ Comment@C++:::R: {\n\
+	Comments>// Comment@C@C++@Java@JavaScript:::R: {\n\
 		replace_in_selection(\"^.*$\", \"// &\", \"regex\")\n\
 	}\n\
-	C Comments>- C++ Comment@C++:::R: {\n\
+	Comments>// Uncomment@C@C++@Java@JavaScript:::R: {\n\
 		replace_in_selection(\"(^[ \\\\t]*// ?)(.*)$\", \"\\\\2\", \"regex\")\n\
 	}\n\
-	C Comments>+ C Bar Comment 1@C:::R: {\n\
+	Comments># Comment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl:::R: {\n\
+		replace_in_selection(\"^.*$\", \"#&\", \"regex\")\n\
+	}\n\
+	Comments># Uncomment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl:::R: {\n\
+		replace_in_selection(\"(^[ \\\\t]*#)(.*)$\", \"\\\\2\", \"regex\")\n\
+	}\n\
+	Comments>-- Comment@SQL:::R: {\n\
+		replace_in_selection(\"^.*$\", \"--&\", \"regex\")\n\
+	}\n\
+	Comments>-- Uncomment@SQL:::R: {\n\
+		replace_in_selection(\"(^[ \\\\t]*--)(.*)$\", \"\\\\2\", \"regex\")\n\
+	}\n\
+	Comments>! Comment@X Resources:::R: {\n\
+		replace_in_selection(\"^.*$\", \"!&\", \"regex\")\n\
+	}\n\
+	Comments>! Uncomment@X Resources:::R: {\n\
+		replace_in_selection(\"(^[ \\\\t]*!)(.*)$\", \"\\\\2\", \"regex\")\n\
+	}\n\
+	Comments>Bar Comment@C:::R: {\n\
 		if ($selection_left != -1) {\n\
 		    dialog(\"Selection must not be rectangular\")\n\
 		    return\n\
@@ -455,7 +473,7 @@ static PrefDescripRec PrefDescrip[] = {
 		replace_selection(newText)\n\
 		select(start, start + length(newText))\n\
 	}\n\
-	C Comments>- C Bar Comment 1@C:::R: {\n\
+	Comments>Bar Uncomment@C:::R: {\n\
 		selStart = $selection_start\n\
 		selEnd = $selection_end\n\
 		newText = get_range(selStart+3, selEnd-4)\n\
