@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: vmsUtils.c,v 1.3 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: vmsUtils.c,v 1.4 2001/07/17 07:31:58 amai Exp $";
 /*******************************************************************************
 *									       *
 * vmsUtils.c - Utility routines for VMS systems.			       *
@@ -157,10 +157,12 @@ void FreeStrDesc(struct dsc$descriptor_s *vmsString)
     free(vmsString);
 }
 
+#if !(defined __ALPHA && (defined _XOPEN_SOURCE_EXTENDED || !defined _ANSI_C_SOURCE))
 double rint(double dnum)
 {
     return floor(dnum + 0.5);
 }
+#endif
 
 /*
 ** Re-read the command line and convert it from VMS style to unix style.

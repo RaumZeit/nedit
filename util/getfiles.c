@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.12 2001/06/06 10:00:23 amai Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.13 2001/07/17 07:31:58 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -404,7 +404,13 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
            page states that it always returns the full path name. We can
            easily work around this by checking that the first character of the
            file name is a `/'. */
-	if (fileString[0] == '/') {
+#ifdef VMS
+       /* VMS  won't return `/' as the 1st character of the full file spec.
+         `:' terminates the device name and is not allowed elsewhere */
+        if (strchr(fileString, ':') != NULL) {
+#else
+        if (fileString[0] == '/') {
+#endif        /* VMS */
 	    /* The directory name is already present in the file name or
 	       the user entered a full path name. */
 	    strcpy(filename, fileString);

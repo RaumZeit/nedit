@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.26 2001/05/17 11:42:27 arnef Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.27 2001/07/17 07:31:57 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3572,8 +3572,14 @@ static int matchLanguageMode(WindowInfo *window)
     	    ext = LanguageModes[i]->extensions[j];
     	    extLen = strlen(ext);
     	    start = fileNameLen - extLen;
-    	    if (start >= 0 && !strncmp(&window->filename[start], ext, extLen))
-    	    	return i;
+#if defined(__VMS) && (__VMS_VER >= 70200000) 
+          /* VMS v7.2 has case-preserving filenames */
+            if (start >= 0 && !strncasecmp(&window->filename[start], ext, extLen))
+               return i;
+#else
+            if (start >= 0 && !strncmp(&window->filename[start], ext, extLen))  
+                return i;
+#endif
     	}
     }
 
