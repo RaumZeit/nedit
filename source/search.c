@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.49 2002/09/11 18:59:49 arnef Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.50 2002/09/18 20:17:37 arnef Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -503,7 +503,6 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
         while (selectionInfo->done == 0) {
             XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
             ServerDispatchEvent(&nextEvent);
-            XtDispatchEvent(&nextEvent);
         }
         primary_selection = selectionInfo->selection;
     }
