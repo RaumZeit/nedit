@@ -108,7 +108,7 @@ Michael Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, \
 Mike Duigou, and Seak, Teng-Fong.\n\
 \n\
 NEdit sources, executables, additional documentation, and contributed \
-software are available from the nedit web site at http://nedit.org.\n\
+software are available from the NEdit web site at http://nedit.org.\n\
 \n\
 This program is free software; you can redistribute it and/or \
 modify it under the terms of the GNU General Public License \
@@ -460,7 +460,7 @@ related to programming are discussed below:\n\
 \n\
 Language Modes\n\
 \n\
-When nedit initially reads a file, it attempts to determine whether the \
+When NEdit initially reads a file, it attempts to determine whether the \
 file is in one of the computer languages that it knows about.  Knowing \
 what language a file is written in allows NEdit to assign highlight \
 patterns and smart indent macros, and to set language specific \
@@ -1033,10 +1033,10 @@ plain-text means from system to system.  Plain-text files can differ \
 in character set, line termination, and wrapping.\n\
 \n\
 While character set differences are the most obvious and pose the \
-most challenge to portability, they affect nedit only indirectly via \
+most challenge to portability, they affect NEdit only indirectly via \
 the same font and localization mechanisms common to all X \
 applications.  If your system is set up properly, you will probably \
-never see character-set related problems in nedit.  NEdit can not \
+never see character-set related problems in NEdit.  NEdit can not \
 display Unicode text files, or any multi-byte character set.\n\
 \n\
 The primary difference between an MS DOS format file and a Unix \
@@ -1047,7 +1047,7 @@ the single character Unix standard.  NEdit auto-detects MS DOS format \
 files based on the line termination at the start of the file.  Files \
 are judged to be DOS format if all of the first five line terminators, \
 within a maximum range, are DOS-style.  To change the format in which \
-nedit writes a file from DOS to Unix or visa versa, use the Save \
+NEdit writes a file from DOS to Unix or visa versa, use the Save \
 As... command and check or un-check the MS DOS Format button.\n\
 \n\
 Wrapping within text files can vary among individual users, as \
@@ -1307,10 +1307,10 @@ this menu are:\n\
 	focus follows the mouse.\n\
 \n\
     Modification Warnings -- Pop up a warning dialog when\n\
-        files get changed external to nedit.\n\
+        files get changed external to NEdit.\n\
 \n\
     Exit Warnings -- Ask before exiting when two or more\n\
-        files are open in an nedit session.\n\
+        files are open in an NEdit session.\n\
 \n\
     Initial Window Size -- Default size for new windows.\n\
 \n\
@@ -1428,16 +1428,16 @@ Sharing Customizations with Other NEdit Users\n\
 \n\
 If you have written macro or shell menu commands, highlight patterns, \
 or smart-indent macros that you want to share with other NEdit users, you \
-can make a file which they can load into their nedit environment.\n\
+can make a file which they can load into their NEdit environment.\n\
 \n\
-To load such a file, start nedit with the command:\n\
+To load such a file, start NEdit with the command:\n\
 \n\
    nedit -import <file>\n\
 \n\
-In the new nedit session, verify that the imported patterns or macros do \
+In the new NEdit session, verify that the imported patterns or macros do \
 what you want, then select Preferences -> Save Defaults.  \
 Saving incorporates the changes into your own .nedit file, so the next \
-time you run nedit, you will not have to import the distribution file.\n\
+time you run NEdit, you will not have to import the distribution file.\n\
 \n\
 Loading a customization file is automated, but creating one is not.  \
 To produce a file to be imported by other users, you must make a copy of \
@@ -2221,7 +2221,7 @@ To run NEdit in server mode, type:\n\
 NEdit can also be started in server mode via the nc program when \
 no servers are available.\n\
 \n\
-The nc (for NEdit Client) program, which is distributed along with nedit, sends \
+The nc (for NEdit Client) program, which is distributed along with NEdit, sends \
 commands to an nedit server to open files, select lines, or execute editor \
 actions.  It accepts a limited set of the nedit command line options: -read, \
 -create, -line (or +n), -do, and a list of file names.  Listing a file on the \
@@ -3836,7 +3836,7 @@ keystroke typed, so if you try to get too fancy, you may degrade performance.",
 \n\
 For a much more comprehensive list of common problems and solutions, \
 see the NEdit FAQ.  The latest \
-version of the FAQ can always be found on the nedit web site at:\n\
+version of the FAQ can always be found on the NEdit web site at:\n\
 \n\
     http://nedit.org.\n\
 \n\
@@ -3892,8 +3892,8 @@ explicit focus users.\n\
 P: The Backspace key doesn't work, or deletes forward rather than backward.\n\
 S: While this is an X/Motif binding problem, and should be solved outside \
 of NEdit in the Motif virtual binding layer (or possibly xmodmap or \
-translations), nedit provides an out.  If you set the resource: \
-nedit.remapDeleteKey to True, nedit will forcibly map the delete key \
+translations), NEdit provides an out.  If you set the resource: \
+nedit.remapDeleteKey to True, NEdit will forcibly map the delete key \
 to backspace.  The default setting of this resource recently changed, so \
 users who have been depending on this remapping will now have to set \
 it explicitly (or fix their bindings).\n\
@@ -3935,29 +3935,29 @@ memory, which is usually limited.\n\
 \n\
 REPORTING BUGS\n\
 \n\
-The nedit developers subscribe to both discuss@nedit.org and \
+The NEdit developers subscribe to both discuss@nedit.org and \
 develop@nedit.org, either of which may be used for reporting bugs.  If \
 you're not sure, or you think the report might be of interest to the \
-general nedit user community, send the report to discuss@nedit.org.  If \
+general NEdit user community, send the report to discuss@nedit.org.  If \
 it's something obvious and boring, like we misspelled \"anemometer\" in \
 the on-line help, send it to develop.  If you don't want to subscribe to \
 these lists, please add a note to your mail about cc'ing you on \
 responses.",
 
-"There are two separate mailing lists for nedit users, and one for developers. \
+"There are two separate mailing lists for NEdit users, and one for developers. \
 Users may post to the developer mailing list to report bugs and communicate \
-with the nedit developers.  Remember that nedit is entirely a volunteer effort, \
+with the NEdit developers.  Remember that NEdit is entirely a volunteer effort, \
 so please ask questions first to the discussion list, and do your share to \
 answer other users questions as well.\n\
 \n\
   discuss@nedit.org  -- General discussion, questions and\n\
-    	    	    	answers among nedit users and\n\
+    	    	    	answers among NEdit users and\n\
 			developers.\n\
 \n\
-  announce@nedit.org -- A lov-volume mailing list for\n\
-                        annoumcing new versions.\n\
+  announce@nedit.org -- A low-volume mailing list for\n\
+                        announcing new versions.\n\
 \n\
-  develop@nedit.org  -- Communication among and with nedit\n\
+  develop@nedit.org  -- Communication among and with NEdit\n\
                         developers.  Developers should also\n\
 			subscribe to the discuss list.\n\
 \n\
