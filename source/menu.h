@@ -1,4 +1,4 @@
-/* $Id: menu.h,v 1.10 2004/03/04 09:44:21 tksoh Exp $ */
+/* $Id: menu.h,v 1.11 2004/03/05 08:10:04 tksoh Exp $ */
 
 #ifndef NEDIT_MENU_H_INCLUDED
 #define NEDIT_MENU_H_INCLUDED
@@ -25,5 +25,6 @@ WindowInfo **MakeSortedWindowArray(void);
 void HidePointerOnKeyedEvent(Widget w, XEvent *event);
 Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
 void AddTabContextMenuAction(Widget widget);
+void ShowHiddenTearOff(Widget menuPane);
 
 #endif /* NEDIT_MENU_H_INCLUDED */

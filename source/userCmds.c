@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.42 2004/03/04 09:44:21 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.43 2004/03/05 08:10:04 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -250,7 +250,6 @@ static void updateMenu(WindowInfo *window, int menuType);
 static void manageTearOffMenu(Widget menuPane);
 static void resetManageMode(UserMenuList *list);
 static void tearOffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event);
-static void showTearOff(Widget menuPane);
 static void manageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void manageMenuWidgets(UserMenuList *list);
@@ -1431,65 +1430,6 @@ static void resetManageMode(UserMenuList *list)
 }
 
 /*
-** Event handler for restoring the input hint of (sub) menu tearoffs
-** previously disabled in showTearOff()
-*/
-static void tearOffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event)
-{
-    Widget shell = (Widget)clientData;
-    XWMHints *wmHints;
-
-    if (event->type != MapNotify)
-        return;
-
-    /* restore the input hint previously disabled in showTearOff() */
-    wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
-    wmHints->input = True;
-    wmHints->flags |= InputHint;
-    XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
-    XFree(wmHints);
-
-    /* we only need to do this only */
-    XtRemoveEventHandler(shell, StructureNotifyMask, False,
-            (XtEventHandler)tearOffMappedCB, shell);
-}
-
-/*
-** Redisplay the hidden (sub) menu tearoffs
-*/
-static void showTearOff(Widget menuPane)
-{
-    Widget shell;
-
-    if (!menuPane)
-        return;
-
-    shell = XtParent(menuPane);
-    if (!XmIsMenuShell(shell)) {
-        /* (sub) menu was torn-off -> redisplay it: */
-        XWMHints *wmHints;
-
-        /* to workaround a problem where the remapped tearoffs
-           always receive the input focus insteads of the text
-           editing window, we disable the input hint of the
-           tearoff shell temporarily. */
-        wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
-        wmHints->input = False;
-        wmHints->flags |= InputHint;
-        XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
-        XFree(wmHints);
-
-        /* show the tearoff */
-        XtMapWidget(shell);
-
-        /* the input hint will be restored when the tearoff
-           is mapped */
-        XtAddEventHandler(shell, StructureNotifyMask, False,
-                (XtEventHandler)tearOffMappedCB, shell);
-    }
-}
-
-/*
 ** Cache user menus:
 ** Manage all menu widgets of given user sub-menu list.
 */
@@ -1540,7 +1480,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu)
 
     /* redisplay sub-menu tearoff window, if the sub-menu
        was torn off before */
-    showTearOff(subMenu->umleSubMenuPane);
+    ShowHiddenTearOff(subMenu->umleSubMenuPane);
 }
 
 /*
@@ -1638,7 +1578,7 @@ static void manageMenuWidgets(UserMenuList *list)
                     }
 
                     /* if the sub-menu was torn off then redisplay it */
-                    showTearOff(element->umleSubMenuPane);
+                    ShowHiddenTearOff(element->umleSubMenuPane);
                 }
             } else if (element->umleManageMode == UMMM_UNMANAGE_ALL){
                 /* menu item represented by "element" is a sub-menu and

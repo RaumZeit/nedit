@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.127 2004/03/04 09:44:21 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.128 2004/03/05 08:10:04 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -141,7 +141,7 @@ static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
 static void setTabCloseButtonImage(Widget button);
 static Widget manageToolBars(Widget toolBarsForm);
-static void closeTearOffs(Widget menuPane);
+static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
 static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData);
@@ -3911,29 +3911,54 @@ void RaiseDocumentWindow(WindowInfo *window)
 }
 
 /*
-** Close all the tearoffs spawned from this menu.
-** It works recursively to close the tearoffs of the submenus
+** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
-static void closeTearOffs(Widget menuPane)
+void redisplayTearOffs(Widget menuPane)
 {
     WidgetList itemList;
     Widget subMenuID;
     Cardinal nItems;
     int n;
 
-    /* close all submenu tearoffs */
+    /* redisplay all submenu tearoffs */
     XtVaGetValues(menuPane, XmNchildren, &itemList, 
             XmNnumChildren, &nItems, NULL);
     for (n=0; n<(int)nItems; n++) {
     	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
 	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
-	    closeTearOffs(subMenuID);
+	    redisplayTearOffs(subMenuID);
 	}
     }
 
-    /* close tearoff for this menu */
+    /* redisplay tearoff for this menu */
     if (!XmIsMenuShell(XtParent(menuPane)))
-    	_XmDismissTearOff(XtParent(menuPane), NULL, NULL);    
+    	ShowHiddenTearOff(menuPane);    
+}
+
+/*
+** hide all the tearoffs spawned from this menu.
+** It works recursively to close the tearoffs of the submenus
+*/
+static void hideTearOffs(Widget menuPane)
+{
+    WidgetList itemList;
+    Widget subMenuID;
+    Cardinal nItems;
+    int n;
+
+    /* hide all submenu tearoffs */
+    XtVaGetValues(menuPane, XmNchildren, &itemList, 
+            XmNnumChildren, &nItems, NULL);
+    for (n=0; n<(int)nItems; n++) {
+    	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
+	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
+	    hideTearOffs(subMenuID);
+	}
+    }
+
+    /* hide tearoff for this menu */
+    if (!XmIsMenuShell(XtParent(menuPane)))
+    	XtUnmapWidget(XtParent(menuPane));    
 }
 
 /*
@@ -3967,8 +3992,11 @@ void RaiseDocument(WindowInfo *window)
     XtManageChild(window->splitPane);
     XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
 
-    /* put away the bg menu tearoff of last active buffer */
-    closeTearOffs(win->bgMenuPane);
+    /* put away the bg menu tearoffs of last active document */
+    hideTearOffs(win->bgMenuPane);
+
+    /* restore the bg menu tearoffs of active document */
+    redisplayTearOffs(window->bgMenuPane);
     
     /* set tab as active */
     XmLFolderSetActiveTab(window->tabBar,
@@ -3993,6 +4021,12 @@ void RaiseDocument(WindowInfo *window)
     XmUpdateDisplay(window->splitPane);
     RefreshWindowStates(window);
     
+    /* put away the bg menu tearoffs of last active document */
+    hideTearOffs(win->bgMenuPane);
+
+    /* restore the bg menu tearoffs of active document */
+    redisplayTearOffs(window->bgMenuPane);
+
     UpdateWMSizeHints(window);
 }
 

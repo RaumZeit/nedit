@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.95 2004/03/04 09:44:21 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.96 2004/03/05 08:10:03 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -5245,6 +5245,69 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args,
     /* Pop up the menu */
     XmMenuPosition(window->tabMenuPane, (XButtonPressedEvent *)event);
     XtManageChild(window->tabMenuPane); 
+}
+
+/*
+** Event handler for restoring the input hint of menu tearoffs
+** previously disabled in ShowHiddenTearOff() 
+*/
+static void tearoffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event)
+{
+    Widget shell = (Widget)clientData;
+    XWMHints *wmHints;
+
+    if (event->type != MapNotify)
+    	return;
+
+    /* restore the input hint previously disabled in ShowHiddenTearOff() */
+    wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
+    wmHints->input = True;
+    wmHints->flags |= InputHint;
+    XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
+    XFree(wmHints);
+
+    /* we only need to do this only */
+    XtRemoveEventHandler(shell, StructureNotifyMask, False,
+    	    (XtEventHandler)tearoffMappedCB, shell);
+}
+
+/*
+** Redisplay (map) a hidden tearoff
+*/
+void ShowHiddenTearOff(Widget menuPane)
+{
+    Widget shell;
+    
+    if (!menuPane)
+    	return;
+    
+    shell = XtParent(menuPane);
+    if (!XmIsMenuShell(shell)) {
+	XWindowAttributes winAttr;
+
+	XGetWindowAttributes(XtDisplay(shell), XtWindow(shell), &winAttr);
+	if (winAttr.map_state == IsUnmapped) {
+            XWMHints *wmHints;
+
+	    /* to workaround a problem where the remapped tearoffs
+	       always receive the input focus insteads of the text
+	       editing window, we disable the input hint of the 
+	       tearoff shell temporarily. */
+	    wmHints = XGetWMHints(XtDisplay(shell), XtWindow(shell));
+	    wmHints->input = False;
+	    wmHints->flags |= InputHint;
+	    XSetWMHints(XtDisplay(shell), XtWindow(shell), wmHints);
+	    XFree(wmHints);
+
+    	    /* show the tearoff */
+	    XtMapWidget(shell);
+
+    	    /* the input hint will be restored when the tearoff
+	       is mapped */
+	    XtAddEventHandler(shell, StructureNotifyMask, False,
+    		    (XtEventHandler)tearoffMappedCB, shell);
+	}
+    }
 }
 
 #ifdef SGI_CUSTOM
