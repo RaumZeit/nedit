@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.26 2001/11/09 23:58:45 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.27 2002/02/11 10:45:41 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -928,15 +928,19 @@ static char *DefaultPatternSets[] = {
 	internal subset delims:\"[\\[\\]>]\":::Keyword::D\n\
 	info:\"(?# version 0.1; author/maintainer: Joor Loohuis, joor@loohuis-consulting.nl)\":::Comment::D}",
     "X Resources:1:0{\n\
-	Preprocessor:\"^[ \\t]*#\":\"$\"::Preprocessor::\n\
+	Preprocessor:\"^\\s*#\":\"$\"::Preprocessor::\n\
 	Preprocessor Wrap:\"\\\\\\n\":::Preprocessor1:Preprocessor:\n\
-	Comment:\"^[ \\t]*!\":\"$\"::Comment::\n\
+	Comment:\"^\\s*!\":\"$\"::Comment::\n\
 	Comment Wrap:\"\\\\\\n\":::Comment:Comment:\n\
-	Resource:\"^[ \\t]*[^: 	]+[ \\t]*:\":\"$\"::Plain::\n\
+	Resource Continued:\"^(\\s*[^:\\s]+\\s*:).*\\\\\\n\":\"$\"::Plain::\n\
+	RC Space Warning:\"\\\\\\s+$\":::Flag:Resource Continued:\n\
+	RC Esc Chars:\"\\\\.\":::Text Arg2:Resource Continued:\n\
+	RC Name:\"\\1\":\"\"::Storage Type:Resource Continued:C\n\
+	RC Wrap:\"\\\\\\n\":::Text Arg1:Resource Continued:\n\
+	Resource:\"^\\s*[^:\\s]+\\s*:\":\"$\"::Plain::\n\
+	Resource Space Warning:\"\\S+\\s+$\":::Flag:Resource:\n\
 	Resource Esc Chars:\"\\\\.\":::Text Arg2:Resource:\n\
-	Resource Space Warning:\"[^ \\t]+[ \\t]+$\":::Flag:Resource:\n\
 	Resource Name:\"&\":\"\"::Storage Type:Resource:C\n\
-	Resource Wrap:\"\\\\\\n\":::Text Arg1:Resource:\n\
 	Free Text:\"^.*$\":::Flag::}",
     "Yacc:1:0{\n\
 	comment:\"/\\*\":\"\\*/\"::Comment::\n\
