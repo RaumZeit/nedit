@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.18 2001/10/15 17:28:16 slobasso Exp $ */
+/* $Id: nedit.h,v 1.19 2002/01/05 16:45:25 amai Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -174,12 +174,18 @@ typedef struct _WindowInfo {
     Widget	readOnlyItem;		/* menu bar settable widgets... */
     Widget	autoSaveItem;
     Widget	saveLastItem;
+    Widget      openSelItem;
     Widget	closeItem;
     Widget	printSelItem;
     Widget	undoItem;
     Widget	redoItem;
     Widget	cutItem;
     Widget	copyItem;
+    Widget      findSelItem;
+    Widget      findAgainItem;
+    Widget	replaceFindAgainItem;
+    Widget 	replaceAgainItem;
+    Widget      gotoSelItem;
     Widget	langModeCascade;
     Widget	findDefItem;
     Widget	autoIndentOffItem;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.40 2001/12/13 13:14:32 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.41 2002/01/05 16:45:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -69,6 +69,8 @@ static const char CVSID[] = "$Id: search.c,v 1.40 2001/12/13 13:14:32 amai Exp $
 #include "textP.h"
 #endif
 
+int NHist = 0;
+
 typedef struct _SelectionInfo {
     int done;
     WindowInfo* window;
@@ -86,7 +88,6 @@ static char *SearchHistory[MAX_SEARCH_HISTORY];
 static char *ReplaceHistory[MAX_SEARCH_HISTORY];
 static int SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
-static int NHist = 0;
 
 static int textFieldNonEmpty(Widget w);
 static void setTextField(WindowInfo* window, Time time, Widget textField);
@@ -198,8 +199,8 @@ static int findMatchingChar(textBuffer *buf, char toMatch, int charPos,
 static void replaceUsingRE(const char *searchStr, const char *replaceStr,
         const char *sourceStr, char *destStr, int maxDestLen, int prevChar,
 	const char *delimiters, int defaultFlags);
-static void saveSearchHistory(const char *searchString, const char *replaceString,
-	int searchType, int isIncremental);
+static void saveSearchHistory(WindowInfo *window, const char *searchString,
+            const char *replaceString, int searchType, int isIncremental);
 static int historyIndex(int nCycles);
 static char *searchTypeArg(int searchType);
 static char *searchWrapArg(int searchWrap);
@@ -2603,7 +2604,7 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
     int beginPos, cursorPos, selStart, selEnd;
     
     /* Save a copy of searchString in the search history */
-    saveSearchHistory(searchString, NULL, searchType, FALSE);
+    saveSearchHistory(window, searchString, NULL, searchType, FALSE);
         
     /* set the position to start the search so we don't find the same
        string that was found on the last search	*/
@@ -2770,7 +2771,7 @@ void EndISearch(WindowInfo *window)
     window->iSearchStartPos = -1;
     
     /* Mark the end of incremental search history overwriting */
-    saveSearchHistory("", NULL, 0, FALSE);
+    saveSearchHistory(window, "", NULL, 0, FALSE);
     
     /* Pop down the search line (if it's not pegged up in Preferences) */
     TempShowISearch(window, FALSE);
@@ -2826,7 +2827,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction,
        search string with the search string of the current history index. */
     if(!(window->iSearchHistIndex > 1 && !strcmp(searchString, 
 	    SearchHistory[historyIndex(window->iSearchHistIndex)]))) {
-   	saveSearchHistory(searchString, NULL, searchType, TRUE);
+   	saveSearchHistory(window, searchString, NULL, searchType, TRUE);
 	/* Reset the incremental search history pointer to the beginning */
 	window->iSearchHistIndex = 1;
     }
@@ -3331,7 +3332,7 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
     int replaced;
 
     /* Save a copy of search and replace strings in the search history */
-    saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(window, searchString, replaceString, searchType, FALSE);
     
     replaced = 0;
 
@@ -3380,7 +3381,7 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
     int beginPos, cursorPos;
     
     /* Save a copy of search and replace strings in the search history */
-    saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(window, searchString, replaceString, searchType, FALSE);
     
     /* If the text selected in the window matches the search string, 	*/
     /* the user is probably using search then replace method, so	*/
@@ -3454,7 +3455,7 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
     textBuffer *tempBuf;
     
     /* save a copy of search and replace strings in the search history */
-    saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(window, searchString, replaceString, searchType, FALSE);
     
     /* find out where the selection is */
     if (!BufGetSelectionPos(window->buffer, &selStart, &selEnd, &isRect,
@@ -3595,7 +3596,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString,
     	return FALSE;
     
     /* save a copy of search and replace strings in the search history */
-    saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(window, searchString, replaceString, searchType, FALSE);
 	
     /* get the entire text buffer from the text area widget */
     fileString = BufGetAll(window->buffer);
@@ -4354,11 +4355,12 @@ static void replaceUsingRE(const char *searchStr, const char *replaceStr,
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-static void saveSearchHistory(const char *searchString, const char *replaceString,
-	int searchType, int isIncremental)
+static void saveSearchHistory(WindowInfo *window, const char *searchString,
+            const char *replaceString, int searchType, int isIncremental)
 {
     char *sStr, *rStr;
     static int currentItemIsIncremental = FALSE;
+    WindowInfo *w;
     
     /* Cancel accumulation of contiguous incremental searches (even if the
        information is not worthy of saving) if search is not incremental */
@@ -4398,6 +4400,12 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
     	XtFree(ReplaceHistory[HistStart]);
     } else
     	NHist++;
+
+    for (w=WindowList; w!=NULL; w=w->next) {
+    	XtSetSensitive(w->findAgainItem, True);
+    	XtSetSensitive(w->replaceFindAgainItem, True);
+    	XtSetSensitive(w->replaceAgainItem, True);
+    }
     
     /* Allocate and copy the search and replace strings and add them to the
        circular buffers at HistStart, bump the buffer pointer to next pos. */

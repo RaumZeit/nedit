@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.46 2001/12/24 09:46:57 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.47 2002/01/05 16:45:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -569,8 +569,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "new", "New", 'N', doActionCB, "new", SHORT);
     createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog",
     	    SHORT);
-    createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
+    window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
     	    doActionCB, "open_selected", FULL);
+    XtSetSensitive(window->openSelItem, window->wasSelected);
     if (GetPrefMaxPrevOpenFiles() != 0) {
 	window->prevOpenMenuPane = createMenu(menuPane, "openPrevious",
     		"Open Previous", 'v', &window->prevOpenMenuItem, SHORT);
@@ -666,11 +667,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     menuPane = createMenu(menuBar, "searchMenu", "Search", 0, NULL, SHORT);
     createMenuItem(menuPane, "find", "Find...", 'F', findCB, window, SHORT);
     createFakeMenuItem(menuPane, "findShift", findCB, window);
-    createMenuItem(menuPane, "findAgain", "Find Again", 'i', findSameCB, window,
+    window->findAgainItem=createMenuItem(menuPane, "findAgain", "Find Again", 'i', findSameCB, window,
     	    SHORT);
+    XtSetSensitive(window->findAgainItem, NHist);
     createFakeMenuItem(menuPane, "findAgainShift", findSameCB, window);
-    createMenuItem(menuPane, "findSelection", "Find Selection", 'S',
+    window->findSelItem=createMenuItem(menuPane, "findSelection", "Find Selection", 'S',
     	    findSelCB, window, SHORT);
+    XtSetSensitive(window->findSelItem, window->wasSelected);
     createFakeMenuItem(menuPane, "findSelectionShift", findSelCB, window);
     createMenuItem(menuPane, "findIncremental", "Find Incremental", 'n',
 	    findIncrCB, window, SHORT);
@@ -678,17 +681,20 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "replace", "Replace...", 'R', replaceCB, window,
     	    SHORT);
     createFakeMenuItem(menuPane, "replaceShift", replaceCB, window);
-    createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A',
+    window->replaceFindAgainItem=createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A',
     	    replaceFindSameCB, window, SHORT);
+    XtSetSensitive(window->replaceFindAgainItem, NHist);
     createFakeMenuItem(menuPane, "replaceFindAgainShift", replaceFindSameCB, window);
-    createMenuItem(menuPane, "replaceAgain", "Replace Again", 'p',
+    window->replaceAgainItem=createMenuItem(menuPane, "replaceAgain", "Replace Again", 'p',
     	    replaceSameCB, window, SHORT);
+    XtSetSensitive(window->replaceAgainItem, NHist);
     createFakeMenuItem(menuPane, "replaceAgainShift", replaceSameCB, window);
     createMenuSeparator(menuPane, "sep1", FULL);
     createMenuItem(menuPane, "gotoLineNumber", "Goto Line Number...", 'L',
     	    doActionCB, "goto_line_number_dialog", FULL);
-    createMenuItem(menuPane, "gotoSelected", "Goto Selected", 'G',
+    window->gotoSelItem=createMenuItem(menuPane, "gotoSelected", "Goto Selected", 'G',
     	    doActionCB, "goto_selected", FULL);
+    XtSetSensitive(window->gotoSelItem, window->wasSelected);
     createMenuSeparator(menuPane, "sep2", FULL);
     createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
     createMenuItem(menuPane, "gotoMark", "Goto Mark", 'o', gotoMarkCB, window,
@@ -700,7 +706,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
     window->findDefItem = createMenuItem(menuPane, "findDefinition",
     	    "Find Definition", 'D', doActionCB, "find_definition", FULL);
-    XtSetSensitive(window->findDefItem, TagsFileList != NULL);
+    XtSetSensitive(window->findDefItem, (TagsFileList != NULL)&&window->wasSelected);
     
     /*
     ** Preferences menu, Default Settings sub menu

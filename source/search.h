@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.14 2001/11/13 11:10:24 amai Exp $ */
+/* $Id: search.h,v 1.15 2002/01/05 16:45:25 amai Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -90,3 +90,8 @@ const char *SearchTypeArg(int searchType, const char * defaultRV);
 ** otherwise. 
 */
 int StringToSearchType(const char * string, int *searchType);
+
+/*
+** History of search actions.
+*/
+extern int NHist;
