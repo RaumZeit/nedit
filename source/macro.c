@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.25 2001/06/19 20:00:18 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.26 2001/06/20 15:48:26 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -28,6 +28,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.25 2001/06/19 20:00:18 slobasso Ex
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #ifdef VMS
@@ -481,20 +482,20 @@ void BeginLearn(WindowInfo *window)
             message[MAX_LEARN_MSG_LEN - 1] = '\0';
         }
         else {
-            snprintf(message, MAX_LEARN_MSG_LEN,
+            sprintf(message,
                 "Learn Mode -- Use menu to finish, press %s to cancel",
                 cCancel);
         }
     }
     else {
         if (cCancel[0] == '\0') {
-            snprintf(message, MAX_LEARN_MSG_LEN,
+            sprintf(message,
                 "Learn Mode -- Press %s to finish, use menu to cancel",
                 cFinish);
 
         }
         else {
-            snprintf(message, MAX_LEARN_MSG_LEN,
+            sprintf(message,
                 "Learn Mode -- Press %s to finish, %s to cancel",
                 cFinish,
                 cCancel);
@@ -1500,7 +1501,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
         message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
     }
     else {
-        snprintf(message, MAX_TIMEOUT_MSG_LEN,
+        sprintf(message,
             "Macro Command in Progress -- Press %s to Cancel",
             cCancel);
     }
