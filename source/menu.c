@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.112 2004/08/20 19:33:20 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.113 2004/09/01 18:42:47 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -211,6 +211,7 @@ static void unloadTipsFileMenuCB(Widget w, WindowInfo *window,
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void newOppositeAP(Widget w, XEvent *event, String *args, 
         Cardinal *nArgs); 
+static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
 static void openDialogAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs); 
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs); 
@@ -424,6 +425,7 @@ static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu,
 static XtActionsRec Actions[] = {
     {"new", newAP},
     {"new_opposite", newOppositeAP},
+    {"new_tab", newTabAP},
     {"open", openAP},
     {"open-dialog", openDialogAP},
     {"open_dialog", openDialogAP},
@@ -2722,9 +2724,9 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 }
 
 /*
-** This is just here because our techniques make it hard to bind a menu item
+** These are just here because our techniques make it hard to bind a menu item
 ** to an action procedure that takes arguments.  The user doesn't need to know
-** about it -- they can use new( "opposite" ).
+** about them -- they can use new( "opposite" ) or new( "tab" ).
 */
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
@@ -2732,6 +2734,13 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
     EditNewFile(GetPrefOpenInTab()? NULL : window, NULL, False, NULL,
             window->path);
+    CheckCloseDim();
+}
+static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
+{
+    WindowInfo *window = WidgetToWindow(w);
+
+    EditNewFile(window, NULL, False, NULL, window->path);
     CheckCloseDim();
 }
 
