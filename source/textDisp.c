@@ -955,6 +955,46 @@ void TextDMakeInsertPosVisible(textDisp *textD)
 }
 
 /*
+** Return the current preferred column along with the current
+** visible line index (-1 if not visible) and the lineStartPos
+** of the current insert position.
+*/
+int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos)
+{
+	int column;
+
+	/* Find the position of the start of the line.  Use the line starts array
+	if possible, to avoid unbounded line-counting in continuous wrap mode */
+	if (posToVisibleLineNum(textD, textD->cursorPos, visLineNum)) {
+		*lineStartPos = textD->lineStarts[*visLineNum];
+	}
+	else {
+		*lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
+		*visLineNum = -1;
+	}
+
+	/* Decide what column to move to, if there's a preferred column use that */
+	column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
+		BufCountDispChars(textD->buffer, *lineStartPos, textD->cursorPos);
+	return(column);
+}
+
+/*
+** Return the insert position of the requested column given
+** the lineStartPos.
+*/
+int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos)
+{
+	int newPos;
+
+	newPos = BufCountForwardDispChars(textD->buffer, lineStartPos, column);
+	if (textD->continuousWrap) {
+		newPos = min(newPos, TextDEndOfLine(textD, lineStartPos, True));
+	}
+	return(newPos);
+}
+
+/*
 ** Cursor movement functions
 */
 int TextDMoveRight(textDisp *textD)

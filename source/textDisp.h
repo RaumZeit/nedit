@@ -124,3 +124,5 @@ int TextDCountLines(textDisp *textD, int startPos, int endPos,
 void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth,
 	int textLeft);
 void TextDMaintainAbsLineNum(textDisp *textD, int state);
+int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
+int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);

@@ -3326,22 +3326,22 @@ Some notes on argument types above:\n\
 \n\
 Keyboard-Only Actions\n\
 \n\
-backward_character()\n\
+backward_character([\"nobell\"])\n\
 Moves the cursor one character to the left.\n\
 \n\
-backward_paragraph()\n\
+backward_paragraph([\"nobell\"])\n\
 Moves the cursor to the beginning of the paragraph, or if the \
 cursor is already at the beginning of a paragraph, moves the cursor \
 to the beginning of the previous paragraph.  Paragraphs are \
 defined as regions of text delimited by one or more blank lines.\n\
 \n\
-backward_word()\n\
+backward_word([\"nobell\"])\n\
 Moves the cursor to the beginning of a word, or, if the \
 cursor is already at the beginning of a word, moves the \
 cursor to the beginning of the previous word.  Word delimiters \
 are user-settable, and defined by the X resource wordDelimiters.\n\
 \n\
-beginning_of_file()\n\
+beginning_of_file([\"scrollbar\"])\n\
 Moves the cursor to the beginning of the file.\n\
 \n\
 beginning_of_line()\n\
@@ -3382,28 +3382,28 @@ at its original location.\n\
 delete_selection()\n\
 Deletes the contents of the primary selection.\n\
 \n\
-delete_next_character()\n\
+delete_next_character([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the character following the cursor.\n\
 \n\
-delete_previous_character()\n\
+delete_previous_character([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the character before the cursor.\n\
 \n\
-delete_next_word()\n\
+delete_next_word([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the word following the cursor.\n\
 \n\
-delete_previous_word()\n\
+delete_previous_word([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the word before the cursor.\n\
 \n\
-delete_to_start_of_line()\n\
+delete_to_start_of_line([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the characters between the cursor \
 and the start of the line.\n\
 \n\
-delete_to_end_of_line()\n\
+delete_to_end_of_line([\"nobell\"])\n\
 If a primary selection exists, deletes its contents.  Otherwise, \
 deletes the characters between the cursor \
 and the end of the line.\n\
@@ -3411,7 +3411,7 @@ and the end of the line.\n\
 deselect_all()\n\
 De-selects the primary selection.\n\
 \n\
-end_of_file()\n\
+end_of_file([\"scrollbar\"])\n\
 Moves the cursor to the end of the file.\n\
 \n\
 end_of_line()\n\
@@ -3421,7 +3421,7 @@ end_of_selection()\n\
 Moves the cursor to the end of the selection \
 without disturbing the selection.\n\
 \n\
-exchange()\n\
+exchange([\"nobell\"])\n\
 Exchange the primary and secondary selections.\n\
 \n\
 extend_adjust()\n\
@@ -3437,16 +3437,19 @@ Begins a selection between the \
 cursor and the mouse.  A drag-selection operation can be started with \
 either extend_start or grab_focus.\n\
 \n\
-forward_character()\n\
+forward_character([\"nobell\"])\n\
 Moves the cursor one character to the right.\n\
 \n\
-forward_paragraph()\n\
+forward_paragraph([\"nobell\"])\n\
 Moves the cursor to the beginning of the next paragraph.  Paragraphs are \
 defined as regions of text delimited by one or more blank lines.\n\
 \n\
-forward_word()\n\
+forward_word([\"tail\"] [\"nobell\"])\n\
 Moves the cursor to the beginning of the next word.  Word delimiters \
-are user-settable, and defined by the X resource wordDelimiters.\n\
+are user-settable, and defined by the X resource wordDelimiters.\
+If the \"tail\" argument is supplied the cursor will be moved to \
+the end of the current word or the end of the next word, if the \
+cursor is between words.\n\
 \n\
 grab_focus()\n\
 Moves the cursor to the mouse pointer location, and prepares for \
@@ -3460,7 +3463,7 @@ If pending delete is on and the cursor is inside the selection, replaces \
 the selection with \"string\".  Otherwise, inserts \"string\" at the \
 cursor location.\n\
 \n\
-key_select(\"direction\")\n\
+key_select(\"direction\" [, \"nobell\"])\n\
 Moves the cursor one character in \
 \"direction\" (\"left\", \"right\", \"up\", or \"down\") and extends the \
 selection.  Same as forward/backward-character(\"extend\"), or \
@@ -3500,21 +3503,29 @@ newline_no_indent()\n\
 Inserts a newline character, without automatic indentation, regardless of \
 the setting of Auto Indent.\n\
 \n\
-next_page()\n\
-Moves the cursor and scroll forward one page.\n\
+next_page([\"stutter\"] [\"column\"] [\"scrollbar\"] [\"nobell\"])\n\
+Moves the cursor and scroll forward one page.\
+The paramater \"stutter\" moves the cursor to the bottom of the display,\
+unless it is already there, otherwise it will page down.\
+The parameter \"column\" will maintain the preferred column while\
+moving the cursor.\n\
 \n\
-page_left()\n\
+page_left([\"scrollbar\"] [\"nobell\"])\n\
 Move the cursor and scroll left one page.\n\
 \n\
-page_right()\n\
+page_right([\"scrollbar\"] [\"nobell\"])\n\
 Move the cursor and scroll right one page.\n\
 \n\
 paste_clipboard()\n\
 Insert the contents of the clipboard at the cursor, or if pending delete \
 is on, replace the primary selection with the contents of the clipboard.\n\
 \n\
-previous_page()\n\
-Moves the cursor and scroll backward one page.\n\
+previous_page([\"stutter\"] [\"column\"] [\"scrollbar\"] [\"nobell\"])\n\
+Moves the cursor and scroll backward one page.\
+The paramater \"stutter\" moves the cursor to the top of the display,\
+unless it is already there, otherwise it will page up.\
+The parameter \"column\" will maintain the preferred column while\
+moving the cursor.\n\
 \n\
 process_bdrag()\n\
 Same as secondary_or_drag_start for compatibility with previous versions.\n\
@@ -3523,27 +3534,33 @@ process_cancel()\n\
 Cancels the current extend_adjust, secondary_adjust, or \
 secondary_or_drag_adjust in progress.\n\
 \n\
-process_down()\n\
+process_down([\"nobell\"])\n\
 Moves the cursor down one line.\n\
 \n\
 process_return()\n\
 Same as newline for compatibility with previous versions.\n\
 \n\
-process_shift_down()\n\
+process_shift_down([\"nobell\"])\n\
 Same as process_down(\"extend\") for compatibility with previous versions.\n\
 \n\
-process_shift_up()\n\
+process_shift_up([\"nobell\"])\n\
 Same as process_up(\"extend\") for compatibility with previous versions.\n\
 \n\
 process_tab()\n\
 If tab emulation is turned on, inserts an emulated tab, otherwise inserts \
 a tab character.\n\
 \n\
-process_up()\n\
+process_up([\"nobell\"])\n\
 Moves the cursor up one line.\n\
 \n\
 scroll_down(nLines)\n\
 Scroll the display down (towards the end of the file) by nLines.\n\
+\n\
+scroll_left(nPixels)\n\
+Scroll the display left by nPixels.\n\
+\n\
+scroll_right(nPixels)\n\
+Scroll the display right by nPixels.\n\
 \n\
 scroll_up(nLines)\n\
 Scroll the display up (towards the beginning of the file) by nLines.\n\
@@ -3587,7 +3604,10 @@ involving cursor movement can take the argument \"extend\", meaning, adjust \
 the primary selection to the new cursor position.  Routines which take \
 the \"extend\" argument as well as mouse dragging operations for both \
 primary and secondary selections can take the optional keyword \"rect\", \
-meaning, make the selection rectangular.",
+meaning, make the selection rectangular. Any routine that accepts the \
+\"scrollbar\" argument will move the display but not the cursor or \
+selection. Routines that accept the \"nobell\" argument will fail silently \
+without beeping, if that argument is supplied.",
 
 "WRITING SYNTAX HIGHLIGHTING PATTERNS\n\
 \n\
