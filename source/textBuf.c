@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.13 2001/11/22 21:01:05 amai Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.14 2001/11/25 22:05:30 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -266,7 +266,7 @@ char *BufGetRange(textBuffer *buf, int start, int end)
 */
 char BufGetCharacter(textBuffer *buf, int pos)
 {
-    if (pos < 0 || pos > buf->length)
+    if (pos < 0 || pos >= buf->length)
         return '\0';
     if (pos < buf->gapStart)
         return buf->buf[pos];
