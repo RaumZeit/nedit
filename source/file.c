@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.27 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.28 2001/08/29 00:01:45 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1054,10 +1054,11 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 
     /* open the temporary file */
 #ifdef VMS
-    if ((fp = fopen(tmpFileName, "w", "rfm = stmlf")) == NULL) {
+    if ((fp = fopen(tmpFileName, "w", "rfm = stmlf")) == NULL)
 #else
-    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL) {
+    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL)
 #endif /* VMS */
+    {
     	DialogF(DF_WARN, parent, 1, "Unable to write file for printing:\n%s",
 		"Dismiss", errorString());
         return;
