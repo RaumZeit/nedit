@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.25 2003/05/07 10:51:52 edg Exp $ */
+/* $Id: parse.y,v 1.26 2003/05/14 19:08:41 n8gray Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -38,7 +38,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.25 2003/05/07 10:51:52 edg Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.26 2003/05/14 19:08:41 n8gray Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -476,20 +476,25 @@ static int yylex(void)
     static char escape[] = "\\\"ntbrfav";
     static char replace[] = "\\\"\n\t\b\r\f\a\v";
 
-    /* skip whitespace and backslash-newline combinations which are
-       also considered whitespace */
+    /* skip whitespace, backslash-newline combinations, and comments, which are
+       all considered whitespace */
     for (;;) {
         if (*InPtr == '\\' && *(InPtr + 1) == '\n')
             InPtr += 2;
         else if (*InPtr == ' ' || *InPtr == '\t')
             InPtr++;
-        else
+        else if (*InPtr == '#')
+            while (*InPtr != '\n' && *InPtr != '\0') {
+                /* Comments stop at escaped newlines */
+                if (*InPtr == '\\' && *(InPtr + 1) == '\n') {
+                    InPtr += 2;
+                    break;
+                }
+                InPtr++;
+            }        else
             break;
     }
 
-    /* skip comments */
-    if (*InPtr == '#')
-        while (*InPtr != '\n' && *InPtr != '\0') InPtr++;
 
     /* return end of input at the end of the string */
     if (*InPtr == '\0') {
