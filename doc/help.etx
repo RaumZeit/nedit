@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.59 2004/02/16 01:02:37 tksoh Exp $
+.. $Id: help.etx,v 1.60 2004/02/19 06:23:13 tksoh Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4516,7 +4516,7 @@ NEdit Command Line
       [-**iconic**] [-**noiconic**] [-**display** [host]:server[.screen]
       [-**xrm** resourcestring] [-**svrname** name] [-**import** file]
       [-**background** color] [-**foreground** color]
-      [-**tabbed**] [-**untabbed**] [-**V**|-**version**]
+      [-**tabbed**] [-**untabbed**] [-**group**] [-**V**|-**version**]
       [--] [file...]
 
 **-read**
@@ -4604,10 +4604,13 @@ NEdit Command Line
   -> Colors dialog).
 
 **-tabbed**
-  open all subsequent files in new tabs.
+  Open all subsequent files in new tabs. Resets -group option.
 
 **-untabbed**
-  open all subsequent files in new windows.
+  Open all subsequent files in new windows. Resets -group option.
+
+**-group**
+  Open all subsequent files as tabs in a new window.
 
 **-xrm resourcestring** 
   Set the value of an X resource to override a default
@@ -4721,10 +4724,13 @@ NEdit Command Line
   Colors dialog).
 
 **/tabbed**
-  open all subsequent files in new tabs.
+  Open all subsequent files in new tabs. Resets /group option.
 
 **/untabbed**
-  open all subsequent files in new windows.
+  Open all subsequent files in new windows. Resets /group option.
+
+**/group**
+  Open all subsequent files as tabs in a new window.
 
 **/xrm=resourcestring**
   Set the value of an X resource to override a default value 
@@ -4784,7 +4790,7 @@ Client/Server Mode
        [**-svrname** name] [**-svrcmd** command]
        [**-ask**] [**-noask**] [**-timeout** seconds]
        [**-geometry** geometry | **-g** geometry] [**-icon** | **-iconic**]
-       [-**tabbed**] [-**untabbed**] [**-wait**]
+       [-**tabbed**] [-**untabbed**] [-**group**] [**-wait**]
        [**-V** | **-version**]
        [**-xrm** resourcestring] [**-display** [host]:server[.screen]]
        [**-**-] [file...]
@@ -4843,10 +4849,13 @@ Client/Server Mode
   increase the time-out period. In most cases, the default is fine.
 
 **-tabbed**
-  open all subsequent files in new tabs.
+  Open all subsequent files in new tabs. Resets -group option.
 
 **-untabbed**
-  open all subsequent files in new windows.
+  Open all subsequent files in new windows. Resets -group option.
+
+**-group**
+  Open all subsequent files as tabs in a new window.
 
 **-wait**
   Instructs nc not to return to the shell until all files given are closed.

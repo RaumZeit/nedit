@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.38 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.39 2004/02/19 06:23:14 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -117,7 +117,7 @@ static const char cmdLineHelp[] =
 "           [-svrname name] [-svrcmd command]\n"
 "           [-ask] [-noask] [-timeout seconds]\n"
 "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-"           [-tabbed] [-untabbed] [-wait]\n"
+"           [-tabbed] [-untabbed] [-group] [-wait]\n"
 "           [-V | -version]\n"
 "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
 "           [--] [file...]\n";
@@ -610,7 +610,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     char *commandString, *outPtr;
     int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
     int i, lineArg, nRead, charsWritten, opts = True;
-    int fileCount = 0;
+    int fileCount = 0, group = 0, isTabbed;
 
     /* Allocate a string for output, for the maximum possible length.  The
        maximum length is calculated by assuming every argument is a file,
@@ -651,8 +651,12 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     	    create = 1;
     	} else if (opts && !strcmp(argv[i], "-tabbed")) {
     	    tabbed = 1;
+    	    group = 0;	/* override -group option */
     	} else if (opts && !strcmp(argv[i], "-untabbed")) {
     	    tabbed = 0;
+    	    group = 0;  /* override -group option */
+    	} else if (opts && !strcmp(argv[i], "-group")) {
+    	    group = 2; /* 2: start new group, 1: in group */
     	} else if (opts && (!strcmp(argv[i], "-iconic") || 
 	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = 1;
@@ -711,6 +715,20 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 	           return;
 		}
     		strcat(path, name);
+
+		/* determine if file is to be openned in new tab, by
+		   factoring the options -group, -tabbed & -untabbed */
+    		if (group == 2) {
+	            isTabbed = 0;  /* start a new window for new group */
+		    group = 1;     /* next file will be within group */
+		} 
+		else if (group == 1) {
+	    	    isTabbed = 1;  /* new tab for file in group */
+		}
+		else {
+	    	    isTabbed = tabbed; /* not in group */
+		}
+	    
                 /* See below for casts */
     		sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
 			lineNum, read, create, iconic, tabbed, (long) strlen(path),
@@ -733,6 +751,20 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 	       return;
 	    }
     	    strcat(path, name);
+	    
+	    /* determine if file is to be openned in new tab, by
+	       factoring the options -group, -tabbed & -untabbed */
+    	    if (group == 2) {
+	        isTabbed = 0;  /* start a new window for new group */
+		group = 1;     /* next file will be within group */
+	    } 
+	    else if (group == 1) {
+	    	isTabbed = 1;  /* new tab for file in group */
+	    }
+	    else {
+	    	isTabbed = tabbed; /* not in group */
+	    }
+	    
     	    /* SunOS 4 acc or acc and/or its runtime library has a bug
     	       such that %n fails (segv) if it follows a string in a
     	       printf or sprintf.  The silly code below avoids this.
@@ -740,9 +772,8 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
                The "long" cast on strlen() is necessary because size_t
                is 64 bit on Alphas, and 32-bit on most others.  There is
                no printf format specifier for "size_t", thanx, ANSI. */
-
     	    sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum,
-		    read, create, iconic, tabbed, (long) strlen(path), 
+		    read, create, iconic, isTabbed, (long) strlen(path), 
 		    (long) strlen(toDoCommand), (long) strlen(langMode),
 		    (long) strlen(geometry), &charsWritten);
     	    outPtr += charsWritten;

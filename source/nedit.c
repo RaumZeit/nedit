@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.62 2004/02/16 01:02:38 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.63 2004/02/19 06:23:14 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int gotoLine = False, macroFileRead = False, opts = True;
-    int iconic = False, tabbed = -1;
+    int iconic = False, tabbed = -1, group = 0, isTabbed;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
@@ -505,8 +505,12 @@ int main(int argc, char **argv)
     	    editFlags |= SUPPRESS_CREATE_WARN;
     	} else if (opts && !strcmp(argv[i], "-tabbed")) {
     	    tabbed = 1;
+    	    group = 0;	/* override -group option */
     	} else if (opts && !strcmp(argv[i], "-untabbed")) {
     	    tabbed = 0;
+    	    group = 0;	/* override -group option */
+    	} else if (opts && !strcmp(argv[i], "-group")) {
+    	    group = 2; /* 2: start new group, 1: in group */
     	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineNum);
@@ -548,8 +552,7 @@ int main(int argc, char **argv)
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {
-	    int openTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed;
-	    WindowInfo *hostWin = openTabbed? WindowList : NULL;
+	    WindowInfo *hostWin;
 #ifdef VMS
 	    int numFiles, j;
 	    char **nameList = NULL;
@@ -559,8 +562,22 @@ int main(int argc, char **argv)
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
 	    	if (ParseFilename(nameList[j], filename, pathname) == 0) {
+		    /* determine if file is to be openned in new tab, by
+		       factoring the options -group, -tabbed & -untabbed */
+    		    if (group == 2) {
+	        	isTabbed = 0;  /* start a new window for new group */
+			group = 1;     /* next file will be within group */
+		    } 
+		    else if (group == 1) {
+	    		isTabbed = 1;  /* new tab for file in group */
+		    }
+		    else {
+    	    	    	/* not in group */
+	    		isTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed; 
+		    }
+		    hostWin = isTabbed? WindowList : NULL;
 		    EditExistingFile(hostWin, filename, pathname, editFlags,
-				     geometry, iconic, langMode, openTabbed);
+				     geometry, iconic, langMode, isTabbed);
 		    fileSpecified = TRUE;
 		    if (!macroFileRead) {
 		        ReadMacroInitFile(WindowList);
@@ -579,8 +596,23 @@ int main(int argc, char **argv)
 	    	free(nameList);
 #else
 	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
+		/* determine if file is to be openned in new tab, by
+		   factoring the options -group, -tabbed & -untabbed */
+    		if (group == 2) {
+	            isTabbed = 0;  /* start a new window for new group */
+		    group = 1;     /* next file will be within group */
+		} 
+		else if (group == 1) {
+	    	    isTabbed = 1;  /* new tab for file in group */
+		}
+		else {
+    	    	    /* not in group */
+	    	    isTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed; 
+		}
+
+		hostWin = isTabbed? WindowList : NULL;
 		EditExistingFile(hostWin, filename, pathname,
-				 editFlags, geometry, iconic, langMode, openTabbed);
+				 editFlags, geometry, iconic, langMode, isTabbed);
 		fileSpecified = TRUE;
 		if (!macroFileRead) {
 		    ReadMacroInitFile(WindowList);

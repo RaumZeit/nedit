@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 9, 2004 (Do NOT edit!)
+                 Generated on Feb 18, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -4308,7 +4308,7 @@ static char * htxt_command_line [] = {
 "      [-\01Biconic\01A] [-\01Bnoiconic\01A] [-\01Bdisplay\01A [host]:server[.screen]\n",
 "      [-\01Bxrm\01A resourcestring] [-\01Bsvrname\01A name] [-\01Bimport\01A file]\n",
 "      [-\01Bbackground\01A color] [-\01Bforeground\01A color]\n",
-"      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01BV\01A|-\01Bversion\01A]\n",
+"      [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01Bgroup\01A] [-\01BV\01A|-\01Bversion\01A]\n",
 "      [--] [file...]\n",
 "\01I\n",
 "\01A\01B-read\01A\n",
@@ -4396,10 +4396,13 @@ static char * htxt_command_line [] = {
 "-> Colors dialog). ",
 "\n\n",
 "\01A\01B-tabbed\01A\n",
-"\01Iopen all subsequent files in new tabs. ",
+"\01IOpen all subsequent files in new tabs. Resets -group option. ",
 "\n\n",
 "\01A\01B-untabbed\01A\n",
-"\01Iopen all subsequent files in new windows. ",
+"\01IOpen all subsequent files in new windows. Resets -group option. ",
+"\n\n",
+"\01A\01B-group\01A\n",
+"\01IOpen all subsequent files as tabs in a new window. ",
 "\n\n",
 "\01A\01B-xrm resourcestring\01A \n",
 "\01ISet the value of an X resource to override a default ",
@@ -4510,10 +4513,13 @@ static char * htxt_command_line [] = {
 "Colors dialog). ",
 "\n\n",
 "\01A\01B/tabbed\01A\n",
-"\01Iopen all subsequent files in new tabs. ",
+"\01IOpen all subsequent files in new tabs. Resets /group option. ",
 "\n\n",
 "\01A\01B/untabbed\01A\n",
-"\01Iopen all subsequent files in new windows. ",
+"\01IOpen all subsequent files in new windows. Resets /group option. ",
+"\n\n",
+"\01A\01B/group\01A\n",
+"\01IOpen all subsequent files as tabs in a new window. ",
 "\n\n",
 "\01A\01B/xrm=resourcestring\01A\n",
 "\01ISet the value of an X resource to override a default value ",
@@ -4570,7 +4576,7 @@ static char * htxt_server [] = {
 "       [\01B-svrname\01A name] [\01B-svrcmd\01A command]\n",
 "       [\01B-ask\01A] [\01B-noask\01A] [\01B-timeout\01A seconds]\n",
 "       [\01B-geometry\01A geometry | \01B-g\01A geometry] [\01B-icon\01A | \01B-iconic\01A]\n",
-"       [-\01Btabbed\01A] [-\01Buntabbed\01A] [\01B-wait\01A]\n",
+"       [-\01Btabbed\01A] [-\01Buntabbed\01A] [-\01Bgroup\01A] [\01B-wait\01A]\n",
 "       [\01B-V\01A | \01B-version\01A]\n",
 "       [\01B-xrm\01A resourcestring] [\01B-display\01A [host]:server[.screen]]\n",
 "       [\01B-\01A-] [file...]\n",
@@ -4629,10 +4635,13 @@ static char * htxt_server [] = {
 "increase the time-out period. In most cases, the default is fine. ",
 "\n\n",
 "\01A\01B-tabbed\01A\n",
-"\01Iopen all subsequent files in new tabs. ",
+"\01IOpen all subsequent files in new tabs. Resets -group option. ",
 "\n\n",
 "\01A\01B-untabbed\01A\n",
-"\01Iopen all subsequent files in new windows. ",
+"\01IOpen all subsequent files in new windows. Resets -group option. ",
+"\n\n",
+"\01A\01B-group\01A\n",
+"\01IOpen all subsequent files as tabs in a new window. ",
 "\n\n",
 "\01A\01B-wait\01A\n",
 "\01IInstructs nc not to return to the shell until all files given are closed. ",
@@ -5386,4 +5395,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Feb  9, 2004\n";
+static const char * NEditVersion = "NEdit release of Feb 18, 2004\n";
