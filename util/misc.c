@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.19 2001/04/24 21:10:43 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.20 2001/05/19 16:09:49 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.19 2001/04/24 21:10:43 tringali Exp
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <X11/keysymdef.h>
 #include <Xm/Xm.h>
 #include <Xm/Label.h>
 #include <Xm/LabelG.h>
@@ -1441,7 +1442,7 @@ static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo)
     	}
     } else {
 	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
-	if (mnemonic != '\0') {
+	if (mnemonic != XK_VoidSymbol && mnemonic != '\0') {
 	    mneString[0] = mnemonic; mneString[1] = '\0';
 	    keyCode = XKeysymToKeycode(XtDisplay(dialog),
 	    	    XStringToKeysym(mneString));
