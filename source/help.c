@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.65 2001/11/27 10:47:10 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.66 2001/12/03 16:46:40 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -54,6 +54,9 @@ static const char CVSID[] = "$Id: help.c,v 1.65 2001/11/27 10:47:10 amai Exp $";
 #include "preferences.h"
 #include "help.h"
 #include "file.h"
+
+extern const char linkdate[];
+extern const char linktime[];
 
 static const char *const HelpTitles[NUM_TOPICS] = {
 "Version",
@@ -4840,7 +4843,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 
         sprintf(text, HelpText[topic], 
                 COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-                __DATE__, __TIME__,
+                linkdate, linktime,
                 XmVersion, XmVERSION_STRING,
                 xmUseVersion,
                 ServerVendor(TheDisplay),
