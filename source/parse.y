@@ -1,5 +1,6 @@
-/* $Id: parse.y,v 1.15 2001/07/11 21:35:50 amai Exp $ */
+/* $Id: parse.y,v 1.16 2001/08/08 08:34:06 amai Exp $ */
 %{
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/Intrinsic.h>
@@ -11,6 +12,7 @@
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include "textBuf.h"
 #include "nedit.h"
 #include "rbTree.h"
@@ -27,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.15 2001/07/11 21:35:50 amai Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.16 2001/08/08 08:34:06 amai Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -251,6 +253,7 @@ blank:	  /* nothing */
 	
 %% /* User Subroutines Section */
 
+
 /*
 ** Parse a null terminated string and create a program from it (this is the
 ** parser entry point).  The program created by this routine can be
@@ -284,6 +287,7 @@ Program *ParseMacro(char *expr, char **msg, char **stoppedAt)
     *stoppedAt = InPtr;
     return prog;
 }
+
 
 static int yylex(void)
 {
