@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Mar 7, 2002 (Do NOT edit!)
+                 Generated on Mar 11, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -834,6 +834,11 @@ static char * htxt_programmer [] = {
 "character of the pair.  NEdit will match {, (, [, <, \", ', `, /, and \\. ",
 "Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by ",
 "default), will select all of the text between the matching characters. ",
+"\n\n",
+"When syntax highlighting is enabled, the matching routines can optionally ",
+"make use of the syntax information for improved accuracy. In that case, ",
+"a brace inside a highlighted string will not match a brace inside a comment, ",
+"for instance. ",
 "\n\n",
 "\01ROpening Included Files\01I",
 "\n\n",
@@ -2085,6 +2090,9 @@ static char * htxt_macro_subrs [] = {
 "\01IContains the current preference for showing matching pairs, ",
 "such as \"[]\" and \"{}\" pairs. Can be \"off\", \"delimiter\", or \"range\". ",
 "\n\n",
+"\01A\01B$match_syntax_based\01A\n",
+"\01IWhether pair matching should use syntax information, if available. ",
+"\n\n",
 "\01A\01B$statistics_line\01A\n",
 "\01IHas a value of 1 if the statistics line is shown, otherwise 0. ",
 "\n\n",
@@ -2483,6 +2491,9 @@ static char * htxt_actions [] = {
 "\n\n",
 "\01A\01Bset_show_matching( \"off\" | \"delimiter\" | \"range\" )\01A\n",
 "\01ISet show matching (...) mode for the current window. ",
+"\n\n",
+"\01A\01Bset_match_syntax_based( [0 | 1] )\01A\n",
+"\01ISet whether matching should be syntax based for the current window. ",
 "\n\n",
 "\01A\01Bset_statistics_line( [0 | 1] )\01A\n",
 "\01IShow or hide the statistics line for the current window. ",
@@ -2932,6 +2943,10 @@ static char * htxt_preferences [] = {
 "insertion cursor is positioned after it. Delimiter only highlights the ",
 "matching delimiter, while Range highlights the whole range of text between ",
 "the matching delimiters. ",
+"\n\n",
+"Optionally, the matching can make use of syntax information if syntax ",
+"highlighting is enabled. Alternatively, the matching is purely character ",
+"based. In general, syntax based matching results in fewer false matches. ",
 "\n\n",
 "\01A\01BOvertype\01A\n",
 "\01IIn overtype mode, new characters entered replace the characters in front of ",
@@ -4797,4 +4812,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Mar  7, 2002\n";
+static const char * NEditVersion = "NEdit release of Mar 11, 2002\n";

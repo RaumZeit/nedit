@@ -1,6 +1,6 @@
                     NEdit Version 5.3,  March 2002
 
-$Id: README,v 1.26 2002/03/11 18:17:02 edg Exp $
+$Id: README,v 1.27 2002/03/11 22:21:10 edg Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -48,11 +48,11 @@ Version 5.3 is mainly a bug fix release but also offers some new features.
 The most significant enhancements in this release are:
 
  - A revamped Help system with hyperlinked cross-references.
- - A customizable window title.
  - Enhanced support for Exuberant ctags.
  - Goto Line also accepts Column numbers.
  - Automatic line-feed termination when saving is now optional.
  - A customizable window title.
+ - Optional syntax based parenthesis matching (iso. purely character based).
  
 There are also several smaller improvements and bug fixes, see the
 ReleaseNotes file for more details.

@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.3, February 2002
 
 
-$Id: ReleaseNotes,v 1.14 2002/03/11 18:17:03 edg Exp $
+$Id: ReleaseNotes,v 1.15 2002/03/11 22:21:10 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -31,7 +31,9 @@ New Features in 5.3
   - Automatic line-feed termination when saving is now optional (SF #503073).
 
   - A customizable window title (SF #477875/#519092).
-
+ 
+  - Optional syntax based parenthesis matching (iso. purely character based)
+    (SF #513976).
 
 Bugs Fixed in 5.3
 

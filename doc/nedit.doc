@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Mar  7, 2002                                               March 7, 2002
+NEdit release of Mar 11, 2002                                               March 11, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -829,6 +829,11 @@ PROGRAMMING WITH NEDIT
   character of the pair. NEdit will match {, (, [, <, ", ', `, /, and \. 
   Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by 
   default), will select all of the text between the matching characters. 
+
+  When syntax highlighting is enabled, the matching routines can optionally 
+  make use of the syntax information for improved accuracy. In that case, a 
+  brace inside a highlighted string will not match a brace inside a comment, 
+  for instance. 
 
 
   OPENING INCLUDED FILES
@@ -2151,6 +2156,9 @@ $show_matching
   Contains the current preference for showing matching pairs, such as "[]" and 
   "{}" pairs. Can be "off", "delimiter", or "range". 
 
+$match_syntax_based
+  Whether pair matching should use syntax information, if available. 
+
 $statistics_line
   Has a value of 1 if the statistics line is shown, otherwise 0. 
 
@@ -2551,6 +2559,9 @@ set_show_line_numbers( [0 | 1] )
 
 set_show_matching( "off" | "delimiter" | "range" )
   Set show matching (...) mode for the current window. 
+
+set_match_syntax_based( [0 | 1] )
+  Set whether matching should be syntax based for the current window. 
 
 set_statistics_line( [0 | 1] )
   Show or hide the statistics line for the current window. A value of 0 turns 
@@ -2994,6 +3005,10 @@ Show Matching (..)
   insertion cursor is positioned after it. Delimiter only highlights the 
   matching delimiter, while Range highlights the whole range of text between 
   the matching delimiters. 
+
+  Optionally, the matching can make use of syntax information if syntax 
+  highlighting is enabled. Alternatively, the matching is purely character 
+  based. In general, syntax based matching results in fewer false matches. 
 
 Overtype
   In overtype mode, new characters entered replace the characters in front of 
@@ -4120,8 +4135,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Mar  7, 2002
-Mar 7, 2002
+NEdit release of Mar 11, 2002
+Mar 11, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 
