@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.29 2001/05/04 18:33:24 arnef Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.30 2001/07/18 13:00:58 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -149,7 +149,7 @@ static int countWritableWindows(const WindowInfo* window);
 static void collectWritableWindows(WindowInfo* window);
 static void freeWritableWindowsCB(Widget* w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData);
-static void checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+static void checkMultiReplaceListForDoomedW(WindowInfo* window, 
                                                      WindowInfo* doomedWindow);
 static void removeDoomedWindowFromList(WindowInfo* window, int index);
 static void unmanageReplaceDialogs(WindowInfo *window);
@@ -613,14 +613,14 @@ void DoReplaceMultiFileDlog(WindowInfo *window)
 ** (application modal), but Lesstif doesn't (always) honor application
 ** modalness, so there can be more than one dialog. 
 */
-void RemoveFromMultiFileReplaceDialogLists(WindowInfo *doomedWindow)
+void RemoveFromMultiReplaceDialog(WindowInfo *doomedWindow)
 {
     WindowInfo *w;
     
     for (w=WindowList; w!=NULL; w=w->next) 
        if (w->writableWindows) 
           /* A multi-file replacement dialog is up for this window */
-          checkMultiFileReplaceListForDoomedWindow(w, doomedWindow);
+          checkMultiReplaceListForDoomedW(w, doomedWindow);
 }
 
 static void createReplaceDlog(Widget parent, WindowInfo *window)
@@ -1561,7 +1561,7 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
 ** Iterates through the list of writable windows of a window, and removes
 ** the doomed window if necessary.
 */
-static void checkMultiFileReplaceListForDoomedWindow(WindowInfo* window, 
+static void checkMultiReplaceListForDoomedW(WindowInfo* window, 
 						     WindowInfo* doomedWindow)
 {
     WindowInfo        *w;

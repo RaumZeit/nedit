@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.10 2001/05/04 18:33:24 arnef Exp $ */
+/* $Id: search.h,v 1.11 2001/07/18 13:00:58 amai Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -39,7 +39,7 @@ void SetISearchTextCallbacks(WindowInfo *window);
 void FlashMatching(WindowInfo *window, Widget textW);
 void SelectToMatchingCharacter(WindowInfo *window);
 void GotoMatchingCharacter(WindowInfo *window);
-void RemoveFromMultiFileReplaceDialogLists(WindowInfo *window);
+void RemoveFromMultiReplaceDialog(WindowInfo *window);
 
 /*
 ** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE 

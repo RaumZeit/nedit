@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.26 2001/06/22 18:27:53 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.27 2001/07/18 13:00:58 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -533,7 +533,7 @@ void CloseWindow(WindowInfo *window)
        be only one of those dialogs at the same time (application modal),
        but LessTif doesn't even (always) honor application modalness, so
        there can be more than one dialog. */
-    RemoveFromMultiFileReplaceDialogLists(window);
+    RemoveFromMultiReplaceDialog(window);
     
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
