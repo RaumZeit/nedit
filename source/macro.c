@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.33 2001/08/25 15:24:52 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.34 2001/08/26 02:28:30 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2114,7 +2114,6 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
         /* Couldn't trust file size. Use slower but more general method */   
         int chunkSize = 1024;
         char *buffer;
-        char *final;
         
         buffer = XtMalloc(readLen * sizeof(char));
         memcpy(buffer, result->val.str, readLen * sizeof(char));
