@@ -2982,9 +2982,9 @@ static void updateWindowMenu(WindowInfo *window)
     Widget btn;
     WidgetList items;
     Cardinal nItems;
-    int n, userData;
+    XtArgVal userData;
     XmString st1;
-    int i, nWindows, windowIndex;
+    int i, n, nWindows, windowIndex;
     WindowInfo **windows;
     
     /* Make a sorted list of windows */
