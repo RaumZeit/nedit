@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.11 2002/10/15 11:00:41 ajhood Exp $ */
+/* $Id: interpret.h,v 1.12 2002/12/12 17:25:52 slobasso Exp $ */
 
 #ifndef NEDIT_INTERPRET_H_INCLUDED
 #define NEDIT_INTERPRET_H_INCLUDED
@@ -39,7 +39,7 @@ typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList,
         int nArgs, struct DataValueTag *result, char **errMsg);
 
 typedef struct DataValueTag {
-    char tag;
+    enum typeTags tag;
     union {
         int n;
         char *str;
@@ -61,7 +61,7 @@ typedef struct {
 /* symbol table entry */
 typedef struct SymbolRec {
     char *name;
-    char type;
+    enum symTypes type;
     DataValue value;
     struct SymbolRec *next;     /* to link to another */  
 } Symbol;
@@ -103,6 +103,7 @@ int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
 Symbol *InstallIteratorSymbol();
 Symbol *LookupStringConstSymbol(const char *value);
+Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(const char *name);
 Symbol *InstallSymbol(const char *name, int type, DataValue value);
 Program *FinishCreatingProgram(void);
@@ -111,6 +112,9 @@ void StartLoopAddrList(void);
 int AddBreakAddr(Inst *addr);
 int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
+
+/* create a permanently allocated static string (only for use with static strings) */
+#define PERM_ALLOC_STR(xStr) (((char *)("\001" xStr)) + 1)
 
 /* Routines for executing programs */
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
@@ -129,5 +133,7 @@ void ModifyReturnedValue(RestartData *context, DataValue dv);
 WindowInfo *MacroRunWindow(void);
 WindowInfo *MacroFocusWindow(void);
 void SetMacroFocusWindow(WindowInfo *window);
+/* function used for implicit conversion from string to number */
+int StringToNum(const char *string, int *number);
 
 #endif /* NEDIT_INTERPRET_H_INCLUDED */
