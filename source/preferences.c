@@ -973,11 +973,18 @@ void ImportPrefFile(char *filename, int convertOld)
 {
     XrmDatabase db;
     
-    db = XrmGetFileDatabase(filename);
-    OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
-	    XtNumber(PrefDescrip));
-    translatePrefFormats(convertOld);
-    ImportedFile = XtNewString(filename);
+    if ((db = XrmGetFileDatabase(filename)) != NULL)
+    	{		
+     	 OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
+    	    	XtNumber(PrefDescrip));
+       translatePrefFormats(convertOld);
+       ImportedFile = XtNewString(filename);
+      } else
+      {
+       fprintf(stderr, "Could not open additional preferences file: ");
+       fprintf(stderr, filename);
+       fprintf(stderr, "\n");
+	}
 }
 
 void SetPrefWrap(int state)
