@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.15 2001/04/03 01:42:10 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.16 2001/04/09 18:46:10 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1485,7 +1485,7 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode)
 	    		XtClass(w) == xmLabelGadgetClass) {
 	    	    XtVaGetValues(w, XmNuserData, &userData, NULL);
 	    	    if (userData!=NULL && XtIsWidget(userData) && 
-                        XmIsTraversable(w))
+                        XmIsTraversable(userData))
 	    	    	XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
 	    	} else if (XmIsTraversable(w)) {
 	    	    XmProcessTraversal(w, XmTRAVERSE_CURRENT);
