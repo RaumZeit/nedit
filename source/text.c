@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.26 2002/04/19 16:22:52 slobasso Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.27 2002/04/22 16:37:09 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -39,6 +39,14 @@ static const char CVSID[] = "$Id: text.c,v 1.26 2002/04/19 16:22:52 slobasso Exp
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef VMS
+#include "../util/VMSparam.h"
+#else
+#ifndef __MVS__
+#include <sys/param.h>
+#endif
+#endif /*VMS*/
+#include <limits.h>
 
 #include <X11/Intrinsic.h>
 #include <X11/IntrinsicP.h>
@@ -55,6 +63,8 @@ static const char CVSID[] = "$Id: text.c,v 1.26 2002/04/19 16:22:52 slobasso Exp
 #include "textP.h"
 #include "textSel.h"
 #include "textDrag.h"
+#include "nedit.h"
+#include "preferences.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
