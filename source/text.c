@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.14 2001/05/12 00:48:47 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.15 2001/07/31 11:58:46 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -1958,7 +1958,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 #ifdef NO_XMIM
     static XComposeStatus compose = {NULL, 0};
 #else
-    Status status;
+    int status;
 #endif
     XKeyEvent *e = (XKeyEvent *)event;
     char chars[20];
@@ -3887,7 +3887,7 @@ static int hasKey(char *key, String *args, Cardinal *nArgs)
 {
     int i;
     
-    for (i=0; i<*nArgs; i++)
+    for (i=0; i<(int)*nArgs; i++)
     	if (!strCaseCmp(args[i], key))
     	    return True;
     return False;
