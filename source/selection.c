@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.12 2001/11/16 10:06:34 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.13 2001/11/16 11:13:42 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.12 2001/11/16 10:06:34 amai Ex
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else

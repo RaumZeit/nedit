@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.9 2001/08/23 14:59:14 amai Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.10 2001/11/16 11:13:42 amai Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -25,6 +25,9 @@ static const char CVSID[] = "$Id: shift.c,v 1.9 2001/08/23 14:59:14 amai Exp $";
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+#include <string.h>
+#include <limits.h>
+#include <ctype.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -32,8 +35,6 @@ static const char CVSID[] = "$Id: shift.c,v 1.9 2001/08/23 14:59:14 amai Exp $";
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include <limits.h>
-#include <ctype.h>
 #include <Xm/Xm.h>
 #include "../util/DialogF.h"
 #include "textBuf.h"
@@ -57,7 +58,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static int atTabStop(int pos, int tabDist);
 static int nextTab(int pos, int tabDist);
-static int countLines(char *text);
+static int countLines(const char *text);
 static int findParagraphStart(textBuffer *buf, int startPos);
 static int findParagraphEnd(textBuffer *buf, int startPos);
 
@@ -449,7 +450,7 @@ static int nextTab(int pos, int tabDist)
     return (pos/tabDist)*tabDist + tabDist;
 }
 
-static int countLines(char *text)
+static int countLines(const char *text)
 {
     int count = 1;
     
