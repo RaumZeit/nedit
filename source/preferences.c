@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.21 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.22 2001/04/06 13:09:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -773,7 +773,7 @@ static Widget WrapText, WrapTextLabel, WrapWindowToggle;
 
 static void translatePrefFormats(int convertOld);
 static void setIntPref(int *prefDataField, int newValue);
-static void setStringPref(char *prefDataField, char *newValue);
+static void setStringPref(char *prefDataField, const char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1321,7 +1321,7 @@ int GetPrefSortOpenPrevMenu(void)
     return PrefData.sortOpenPrevMenu;
 }
 
-void SetPrefTagFile(char *tagFileName)
+void SetPrefTagFile(const char *tagFileName)
 {
     setStringPref(PrefData.tagFile, tagFileName);
 }
@@ -1411,7 +1411,7 @@ XFontStruct *GetPrefBoldItalicFont(void)
     return PrefData.boldItalicFontStruct;
 }
 
-void SetPrefShell(char *shell)
+void SetPrefShell(const char *shell)
 {
     setStringPref(PrefData.shell, shell);
 }
@@ -1421,7 +1421,7 @@ char *GetPrefShell(void)
     return PrefData.shell;
 }
 
-void SetPrefGeometry(char *geometry)
+void SetPrefGeometry(const char *geometry)
 {
     setStringPref(PrefData.geometry, geometry);
 }
@@ -1502,7 +1502,8 @@ static void setIntPref(int *prefDataField, int newValue)
 	PrefsHaveChanged = True;
     *prefDataField = newValue;
 }
-static void setStringPref(char *prefDataField, char *newValue)
+
+static void setStringPref(char *prefDataField, const char *newValue)
 {
     if (strcmp(prefDataField, newValue))
 	PrefsHaveChanged = True;

@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.8 2001/04/06 09:49:56 amai Exp $ */
+/* $Id: preferences.h,v 1.9 2001/04/06 13:09:54 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -59,7 +59,7 @@ void SetPrefRepositionDialogs(int state);
 int GetPrefRepositionDialogs(void);
 void SetPrefSortOpenPrevMenu(int state);
 int GetPrefSortOpenPrevMenu(void);
-void SetPrefTagFile(char *tagFileName);
+void SetPrefTagFile(const char *tagFileName);
 char *GetPrefTagFile(void);
 int GetPrefSmartTags(void);
 void SetPrefSmartTags(int state);
@@ -75,9 +75,9 @@ XmFontList GetPrefFontList(void);
 XFontStruct *GetPrefBoldFont(void);
 XFontStruct *GetPrefItalicFont(void);
 XFontStruct *GetPrefBoldItalicFont(void);
-void SetPrefShell(char *shell);
+void SetPrefShell(const char *shell);
 char *GetPrefShell(void);
-void SetPrefGeometry(char *geometry);
+void SetPrefGeometry(const char *geometry);
 char *GetPrefGeometry(void);
 char *GetPrefServerName(void);
 char *GetPrefBGMenuBtn(void);
