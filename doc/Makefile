@@ -1,6 +1,6 @@
 # Makefile for NEdit text editor documentation
 #
-#  $Id: Makefile,v 1.3 2002/09/26 10:24:23 ajhood Exp $
+#  $Id: Makefile,v 1.4 2002/12/13 17:23:41 edg Exp $
 #
 #  NEdit help documentation and internal help code using one common
 #  source, help.etx, a Structure Enhanced TEXT document.
@@ -72,3 +72,59 @@ clean:
 	@ echo "Removing generated NEdit documentation..."
 	@ rm -rf help nedit.html html nedit.doc .version
 
+#
+# FAQ targets. Requires an XSLT parser and processor, such as Java with the
+# XP and XT packages (http://www.jclark.com/xml/)
+# Override the XSLT variable at the command line as follows:
+#
+#   make XSLT=<command to process the xsl files> faq
+#
+# Example: make XSLT="java -classpath xp.jar:xt.jar com.jclark.xsl.sax.Driver" faq
+#
+XSLT=undefined
+
+faq: check_xsl faq.txt html/faq/index.shtml
+
+faq.txt: faq.xml faq-txt.xsl faq-txt-pass2.xsl faq-txt.awk
+	@ echo Building FAQ - text version
+	@ rm -f faq-txt.html faq-txt-tmp.txt faq.txt
+	@ ${XSLT} faq.xml faq-txt.xsl faq-txt.html
+	@ ${XSLT} faq-txt.html faq-txt-pass2.xsl faq-txt-tmp.txt
+	@ awk -f faq-txt.awk < faq-txt-tmp.txt > faq.txt
+	@ rm -f faq-txt-tmp.txt
+
+html/faq/index.shtml: faq.xml faq-txt.xsl
+	@ echo Building FAQ - HTML version
+	@ rm -f html/faq/*.shtml
+	@ if [ ! -d html ]; then mkdir html; fi
+	@ if [ ! -d html/faq ]; then mkdir html/faq; fi
+	@ ${XSLT} faq.xml faq.xsl html/faq/index.shtml
+
+check_xsl:
+	@ if [ "x${XSLT}" = "xundefined" ]; \
+          then\
+	    echo "To rebuild the FAQ, an XSLT parser and processer are required.";\
+            echo "For instance, a Java runtime environment and the XT and XP";\
+	    echo "packages (http://www.jclark.com/xml/) can be used.";\
+	    echo "Then type:";\
+            echo "";\
+	    echo "   make XSLT=<command to process the xsl files> faq";\
+            echo "";\
+	    echo "For instance:";\
+            echo "";\
+            echo "   make XSLT=\"java -classpath xp.jar:xt.jar com.jclark.xsl.sax.Driver\" faq";\
+            echo "";\
+	    exit 1;\
+          fi
+
+FAQFILES = faq-txt.html faq-txt.xsl faq-txt-pass2.xsl faq-txt.awk\
+           faq-txt.dtd README.FAQ faq.txt Makefile faq.xml faq.xsl\
+           faq.dtd
+faq-dist:
+	@ echo "Building faq.tar.gz";\
+          rm -f faq.tar.gz;\
+	  DISTFILES="${FAQFILES} `ls html/faq/*.shtml`";\
+	  tar cv $${DISTFILES} | gzip -c > faq.tar.gz;\
+	  echo "Building faq.zip";\
+	  rm -f faq.zip;\
+	  zip faq.zip $${DISTFILES};\
