@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.61 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.62 2002/07/17 20:42:42 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -532,7 +532,7 @@ static WindowInfo *ShortMenuWindow;
 
 void HidePointerOnKeyedEvent(Widget w, XEvent *event)
 {
-    if (event && event->type == KeyPress) {
+    if (event && (event->type == KeyPress || event->type == KeyRelease)) {
         ShowHidePointer((TextWidget)w, True);
     }
 }
@@ -1328,7 +1328,7 @@ static void markCB(Widget w, XtPointer clientData, XtPointer callData)
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    if (event->type == KeyPress)
+    if (event->type == KeyPress || event->type == KeyRelease)
     	BeginMarkCommand(window);
     else
     	XtCallActionProc(window->lastFocus, "mark_dialog", event, NULL, 0);
@@ -1343,7 +1343,7 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    if (event->type == KeyPress)
+    if (event->type == KeyPress || event->type == KeyRelease)
     	BeginGotoMarkCommand(window, extend);
     else
     	XtCallActionProc(window->lastFocus, "goto_mark_dialog", event, params,
