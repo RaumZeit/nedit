@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.9 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.10 2001/06/21 14:54:55 edel Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1013,7 +1013,7 @@ static void createOutputDialog(Widget parent, char *text)
     	cols = 1;
     
     ac = 0;
-    form = XmCreateFormDialog(parent, "shellOutForm", al, ac);
+    form = CreateFormDialog(parent, "shellOutForm", al, ac);
 
     ac = 0;
     XtSetArg(al[ac], XmNlabelString, st1=MKSTRING("Dismiss")); ac++;
