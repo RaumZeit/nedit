@@ -1797,10 +1797,11 @@ sub help_finishing
         #------------------------------------
         # ... because only one style allowed.
         #------------------------------------
-        $stlNm        = get_style_name( "" );
+        $stlFront     = $styleMark . get_style_name( "" );
         $headingLevel = 0;
-        $stlEnd       = get_style_name( $initialStyle );
-        $_            = "$styleMark$stlNm$_$styleMark$stlEnd";
+        $stlEnd       = $styleMark . get_style_name( $initialStyle );
+        $stlFront     = "" if /^$styleToken/ ; # remove redundancy when present
+        $_            = $stlFront . $_ .$stlEnd;
     }
     
     #---------------------------------------------
@@ -2449,6 +2450,7 @@ sub emit_help_menu_text
             }
             print $stream "static char * htxt_$helpName [] = {\n";
             $styleChanged = $initialStyle; # This forces initial style out
+            $crntStyle    = $initialStyle;
             parse_setext( \@section );
             print $stream "NULL\n};\n\n";
         }
