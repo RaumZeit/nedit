@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.26 2001/03/27 23:00:04 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.27 2001/03/30 17:48:17 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3064,6 +3064,9 @@ $display_width -- Width of the current pane in pixels.\n\
 $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of \
 the Preferences menu, value is the distance between emulated tab stops.  If \
 tab emulation is turned off, value is -1.\n\
+\n\
+$empty_array -- An array with no elements. This can be used to initialize \
+an array to an empty state.\n\
 \n\
 $file_format -- Current newline format that the file will be saved with. Can \
 be \"unix\", \"dos\" or \"macintosh\".\n\
