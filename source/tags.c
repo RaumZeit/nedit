@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.34 2002/03/14 17:19:52 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.35 2002/04/26 16:04:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -108,7 +108,7 @@ static int addTag(const char *name, const char *file, const char *search,
 static int delTag(const char *name, const char *file, const char *search,
                   int posInf,  int index);
 static tag *getTag(const char *name);
-static void findAllDialogAP(Widget dialogParent, const char *string);
+static void findAllDialogAP(WindowInfo *window, Widget dialogParent, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, const char *name,
                                char *label, int nArgs, char *args[]);
@@ -118,10 +118,8 @@ static Widget createSelectMenu(Widget parent, const char *name,
 static tag **Tags = NULL;
 static int DefTagHashSize = 10000;
 
-static const char *tagMark;
 static int nTags = 0;
 static const char *tagName;
-static WindowInfo *currentWindow;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
 static int  tagPosInf[MAXDUPTAGS];
@@ -683,6 +681,33 @@ int LookupTag(const char *name, const char **file,
     }
 }
 
+static void findDef(WindowInfo *window, const char *value) {
+    static char tagText[MAX_TAG_LEN + 1];
+    const char *p;
+    int l, ml;
+    
+    l = strlen(value);
+    if (l <= MAX_TAG_LEN) {
+        /* should be of type text??? */
+        for (p = value; *p && isascii(*p); p++) {
+        }
+        if (!(*p)) {
+            ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
+            strncpy(tagText, value, ml);
+            tagText[ml] = '\0';
+            findAllDialogAP(window, window->textArea, tagText);
+        }
+        else {
+            fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
+            XBell(TheDisplay, 0);
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: Tag Length too long.\n");
+        XBell(TheDisplay, 0);
+    }
+}
+
 /*
 ** Lookup the definition for the current primary selection the currently
 ** loaded tags file and bring up the file and line that the tags file
@@ -690,46 +715,31 @@ int LookupTag(const char *name, const char **file,
 */
 void FindDefinition(WindowInfo *window, Time time, const char *arg)
 {
-    tagMark = arg;
-    currentWindow = window;
-    XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-	    (XtSelectionCallbackProc)findDefCB, window, time);
+    if (arg) {
+        findDef(window, arg);
+    }
+    else {
+        XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
+            (XtSelectionCallbackProc)findDefCB, window, time);
+    }
 }
 
 /*	Callback function for FindDefinition */
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format)
 {
-    static char tagText[MAX_TAG_LEN+1];
+    static char tagText[MAX_TAG_LEN + 1];
     const char *p;
     int l,ml;
     
-    if (tagMark == NULL) tagMark = value;
     /* skip if we can't get the selection data, or it's obviously too long */
-    if (*type == XT_CONVERT_FAIL || tagMark == NULL) {
-	XBell(TheDisplay, 0);
-	XtFree(value);
-	return;
+    if (*type != XT_CONVERT_FAIL && value != NULL) {
+        findDef(window, value);
     }
-    l = strlen(tagMark);
-    if (l > MAX_TAG_LEN) {
-	fprintf(stderr, "NEdit: Tag Length too long.\n");
-	XBell(TheDisplay, 0);
-	XtFree(value);
-	return;
+    else {
+        XBell(TheDisplay, 0);
+        XtFree(value);
     }
-    /* should be of type text??? */
-    for (p = tagMark; *p && isascii(*p); p++);
-    if (*p) {
-	fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-	XBell(TheDisplay, 0);
-	XtFree(value);
-	return;
-    }
-    ml = (l<MAX_TAG_LEN?l:MAX_TAG_LEN);
-    strncpy(tagText, tagMark, ml);
-    tagText[ml] = '\0';
-    findAllDialogAP(window->textArea, tagText);
     XtFree(value);
 }
 
@@ -848,7 +858,7 @@ static int fakeRegExSearch(WindowInfo *window, const char *searchString,
 /*	Handles tag "collisions". Prompts user with a list of collided
 	tags in the hash table and allows the user to select the correct
 	one. */
-static void findAllDialogAP(Widget dialogParent, const char *string)
+static void findAllDialogAP(WindowInfo *window, Widget dialogParent, const char *string)
 {
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char temp[32+2*MAXPATHLEN+MAXLINE];
@@ -873,8 +883,8 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	strcpy(tagSearch[nTags],searchString);
 	tagPosInf[nTags]=startPos;
 	ParseFilename(tagFiles[nTags], filename, pathname);
-	if (GetPrefSmartTags() && !strcmp(currentWindow->filename,filename)
-			       && !strcmp(currentWindow->path,pathname)   ) {
+	if (GetPrefSmartTags() && !strcmp(window->filename,filename)
+			       && !strcmp(window->path,pathname)   ) {
 	    if (nTags) {
 		strcpy(tagFiles[0],tagFiles[nTags]);
 		strcpy(tagSearch[0],tagSearch[nTags]);
@@ -883,7 +893,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	    nTags = 1;
 	    break;
 	}
-	if (!strcmp(currentWindow->path,pathname)) {
+	if (!strcmp(window->path,pathname)) {
 	    samePath++;
 	    nTag=nTags;
 	}
