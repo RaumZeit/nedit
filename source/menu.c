@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.122 2004/11/09 19:37:02 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.123 2004/12/05 01:15:03 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -95,6 +95,8 @@ static const char CVSID[] = "$Id: menu.c,v 1.122 2004/11/09 19:37:02 yooden Exp 
 enum menuModes {FULL, SHORT};
 
 typedef void (*menuCallbackProc)();
+
+extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -2965,7 +2967,23 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		"nedit: unload_tags_file action requires file argument\n");
 	return;
     }
-    DeleteTagsFile(args[0], TAG);
+    
+    if (DeleteTagsFile(args[0], TAG)) {
+    	WindowInfo *win;
+
+	/* refresh the "Unload Tags File" tear-offs after unloading, or 
+	   close the tear-offs if all tags files have been unloaded */
+	for (win=WindowList; win!=NULL; win=win->next) {
+    	    if (IsTopDocument(win) && 
+	            !XmIsMenuShell(XtParent(win->unloadTagsMenuPane))) {
+    		if (XtIsSensitive(win->unloadTagsMenuItem))
+		    updateTagsFileMenu(win);
+		else
+		    _XmDismissTearOff(XtParent(win->unloadTagsMenuPane),
+		            NULL, NULL);
+	    }
+	}
+    }
 }
 
 static void loadTipsDialogAP(Widget w, XEvent *event, String *args,
