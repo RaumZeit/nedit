@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.37 2002/11/13 21:57:44 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.38 2002/12/09 17:55:34 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -265,8 +265,8 @@ static char *fallbackResources[] = {
     "*shellMenu.filterSelection.acceleratorText: Alt+R",
     "*shellMenu.executeCommand.accelerator: Alt<Key>x",
     "*shellMenu.executeCommand.acceleratorText: Alt+X",
-    "*shellMenu.executeCommandLine.accelerator: <Key>KP_Enter",
-    "*shellMenu.executeCommandLine.acceleratorText: KP Enter",
+    "*shellMenu.executeCommandLine.accelerator: Ctrl<Key>KP_Enter",
+    "*shellMenu.executeCommandLine.acceleratorText: Ctrl+KP Enter",
     "*shellMenu.cancelShellCommand.accelerator: Ctrl<Key>period",
     "*shellMenu.cancelShellCommand.acceleratorText: Ctrl+.",
     "*macroMenu.mnemonic: c",
