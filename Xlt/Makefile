@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2005/03/23 12:34:27 edg Exp $
+# $Id: Makefile,v 1.1 2005/03/23 12:34:28 edg Exp $
 SHELL=/bin/sh
 #
 # Makefile for NEdit text editor
@@ -19,9 +19,10 @@ all:
 	@(cd ../makefiles && ls -C Makefile* | sed -e 's/Makefile.//g')
 
 .DEFAULT:
-	@- (cd XmL;   if [ -f ../../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
-           then ln -s ../../makefiles/Makefile.$@ .; fi)
-	@- (cd XmL;    $(MAKE) -f Makefile.$@ libXmL.a)
+	@- if [ -f ../makefiles/Makefile.$@ -a ! -f ./Makefile.$@ ];\
+           then ln -s ../makefiles/Makefile.$@ .; fi
+	@- $(MAKE) -f Makefile.$@ libXlt.a
 
 clean:
-	@- (cd XmL;    $(MAKE) -f Makefile.common clean)
+	@- $(MAKE) -f Makefile.common clean
+
