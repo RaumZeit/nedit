@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.77 2003/05/24 19:15:20 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.78 2003/05/25 15:55:36 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -146,8 +146,6 @@ static void matchSyntaxBasedDefCB(Widget w, WindowInfo *window, caddr_t callData
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void highlightDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData);
-static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
-	caddr_t callData);
 static void fontDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void colorDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
@@ -897,13 +895,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    'R', highlightingDefCB, window, FULL);
     createMenuItem(subSubPane, "textDrawingStyles", "Text Drawing Styles...", 'T',
     	    stylesDefCB, window, FULL);
-    subSubPane = createMenu(subPane, "backlighting", "Backlighting",
-          'g', NULL, FULL);
-    window->backlightCharsDefItem = createMenuToggle(subSubPane,
+    window->backlightCharsDefItem = createMenuToggle(subPane,
           "backlightChars", "Apply Backlighting", 'g', backlightCharsDefCB,
           window, GetPrefBacklightChars(), FULL);
-    createMenuItem(subSubPane, "backlightCharTypes", "Use Current",
-          'U', backlightCharTypesDefCB, window, FULL);
 
     window->statsLineDefItem = createMenuToggle(subPane, "statisticsLine",
     	    "Statistics Line", 'S', statsLineDefCB, window, GetPrefStatsLine(),
@@ -1852,12 +1846,6 @@ static void backlightCharsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefBacklightChars(state);
     for (win=WindowList; win!=NULL; win=win->next)
       XmToggleButtonSetState(win->backlightCharsDefItem, state, False);
-}
-
-static void backlightCharTypesDefCB(Widget w, WindowInfo *window,
-      caddr_t callData)
-{
-    BacklightUseCurrCharTypesAsPref(window, False);
 }
 
 static void highlightOffDefCB(Widget w, WindowInfo *window, caddr_t callData)

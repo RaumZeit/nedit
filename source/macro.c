@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.69 2003/05/20 05:41:08 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.70 2003/05/25 15:55:36 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -237,8 +237,10 @@ static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+/* DISASBLED for 5.4 
 static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
 	int nArgs, DataValue *result, char **errMsg);
+*/
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -335,8 +337,10 @@ static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, char **errMsg);
 static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
+/* DISABLED FOR 5.4
 static int backlightStringMV(WindowInfo *window, DataValue *argList,
 	int nArgs, DataValue *result, char **errMsg);
+*/
 static int rangesetListMV(WindowInfo *window, DataValue *argList,
 	int nArgs, DataValue *result, char **errMsg);
 static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -375,7 +379,7 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
         tolowerMS, listDialogMS, getenvMS,
         stringCompareMS, splitMS, calltipMS, killCalltipMS,
-        setBacklightStringMS,
+/* DISABLED for 5.4        setBacklightStringMS,*/
         rangesetCreateMS, rangesetDestroyMS,
         rangesetAddMS, rangesetSubtractMS, rangesetInvertMS, 
         rangesetInfoMS, rangesetRangeMS, rangesetIncludesPosMS, 
@@ -392,7 +396,7 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "shell_command", "string_to_clipboard", "clipboard_to_string",
         "toupper", "tolower", "list_dialog", "getenv",
         "string_compare", "split", "calltip", "kill_calltip",
-        "set_backlight_string",
+/* DISABLED for 5.4        "set_backlight_string", */
         "rangeset_create", "rangeset_destroy",
         "rangeset_add", "rangeset_subtract", "rangeset_invert", 
         "rangeset_info", "rangeset_range", "rangeset_includes",
@@ -412,7 +416,8 @@ static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
         displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
         serverNameMV, calltipIDMV,
-        backlightStringMV, rangesetListMV
+/* DISABLED for 5.4        backlightStringMV, */
+	rangesetListMV
     };
 #define N_SPECIAL_VARS (sizeof SpecialVars/sizeof *SpecialVars)
 static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
@@ -429,7 +434,8 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$colu
         "$min_font_width", "$max_font_width", "$top_line", "$n_display_lines",
         "$display_width", "$active_pane", "$n_panes", "$empty_array",
         "$server_name", "$calltip_ID",
-        "$backlight_string", "$rangeset_list"
+/* DISABLED for 5.4       "$backlight_string", */
+        "$rangeset_list"
     };
 
 /* Global symbols for returning values from built-in functions */
@@ -3585,6 +3591,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** value of the resource. If the empty string is passed, the backlighting string
 ** will be cleared, turning off backlighting.
 */
+/* DISABLED for 5.4
 static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
@@ -3605,12 +3612,12 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
 
     if (strcmp(backlightString, "default") == 0)
       backlightString = GetPrefBacklightCharTypes();
-    if (backlightString && *backlightString == '\0')  /* empty string param */
-      backlightString = NULL;                 /* turns of backlighting */
+    if (backlightString && *backlightString == '\0')  / * empty string param * /
+      backlightString = NULL;                 / * turns of backlighting * /
 
     SetBacklightChars(window, backlightString);
     return True;
-}
+} */
 
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
@@ -4060,6 +4067,7 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
+/* DISABLED for 5.4
 static int backlightStringMV(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
@@ -4071,7 +4079,7 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
     result->val.str = AllocString(strlen(backlightString) + 1);
     strcpy(result->val.str, backlightString);
     return True;
-}
+} */
 
 /* -------------------------------------------------------------------------- */
 

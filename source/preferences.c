@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.93 2003/05/24 19:15:20 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.94 2003/05/25 15:55:36 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -740,7 +740,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"backlightCharTypes", "BacklightCharTypes", PREF_ALLOC_STRING,
       "0-8,10-31,127:red;9:#dedede;32-126,160-255:#f0f0f0;128-159:orange",
     /*                     gray87                 gray94                 */
-      &PrefData.backlightCharTypes, NULL, True},
+      &PrefData.backlightCharTypes, NULL, False},
     {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.searchDlogs, NULL, True},
     {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False",
@@ -1674,20 +1674,6 @@ void SetPrefBacklightCharTypes(char *types)
 char *GetPrefBacklightCharTypes(void)
 {
     return PrefData.backlightCharTypes;
-}
-
-void BacklightUseCurrCharTypesAsPref(WindowInfo *window, int quietly)
-{
-    if (!quietly)
-    {
-        if (DialogF(DF_INF, window->shell, 2, "Backlighting",
-                "The default backlighting specifications will be\n"
-                "changed to those of the current window.", "OK", "Cancel") == 2)
-        {
-            return;
-        }
-    }
-    SetPrefBacklightCharTypes(window->backlightCharTypes);
 }
 
 void SetPrefRepositionDialogs(int state)

@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 19, 2003 (Do NOT edit!)
+                 Generated on May 25, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -810,23 +810,28 @@ static char * htxt_programmer [] = {
 "You can set the language mode manually for a window, by selecting it from the ",
 "menu: Preferences -> Language Modes. ",
 "\n\n",
-"\01RBacklighting\01I",
+"\01RBacklighting [EXPERIMENTAL]\01I",
 "\n\n",
-"Nedit can be made to set the background color of particular classes of ",
+"NEdit can be made to set the background color of particular classes of ",
 "characters to allow easy identification of those characters. This is ",
 "particularly useful if you need to be able to distiguish between tabs ",
 "and spaces in a file where the difference is important. The colors used ",
-"for backlighting are specified by a resource, \"nedit*backlightCharTypes\" ",
-"but can be changed for a particular window using the macro built-in function ",
-"set_backlight_string(). You can turn backlighting on and off through the ",
+"for backlighting are specified by a resource, \"nedit*backlightCharTypes\". ",
+"You can turn backlighting on and off through the ",
 "Preferences -> Apply Backlighting menu entry. ",
 "\n\n",
 "If you prefer to have backlighting turned on for all new windows, use ",
-"the Preferences -> Default Settings -> Backlighting -> Apply Backlighting ",
-"menu entry. If you wish to set the current window's backlighting settings ",
-"for new windows, use Preferences -> Default Settings -> Backlighting -> ",
-"Use Current. These settings will be saved along with other preferences ",
-"using Preferences -> Save Defaults. ",
+"the Preferences -> Default Settings -> Apply Backlighting menu entry. ",
+"This settings can be saved along with other preferences using ",
+"Preferences -> Save Defaults. ",
+"\n\n",
+"\01JImportant:\01I In future versions of NEdit, the backlighting feature will be ",
+"extended and reworked such that it becomes easier to configure. The current ",
+"way of controlling it through a resource is generally considered to be below ",
+"NEdit's usability standards. These future changes are likely to be ",
+"incompatible with the current format of the \"nedit*backlightCharTypes\" ",
+"resource, though. Therefore, it is expected that there will be no automatic ",
+"migration path for users who customize the resource. ",
 "\n\n",
 "\01RLine Numbers\01I",
 "\n\n",
@@ -2260,11 +2265,6 @@ static char * htxt_macro_subrs [] = {
 "\01A\01B$wrap_text\01A\n",
 "\01IThe current wrap text mode. Values are \"none\", \"auto\" or \"continuous\". ",
 "\n\n",
-"\01A\01B$backlight_string\01A\n",
-"\01IThe current value of the window's backlighting specification. This is empty ",
-"if backlighting is turned off. It can be changed through calls to the ",
-"built-in macro function set_backlight_string(). ",
-"\n\n",
 "\01RBuilt-in Subroutines\01I",
 "\n\n",
 "\01A\01Bappend_file( string, filename )\01A\n",
@@ -2409,14 +2409,6 @@ static char * htxt_macro_subrs [] = {
 "\01ISelects a rectangular area of text between a starting and ending position, ",
 "and confined horizontally to characters displayed between positions \"left\", ",
 "and \"right\". ",
-"\n\n",
-"\01A\01Bset_backlight_string( [string] )\01A\n",
-"\01IApplies the given string, which should be in the format of the ",
-"nedit*backlightCharTypes X resource, to the current text window, turning on ",
-"backlighting.  If the value of the string passed is \"default\", or if no ",
-"parameter is passed, the nedit.backlightCharTypes X resource's own value will ",
-"be used.  If the empty string, \"\", is passed, backlighting will be turned ",
-"off. ",
 "\n\n",
 "\01A\01Bset_cursor_pos( position )\01A\n",
 "\01ISet the cursor position for the current window. ",
@@ -3901,6 +3893,8 @@ static char * htxt_resources [] = {
 "\n\n",
 "\01A\01Bnedit.backlightCharTypes\01A:  0-8,10-31,127:red;9:#dedede;32-126,160-255:#f0f0f0;128-159:orange\n",
 "\01I\n",
+"\01JNOTE: backlighting is \01Lexperimental\01J\01I (see \"\01QProgramming with NEdit\01I\"). ",
+"\n\n",
 "A string specifying character classes as ranges of ASCII values followed by ",
 "the color to be used as their background colors.  The format is: ",
 "\n\n",
@@ -3911,9 +3905,6 @@ static char * htxt_resources [] = {
 "For example: ",
 "\01A    32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5\n",
 "\01I\n",
-"The macro built-in function set_backlight_string() allows these strings to be ",
-"set for a particular window. ",
-"\n\n",
 "\01A\01Bnc.autoStart\01A: True \n",
 "\01I\n",
 "Whether the nc program should automatically start an NEdit server (without ",
@@ -5242,4 +5233,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of May 19, 2003\n";
+static const char * NEditVersion = "NEdit release of May 25, 2003\n";
