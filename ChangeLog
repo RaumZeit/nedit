@@ -1,4 +1,495 @@
-2004-07-07 03:39  n8gray
+2004-08-24 09:37  edg
+
+	* source/file.c (1.88): Fix for SF bug #999021 Using exit() in a
+	macro causes hang.
+
+2004-08-20 19:33  n8gray
+
+	* doc/help.etx (1.76), source/help_data.h (1.73), source/menu.c
+	(1.112), source/nedit.c (1.82), source/nedit.h (1.58),
+	source/preferences.c (1.126), source/window.c (1.170),
+	source/window.h (1.25): Committing Tony Ballinski's fix for bug
+	#1005442: documentation for rangeset_set_mode( r, type ) not clear
+
+2004-08-20 16:37  edg
+
+	* doc/help.etx (1.75), source/help_data.h (1.72),
+	source/help_topic.h (1.63), source/regularExp.c (1.25): Fix for SF
+	bug #1008656: word delimiters ignored.	Partially reverted the
+	implementation of '<', '>', and \B back to the pre-5.4 behaviour,
+	without giving up the fix for the problem that we wanted to solve
+	in 5.4.  Word boundaries are now again defined in terms of the
+	delimiter set (which makes things more consistent overall), but
+	word boundary operators still test both the previous and the next
+	character (the pre-5.4 version only tested one character, causing
+	surprising matches, eg., between to spaces).
+
+2004-08-16 10:12  edg
+
+	* doc/help.etx (1.74), source/help_data.h (1.71),
+	source/help_topic.h (1.62): Documentation fix for regex boundary
+	expression semantics.
+
+2004-08-15 02:09  tksoh
+
+	* Microline/XmL/: Folder.c (1.6), FolderP.h (1.5), XmL.h (1.6):
+	Added resource XmLFolder.minTabWidth to fix SF bug #1005064, where
+	tabs were getting wrong sizes when too many tabs were opened.
+
+2004-08-12 16:51  edg
+
+	* source/window.c (1.169): Avoid replace dialog button sensitivity
+	updates when the dialog is not mapped and the selection is altered.
+	In this way many indirect status checks for all files are avoided
+	(triggered by updating the sensitivity of the "Multiple Files..."
+	button).
+
+2004-08-12 13:43  edg
+
+	* source/window.c (1.168): Fix for SF bug #1006830: "Warn on Exit"
+	doesn't work sometimes.
+
+2004-08-12 09:06  edg
+
+	* source/file.c (1.87): Avoid "File Modified Externally" dialogs
+	for tabs that are not visible (similar to minimized windows).
+
+2004-08-10 22:28  yooden
+
+	* source/nedit.c (1.81): Adds limits.h.
+
+2004-08-09 22:20  n8gray
+
+	* README (1.42), util/misc.c (1.69): It appears I never committed
+	the updated RC1 README file.  Here it is.  This also contains a
+	minor correction to the comment documentation for QueryDesktop. 
+	There have been no functional changes.
+
+2004-08-09 16:48  edg
+
+	* source/: nedit.c (1.80), window.c (1.167): Restored the "invalid
+	default virtual key binding" workaround that had become effectively
+	disabled due to the shell widget hierarchy reorganization.  (Bug
+	report at discuss list by Timothy Paige: page-up,page-down on sun
+	keyboard.)
+
+2004-08-04 17:43  n8gray
+
+	* source/preferences.c (1.125): Bump the prefs file version to
+	prevent repeated conversion.
+
+2004-08-04 08:05  n8gray
+
+	* source/preferences.c (1.124): Notify user when prefs file gets
+	changed for 5.5.
+
+2004-08-01 10:06  yooden
+
+	* source/file.c (1.86), source/help.c (1.102), source/highlight.c
+	(1.50), source/highlightData.c (1.68), source/macro.c (1.89),
+	source/menu.c (1.111), source/preferences.c (1.123),
+	source/search.c (1.71), source/selection.c (1.31), source/shell.c
+	(1.34), source/smartIndent.c (1.36), source/tags.c (1.59),
+	source/userCmds.c (1.49), util/DialogF.c (1.31), util/fontsel.c
+	(1.28), util/getfiles.c (1.30), util/misc.c (1.68), util/misc.h
+	(1.25), util/printUtils.c (1.25): Dialog OK's are getting less
+	blanks, more margin.
+
+2004-08-01 07:55  yooden
+
+	* doc/help.etx (1.73), source/help_data.h (1.70),
+	source/help_topic.h (1.61): Fixes some leftovers of the licence
+	clarification.
+
+2004-07-29 13:47  tringali
+
+	* util/DialogF.c (1.30): SF #999820 - spaces in dialog button
+	mnemonics
+
+2004-07-28 18:02  n8gray
+
+	* source/: text.c (1.48), window.c (1.166): Fix for bug 996786:
+	Problems with Overtype mode.
+
+2004-07-27 18:25  n8gray
+
+	* README (1.41): Minor grammatical fix.
+
+2004-07-27 18:23  n8gray
+
+	* README (1.40): Updated feature list for 5.5.
+
+2004-07-26 22:52  n8gray
+
+	* util/system.h (1.16): Fixes test for PowerPC architecture in OS
+	X.
+
+2004-07-25 22:24  yooden
+
+	* Makefile (1.17): Increase Posixication level.
+
+2004-07-24 17:41  yooden
+
+	* README (1.39), doc/help.etx (1.72): License change, step 4:
+	Mention of the Mozilla project.
+
+2004-07-23 18:52  n8gray
+
+	* source/window.c (1.165, BETA-5-5): Fix for bug 996216: Detach
+	Tab/Move tab don't keep non-default word delimiters.
+
+2004-07-23 18:40  n8gray
+
+	* source/window.c (1.164): Purely cosmetic.  Renamed cloneTextPane
+	to cloneTextPanes and moved functions around so that
+	cloneTextPanes, cloneDocument, cloneUndoItems, DetachDocument, and
+	MoveDocument are together.
+
+2004-07-23 18:07  n8gray
+
+	* source/window.c (1.163): Applied TK Soh's patch to correct the
+	colors of detached multi-pane windows.
+	
+	Fixes bug #996248.
+
+2004-07-21 20:57  yooden
+
+	* Microline/XmL/: Folder.c (1.5), FolderP.h (1.4), XmL.h (1.5)
+	(utags: BETA-5-5): License change, step 3: Reapply changes to
+	Mozilla widgets
+
+2004-07-21 20:38  yooden
+
+	* Microline/Makefile (1.2, BETA-5-5), Microline/Makefile.in (1.2,
+	BETA-5-5), Microline/XmL/Folder.c (1.4), Microline/XmL/Folder.h
+	(1.2, BETA-5-5), Microline/XmL/FolderP.h (1.3),
+	Microline/XmL/Grid.c (1.2, BETA-5-5), Microline/XmL/Grid.h (1.2,
+	BETA-5-5), Microline/XmL/GridP.h (1.2, BETA-5-5),
+	Microline/XmL/GridUtil.c (1.2, BETA-5-5), Microline/XmL/Makefile
+	(1.2, BETA-5-5), Microline/XmL/Makefile.in (1.2, BETA-5-5),
+	Microline/XmL/Progress.c (1.2, BETA-5-5), Microline/XmL/Progress.h
+	(1.2, BETA-5-5), Microline/XmL/ProgressP.h (1.2, BETA-5-5),
+	Microline/XmL/Tree.c (1.2, BETA-5-5), Microline/XmL/Tree.h (1.2,
+	BETA-5-5), Microline/XmL/TreeP.h (1.2, BETA-5-5),
+	Microline/XmL/XmL.c (1.2, BETA-5-5), Microline/XmL/XmL.h (1.4),
+	Microline/XmL/XmL.uih (1.2, BETA-5-5), Microline/examples/Makefile
+	(1.2, BETA-5-5), Microline/examples/Makefile.in (1.2, BETA-5-5),
+	Microline/examples/demo.c (1.2, BETA-5-5),
+	Microline/examples/folder1.c (1.2, BETA-5-5),
+	Microline/examples/folder2.c (1.2, BETA-5-5),
+	Microline/examples/folder3.c (1.2, BETA-5-5),
+	Microline/examples/folder4.c (1.2, BETA-5-5),
+	Microline/examples/grid1.c (1.2, BETA-5-5),
+	Microline/examples/grid2.c (1.2, BETA-5-5),
+	Microline/examples/grid3.c (1.2, BETA-5-5),
+	Microline/examples/grid4.c (1.2, BETA-5-5),
+	Microline/examples/grid5.c (1.2, BETA-5-5),
+	Microline/examples/grid6.c (1.2, BETA-5-5),
+	Microline/examples/prog1.c (1.2, BETA-5-5),
+	Microline/examples/prog2.c (1.2, BETA-5-5),
+	Microline/examples/prog3.c (1.2, BETA-5-5),
+	Microline/examples/tree1.c (1.2, BETA-5-5),
+	Microline/examples/tree2.c (1.2, BETA-5-5),
+	Microline/examples/tree3.c (1.2, BETA-5-5),
+	Microline/examples/tree4.c (1.2, BETA-5-5),
+	Microline/examples/tree5.c (1.2, BETA-5-5),
+	Microline/examples/uil1.c (1.2, BETA-5-5),
+	Microline/examples/uil1.uil (1.2, BETA-5-5),
+	Microline/examples/util1.c (1.2, BETA-5-5),
+	Microline/man/XmLArrayAdd.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayDel.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayFree.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayGet.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayGetCount.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayMove.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayNew.3x (1.2, BETA-5-5),
+	Microline/man/XmLArrayReorder.3x (1.2, BETA-5-5),
+	Microline/man/XmLArraySet.3x (1.2, BETA-5-5),
+	Microline/man/XmLArraySort.3x (1.2, BETA-5-5),
+	Microline/man/XmLCreateFolder.3x (1.2, BETA-5-5),
+	Microline/man/XmLCreateGrid.3x (1.2, BETA-5-5),
+	Microline/man/XmLCreateProgress.3x (1.2, BETA-5-5),
+	Microline/man/XmLCreateTree.3x (1.2, BETA-5-5),
+	Microline/man/XmLCvtStringToUChar.3x (1.2, BETA-5-5),
+	Microline/man/XmLDateDaysInMonth.3x (1.2, BETA-5-5),
+	Microline/man/XmLDateWeekDay.3x (1.2, BETA-5-5),
+	Microline/man/XmLDrawnButtonSetType.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolder.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolderAddBitmapTab.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolderAddBitmapTabForm.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolderAddTab.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolderAddTabForm.3x (1.2, BETA-5-5),
+	Microline/man/XmLFolderSetActiveTab.3x (1.2, BETA-5-5),
+	Microline/man/XmLFontListCopyDefault.3x (1.2, BETA-5-5),
+	Microline/man/XmLFontListGetDimensions.3x (1.2, BETA-5-5),
+	Microline/man/XmLGrid.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridAddColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridAddRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridColumnIsVisible.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridCopyPos.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridCopySelected.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeleteAllColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeleteAllRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeleteColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeleteRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectAllCells.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectAllColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectAllRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectCell.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectColumn.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridDeselectRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridEditBegin.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridEditCancel.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridEditComplete.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetColumn.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetFocus.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedCellCount.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedCells.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedColumnCount.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedRowCount.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridGetSelectedRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridMoveColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridMoveRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridPaste.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridPastePos.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRead.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridReadPos.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRedrawAll.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRedrawCell.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRedrawColumn.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRedrawRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridReorderColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridReorderRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRowColumnToXY.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridRowIsVisible.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectAllCells.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectAllColumns.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectAllRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectCell.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectColumn.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSelectRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSetFocus.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSetStrings.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridSetStringsPos.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridWrite.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridWritePos.3x (1.2, BETA-5-5),
+	Microline/man/XmLGridXYToRowColumn.3x (1.2, BETA-5-5),
+	Microline/man/XmLMessageBox.3x (1.2, BETA-5-5),
+	Microline/man/XmLPixmapDraw.3x (1.2, BETA-5-5),
+	Microline/man/XmLProgress.3x (1.2, BETA-5-5),
+	Microline/man/XmLRectIntersect.3x (1.2, BETA-5-5),
+	Microline/man/XmLShellOfWidget.3x (1.2, BETA-5-5),
+	Microline/man/XmLSort.3x (1.2, BETA-5-5),
+	Microline/man/XmLStringDraw.3x (1.2, BETA-5-5),
+	Microline/man/XmLStringDrawDirection.3x (1.2, BETA-5-5),
+	Microline/man/XmLTree.3x (1.2, BETA-5-5),
+	Microline/man/XmLTreeAddRow.3x (1.2, BETA-5-5),
+	Microline/man/XmLTreeAddRows.3x (1.2, BETA-5-5),
+	Microline/man/XmLWarning.3x (1.2, BETA-5-5), util/vmsParam.h (1.5,
+	BETA-5-5): License change, step 2: Import of Mozilla files with new
+	license
+
+2004-07-21 11:32  yooden
+
+	* README (1.38, BETA-5-5), doc/help.etx (1.71, BETA-5-5),
+	doc/nc.pod (1.6, BETA-5-5), doc/nedit.pod (1.7, BETA-5-5),
+	doc/setext (1.12, BETA-5-5), source/calltips.c (1.8, BETA-5-5),
+	source/calltips.h (1.3, BETA-5-5), source/file.c (1.85, BETA-5-5),
+	source/file.h (1.14, BETA-5-5), source/help.c (1.101, BETA-5-5),
+	source/help.h (1.12, BETA-5-5), source/help_data.h (1.69,
+	BETA-5-5), source/help_topic.h (1.60, BETA-5-5), source/highlight.c
+	(1.49, BETA-5-5), source/highlight.h (1.13, BETA-5-5),
+	source/highlightData.c (1.67, BETA-5-5), source/highlightData.h
+	(1.12, BETA-5-5), source/interpret.c (1.40, BETA-5-5),
+	source/interpret.h (1.16, BETA-5-5), source/linkdate.c (1.4,
+	BETA-5-5), source/macro.c (1.88, BETA-5-5), source/macro.h (1.7,
+	BETA-5-5), source/menu.c (1.110, BETA-5-5), source/menu.h (1.12,
+	BETA-5-5), source/nc.c (1.43, BETA-5-5), source/nedit.c (1.79,
+	BETA-5-5), source/nedit.h (1.57, BETA-5-5), source/parse.h (1.6,
+	BETA-5-5), source/preferences.c (1.122, BETA-5-5),
+	source/preferences.h (1.42, BETA-5-5), source/rangeset.c (1.11,
+	BETA-5-5), source/rangeset.h (1.6, BETA-5-5), source/rbTree.h (1.4,
+	BETA-5-5), source/regexConvert.c (1.10, BETA-5-5),
+	source/regexConvert.h (1.6, BETA-5-5), source/regularExp.c (1.24,
+	BETA-5-5), source/regularExp.h (1.11, BETA-5-5), source/search.c
+	(1.70, BETA-5-5), source/search.h (1.22, BETA-5-5),
+	source/selection.c (1.30, BETA-5-5), source/selection.h (1.6,
+	BETA-5-5), source/server.c (1.31, BETA-5-5), source/server.h (1.6,
+	BETA-5-5), source/server_common.c (1.5, BETA-5-5),
+	source/server_common.h (1.2, BETA-5-5), source/shell.c (1.33,
+	BETA-5-5), source/shell.h (1.8, BETA-5-5), source/shift.c (1.16,
+	BETA-5-5), source/shift.h (1.5, BETA-5-5), source/smartIndent.c
+	(1.35, BETA-5-5), source/smartIndent.h (1.7, BETA-5-5),
+	source/tags.c (1.58, BETA-5-5), source/tags.h (1.14, BETA-5-5),
+	source/text.c (1.47, BETA-5-5), source/text.h (1.19, BETA-5-5),
+	source/textBuf.c (1.32, BETA-5-5), source/textBuf.h (1.16,
+	BETA-5-5), source/textDisp.c (1.57, BETA-5-5), source/textDisp.h
+	(1.25, BETA-5-5), source/textDrag.c (1.10, BETA-5-5),
+	source/textDrag.h (1.4, BETA-5-5), source/textP.h (1.9, BETA-5-5),
+	source/textSel.c (1.14, BETA-5-5), source/textSel.h (1.5,
+	BETA-5-5), source/undo.c (1.17, BETA-5-5), source/undo.h (1.7,
+	BETA-5-5), source/userCmds.c (1.48, BETA-5-5), source/userCmds.h
+	(1.7, BETA-5-5), source/window.c (1.162), source/window.h (1.24,
+	BETA-5-5), source/windowTitle.c (1.13, BETA-5-5),
+	source/windowTitle.h (1.4, BETA-5-5), util/DialogF.c (1.29,
+	BETA-5-5), util/DialogF.h (1.10, BETA-5-5), util/check_lin_tif.c
+	(1.10, BETA-5-5), util/clearcase.c (1.5, BETA-5-5),
+	util/clearcase.h (1.4, BETA-5-5), util/fileUtils.c (1.32,
+	BETA-5-5), util/fileUtils.h (1.11, BETA-5-5), util/fontsel.c (1.27,
+	BETA-5-5), util/fontsel.h (1.10, BETA-5-5), util/getfiles.c (1.29,
+	BETA-5-5), util/getfiles.h (1.7, BETA-5-5), util/managedList.c
+	(1.14, BETA-5-5), util/managedList.h (1.6, BETA-5-5), util/misc.c
+	(1.67, BETA-5-5), util/misc.h (1.24, BETA-5-5), util/prefFile.c
+	(1.23, BETA-5-5), util/prefFile.h (1.7, BETA-5-5),
+	util/printUtils.c (1.24, BETA-5-5), util/printUtils.h (1.8,
+	BETA-5-5), util/system.h (1.15, BETA-5-5), util/utils.c (1.21,
+	BETA-5-5), util/utils.h (1.12, BETA-5-5), util/vmsUtils.c (1.6,
+	BETA-5-5), util/vmsUtils.h (1.6, BETA-5-5): License change, step 1:
+	Added Motif clause to a lot of files.
+
+2004-07-20 01:40  n8gray
+
+	* source/window.c (1.161): The stats line copies its font from the
+	Row/Column widget.
+
+2004-07-18 23:13  yooden
+
+	* source/shift.c (1.15): Fixes inconsistency between 'Fill
+	Paragraph' and wrap.
+
+2004-07-18 22:30  yooden
+
+	* doc/help.etx (1.70), source/file.c (1.84), source/help.c (1.100),
+	source/help_data.h (1.68), source/help_topic.h (1.59),
+	source/highlight.c (1.48), source/highlightData.c (1.66),
+	source/macro.c (1.87), source/menu.c (1.109), source/nedit.c
+	(1.78), source/preferences.c (1.121), source/search.c (1.69),
+	source/selection.c (1.29), source/shell.c (1.32),
+	source/smartIndent.c (1.34), source/tags.c (1.57),
+	source/userCmds.c (1.47), source/windowTitle.c (1.12),
+	util/fontsel.c (1.26), util/getfiles.c (1.28), util/misc.c (1.66),
+	util/printUtils.c (1.23): Fixes some of the misnamed dialogs.
+
+2004-07-15 21:17  n8gray
+
+	* source/: help.c (1.99), nedit.c (1.77): Fix for bug 873469: nedit
+	-V requires X server.  Fix due to T. Haude with slight
+	modification.  (argument scanning stops if it sees "--".)
+
+2004-07-15 18:47  edg
+
+	* ReleaseNotes (1.25, BETA-5-5): Added bug #987102 to the list of
+	bugs fixed in 5.5.
+
+2004-07-15 18:39  edg
+
+	* source/regularExp.c (1.23): Fix for SF bug #987102:  segmentation
+	fault on replace. Regex recursion is now limited to 10000. The API
+	could still be extended to handle errors more gracefully (error
+	messages are currently written to stderr).
+
+2004-07-15 18:30  edg
+
+	* source/nedit.c (1.76): Added Lesstif-specific suppression of
+	harmless but annoying warnings generated by non-production versions
+	of the library.  Developers can see the suppressed messages by
+	adding -DDEBUG_LESSTIF_WARNINGS to their compile flags.  So far,
+	I've added 3 messages to the suppression list, but the list can
+	easily be extended if more of these messages show up.
+
+2004-07-15 18:26  edg
+
+	* util/check_lin_tif.c (1.9): Added OpenMotif 2.2.3 and Lesstif
+	0.93.94 to the "known good" lists.  (I didn't add 0.93.95 since it
+	doesn't officially exist yet).
+
+2004-07-15 17:08  edg
+
+	* source/calltips.c (1.7): Removed the custom fix for SF bug
+	#925951 again. It is covered by the fix for bug #991700.
+
+2004-07-15 17:06  edg
+
+	* source/nedit.c (1.75): Fix for SF bug #991700: 5.5 crash. The
+	workaround to prevent this crash was executed too late due to the
+	reorganization of the shells.
+
+2004-07-15 09:07  yooden
+
+	* source/file.c (1.83): Small optimization in backupFileName()
+
+2004-07-15 02:03  yooden
+
+	* makefiles/Makefile.solarisx86 (1.1, BETA-5-5): Added Makefile for
+	Solaris x86.
+
+2004-07-15 01:47  yooden
+
+	* source/: highlightData.c (1.65), preferences.c (1.120): Fixes two
+	small issues wrt C++.
+
+2004-07-14 19:51  n8gray
+
+	* source/menu.c (1.108): There were two accelerators for 'T' in the
+	File menu.  I changed "Load Tags File" to use 'g' instead.
+
+2004-07-14 19:48  n8gray
+
+	* makefiles/Makefile.macosx (1.7, BETA-5-5): Adding the
+	-mdynamic-no-pic gcc flag to get cleaner code on OS X.
+
+2004-07-14 13:31  yooden
+
+	* source/file.c (1.82): Someone forgot to call stat() before
+	querying the statbuf.
+
+2004-07-13 11:44  edg
+
+	* source/menu.c (1.107): Another crash fix: tab context popup menu
+	didn't inherit proper visual.
+
+2004-07-13 11:35  edg
+
+	* Xlt/BubbleButton.c (1.6, BETA-5-5): Crash fix: bubblebutton
+	tooltips didn't inherit proper visual (Tk Soh).
+
+2004-07-12 20:08  edg
+
+	* source/search.c (1.68): Fix for incremental search bar clear
+	button crash reported by Yury Burkatovsky. It wasn't as hard as I
+	thought it would be.
+
+2004-07-09 12:20  edg
+
+	* ReleaseNotes (1.24): First stab at the release notes for 5.5.
+
+2004-07-09 07:44  edg
+
+	* util/misc.c (1.65): Inserted some casts to suppress harmless
+	warnings on Solaris.
+
+2004-07-08 13:07  edg
+
+	* source/help.c (1.98): More fundamental fix for SF bug #982589:
+	Help font inconsistent with window size. The help window size
+	calculation is now based on the actual fixed font used in the help
+	window.
+
+2004-07-08 06:29  n8gray
+
+	* Makefile (1.16, BETA-5-5), README (1.37), source/help_data.h
+	(1.67), source/help_topic.h (1.58), source/nc.c (1.42): Man, that
+	was a quick beta!  Back to RC1.
+
+2004-07-07 08:18  edg
+
+	* ChangeLog (1.38, BETA-5-5): Regenerated (cvs2cl.pl -b -r -t
+	--accum --gmt).
+
+2004-07-07 01:39  n8gray
 
 	* README (1.36), makefiles/Makefile.macosx (1.6): Updating some OS
 	X documentation.
