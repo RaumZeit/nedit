@@ -336,6 +336,8 @@ static int strCaseCmp(const char *str1, const char *str2);
 static int compareWindowNames(const void *windowA, const void *windowB);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
+static void raiseWindowAP(Widget w, XEvent *event, String *args,
+	Cardinal *nArgs);
 #ifdef SGI_CUSTOM
 static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
@@ -459,6 +461,7 @@ static XtActionsRec Actions[] = {
     {"end_of_selection", endOfSelectionAP},
     {"repeat_macro", repeatMacroAP},
     {"repeat_dialog", repeatDialogAP},
+    {"raise_window", raiseWindowAP},
 };
 
 /* List of previously opened files for File menu */
@@ -2731,6 +2734,90 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args,
     else
     	TextSetCursorPos(w, BufCountForwardDispChars(buf,
     		BufStartOfLine(buf, end), rectEnd));
+}
+
+static void raiseWindowAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    WindowInfo *nextWindow;
+    WindowInfo *tmpWindow;
+    int windowIndex;
+
+    if (nArgs > 0) {
+        if (strcmp(args[0], "last") == 0) {
+            window = WindowList;
+        }
+        else if (strcmp(args[0], "first") == 0) {
+            window = WindowList;
+            if (window != NULL) {
+                nextWindow = window->next;
+                while (nextWindow != NULL) {
+                    window = nextWindow;
+                    nextWindow = nextWindow->next;
+                }
+            }
+        }
+        else if (strcmp(args[0], "previous") == 0) {
+            tmpWindow = window;
+            window = WindowList;
+            if (window != NULL) {
+                nextWindow = window->next;
+                while (nextWindow != NULL && nextWindow != tmpWindow) {
+                    window = nextWindow;
+                    nextWindow = nextWindow->next;
+                }
+                if (nextWindow == NULL && tmpWindow != WindowList) {
+                    window = NULL;
+                }
+            }
+        }
+        else if (strcmp(args[0], "next") == 0) {
+            if (window != NULL) {
+                window = window->next;
+                if (window == NULL) {
+                    window = WindowList;
+                }
+            }
+        }
+        else {
+            if (sscanf(args[0], "%d", &windowIndex) == 1) {
+                if (windowIndex > 0) {
+                    for (window = WindowList; window != NULL && windowIndex > 1;
+                        --windowIndex) {
+                        window = window->next;
+                    }
+                }
+                else if (windowIndex < 0) {
+                    for (window = WindowList; window != NULL;
+                        window = window->next) {
+                        ++windowIndex;
+                    }
+                    if (windowIndex >= 0) {
+                        for (window = WindowList; window != NULL &&
+                            windowIndex > 0; window = window->next) {
+                            --windowIndex;
+                        }
+                    }
+                    else {
+                        window = NULL;
+                    }
+                }
+                else {
+                    window = NULL;
+                }
+            }
+            else {
+                window = NULL;
+            }
+        }
+    }
+    if (window != NULL) {
+        RaiseShellWindow(window->shell);
+    }
+    else {
+        XBell(TheDisplay, 0);
+    }
 }
 
 /*

@@ -3171,6 +3171,12 @@ pressed (the first button is number 1), in $string_dialog_button.  \
 If the user closes the dialog via the window close box, the function \
 returns the empty string, and $string_dialog_button returns 0.\n\
 \n\
+string_compare(string1, string2 [, consider-case]) -- Compare two \
+strings and return 0 if they are equal, -1 if string1 is less than \
+string2 or 1 if string1 is greater than string2. The default is to \
+do a case sensitive comparison. Optionally a \"nocase\" argument \
+can be supplied to force the comparison to ingore case differences. \
+\n\
 string_to_clipboard(string) -- Copy the contents of a macro string \
 to the clipboard.\n\
 \n\
@@ -3311,6 +3317,8 @@ Some notes on argument types above:\n\
   non-regex-search-type	    Either \"literal\" or \"case\"\n\
 \n\
   search-wrap	    Either \"wrap\" or \"nowrap\"\n\
+\n\
+  consider-case	 Either \"case\" or \"nocase\"\n\
 \n\
   keep-dialog	    Either \"keep\" or \"nokeep\"\n\
 \n\
@@ -3552,6 +3560,13 @@ a tab character.\n\
 \n\
 process_up([\"nobell\"])\n\
 Moves the cursor up one line.\n\
+\n\
+raise_window([relative-window] | [positive-index] | [negative-index])\n\
+Raise the current focused window to the front if no argument is supplied. \
+Possible arguments are \n\
+  relative-window   Either  \"first\", \"last\", \"next\", \"previous\"\n\
+  positive-index are numbers greater than 0. 1 is the same as \"last\".\n\
+  negative-index are numbers less than 0. -1 is the as \"first\".\n\
 \n\
 scroll_down(nLines)\n\
 Scroll the display down (towards the end of the file) by nLines.\n\

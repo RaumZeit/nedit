@@ -203,6 +203,8 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
 /* T Balinski End */
 static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg);
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -239,12 +241,13 @@ static int readSearchArgs(DataValue *argList, int nArgs, int*searchDirection,
 	int *searchType, int *wrap, char **errMsg);
 static int wrongNArgsErr(char **errMsg);
 static int tooFewArgsErr(char **errMsg);
+static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, char **errMsg);
 static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
-#define N_MACRO_SUBRS 32
+#define N_MACRO_SUBRS 33
 static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	dialogMS, stringDialogMS, replaceRangeMS, replaceSelectionMS,
     	setCursorPosMS, getCharacterMS, minMS, maxMS, searchMS,
@@ -252,7 +255,8 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	writeFileMS, appendFileMS, beepMS, getSelectionMS,
 	replaceInStringMS, selectMS, selectRectangleMS, focusWindowMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
-	tolowerMS, listDialogMS, getenvMS, setLanguageModeMS};
+	tolowerMS, listDialogMS, getenvMS, setLanguageModeMS,
+    stringCompareMS};
 static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
     	"set_cursor_pos", "get_character", "min", "max", "search",
@@ -260,7 +264,8 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
         "write_file", "append_file", "beep", "get_selection",
 	"replace_in_string", "select", "select_rectangle", "focus_window",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
-	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode"};
+	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode",
+    "string_compare"};
 #define N_SPECIAL_VARS 16
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
@@ -2970,6 +2975,47 @@ static int setLanguageModeMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
+static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg)
+{
+    char stringStorage[3][25];
+    char *leftStr, *rightStr, *argStr;
+    int considerCase = True;
+    int i;
+    int compareResult;
+    
+    if (nArgs < 2) {
+        return(wrongNArgsErr(errMsg));
+    }
+    if (!readStringArg(argList[0], &leftStr, stringStorage[0], errMsg))
+        return False;
+    if (!readStringArg(argList[1], &rightStr, stringStorage[1], errMsg))
+        return False;
+    for (i = 2; i < nArgs; ++i) {
+    	if (!readStringArg(argList[i], &argStr, stringStorage[2], errMsg))
+    	    return False;
+    	else if (!strcmp(argStr, "case"))
+    	    considerCase = True;
+    	else if (!strcmp(argStr, "nocase"))
+    	    considerCase = False;
+    	else {
+    	    *errMsg = "unrecognized argument to %s";
+    	    return False;
+    	}
+    }
+    if (considerCase) {
+        compareResult = strcmp(leftStr, rightStr);
+        compareResult = (compareResult > 0) ? 1 : ((compareResult < 0) ? -1 : 0);
+    }
+    else {
+        compareResult = strCaseCmp(leftStr, rightStr);
+    }
+    result->tag = INT_TAG;
+    result->val.n = compareResult;
+    return True;
+}
+
+
 static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
@@ -3140,6 +3186,28 @@ static int tooFewArgsErr(char **errMsg)
     return False;
 }
 
+/*
+** strCaseCmp compares its arguments and returns 0 if the two strings
+** are equal IGNORING case differences.  Otherwise returns 1 or -1
+** depending on relative comparison.
+*/
+static int strCaseCmp(char *str1, char *str2)
+{
+    char *c1, *c2;
+
+    for (c1 = str1, c2 = str2; (*c1 != '\0' && *c2 != '\0') && 
+        toupper((unsigned char)*c1) == toupper((unsigned char)*c2); ++c1, ++c2) {
+    }
+    if (((unsigned char)toupper((unsigned char)*c1)) > ((unsigned char)toupper((unsigned char)*c2))) {
+        return(1);
+    }
+    else if (((unsigned char)toupper((unsigned char)*c1)) < ((unsigned char)toupper((unsigned char)*c2))) {
+        return(-1);
+    }
+    else {
+        return(0);
+    }
+}
 
 /*
 ** Get an integer value from a tagged DataValue structure.  Return True
