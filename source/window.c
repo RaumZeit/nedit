@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.63 2002/08/15 19:03:38 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.64 2002/08/17 14:28:21 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -149,7 +149,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     Arg al[20];
     int ac;
     XmString s1;
-    Dimension ht, ht_lc;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
 #endif
@@ -1906,9 +1905,8 @@ void UpdateStatsLine(WindowInfo *window)
 {
     int line, pos, colNum;
     char *string, *format, slinecol[32];
-    Widget statW = window->statsLine, statform;
+    Widget statW = window->statsLine;
     XmString xmslinecol;
-    Dimension ht;
 #ifdef SGI_CUSTOM
     char *sleft, *smid, *sright;
 #endif
