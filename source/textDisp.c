@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.17 2002/02/05 18:16:58 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.18 2002/02/13 14:14:27 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -1423,6 +1423,12 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     	    	    (origCursorPos <= endDispPos || endDispPos == buf->length))
     	    	blankCursorProtrusions(textD);
     	}
+        /* If more than one line is inserted/deleted, a line break may have
+           been inserted or removed in between, and the line numbers may
+           have changed. If only one line is altered, line numbers cannot
+           be affected (the insertion or removal of a line break always 
+           results in at least two lines being redrawn). */
+	if (linesInserted > 1) redrawLineNumbers(textD, False);
     } else { /* linesInserted != linesDeleted */
     	endDispPos = textD->lastChar + 1;
     	if (origCursorPos >= pos)
