@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.26 2003/07/18 15:14:16 edg Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.27 2003/12/25 06:55:08 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -385,7 +385,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
 	flags |= OUTPUT_TO_DIALOG;
     	left = right = 0;
     } else if (output == TO_NEW_WINDOW) {
-    	EditNewFile(NULL, False, NULL, window->path);
+    	EditNewFile(inWindow, NULL, False, NULL, window->path);
     	outWidget = WindowList->textArea;
 	inWindow = WindowList;
     	left = right = 0;

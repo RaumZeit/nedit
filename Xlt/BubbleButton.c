@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.2 2003/12/24 07:41:29 tksoh Exp $
+ * $Id: BubbleButton.c,v 1.3 2003/12/25 06:55:07 tksoh Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -23,7 +23,9 @@
  *
  **/
 
+#ifdef HAVE_CONFIG_H
 #include "../config.h"
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -46,7 +48,7 @@
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.2 2003/12/24 07:41:29 tksoh Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.3 2003/12/25 06:55:07 tksoh Exp $";
 
 /*
    Widget methods, forward declarations
@@ -99,6 +101,16 @@ static XtResource resources[] =
 		XltNbubbleDuration, XltCBubbleDuration, XtRInt,
 		sizeof(int), Offset(Duration),
 		XtRImmediate, (XtPointer)0
+	},
+	{
+		XltNslidingBubble, XltCslidingBubble, XmRBoolean,
+		sizeof(Boolean), Offset(slidingBubble),
+		XmRImmediate, (XtPointer)True
+	},
+	{
+		XltNautoParkBubble, XltCautoParkBubble, XmRBoolean,
+		sizeof(Boolean), Offset(autoParkBubble),
+		XmRImmediate, (XtPointer)False
 	},
 };
 
@@ -345,12 +357,20 @@ static void
 UnpostIt(Widget w)
 {
     BubbleButton_DurationTimer(w) = (XtIntervalId)NULL;
-    BubbleButton_Slider(w) = XtVaCreateWidget("Slide", xltSlideContextWidgetClass,
-	XmGetXmDisplay(XtDisplay(w)),
-	XltNslideWidget, XtParent(BubbleButton_Label(w)),
-	XltNslideDestHeight, 1,
-	NULL);
-    XtAddCallback(BubbleButton_Slider(w), XltNslideFinishCallback, (XtCallbackProc)fadeOutFinish, w);
+    if (BubbleButton_SlidingBubble(w))
+    {
+	BubbleButton_Slider(w) = XtVaCreateWidget("Slide", xltSlideContextWidgetClass,
+	    XmGetXmDisplay(XtDisplay(w)),
+	    XltNslideWidget, XtParent(BubbleButton_Label(w)),
+	    XltNslideDestHeight, 1,
+	    NULL);
+	XtAddCallback(BubbleButton_Slider(w), XltNslideFinishCallback,
+            (XtCallbackProc)fadeOutFinish, w);
+	}
+    else
+    {
+    	XtPopdown(XtParent(BubbleButton_Label(w)));
+    }
 }
 
 static void
@@ -366,12 +386,15 @@ fadeInFinish(Widget slide, Widget w, XtPointer call_data)
     }
 }
 
+#define TOOLTIP_EDGE_GUARD 5
 static void
 PostIt(Widget w)
 {
 int rx, ry, x, y;
 unsigned int key;
 Window root, child;
+Dimension xPos, yPos;
+XWindowAttributes screenAttr;
 
     	BubbleButton_Timer(w) = (XtIntervalId)NULL;
     	XQueryPointer(XtDisplay(w),
@@ -390,22 +413,71 @@ Window root, child;
 	XtWidgetGeometry geo;
 
 	    XtQueryGeometry(BubbleButton_Label(w), NULL, &geo);
-	    XtVaSetValues(XtParent(BubbleButton_Label(w)),
-    		XmNx, rx + 1 /*- x + XtWidth(w) / 2*/,
-    		XmNy, ry + 1 /*- y + XtHeight(w)*/,
-    		XmNheight, 1,
-    		XmNwidth, 1 /*geo.width*/,
-    		NULL);
-	    XtPopup(XtParent(BubbleButton_Label(w)), XtGrabNone);
-	    BubbleButton_Slider(w) = XtVaCreateWidget("Slide", xltSlideContextWidgetClass,
-	    	XmGetXmDisplay(XtDisplay(w)),
-		XltNslideWidget, XtParent(BubbleButton_Label(w)),
-		XltNslideDestX, rx - x + XtWidth(w) / 2,
-		XltNslideDestY, ry - y + XtHeight(w),
-		XltNslideDestWidth, geo.width,
-		XltNslideDestHeight, geo.height,
-		NULL);
-	    XtAddCallback(BubbleButton_Slider(w), XltNslideFinishCallback, (XtCallbackProc)fadeInFinish, w);
+
+	    xPos = rx - x + XtWidth(w) / 2 ;
+	    yPos = ry - y + XtHeight(w);
+
+	    if (BubbleButton_AutoParkBubble(w))
+	    {
+		xPos = rx + 3;
+		yPos = ry + 15;
+
+		/* keep tooltip within screen */
+		 XGetWindowAttributes(XtDisplay(w), 
+			 RootWindowOfScreen(XtScreen(w)), &screenAttr);
+
+		if (xPos + geo.width >= screenAttr.width - TOOLTIP_EDGE_GUARD)
+		    xPos = screenAttr.width - geo.width - TOOLTIP_EDGE_GUARD;
+
+		if (yPos + geo.height >= screenAttr.height - TOOLTIP_EDGE_GUARD)
+		    yPos = ry - 15 - geo.height;
+	    }
+
+	    
+	    if (BubbleButton_SlidingBubble(w))
+	    {
+	    	int xAdjust, yAdjust;
+		
+		/* FIXME: slider must avoid pointer */
+		xAdjust = rx < xPos? 1 : -1;
+		yAdjust = ry < yPos? 1 : - geo.height/2;
+
+		XtVaSetValues(XtParent(BubbleButton_Label(w)),
+		    XmNx, rx + xAdjust /*- x + XtWidth(w) / 2*/,
+		    XmNy, ry + yAdjust /*- y + XtHeight(w)*/,
+		    XmNheight, 1,
+		    XmNwidth, 1 /*geo.width*/,
+		    NULL);
+		XtPopup(XtParent(BubbleButton_Label(w)), XtGrabNone);
+
+		BubbleButton_Slider(w) = XtVaCreateWidget("Slide", xltSlideContextWidgetClass,
+		    XmGetXmDisplay(XtDisplay(w)),
+		    XltNslideWidget, XtParent(BubbleButton_Label(w)),
+		    XltNslideDestX, xPos,
+		    XltNslideDestY, yPos,
+		    XltNslideDestWidth, geo.width,
+		    XltNslideDestHeight, geo.height,
+		    NULL);
+		XtAddCallback(BubbleButton_Slider(w), XltNslideFinishCallback, (XtCallbackProc)fadeInFinish, w);
+	    }
+	    else
+	    {
+		XtVaSetValues(XtParent(BubbleButton_Label(w)),
+		    XmNx, xPos /*- x + XtWidth(w) / 2*/,
+		    XmNy, yPos /*- y + XtHeight(w)*/,
+		    XmNheight, geo.height,
+		    XmNwidth, geo.width /*geo.width*/,
+		    NULL);
+		XtPopup(XtParent(BubbleButton_Label(w)), XtGrabNone);
+
+		if (BubbleButton_Duration(w) > 0)
+		{
+		    BubbleButton_DurationTimer(w) = XtAppAddTimeOut(XtWidgetToApplicationContext(w),
+				    BubbleButton_Duration(w),
+				    (XtTimerCallbackProc)UnpostIt, 
+				    w);
+		}
+	    }
 	}
 }
 

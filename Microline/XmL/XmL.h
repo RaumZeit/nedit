@@ -93,6 +93,8 @@ extern "C" {
 #define XmCRotateWhenLeftRight "RotateWhenLeftRight"
 #define XmNtabBarHeight "tabBarHeight"
 #define XmCTabBarHeight "TabBarHeight"
+#define XmNmaxTabWidth "maxTabWidth"
+#define XmCmaxTabWidth "MaxTabWidth"
 #define XmNtabCount "tabCount"
 #define XmCTabCount "TabCount"
 #define XmNtabPlacement "tabPlacement"
@@ -142,6 +144,7 @@ typedef struct
 
 #define XmRESIZE_STATIC  10
 #define XmRESIZE_DYNAMIC 11
+#define XmRESIZE_PACK 12
 
 /* Grid resources */
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.89 2003/12/25 06:55:08 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -52,10 +52,15 @@ static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $"
 #include "nedit.bm"
 #include "n.bm"
 #include "windowTitle.h"
+#include "interpret.h"
 #include "../util/clearcase.h"
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
+#include "../util/fileUtils.h"
+#include "../util/DialogF.h"
+#include "../Xlt/BubbleButton.h"
+#include "../Microline/XmL/Folder.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,10 +89,15 @@ static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $"
 #include <Xm/PanedW.h>
 #include <Xm/PanedWP.h>
 #include <Xm/RowColumnP.h>
+#include <Xm/Separator.h>
 #include <Xm/Text.h>
 #include <Xm/ToggleB.h>
+#include <Xm/PushB.h>
 #include <Xm/Form.h>
+#include <Xm/Frame.h>
 #include <Xm/Label.h>
+#include <Xm/SelectioB.h>
+#include <Xm/List.h>
 #include <Xm/Protocols.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
@@ -98,11 +108,9 @@ static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $"
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
-
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
 
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */
@@ -112,6 +120,26 @@ static const char CVSID[] = "$Id: window.c,v 1.88 2003/12/04 09:52:35 edg Exp $"
    below the main menu bar */
 #define STAT_SHADOW_THICKNESS 1
 
+/* buffer tabs configuration */
+#define MIN_TAB_SLOTS 3
+
+/* bitmap data for the close-tab button */
+#define close_width 11
+#define close_height 11
+static unsigned char close_bits[] = {
+   0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00,
+   0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
+
+static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
+        int crossWin);
+static Widget addBufferTab(Widget folder, WindowInfo *window, const char *string);
+static int getTabPosition(Widget tab);
+static void setTabCloseButtonImage(Widget button);
+static Widget manageToolBars(Widget toolBarsForm);
+static void CloseBufferWindow(Widget w, WindowInfo *window, XtPointer callData);
+static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
+static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData);
+static void raiseTabCB(Widget w, XtPointer *clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int cols, int emTabDist, char *delimiters, int wrapMargin,
         int lineNumCols);
@@ -128,7 +156,6 @@ static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData);
 static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData);
-static int isIconic(WindowInfo *window);
 static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
@@ -142,7 +169,17 @@ static unsigned char* sanitizeVirtualKeyBindings();
 static int sortAlphabetical(const void* k1, const void* k2);
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
+static void setBufferSharedPref(WindowInfo *window, WindowInfo *lastwin);
+static void refreshBufferMenuBar(WindowInfo *window);
+static void cloneBuffer(WindowInfo *window, WindowInfo *orgWin);
+static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin);
+static UndoInfo *cloneUndoItems(UndoInfo *orgList);
 static Widget containingPane(Widget w);
+
+static WindowInfo *focusInBuffer = NULL;  	/* where we are now */
+static WindowInfo *lastBuffer = NULL;	    	/* where we came from */
+static int DoneWithAttachBufferDialog;
+
 
 /*
 ** Create a new editor window
@@ -150,12 +187,13 @@ static Widget containingPane(Widget w);
 WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
     Widget winShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
-    Widget iSearchLabel;
+    Widget iSearchLabel, closeTabBtn, tabForm, form;
     WindowInfo *window;
     Pixel bgpix, fgpix;
     Arg al[20];
     int ac;
     XmString s1;
+    WindowInfo *win;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
 #endif
@@ -165,6 +203,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     static Atom wmpAtom, syAtom = 0;
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
+    XmFontList fontList;
+    int fontWidth, tabWidth;
+    XFontStruct *fs;
 
     if (firstTime) 
     {
@@ -220,6 +261,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->overstrike = False;
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
+    window->showTabBar = GetPrefTabBar() ? (GetPrefTabBarHideOne()? 0:1) : 0;
     window->showStats = GetPrefStatsLine();
     window->showISearchLine = GetPrefISearchLine();
     window->showLineNumbers = GetPrefLineNums();
@@ -266,6 +308,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->iSearchLastLiteralCase = FALSE;
     window->findLastRegexCase      = TRUE;
     window->findLastLiteralCase    = FALSE;
+    window->bufferTab = NULL;
     
     /* If window geometry was specified, split it apart into a window position
        component and a window size component.  Create a new geometry string
@@ -334,6 +377,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        window pointer from the widget id of any of the window's widgets */
     XtSetArg(al[ac], XmNuserData, window); ac++;
     mainWin = XmCreateMainWindow(winShell, "main", al, ac);
+    window->mainWin = mainWin;
     XtManageChild(mainWin);
     
     /* The statsAreaForm holds the stats line and the I-Search line. */
@@ -343,9 +387,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNmarginHeight, STAT_SHADOW_THICKNESS,
             /* XmNautoUnmanage, False, */
             NULL);
-    if(window->showISearchLine || window->showStats)
+    if (window->showTabBar || window->showISearchLine || 
+    	    window->showStats)
         XtManageChild(statsAreaForm);
-            
+    
     /* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
        the i-search bar was active, and the i-search text widget was focussed,
        and the window's width was resized to nearly zero. 
@@ -357,13 +402,15 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        to 0 seems to avoid avoid the crash. */
        
     window->iSearchForm = XtVaCreateWidget("iSearchForm", 
-            xmFormWidgetClass, statsAreaForm,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNbottomAttachment, window->showStats ?
-                XmATTACH_NONE : XmATTACH_FORM,
-            NULL);
+       	    xmFormWidgetClass, statsAreaForm,
+	    XmNshadowThickness, 0,
+	    XmNleftAttachment, XmATTACH_FORM,
+	    XmNleftOffset, STAT_SHADOW_THICKNESS,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNtopOffset, STAT_SHADOW_THICKNESS,
+	    XmNrightAttachment, XmATTACH_FORM,
+	    XmNrightOffset, STAT_SHADOW_THICKNESS,
+	    XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
     if(window->showISearchLine)
         XtManageChild(window->iSearchForm);
     iSearchLabel = XtVaCreateManagedWidget("iSearchLabel",
@@ -445,7 +492,90 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     RemapDeleteKey(window->iSearchText);
 
     SetISearchTextCallbacks(window);
+
+    /* create the buffer tab bar */
+    tabForm = XtVaCreateWidget("tabForm", 
+       	    xmFormWidgetClass, statsAreaForm,
+	    XmNmarginHeight, 0,
+	    XmNmarginWidth, 0,
+	    XmNspacing, 0,
+    	    XmNresizable, False, 
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNrightAttachment, XmATTACH_FORM,
+	    XmNshadowThickness, 0, NULL);
+
+    /* button to close top buffer */
+    closeTabBtn = XtVaCreateManagedWidget("closeTabBtn",
+      	    xmPushButtonWidgetClass, tabForm,
+	    XmNmarginHeight, 0,
+	    XmNmarginWidth, 0,
+    	    XmNhighlightThickness, 0,
+	    XmNlabelType, XmPIXMAP,
+    	    XmNshadowThickness, 1,
+            XmNtraversalOn, False,
+            XmNrightAttachment, XmATTACH_FORM,
+            XmNrightOffset, 5,
+            XmNbottomAttachment, XmATTACH_FORM,	    
+            XmNbottomOffset, 3,
+	    NULL);
+
+    XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, 
+	    mainWin);
+    setTabCloseButtonImage(closeTabBtn);
     
+    window->bufferTabBar = XtVaCreateManagedWidget("tabBar", 
+       	    xmlFolderWidgetClass, tabForm,
+    	    XmNinactiveBackground, AllocateColor(tabForm, "#909090"),
+	    XmNresizePolicy, XmRESIZE_PACK,
+	    XmNmaxTabWidth, 150,
+	    XmNhighlightThickness, 0,
+	    XmNshadowThickness, 1,
+	    XmNleftAttachment, XmATTACH_FORM,
+            XmNleftOffset, 1,
+	    XmNrightAttachment, XmATTACH_WIDGET,
+	    XmNrightWidget, closeTabBtn,
+            XmNrightOffset, 10,
+            XmNbottomAttachment, XmATTACH_FORM,
+            XmNbottomOffset, 0,
+            XmNtopAttachment, XmATTACH_FORM,
+	    XmNtraversalOn, False,
+	    NULL);
+
+    /* create an unmanaged composite widget to get the folder
+       widget to hide the 3D shadow for the manager area.
+       Note: this works only on the patched XmLFolder widget */
+    form = XtVaCreateWidget("form",
+	    xmFormWidgetClass, window->bufferTabBar,
+	    XmNheight, 1,
+	    XmNresizable, False,
+	    NULL);
+
+    XtAddCallback(window->bufferTabBar, XmNactivateCallback,
+    	    (XtCallbackProc)raiseTabCB, NULL);
+
+    window->bufferTab = addBufferTab(window->bufferTabBar, window, name);
+
+    /* set minimum space for filename on tabs */
+    XtVaGetValues(window->bufferTab, XmNfontList, &fontList, NULL);
+    fs = GetDefaultFontStruct(fontList);
+    fontWidth = (fs->min_bounds.width + fs->max_bounds.width)/2;
+    tabWidth = fontWidth * 20 + 5;
+    if (tabWidth < 150)
+    	tabWidth = 150;
+    XtVaSetValues(window->bufferTabBar, XmNmaxTabWidth, tabWidth, NULL);
+
+    if (window->showTabBar)
+    	XtManageChild(tabForm);
+
+    /* put a separating line below the tab bar */
+    XtVaCreateManagedWidget("TOOLBAR_SEP", xmSeparatorWidgetClass,
+    	    statsAreaForm,
+	    XmNseparatorType, XmSHADOW_ETCHED_IN,
+	    XmNmargin, 0,
+            XmNleftAttachment, XmATTACH_FORM,
+            XmNrightAttachment, XmATTACH_FORM,
+    	    NULL);
+
     /* A form to hold the stats line text and line/col widgets */
     window->statsLineForm = XtVaCreateWidget("statsLineForm",
             xmFormWidgetClass, statsAreaForm,
@@ -464,15 +594,14 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             xmLabelWidgetClass, window->statsLineForm,
             XmNlabelString, s1=XmStringCreateSimple("L: ---  C: ---"),
             XmNshadowThickness, 0,
-            XmNmarginHeight, 0,
-            XmNmarginTop, 1,    /* Help align with statsLine */
+            XmNmarginHeight, 2,
             XmNtraversalOn, False,
             XmNtopAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM, /*  */
             NULL);
     XmStringFree(s1);
-    
+
     /* Create file statistics display area.  Using a text widget rather than
        a label solves a layout problem with the main window, which messes up
        if the label is too long (we would need a resize callback to control
@@ -480,7 +609,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        file names and line numbers.  Colors are copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-
     XtVaGetValues(statsAreaForm, XmNbackground, &bgpix, NULL);
     XtVaGetValues(statsAreaForm, XmNforeground, &fgpix, NULL);
     stats = XtVaCreateManagedWidget("statsLine", 
@@ -489,18 +617,22 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNforeground, fgpix,
             XmNshadowThickness, 0,
             XmNhighlightColor, bgpix,
-            XmNhighlightThickness, 1,  /* Setting this to zero causes mysterious
-                                          problems with lesstif! */
-            XmNmarginHeight, 0,
+            XmNhighlightThickness, 0,  /* must be zero, for OM (2.1.30) to 
+	                                  aligns tatsLineColNo & statsLine */
+            XmNmarginHeight, 1,        /* == statsLineColNo.marginHeight - 1,
+	                                  to align with statsLineColNo */
             XmNscrollHorizontal, False,
             XmNeditMode, XmSINGLE_LINE_EDIT,
             XmNeditable, False,
             XmNtraversalOn, False,
             XmNcursorPositionVisible, False,
-            XmNtopAttachment, XmATTACH_FORM,
+            XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
+            XmNtopWidget, window->statsLineColNo,
             XmNleftAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_WIDGET,
             XmNrightWidget, window->statsLineColNo,
+            XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
+            XmNbottomWidget, window->statsLineColNo,
             XmNrightOffset, 3,
             NULL);
     window->statsLine = stats;
@@ -514,6 +646,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     if (window->fontList == NULL)
         XtVaGetValues(stats, XmNfontList, &window->fontList, NULL);
 
+    manageToolBars(statsAreaForm);
+
     /* Create the menu bar */
     menuBar = CreateMenuBar(mainWin, window);
     window->menuBar = menuBar;
@@ -525,11 +659,14 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNspacing, 3, XmNsashIndent, -2, NULL);
     window->splitPane = pane;
     XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, NULL, NULL, pane);
+    
+    /* buffer/window info should associate with text pane */
+    XtVaSetValues(pane, XmNuserData, window, NULL);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
        recognize Caps Lock and Num Lock as modifiers, and don't trigger if
        they are engaged */ 
-    AccelLockBugPatch(pane, menuBar);
+    AccelLockBugPatch(pane, window->menuBar);
 
     /* Create the first, and most permanent text area (other panes may
        be added & removed, but this one will never be removed */
@@ -605,8 +742,116 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     UpdateMinPaneHeights(window);
     
     restoreInsaneVirtualKeyBindings(invalidBindings);
+    
+    /* create persistant dialog upfront, shared by all buffers
+       in a common shell window */
+    CreateFindDlog(window->shell, window);
+    CreateReplaceDlog(window->shell, window);
+    CreateReplaceMultiFileDlog(window);
 
+    /* tell the world there's a new window to move in */
+    if (GetPrefBufferMode()) {
+	for(win=WindowList; win; win=win->next) {
+    	    if (IsTopBuffer(win))	    
+    		XtSetSensitive(win->attachBufferItem, 
+	    		NBuffers(window) < NWindows());
+	}
+    }
+    
     return window;
+}
+
+/*
+** add a new tab to the tab bar, where the [new] buffer belongs.
+*/
+static Widget addBufferTab(Widget folder, WindowInfo *window, const char *string)
+{
+    Widget tooltipLabel, tab;
+    XmString s1;
+    
+    s1 = XmStringCreateSimple((char *)string);
+    tab = XtVaCreateManagedWidget("tab",
+	    xrwsBubbleButtonWidgetClass, folder,
+	    XmNmarginWidth, 0,
+	    XmNmarginHeight, 0,
+  	    XmNalignment, XmALIGNMENT_BEGINNING,
+  	    XmNlabelString, s1,
+  	    XltNbubbleString, s1,
+	    XltNshowBubble, GetPrefToolTips(),
+	    XltNautoParkBubble, True,
+	    XltNslidingBubble, False,
+	    /* XltNdelay, 800,*/
+	    /* XltNbubbleDuration, 8000,*/
+	    NULL);
+    XmStringFree(s1);
+
+    XtAddCallback(tab, XmNactivateCallback,
+    	    (XtCallbackProc)clickTabCB, NULL);
+
+    /* BubbleButton simply use reversed video for tooltips,
+       we try to use the 'standard' color */
+    tooltipLabel = XtNameToWidget(tab, "*BubbleLabel");
+    XtVaSetValues(tooltipLabel,
+    	    XmNbackground, AllocateColor(tab, GetPrefTooltipBgColor()),
+    	    XmNforeground, AllocateColor(tab, NEDIT_DEFAULT_FG),
+	    NULL);
+
+    /* put borders around tooltip. BubbleButton use 
+       transientShellWidgetClass as tooltip shell, which
+       came without borders */
+    XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, NULL);
+	
+    return tab;
+}
+	    
+/*
+** return the tab next to the closing tab.
+**
+** tab close left to right (Mozilla 1.1 behavior), i.e
+** the 'right-hand' tab get the new seat, unless the
+** closing buffer is the right-most tab
+*/
+static WindowInfo *replacementBuffer(WindowInfo *window)
+{
+    int n, tabPos, nextPos;
+    WindowInfo **winList, *win;
+    int nBuf = NBuffers(window);
+    
+    if (nBuf <= 1)
+    	return NULL;
+	
+    winList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nBuf);
+    n = nBuf -1;
+    for (win=WindowList; win && n>=0; win=win->next) {
+    	if (win->shell == window->shell)
+	    winList[n--] = win;
+    }
+    
+    for (n=0; n<nBuf; n++) {
+    	if (winList[n] == window) {
+	    tabPos = n;
+	    break;
+	}   
+    }
+    	
+    nextPos = tabPos == nBuf-1? tabPos-1 : tabPos+1;
+    win = winList[nextPos];
+    XtFree((char*) winList);
+    return win;
+}
+
+/* 
+ * find which buffer/window a tab belongs to
+**/
+WindowInfo *TabToWindow(Widget tab)
+{
+    WindowInfo *win;
+    for (win=WindowList; win; win=win->next) {
+    	if (win->bufferTab == tab)
+	    return win;
+    }
+
+    return NULL;
 }
 
 /*
@@ -616,7 +861,20 @@ void CloseWindow(WindowInfo *window)
 {
     int keepWindow;
     char name[MAXPATHLEN];
-    
+    WindowInfo *win, *topBuf = NULL, *nextBuf = NULL;
+
+    /* turn off the tear-off menus for Shell & Macro to
+       minimized visual disturbance if these menus get
+       updated somehow, especial when CloseWindow() is
+       called from within macros. */
+    if (IsTopBuffer(window)) {
+	if (!XmIsMenuShell(XtParent(window->macroMenuPane)))
+    	    XtPopdown(XtParent(window->macroMenuPane));
+
+	if (!XmIsMenuShell(XtParent(window->shellMenuPane)))
+    	    XtPopdown(XtParent(window->shellMenuPane));
+    }
+        
     /* Free smart indent macro programs */
     EndSmartIndent(window);
     
@@ -675,6 +933,7 @@ void CloseWindow(WindowInfo *window)
                                                    line from long file names */
         UpdateStatsLine(window);
         DetermineLanguageMode(window, True);
+	RefreshTabState(window);
         return;
     }
     
@@ -694,16 +953,71 @@ void CloseWindow(WindowInfo *window)
     ClearUndoList(window);
     ClearRedoList(window);
     
-    /* remove and deallocate all of the widgets associated with window */
-    XtFree(window->backlightCharTypes); /* we made a copy earlier on */
-    XtDestroyWidget(window->shell);
+    /* close window, or buffer */
+    if (NBuffers(window) > 1) {
+    	if (MacroRunWindow() && MacroRunWindow() != window &&
+	    	MacroRunWindow()->shell == window->shell) {
+	    nextBuf = MacroRunWindow();
+	}
+	else if (IsTopBuffer(window)) {
+	    /* if this is the active buffer, then we need
+	       to find its successor */
+    	    nextBuf = replacementBuffer(window);
+	}
+	else
+	    topBuf = GetTopBuffer(window->shell);	    
+    }
     
     /* remove the window from the global window list, update window menus */
     removeFromWindowList(window);
     InvalidateWindowMenus();
+
+    /* remove tab from tab bar */
+    XtDestroyWidget(window->bufferTab);
+
+    if (nextBuf) {
+        /* show the replacement buffer */
+    	RaiseBuffer(nextBuf);
+	ShowWindowTabBar(nextBuf);
+    }
+    else if (topBuf) {
+    	/* refresh tabbar after deleting a non-top buffer */
+	ShowWindowTabBar(topBuf);
+    }
+    
+    /* tell the world there's one less window to move in */
+    if (GetPrefBufferMode()) {
+	for(win=WindowList; win; win=win->next) {
+    	    if (IsTopBuffer(win))	    
+    		XtSetSensitive(win->attachBufferItem, 
+	    		NBuffers(WindowList) < NWindows());
+	}
+    }
+
+    /* destroy the buffer pane, or window */
+    if (nextBuf || topBuf) {
+        DeleteBuffer(window);
+    }
+    else {
+	/* remove and deallocate all of the widgets associated with window */
+    	XtFree(window->backlightCharTypes); /* we made a copy earlier on */
+	XtDestroyWidget(window->shell);
+    }
     
     /* deallocate the window data structure */
     XtFree((char *)window);
+}
+
+void ShowWindowTabBar(WindowInfo *window)
+{
+    if (GetPrefTabBar()) {
+	if (GetPrefTabBarHideOne())
+	    ShowBufferTabBar(window, NBuffers(window)>1);
+	else 
+	    ShowBufferTabBar(window, True);
+    }
+    else
+	ShowBufferTabBar(window, False);
 }
 
 /*
@@ -804,7 +1118,8 @@ void SplitWindow(WindowInfo *window)
     }
 
     /* Re-manage panedWindow to recalculate pane heights & reset selection */
-    XtManageChild(window->splitPane);
+    if (IsTopBuffer(window))
+    	XtManageChild(window->splitPane);
     
     /* Reset all of the heights, scroll positions, etc. */
     for (i=0; i<=window->nPanes; i++) {
@@ -908,7 +1223,9 @@ void ClosePane(WindowInfo *window)
         text = i==0 ? window->textArea : window->textPanes[i-1];
         setPaneDesiredHeight(containingPane(text), paneHeights[i]);
     }
-    XtManageChild(window->splitPane);
+
+    if (IsTopBuffer(window))
+    	XtManageChild(window->splitPane);
     
     /* Reset all of the scroll positions, insert positions, etc. */
     for (i=0; i<=window->nPanes; i++) {
@@ -1031,27 +1348,39 @@ void ShowStatsLine(WindowInfo *window, int state)
 static void showStats(WindowInfo *window, int state)
 {
     if (state) {
-        Dimension ht;
-
-        XtVaSetValues(window->iSearchForm,
-                XmNbottomAttachment, XmATTACH_NONE, NULL);
         XtManageChild(window->statsLineForm);
         showStatsForm(window, True);
-        
-        /* workaround for Lesstif (0.93.0, maybe others) to reveal the 
-            statsline */
-        XtVaGetValues(window->statsLine, XmNheight, &ht, NULL);
-        XtVaSetValues(window->statsLineColNo, XmNheight, ht, NULL);
     } else {
         XtUnmanageChild(window->statsLineForm);
-        XtVaSetValues(window->iSearchForm,
-                XmNbottomAttachment, XmATTACH_FORM, NULL);
         showStatsForm(window, window->showISearchLine);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
     /* Already done in showStatsForm */
     /* UpdateWMSizeHints(window); */
+}
+
+/*
+*/
+static void showTabBar(WindowInfo *window, int state)
+{
+    if (state) {
+	XtManageChild(XtParent(window->bufferTabBar));
+	showStatsForm(window, True);
+    } else {
+	XtUnmanageChild(XtParent(window->bufferTabBar));
+	showStatsForm(window, False);
+    }
+}
+
+/*
+*/
+void ShowBufferTabBar(WindowInfo *window, int state)
+{
+    if (XtIsManaged(XtParent(window->bufferTabBar)) == state)
+        return;
+    window->showTabBar = state;
+    showTabBar(window, state);
 }
 
 /*
@@ -1085,15 +1414,11 @@ void TempShowISearch(WindowInfo *window, int state)
 static void showISearch(WindowInfo *window, int state)
 {
     if (state) {
-        XtManageChild(window->iSearchForm);
-        XtVaSetValues(window->statsLineForm, XmNtopAttachment, 
-                XmATTACH_WIDGET, XmNtopWidget, window->iSearchForm, NULL);
-        showStatsForm(window, True);
+	XtManageChild(window->iSearchForm);
+	showStatsForm(window, True);
     } else {
-        XtUnmanageChild(window->iSearchForm);
-        XtVaSetValues(window->statsLineForm, XmNtopAttachment, 
-                XmATTACH_FORM, NULL);
-        showStatsForm(window, window->showStats || 
+	XtUnmanageChild(window->iSearchForm);
+	showStatsForm(window, window->showStats || 
                 window->modeMessageDisplayed);
     }
       
@@ -1120,7 +1445,7 @@ static void showStatsForm(WindowInfo *window, int state)
        this occurs may be earlier than 2.1.  If the stats line shows
        double thickness shadows in earlier Motif versions, the #if XmVersion
        directive should be moved back to that earlier version) */
-    if (state) {
+    if (manageToolBars(statsAreaForm)) {
         XtUnmanageChild(statsAreaForm);    /*... will this fix Solaris 7??? */
         XtVaSetValues(mainW, XmNcommandWindowLocation,
                 XmCOMMAND_ABOVE_WORKSPACE, NULL);
@@ -1135,7 +1460,7 @@ static void showStatsForm(WindowInfo *window, int state)
         XtVaSetValues(mainW, XmNcommandWindowLocation,
                 XmCOMMAND_BELOW_WORKSPACE, NULL);
     }
-      
+    
     /* Tell WM that the non-expandable part of the window has changed size */
     UpdateWMSizeHints(window);
 }
@@ -1146,6 +1471,9 @@ static void showStatsForm(WindowInfo *window, int state)
 */
 void SetModeMessage(WindowInfo *window, const char *message)
 {
+    if (!IsTopBuffer(window))
+    	return;
+	
     window->modeMessageDisplayed = True;
     XmTextSetString(window->statsLine, (char*)message);
     /*
@@ -1161,6 +1489,9 @@ void SetModeMessage(WindowInfo *window, const char *message)
 */
 void ClearModeMessage(WindowInfo *window)
 {
+    if (!IsTopBuffer(window))
+    	return;
+
     window->modeMessageDisplayed = False;
     /*
      * Remove the stats line only if indicated by it's window state.
@@ -1423,22 +1754,47 @@ void SetWrapMargin(WindowInfo *window, int margin)
 /*
 ** Recover the window pointer from any widget in the window, by searching
 ** up the widget hierarcy for the top level container widget where the window
-** pointer is stored in the userData field.
+** pointer is stored in the userData field. In buffer mode, this is the window
+** pointer of the top (active) buffer, which is returned if w is 'shell-level'
+** widget - menus, find/replace dialogs, etc.
+**
+** To support action routine in buffer mode, a copy of the window pointer 
+** is also store in the splitPane widget.
 */
 WindowInfo *WidgetToWindow(Widget w)
 {
-    WindowInfo *window;
+    WindowInfo *window = NULL;
     Widget parent;
     
     while (True) {
-        parent = XtParent(w);
-        if (parent == NULL)
-            return NULL;
-        if (XtClass(parent) == topLevelShellWidgetClass)
-            break;
-        w = parent;
+    	/* return window pointer of buffer */
+    	if (XtClass(w) == xmPanedWindowWidgetClass)
+	    break;
+	    
+	if (XtClass(w) == topLevelShellWidgetClass) {
+    	    WidgetList items;
+
+	    /* there should be only 1 child for the shell -
+	       the main window widget */
+    	    XtVaGetValues(w, XmNchildren, &items, NULL);
+	    w = items[0];
+	    break;
+	}
+	
+    	parent = XtParent(w);
+    	if (parent == NULL)
+    	    return NULL;
+	
+	/* make sure it is not a dialog shell */
+    	if (XtClass(parent) == topLevelShellWidgetClass &&
+	    	XmIsMainWindow(w))
+    	    break;
+
+    	w = parent;
     }
+    
     XtVaGetValues(w, XmNuserData, &window, NULL);
+
     return window;
 }
 
@@ -1449,12 +1805,14 @@ WindowInfo *WidgetToWindow(Widget w)
 void SetWindowModified(WindowInfo *window, int modified)
 {
     if (window->fileChanged == FALSE && modified == TRUE) {
-        XtSetSensitive(window->closeItem, TRUE);
-        window->fileChanged = TRUE;
-        UpdateWindowTitle(window);
+    	XtSetSensitive(window->closeItem, TRUE);
+    	window->fileChanged = TRUE;
+    	UpdateWindowTitle(window);
+	RefreshTabState(window);
     } else if (window->fileChanged == TRUE && modified == FALSE) {
-        window->fileChanged = FALSE;
-        UpdateWindowTitle(window);
+    	window->fileChanged = FALSE;
+    	UpdateWindowTitle(window);
+	RefreshTabState(window);
     }
 }
 
@@ -1464,7 +1822,12 @@ void SetWindowModified(WindowInfo *window, int modified)
 */
 void UpdateWindowTitle(const WindowInfo *window)
 {
-    char *title = FormatWindowTitle(window->filename,
+    char *iconTitle, *title;
+    
+    if (!IsTopBuffer((WindowInfo*)window))
+    	return;
+
+    title = FormatWindowTitle(window->filename,
                                     window->path,
 #ifdef VMS
                                     NULL,
@@ -1478,7 +1841,7 @@ void UpdateWindowTitle(const WindowInfo *window)
                                     window->fileChanged,
                                     GetPrefTitleFormat());
                    
-    char *iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
+    iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
     strcpy(iconTitle, window->filename);
     if (window->fileChanged)
@@ -1510,6 +1873,9 @@ void UpdateWindowReadOnly(WindowInfo *window)
 {
     int i, state;
     
+    if (!IsTopBuffer(window))
+    	return;
+
     state = IS_ANY_LOCKED(window->lockReasons);
     XtVaSetValues(window->textArea, textNreadOnly, state, NULL);
     for (i=0; i<window->nPanes; i++)
@@ -1754,25 +2120,30 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     /* Check and dim/undim selection related menu items */
     if ((window->wasSelected && !selected) ||
         (!window->wasSelected && selected)) {
-        window->wasSelected = selected;
-        XtSetSensitive(window->printSelItem, selected);
-        XtSetSensitive(window->cutItem, selected);
-        XtSetSensitive(window->copyItem, selected);
-        XtSetSensitive(window->delItem, selected);
-        /* Note we don't change the selection for items like
-           "Open Selected" and "Find Selected".  That's because
-           it works on selections in external applications.
-           Desensitizing it if there's no NEdit selection 
-           disables this feature. */
+    	window->wasSelected = selected;
+	
+	/* buffers may share a common shell window, menu-bar etc.
+	   we don't do much if things happen to the hidden ones */
+        if (IsTopBuffer(window)) {
+    	    XtSetSensitive(window->printSelItem, selected);
+    	    XtSetSensitive(window->cutItem, selected);
+    	    XtSetSensitive(window->copyItem, selected);
+            XtSetSensitive(window->delItem, selected);
+            /* Note we don't change the selection for items like
+               "Open Selected" and "Find Selected".  That's because
+               it works on selections in external applications.
+               Desensitizing it if there's no NEdit selection 
+               disables this feature. */
 #ifndef VMS
-        XtSetSensitive(window->filterItem, selected);
+            XtSetSensitive(window->filterItem, selected);
 #endif
 
-        DimSelectionDepUserMenuItems(window, selected);
-        if (window->replaceDlog != NULL)
-        {
-            UpdateReplaceActionButtons(window);
-        }
+            DimSelectionDepUserMenuItems(window, selected);
+            if (window->replaceDlog != NULL)
+            {
+        	UpdateReplaceActionButtons(window);
+            }
+	}
     }
     
     /* Make sure line number display is sufficient for new data */
@@ -1844,15 +2215,25 @@ static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData)
 
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
-    if (WindowList->next == NULL) {
-        if (!CheckPrefsChangesSaved(window->shell))
-            return;
-        if (!WindowList->fileChanged)
-            exit(EXIT_SUCCESS);
-        if (CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE))
-            exit(EXIT_SUCCESS);
-    } else
-        CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
+    window = WidgetToWindow(w);
+    
+    if (GetPrefBufferMode()) {
+	/* in window-buffer mode, we now have only one app window,
+	   to close is to quit */
+	CloseBufferWindow(w, window, callData);
+    }
+    else {
+    	/* close this window */
+	if (WindowList->next == NULL) {
+	    if (!CheckPrefsChangesSaved(window->shell))
+    		return;
+	    if (!WindowList->fileChanged)
+     		exit(EXIT_SUCCESS);
+     	    if (CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE))
+     		exit(EXIT_SUCCESS);
+	} else
+    	    CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);    
+    }
 }
 
 static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData) 
@@ -1862,6 +2243,8 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
     int argc = 0, maxArgc, nWindows, i;
     char **argv;
     int wasIconic = False;
+    
+    window = WidgetToWindow(w);
     
     /* Only post a restart command on the first window in the window list so
        session manager can restart the whole set of windows in one executable,
@@ -1903,7 +2286,7 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
         getGeometryString(win, geometry);
         argv[argc++] = XtNewString("-geometry");
         argv[argc++] = XtNewString(geometry);
-        if (isIconic(win)) {
+        if (IsIconic(win)) {
             argv[argc++] = XtNewString("-iconic");
             wasIconic = True;
         } else if (wasIconic) {
@@ -1930,7 +2313,7 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
 ** on the shell window.  I think this is the most reliable way to tell,
 ** but if someone has a better idea please send me a note).
 */
-static int isIconic(WindowInfo *window)
+int IsIconic(WindowInfo *window)
 {
     unsigned long *property = NULL;
     unsigned long nItems;
@@ -2037,6 +2420,9 @@ void UpdateStatsLine(WindowInfo *window)
     char *sleft, *smid, *sright;
 #endif
     
+    if (!IsTopBuffer(window))
+      return;
+
     /* This routine is called for each character typed, so its performance
        affects overall editor perfomance.  Only update if the line is on. */ 
     if (!window->showStats)
@@ -2061,6 +2447,12 @@ void UpdateStatsLine(WindowInfo *window)
             sprintf(string, "%s%s%s %d bytes", window->path,
                     window->filename, format, window->buffer->length);
     }
+    
+    /* Update the line/column number */
+    xmslinecol = XmStringCreateSimple(slinecol);
+    XtVaSetValues( window->statsLineColNo, 
+            XmNlabelString, xmslinecol, NULL );
+    XmStringFree(xmslinecol);
     
     /* Don't clobber the line if there's a special message being displayed */
     if (!window->modeMessageDisplayed) {
@@ -2151,7 +2543,7 @@ void AllWindowsUnbusy(void)
 
     for (w=WindowList; w!=NULL; w=w->next)
     {
-        ClearModeMessage(w);
+        /* ClearModeMessage(w); */
         EndWait(w->shell);
     }
 
@@ -2290,6 +2682,29 @@ void AddSmallIcon(Widget shell)
     }
     XtVaSetValues(shell, XmNiconPixmap, iconPixmap,
             XmNiconMask, maskPixmap, NULL);
+}
+
+static void setTabCloseButtonImage(Widget button)
+{
+    static Pixmap pixmap = 0;
+
+    if (pixmap == 0) {
+    	Pixel fg, bg;
+	int depth;
+	
+	/* create pixmap per the color depth setting. This fixes a
+	   BadMatch (X_CopyArea) error due to mismatching of color
+	   depth between the bitmap (depth of 1) and the screen,
+	   specifically on when linked to LessTif (0.93.x) on
+	   ASPLinux 7.1 */
+    	XtVaGetValues (button, XmNforeground, &fg, XmNbackground, &bg,
+	    	XmNdepth, &depth, NULL);
+	pixmap = XCreatePixmapFromBitmapData(TheDisplay,
+                RootWindowOfScreen(XtScreen(button)), (char *)close_bits,
+                close_width, close_height, fg, bg, depth);
+    }
+    
+    XtVaSetValues(button, XmNlabelPixmap, pixmap, NULL);
 }
 
 /*
@@ -2547,6 +2962,1271 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings
                       strlen((const char*)insaneVirtKeyBindings));
       XFree((char*)insaneVirtKeyBindings);
    }
+}
+
+/*
+** perform generic management on the children (toolbars) of toolBarsForm,
+** a.k.a. statsForm, by setting the form attachment of the managed child 
+** widgets per their position/order.
+**
+** You can optionally create separator after a toolbar widget with it's 
+** widget name set to "TOOLBAR_SEP", which will appear below the toolbar
+** widget. These seperators will then be managed automatically by this  
+** routine along with the toolbars they 'attached' to.
+**
+** It also takes care of the attachment offset settings of the child
+** widgets to keep the border lines of the parent form displayed, so
+** you don't have set them before hand.
+**
+** Note: XtManage/XtUnmange the target child (toolbar) before calling this
+**       function.
+**
+** Returns the last toolbar widget managed.
+**
+*/
+static Widget manageToolBars(Widget toolBarsForm)
+{
+    Widget topWidget = NULL;
+    WidgetList children;
+    int n, nItems=0;
+
+    XtVaGetValues(toolBarsForm, XmNchildren, &children, 
+    	    XmNnumChildren, &nItems, NULL);
+
+    for (n=0; n<nItems; n++) {
+    	Widget tbar = children[n];
+	
+    	if (XtIsManaged(tbar)) {	    
+	    if (topWidget) {
+		XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_WIDGET,
+			XmNtopWidget, topWidget,
+		    	XmNbottomAttachment, XmATTACH_NONE,
+	    	    	XmNleftOffset, STAT_SHADOW_THICKNESS,
+	    	    	XmNrightOffset, STAT_SHADOW_THICKNESS,			
+			NULL);
+	    }
+	    else {
+	    	/* the very first toolbar on top */
+	    	XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_FORM,
+		    	XmNbottomAttachment, XmATTACH_NONE,
+	    	    	XmNleftOffset, STAT_SHADOW_THICKNESS,
+	    	    	XmNtopOffset, STAT_SHADOW_THICKNESS,			
+	    	    	XmNrightOffset, STAT_SHADOW_THICKNESS,			
+			NULL);
+	    }
+
+	    topWidget = tbar;	    
+
+	    /* if the next widget is a separator, turn it on */
+	    if (n+1<nItems && !strcmp(XtName(children[n+1]), "TOOLBAR_SEP")) {
+    	    	XtManageChild(children[n+1]);
+	    }	    
+	}
+	else {
+	    /* Remove top attachment to widget to avoid circular dependency.
+	       Attach bottom to form so that when the widget is redisplayed
+	       later, it will trigger the parent form to resize properly as
+	       if the widget is being inserted */
+	    XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE,
+		    XmNbottomAttachment, XmATTACH_FORM, NULL);
+	    
+	    /* if the next widget is a separator, turn it off */
+	    if (n+1<nItems && !strcmp(XtName(children[n+1]), "TOOLBAR_SEP")) {
+    	    	XtUnmanageChild(children[n+1]);
+	    }
+	}
+    }
+    
+    if (topWidget) {
+    	if (strcmp(XtName(topWidget), "TOOLBAR_SEP")) {
+	    XtVaSetValues(topWidget, 
+		    XmNbottomAttachment, XmATTACH_FORM,
+		    XmNbottomOffset, STAT_SHADOW_THICKNESS,
+		    NULL);
+	}
+	else {
+	    /* is a separator */
+	    Widget wgt;
+	    XtVaGetValues(topWidget, XmNtopWidget, &wgt, NULL);
+	    
+	    /* don't need sep below bottom-most toolbar */
+	    XtUnmanageChild(topWidget);
+	    XtVaSetValues(wgt, 
+		    XmNbottomAttachment, XmATTACH_FORM,
+		    XmNbottomOffset, STAT_SHADOW_THICKNESS,
+		    NULL);
+	}
+    }
+    
+    return topWidget;
+}
+
+/*
+** Calculate the dimension of the text area, in terms of rows & cols, 
+** as if there's only one single text pane in the window.
+*/
+static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols)
+{
+    Widget hScrollBar;
+    Dimension hScrollBarHeight, paneHeight;
+    int marginHeight, marginWidth, totalHeight, fontHeight;
+    textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+
+    /* width is the same for panes */
+    XtVaGetValues(window->textArea, textNcolumns, nCols, NULL);
+    
+    /* we have to work out the height, as the text area may have been split */
+    XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar,
+            textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth,
+	    NULL);
+    XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, NULL);
+    XtVaGetValues(window->splitPane, XmNheight, &paneHeight, NULL);
+    totalHeight = paneHeight - 2*marginHeight -hScrollBarHeight;
+    fontHeight = textD->ascent + textD->descent;
+    *nRows = totalHeight/fontHeight;
+}
+
+/*
+** Create a new buffer in the shell window
+*/
+WindowInfo *CreateBuffer(WindowInfo *shellWindow, const char *name,
+	char *geometry, int iconic)
+{
+    Widget pane, text;
+    WindowInfo *window;
+    int nCols, nRows;
+    
+#ifdef SGI_CUSTOM
+    char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
+#endif
+
+    /* Allocate some memory for the new window data structure */
+    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    memcpy(window, shellWindow, sizeof(WindowInfo));
+    
+    /* initialize window structure */
+    /* + Schwarzenberg: should a 
+      memset(window, 0, sizeof(WindowInfo));
+         be added here ?
+    */
+#if 0
+    /* share these dialog items with parent shell */
+    window->replaceDlog = NULL;
+    window->replaceText = NULL;
+    window->replaceWithText = NULL;
+    window->replaceWordToggle = NULL;
+    window->replaceCaseToggle = NULL;
+    window->replaceRegexToggle = NULL;
+    window->findDlog = NULL;
+    window->findText = NULL;
+    window->findWordToggle = NULL;
+    window->findCaseToggle = NULL;
+    window->findRegexToggle = NULL;
+    window->replaceMultiFileDlog = NULL;
+    window->replaceMultiFilePathBtn = NULL;
+    window->replaceMultiFileList = NULL;
+#endif
+    window->multiFileReplSelected = FALSE;
+    window->multiFileBusy = FALSE;
+    window->writableWindows = NULL;
+    window->nWritableWindows = 0;
+    window->fileChanged = FALSE;
+    window->fileMissing = True;
+    window->fileMode = 0;
+    window->filenameSet = FALSE;
+    window->fileFormat = UNIX_FILE_FORMAT;
+    window->lastModTime = 0;
+    strcpy(window->filename, name);
+    window->undo = NULL;
+    window->redo = NULL;
+    window->nPanes = 0;
+    window->autoSaveCharCount = 0;
+    window->autoSaveOpCount = 0;
+    window->undoOpCount = 0;
+    window->undoMemUsed = 0;
+    CLEAR_ALL_LOCKS(window->lockReasons);
+    window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+    window->autoSave = GetPrefAutoSave();
+    window->saveOldVersion = GetPrefSaveOldVersion();
+    window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
+    window->overstrike = False;
+    window->showMatchingStyle = GetPrefShowMatching();
+    window->matchSyntaxBased = GetPrefMatchSyntaxBased();
+    window->showStats = GetPrefStatsLine();
+    window->showISearchLine = GetPrefISearchLine();
+    window->showLineNumbers = GetPrefLineNums();
+    window->highlightSyntax = GetPrefHighlightSyntax();
+    window->backlightCharTypes = NULL;
+    window->backlightChars = GetPrefBacklightChars();
+    if (window->backlightChars) {
+      char *cTypes = GetPrefBacklightCharTypes();
+      if (cTypes && window->backlightChars) {
+          if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+              strcpy(window->backlightCharTypes, cTypes);
+      }
+    }
+    window->modeMessageDisplayed = FALSE;
+    window->ignoreModify = FALSE;
+    window->windowMenuValid = FALSE;
+    window->prevOpenMenuValid = FALSE;
+    window->flashTimeoutID = 0;
+    window->wasSelected = FALSE;
+    strcpy(window->fontName, GetPrefFontName());
+    strcpy(window->italicFontName, GetPrefItalicFontName());
+    strcpy(window->boldFontName, GetPrefBoldFontName());
+    strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
+    window->colorDialog = NULL;
+    window->fontList = GetPrefFontList();
+    window->italicFontStruct = GetPrefItalicFont();
+    window->boldFontStruct = GetPrefBoldFont();
+    window->boldItalicFontStruct = GetPrefBoldItalicFont();
+    window->fontDialog = NULL;
+    window->nMarks = 0;
+    window->markTimeoutID = 0;
+    window->highlightData = NULL;
+    window->shellCmdData = NULL;
+    window->macroCmdData = NULL;
+    window->smartIndentData = NULL;
+    window->languageMode = PLAIN_LANGUAGE_MODE;
+    window->iSearchHistIndex = 0;
+    window->iSearchStartPos = -1;
+    window->replaceLastRegexCase   = TRUE;
+    window->replaceLastLiteralCase = FALSE;
+    window->iSearchLastRegexCase   = TRUE;
+    window->iSearchLastLiteralCase = FALSE;
+    window->findLastRegexCase      = TRUE;
+    window->findLastLiteralCase    = FALSE;
+    window->bufferTab = NULL;
+
+    if (window->fontList == NULL)
+        XtVaGetValues(shellWindow->statsLine, XmNfontList, 
+    	    	&window->fontList,NULL);
+
+    getTextPaneDimension(shellWindow, &nRows, &nCols);
+    
+    /* Create pane for new buffer. We defer mapping the pane widget
+       to reduce flickers caused by its resizing when the text area
+       is added to it */
+    pane = XtVaCreateWidget("pane",
+    	    xmPanedWindowWidgetClass, window->mainWin,
+    	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
+    	    XmNspacing, 3, XmNsashIndent, -2,
+	    XmNmappedWhenManaged, False,
+	    NULL);
+    XtVaSetValues(window->mainWin, XmNworkWindow, pane, NULL);
+    XtManageChild(pane);
+    window->splitPane = pane;
+    
+    /* buffer/window info should associate with text pane */
+    XtVaSetValues(pane, XmNuserData, window, NULL);
+
+    /* Patch around Motif's most idiotic "feature", that its menu accelerators
+       recognize Caps Lock and Num Lock as modifiers, and don't trigger if
+       they are engaged */ 
+    AccelLockBugPatch(pane, window->menuBar);
+
+    /* Create the first, and most permanent text area (other panes may
+       be added & removed, but this one will never be removed */
+    text = createTextArea(pane, window, nRows, nCols,
+    	    GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(),
+	    GetPrefWrapMargin(), window->showLineNumbers?MIN_LINE_NUM_COLS:0);
+    XtManageChild(text);
+    window->textArea = text;
+    window->lastFocus = text;
+    
+    /* map the new buffer pane but keep it hidden */
+    XLowerWindow(TheDisplay, XtWindow(pane));
+    XtMapWidget(pane);
+    
+    /* Create the right button popup menu (note: order is important here,
+       since the translation for popping up this menu was probably already
+       added in createTextArea, but CreateBGMenu requires window->textArea
+       to be set so it can attach the menu to it (because menu shells are
+       finicky about the kinds of widgets they are attached to)) */
+    window->bgMenuPane = CreateBGMenu(window);
+    
+    /* Create the text buffer rather than using the one created automatically
+       with the text area widget.  This is done so the syntax highlighting
+       modify callback can be called to synchronize the style buffer BEFORE
+       the text display's callback is called upon to display a modification */
+    window->buffer = BufCreate();
+    BufAddModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
+    
+    /* Attach the buffer to the text widget, and add callbacks for modify */
+    TextSetBuffer(text, window->buffer);
+    BufAddModifyCB(window->buffer, modifiedCB, window);
+    
+    /* Designate the permanent text area as the owner for selections */
+    HandleXSelections(text);
+    
+    /* Set the requested hardware tab distance and useTabs in the text buffer */
+    BufSetTabDistance(window->buffer, GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+    window->buffer->useTabs = GetPrefInsertTabs();
+
+    /* add the window to the global window list, update the Windows menus */
+    InvalidateWindowMenus();
+    addToWindowList(window);
+
+    window->bufferTab = addBufferTab(window->bufferTabBar, window, name);
+    ShowBufferTabBar(window, GetPrefTabBar());
+    return window;
+}
+
+/*
+** return the next window/buffer on the tab list.
+*/
+static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
+        int crossWin)
+{
+    int n, tabPos, nextPos;
+    WindowInfo **winList, *win;
+    int nBuf = crossWin? NWindows() : NBuffers(window);
+    
+    if (nBuf <= 1)
+    	return NULL;
+	
+    winList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nBuf);
+    n = nBuf -1;
+    for (win=WindowList; win && n>=0; win=win->next) {
+    	if (crossWin)
+	    winList[n--] = win;
+	else if (win->shell == window->shell)
+	    winList[n--] = win;
+    }
+    
+    for (n=0; n<nBuf; n++) {
+    	if (winList[n] == window) {
+	    tabPos = n;
+	    break;
+	}   
+    }
+
+    /* calculate index position of next tab */
+    nextPos = tabPos + direction;
+    if (nextPos >= nBuf)
+    	nextPos = 0;
+    else if (nextPos < 0)
+    	nextPos = nBuf - 1;
+    
+    /* find which window next tab belongs to */
+    win = winList[nextPos];
+    XtFree((char *)winList);
+    return win;
+}
+
+/*
+** return the integer position of a tab in the tabbar it
+** belongs to, or -1 if there's an error, somehow.
+*/
+static int getTabPosition(Widget tab)
+{
+    WidgetList tabList;
+    int i, tabCount;
+    Widget tabBar = XtParent(tab);
+    
+    XtVaGetValues(tabBar, XmNtabWidgetList, &tabList,
+            XmNtabCount, &tabCount, NULL);
+
+    for (i=0; i< tabCount; i++) {
+    	if (tab == tabList[i])
+	    return i;
+    }
+    
+    return -1; /* something is wrong! */
+}
+
+/*
+** update the tab label, etc. of a tab per the states of it's buffer.
+*/
+void RefreshTabState(WindowInfo *win)
+{
+    XmString s1, tipString;
+    char labelString[MAXPATHLEN];
+    
+    sprintf(labelString, "%s%s", win->fileChanged? "*" : "",
+	    win->filename);
+    s1=XmStringCreateSimple(labelString);
+
+    if (GetPrefShowPathInWindowsMenu() && win->filenameSet) {
+       strcat(labelString, " - ");
+       strcat(labelString, win->path);
+    }
+    tipString=XmStringCreateSimple(labelString);
+    
+    XtVaSetValues(win->bufferTab,
+	    XltNbubbleString, tipString,
+	    XmNlabelString, s1,
+	    NULL);
+    XmStringFree(s1);
+    XmStringFree(tipString);
+}
+
+/*
+** close all the buffers in a shell window
+*/
+int CloseAllBufferInWindow(WindowInfo *window) 
+{
+    WindowInfo *win;
+    
+    if (NBuffers(window) == 1) {
+    	/* the only buffer in the window */
+    	return CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
+    }
+    else {
+	Widget winShell = window->shell;
+	WindowInfo *topBuffer;
+
+    	/* close all _modified_ buffers belong to this window */
+	for (win = WindowList; win; ) {
+    	    if (win->shell == winShell && win->fileChanged) {
+	    	WindowInfo *next = win->next;
+    	    	if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+		    return False;
+		win = next;
+	    }
+	    else
+	    	win = win->next;
+	}
+
+    	/* see there's still buffers left in the window */
+	for (win = WindowList; win; win=win->next)
+	    if (win->shell == winShell)
+	    	break;
+	
+	if (win) {
+	    topBuffer = GetTopBuffer(winShell);
+
+    	    /* close all non-top buffers belong to this window */
+	    for (win = WindowList; win; ) {
+    		if (win->shell == winShell && win != topBuffer) {
+	    	    WindowInfo *next = win->next;
+    	    	    if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+			return False;
+		    win = next;
+		}
+		else
+	    	    win = win->next;
+	    }
+
+	    /* close the last buffer and its window */
+    	    if (!CloseFileAndWindow(topBuffer, PROMPT_SBC_DIALOG_RESPONSE))
+		return False;
+	}
+    }
+    
+    return True;
+}
+
+static void CloseBufferWindow(Widget w, WindowInfo *window, XtPointer callData) 
+{
+    int nBuffers = NBuffers(window);
+    
+    if (nBuffers == NWindows()) {
+    	/* this is only window, then exit */
+	XtCallActionProc(WindowList->lastFocus, "exit",
+    		((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    }
+    else {
+        if (nBuffers == 1) {
+	    CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
+	}
+    	else {
+            int resp = DialogF(DF_QUES, window->shell, 2, "Close Window",
+	    	    "Close ALL buffers in this window?", "Close", "Cancel");
+
+            if (resp == 1)
+    		CloseAllBufferInWindow(window);
+	}
+    }
+}
+
+static void cloneTextPane(WindowInfo *window, WindowInfo *orgWin)
+{
+    short paneHeights[MAX_PANES+1];
+    int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
+    int horizOffsets[MAX_PANES+1];
+    int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
+    char *delimiters;
+    Widget text;
+    selection sel;
+    
+    /* old window must disown hilite data */
+    orgWin->highlightData = NULL;
+        
+    /* transfer the primary selection */
+    memcpy(&sel, &orgWin->buffer->primary, sizeof(selection));
+	    
+    if (sel.selected) {
+    	if (sel.rectangular)
+    	    BufRectSelect(window->buffer, sel.start, sel.end,
+		    sel.rectStart, sel.rectEnd);
+    	else
+    	    BufSelect(window->buffer, sel.start, sel.end);
+    } else
+    	BufUnselect(window->buffer);
+
+    /* Record the current heights, scroll positions, and insert positions
+       of the existing panes, keyboard focus */
+    focusPane = 0;
+    for (i=0; i<=orgWin->nPanes; i++) {
+    	text = i==0 ? orgWin->textArea : orgWin->textPanes[i-1];
+    	insertPositions[i] = TextGetCursorPos(text);
+    	XtVaGetValues(XtParent(text), XmNheight, &paneHeights[i], NULL);
+    	totalHeight += paneHeights[i];
+    	TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+    	if (text == orgWin->lastFocus)
+    	    focusPane = i;
+    }
+    
+    window->nPanes = orgWin->nPanes;
+    
+    /* clone split panes, if any */
+    if (window->nPanes) {
+	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+    	XtUnmanageChild(window->splitPane);
+
+	/* Create a text widget to add to the pane and set its buffer and
+	   highlight data to be the same as the other panes in the orgWin */
+	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
+    		textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
+		textNlineNumCols, &lineNumCols, NULL);
+
+	for(i=0; i<orgWin->nPanes; i++) {
+	    text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
+    		    delimiters, wrapMargin, lineNumCols);
+	    TextSetBuffer(text, window->buffer);
+
+	    if (window->highlightData != NULL)
+    		AttachHighlightToWidget(text, window);
+	    XtManageChild(text);
+	    window->textPanes[i] = text;
+	}
+
+	/* Set the minimum pane height in the new pane */
+	UpdateMinPaneHeights(window);
+
+	for (i=0; i<=window->nPanes; i++) {
+    	    text = i==0 ? window->textArea : window->textPanes[i-1];
+    	    setPaneDesiredHeight(containingPane(text), paneHeights[i]);
+	}
+
+	/* Re-manage panedWindow to recalculate pane heights & reset selection */
+    	XtManageChild(window->splitPane);
+    }
+
+    /* Reset all of the heights, scroll positions, etc. */
+    for (i=0; i<=window->nPanes; i++) {
+    	textDisp *textD;
+	
+    	text = i==0 ? window->textArea : window->textPanes[i-1];
+	TextSetCursorPos(text, insertPositions[i]);
+	TextSetScroll(text, topLines[i], horizOffsets[i]);
+
+	/* dim the cursor */
+    	textD = ((TextWidget)text)->text.textD;
+	TextDSetCursorStyle(textD, DIM_CURSOR);
+	TextDUnblankCursor(textD);
+    }
+        
+    /* set the focus pane */
+    for (i=0; i<=window->nPanes; i++) {
+    	text = i==0 ? window->textArea : window->textPanes[i-1];
+	if(i == focusPane) {
+	    window->lastFocus = text;
+    	    XmProcessTraversal(text, XmTRAVERSE_CURRENT);
+	    break;
+	}
+    }
+    
+    /* Update the window manager size hints after the sizes of the panes have
+       been set (the widget heights are not yet readable here, but they will
+       be by the time the event loop gets around to running this timer proc) */
+    XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0,
+    	    wmSizeUpdateProc, window);
+}
+
+/*
+** Refresh the menu entries per the settings of the
+** top/active buffer.
+*/
+void RefreshMenuToggleStates(WindowInfo *window)
+{
+    WindowInfo *win;
+    
+    /* File menu */
+    XtSetSensitive(window->printSelItem, window->wasSelected);
+
+    /* Edit menu */
+    XtSetSensitive(window->undoItem, window->undo != NULL);
+    XtSetSensitive(window->redoItem, window->redo != NULL);
+    XtSetSensitive(window->printSelItem, window->wasSelected);
+    XtSetSensitive(window->cutItem, window->wasSelected);
+    XtSetSensitive(window->copyItem, window->wasSelected);
+    XtSetSensitive(window->delItem, window->wasSelected);
+    
+    /* Preferences menu */
+    XmToggleButtonSetState(window->statsLineItem, window->showStats, False);
+    XmToggleButtonSetState(window->iSearchLineItem, window->showISearchLine, False);
+    XmToggleButtonSetState(window->lineNumsItem, window->showLineNumbers, False);
+    XmToggleButtonSetState(window->highlightItem, window->highlightSyntax, False);
+    XtSetSensitive(window->highlightItem, window->languageMode != PLAIN_LANGUAGE_MODE);
+    XmToggleButtonSetState(window->backlightCharsItem, window->backlightChars, False);
+    XmToggleButtonSetState(window->saveLastItem, window->saveOldVersion, False);
+    XmToggleButtonSetState(window->autoSaveItem, window->autoSave, False);
+    XmToggleButtonSetState(window->overtypeModeItem, window->overstrike, False);
+    XmToggleButtonSetState(window->matchSyntaxBasedItem, window->matchSyntaxBased, False);
+    XmToggleButtonSetState(window->readOnlyItem, IS_USER_LOCKED(window->lockReasons), False);
+
+    XtSetSensitive(window->smartIndentItem, 
+            SmartIndentMacrosAvailable(LanguageModeName(window->languageMode)));
+
+    SetAutoIndent(window, window->indentStyle);
+    SetAutoWrap(window, window->wrapMode);
+    SetShowMatching(window, window->showMatchingStyle);
+    SetLanguageMode(window, window->languageMode, FALSE);
+    
+    /* Windows Menu */
+    XtSetSensitive(window->splitWindowItem, window->nPanes < MAX_PANES);
+    XtSetSensitive(window->closePaneItem, window->nPanes > 0);
+    XtSetSensitive(window->detachBufferItem, NBuffers(window)>1);
+
+    for (win=WindowList; win; win=win->next)
+    	if (win->shell != window->shell)  
+	    break;
+    XtSetSensitive(window->attachBufferItem, win != NULL);
+}
+
+/*
+** Refresh the various settings/state of the shell window per the
+** settings of the top/active buffer.
+*/
+static void refreshBufferMenuBar(WindowInfo *window)
+{
+    RefreshMenuToggleStates(window);
+    
+    /* Add/remove language specific menu items */
+#ifndef VMS
+    UpdateShellMenu(window);
+#endif
+    UpdateMacroMenu(window);
+    UpdateBGMenu(window);
+    
+    /* refresh selection-sensitive menus */
+    DimSelectionDepUserMenuItems(window, window->wasSelected);
+}
+
+static void setBufferSharedPref(WindowInfo *window, WindowInfo *lastwin)
+{
+    window->showTabBar = lastwin->showTabBar;
+    window->showStats = lastwin->showStats;
+    window->showISearchLine = lastwin->showISearchLine;
+}
+
+/*
+** remember the last active buffer
+*/
+WindowInfo *MarkLastBuffer(WindowInfo *window)
+{
+    WindowInfo *prev = lastBuffer;
+    
+    if (window)
+    	lastBuffer = window;
+	
+    return prev;
+}
+
+/*
+** remember the active buffer
+*/
+WindowInfo *MarkActiveBuffer(WindowInfo *window)
+{
+    WindowInfo *prev = focusInBuffer;
+
+    if (window)
+    	focusInBuffer = window;
+
+    return prev;
+}
+
+/*
+** Bring up the next window by tab order
+*/
+void NextBuffer(WindowInfo *window)
+{
+    WindowInfo *win;
+    
+    if (WindowList->next == NULL)
+    	return;
+
+    win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate());
+    
+    if (window->shell == win->shell)
+	RaiseBuffer(win);
+    else
+    	RaiseBufferWindow(win);
+}
+
+/*
+** Bring up the previous window by tab order
+*/
+void PreviousBuffer(WindowInfo *window)
+{
+    WindowInfo *win;
+    
+    if (WindowList->next == NULL)
+    	return;
+
+    win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate());
+
+    if (window->shell == win->shell)
+	RaiseBuffer(win);
+    else
+    	RaiseBufferWindow(win);
+}
+
+/*
+** Bring up the last active window
+*/
+void ToggleBuffer(WindowInfo *window)
+{
+    WindowInfo *win;
+    
+    for(win = WindowList; win; win=win->next)
+    	if (lastBuffer == win)
+	    break;
+    
+    if (!win)
+    	return;
+
+    if (window->shell == win->shell)
+	RaiseBuffer(win);
+    else
+    	RaiseBufferWindow(win);
+	
+}
+
+/*
+** make sure window is alive is kicking
+*/
+int IsValidWindow(WindowInfo *window)
+{
+    WindowInfo *win;
+    
+    for(win = WindowList; win; win=win->next)
+    	if (window == win)
+	    return True;
+    
+    
+    return False;
+}
+
+/*
+** raise the buffer and its shell window
+*/
+void RaiseBufferWindow(WindowInfo *window)
+{
+    RaiseBuffer(window);
+    RaiseShellWindow(window->shell);
+}
+
+/*
+** raise the buffer in its shell window
+*/
+void RaiseBuffer(WindowInfo *window)
+{
+    WindowInfo *win, *lastwin;        
+
+    if (!GetPrefBufferMode())
+    	return;
+	
+    lastwin = MarkActiveBuffer(window);
+    if (lastwin != window && IsValidWindow(lastwin))
+    	MarkLastBuffer(lastwin);
+
+    if (!GetPrefBufferMode() || !window || !WindowList)
+    	return;
+
+    /* buffer already active? */
+    XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
+
+    if (win == window)
+    	return;    
+    
+    /* refresh shared menu items */
+    setBufferSharedPref(window, win);
+    
+    /* set the buffer as active */
+    XtVaSetValues(window->mainWin, XmNuserData, window, NULL);
+    
+    /* show the new top buffer */ 
+    XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, NULL);
+    XtManageChild(window->splitPane);
+    XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
+
+    /* set tab as active */
+    XmLFolderSetActiveTab(window->bufferTabBar,
+    	    getTabPosition(window->bufferTab), False);
+
+    /* set keyboard focus. Must be done before unmanaging previous
+       top buffer, else lastFocus will be reset to textArea */
+    XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
+    
+    /* we only manage the top buffer, else the next time a buffer 
+       is raised again, it's textpane might not resize properly.
+       Also, somehow (bug?) XtUnmanageChild() doesn't hide the 
+       splitPane, which obscure lower part of the statsform where
+       we toggle its components, so we need to put the buffer at 
+       the back */
+    XLowerWindow(TheDisplay, XtWindow(win->splitPane));
+    XtUnmanageChild(win->splitPane);
+
+    /* now refresh window state/info. RefreshBufferWindowState() 
+       has a lot of work to do, so we update the screen first so
+       the buffers appear to switch immediately */
+    XmUpdateDisplay(window->splitPane);
+    RefreshBufferWindowState(window);
+}
+
+WindowInfo* GetTopBuffer(Widget w)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    
+    return WidgetToWindow(window->shell);
+}
+
+Boolean IsTopBuffer(const WindowInfo *window)
+{
+    return window == GetTopBuffer(window->shell)? True : False;
+}
+
+void DeleteBuffer(WindowInfo *window)
+{    
+    if (!GetPrefBufferMode() || !window)
+    	return;
+    
+    XtDestroyWidget(window->splitPane);
+}
+
+/*
+** clone a buffer into the other.
+*/
+static void cloneBuffer(WindowInfo *window, WindowInfo *orgWin)
+{
+    char *orgBuffer;
+    char *params[4];
+    
+    strcpy(window->path, orgWin->path);
+    strcpy(window->filename, orgWin->filename);
+
+    ShowLineNumbers(window, orgWin->showLineNumbers);
+
+    /* copy the buffer */
+    window->ignoreModify = True;
+    orgBuffer = BufGetAll(orgWin->buffer);
+    BufSetAll(window->buffer, orgBuffer);
+    window->ignoreModify = False;
+    XtFree(orgBuffer);
+
+    /* transfer text fonts */
+    params[0] = orgWin->fontName;
+    params[1] = orgWin->italicFontName;
+    params[2] = orgWin->boldFontName;
+    params[3] = orgWin->boldItalicFontName;
+    XtCallActionProc(window->textArea, "set_fonts", NULL, params, 4);
+
+    SetBacklightChars(window, orgWin->backlightCharTypes);
+    
+    /* recycle the hilite data */    
+    window->languageMode = orgWin->languageMode;
+    window->highlightData = orgWin->highlightData;
+    if (window->highlightData != NULL)
+    	AttachHighlightToWidget(window->textArea, window);
+
+    /* clone original buffer's states */
+    window->filenameSet = orgWin->filenameSet;
+    window->fileFormat = orgWin->fileFormat;
+    window->lastModTime = orgWin->lastModTime;
+    window->fileChanged = orgWin->fileChanged;
+    window->fileMissing = orgWin->fileMissing;
+    window->lockReasons = orgWin->lockReasons;
+    window->nPanes = orgWin->nPanes;
+    window->autoSaveCharCount = orgWin->autoSaveCharCount;
+    window->autoSaveOpCount = orgWin->autoSaveOpCount;
+    window->undoOpCount = orgWin->undoOpCount;
+    window->undoMemUsed = orgWin->undoMemUsed;
+    window->lockReasons = orgWin->lockReasons;
+    window->autoSave = orgWin->autoSave;
+    window->saveOldVersion = orgWin->saveOldVersion;
+    window->wrapMode = orgWin->wrapMode;
+    window->overstrike = orgWin->overstrike;
+    window->showMatchingStyle = orgWin->showMatchingStyle;
+    window->matchSyntaxBased = orgWin->matchSyntaxBased;
+    window->highlightSyntax = orgWin->highlightSyntax;
+#if 0    
+    window->showStats = orgWin->showStats;
+    window->showISearchLine = orgWin->showISearchLine;
+    window->showLineNumbers = orgWin->showLineNumbers;
+    window->modeMessageDisplayed = orgWin->modeMessageDisplayed;
+    window->ignoreModify = orgWin->ignoreModify;
+    window->windowMenuValid = orgWin->windowMenuValid;
+    window->prevOpenMenuValid = orgWin->prevOpenMenuValid;
+    window->flashTimeoutID = orgWin->flashTimeoutID;
+    window->wasSelected = orgWin->wasSelected;
+    strcpy(window->fontName, orgWin->fontName);
+    strcpy(window->italicFontName, orgWin->italicFontName);
+    strcpy(window->boldFontName, orgWin->boldFontName);
+    strcpy(window->boldItalicFontName, orgWin->boldItalicFontName);
+    window->fontList = orgWin->fontList;
+    window->italicFontStruct = orgWin->italicFontStruct;
+    window->boldFontStruct = orgWin->boldFontStruct;
+    window->boldItalicFontStruct = orgWin->boldItalicFontStruct;
+    window->nMarks = orgWin->nMarks;
+    window->markTimeoutID = orgWin->markTimeoutID;
+    window->highlightData = orgWin->highlightData;
+    window->shellCmdData = orgWin->shellCmdData;
+    window->macroCmdData = orgWin->macroCmdData;
+    window->smartIndentData = orgWin->smartIndentData;
+#endif    
+    window->iSearchHistIndex = orgWin->iSearchHistIndex;
+    window->iSearchStartPos = orgWin->iSearchStartPos;
+    window->replaceLastRegexCase = orgWin->replaceLastRegexCase;
+    window->replaceLastLiteralCase = orgWin->replaceLastLiteralCase;
+    window->iSearchLastRegexCase = orgWin->iSearchLastRegexCase;
+    window->iSearchLastLiteralCase = orgWin->iSearchLastLiteralCase;
+    window->findLastRegexCase = orgWin->findLastRegexCase;
+    window->findLastLiteralCase = orgWin->findLastLiteralCase;
+    
+    /* copy the text/split panes settings, cursor pos & selection */
+    cloneTextPane(window, orgWin);
+    
+    /* copy undo & redo list */
+    window->undo = cloneUndoItems(orgWin->undo);
+    window->redo = cloneUndoItems(orgWin->redo);
+
+    /* kick start the auto-indent engine */
+    window->indentStyle = NO_AUTO_INDENT;
+    SetAutoIndent(window, orgWin->indentStyle);
+
+    /* synchronize window state to this buffer */
+    RefreshBufferWindowState(window);
+}
+
+static UndoInfo *cloneUndoItems(UndoInfo *orgList)
+{
+    UndoInfo *head = NULL, *undo, *clone, *last = NULL;
+
+    for (undo = orgList; undo; undo = undo->next) {
+	clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+	memcpy(clone, undo, sizeof(UndoInfo));
+
+	if (undo->oldText) {
+	    clone->oldText = XtMalloc(strlen(undo->oldText)+1);
+	    strcpy(clone->oldText, undo->oldText);
+	}
+	clone->next = NULL;
+
+	if (last)
+	    last->next = clone;
+	else
+	    head = clone;
+
+	last = clone;
+    }
+
+    return head;
+}
+
+/*
+** return number of buffers own by this shell window
+*/
+int NBuffers(WindowInfo *window)
+{
+    WindowInfo *win;
+    int nBuffer = 0;
+    
+    if (!GetPrefBufferMode())
+    	return 1;
+	
+    for (win = WindowList; win; win = win->next) {
+    	if (win->shell == window->shell)
+	    nBuffer++;
+    }
+    
+    return nBuffer;
+}
+
+/* 
+** refresh window state for this buffer
+*/
+void RefreshBufferWindowState(WindowInfo *window)
+{
+    if (!GetPrefBufferMode() || !IsTopBuffer(window))
+    	return;
+	
+    UpdateStatsLine(window);
+    UpdateWindowReadOnly(window);
+    UpdateWindowTitle(window);
+
+    /* we need to force the statsline to reveal itself */
+    XmTextSetCursorPosition(window->statsLine, 0);	/* start of line */
+    XmTextSetCursorPosition(window->statsLine, 9000);	/* end of line */
+
+    XmUpdateDisplay(window->statsLine);    
+    refreshBufferMenuBar(window);
+}
+
+/*
+** spin off the buffer to a new window
+*/
+WindowInfo *DetachBuffer(WindowInfo *window)
+{
+    WindowInfo *win, *cloneWin;
+    char *dim, geometry[MAX_GEOM_STRING_LEN];
+    
+    if (NBuffers(window) < 2)
+    	return NULL;
+
+    /* raise another buffer in the same shell window */
+    win = replacementBuffer(window);
+    RaiseBuffer(win);
+    
+    /* create new window in roughly the size of original window,
+       to reduce flicker when the window is resized later */
+    getGeometryString(window, geometry);
+    dim = strtok(geometry, "+-");
+    cloneWin = CreateWindow(window->filename, dim, False);
+    
+    /* these settings should follow the detached buffer.
+       must be done before cloning window, else the height 
+       of split panes may not come out correctly */
+    ShowISearchLine(cloneWin, window->showISearchLine);
+    ShowStatsLine(cloneWin, window->showStats);
+
+    /* clone the buffer & its pref settings */
+    cloneBuffer(cloneWin, window);
+
+    /* remove the buffer from the old window */
+    window->fileChanged = False;
+    CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
+    
+    /* some menu states might have changed when deleting buffer */
+    RefreshBufferWindowState(win);
+    
+    /* this should keep the new buffer window fresh */
+    RefreshBufferWindowState(cloneWin);
+    RefreshTabState(cloneWin);
+
+    return cloneWin;
+}
+
+/*
+** attach (move) a buffer to an other window.
+**
+** the attaching buffer will inherit the window settings from
+** its new hosts, i.e. the window size, stats and isearch lines.
+*/
+WindowInfo *AttachBuffer(WindowInfo *toWindow, WindowInfo *window)
+{
+    WindowInfo *win, *cloneWin;
+
+    /* raise another buffer in the window of attaching buffer */
+    for (win = WindowList; win; win = win->next) {
+    	if (win->shell == window->shell && window != win)
+	    break;
+    }
+
+    if (win) 
+    	RaiseBuffer(win);
+    else
+    	XtUnmapWidget(window->shell);
+    
+    /* relocate the buffer to target window */
+    cloneWin = CreateBuffer(toWindow, window->filename, NULL, False);
+    cloneBuffer(cloneWin, window);
+    
+    /* remove the buffer from the old window */
+    window->fileChanged = False;
+    CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
+    
+    /* some menu states might have changed when deleting buffer */
+    if (win) {
+    	RefreshBufferWindowState(win);
+    }
+    
+    /* this should keep the new buffer window fresh */
+    RaiseBufferWindow(cloneWin);
+    RefreshTabState(cloneWin);
+    
+    return cloneWin;
+}
+
+static void attachBufferCB(Widget dialog, WindowInfo *parentWin,
+	XtPointer call_data)
+{
+    XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *) call_data;
+    DoneWithAttachBufferDialog = cbs->reason;
+}
+
+/*
+** present dialog to selecting target window for attaching
+** buffers. Return immediately if there is only one shell window.
+*/
+void AttachBufferDialog(Widget parent)
+{
+    WindowInfo *parentWin = WidgetToWindow(parent);    
+    WindowInfo *win, *attachWin, **shellWinList;
+    int i, nList=0, nWindows=0, ac;
+    char tmpStr[MAXPATHLEN+50];
+    Widget dialog, listBox, attachAllOption;
+    XmString *list = NULL;
+    XmString popupTitle, s1;
+    Arg csdargs[20];
+    int *position_list, position_count;
+    
+    /* create the window list */    
+    nWindows = NWindows();
+    list = (XmStringTable) XtMalloc(nWindows * sizeof(XmString *));
+    shellWinList = (WindowInfo **) XtMalloc(nWindows * sizeof(WindowInfo *));
+
+    for (win=WindowList; win; win=win->next) {
+	if (win->shell == parentWin->shell)
+	    continue;
+	
+	if (!IsTopBuffer(win))
+	    continue;
+	        
+	sprintf(tmpStr, "%s%s",
+		win->filenameSet? win->path : "", win->filename);
+
+	list[nList] = XmStringCreateSimple(tmpStr);
+	shellWinList[nList] = win;
+	nList++;
+    }
+
+    if (!nList) {
+    	XtFree((char *)list);
+    	return;    
+    }
+    
+    sprintf(tmpStr, "Attach %s to:", parentWin->filename);
+    popupTitle = XmStringCreateSimple(tmpStr);
+    ac = 0;
+    XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); ac++;
+    XtSetArg(csdargs[ac], XmNlistLabelString, popupTitle); ac++;
+    XtSetArg(csdargs[ac], XmNlistItems, list); ac++;
+    XtSetArg(csdargs[ac], XmNlistItemCount, nList); ac++;
+    XtSetArg(csdargs[ac], XmNvisibleItemCount, 12); ac++;
+    XtSetArg(csdargs[ac], XmNautoUnmanage, False); ac++;
+    dialog = CreateSelectionDialog(parent,"attachBuffer",csdargs,ac);
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));        
+    XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)attachBufferCB, parentWin);
+    XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)attachBufferCB, parentWin);
+    XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)attachBufferCB, parentWin);
+    XmStringFree(popupTitle);
+
+    /* free the window list */
+    for (i=0; i<nList; i++)
+	XmStringFree(list[i]);
+    XtFree((char *)list);    
+
+    /* create the option box for attaching all buffers */    
+    s1 = MKSTRING("Attach all buffers in window");
+    attachAllOption =  XtVaCreateWidget("attachAll", 
+    	    xmToggleButtonWidgetClass, dialog,
+	    XmNlabelString, s1,
+	    XmNalignment, XmALIGNMENT_BEGINNING,
+	    NULL);
+    XmStringFree(s1);
+    
+    if (NBuffers(parentWin) >1)
+	XtManageChild(attachAllOption);
+
+    /* only one buffer in the window */
+    XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
+
+    s1 = MKSTRING("Attach");
+    XtVaSetValues (dialog, XmNokLabelString, s1, NULL);
+    XmStringFree(s1);
+    
+    /* default to the first window on the list */
+    listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
+    XmListSelectPos(listBox, 1, True);
+    /* show the dialog */
+    DoneWithAttachBufferDialog = 0;
+    ManageDialogCenteredOnPointer(dialog);
+    while (!DoneWithAttachBufferDialog)
+        XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
+
+    /* get window to attach buffer */   
+    XmListGetSelectedPos(listBox, &position_list, &position_count);
+    attachWin = shellWinList[position_list[0]-1];
+    XtFree((char *)position_list);
+    
+    /* now attach buffer(s) */
+    if (DoneWithAttachBufferDialog == XmCR_OK) {
+    	/* attach top (active) buffer */
+	if (XmToggleButtonGetState(attachAllOption)) {
+    	    /* attach all buffers */
+	    for (win = WindowList; win; ) {		
+    		if (win != parentWin && win->shell == parentWin->shell) {
+	    	    WindowInfo *next = win->next;
+    	    	    AttachBuffer(attachWin, win);
+		    win = next;
+		}
+		else
+	    	    win = win->next;
+	    }
+
+	    /* top buffer is last to attach */
+    	    AttachBuffer(attachWin, parentWin);
+	}
+	else {
+    	    AttachBuffer(attachWin, parentWin);
+	}
+    }
+
+    XtFree((char *)shellWinList);    
+    XtDestroyWidget(dialog);	
+}
+
+static void hideTooltip(Widget tab)
+{
+    Widget tooltip = XtNameToWidget(tab, "*BubbleShell");
+    
+    if (tooltip)
+    	XtPopdown(tooltip);
+}
+
+/*
+** callback to close-tab button.
+*/
+static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
+{
+    CloseFileAndWindow(GetTopBuffer(mainWin), PROMPT_SBC_DIALOG_RESPONSE);
+}
+
+/*
+** callback to tab (button).
+*/
+static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData)
+{
+    hideTooltip(w);
+}
+
+/*
+** callback to tab (tabbar) that raise the buffer.
+*/
+static void raiseTabCB(Widget w, XtPointer *clientData, XtPointer callData)
+{
+    XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)callData;
+    WidgetList tabList;
+    Widget tab;
+
+    XtVaGetValues(w, XmNtabWidgetList, &tabList, NULL);
+    tab = tabList[cbs->pos];
+    RaiseBuffer(TabToWindow(tab));
 }
 
 static Widget containingPane(Widget w)

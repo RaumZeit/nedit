@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.43 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.44 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1942,6 +1942,18 @@ static double colorDistance(const XColor *c1, const XColor *c2)
 
     /* use square Euclidian distance */
     return tred * tred + tgreen * tgreen + tblue * tblue;
+}
+
+/*
+** use this canned function to call AllocColor() when
+** the r, g & b components is not needed, thus saving
+** the little hassle of creating the dummy variable.
+*/
+Pixel AllocateColor(Widget w, const char *colorName)
+{
+    int dummy;
+    
+    return AllocColor(w, colorName, &dummy, &dummy, &dummy);
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.102 2003/12/07 22:48:07 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.103 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.102 2003/12/07 22:48:07 yood
 #include "preferences.h"
 #include "textBuf.h"
 #include "nedit.h"
+#include "menu.h"
 #include "text.h"
 #include "search.h"
 #include "window.h"
@@ -225,6 +226,7 @@ typedef struct {
 
 /* Repository for simple preferences settings */
 static struct prefData {
+    int bufferMode;		/* run nedit in vim/emacs-like buffer mode */
     int wrapStyle;		/* what kind of wrapping to do */
     int wrapMargin;		/* 0=wrap at window width, other=wrap margin */
     int autoIndent;		/* style for auto-indent */
@@ -236,6 +238,10 @@ static struct prefData {
     int searchWraps;	/* whether to attempt search again if reach bof or eof */
     int statsLine;		/* whether to show the statistics line */
     int iSearchLine;	    	/* whether to show the incremental search line*/
+    int tabBar;	    	/* whether to show the windows/buffers tabs */
+    int tabBarHideOne;  	/* hide buffer tabbar if only one buffer */
+    int globalTabNavigate;  	/* cross-windows buffer navigation */
+    int toolTips;	    	/* whether to show the tooltips */
     int lineNums;   	    	/* whether to show line numbers */
     int pathInWindowsMenu;   	/* whether to show path in windows menu */
     int warnFileMods;	    	/* warn user if files externally modified */
@@ -295,6 +301,7 @@ static struct prefData {
     char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN];/* fonts for help system */
     char helpLinkColor[MAX_COLOR_LEN]; 	/* Color for hyperlinks in the help system */
     char colorNames[NUM_COLORS][MAX_COLOR_LEN];
+    char tooltipBgColor[MAX_COLOR_LEN];
     int  undoModifiesSelection;
 } PrefData;
 
@@ -727,6 +734,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.autoIndent, AutoIndentTypes, True},
     {"autoSave", "AutoSave", PREF_BOOLEAN, "True",
     	&PrefData.autoSave, NULL, True},
+    {"bufferMode", "BufferMode", PREF_BOOLEAN, "True",
+    	&PrefData.bufferMode, NULL, False},
     {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False",
     	&PrefData.saveOldVersion, NULL, True},
     {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter",
@@ -766,6 +775,14 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.statsLine, NULL, True},
     {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False",
     	&PrefData.iSearchLine, NULL, True},
+    {"tabBar", "TabBar", PREF_BOOLEAN, "True",
+    	&PrefData.tabBar, NULL, True},
+    {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True",
+    	&PrefData.tabBarHideOne, NULL, True},
+    {"toolTips", "ToolTips", PREF_BOOLEAN, "True",
+    	&PrefData.toolTips, NULL, True},
+    {"globalTabNavigate", "GlobalTabNavigate", PREF_BOOLEAN, "False",
+    	&PrefData.globalTabNavigate, NULL, True},
     {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False",
     	&PrefData.lineNums, NULL, True},
     {"pathInWindowsMenu", "PathInWindowsMenu", PREF_BOOLEAN, "True",
@@ -882,6 +899,9 @@ static PrefDescripRec PrefDescrip[] = {
     {"cursorFgColor", "cursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG,
         PrefData.colorNames[CURSOR_FG_COLOR],
         (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), True},
+    {"tooltipBgColor", "tooltipBgColor", PREF_STRING, "LemonChiffon1",
+        PrefData.tooltipBgColor,
+        (void *)sizeof(PrefData.tooltipBgColor), False},
                 
     {"shell", "Shell", PREF_STRING,
 #if defined(__MVS__) || defined(__EMX__)
@@ -939,6 +959,8 @@ static XrmOptionDescRec OpTable[] = {
     {"-noautoindent", ".autoIndent", XrmoptionNoArg, (caddr_t)"False"},
     {"-autosave", ".autoSave", XrmoptionNoArg, (caddr_t)"True"},
     {"-noautosave", ".autoSave", XrmoptionNoArg, (caddr_t)"False"},
+    {"-buffers", ".bufferMode", XrmoptionNoArg, (caddr_t)"True"},
+    {"-nobuffers", ".bufferMode", XrmoptionNoArg, (caddr_t)"False"},
     {"-rows", ".textRows", XrmoptionSepArg, (caddr_t)NULL},
     {"-columns", ".textCols", XrmoptionSepArg, (caddr_t)NULL},
     {"-tabs", ".tabDistance", XrmoptionSepArg, (caddr_t)NULL},
@@ -1330,6 +1352,16 @@ void ImportPrefFile(const char *filename, int convertOld)
     }
 }
 
+void SetPrefBufferMode(int state)
+{
+    setIntPref(&PrefData.bufferMode, state);
+}
+
+int GetPrefBufferMode(void)
+{
+    return PrefData.bufferMode;
+}
+
 void SetPrefWrap(int state)
 {
     setIntPref(&PrefData.wrapStyle, state);
@@ -1476,6 +1508,46 @@ void SetPrefISearchLine(int state)
 int GetPrefISearchLine(void)
 {
     return PrefData.iSearchLine;
+}
+
+void SetPrefTabBar(int state)
+{
+    setIntPref(&PrefData.tabBar, state);
+}
+
+int GetPrefTabBar(void)
+{
+    return PrefData.tabBar && GetPrefBufferMode();
+}
+
+void SetPrefTabBarHideOne(int state)
+{
+    setIntPref(&PrefData.tabBarHideOne, state);
+}
+
+int GetPrefTabBarHideOne(void)
+{
+    return PrefData.tabBarHideOne && GetPrefBufferMode();
+}
+
+void SetPrefGlobalTabNavigate(int state)
+{
+    setIntPref(&PrefData.globalTabNavigate, state);
+}
+
+int GetPrefGlobalTabNavigate(void)
+{
+    return PrefData.globalTabNavigate && GetPrefBufferMode();
+}
+
+void SetPrefToolTips(int state)
+{
+    setIntPref(&PrefData.toolTips, state);
+}
+
+int GetPrefToolTips(void)
+{
+    return PrefData.toolTips;
 }
 
 void SetPrefLineNums(int state)
@@ -1830,6 +1902,11 @@ char *GetPrefHelpFontName(int index)
 char *GetPrefHelpLinkColor(void)
 {
     return PrefData.helpLinkColor;
+}
+
+char *GetPrefTooltipBgColor(void)
+{
+    return PrefData.tooltipBgColor;
 }
 
 void SetPrefShell(const char *shell)
@@ -4810,7 +4887,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
 
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    WindowInfo *window = (WindowInfo *)clientData;
+    WindowInfo *window = WidgetToWindow(w);
     char *params[1];
     void *mode;
     

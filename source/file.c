@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.71 2003/12/23 10:53:57 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.72 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -102,8 +102,8 @@ static int min(int i1, int i2);
 void removeVersionNumber(char *fileName);
 #endif /*VMS*/
 
-void EditNewFile(char *geometry, int iconic, const char *languageMode,
-	const char *defaultPath)
+WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
+        const char *languageMode, const char *defaultPath)
 {
     char name[MAXPATHLEN];
     WindowInfo *window;
@@ -113,8 +113,12 @@ void EditNewFile(char *geometry, int iconic, const char *languageMode,
     /* Find a (relatively) unique name for the new file */
     UniqueUntitledName(name);
 
-    /* create the window */
-    window = CreateWindow(name, geometry, iconic);
+    /* create the window/buffer */
+    if (GetPrefBufferMode() && inWindow)
+	window = CreateBuffer(inWindow, name, geometry, iconic);
+    else 
+	window = CreateWindow(name, geometry, iconic);
+	
     strcpy(window->filename, name);
     strcpy(window->path, defaultPath ? defaultPath : "");
     SetWindowModified(window, FALSE);
@@ -122,10 +126,19 @@ void EditNewFile(char *geometry, int iconic, const char *languageMode,
     UpdateWindowReadOnly(window);
     UpdateStatsLine(window);
     UpdateWindowTitle(window);
+    RefreshTabState(window);
+    
     if (languageMode == NULL) 
     	DetermineLanguageMode(window, True);
     else
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
+	
+    if (iconic && IsIconic(window))
+        RaiseBuffer(window);
+    else
+        RaiseBufferWindow(window);
+	
+    return window;
 }
 
 /*
@@ -152,37 +165,64 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     /* first look to see if file is already displayed in a window */
     window = FindWindowWithFile(name, path);
     if (window != NULL) {
-    	RaiseShellWindow(window->shell);
+    	RaiseBufferWindow(window);
 	return window;
     }
     
     /* If an existing window isn't specified; or the window is already
        in use (not Untitled or Untitled and modified), or is currently
        busy running a macro; create the window */
-    if (inWindow == NULL || inWindow->filenameSet || inWindow->fileChanged ||
-	    inWindow->macroCmdData != NULL)
+    if (inWindow == NULL) {
 	window = CreateWindow(name, geometry, iconic);
+    }
+    else if (inWindow->filenameSet || inWindow->fileChanged ||
+	    inWindow->macroCmdData != NULL) {
+	if (GetPrefBufferMode()) {
+	    window = CreateBuffer(inWindow, name, geometry, iconic);
+    	    RaiseBuffer(window);
+    	}
+	else {
+	    window = CreateWindow(name, geometry, iconic);
+	}
+    }
     else {
+    	/* open file in untitled buffer */
     	window = inWindow;
+    	strcpy(window->path, path);
+    	strcpy(window->filename, name);
         if (!iconic) {
-            RaiseShellWindow(window->shell);
+            RaiseBufferWindow(window);
         }
     }
-    	
+    
     /* Open the file */
     if (!doOpen(window, name, path, flags)) {
+	/* bring back the previous top buffer */
+    	if (NBuffers(window) > 1)
+	    RaiseBuffer(inWindow);
+	    
 	/* The user may have destroyed the window instead of closing the 
 	   warning dialog; don't close it twice */
 	safeClose(window);
+	
     	return NULL;
     }
     
+    /* update tab label and tooltip */
+    RefreshTabState(window);
+
+    /* Decide what language mode to use, trigger language specific actions */
+    if (languageMode == NULL) 
+    	DetermineLanguageMode(window, True);
+    else
+	SetLanguageMode(window, FindLanguageMode(languageMode), True);
+
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
     UpdateStatsLine(window);
-    
+
     /* Add the name to the convenience menu of previously opened files */
     strcpy(fullname, path);
     strcat(fullname, name);
@@ -190,11 +230,6 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
       	AddRelTagsFile(GetPrefTagFile(), path, TAG);
     AddToPrevOpenMenu(fullname);
     
-    /* Decide what language mode to use, trigger language specific actions */
-    if (languageMode == NULL) 
-    	DetermineLanguageMode(window, True);
-    else
-	SetLanguageMode(window, FindLanguageMode(languageMode), True);
     return window;
 }
 
@@ -208,11 +243,11 @@ void RevertToSaved(WindowInfo *window)
     Widget text;
     
     /* Can't revert untitled windows */
-    if (!window->filenameSet)
-    {
-        DialogF(DF_WARN, window->shell, 1, "Error",
-                "Window was never saved, can't re-read", "Dismiss");
-        return;
+    if (!window->filenameSet) {
+    	DialogF(DF_WARN, window->shell, 1, "Error",
+    		"Window '%s' was never saved, can't re-read",
+		"Dismiss", window->filename);
+    	return;
     }
     
     /* save insert & scroll positions of all of the panes to restore later */
@@ -292,7 +327,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     window->filenameSet = TRUE;
     window->fileMissing = TRUE;
 
-    /* Get the full name of the file */
+   /* Get the full name of the file */
     strcpy(fullname, path);
     strcat(fullname, name);
     
@@ -615,9 +650,10 @@ int CloseAllFilesAndWindows(void)
 {
     while (WindowList->next != NULL || 
     		WindowList->filenameSet || WindowList->fileChanged) {
-    	if (!CloseFileAndWindow(WindowList, PROMPT_SBC_DIALOG_RESPONSE))
-    	    return FALSE;
+    	if (!CloseAllBufferInWindow(WindowList))
+	    return False;
     }
+
     return TRUE;
 }
 
@@ -626,7 +662,8 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse)
     int response, stat;
     
     /* Make sure that the window is not in iconified state */
-    RaiseShellWindow(window->shell);
+    if (window->fileChanged)
+    	RaiseBufferWindow(window);
 
     /* If the window is a normal & unmodified file or an empty new file, 
        or if the user wants to ignore external modifications then
@@ -795,6 +832,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     retVal = doSave(window);
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
+    RefreshTabState(window);
     
     /* Add the name to the convenience menu of previously opened files */
     AddToPrevOpenMenu(fullname);

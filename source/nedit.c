@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.53 2003/12/09 12:57:20 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.54 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -183,9 +183,11 @@ static char *fallbackResources[] = {
     "*helpMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*fileMenu.mnemonic: F",
     "*fileMenu.new.accelerator: Ctrl<Key>n",
-    "*fileMenu.new.acceleratorText: Ctrl+N",
+    "*fileMenu.new.acceleratorText: [Shift]Ctrl+N",
+    "*fileMenu.newShift.accelerator: Shift Ctrl<Key>n",
     "*fileMenu.open.accelerator: Ctrl<Key>o",
-    "*fileMenu.open.acceleratorText: Ctrl+O",
+    "*fileMenu.open.acceleratorText: [Shift]Ctrl+O",
+    "*fileMenu.openShift.accelerator: Shift Ctrl<Key>O",
     "*fileMenu.openSelected.accelerator: Ctrl<Key>y",
     "*fileMenu.openSelected.acceleratorText: Ctrl+Y",
     "*fileMenu.close.accelerator: Ctrl<Key>w",
@@ -300,6 +302,12 @@ static char *fallbackResources[] = {
     "*windowsMenu.splitWindow.acceleratorText: Ctrl+2",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
+    "*windowsMenu.nextBuffer.accelerator: Ctrl Alt<Key>N",
+    "*windowsMenu.nextBuffer.acceleratorText: Ctrl+Alt+N",
+    "*windowsMenu.prevBuffer.accelerator: Ctrl Alt<Key>P",
+    "*windowsMenu.prevBuffer.acceleratorText: Ctrl+Alt+P",
+    "*windowsMenu.toggleBuffer.accelerator: Ctrl Alt<Key>O",
+    "*windowsMenu.toggleBuffer.acceleratorText: Ctrl+Alt+O",
     "*helpMenu.mnemonic: H",
     "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\
@@ -325,8 +333,8 @@ static const char cmdLineHelp[] =
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
 	      [-import file] [-background color] [-foreground color]\n\
-	      [-V|-version] [--]\n\
-	      [file...]\n";
+	      [-V|-version] [-buffers] [-nobuffers] [-win]\n\
+	      [--] [file...]\n";
 #else
 "";
 #endif /*VMS*/
@@ -335,7 +343,7 @@ int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int gotoLine = False, macroFileRead = False, opts = True;
-    int iconic = False;
+    int iconic = False, newWin = False;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
@@ -478,6 +486,10 @@ int main(int argc, char **argv)
     	    editFlags |= PREF_READ_ONLY;
     	} else if (opts && !strcmp(argv[i], "-create")) {
     	    editFlags |= SUPPRESS_CREATE_WARN;
+    	} else if (opts && !strcmp(argv[i], "-win")) {
+	    /* NB: -win option is non-sticky, it will be reset 
+	           after being used once */
+    	    newWin = 1;
     	} else if (opts && !strcmp(argv[i], "-line")) {
     	    nextArg(argc, argv, &i);
 	    nRead = sscanf(argv[i], "%d", &lineNum);
@@ -548,8 +560,8 @@ int main(int argc, char **argv)
 	    	free(nameList);
 #else
 	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
-		EditExistingFile(WindowList, filename, pathname, editFlags,
-				 geometry, iconic, langMode);
+		EditExistingFile(newWin? NULL : WindowList, filename, pathname,
+				 editFlags, geometry, iconic, langMode);
 		fileSpecified = TRUE;
 		if (!macroFileRead) {
 		    ReadMacroInitFile(WindowList);
@@ -564,6 +576,7 @@ int main(int argc, char **argv)
 	    }
 #endif /*VMS*/
 	    toDoCommand = NULL;
+    	    newWin = 0;     /* this option is non-sticky */	    
 	}
     }
 #ifdef VMS
@@ -571,8 +584,8 @@ int main(int argc, char **argv)
 #endif /*VMS*/
     
     /* If no file to edit was specified, open a window to edit "Untitled" */
-    if (!fileSpecified) {
-    	EditNewFile(geometry, iconic, langMode, NULL);
+    if (!fileSpecified || newWin) {
+    	EditNewFile(NULL, geometry, iconic, langMode, NULL);
 	ReadMacroInitFile(WindowList);
 	if (toDoCommand != NULL)
 	    DoMacro(WindowList, toDoCommand, "-do macro");

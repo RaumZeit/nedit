@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.41 2003/11/22 13:03:40 edg Exp $ */
+/* $Id: nedit.h,v 1.42 2003/12/25 06:55:07 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -176,6 +176,7 @@ enum colorTypes {
 typedef struct _WindowInfo {
     struct _WindowInfo *next;
     Widget	shell;			/* application shell of window */
+    Widget	mainWin;		/* main window of shell */
     Widget	splitPane;		/* paned win. for splitting text area */
     Widget	textArea;		/* the first text editing area widget */
     Widget	textPanes[MAX_PANES];	/* additional ones created on demand */
@@ -189,6 +190,8 @@ typedef struct _WindowInfo {
     Widget  	iSearchCaseToggle;
     Widget  	iSearchRevToggle;
     Widget	menuBar;    	    	/* the main menu bar */
+    Widget	bufferTabBar;		/* toolbar for tabbed window */
+    Widget	bufferTab;		/* tab for this buffer */
     Widget	replaceDlog;		/* replace dialog */
     Widget	replaceText;		/* replace dialog settable widgets... */
     Widget	replaceWithText;
@@ -249,6 +252,7 @@ typedef struct _WindowInfo {
     Widget  	noWrapItem;
     Widget  	newlineWrapItem;
     Widget  	continuousWrapItem;
+    Widget	showTabBarItem;
     Widget	statsLineItem;
     Widget	iSearchLineItem;
     Widget	lineNumsItem;
@@ -294,6 +298,10 @@ typedef struct _WindowInfo {
     Widget	allTagsDefItem;
     Widget	smartTagsDefItem;
     Widget	reposDlogsDefItem;
+    Widget	tabBarDefItem;
+    Widget	tabBarHideDefItem;
+    Widget	toolTipsDefItem;
+    Widget	tabNavigateDefItem;
     Widget	statsLineDefItem;
     Widget	iSearchLineDefItem;
     Widget	lineNumsDefItem;
@@ -325,6 +333,8 @@ typedef struct _WindowInfo {
     Widget	repeatItem;
     Widget	splitWindowItem;
     Widget	closePaneItem;
+    Widget	detachBufferItem;
+    Widget	attachBufferItem;
     Widget  	bgMenuUndoItem;
     Widget  	bgMenuRedoItem;
 #ifdef SGI_CUSTOM
@@ -382,6 +392,7 @@ typedef struct _WindowInfo {
 					   FLASH_RANGE */
     char	matchSyntaxBased;	/* Use syntax info to show matching */
     Boolean	showStats;		/* is stats line supposed to be shown */
+    Boolean	showTabBar;		/* is tabbar supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
@@ -390,7 +401,9 @@ typedef struct _WindowInfo {
     Boolean	modeMessageDisplayed;	/* special stats line banner for learn
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */
-    Boolean	windowMenuValid;	/* is window menu is up to date? */
+    Boolean	windowMenuValid;	/* is window menu up to date? */
+    Boolean	macroMenuValid;		/* is macro menu up to date? */
+    Boolean	shellMenuValid;		/* is shell menu up to date? */
     Boolean	prevOpenMenuValid;	/* Prev. Opened Files menu up to date?*/
     int		rHistIndex, fHistIndex;	/* history placeholders for */
     int     	iSearchHistIndex;	/*   find and replace dialogs */

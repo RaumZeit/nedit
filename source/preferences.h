@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.36 2003/08/03 17:38:49 yooden Exp $ */
+/* $Id: preferences.h,v 1.37 2003/12/25 06:55:07 tksoh Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -44,6 +44,14 @@ void SetPrefStatsLine(int state);
 int GetPrefStatsLine(void);
 void SetPrefISearchLine(int state);
 int GetPrefISearchLine(void);
+void SetPrefTabBar(int state);
+int GetPrefTabBar(void);
+void SetPrefTabBarHideOne(int state);
+int GetPrefTabBarHideOne(void);
+void SetPrefGlobalTabNavigate(int state);
+int GetPrefGlobalTabNavigate(void);
+void SetPrefToolTips(int state);
+int GetPrefToolTips(void);
 void SetPrefLineNums(int state);
 int GetPrefLineNums(void);
 void SetPrefShowPathInWindowsMenu(int state);
@@ -105,6 +113,7 @@ XmFontList GetPrefFontList(void);
 XFontStruct *GetPrefBoldFont(void);
 XFontStruct *GetPrefItalicFont(void);
 XFontStruct *GetPrefBoldItalicFont(void);
+char *GetPrefTooltipBgColor(void);
 char *GetPrefHelpFontName(int index);
 char *GetPrefHelpLinkColor();
 char *GetPrefColorName(int colorIndex);
@@ -166,9 +175,14 @@ int GetPrefReplaceDefScope(void);
 #endif
 void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
+int GetPrefOverrideVirtKeyBindings(void);
+void SetPrefBufferMode(int state);
+int GetPrefBufferMode(void);
 void SetPrefUndoModifiesSelection(Boolean);
-void SetPrefWindowBufferMode(int state);
-int GetPrefWindowBufferMode(void);
+void SetPrefBufferMode(int state);
+int GetPrefBufferMode(void);
+void SetPrefBufferMode(int state);
+int GetPrefBufferMode(void);
 Boolean GetPrefUndoModifiesSelection(void);
 int GetPrefOverrideVirtKeyBindings(void);
 

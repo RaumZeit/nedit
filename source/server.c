@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.22 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.23 2003/12/25 06:55:08 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -287,10 +287,27 @@ static void processServerCommandString(char *string)
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, iconicFlag;
+    int lineNum, createFlag, readFlag, iconicFlag, newWinFlag;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window;
-    
+
+    /* If the command string is empty, put up an empty, Untitled window
+       (or just pop one up if it already exists) */
+    if (string[0] == '\0') {
+    	for (window=WindowList; window!=NULL; window=window->next)
+    	    if (!window->filenameSet && !window->fileChanged)
+    	    	break;
+    	if (window == NULL) {
+    	    EditNewFile(WindowList, NULL, False, NULL, NULL);
+    	    CheckCloseDim();
+    	} 
+	else {
+	    RaiseBuffer(window);
+    	    XMapRaised(TheDisplay, XtWindow(window->shell));
+    	}
+	return;
+    }
+
     /*
     ** Loop over all of the files in the command list
     */
@@ -305,10 +322,10 @@ static void processServerCommandString(char *string)
 	   command both followed by newlines.  This bit of code reads the
 	   header, and converts the newlines following the filename and do
 	   command to nulls to terminate the filename and doCommand strings */
-	itemsRead = sscanf(inPtr, "%d %d %d %d %d %d %d %d%n", &lineNum,
-		&readFlag, &createFlag, &iconicFlag, &fileLen, &doLen,
-		&lmLen, &geomLen, &charsRead);
-	if (itemsRead != 8)
+	itemsRead = sscanf(inPtr, "%d %d %d %d %d %d %d %d %d%n", &lineNum,
+		&readFlag, &createFlag, &iconicFlag, &newWinFlag, &fileLen,
+		&doLen, &lmLen, &geomLen, &charsRead);
+	if (itemsRead != 9)
     	    goto readError;
 	inPtr += charsRead + 1;
 	if (inPtr - string + fileLen > stringLen)
@@ -340,21 +357,33 @@ static void processServerCommandString(char *string)
     	    for (window=WindowList; window!=NULL; window=window->next)
     		if (!window->filenameSet && !window->fileChanged)
     	    	    break;
+
     	    if (*doCommand == '\0') {
-                if (window == NULL) {
-    		    EditNewFile(NULL, iconicFlag, lmLen==0?NULL:langMode, NULL);
-    	        } else {
-	            if (!iconicFlag) {
-    		        XMapRaised(TheDisplay, XtWindow(window->shell));
-		    }
-	        }
+	    	if (newWinFlag) {
+		    EditNewFile(NULL, geometry, iconicFlag,
+		            lmLen==0?NULL:langMode, NULL);
+		} else {
+                    if (window == NULL) {
+    			EditNewFile(WindowList, NULL, iconicFlag, 
+			        lmLen==0?NULL:langMode, NULL);
+    	            } else {
+	        	if (!iconicFlag) {
+    		            XMapRaised(TheDisplay, XtWindow(window->shell));
+			}
+	            }
+		}
             } else {
                 WindowInfo *win = WindowList;
-		/* Starting a new command while another one is still running
-		   in the same window is not possible (crashes). */
-		while (win != NULL && win->macroCmdData != NULL) {
-		    win = win->next;
+	    	if (newWinFlag) {
+		    win = EditNewFile(NULL, geometry, iconicFlag, NULL, NULL);
+		} else {
+		    /* Starting a new command while another one is still running
+		       in the same window is not possible (crashes). */
+		    while (win != NULL && win->macroCmdData != NULL) {
+			win = win->next;
+		    }
 		}
+		
 		if (!win) {
 		    XBell(TheDisplay, 0);
 		} else {
@@ -380,16 +409,21 @@ static void processServerCommandString(char *string)
 	}
     	window = FindWindowWithFile(filename, pathname);
     	if (window == NULL)
-	    window = EditExistingFile(WindowList, filename, pathname,
-		    editFlags, geometry, iconicFlag, lmLen==0?NULL:langMode);
+	    window = EditExistingFile(newWinFlag? NULL: WindowList,
+		    filename, pathname, editFlags, geometry, iconicFlag, 
+		    lmLen==0?NULL:langMode);
 	
 	/* Do the actions requested (note DoMacro is last, since the do
 	   command can do anything, including closing the window!) */
 	if (window != NULL) {
             deleteFileOpenProperty(window);
             getFileClosedProperty(window);
-	    if (!iconicFlag)
-	    	XMapRaised(TheDisplay, XtWindow(window->shell));
+
+	    if (!iconicFlag) {
+		RaiseBuffer(window);
+		XMapRaised(TheDisplay, XtWindow(window->shell));
+	    }
+	   
 	    if (lineNum > 0)
 		SelectNumberedLine(window, lineNum);
 	    if (*doCommand != '\0') {

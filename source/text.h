@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.17 2003/05/16 16:47:21 slobasso Exp $ */
+/* $Id: text.h,v 1.18 2003/12/25 06:55:08 tksoh Exp $ */
 
 #ifndef NEDIT_TEXT_H_INCLUDED
 #define NEDIT_TEXT_H_INCLUDED
@@ -139,6 +139,7 @@ void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
 int TextFirstVisiblePos(Widget w);
 int TextLastVisiblePos(Widget w);
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
+const char *GetDefaultTranslations(void);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 

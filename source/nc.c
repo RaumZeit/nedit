@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.36 2003/12/05 00:01:39 slobasso Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.37 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -104,6 +104,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context,
                                          Window rootWindow);
 
 Display *TheDisplay;
+XtAppContext AppContext;
 static Atom currentWaitForAtom;
 static Atom noAtom = (Atom)(-1);
 
@@ -113,7 +114,7 @@ static const char cmdLineHelp[] =
 #else
 "Usage:  nc [-read] [-create]\n"
 "           [-line n | +n] [-do command] [-lm languagemode]\n"
-"           [-svrname name] [-svrcmd command]\n"
+"           [-win] [-svrname name] [-svrcmd command]\n"
 "           [-ask] [-noask] [-timeout seconds]\n"
 "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
 "           [-wait]\n"
@@ -223,6 +224,22 @@ static void createWaitProperties()
     }
 }
 
+/*
+** this function cleans up the command string to be passed on to
+** the server, such that the very first -win option is ignored
+** if a new server has just been started.
+*/
+static void clearCmdLineWinFlag(CommandLine *commandLine)
+{
+    int dummy, newWinFlag, charsRead, itemsRead;
+    char *commandString = commandLine->serverRequest;
+    itemsRead = sscanf(commandString, "%d %d %d %d %d%n", &dummy,
+	    &dummy, &dummy, &dummy, &newWinFlag, &charsRead);
+    
+    if (itemsRead == 5)
+    	commandString[charsRead-1] = '0';
+}
+
 int main(int argc, char **argv)
 {
     XtAppContext context;
@@ -234,7 +251,7 @@ int main(int argc, char **argv)
 
     /* Initialize toolkit and get an application context */
     XtToolkitInitialize();
-    context = XtCreateApplicationContext();
+    AppContext = context = XtCreateApplicationContext();
     
 #ifdef VMS
     /* Convert the command line to Unix style */
@@ -306,6 +323,7 @@ int main(int argc, char **argv)
 
     if (serverExists == False) {
         startNewServer(context, rootWindow, commandLine.shell, serverExistsAtom);
+	clearCmdLineWinFlag(&commandLine);
     }
 
     waitUntilRequestProcessed(context,
@@ -608,10 +626,10 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     char name[MAXPATHLEN], path[MAXPATHLEN];
     const char *toDoCommand = "", *langMode = "", *geometry = "";
     char *commandString, *outPtr;
-    int lineNum = 0, read = 0, create = 0, iconic = 0, length = 0;
+    int lineNum = 0, read = 0, create = 0, iconic = 0, newWin = 0, length = 0;
     int i, lineArg, nRead, charsWritten, opts = True;
     int fileCount = 0;
-    
+
     /* Allocate a string for output, for the maximum possible length.  The
        maximum length is calculated by assuming every argument is a file,
        and a complete record of maximum length is created for it */
@@ -649,6 +667,8 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     	    read = 1;
     	} else if (opts && !strcmp(argv[i], "-create")) {
     	    create = 1;
+    	} else if (opts && !strcmp(argv[i], "-win")) {
+    	    newWin = 1; /* NB: -win option is non-sticky */
     	} else if (opts && (!strcmp(argv[i], "-iconic") || 
 	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = 1;
@@ -708,8 +728,8 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 		}
     		strcat(path, name);
                 /* See below for casts */
-    		sprintf(outPtr, "%d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
-			lineNum, read, create, iconic, (long) strlen(path),
+    		sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
+			lineNum, read, create, iconic, newWin, (long) strlen(path),
 			(long) strlen(toDoCommand), (long) strlen(langMode), 
                         (long) strlen(geometry),
 			path, toDoCommand, langMode, geometry, &charsWritten);
@@ -737,9 +757,10 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
                is 64 bit on Alphas, and 32-bit on most others.  There is
                no printf format specifier for "size_t", thanx, ANSI. */
 
-    	    sprintf(outPtr, "%d %d %d %d %ld %ld %ld %ld\n%n", lineNum, read,
-		    create, iconic, (long) strlen(path), (long) strlen(toDoCommand),
-		    (long) strlen(langMode), (long) strlen(geometry), &charsWritten);
+    	    sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum,
+		    read, create, iconic, newWin, (long) strlen(path), 
+		    (long) strlen(toDoCommand), (long) strlen(langMode),
+		    (long) strlen(geometry), &charsWritten);
     	    outPtr += charsWritten;
     	    strcpy(outPtr, path);
     	    outPtr += strlen(path);
@@ -759,19 +780,24 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
             addToFileList(path);
 	    fileCount++;
 #endif /* VMS */
+
+	    /* -win option is non-sticky, i.e. only applies to
+	       first file immediately after it */
+    	    newWin = 0;
     	}
     }
 #ifdef VMS
     VMSFileScanDone();
 #endif /*VMS*/
     
-    /* If there's an un-written -do command,
+    /* If there's an un-written -do command, or we are to open a new window,
      * or user has requested iconic state, but not provided a file name,
      * create a server request with an empty file name and requested
      * iconic state (and optional language mode and geometry).
      */
-    if (toDoCommand[0] != '\0' || fileCount == 0) {
-	sprintf(outPtr, "0 0 0 %d 0 %ld %ld %ld\n\n%n", iconic, (long) strlen(toDoCommand),
+    if (toDoCommand[0] != '\0' || fileCount == 0 || newWin) {
+	sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n%n", iconic, newWin,
+		(long) strlen(toDoCommand),
 		(long) strlen(langMode), (long) strlen(geometry), &charsWritten);
 	outPtr += charsWritten;
 	strcpy(outPtr, toDoCommand);

@@ -232,6 +232,12 @@ static XtResource resources[] =
 		XmRImmediate, (XtPointer)0,
 		},
 		{
+		XmNmaxTabWidth, XmCmaxTabWidth,
+		XmRDimension, sizeof(Dimension),
+		XtOffset(XmLFolderWidget, folder.maxTabWidth),
+		XmRImmediate, (XtPointer)100,
+		},
+		{
 		XmNpixmapMargin, XmCPixmapMargin,
 		XmRDimension, sizeof(Dimension),
 		XtOffset(XmLFolderWidget, folder.pixmapMargin),
@@ -840,6 +846,8 @@ LayoutTopBottom(XmLFolderWidget f,
   Dimension width, minWidth, borderWidth;
   Dimension co;
   int st, ht;
+  int tabFit, tgtTabWidth = 0;
+  int tabPaddingWidth, tailSpace;
   Boolean map, isManaged;
   struct
   {
@@ -867,13 +875,58 @@ LayoutTopBottom(XmLFolderWidget f,
   rowNum = 0;
   tabNum = 0;
   minWidth = 0;
+
+  if (f->folder.tabCount && f->folder.resizePolicy == XmRESIZE_PACK)
+    {
+      int maxTabWidth = f->folder.maxTabWidth;
+      int tabEffCount = 0;
+
+      for (i = 0; i < f->folder.tabCount; i++)
+	{
+	  tab = f->folder.tabs[i];
+	  if (!XtIsManaged(tab))
+            continue;
+	  tabEffCount++;
+	}
+	
+      tabPaddingWidth = (st + co + f->folder.marginWidth + ht +
+	      f->folder.tabs[0]->core.border_width) * 2;
+      if (maxTabWidth * tabEffCount > f->core.width)
+        {
+      	  tgtTabWidth = f->core.width/tabEffCount - tabPaddingWidth;
+	  tailSpace = f->core.width % tabEffCount;
+	  tabFit = 1;
+	}
+      else
+        {
+      	  tgtTabWidth = maxTabWidth - tabPaddingWidth;
+	  tabFit = 0;
+	}
+    }
+  
   for (i = 0; i < f->folder.tabCount; i++)
     {
       tab = f->folder.tabs[i];
       if (!XtIsManaged(tab))
 	continue;
-      fc = (XmLFolderConstraintRec *)(tab->core.constraints);
 
+      if (f->folder.resizePolicy == XmRESIZE_PACK)
+        {
+	  if (tabFit)
+            {
+	      XtVaSetValues(tab, XmNwidth,
+      		      tailSpace? tgtTabWidth+1: tgtTabWidth, NULL);
+	      if (tailSpace)
+	      	 tailSpace--;
+            }
+	  else 
+	    {
+	       XtVaSetValues(tab, XmNwidth, tgtTabWidth, NULL);
+	    }
+	}
+
+      fc = (XmLFolderConstraintRec *)(tab->core.constraints);
+      
       /* check for start of a new row */
       fc->folder.firstInRow = False;
       if (!tabNum)
@@ -1703,7 +1756,7 @@ DrawManagerShadowTopBottom(XmLFolderWidget f,
   Window win;
   XmLFolderConstraintRec *fc;
   XSegment *topSeg, *botSeg;
-  int i, bCount, tCount, st, botOff;
+  int i, bCount, tCount, st, botOff, isManaged;
 
   dpy = XtDisplay(f);
   win = XtWindow(f);
@@ -1762,6 +1815,28 @@ DrawManagerShadowTopBottom(XmLFolderWidget f,
       SetGC(f, GC_UNSET);
     }
 
+  /* see if there's any composite widgets in the folder */
+  isManaged = 0;
+  for (i = 0; i < f->composite.num_children; i++) 
+    {
+      Widget child = f->composite.children[i];
+      if (!XtIsSubclass(child, xmPrimitiveWidgetClass) && XtIsManaged(child))
+        {
+	  isManaged = 1;
+	  break;
+	}
+      	
+    }
+
+  /* no need to draw shadow for the manager area if
+     there isn't any composite widgets in the folder */
+  if (!isManaged)
+    {
+      free((char *)topSeg);
+      free((char *)botSeg);
+      return;
+    }
+    
   /* left shadow */
   tCount = 0;
   for (i = 0; i < st; i++)
@@ -3414,6 +3489,7 @@ CvtStringToFolderResizePolicy(Display *dpy,
     { "RESIZE_NONE", XmRESIZE_NONE },
     { "RESIZE_STATIC", XmRESIZE_STATIC },
     { "RESIZE_DYNAMIC", XmRESIZE_DYNAMIC },
+    { "RESIZE_PACK", XmRESIZE_PACK },
     { 0, 0 },
   };
 
@@ -3574,7 +3650,7 @@ XmLFolderAddBitmapTab(Widget w,
 					 f->folder.inactiveBg, depth);
   sprintf(name, "tab%d", f->folder.tabCount);
   tab = XtVaCreateManagedWidget(name,
-				xmDrawnButtonWidgetClass, w,
+				f->folder.tabWidgetClass, w,
 				XmNfontList, f->folder.fontList,
 				XmNmarginWidth, 0,
 				XmNmarginHeight, 0,
@@ -3630,7 +3706,7 @@ XmLFolderAddTab(Widget w,
   f = (XmLFolderWidget)w;
   sprintf(name, "tab%d", f->folder.tabCount);
   tab = XtVaCreateManagedWidget(name,
-				xmDrawnButtonWidgetClass, w,
+				f->folder.tabWidgetClass, w,
 				XmNfontList, f->folder.fontList,
 				XmNmarginWidth, 0,
 				XmNmarginHeight, 0,

@@ -1,6 +1,6 @@
 /**
  *
- * $Id: SlideC.c,v 1.1 2003/12/23 08:34:36 tksoh Exp $
+ * $Id: SlideC.c,v 1.2 2003/12/25 06:55:07 tksoh Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -23,7 +23,9 @@
  *
  **/
 
+#ifdef HAVE_CONFIG_H
 #include "../config.h"
+#endif
 
 #include <Xm/XmP.h>
 

@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButtonP.h,v 1.1 2003/12/23 08:34:36 tksoh Exp $
+ * $Id: BubbleButtonP.h,v 1.2 2003/12/25 06:55:07 tksoh Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -40,6 +40,8 @@ typedef struct {
 	int Duration;
 	Boolean Swapped;
 	Widget slider;
+	Boolean slidingBubble;
+	Boolean autoParkBubble;
 } XltBubbleButtonPart;
 
 #define BubbleButton_Timer(w) (((XltBubbleButtonWidget)w)->bubble_button.Timer)
@@ -53,6 +55,8 @@ typedef struct {
 #define BubbleButton_Duration(w) (((XltBubbleButtonWidget)w)->bubble_button.Duration)
 #define BubbleButton_Swapped(w) (((XltBubbleButtonWidget)w)->bubble_button.Swapped)
 #define BubbleButton_Slider(w) (((XltBubbleButtonWidget)w)->bubble_button.slider)
+#define BubbleButton_SlidingBubble(w) (((XltBubbleButtonWidget)w)->bubble_button.slidingBubble)
+#define BubbleButton_AutoParkBubble(w) (((XltBubbleButtonWidget)w)->bubble_button.autoParkBubble)
 
 #define BubbleButtonClass_LeaveTime(w) (((XltBubbleButtonWidgetClass)XtClass(w))->bubble_button_class.leave_time)
 

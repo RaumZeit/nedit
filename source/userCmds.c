@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.33 2003/10/22 20:05:13 tringali Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.34 2003/12/25 06:55:08 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1125,6 +1125,9 @@ static void updateMenu(WindowInfo *window, int menuType)
     int i, nTreeEntries, isDefaultLM;
     char *hierName, *namePtr, *subMenuName, *subSep, *strippedName, *name;
     
+    if (!IsTopBuffer(window))
+    	return;
+	
     /* Fetch the appropriate menu pane and item list for this menu type */
     if (menuType == SHELL_CMDS) {
     	menuPane = window->shellMenuPane;

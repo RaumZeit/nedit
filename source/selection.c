@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.25 2003/05/09 17:43:48 edg Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.26 2003/12/25 06:55:08 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -322,7 +322,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
         XBell(TheDisplay, 0);
 	return;
     }	
-    EditExistingFile(WindowList, filename, pathname, 0, NULL, False, NULL);
+    EditExistingFile(window, filename, pathname, 0, NULL, False, NULL);
 #elif defined(USE_MOTIF_GLOB)
     { char **nameList = NULL;
       int i, nFiles = 0, maxFiles = 30;
@@ -338,7 +338,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	      XBell(TheDisplay, 0);
 	  }
         else {
-    	      EditExistingFile(WindowList, filename, pathname, 0, NULL, 
+    	      EditExistingFile(window, filename, pathname, 0, NULL, 
 	                       False, NULL);
 	  }
       }
@@ -356,7 +356,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	  if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
 	      XBell(TheDisplay, 0);
 	  else
-    	      EditExistingFile(WindowList, filename, pathname, 0, NULL,
+    	      EditExistingFile(window, filename, pathname, 0, NULL,
 	                       False, NULL);
       }
       globfree(&globbuf);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.75 2003/12/19 23:23:30 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.76 2003/12/25 06:55:07 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -517,6 +517,8 @@ static WindowInfo *MacroRecordWindow = NULL;
 /* Arrays for translating escape characters in escapeStringChars */
 static char ReplaceChars[] = "\\\"ntbrfav";
 static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
+
+static WindowInfo *focusShifted = NULL;
 
 /*
 ** Install built-in macro subroutines and special variables for accessing
@@ -1113,6 +1115,24 @@ static void finishMacroCmdExecution(WindowInfo *window)
 	event.type = ClientMessage;
 	XSendEvent(XtDisplay(window->shell), XtWindow(window->shell), False,
 		NoEventMask, (XEvent *)&event);
+    }
+
+    /* any actions performed after focus is shifted into non-top buffers
+       with focus_window() may modify the 'shell-level' properties (menus,
+       statsline, etc) belong to the top buffer, we refresh these 
+       properties in case they did get modified */
+    if (GetPrefBufferMode() && focusShifted) {
+	WindowInfo *macroRunWindow = cmdData->context->runWindow;
+    	WindowInfo *win;
+	
+	for (win=WindowList; win; win=win->next) {
+	    if (win == macroRunWindow && IsTopBuffer(win))
+	    	DimSelectionDepUserMenuItems(win, win->wasSelected);
+	    else if (NBuffers(win) > 1 && IsTopBuffer(win))
+	    	RefreshMenuToggleStates(win);
+	}
+	
+	focusShifted = NULL;
     }
 }
 
@@ -1826,6 +1846,10 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
 	return True;
     }
 
+    /* set flag to indicate focus has been shifted */
+    if (MacroRunWindow() != w)
+    	focusShifted = w;
+	
     /* Change the focused window to the requested one */
     SetMacroFocusWindow(w);
 

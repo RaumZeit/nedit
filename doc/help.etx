@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.55 2003/12/23 21:54:05 slobasso Exp $
+.. $Id: help.etx,v 1.56 2003/12/25 06:55:07 tksoh Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3862,6 +3862,11 @@ X Resources
   options not settable via the Preferences menu (for preference resource names,
   see your NEdit preference file):
 
+**nedit.bufferMode**: True
+
+  When set to True, run NEdit in buffer mode. Same as running NEdit with
+  the ~-buffers~ command line option.
+
 **nedit.tagFile**: (not defined) 
 
   This can be the name of a file, or multiple files separated by a colon (:)
@@ -4512,7 +4517,22 @@ NEdit Command Line
       [-**iconic**] [-**noiconic**] [-**display** [host]:server[.screen]
       [-**xrm** resourcestring] [-**svrname** name] [-**import** file]
       [-**background** color] [-**foreground** color] [-**V**|-**version**]
+      [-**buffer**] [-**nobuffer**] [-**win** file]
       [--] [file...]
+
+**-buffer**
+  Run NEdit in buffer mode - allow multiple buffers (files) per window.
+
+**-nobuffer**
+  Disable buffer mode, run NEdit in normal (one file per window) mode.
+
+**-win**
+  In ~buffer mode~, files are opened as new tabs by default, use -win to 
+  open files in new windows. 
+  
+  **Note**: this option is ~non-sticky~, i.e. it applies only to the
+  ~first~ file specified immediate after the option. This allows users 
+  to open group of files in the same window.
 
 **-read**
   Open the file Read Only regardless of the actual file protection.

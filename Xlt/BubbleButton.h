@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.h,v 1.1 2003/12/23 08:34:36 tksoh Exp $
+ * $Id: BubbleButton.h,v 1.2 2003/12/25 06:55:07 tksoh Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -61,6 +61,18 @@ extern "C" {
 #endif
 #ifndef XltCBubbleDuration
 #define XltCBubbleDuration "BubbleDuration"
+#endif
+#ifndef XltNslidingBubble
+#define XltNslidingBubble "slidingBubble"
+#endif
+#ifndef XltCslidingBubble
+#define XltCslidingBubble "SlidingBubble"
+#endif
+#ifndef XltNautoParkBubble
+#define XltNautoParkBubble "autoParkBubble"
+#endif
+#ifndef XltCautoParkBubble
+#define XltCautoParkBubble "AutoParkBubble"
 #endif
 
 extern WidgetClass xrwsBubbleButtonWidgetClass;

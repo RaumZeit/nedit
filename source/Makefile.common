@@ -1,4 +1,4 @@
-# $Id: Makefile.common,v 1.15 2003/05/15 19:42:31 n8gray Exp $
+# $Id: Makefile.common,v 1.16 2003/12/25 06:55:07 tksoh Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #
@@ -9,13 +9,20 @@ OBJS =	nedit.o file.o menu.o window.o selection.o search.o undo.o shift.o \
 	highlightData.o interpret.o parse.o smartIndent.o regexConvert.o \
 	rbTree.o windowTitle.o calltips.o server_common.o rangeset.o
 
+XLTLIB = ../Xlt/libXlt.a
+XMLLIB = ../Microline/XmL/libXmL.a
+
+.c.o:
+	$(CC) -c -I../Microline $(CFLAGS) -o $@ $<
+
 all: nedit nc
 
 # Note there is no depedency for linkdate.c/o.  This is intentional,
 # we only want natural rebuilds to regenerate the link date.
-nedit: $(OBJS) ../util/libNUtil.a
+nedit: $(OBJS) ../util/libNUtil.a $(XMLLIB) $(XLTLIB)
 	$(CC) $(CFLAGS) -c linkdate.c
-	$(CC) $(CFLAGS) $(OBJS) linkdate.o ../util/libNUtil.a $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(OBJS) linkdate.o $(XMLLIB) \
+	 $(XLTLIB) ../util/libNUtil.a $(LIBS) -o $@
 
 # Note LIBS isn't quite right here; it links unnecessarily against Motif
 nc: nc.o server_common.o ../util/libNUtil.a

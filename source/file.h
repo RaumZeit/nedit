@@ -1,4 +1,4 @@
-/* $Id: file.h,v 1.10 2002/07/11 21:18:09 slobasso Exp $ */
+/* $Id: file.h,v 1.11 2003/12/25 06:55:07 tksoh Exp $ */
 
 #ifndef NEDIT_FILE_H_INCLUDED
 #define NEDIT_FILE_H_INCLUDED
@@ -16,8 +16,8 @@
 #define YES_SBC_DIALOG_RESPONSE 1
 #define NO_SBC_DIALOG_RESPONSE 2
 
-void EditNewFile(char *geometry, int iconic, const char *languageMode,
-    	const char *defaultPath);
+WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
+        const char *languageMode, const char *defaultPath);
 WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
         const char *path, int flags, char *geometry, int iconic,
 	const char *languageMode);
