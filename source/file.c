@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.14 2001/04/16 23:20:11 slobasso Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.15 2001/04/16 23:49:15 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -196,6 +196,7 @@ void RevertToSaved(WindowInfo *window)
     int i;
     int insertPositions[MAX_PANES], topLines[MAX_PANES];
     int horizOffsets[MAX_PANES];
+    int openFlags = 0;
     Widget text;
     
     /* Can't revert untitled windows */
@@ -217,7 +218,9 @@ void RevertToSaved(WindowInfo *window)
     strcpy(path, window->path);
     RemoveBackupFile(window);
     ClearUndoList(window);
-    if (!doOpen(window, name, path, IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0)) {
+    openFlags |= IS_FORCE_LOCKED(window->lockReasons) ? FORCE_READ_ONLY : 0;
+    openFlags |= IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0;
+    if (!doOpen(window, name, path, openFlags)) {
     	CloseWindow(window);
     	return;
     }
@@ -383,7 +386,7 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 it, but not modify or re-save its contents.", "View", "Cancel");
 	    if (resp == 2)
 		return FALSE;
-            SET_FORCE_LOCKED(window->lockReasons, TRUE);
+            SET_TMBD_LOCKED(window->lockReasons, TRUE);
 	    for (c=fileString; c<&fileString[readLen]; c++)
     		if (*c == '\0')
     		    *c = 0xfe;
