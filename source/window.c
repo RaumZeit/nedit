@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.55 2002/07/12 11:44:01 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.56 2002/07/16 11:39:30 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -2207,7 +2207,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     count = 0;
     while (i<maxCount && pos2 && *pos2)
     {
-	while (isspace(*pos2) || *pos2 == '\n') ++pos2;
+	while (isspace((int) *pos2) || *pos2 == '\n') ++pos2;
         
         if (*pos2)
         {
