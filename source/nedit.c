@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.55 2003/12/28 17:30:02 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.56 2003/12/30 15:19:17 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -110,7 +110,7 @@ Widget TheAppShell;
 #define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
-static const char *const fallbackResources[] = {
+static char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
        if the user's environment provides no usable defaults.  We try
        to choose a Windows-y default color setting here.  Editable text 
@@ -140,11 +140,6 @@ static const char *const fallbackResources[] = {
         "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
-
-    "*XmLFolder.highlightThickness: 0",
-    "*XmLFolder.shadowThickness:    1",
-    "*XmLFolder.maxTabWidth:        150",
-    "*XmLFolder.traversalOn:        False",
 
     /* Prevent the file selection box from acting stupid. */
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
@@ -325,7 +320,8 @@ static const char *const fallbackResources[] = {
 ~Meta~Ctrl~Shift<Btn2Down>:\
     process-bdrag() help-hyperlink()\\n\
 ~Meta~Ctrl~Shift<Btn2Up>:\
-    help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")"
+    help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")",
+    NULL
 };
 
 static const char cmdLineHelp[] =
@@ -351,7 +347,7 @@ int main(int argc, char **argv)
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
-    XrmDatabase prefDB, db;
+    XrmDatabase prefDB;
     static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry",
             "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth",
 	    "-bw", "-title", NULL};
@@ -370,6 +366,9 @@ int main(int argc, char **argv)
     /* Set up a warning handler to trap obnoxious Xt grab warnings */
     SuppressPassiveGrabWarnings();
 
+    /* Set up default resources if no app-defaults file is found */
+    XtAppSetFallbackResources(context, fallbackResources);
+    
 #if XmVersion >= 1002
     /* Allow users to change tear off menus with X resources */
     XmRepTypeInstallTearOffModelConverter();
@@ -400,13 +399,6 @@ int main(int argc, char **argv)
 	XtWarning ("NEdit: Can't open display\n");
 	exit(EXIT_FAILURE);
     }
-
-    /* Set up default resources.  We no longer use XtAppSetFallbackResources
-       so things work properly even if the user has an obsolete app-defaults
-       file on the system against our wishes. */
-    db = XtDatabase(TheDisplay);
-    for (i = 0; i < XtNumber(fallbackResources); i++)
-        XrmPutLineResource(&db, fallbackResources[i]);
 
     /* Create a hidden application shell that is the parent of all the
        main editor windows. */
@@ -727,15 +719,17 @@ static void patchResourcesForVisual(void)
         XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
 #endif
 
-        for (i = 0; i < XtNumber(fallbackResources); ++i)
+        for (i = 1; i < XtNumber(fallbackResources); ++i)
         {
-            if (strstr(fallbackResources[i], "*background:") ||
-                strstr(fallbackResources[i], "*foreground:"))
+            Cardinal resIndex = i - 1;
+            
+            if (strstr(fallbackResources[resIndex], "*background:") ||
+                strstr(fallbackResources[resIndex], "*foreground:"))
             {
                 /* Qualify by application name to prevent them from being
                    converted against the wrong colormap. */
                 char buf[1024] = "*" APP_NAME;
-                strcat(buf, fallbackResources[i]);
+                strcat(buf, fallbackResources[resIndex]);
                 XrmPutLineResource(&db, buf);
             }
         }
