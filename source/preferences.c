@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.27 2001/07/17 07:31:57 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.28 2001/08/07 01:53:37 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -480,109 +480,125 @@ static PrefDescripRec PrefDescrip[] = {
 #ifdef VMS
 /* The VAX compiler can't compile Java-Script's definition in highlightData.c */
     {"highlightPatterns", "HighlightPatterns", PREF_ALLOC_STRING,
-       "C:Default\n\
-	C++:Default\n\
-	Java:Default\n\
-	Ada:Default\n\
-	Fortran:Default\n\
-	Pascal:Default\n\
-	Lex:Default\n\
-	Yacc:Default\n\
-	Perl:Default\n\
-	Python:Default\n\
-	Awk:Default\n\
-	Tcl:Default\n\
-	Sh Ksh Bash:Default\n\
-	Csh:Default\n\
-	Makefile:Default\n\
-	SGML HTML:Default\n\
-	LaTeX:Default\n\
-	PostScript:Default\n\
-	SQL:Default\n\
-	Matlab:Default\n\
-	VHDL:Default\n\
-	X Resources:Default\n\
-	Verilog:Default\n\
-	NEdit Macro:Default", &TempStringPrefs.highlight, NULL, True},
+       "Ada:Default\n\
+        Awk:Default\n\
+        C++:Default\n\
+        C:Default\n\
+        CSS:Default\n\
+        Csh:Default\n\
+        Fortran:Default\n\
+        Java:Default\n\
+        LaTeX:Default\n\
+        Lex:Default\n\
+        Makefile:Default\n\
+        Matlab:Default\n\
+        NEdit Macro:Default\n\
+        Pascal:Default\n\
+        Perl:Default\n\
+        PostScript:Default\n\
+        Python:Default\n\
+        Regex:Default\n\
+        SGML HTML:Default\n\
+        SQL:Default\n\
+        Sh Ksh Bash:Default\n\
+        Tcl:Default\n\
+        VHDL:Default\n\
+        Verilog:Default\n\
+        XML:Default\n\
+        X Resources:Default\n\
+        Yacc:Default",
+        &TempStringPrefs.highlight, NULL, True},
     {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
 #else
     {"highlightPatterns", "HighlightPatterns", PREF_ALLOC_STRING,
-       "C:Default\n\
-	C++:Default\n\
-	Java:Default\n\
-	JavaScript:Default\n\
-	Ada:Default\n\
-	Fortran:Default\n\
-	Pascal:Default\n\
-	Lex:Default\n\
-	Yacc:Default\n\
-	Perl:Default\n\
-	Python:Default\n\
-	Awk:Default\n\
-	Tcl:Default\n\
-	Sh Ksh Bash:Default\n\
-	Csh:Default\n\
-	Makefile:Default\n\
-	SGML HTML:Default\n\
-	LaTeX:Default\n\
-	PostScript:Default\n\
-	SQL:Default\n\
-	Matlab:Default\n\
-	VHDL:Default\n\
-	Verilog:Default\n\
-	X Resources:Default\n\
-	NEdit Macro:Default", &TempStringPrefs.highlight, NULL, True},
+       "Ada:Default\n\
+        Awk:Default\n\
+        C++:Default\n\
+        C:Default\n\
+        CSS:Default\n\
+        Csh:Default\n\
+        Fortran:Default\n\
+        Java:Default\n\
+        JavaScript:Default\n\
+        LaTeX:Default\n\
+        Lex:Default\n\
+        Makefile:Default\n\
+        Matlab:Default\n\
+        NEdit Macro:Default\n\
+        Pascal:Default\n\
+        Perl:Default\n\
+        PostScript:Default\n\
+        Python:Default\n\
+        Regex:Default\n\
+        SGML HTML:Default\n\
+        SQL:Default\n\
+        Sh Ksh Bash:Default\n\
+        Tcl:Default\n\
+        VHDL:Default\n\
+        Verilog:Default\n\
+        XML:Default\n\
+        X Resources:Default\n\
+        Yacc:Default",
+        &TempStringPrefs.highlight, NULL, True},
     {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
 #endif /*VMS*/
 #ifdef VMS
-       "C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.CC .HH .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	Java:.JAVA::::::\n\
-	Ada:.ADA .AD .ADS .ADB .A::::::\n\
-	Fortran:.F .F77 .FOR::::::\n\
-	Pascal:.PAS .P .INT::::::\n\
-	Lex:.lex::::::\n\
-        Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":::::\n\
-	Python:.PY:\"^#!.*python\":Auto:None:::\n\
-	Awk:.AWK::::::\n\
-	Tcl:.TCL::::::\n\
-	Makefile:MAKEFILE::::::\n\
-	SGML HTML:.sgml .sgm .html .htm .shtm .shtml:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
-	LaTeX:.TEX .STY .CLS .DTX .INS::::::\n\
-	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!:::::\"/%(){}[]<>\"\n\
-	SQL:.sql::::::\n\
-	Matlab:.m .oct .sci::::::\n\
-	VHDL:.VHD .VHDL .VDL::::::\n\
-	Verilog:.V::::::\n\
-	X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
-	NEdit Macro:.NM .NEDITMACRO::::::",
+       "Ada:.ADA .AD .ADS .ADB .A::::::\n\
+        Awk:.AWK::::::\n\
+        C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+        C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+        CSS:CSS::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"\n\
+        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
+        Fortran:.F .F77 .FOR::::::\n\
+        Java:.JAVA::::::\n\
+        LaTeX:.TEX .STY .CLS .DTX .INS::::::\n\
+        Lex:.lex::::::\n\
+        Makefile:MAKEFILE:::None:8:8:\n\
+        Matlab:.m .oct .sci::::::\n\
+        NEdit Macro:.NM .NEDITMACRO::::::\n\
+        Pascal:.PAS .P .INT::::::\n\
+        Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"\n\
+        PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
+        Python:.PY:\"^#!.*python\":Auto:None:::\n\
+        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::\n\
+        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
+        SQL:.sql::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::\n\
+        Tcl:.TCL::Smart:None:::\n\
+        VHDL:.VHD .VHDL .VDL::::::\n\
+        Verilog:.V::::::\n\
+        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"\n\
+        X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
+        Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"",
 #else
-       "C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	Java:.java::::::\n\
-	JavaScript:.js::::::\n\
-	Ada:.ada .ad .ads .adb .a::::::\n\
-	Fortran:.f .f77 .for::::::\n\
-	Pascal:.pas .p .int::::::\n\
-	Lex:.lex::::::\n\
-        Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	Perl:.pl .pm .p5:\"^[ \\t]*#[ \\t]*!.*perl\":::::\n\
-	Python:.py:\"^#!.*python\":Auto:None:::\n\
-	Tcl:.tcl::::::\n\
-	Awk:.awk::::::\n\
-	Sh Ksh Bash:.sh .bash .ksh .profile:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/(sh|ksh|bash)\":::::\n\
-	Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
-	Makefile:Makefile makefile .gmk:::None:8:8:\n\
-	SGML HTML:.sgml .sgm .html .htm .shtm .shtml:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
-	LaTeX:.tex .sty .cls .dtx .ins::::::\n\
-	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
-	SQL:.sql::::::\n\
-	Matlab:.m .oct .sci::::::\n\
-	VHDL:.vhd .vhdl .vdl::::::\n\
-	Verilog:.v::::::\n\
-	X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
-	NEdit Macro:.nm .neditmacro::::::",
+       "Ada:.ada .ad .ads .adb .a::::::\n\
+        Awk:.awk::::::\n\
+        C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+        C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+        CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"\n\
+        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
+        Fortran:.f .f77 .for::::::\n\
+        Java:.java::::::\n\
+        JavaScript:.js::::::\n\
+        LaTeX:.tex .sty .cls .dtx .ins::::::\n\
+        Lex:.lex::::::\n\
+        Makefile:Makefile makefile .gmk:::None:8:8:\n\
+        Matlab:.m .oct .sci::::::\n\
+        NEdit Macro:.nm .neditmacro::::::\n\
+        Pascal:.pas .p .int::::::\n\
+        Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"\n\
+        PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
+        Python:.py:\"^#!.*python\":Auto:None:::\n\
+        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::\n\
+        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
+        SQL:.sql::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::\n\
+        Tcl:.tcl .tk .itcl .itk::Smart:None:::\n\
+        VHDL:.vhd .vhdl .vdl::::::\n\
+        Verilog:.v::::::\n\
+        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"\n\
+        X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
+        Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"",
 #endif
 	&TempStringPrefs.language, NULL, True},
     {"styles", "Styles", PREF_ALLOC_STRING, "Plain:black:Plain\n\
@@ -611,7 +627,10 @@ static PrefDescripRec PrefDescrip[] = {
     	Text Arg1:SteelBlue4:Bold\n\
 	Text Arg2:RoyalBlue4:Plain\n\
     	Text Escape:gray30:Bold\n\
-	LaTeX Math:darkGreen:Plain", &TempStringPrefs.styles, NULL, True},
+	LaTeX Math:darkGreen:Plain\n\
+	Pointer:#660000:Bold\n\
+	Regex:#009944:Bold\n\
+	Warning:brown2:Italic", &TempStringPrefs.styles, NULL, True},
     {"smartIndentInit", "SmartIndentInit", PREF_ALLOC_STRING,
         "C:Default\n\
 	C++:Default\n\

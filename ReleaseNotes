@@ -1,6 +1,6 @@
           Release Notes for NEdit Version 5.2 Beta, August 2001
 
-$Id: ReleaseNotes,v 1.8 2001/08/03 12:16:45 amai Exp $
+$Id: ReleaseNotes,v 1.9 2001/08/07 01:53:37 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -19,6 +19,9 @@ New Features in 5.2
  of this time, these features may be incomplete and have bugs.  Please report
  bugs to http://sourceforge.net/bugs/?group_id=11005, or send mail to
  develop@nedit.org.
+
+ - Added built-in patterns for CSS, XML, and regular expressions (Regex).
+   Many other pattern updates.
 
  - Support for high- and true-color systems.  NEdit now will automatically
    select the best visual from your X server.  This reduces the chance of
