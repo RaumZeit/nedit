@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.38 2001/11/07 22:54:40 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.39 2001/11/18 19:02:58 arnef Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -55,6 +55,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.38 2001/11/07 22:54:40 edg E
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
 #include "../util/fontsel.h"
+#include "../util/clearcase.h"
 #include "textBuf.h"
 #include "nedit.h"
 #include "text.h"
@@ -67,6 +68,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.38 2001/11/07 22:54:40 edg E
 #include "help.h"
 #include "regularExp.h"
 #include "smartIndent.h"
+#include "windowTitle.h"
 
 #define PREF_FILE_NAME ".nedit"
 
@@ -237,6 +239,7 @@ static struct prefData {
     				   file we're reading */
     int findReplaceUsesSelection; /* whether the find replace dialog is automatically
                                      loaded with the primary selection */
+    char titleFormat[MAX_TITLE_FORMAT_LEN];
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -753,6 +756,8 @@ static PrefDescripRec PrefDescrip[] = {
 #endif
     {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False",
     	&PrefData.findReplaceUsesSelection, NULL, False},
+    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d",
+	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -1552,6 +1557,22 @@ int GetPrefShortMenus(void)
     return PrefData.shortMenus;
 }
 #endif
+
+void SetPrefTitleFormat(const char* format)
+{
+    const WindowInfo* window;
+
+    setStringPref(PrefData.titleFormat, format);
+
+    /* update all windows */
+    for (window=WindowList; window!=NULL; window=window->next) {
+        UpdateWindowTitle(window);
+    }
+}
+const char* GetPrefTitleFormat(void)
+{
+    return(PrefData.titleFormat);
+}
 
 /*
 ** If preferences don't get saved, ask the user on exit whether to save
@@ -3609,6 +3630,7 @@ static int matchLanguageMode(WindowInfo *window)
 {
     char *ext, *first200;
     int i, j, fileNameLen, extLen, beginPos, endPos, start;
+    const char *versionExtendedPath;
 
     /*... look for an explicit mode statement first */
     
@@ -3632,8 +3654,8 @@ static int matchLanguageMode(WindowInfo *window)
     if (strchr(window->filename, ';') != NULL)
     	fileNameLen = strchr(window->filename, ';') - window->filename;
 #endif
-    if (strstr(window->filename, "@@/") != NULL)
-      	fileNameLen = strstr(window->filename, "@@/") - window->filename;
+    if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename)) != NULL)
+        fileNameLen = versionExtendedPath - window->filename;
     for (i=0; i<NLanguageModes; i++) {
     	for (j=0; j<LanguageModes[i]->nExtensions; j++) {
     	    ext = LanguageModes[i]->extensions[j];

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.39 2001/11/16 10:06:34 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.40 2001/11/18 19:02:58 arnef Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -70,6 +70,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.39 2001/11/16 10:06:34 amai Exp $";
 #include "interpret.h"
 #include "smartIndent.h"
 #include "../util/utils.h"
+#include "windowTitle.h"
 
 /* File name for Open Previous file database */
 #ifdef VMS
@@ -125,6 +126,7 @@ static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void customizeTitleDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -803,6 +805,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->pathInWindowsMenuDefItem = createMenuToggle(subSubPane, "pathInWindowsMenu",
     	    "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(),
     	    SHORT);
+    createMenuItem(subPane, "custimizeTitle", "Customize Window Title...", 'd',
+    	    customizeTitleDefCB, window, FULL);
 
     /* Search sub menu */
     subSubPane = createMenu(subPane, "searching", "Searching",
@@ -1758,6 +1762,11 @@ static void macroDefCB(Widget w, WindowInfo *window, caddr_t callData)
 static void bgMenuDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     EditBGMenu(window);
+}
+
+static void customizeTitleDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+   EditCustomTitleFormat(window->shell, window);
 }
 
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)

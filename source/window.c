@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.33 2001/08/21 14:29:37 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.34 2001/11/18 19:02:58 arnef Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -81,6 +81,9 @@ static const char CVSID[] = "$Id: window.c,v 1.33 2001/08/21 14:29:37 tringali E
 #include "userCmds.h"
 #include "nedit.bm"
 #include "n.bm"
+#include "../util/utils.h"
+#include "../util/clearcase.h"
+#include "windowTitle.h"
 
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */
@@ -114,7 +117,6 @@ static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
 static void getGeometryString(WindowInfo *window, char *geomString);
-static char *getClearCaseViewTag(void);
 #ifdef ROWCOLPATCH
 static void patchRowCol(Widget w);
 static void patchedRemoveChild(Widget child);
@@ -1254,31 +1256,20 @@ void SetWindowModified(WindowInfo *window, int modified)
 ** Update the window title to reflect the filename, read-only, and modified
 ** status of the window data structure
 */
-void UpdateWindowTitle(WindowInfo *window)
+void UpdateWindowTitle(const WindowInfo *window)
 {
-    char *title, *iconTitle;
-    char *serverName = IsServer ? GetPrefServerName() : "";
-    
-    title = XtMalloc(strlen(window->filename) + strlen(getClearCaseViewTag()) +
-    	    strlen(serverName) + 26); /*strlen(" -- (read only, modified)")+1 */
-    iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
+    char *title = FormatWindowTitle(window->filename,
+                                    window->path,
+                                    GetClearCaseViewTag(),
+                                    GetPrefServerName(),
+                                    IsServer,
+                                    window->filenameSet,
+                                    window->lockReasons,
+                                    window->fileChanged,
+                                    GetPrefTitleFormat());
+                   
+    char *iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
-    /* Set the window title, adding annotations for "modified" or "read-only",
-       and possibly a server name and/or ClearCase view tag. */
-    strcpy(title, getClearCaseViewTag());
-    if (serverName[0] != '\0')
-	sprintf(&title[strlen(title)], "-%s- ", serverName);
-    strcat(title, window->filename);
-    if (IS_ANY_LOCKED_IGNORING_USER(window->lockReasons) && window->fileChanged)
-    	strcat(title, " (read only, modified)");
-    else if (IS_ANY_LOCKED_IGNORING_USER(window->lockReasons))
-    	strcat(title, " (read only)");
-    else if (IS_USER_LOCKED(window->lockReasons) && window->fileChanged)
-    	strcat(title, " (locked, modified)");
-    else if (IS_USER_LOCKED(window->lockReasons))
-    	strcat(title, " (locked)");
-    else if (window->fileChanged)
-    	strcat(title, " (modified)");
     strcpy(iconTitle, window->filename);
     if (window->fileChanged)
     	strcat(iconTitle, "*");
@@ -1294,7 +1285,6 @@ void UpdateWindowTitle(WindowInfo *window)
     	sprintf(title, "Replace (in %s)", window->filename);
     	XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, NULL);
     }
-    XtFree(title);
     XtFree(iconTitle);
 
     /* Update the Windows menus with the new name */
@@ -2055,54 +2045,6 @@ static void getGeometryString(WindowInfo *window, char *geomString)
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id)
 {
     UpdateWMSizeHints((WindowInfo *)clientData);
-}
-
-/*
-** Return a string showing the clearcase view name, pre-formated for the
-** window title.  If clearcase is not in use, or a view is not set, or the
-** view name is identical to the server name, an empty string is returned.
-** The returned string is statically allocated.  (Obviously, this is not a
-** general purpose routine, it is tailored just for the window title.)
-**
-** If user has ClearCase and is in a view, CLEARCASE_ROOT will be set and
-** the view name can be extracted.  This check is safe and efficient enough
-** that it doesn't impact non-clearcase users, so it is not conditionally
-** compiled. (Thanks to Max Vohlken)
-*/
-static char *getClearCaseViewTag(void)
-{
-    static char *viewTag = NULL;
-    char *envPtr;
-    char *tagPtr;
-
-    if (viewTag != NULL)
-        return viewTag;
-
-    /* Extract the view name from the CLEARCASE_ROOT environment variable */
-    envPtr = getenv("CLEARCASE_ROOT");
-    if (envPtr == NULL) {
-	viewTag = "";
-	return viewTag;
-    }
-    tagPtr = strrchr(envPtr, '/');
-    if (tagPtr == NULL) {
-	viewTag = "";
-	return viewTag;
-    }
-    tagPtr++;
-    
-    /* Don't put the name in the title if it's the same as the server name,
-       because that's how clearcase views are normally handled in server
-       mode, and server-mode users would always see the view name twice. */
-    if (IsServer && !strcmp(GetPrefServerName(), tagPtr)) {
-	viewTag = "";
-	return viewTag;
-    }
-    
-    /* Format the string for the window title */
-    viewTag = XtMalloc(strlen(tagPtr) + 4);
-    sprintf(viewTag, "{%s} ", tagPtr);
-    return viewTag;
 }
 
 #ifdef ROWCOLPATCH

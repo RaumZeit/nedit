@@ -1,8 +1,10 @@
-/* $Id: preferences.h,v 1.14 2001/09/05 11:44:25 amai Exp $ */
+/* $Id: preferences.h,v 1.15 2001/11/18 19:02:58 arnef Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
 #define MAX_LANGUAGE_MODES 127
+
+#define MAX_TITLE_FORMAT_LEN 50
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
@@ -127,3 +129,5 @@ int GetPrefBeepOnSearchWrap(void);
 void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope(void);
 #endif
+void SetPrefTitleFormat(const char* format);
+const char* GetPrefTitleFormat(void);

@@ -1,8 +1,8 @@
-/* $Id: window.h,v 1.7 2001/08/17 11:01:59 amai Exp $ */
+/* $Id: window.h,v 1.8 2001/11/18 19:02:58 arnef Exp $ */
 WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
-void UpdateWindowTitle(WindowInfo *window);
+void UpdateWindowTitle(const WindowInfo *window);
 void UpdateWindowReadOnly(WindowInfo *window);
 void UpdateStatsLine(WindowInfo *window);
 void UpdateLineNumDisp(WindowInfo *window);

@@ -1,11 +1,11 @@
-# $Id: Makefile.common,v 1.5 2001/02/26 23:38:03 edg Exp $
+# $Id: Makefile.common,v 1.6 2001/11/18 19:02:58 arnef Exp $
 #
 # Platform independent part of make procedure for Nirvana utilities directory, 
 # included by machine specific makefiles.
 #
 
 OBJS = DialogF.o getfiles.o printUtils.o misc.o fileUtils.o \
-	prefFile.o fontsel.o managedList.o utils.o
+	prefFile.o fontsel.o managedList.o utils.o clearcase.o
 
 all: libNUtil.a
 

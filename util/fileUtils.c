@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.15 2001/11/12 13:46:54 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.16 2001/11/18 19:02:58 arnef Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -336,3 +336,22 @@ static void copyThruSlash(char **toString, char **fromString)
     }
 }
 #endif /* UNIX */
+
+/*
+** Return the trailing 'n' no. of path components
+*/
+const char* GetTrailingPathComponents(const char* path,
+                                      int noOfComponents)
+{
+    /* Start from the rear */
+    const char* ptr = path + strlen(path);
+    int count = 0;
+    while (--ptr > path) {
+        if (*ptr == '/') {
+            if (count++ == noOfComponents) {
+                break;
+            }
+        }
+    }
+    return(ptr);
+} 

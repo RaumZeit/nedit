@@ -1,4 +1,4 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.11 2001/09/06 09:37:54 amai Exp $
+# $Header: /home/bertw/cvsroot/nedit/nedit/source/Makefile.dependencies,v 1.12 2001/11/18 19:02:57 arnef Exp $
 file.o: file.c ../util/misc.h ../util/DialogF.h ../util/fileUtils.h \
  ../util/getfiles.h ../util/printUtils.h ../util/utils.h textBuf.h \
  text.h nedit.h window.h preferences.h undo.h menu.h file.h tags.h
@@ -20,17 +20,19 @@ menu.o: menu.c ../util/getfiles.h ../util/DialogF.h ../util/misc.h \
  ../util/fileUtils.h textBuf.h text.h nedit.h file.h menu.h window.h \
  search.h selection.h undo.h shift.h help.h preferences.h tags.h \
  userCmds.h shell.h macro.h highlight.h highlightData.h rbTree.h \
- interpret.h smartIndent.h ../util/utils.h
-nc.o: nc.c ../util/fileUtils.h ../util/prefFile.h
+ interpret.h smartIndent.h ../util/utils.h windowTitle.h
+nc.o: nc.c ../util/fileUtils.h ../util/utils.h ../util/prefFile.h \
+ ../util/clearcase.h
 nedit.o: nedit.c textBuf.h nedit.h file.h preferences.h regularExp.h \
  selection.h tags.h menu.h macro.h server.h rbTree.h interpret.h \
  parse.h help.h ../util/misc.h ../util/printUtils.h \
  ../util/fileUtils.h ../util/getfiles.h
 parse.o: parse.c textBuf.h nedit.h rbTree.h interpret.h parse.h
 preferences.o: preferences.c ../util/prefFile.h ../util/misc.h \
- ../util/DialogF.h ../util/managedList.h ../util/fontsel.h textBuf.h \
- nedit.h text.h search.h preferences.h window.h userCmds.h highlight.h \
- highlightData.h help.h regularExp.h smartIndent.h
+ ../util/DialogF.h ../util/managedList.h ../util/fontsel.h \
+ ../util/clearcase.h textBuf.h nedit.h text.h search.h preferences.h \
+ window.h userCmds.h highlight.h highlightData.h help.h regularExp.h \
+ smartIndent.h windowTitle.h
 rbTree.o: rbTree.c rbTree.h
 regexConvert.o: regexConvert.c regexConvert.h
 regularExp.o: regularExp.c regularExp.h
@@ -38,8 +40,9 @@ search.o: search.c ../util/DialogF.h ../util/misc.h regularExp.h \
  textBuf.h text.h nedit.h search.h window.h preferences.h
 selection.o: selection.c ../util/DialogF.h ../util/fileUtils.h \
  textBuf.h text.h nedit.h selection.h file.h window.h menu.h
-server.o: server.c ../util/fileUtils.h textBuf.h nedit.h window.h \
- file.h selection.h macro.h menu.h server.h preferences.h
+server.o: server.c ../util/fileUtils.h ../util/utils.h textBuf.h \
+ nedit.h window.h file.h selection.h macro.h menu.h server.h \
+ preferences.h
 shell.o: shell.c ../util/DialogF.h ../util/misc.h textBuf.h text.h \
  nedit.h window.h preferences.h file.h shell.h macro.h rbTree.h \
  interpret.h
@@ -65,4 +68,9 @@ userCmds.o: userCmds.c ../util/DialogF.h ../util/misc.h \
 window.o: window.c ../util/DialogF.h ../util/misc.h textBuf.h \
  textSel.h text.h textDisp.h textP.h nedit.h window.h menu.h file.h \
  search.h undo.h preferences.h selection.h shell.h macro.h highlight.h \
- smartIndent.h userCmds.h nedit.bm n.bm
+ smartIndent.h userCmds.h nedit.bm n.bm ../util/utils.h \
+ ../util/clearcase.h windowTitle.h
+windowTitle.o: windowTitle.c ../util/prefFile.h ../util/misc.h \
+ ../util/DialogF.h ../util/utils.h ../util/fileUtils.h \
+ ../util/clearcase.h textBuf.h nedit.h windowTitle.h preferences.h \
+ help.h

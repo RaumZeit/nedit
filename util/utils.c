@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.5 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.6 2001/11/18 19:02:58 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -24,6 +24,15 @@ static const char CVSID[] = "$Id: utils.c,v 1.5 2001/08/14 08:37:16 jlous Exp $"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef VMS
+#include <lib$routines.h>
+#include ssdef
+#include syidef
+#include "../util/VMSparam.h"
+#include "../util/VMSutils.h"
+#endif
+#include <X11/Xlib.h>
+#include <sys/utsname.h>
 #include <sys/types.h>
 #ifdef VMS
 #include "vmsparam.h"
@@ -69,4 +78,72 @@ extern const char
     }
     ptr=GetCurrentDir();
     return (ptr);
+}
+
+/*
+** Return a pointer to the username of the current user in a statically
+** allocated string.
+*/
+const char *GetUserName(void)
+{
+#ifdef VMS
+    return cuserid(NULL);
+#else
+    /* cuserid has apparently been dropped from the ansi C standard, and if
+       strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
+       to cuserid fail to compile.  Older versions of nedit try to use the
+       getlogin call first, then if that fails, use getpwuid and getuid.  This
+       results in the user-name of the original terminal being used, which is
+       not correct when the user uses the su command.  Now, getpwuid only: */
+    const struct passwd *passwdEntry = getpwuid(getuid());
+    if (!passwdEntry) {
+       perror("NEdit/nc: getpwuid() failed ");
+       exit(EXIT_FAILURE);
+    }
+    return passwdEntry->pw_name;
+#endif
+}
+
+/*
+** Writes the hostname of the current system in string "hostname".
+*/
+const char *GetHostName(void)
+{
+    static char hostname[MAXNODENAMELEN+1];
+    static int  hostnameFound = False;
+    
+    if (!hostnameFound) {
+#ifdef VMS
+        /* This should be simple, but uname is not supported in the DEC C RTL and
+           gethostname on VMS depends either on Multinet or UCX.  So use uname 
+           on Unix, and use LIB$GETSYI on VMS. Note the VMS hostname will
+           be in DECNET format with trailing double colons, e.g. "FNALV1::".    */
+        int syi_status;
+        struct dsc$descriptor_s *hostnameDesc;
+        unsigned long int syiItemCode = SYI$_NODENAME;	/* get Nodename */
+        unsigned long int unused = 0;
+        unsigned short int hostnameLen = MAXNODENAMELEN+1;
+
+        hostnameDesc = NulStrWrtDesc(hostname, MAXNODENAMELEN+1);
+        syi_status = lib$getsyi(&syiItemCode, &unused, hostnameDesc, &hostnameLen,
+    			        0, 0);
+        if (syi_status != SS$_NORMAL) {
+	    fprintf(stderr, "Error return from lib$getsyi: %d", syi_status);
+	    strcpy(hostname, "VMS");
+        } else
+    	    hostname[hostnameLen] = '\0';
+        FreeStrDesc(hostnameDesc);
+#else
+        struct utsname nameStruct;
+        int rc = uname(&nameStruct);
+        if (rc<0) {
+            /* Shouldn't ever happen, so we better exit() here */
+           perror("NEdit/nc: uname() failed ");
+           exit(EXIT_FAILURE);
+        }
+        strcpy(hostname, nameStruct.nodename);
+#endif
+        hostnameFound = True;
+    }
+    return hostname;
 }

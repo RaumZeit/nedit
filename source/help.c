@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.62 2001/11/16 11:02:16 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.63 2001/11/18 19:02:57 arnef Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1312,6 +1312,12 @@ this menu are:\n\
 \n\
     Customize Menus -- Add/remove items from the Shell,\n\
         Macro, and window background menus (see below).\n\
+\n\
+    Customize Window Title -- Opens a dialog where the\n\
+        information to be displayed in the windows's title\n\
+        field can be defined and tested. The dialog contains\n\
+        a Help button, providing further information about\n\
+        the options available.\n\
 \n\
     Searching -- Options for controlling the behavior of\n\
         Find and Replace commands:\n\
@@ -4655,7 +4661,45 @@ Turning this off, will keep NEdit from automatically \
 inserting tabs.  Some software developers prefer to keep \
 their source code free of tabs to avoid its \
 misinterpretation on systems with different tab \
-character conventions."
+character conventions.",
+
+"The Customize Window Title dialog allows you to customize \
+and test the way information will be displayed in each window's \
+title field.\n\
+\n\
+A printf() like string is used to define the format. The \
+default format is:\n\
+   {%c} [%s] %f (%S) - %d\n\
+\n\
+   The following flags are recognised:\n\
+   %c    ClearCase view tag\n\
+   %s    server name\n\
+   %[n]d directory, with one optional digit specifying\n\
+         the max number of trailing directory\n\
+         components to display. Skipped components are\n\
+         replaced by an ellipsis (...).\n\
+   %f    file name\n\
+   %h    host name\n\
+   %S    file status\n\
+   %u    user name\n\
+\n\
+Use the \'Override current settings for test\' buttons to see \
+the effect on the title when certain conditions are true or false.\n\
+The dialog's title is dynamically updated when format string is changed \
+and override buttons are pressed.\n\
+\n\
+The resulting title will only contain elements with \
+a value. Hence, the title is compressed as follows:\n\
+   - elements with no value are removed\n\
+   - empty parenthesis pairs i.e. (), [] or {}, or\n\
+     parenthesis pairs containing only space(s), are\n\
+     removed\n\
+   - sequences of spaces are replaced with one space\n\
+   - leading spaces are removed\n\
+   - trailing spaces and dashes are removed\n\
+\n\
+If the server name and the ClearCase view tag are identical, only \
+the first one specified in the format string will be displayed.\n"
 };
 
 static Widget HelpWindows[NUM_TOPICS] = {NULL}; 
