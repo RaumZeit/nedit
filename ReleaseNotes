@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.30 2004/10/08 22:26:40 yooden Exp $
+$Id: ReleaseNotes,v 1.31 2004/10/08 22:58:04 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -19,6 +19,9 @@ Bugs fixed in $NEXT_VERSION
     (SF bug #906878).
 
   - The status bar reflects a changed keybinding in the shell command banner.
+
+  - There is now a pattern for highlighting nested command substitution in
+    shell scripts (SF patch #1010742).
 
 
 New features in 5.5 

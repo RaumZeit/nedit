@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.68 2004/08/01 10:06:10 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.69 2004/10/08 22:58:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -824,6 +824,7 @@ static char *DefaultPatternSets[] = {
         cs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:command substitution:\n\
         cs variables2:\"\\$\\{\":\"}\":\"`\":Identifier1:command substitution:\n\
         new command substitution:\"\\$\\(\":\"\\)\"::Subroutine::\n\
+        ncs new command substitution:\"\\$\\(\":\"\\)\"::Subroutine:new command substitution:\n\
         ncs escapes:\"\\\\[\\\\$`\"\"']\":::Subroutine1:new command substitution:\n\
         ncs single quoted string:\"'\":\"'\"::String1:new command substitution:\n\
         ncs variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:new command substitution:\n\
