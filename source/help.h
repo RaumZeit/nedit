@@ -110,3 +110,5 @@ extern const char linkdate[];
 extern const char linktime[];
 
 void Help(Widget parent, enum HelpTopic topic);
+
+void PrintVersion(void);
