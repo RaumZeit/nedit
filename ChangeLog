@@ -1,3 +1,78 @@
+2004-10-08 13:24  edg
+
+	* source/window.c (1.178): Fix for replace dialog buttons not being
+	updated when switching tabs, possibly resulting in temporarily
+	inconsistent button states.  Candidate fix for 5.5.1.
+
+2004-10-08 00:34  yooden
+
+	* doc/help.etx (1.80), source/file.c (1.90), source/menu.c (1.120),
+	source/nedit.h (1.62), source/preferences.c (1.130),
+	source/preferences.h (1.45), source/search.c (1.73),
+	source/search.h (1.24), source/text.c (1.50), source/text.h (1.21),
+	source/textDisp.c (1.60), source/textDisp.h (1.27), source/textP.h
+	(1.11), source/window.c (1.177), source/window.h (1.27),
+	util/getfiles.c (1.32), util/getfiles.h (1.9), util/prefFile.c
+	(1.25): /*	      */
+
+2004-10-07 10:27  edg
+
+	* source/undo.c (1.18): Fix for SF bug #988220: backup file?.  The
+	backup file was not removed when a redo operation returned the
+	document to the state where it matches the saved file. Closing the
+	document then left behind the backup file.
+
+2004-10-02 13:31  yooden
+
+	* source/: menu.c (1.119), textDisp.c (1.59): Fixes a wrong
+	assumption about the hairline code.
+
+2004-10-01 10:13  yooden
+
+	* doc/help.etx (1.79), source/menu.c (1.118), source/nedit.h
+	(1.61), source/preferences.c (1.129), source/preferences.h (1.44),
+	source/text.c (1.49), source/text.h (1.20), source/textDisp.c
+	(1.58), source/textDisp.h (1.26), source/textP.h (1.10),
+	source/window.c (1.176), source/window.h (1.26), util/prefFile.c
+	(1.24): Adds an optional hairline at the wrap column.
+
+2004-10-01 10:06  yooden
+
+	* doc/help.etx (1.78), source/file.c (1.89), source/help_data.h
+	(1.74), source/menu.c (1.117), source/nedit.h (1.60),
+	source/preferences.c (1.128), source/preferences.h (1.43),
+	util/getfiles.c (1.31), util/getfiles.h (1.8): Adds a widget to
+	(un)display hidden files in the FSB.
+
+2004-10-01 09:50  yooden
+
+	* doc/help.etx (1.77), source/menu.c (1.116), source/nedit.h
+	(1.59), source/preferences.c (1.127), source/search.c (1.72),
+	source/search.h (1.23), source/window.c (1.175): Adds a smart
+	search mode, which toggles caseness in regex searches.
+        
+============================================================================
+2004-09-30  REL-5-5 branch created
+============================================================================
+
+2004-09-30 22:52  n8gray
+
+	* README (1.47): Oops -- missed a bit of CVS conflict detrius.
+
+2004-09-30 22:51  n8gray
+
+	* Makefile (1.19), README (1.46), ReleaseNotes (1.28), source/nc.c
+	(1.45): Updating version information in preparation for 5.5
+	release.
+
+2004-09-30 21:35  edg
+
+	* README (1.45): Removed obsolete "KNOWN DEFECTS" section.
+
+2004-09-30 11:31  edg
+
+	* ChangeLog (1.40): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
 2004-09-30 11:30  edg
 
 	* README (1.44), ReleaseNotes (1.27): Updates for 5.5
