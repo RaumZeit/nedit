@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.134 2004/03/31 12:31:13 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.135 2004/03/31 15:02:10 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1425,10 +1425,16 @@ void ShowLineNumbers(WindowInfo *window, int state)
     if (state) {
         UpdateLineNumDisp(window);
     } else {
-        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
-        XtVaGetValues(window->textArea, textNmarginWidth, &marginWidth, NULL);
-        XtVaSetValues(window->shell, XmNwidth,
-                windowWidth - textD->left + marginWidth, NULL);
+	/* resize if there's only _one_ document in the window, to avoid
+	   the growing-window bug */
+    	if (NDocuments(window) == 1) {
+            XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+            XtVaGetValues(window->textArea,
+	            textNmarginWidth, &marginWidth, NULL);
+            XtVaSetValues(window->shell, XmNwidth,
+                    windowWidth - textD->left + marginWidth, NULL);
+	}
+	
         for (i=0; i<=window->nPanes; i++) {
             text = i==0 ? window->textArea : window->textPanes[i-1];
             XtVaSetValues(text, textNlineNumCols, 0, NULL);
@@ -1859,13 +1865,17 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     UpdateWMSizeHints(window);
     
     /* Use the information from the old window to re-size the window to a
-       size appropriate for the new font */
-    fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
-    fontHeight = textD->ascent + textD->descent;
-    newWindowWidth = (oldTextWidth*fontWidth) / oldFontWidth + borderWidth;
-    newWindowHeight = (oldTextHeight*fontHeight) / oldFontHeight + borderHeight;
-    XtVaSetValues(window->shell, XmNwidth, newWindowWidth, XmNheight,
-            newWindowHeight, NULL);
+       size appropriate for the new font, but only do so if there's only
+       _one_ document in the window, in order to avoid growing-window bug */
+    if (NDocuments(window) == 1) {
+	fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
+	fontHeight = textD->ascent + textD->descent;
+	newWindowWidth = (oldTextWidth*fontWidth) / oldFontWidth + borderWidth;
+	newWindowHeight = (oldTextHeight*fontHeight) / oldFontHeight + 
+	        borderHeight;
+	XtVaSetValues(window->shell, XmNwidth, newWindowWidth, XmNheight,
+        	newWindowHeight, NULL);
+    }
     
     /* Change the minimum pane height */
     UpdateMinPaneHeights(window);
@@ -2602,16 +2612,20 @@ void UpdateLineNumDisp(WindowInfo *window)
         
     /* Is the width of the line number area sufficient to display all the
        line numbers in the file?  If not, expand line number field, and the
-       window width */
+       window width. But only do so if there's only _one_ document in the
+       window, in order to avoid growing-window bug */
     XtVaGetValues(window->textArea, textNlineNumCols, &lineNumCols,
             textNmarginWidth, &marginWidth, NULL);
     if (lineNumCols < reqCols) {
-        fontWidth = textD->fontStruct->max_bounds.width;
-        oldWidth = textD->left - marginWidth;
-        newWidth = reqCols * fontWidth + marginWidth;
-        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
-        XtVaSetValues(window->shell, XmNwidth,
-                windowWidth + newWidth-oldWidth, NULL);
+    	if (NDocuments(window) == 1) {
+            fontWidth = textD->fontStruct->max_bounds.width;
+            oldWidth = textD->left - marginWidth;
+            newWidth = reqCols * fontWidth + marginWidth;
+            XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+            XtVaSetValues(window->shell, XmNwidth,
+                    windowWidth + newWidth-oldWidth, NULL);
+	}
+
         UpdateWMSizeHints(window);
         for (i=0; i<=window->nPanes; i++) {
             text = i==0 ? window->textArea : window->textPanes[i-1];

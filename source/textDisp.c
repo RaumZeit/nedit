@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.54 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.55 2004/03/31 15:02:10 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -503,6 +503,13 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     textD->width = textD->height = 0;
     TextDResize(textD, width, height);
     
+    /* if the shell window doesn't get resized, and the new fonts are
+       of smaller sizes, sometime we get some residual text on the
+       blank space at the bottom part of text area. Clear it here. */
+    clearRect(textD, textD->gc, textD->left, 
+	    textD->top + textD->height - maxAscent - maxDescent, 
+	    textD->width, maxAscent + maxDescent);
+
     /* Redisplay */
     TextDRedisplayRect(textD, textD->left, textD->top, textD->width,
             textD->height);

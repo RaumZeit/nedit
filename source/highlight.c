@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.45 2004/01/12 17:09:35 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.46 2004/03/31 15:02:09 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -2401,7 +2401,12 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
 {
     int i, borderHeight, marginHeight;
     Dimension windowHeight, textAreaHeight, textHeight, newWindowHeight;
-    	
+    
+    /* resize if there's only _one_ document in the window, to avoid
+       the growing-window bug */
+    if (NDocuments(window) > 1)
+    	return;
+	
     /* Decompose the window height into the part devoted to displaying
        text (textHeight) and the non-text part (boderHeight) */
     XtVaGetValues(window->shell, XmNheight, &windowHeight, NULL);
