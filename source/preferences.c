@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.76 2003/03/05 23:50:59 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.77 2003/03/07 01:07:15 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1020,9 +1020,9 @@ static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontDismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateFonts(fontDialog *fd);
 
-static int checkColorStatus(colorDialog *cd, Widget colorFieldW);
+static Status checkColorStatus(colorDialog *cd, Widget colorFieldW);
 static int verifyAllColors (colorDialog *cd);
-static int showColorStatus (colorDialog *cd, Widget colorFieldW,
+static void showColorStatus (colorDialog *cd, Widget colorFieldW,
       Widget errorLabelW);
 static void updateColors(colorDialog *cd);
 static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -5223,8 +5223,8 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
     char msg[100] = "";
     
     if (!GetPrefShortMenus()) {
-    	*setDefault = False;
-    	return True;
+        *setDefault = False;
+        return True;
     }
     
     sprintf(msg, "%s\nSave as default for future windows as well?", settingName);
@@ -5363,7 +5363,8 @@ static int verifyAllColors(colorDialog *cd) {
             checkColorStatus(cd, cd->cursorFgW) );
 }
 
-static int checkColorStatus(colorDialog *cd, Widget colorFieldW)
+/* Returns nonzero if the color is valid, zero if it's not */
+static Status checkColorStatus(colorDialog *cd, Widget colorFieldW)
 {
     Colormap cMap;
     XColor colorDef;
@@ -5375,25 +5376,21 @@ static int checkColorStatus(colorDialog *cd, Widget colorFieldW)
                             &colorDef);
 }
 
-static int showColorStatus(colorDialog *cd, Widget colorFieldW, 
+/* Show or hide errorLabelW depending on whether or not colorFieldW 
+    contains a valid color name.  This is currently done by changing the
+    color of the label's text.  It would be better IMHO to do it with 
+    Xt{Map,Unmap}Widget but I can't get that to work. */
+static void showColorStatus(colorDialog *cd, Widget colorFieldW, 
         Widget errorLabelW)
 {
-    int status;
-    XmString s;    
-    
-    /* XXX: See the message in addColorGroup about mapping/unmapping 
-        errorLabelW instead of changing the label string.  For some reason 
-        XtIsWidget(errorLabelW) is False!
-    */
-    status = checkColorStatus(cd, colorFieldW);
-    if (status)
-        s = XmStringCreateSimple("");
+    Pixel fgPix;
+    if (checkColorStatus(cd, colorFieldW))
+        /* The color is valid -- hide the error label*/
+        XtVaGetValues(errorLabelW, XmNbackground, &fgPix, NULL);
     else
-        s = XmStringCreateSimple("(Invalid!)");
-
-    XtVaSetValues(errorLabelW, XmNlabelString, s, NULL);
-    XmStringFree(s);
-    return status;
+        /* The color's not valid */
+        XtVaGetValues(XtParent(errorLabelW), XmNforeground, &fgPix, NULL);
+    XtVaSetValues(errorLabelW, XmNforeground, fgPix, NULL);
 }
 
 /* Update the colors in the window or in the preferences */
@@ -5523,24 +5520,10 @@ Widget addColorGroup( Widget parent, const char *name, char mnemonic,
           XmNleftPosition, leftPos, NULL);
     XmStringFree(s1);
 
-    /* The error label widget 
-    
-       XXX: I think the right thing to do would be to map/unmap the widget
-       instead of changing the text of the label.  That way the layout would
-       reserve room for it even when it's not shown.  Right now this label can
-       get crowded out with bad results if the fieldW is too narrow and the 
-       LblW is too wide.  (Change XmNcolumns in the fieldW below to see what I
-       mean.)
-
-       But when I try to use XtMapWidget or XtUnmapWidget on errW in 
-       showColorStatus I get a segfault.  If I test it with XtIsWidget it
-       never evaluates to true.  Yet the code that's there now works fine!
-       I'm stumped.
-    */
+    /* The error label widget */
     strcpy(&(longerName[nameLen]), "ErrLbl");
     *errW = XtVaCreateManagedWidget(longerName,
           xmLabelGadgetClass, parent,
-          /* XmNmappedWhenManaged, False, */
           XmNlabelString, s1=XmStringCreateSimple("(Invalid!)"),
           XmNalignment, XmALIGNMENT_END,
           XmNtopAttachment, XmATTACH_WIDGET,
