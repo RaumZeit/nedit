@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.28 2001/07/31 23:16:34 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.29 2001/08/02 22:59:58 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -595,22 +595,25 @@ void Replay(WindowInfo *window)
 {
     Program *prog;
     char *errMsg, *stoppedAt;
-    
-    if (ReplayMacro == NULL)
-    	return;
-    
-    /* Parse the replay macro (it's stored in text form) and compile it into
-       an executable program "prog" */
-    prog = ParseMacro(ReplayMacro, &errMsg, &stoppedAt);
-    if (prog == NULL) {
-    	fprintf(stderr,
-    		"NEdit internal error, learn/replay macro syntax error: %s\n",
-    		errMsg);
-    	return;
-    }
 
-    /* run the executable program */
-    runMacro(window, prog);
+    /* Verify that a replay macro exists and it's not empty and that */
+    /* we're not already running a macro */
+    if (ReplayMacro != NULL &&
+            ReplayMacro[0] != 0 &&
+            window->macroCmdData == NULL) {
+        /* Parse the replay macro (it's stored in text form) and compile it into
+        an executable program "prog" */
+        prog = ParseMacro(ReplayMacro, &errMsg, &stoppedAt);
+        if (prog == NULL) {
+            fprintf(stderr,
+                "NEdit internal error, learn/replay macro syntax error: %s\n",
+                errMsg);
+            return;
+        }
+
+        /* run the executable program */
+        runMacro(window, prog);
+    }
 }
 
 /*
