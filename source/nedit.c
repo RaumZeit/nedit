@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.88 2005/02/02 09:08:09 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.89 2005/02/12 01:53:20 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -52,6 +52,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.88 2005/02/02 09:08:09 edg Exp $";
 #include "../util/printUtils.h"
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
+#include "../util/motif.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,6 +130,12 @@ Widget TheAppShell;
 
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
+#define NEDIT_TEXT_TRANSLATIONS "#override\\n" \
+                                "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n" \
+                                "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n" \
+                                "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n" \
+                                "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n"
+
 static char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
        if the user's environment provides no usable defaults.  We try
@@ -140,9 +147,11 @@ static char *fallbackResources[] = {
        the user or environment to override this sensibly:
 
        nedit -xrm '*textFontList: myfont'
+
+       This is broken in recent versions of LessTif.
       */
 
-#if (defined(LESSTIF_VERSION) && defined(__CYGWIN__))
+#ifdef LESSTIF_VERSION
     "*FontList: "               NEDIT_DEFAULT_FONT,
     "*XmText.FontList: "        NEDIT_FIXED_FONT,
     "*XmTextField.FontList: "   NEDIT_FIXED_FONT,
@@ -163,20 +172,13 @@ static char *fallbackResources[] = {
     "*XmTextField.foreground: " NEDIT_DEFAULT_FG,
     "*XmTextField.background: " NEDIT_DEFAULT_TEXT_BG,
 
-    "*XmText.translations: #override\\n"
-        "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
-    "*XmTextField.translations: #override\\n"
-        "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
-        "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
+    /* Use baseTranslations as per Xt Programmer's Manual, 10.2.12 */
+    "*XmText.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,
+    "*XmTextField.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,
 
     "*XmLFolder.highlightThickness: 0",
     "*XmLFolder.shadowThickness:    1",
-    "*XmLFolder.maxTabWidth:        150",
+    "*XmLFolder.maxTabWidth:        32767",
     "*XmLFolder.traversalOn:        False",
     "*XmLFolder.inactiveForeground: #666" ,
     "*tab.alignment: XmALIGNMENT_BEGINNING",
@@ -344,7 +346,7 @@ static char *fallbackResources[] = {
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
     "*helpMenu.mnemonic: H",
-    "nedit.help.helpForm.sw.helpText*translations: #override\
+    "nedit.help.helpForm.sw.helpText*baseTranslations: #override\
 <Key>Tab:help-focus-buttons()\\n\
 <Key>Return:help-button-action(\"close\")\\n\
 Ctrl<Key>F:help-button-action(\"find\")\\n\
@@ -390,7 +392,12 @@ int main(int argc, char **argv)
             "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth",
 	    "-bw", "-title", NULL};
     unsigned char* invalidBindings = NULL;
-    
+
+    /* Warn user if this has been compiled wrong. */
+    enum MotifStability stability = GetMotifStability();
+    if (stability == MotifKnownBad)
+        fputs("WARNING: This version of NEdit is built incorrectly, and will be unstable.\n", stderr);
+
     /* Save the command which was used to invoke nedit for restart command */
     ArgV0 = argv[0];
 

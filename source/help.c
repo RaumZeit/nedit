@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.103 2004/12/23 22:25:45 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.104 2005/02/12 01:53:19 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -45,6 +45,7 @@ static const char CVSID[] = "$Id: help.c,v 1.103 2004/12/23 22:25:45 edg Exp $";
 #include "help_data.h"
 #include "file.h"
 #include "highlight.h"
+#include "../util/motif.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
@@ -215,41 +216,39 @@ static void freeBuildInfo(void)
     XtFree(bldInfoString);
 }
 
+static const char *const warning =
+    "\nThis NEdit was built with a known-bad version of Motif.  Please "
+    "do not report any bugs you encounter unless you can reproduce "
+    "them with a known-good binary from the www.nedit.org website. "
+    "If this binary was supplied with your Linux distribution please "
+    "file a bug report with them asking them to build NEdit with a "
+    "known-good version of Motif.\n";
+
+
 static const char *getBuildInfo(void)
 {
-    const char * bldFormat =
+    static const char *bldFormat =
         "%s\n"
         "     Built on: %s, %s, %s\n"
         "     Built at: %s, %s\n"
-        "   With Motif: %d.%d.%d [%s]"
-#ifdef BUILD_BROKEN_NEDIT
-            " (KNOWN-BAD)\n"
-#elif defined BUILD_UNTESTED_NEDIT
-            " (UNTESTED)\n"
-#else 
-            "\n"
-#endif
+        "   With Motif: %s%d.%d.%d [%s]\n"
         "Running Motif: %d.%d [%s]\n"
         "       Server: %s %d\n"
         "       Visual: %s\n"
         "       Locale: %s\n"
-#ifdef BUILD_BROKEN_NEDIT
-        "\nThis NEdit was built with a known-bad version of Motif.  Please\n"
-        "do not report any bugs you encounter unless you can reproduce\n"
-        "them with a known-good binary from the www.nedit.org website.\n"
-        "If this binary was supplied with your Linux distribution please\n"
-        "file a bug report with them asking them to build NEdit with a\n"
-        "known-good version of Motif.\n"
-#endif
        ;
-    const char * visualClass[] = {"StaticGray",  "GrayScale",
-                                  "StaticColor", "PseudoColor",
-                                  "TrueColor",   "DirectColor"};
-    const char *locale;
+
+    static const char *visualClass[] = {"StaticGray",  "GrayScale",
+                                        "StaticColor", "PseudoColor",
+                                        "TrueColor",   "DirectColor"};
+
+    static const char *const stabilities[] = {"", "(Known Bad) ", "(Untested) "};
 
     if (bldInfoString == NULL)
     {
+        const char *locale;
         char visualStr[500] = "<unknown>";
+        const enum MotifStability stab = GetMotifStability();
 
         if (TheDisplay) {
             Visual     *visual;
@@ -265,21 +264,24 @@ static const char *getBuildInfo(void)
                     usingDefaultVisual ? ", Default" : "");
         }
 
-        bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
+        bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
         locale = setlocale(LC_MESSAGES, "");
 
         sprintf(bldInfoString, bldFormat,
-            NEditVersion,
-            COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-            linkdate, linktime,
-            XmVERSION, XmREVISION, XmUPDATE_LEVEL,
-            XmVERSION_STRING,
-            xmUseVersion/1000, xmUseVersion%1000,
-            _XmVersionString,
-            (NULL == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
-            (NULL == TheDisplay ? 0 : VendorRelease(TheDisplay)),
-            visualStr,
-            locale ? locale : "None");
+             NEditVersion,
+             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+             linkdate, linktime,
+             stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL,
+             XmVERSION_STRING, 
+             xmUseVersion/1000, xmUseVersion%1000,
+             _XmVersionString,
+             (NULL == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
+             (NULL == TheDisplay ? 0 : VendorRelease(TheDisplay)),
+             visualStr,
+             locale ? locale : "None");
+
+        if (stab == MotifKnownBad)
+            strcat(bldInfoString, warning);
 
         atexit(freeBuildInfo);
     }

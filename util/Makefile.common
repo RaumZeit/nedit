@@ -1,11 +1,11 @@
-# $Id: Makefile.common,v 1.8 2003/05/20 00:27:56 n8gray Exp $
+# $Id: Makefile.common,v 1.9 2005/02/12 01:53:21 tringali Exp $
 #
 # Platform independent part of make procedure for Nirvana utilities directory, 
 # included by machine specific makefiles.
 #
 
 OBJS = DialogF.o getfiles.o printUtils.o misc.o fileUtils.o \
-	prefFile.o fontsel.o managedList.o utils.o clearcase.o
+	prefFile.o fontsel.o managedList.o utils.o clearcase.o motif.o
 
 all: libNUtil.a
 
@@ -17,9 +17,11 @@ printUtils.o: printUtils.c
 
 # This is for any platform where bogus OpenMotif or LessTif versions might
 # be found in the wild.  The rule needs a different name from the executable
-# so that the rule continues to fire if the executable exists.
-check_tif_rule:
-	$(CC) $(CFLAGS) -o check_lin_tif check_lin_tif.c
+# so that the rule continues to fire if the executable exists.  Note that we
+# do not cache the .o file - this is so if the build fails, you can jump
+# and retry on another system without worrying that it will be different.
+check_tif_rule: motif.o
+	$(CC) $(CFLAGS) -o check_lin_tif check_lin_tif.c motif.c
 	./check_lin_tif
 
 clean:

@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* check_lin_tif.c:  A small test program to detect bad versions of LessTif and *
+* verifyMotif:  A small test program to detect bad versions of LessTif and     *
 * Open Motif.  Written on linux but should be portable.                        *
 *                                                                              *
 * Copyright (C) 2003 Nathaniel Gray                                            *
@@ -25,265 +25,114 @@
 *                                                                              *
 * Written by Nathaniel Gray                                                    *
 *                                                                              *
+* Modifications by:                                                            *
+* Scott Tringali                                                               *
+*                                                                              *
 *******************************************************************************/
 
-/*
- * About the different #defines that Motif gives us:
- * All Motifs #define several values.  These are the values in
- * Open Motif 2.1.30, for example:
- *     #define XmVERSION       2
- *     #define XmREVISION      1
- *     #define XmUPDATE_LEVEL  30
- *     #define XmVersion       (XmVERSION * 1000 + XmREVISION)
- *     #define XmVERSION_STRING "@(#)Motif Version 2.1.30"
- * 
- * In addition, LessTif #defines several values as shown here for
- * version 0.93.0:
- *     #define LESSTIF_VERSION  0
- *     #define LESSTIF_REVISION 93
- *     #define LesstifVersion   (LESSTIF_VERSION * 1000 + LESSTIF_REVISION)
- *     #define LesstifVERSION_STRING \
- *             "@(#)GNU/LessTif Version 2.1 Release 0.93.0"
- *
- * Also, in LessTif the XmVERSION_STRING is identical to the 
- * LesstifVERSION_STRING.  Unfortunately, the only way to find out the
- * "update level" of a LessTif release is to parse the LesstifVERSION_STRING.
- *
- * To test:
-        gcc -I /usr/X11R6/include/ -o check_tif check_tif.c
-        gcc -I /usr/X11R6/LessTif/Motif2.1/include/ -o check_tif check_tif.c
-        gcc -I /usr/X11R6/LessTif/Motif1.2/include/ -o check_tif check_tif.c
- */
 #include <Xm/Xm.h>
-#include <string.h>
+#include "motif.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-/* 
- * These are versions of LessTif that are known to be stable with NEdit in
- * Motif 1.2 mode.
- *
- * XXX: For the moment, we don't think that there are any bugs that show up 
- *      in Motif 2.1 mode that don't also show up in Motif 1.2 mode.  Thus
- *      the code to do different things based on that info is disabled.  If
- *      we do come across a version of lesstif that works in one mode but not
- *      the other then we should revive the commented-out code.
-static char *good_lesstif_1_2_versions[] = {
-    "0.92.32",
-    "0.93.0",
-    "0.93.12",
-    "0.93.18",
-    NULL
-};
- */
-
-/* 
- * These are versions of LessTif that are known to be stable with NEdit in
- * Motif 2.1 mode.
- */
-static char *good_lesstif_2_1_versions[] = {
-    "0.92.32",
-    "0.93.0",
-    "0.93.12",
-    "0.93.18",
-    "0.93.94",
-    NULL
-};
-
-/* 
- * These are versions of LessTif that are known NOT to be stable with NEdit in
- * Motif 1.2 mode.
-static char *bad_lesstif_1_2_versions[] = {
-    "0.93.25",
-    "0.93.29",
-    "0.93.34"
-    "0.93.36",
-    "0.93.39",
-    "0.93.40",
-    "0.93.41",
-    NULL
-};
- */
-
-/* 
- * These are versions of LessTif that are known NOT to be stable with NEdit in
- * Motif 2.1 mode.
- */
-static char *bad_lesstif_2_1_versions[] = {
-    "0.93.25",
-    "0.93.29",
-    "0.93.34"
-    "0.93.36",
-    "0.93.39",
-    "0.93.40",
-    "0.93.41",
-    "0.93.44",
-    NULL
-};
-
 /* Print out a message listing the known-good versions */
-static void good_versions(void) {
-    int i;
-    fprintf(stderr, "\nNEdit is known to work with LessTif versions:\n");
-    for (i=0; good_lesstif_2_1_versions[i]; i++) {
-        fprintf(stderr, "\t%s\n", good_lesstif_2_1_versions[i]);
-    }
-    fprintf(stderr, 
-        "and is known to be very stable with Open Motif versions 2.1.30 and\n"
-        "2.2.3, which are freely available from several sources, including:\n"
+
+static void showGoodVersions(void) 
+{
+    fputs("\nNEdit is known to work with Motif versions:\n", stderr);
+    fputs(GetMotifStableVersions(), stderr);
+    
+    fputs(
+        "OpenMotif is available from:\n"
         "\thttp://www.opengroup.org/openmotif/\n"
         "\thttp://www.ist.co.uk/DOWNLOADS/motif_download.html\n"
         "\nAlso, unless you need a customized NEdit you should STRONGLY\n"
         "consider downloading a pre-built binary from http://www.nedit.org,\n"
-        "since these are the most stable versions.\n");
+        "since these are the most stable versions.\n", stderr);
 }
 
-/* We assume that the lesstif version is the string after the last
-    space. */
-static char* get_lesstif_rev(char *vs) {
-    char *rev;
-    
-    rev = strrchr(vs, ' ');
-    if (rev == NULL) {
-        fprintf(stderr, "ERROR: Can't get LessTif Version Substring!\n");
-        exit(1);
-    }
-    return rev+1;
-}
+/*
+** Main test driver.  Check the stability, and allow overrides if needed. 
+*/
+int main(int argc, const char *argv[])
+{
+    enum MotifStability stability = GetMotifStability();
 
-/* Check to see if the user has overridden our warnings.  If they haven't,
-    tell them how to do so if they're brave (or foolish :-). */
-static void finish(int exitcode, char *tif) {
-    
-    good_versions();
-    if (exitcode == 1) {
+    if (stability == MotifKnownGood)
+        return EXIT_SUCCESS;
+
+    if (stability == MotifKnownBad)
+    {
+        fprintf(stderr,
+                "ERROR:  Bad Motif Version:\n\t%s\n", 
+                XmVERSION_STRING);
+
+        fprintf(stderr, 
+            "\nThis version of Motif is known to be broken and is\n"
+            "thus unsupported by the NEdit developers.  It will probably\n"
+            "cause NEdit to crash frequently.  Check these pages for a more\n"
+            "detailed description of the problems with this version:\n"
+            "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
+            "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
+
 #ifdef BUILD_BROKEN_NEDIT
         char buf[2];
         fprintf(stderr,
             "\n========================== WARNING ===========================\n"
-            "You have chosen to build NEdit with a known-bad version of %s,\n"
+            "You have chosen to build NEdit with a known-bad version of Motif,\n"
             "risking instability and probable data loss.  You are very brave!\n"
             "Please do not report bugs to the NEdit developers unless you can\n"
             "reproduce them with a known-good NEdit binary downloaded from:\n"
             "\thttp://www.nedit.org\n"
-            "\nHIT ENTER TO CONTINUE\n", tif);
+            "\nHIT ENTER TO CONTINUE\n");
         fgets(buf, 2, stdin);
-        exit(0);
+        return EXIT_SUCCESS;
 #else
+        showGoodVersions();
+        
         fprintf(stderr,
             "\nIf you really want to build a known-bad version of NEdit you\n"
             "can override this sanity check by adding -DBUILD_BROKEN_NEDIT\n"
             "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
             "makefiles/Makefile.linux)\n");
-        exit(1);
 #endif
-    } else if (exitcode == 2) {
+    }
+
+    if (stability == MotifUnknown)
+    {
+        /* This version is neither known-good nor known-bad */
+        fprintf(stderr, 
+                "ERROR:  Untested Motif Version:\n\t%s\n",
+                XmVERSION_STRING);
+
+        fprintf(stderr, 
+            "You are attempting to build NEdit with a version of Motif that\n"
+            "has not been verified to work well with NEdit.  This could be fine,\n"
+            "but it could also lead to crashes and instability.  Historically, \n"
+            "older versions of Motif have quite often been more stable\n"
+            "than newer versions when used with NEdit, so don't assume newer\n"
+            "is better.\n");
+
 #ifdef BUILD_UNTESTED_NEDIT
         char buf[2];
         fprintf(stderr,
             "\n========================== WARNING ===========================\n"
-            "You have chosen to build NEdit with an untested version of %s.\n"
+            "You have chosen to build NEdit with an untested version of Motif.\n"
             "Please report your success or failure with this version to:\n"
             "\tdevelop@nedit.org\n"
-            "\nHIT ENTER TO CONTINUE\n", tif);
+            "\nHIT ENTER TO CONTINUE\n");
         fgets(buf, 2, stdin);
-        exit(0);
+        return EXIT_SUCCESS;
 #else
+        showGoodVersions();
+
         fprintf(stderr,
             "\nIf you really want to build an untested version of NEdit you\n"
             "can override this sanity check by adding -DBUILD_UNTESTED_NEDIT\n"
             "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
             "makefiles/Makefile.linux)\n");
-        exit(2);
 #endif
     }
-}
 
-int main() {
-    char *vs = XmVERSION_STRING, *tif;
-#ifdef LESSTIF_VERSION
-    char **v_good, **v_bad, *lesstif_rev;
-    int i;
-    
-    fprintf(stderr, "LessTif detected.\n");
-    fprintf(stderr, "%s\n", vs);
-    tif = "LessTif";
-    lesstif_rev = get_lesstif_rev(vs);
-    
-    /* XXX:  See comments above regarding Lesstif in Motif 1.2 vs. 2.1 mode
-    if (XmVersion == 1002) {
-        v_good = good_lesstif_1_2_versions;
-        v_bad = bad_lesstif_1_2_versions;
-    } else if (XmVersion == 2001) { */
-        v_good = good_lesstif_2_1_versions;
-        v_bad = bad_lesstif_2_1_versions;
-    /* } else {
-        fprintf(stderr, "Unexpected LessTif Version\n");
-        finish(2, tif);
-    } */
-    
-    /* Check for known good LessTif versions */
-    for (i=0; v_good[i]; i++) {
-        if (!strcmp(lesstif_rev, v_good[i])) {
-            exit(0);
-        }
-    }
-    /* Check for known bad LessTif versions */
-    for (i=0; v_bad[i]; i++) {
-        if (!strcmp(lesstif_rev, v_bad[i])) {
-            fprintf(stderr,
-                "\nYou are attempting to compile NEdit with a version of "
-                "LessTif that\nis known to interact badly with NEdit.  "
-                "Please use a different\nversion of LessTif or Open Motif.\n");
-            finish(1, tif);
-        }
-    }
-#else
-    {
-        int force_bad = 0;  /* This is just for debugging */
-
-        fprintf(stderr, "Open Motif or OSF Motif detected.\n");
-        fprintf(stderr, "%s\n", vs);
-        tif = "Open Motif";
-
-        /* Check for Open Motif 2.1 or 2.2.3. Note: for 2.2.3 we must 
-           check the version string too (see comment below). */
-        if (!force_bad && 
-            ((XmVERSION == 2 && XmREVISION == 1) ||
-             (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL == 3 &&
-                 strcmp("@(#)Motif Version 2.2.3", vs) == 0))) {
-            exit(0);
-        }
-
-        /* Check for the dreaded Open Motif 2.2.2 (some variants of which
-           claim to be 2.2.3, but the version string gives them away). */
-        if (force_bad || 
-                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL <= 2)  ||
-                (XmVERSION == 2 && XmREVISION == 2 && XmUPDATE_LEVEL == 3 &&
-                 strcmp("@(#)Motif Version 2.2.2", vs) == 0)) {
-            fprintf(stderr, "ERROR:  Bad Open Motif Version:\n\t%s\n", vs);
-            fprintf(stderr, 
-                "\nThis version of Open Motif is known to be broken and is\n"
-                "thus unsupported by the NEdit developers.  It will probably\n"
-                "cause NEdit to crash frequently.  Check these pages for a more\n"
-                "detailed description of the problems with this version:\n"
-                "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
-                "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
-            finish(1, tif);
-        }    
-    }
-#endif
-    
-    /* This version is neither known-good nor known-bad */
-    fprintf(stderr, "ERROR:  Untested %s Version:\n\t%s\n", tif, vs);
-    fprintf(stderr, 
-        "You are attempting to build NEdit with a version of %s that\n"
-        "has not been verified to work well with NEdit.  This could be fine,\n"
-        "but it could also lead to crashes and instability.  Historically, \n"
-        "older versions of Motif have quite often been more stable\n"
-        "than newer versions when used with NEdit, so don't assume newer\n"
-        "is better.\n",
-            tif);
-    finish(2, tif);
-    return 1;
+    return EXIT_FAILURE;
 }
