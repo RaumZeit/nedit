@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.29 2002/01/28 10:43:10 amai Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.30 2002/02/08 23:26:26 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -81,8 +81,15 @@ Display *TheDisplay = NULL;
 char *ArgV0 = NULL;
 Boolean IsServer = False;
 
-#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-*"
-#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-*-*"
+/* iso8859 appears to be necessary for newer versions of XFree86 that
+   default to Unicode encoding, which doesn't quite work with Motif.
+   Otherwise Motif puts up garbage (square blocks).
+
+   (This of course, is a stupid default because there are far more iso8859
+   apps than Unicode apps.  But the X folks insist it's a client bug.  Hah.) */
+
+#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-*"
+#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-*"
 
 static char *fallbackResources[] = {
     "*menuBar.marginHeight: 0",
@@ -255,7 +262,7 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
     "*helpMenu.mnemonic: H",
-    0
+    NULL
 };
 
 static const char cmdLineHelp[] =
