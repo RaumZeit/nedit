@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.77 2003/03/07 01:07:15 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.78 2003/03/07 01:34:37 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5636,7 +5636,7 @@ void ChooseColors(WindowInfo *window, int forWindow)
     tmpW = addColorGroup( form, "selectFg", 'S', "Selected Foreground",
             &(cd->selectFgW), &(cd->selectFgErrW), tmpW, 1, 49, 
             selectFgModifiedCB, cd );
-    tmpW = addColorGroup( form, "hiliteFg", 'M', "Matching () Foreground",
+    tmpW = addColorGroup( form, "hiliteFg", 'M', "Matching (..) Foreground",
             &(cd->hiliteFgW), &(cd->hiliteFgErrW), tmpW, 1, 49, 
             hiliteFgModifiedCB, cd );
     tmpW = addColorGroup( form, "lineNoFg", 'L', "Line Numbers",
@@ -5650,7 +5650,7 @@ void ChooseColors(WindowInfo *window, int forWindow)
     tmpW = addColorGroup( form, "selectBg", 'B', "Selected Background",
             &(cd->selectBgW), &(cd->selectBgErrW), tmpW, 51, 99, 
             selectBgModifiedCB, cd );
-    tmpW = addColorGroup( form, "hiliteBg", 'a', "Matching () Background",
+    tmpW = addColorGroup( form, "hiliteBg", 'a', "Matching (..) Background",
             &(cd->hiliteBgW), &(cd->hiliteBgErrW), tmpW, 51, 99, 
             hiliteBgModifiedCB, cd );
     tmpW = addColorGroup( form, "cursorFg", 'C', "Cursor Color",
