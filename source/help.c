@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.47 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.48 2001/08/17 23:02:55 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1323,13 +1323,19 @@ this menu are:\n\
 	    Default Search Style - Initial setting for\n\
 	        search type in Find and Replace dialogs.\n\
 \n\
-	    Default Replace Scope - Initial setting for the\n\
-	        scope in the Replace/Find dialog, when a \n\
-                selection exists. It can be either\n\
-                \"In Window\", \"In Selection\", or \"Smart\".\n\
+	    Default Replace Scope - [THIS OPTION IS ONLY\n\
+                PRESENT WHEN NEDIT WAS COMPILED WITH THE \n\
+                -DREPLACE_SCOPE FLAG TO SELECT AN\n\
+                ALTERNATIVE REPLACE DIALOG LAYOUT.]\n\
+\n\
+                Initial setting for the scope in the \n\
+                Replace/Find dialog, when a selection\n\
+                exists. It can be either \"In Window\",\n\
+                \"In Selection\", or \"Smart\".\n\
                 \"Smart\" results in \"In Window\" if the\n\
                 size of the selection is smaller than\n\
                 1 line, and to \"In Selection\" otherwise.\n\
+                \
 \n\
     Syntax Highlighting -- Program and configure enhanced\n\
         text display for new or supported languages (See\n\

@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.3 2001/08/12 15:45:03 amai Exp $
+# $Id: Makefile.generic,v 1.4 2001/08/17 23:02:55 edg Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -81,6 +81,15 @@ AR=ar
 # 		    set input routines in the nedit text widget.  Turn this on
 #		    if you see crashes in routines beginning with XmIm.  Such
 #		    bugs exist in IRIX 6.5 and some older Motif versions.
+#
+# REPLACE_SCOPE     Currently, two alternative (but functionally equivalent)
+#                   Replace/Find dialog box layouts are available. By default,
+#                   a layout with 2 rows of push buttons is built. Compiling 
+#                   with the REPLACE_SCOPE flag enables an alternative layout 
+#                   with a row of radio buttons for selecting the scope of the 
+#                   replace operations. Eventually, one of these alternatives 
+#                   will probably disappear. Please let us know which one you
+#                   prefer (via the discuss mailing list, for instance).
 #
 # Some compilers need to be told to operate in ansi-standard mode, some have
 # different levels of optimization that you can select (optimization improves

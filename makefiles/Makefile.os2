@@ -1,4 +1,4 @@
-# $Id: Makefile.os2,v 1.4 2001/08/09 18:46:54 amai Exp $
+# $Id: Makefile.os2,v 1.5 2001/08/17 23:02:55 edg Exp $
 #
 # Makefile for NEdit with XFree86 OS/2
 #
@@ -32,7 +32,10 @@ CC=gcc
 AR=ar
 
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
-# -DREPLACE_SCOPE selects an alternative layout for replace dialog 
+#
+# To evaluate an alternative layout for the Replace/Find dialog, add
+# -DREPLACE_SCOPE to the CFLAGS. See the README file for more information.
+#
 DEFINES =                  -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES
 CFLAGS=-Zmt -O5 -mpentium -g -Wall -Wno-unused -W -I$(X11ROOT)/XFree86/include $(DEFINES)
 ARFLAGS=-urs
