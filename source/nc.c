@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.14 2001/11/26 17:17:22 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.15 2001/12/03 22:18:19 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -54,6 +54,7 @@ static const char CVSID[] = "$Id: nc.c,v 1.14 2001/11/26 17:17:22 amai Exp $";
 #include "../util/utils.h"
 #include "../util/prefFile.h"
 #include "../util/clearcase.h"
+#include "../util/system.h"
 
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
@@ -62,6 +63,7 @@ static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id);
 static int startServer(const char *message, const char *commandLine);
 static char *parseCommandLine(int argc, char **argv);
 static void nextArg(int argc, char **argv, int *argIndex);
+static void printNcVersion(void);
 
 static Display *TheDisplay;
 
@@ -69,7 +71,7 @@ static const char cmdLineHelp[] =
 #ifndef VMS
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
-           [-geometry geometry] [-iconic] [--] [file...]\n";
+           [-geometry geometry] [-iconic] [-V|-version] [--] [file...]\n";
 #else
 "";
 #endif /*VMS*/
@@ -145,30 +147,31 @@ int main(int argc, char **argv)
     commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
     outPtr = commandLine;
     for (i=1; i<argc; i++) {
-#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
-        *outPtr++ = '\'';
-#endif
+/* #if !defined(VMS) && !defined(__EMX__) */
+#if defined(VMS)
+   /* Non-Unix shells don't want/need esc */
     	for (c=argv[i]; *c!='\0'; c++) {
-#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
+            *outPtr++ = *c;
+    	}
+    }
+#else
+        *outPtr++ = '\'';
+    	for (c=argv[i]; *c!='\0'; c++) {
             if (*c == '\'') {
                 *outPtr++ = '\'';
                 *outPtr++ = '\\';
             }
-#endif
             *outPtr++ = *c;
-#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
             if (*c == '\'') {
                 *outPtr++ = '\'';
             }
-#endif
     	}
-#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
         *outPtr++ = '\'';
-#endif
     	*outPtr++ = ' ';
     }
+#endif
     *outPtr = '\0';
-    	    
+
     /* Convert command line arguments into a command string for the server */
     commandString = parseCommandLine(argc, argv);
 
@@ -421,6 +424,9 @@ static char *parseCommandLine(int argc, char **argv)
 		            !strcmp(argv[i], "-svrcmd") || 
 	                    !strcmp(argv[i], "-display"))) {
     	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
+    	} else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
+    	    printNcVersion();
+	    exit(EXIT_SUCCESS);
     	} else if (opts && (*argv[i] == '-')) {
 #ifdef VMS
 	    *argv[i] = '/';
@@ -518,4 +524,18 @@ static void nextArg(int argc, char **argv, int *argIndex)
     	exit(EXIT_FAILURE);
     }
     (*argIndex)++;
+}
+
+
+/* Print version of 'nc' */
+static void printNcVersion(void ) {
+   static const char *const ncHelpText = \
+   "nc (NEdit) Version 5.2+ DEVELOPMENT version\n\
+   (December 2001)\n\n\
+     Built on: %s, %s, %s\n\
+     Built at: %s, %s\n";
+     
+    fprintf(stdout, ncHelpText,
+                  COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+                  __DATE__, __TIME__);
 }
