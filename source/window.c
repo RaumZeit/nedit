@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.150 2004/04/24 04:53:41 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.151 2004/04/26 03:01:43 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4117,10 +4117,6 @@ void RaiseDocument(WindowInfo *window)
     if (lastwin != window && IsValidWindow(lastwin))
     	MarkLastDocument(lastwin);
 
-    /* turn on syntax highlight that might have been deferred */
-    if (window->highlightSyntax && window->highlightData==NULL)
-    	StartHighlighting(window, False);
-
     /* buffer already active? */
     XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
 
@@ -4134,6 +4130,14 @@ void RaiseDocument(WindowInfo *window)
     XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, NULL);
     XtManageChild(window->splitPane);
     XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
+
+    /* Turn on syntax highlight that might have been deferred.
+       NB: this must be done after setting the document as
+           XmNworkWindow and managed, else the parent shell 
+	   window may shrink on some window-managers such as 
+	   metacity, due to changes made in UpdateWMSizeHints().*/
+    if (window->highlightSyntax && window->highlightData==NULL)
+    	StartHighlighting(window, False);
 
     /* put away the bg menu tearoffs of last active document */
     hideTearOffs(win->bgMenuPane);
