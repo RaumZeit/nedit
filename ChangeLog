@@ -1,3 +1,62 @@
+2001-07-18 15:00  amai
+
+	* source/: search.c, search.h, window.c: Shrink two function names
+	to 31 characters length and below (seems to be a limit on some VMS
+        systems)
+
+2001-07-17 10:19  amai
+
+	* doc/faq.xml: Updated version from  Florian Xhumari as of
+        http://galleries.free.fr/nedit-faq-01-07-16.tar.gz
+
+2001-07-17 09:31  amai
+
+	* source/preferences.c, util/getfiles.c, util/vmsUtils.c: VMS
+	patches from Blair Phillips <blair.phillips@airservices.gov.au>:
+	avoid rint() re-definition, fix for non-unix file root,
+        case-insensitive match on filename extensions.
+
+2001-07-16 22:41  amai
+
+	* source/lnknedit.com: VMS patch from mark.geary@qwest.com
+
+2001-07-16 16:48  amai
+
+	* doc/: nc.man, nedit.man: Man page updates from Joor Loohuis
+
+2001-07-16 13:49  amai
+
+	* doc/: faq-txt.awk, faq-txt.dtd, faq-txt.xsl, faq.dtd, faq.xml,
+        faq.xsl: faq*: add FAQ files found on our website
+
+2001-07-11 23:35  amai
+
+	* source/: parse.c_noyacc, parse.h, parse.y: Back out "const" patch
+        for ParseMacro(). Was incomplete, therefore broken
+
+2001-07-11 17:21  amai
+
+	* source/: comnedit.com, file.c, lnknedit.com: VMS patches from
+        <Mark.Geary@qwest.com> (not literally as for file.c)
+
+2001-07-11 10:06  amai
+
+	* source/parse.c_noyacc: Update from current parse.y
+
+2001-07-11 10:04  amai
+
+	* source/: parse.h, parse.y: Add some 'const' to ParseMacro()
+        signature
+
+2001-07-11 09:55  amai
+
+	* util/: comutil.com, utils.c: VMS patches from
+        Mark.Geary@qwest.com
+
+2001-07-07 11:55  amai
+
+	* ChangeLog: Update
+
 2001-07-07 11:54  amai
 
 	* COPYRIGHT, README: Have an external file for the license terms.
@@ -5,8 +64,8 @@
 
 2001-07-07 11:48  amai
 
-	* nc.man, nedit.doc, nedit.man: Move doc files to separate
-        subdirectory
+	* nc.man, nedit.doc, nedit.man, doc/nc.man, doc/nedit.doc,
+        doc/nedit.man: Move doc files to separate subdirectory
 
 2001-07-04 11:42  uid30962
 
