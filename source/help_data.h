@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 21, 2004 (Do NOT edit!)
+                 Generated on Mar 10, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -2713,36 +2713,42 @@ static char * htxt_actions [] = {
 "    load_tags_file()          mark_dialog()\n",
 "    load_tags_file_dialog()   goto_mark()\n",
 "    unload_tags_file()        goto_mark_dialog()\n",
-"    print()                   goto_matching()\n",
-"    print_selection()         select_to_matching()\n",
-"    exit()                    find_definition()\n",
-"\01I\n",
-"\01A    Edit Menu                 Shell Menu\n",
-"    -----------------------   -------------------------\n",
-"    undo()                    filter_selection_dialog()\n",
-"    redo()                    filter_selection()\n",
-"    delete()                  execute_command()\n",
-"    select_all()              execute_command_dialog()\n",
-"    shift_left()              execute_command_line()\n",
-"    shift_left_by_tab()       shell_menu_command()\n",
-"    shift_right()\n",
-"    shift_right_by_tab()      Macro Menu\n",
-"    uppercase()               -------------------------\n",
-"    lowercase()               macro_menu_command()\n",
-"    fill_paragraph()          repeat_macro()\n",
-"    control_code_dialog()     repeat_dialog()\n",
-"\01I\n",
-"\01A                              Windows Menu\n",
+"    load_tips_file()          goto_matching()\n",
+"    load_tips_file_dialog()   select_to_matching()\n",
+"    unload_tips_file()        find_definition()\n",
+"    print()                   show_tip()\n",
+"    print_selection()         \n",
+"    exit()                    Shell Menu\n",
+"                              -------------------------\n",
+"    Edit Menu                 filter_selection_dialog()\n",
+"    -----------------------   filter_selection()\n",
+"    undo()                    execute_command()\n",
+"    redo()                    execute_command_dialog()\n",
+"    delete()                  execute_command_line()\n",
+"    select_all()              shell_menu_command()\n",
+"    shift_left()              \n",
+"    shift_left_by_tab()       Macro Menu\n",
+"    shift_right()             -------------------------\n",
+"    shift_right_by_tab()      macro_menu_command()\n",
+"    uppercase()               repeat_macro()\n",
+"    lowercase()               repeat_dialog()\n",
+"    fill_paragraph()          \n",
+"    control_code_dialog()     Windows Menu\n",
 "                              -------------------------\n",
 "                              split_window()\n",
 "                              close_pane()\n",
+"                              detach_document()\n",
+"                              move_document_dialog()\n",
+"                              next_document()\n",
+"                              previous_document()\n",
+"                              last_document()\n",
 "\01I\n",
-"An action representing a menu command is named the same as its corresponding ",
-"menu item except that all punctuation is removed, all letters are changed to ",
-"lower case, and spaces are replaced with underscores.  To present a dialog to ",
-"ask the user for input, use the actions with the `_dialog` suffix. Actions ",
-"without the `_dialog` suffix take the information from the routine's ",
-"arguments (see below).  ",
+"An action representing a menu command is usually named the same as its ",
+"corresponding menu item except that all punctuation is removed, all letters ",
+"are changed to lower case, and spaces are replaced with underscores.  To ",
+"present a dialog to ask the user for input, use the actions with the ",
+"`_dialog` suffix. Actions without the `_dialog` suffix take the information ",
+"from the routine's arguments (see below).  ",
 "\n\n",
 "\01RMenu Action Routine Arguments\01I",
 "\n\n",
@@ -5407,4 +5413,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.5DEV\nFeb 21, 2004\n";
+static const char * NEditVersion = "NEdit release of Mar  9, 2004\n";

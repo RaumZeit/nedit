@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDrag.c,v 1.8 2002/07/11 21:18:12 slobasso Exp $";
+static const char CVSID[] = "$Id: textDrag.c,v 1.9 2004/03/25 07:12:47 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDrag.c - Text Dragging routines for NEdit text widget		       *
@@ -48,7 +48,6 @@ static const char CVSID[] = "$Id: textDrag.c,v 1.8 2002/07/11 21:18:12 slobasso 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
 
 static void trackModifyRange(int *rangeStart, int *modRangeEnd,
     	int *unmodRangeEnd, int modPos, int nInserted, int nDeleted);
