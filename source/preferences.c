@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.115 2004/03/04 09:44:21 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.116 2004/03/06 22:44:09 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -789,7 +789,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False",
     	&PrefData.iSearchLine, NULL, True},
     {"sortTabs", "SortTabs", PREF_BOOLEAN, "False",
-    	&PrefData.sortTabs, NULL, False},
+    	&PrefData.sortTabs, NULL, True},
     {"tabBar", "TabBar", PREF_BOOLEAN, "True",
     	&PrefData.tabBar, NULL, True},
     {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True",

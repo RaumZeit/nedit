@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.96 2004/03/05 08:10:03 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.97 2004/03/06 22:44:09 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -137,6 +137,7 @@ static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void openInTabDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarHideDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void tabSortDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void toolTipsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabNavigateDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -953,6 +954,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->tabNavigateDefItem = createMenuToggle(subSubPane, "tabNavigateDef",
     	    "Next/Prev Tabs Across Windows", 'W', tabNavigateDefCB, window,
 	    GetPrefGlobalTabNavigate(), FULL);
+    window->tabSortDefItem = createMenuToggle(subSubPane, "tabSortDef",
+    	    "Sort Tabs Alphabetically", 'S', tabSortDefCB, window,
+	    GetPrefSortTabs(), FULL);
+    
     window->toolTipsDefItem = createMenuToggle(subPane, "showTooltips",
     	    "Show Tooltips", 0, toolTipsDefCB, window, GetPrefToolTips(),
 	    FULL);
@@ -2295,6 +2300,32 @@ static void tabNavigateDefCB(Widget w, WindowInfo *window, caddr_t callData)
     for (win=WindowList; win!=NULL; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->tabNavigateDefItem, state, False);
+    }
+}
+
+static void tabSortDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefSortTabs(state);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->tabSortDefItem, state, False);
+    }
+    
+    /* If we just enabled sorting, sort all tabs.  Note that this reorders
+       the next pointers underneath us, which is scary, but SortTabBar never
+       touches windows that are earlier in the WindowList so it's ok. */
+    if (state) {
+        Widget shell=(Widget)0;
+        for (win=WindowList; win!=NULL; win=win->next) {
+            if ( win->shell != shell ) {
+                SortTabBar(win);
+                shell = win->shell;
+            }
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.49 2004/03/04 09:44:21 tksoh Exp $ */
+/* $Id: nedit.h,v 1.50 2004/03/06 22:44:09 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -362,6 +362,7 @@ typedef struct _WindowInfo {
     Widget	tabBarHideDefItem;
     Widget	toolTipsDefItem;
     Widget	tabNavigateDefItem;
+    Widget      tabSortDefItem;
     Widget	statsLineDefItem;
     Widget	iSearchLineDefItem;
     Widget	lineNumsDefItem;
