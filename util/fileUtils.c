@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.14 2001/08/17 10:56:46 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.15 2001/11/12 13:46:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -30,6 +30,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.14 2001/08/17 10:56:46 amai Ex
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #ifdef VAXC
 #define NULL (void *) 0
 #endif /*VAXC*/
@@ -47,6 +48,10 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.14 2001/08/17 10:56:46 amai Ex
 #endif /*VMS*/
 #include "fileUtils.h"
 #include "../util/utils.h"
+
+#ifndef MAXSYMLINKS  /* should be defined in <sys/param.h> */
+#define MAXSYMLINKS 20
+#endif
 
 #define TRUE 1
 #define FALSE 0
@@ -131,6 +136,65 @@ int ExpandTilde(char *pathname)
     strcpy(pathname, temp);
     return TRUE;
 }
+
+/*
+ * Resolve symbolic links (if any) for the absolute path given in pathIn 
+ * and place the resolved absolute path in pathResolved. 
+ * -  pathIn must contain an absolute path spec.
+ * -  pathResolved must point to a buffer of minimum size MAXPATHLEN.
+ *
+ * Returns:
+ *   TRUE  if pathResolved contains a valid resolved path
+ *         OR pathIn is not a symlink (pathResolved will have the same
+ *	      contents like pathIn)
+ *
+ *   FALSE an error occured while trying to resolve the symlink, i.e.
+ *         pathIn was no absolute path or the link is a loop.
+ */
+int ResolvePath(const char * pathIn, char * pathResolved) 
+{
+    char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
+    char *pathEnd;
+    int rlResult, loops;
+
+#ifdef NO_READLINK
+    strncpy(pathResolved, pathIn, MAXPATHLEN);
+    /* If there are no links at all, it's a valid "resolved" path */
+    return TRUE;
+#else
+    /* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
+    for(loops=0; loops<MAXSYMLINKS; loops++) {
+	rlResult=readlink(pathIn, resolveBuf, MAXPATHLEN-1);
+	if(rlResult<0) {
+	    if(errno==EINVAL) { 
+		/* It's not a symlink - we are done*/
+		strncpy(pathResolved, pathIn, MAXPATHLEN);
+		return TRUE;
+	    } else {
+	      	return FALSE; 
+	    }
+	} else if (rlResult==0) {
+	    return FALSE;
+	}
+
+	resolveBuf[rlResult]=0;
+
+	if(resolveBuf[0]!='/') {
+	    strncpy(pathBuf, pathIn, MAXPATHLEN);
+	    pathEnd=strrchr(pathBuf, '/');
+	    if(!pathEnd)
+	      	return FALSE;
+	    strcpy(pathEnd+1, resolveBuf);
+	} else {
+	    strcpy(pathBuf, resolveBuf);
+	}
+	NormalizePathname(pathBuf);
+	pathIn=pathBuf;
+    }
+    return FALSE;
+#endif /* NO_READLINK */
+}
+
     
 int NormalizePathname(char *pathname)
 {

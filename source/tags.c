@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.22 2001/10/22 08:50:19 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.23 2001/11/12 13:46:54 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -108,7 +108,6 @@ static const char *rcs_strdup(const char *str);
 static void rcs_free(const char *str);
 
 tagFile *TagsFileList = NULL;       /* list of loaded tags files */
-
 
 /*	Compute hash address from a string key */
 static unsigned hashAddr(const char *key)
@@ -260,8 +259,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath)
 	    continue;
 	if (windowPath && *windowPath) {
 	    strcpy(pathName, windowPath);
-	}
-	else {
+	} else {
 	    strcpy(pathName, GetCurrentDir());
 	 }   
 	strcat(pathName, "/");
@@ -389,17 +387,25 @@ static int loadTagsFile(const char *tagsFile, int index)
     FILE *fp = NULL;
     char line[MAXLINE], name[MAXLINE], searchString[MAXLINE];
     char file[MAXPATHLEN], unused[MAXPATHLEN], tagPath[MAXPATHLEN];
+    char resolvedTagsFile[MAXPATHLEN+1];
     char *posTagREEnd, *posTagRENull;
     int nRead;
     int nTagsAdded=0;
     
+    /* the path of the tags file must be resolved to find the right files:
+     * definition source files are (in most cases) specified relatively inside
+     * the tags file to the tags files directory.
+     */
+    if(!ResolvePath(tagsFile, resolvedTagsFile)) {
+      	return 0;
+    }
 
     /* Open the file */
-    if ((fp = fopen(tagsFile, "r")) == NULL) {
+    if ((fp = fopen(resolvedTagsFile, "r")) == NULL) {
        return 0;
     }
 
-    ParseFilename(tagsFile, unused, tagPath);
+    ParseFilename(resolvedTagsFile, unused, tagPath);
 
     /* Read the file and store its contents */
     while (fgets(line, MAXLINE, fp)) {
