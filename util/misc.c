@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.68 2004/08/01 10:06:12 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.69 2004/08/09 22:20:00 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2247,8 +2247,8 @@ long QueryCurrentDesktop(Display *display, Window rootWindow)
 
 /*
 ** Returns the number of the desktop the given shell window is currently on,
-** or -1 if no desktop information is available (or if the window is sticky, 
-** ie., it is on all desktops).
+** or -1 if no desktop information is available.  Note that windows shown
+** on all desktops (sometimes called sticky windows) should return 0xFFFFFFFF.
 */
 long QueryDesktop(Display *display, Widget shell)
 {
