@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: window.h,v 1.4 2001/03/09 16:58:59 slobasso Exp $ */
 WindowInfo *CreateWindow(char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
@@ -21,6 +21,8 @@ void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);
 void SplitWindow(WindowInfo *window);
+Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
+int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void ClosePane(WindowInfo *window);
 void ShowStatsLine(WindowInfo *window, int state);
 void ShowISearchLine(WindowInfo *window, int state);

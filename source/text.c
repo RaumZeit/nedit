@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.9 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.10 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -1035,6 +1035,16 @@ void TextSetScroll(Widget w, int topLineNum, int horizOffset)
     TextDSetScroll(((TextWidget)w)->text.textD, topLineNum, horizOffset);
 }
 
+int TextGetMinFontWidth(Widget w, Boolean considerStyles)
+{
+    return(TextDMinFontWidth(((TextWidget)w)->text.textD, considerStyles));
+}
+
+int TextGetMaxFontWidth(Widget w, Boolean considerStyles)
+{
+    return(TextDMaxFontWidth(((TextWidget)w)->text.textD, considerStyles));
+}
+
 /*
 ** Set this widget to be the owner of selections made in it's attached
 ** buffer (text buffers may be shared among several text widgets).
@@ -1095,6 +1105,21 @@ void TextCutClipboard(Widget w, Time time)
     BufRemoveSelected(textD->buffer);
     TextDSetInsertPosition(textD, textD->buffer->cursorPosHint);
     checkAutoShowInsertPos(w);
+}
+
+int TextFirstVisibleLine(Widget w)
+{
+    return(((TextWidget)w)->text.textD->topLineNum);
+}
+
+int TextNumVisibleLines(Widget w)
+{
+    return(((TextWidget)w)->text.textD->nVisibleLines);
+}
+
+int TextVisibleWidth(Widget w)
+{
+    return(((TextWidget)w)->text.textD->width);
 }
 
 int TextFirstVisiblePos(Widget w)

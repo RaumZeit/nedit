@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.4 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: textDisp.h,v 1.5 2001/03/09 16:58:59 slobasso Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -87,6 +87,8 @@ void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
     	styleTableEntry *styleTable, int nStyles, char unfinishedStyle,
     	unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
+int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
+int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
 void TextDResize(textDisp *textD, int width, int height);
 void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
 	int height);

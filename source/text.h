@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: text.h,v 1.4 2001/03/09 16:58:59 slobasso Exp $ */
 #ifndef  Text_H
 #define  Text_H
 
@@ -101,12 +101,17 @@ int TextGetCursorPos(Widget w);
 void TextSetCursorPos(Widget w, int pos);
 void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextSetScroll(Widget w, int topLineNum, int horizOffset);
+int TextGetMinFontWidth(Widget w, Boolean considerStyles);
+int TextGetMaxFontWidth(Widget w, Boolean considerStyles);
 void TextHandleXSelections(Widget w);
 void TextStopHandlingSelections(Widget w);
 void TextPasteClipboard(Widget w, Time time);
 void TextColPasteClipboard(Widget w, Time time);
 void TextCopyClipboard(Widget w, Time time);
 void TextCutClipboard(Widget w, Time time);
+int TextFirstVisibleLine(Widget w);
+int TextNumVisibleLines(Widget w);
+int TextVisibleWidth(Widget w);
 void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
     	int allowPendingDelete, int allowWrap);
 int TextFirstVisiblePos(Widget w);

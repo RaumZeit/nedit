@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.6 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.7 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -382,6 +382,38 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     
     /* Clean up line number area in case spacing has changed */
     redrawLineNumbers(textD, True);
+}
+
+int TextDMinFontWidth(textDisp *textD, Boolean considerStyles)
+{
+    int fontWidth = textD->fontStruct->max_bounds.width;
+    int i;
+
+    if (considerStyles) {
+        for (i = 0; i < textD->nStyles; ++i) {
+            int thisWidth = (textD->styleTable[i].font)->min_bounds.width;
+            if (thisWidth < fontWidth) {
+                fontWidth = thisWidth;
+            }
+        }
+    }
+    return(fontWidth);
+}
+
+int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles)
+{
+    int fontWidth = textD->fontStruct->max_bounds.width;
+    int i;
+
+    if (considerStyles) {
+        for (i = 0; i < textD->nStyles; ++i) {
+            int thisWidth = (textD->styleTable[i].font)->max_bounds.width;
+            if (thisWidth > fontWidth) {
+                fontWidth = thisWidth;
+            }
+        }
+    }
+    return(fontWidth);
 }
 
 /*

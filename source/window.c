@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.13 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.14 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -675,6 +675,30 @@ void SplitWindow(WindowInfo *window)
        be by the time the event loop gets around to running this timer proc) */
     XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0,
     	    wmSizeUpdateProc, window);
+}
+
+Widget GetPaneByIndex(WindowInfo *window, int paneIndex)
+{
+    Widget text = NULL;
+    if (paneIndex >= 0 && paneIndex <= window->nPanes) {
+        text = (paneIndex == 0) ? window->textArea : window->textPanes[paneIndex - 1];
+    }
+    return(text);
+}
+
+int WidgetToPaneIndex(WindowInfo *window, Widget w)
+{
+    int i;
+    Widget text;
+    int paneIndex = 0;
+    
+    for (i = 0; i <= window->nPanes; ++i) {
+        text = (i == 0) ? window->textArea : window->textPanes[i - 1];
+        if (text == w) {
+            paneIndex = i;
+        }
+    }
+    return(paneIndex);
 }
 
 /*

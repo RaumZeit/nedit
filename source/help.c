@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.18 2001/03/05 16:20:41 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.19 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3046,12 +3046,16 @@ control to the end of the loop.",
 
 "Built in Variables\n\
 \n\
+$active_pane -- Index of the current pane.\n\
+\n\
 $auto_indent -- Contains the current preference for auto indent. Can be \
 \"off\", \"on\" or \"auto\".\n\
 \n\
 $cursor -- Position of the cursor in the current window.\n\
 \n\
 $column -- Column number of the cursor position in the current window.\n\
+\n\
+$display_width -- Width of the current pane in pixels.\n\
 \n\
 $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of \
 the Preferences menu, value is the distance between emulated tab stops.  If \
@@ -3091,8 +3095,21 @@ $locked -- True if the file has been locked by the user.\n\
 $make_backup_copy -- Has a value of 1 if original file is kept in a \
 backup file on save, otherwise 0.\n\
 \n\
+$max_font_width -- The maximum font width of all the active styles. \
+Syntax highlighting styles are only considered if syntax highlighting \
+is turned on.\n\
+\n\
+$min_font_width -- The minimum font width of all the active styles. \
+Syntax highlighting styles are only considered if syntax highlighting \
+is turned on.\n\
+\n\
 $modified -- True if the file in the current window has been modified \
 and the modifications have not yet been saved.\n\
+\n\
+$n_display_lines -- The number of lines visible in the currently active \
+pane.\n\
+\n\
+$n_panes -- The number of panes in the current window.\n\
 \n\
 $overtype_mode -- True if in Overtype mode.\n\
 \n\
@@ -3120,6 +3137,9 @@ $tab_dist -- The distance between tab stops for a hardware tab \
 character, as set in the Tabs... dialog of the Preferences menu.\n\
 \n\
 $text_length -- The length of the text in the current window.\n\
+\n\
+$top_line -- The line number of the top line of the currently active \
+pane.\n\
 \n\
 $use_tabs -- Whether the user is allowing the NEdit to insert tab \
 characters to maintain spacing in tab emulation and rectangular \
@@ -3548,6 +3568,13 @@ extend_start()\n\
 Begins a selection between the \
 cursor and the mouse.  A drag-selection operation can be started with \
 either extend_start or grab_focus.\n\
+\n\
+focus_pane([relative-pane] | [positive-index] | [negative-index])\n\
+Move the focus to the requested pane.\n\
+Possible arguments are:\n\
+  relative-pane   Either  \"first\", \"last\", \"next\", \"previous\"\n\
+  positive-index are numbers greater than 0. 1 is the same as \"first\".\n\
+  negative-index are numbers less than 0. -1 is the as \"last\".\n\
 \n\
 forward_character([\"nobell\"])\n\
 Moves the cursor one character to the right.\n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.18 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.19 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -340,6 +340,8 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
+static void focusPaneAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs);
 #ifdef SGI_CUSTOM
 static void shortMenusCB(Widget w, WindowInfo *window, caddr_t callData);
 static void addToToggleShortList(Widget w);
@@ -464,6 +466,7 @@ static XtActionsRec Actions[] = {
     {"repeat_macro", repeatMacroAP},
     {"repeat_dialog", repeatDialogAP},
     {"raise_window", raiseWindowAP},
+    {"focus_pane", focusPaneAP}
 };
 
 /* List of previously opened files for File menu */
@@ -2819,6 +2822,61 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
     }
     else {
         XBell(TheDisplay, 0);
+    }
+}
+
+static void focusPaneAP(Widget w, XEvent *event, String *args,
+    Cardinal *nArgs)
+{
+    WindowInfo *window = WidgetToWindow(w);
+    Widget newFocusPane = NULL;
+    int paneIndex;
+    
+    if (*nArgs > 0) {
+        if (strcmp(args[0], "first") == 0) {
+            paneIndex = 0;
+        }
+        else if (strcmp(args[0], "last") == 0) {
+            paneIndex = window->nPanes;
+        }
+        else if (strcmp(args[0], "next") == 0) {
+            paneIndex = WidgetToPaneIndex(window, window->lastFocus) + 1;
+            if (paneIndex > window->nPanes) {
+                paneIndex = 0;
+            }
+        }
+        else if (strcmp(args[0], "previous") == 0) {
+            paneIndex = WidgetToPaneIndex(window, window->lastFocus) - 1;
+            if (paneIndex < 0) {
+                paneIndex = window->nPanes;
+            }
+        }
+        else {
+            if (sscanf(args[0], "%d", &paneIndex) == 1) {
+                if (paneIndex > 0) {
+                    paneIndex = paneIndex - 1;
+                }
+                else if (paneIndex < 0) {
+                    paneIndex = window->nPanes + (paneIndex + 1);
+                }
+                else {
+                    paneIndex = -1;
+                }
+            }
+        }
+        if (paneIndex >= 0 && paneIndex <= window->nPanes) {
+            newFocusPane = GetPaneByIndex(window, paneIndex);
+        }
+        if (newFocusPane != NULL) {
+            window->lastFocus = newFocusPane;
+            XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
+        }
+        else {
+            XBell(TheDisplay, 0);
+        }
+    }
+    else {
+        fprintf(stderr, "NEdit: focus_pane requires argument\n");
     }
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.13 2001/03/06 15:02:01 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.14 2001/03/09 16:58:59 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -265,8 +265,22 @@ static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArg
     DataValue *result, char **errMsg);
 static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
+static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
+static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -306,7 +320,7 @@ static char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
 	"toupper", "tolower", "list_dialog", "getenv", "set_language_mode",
     "string_compare", "split"};
-#define N_SPECIAL_VARS 34
+#define N_SPECIAL_VARS 41
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
     	selectionLeftMV, selectionRightMV, wrapMarginMV, tabDistMV,
@@ -316,7 +330,9 @@ static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
         makeBackupCopyMV, incBackupMV, showMatchingMV,
         overTypeModeMV, readOnlyMV, lockedMV, fileFormatMV,
         fontNameMV, fontNameItalicMV,
-        fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV};
+        fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV,
+        minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
+        displayWidthMV, activePaneMV, nPanesMV};
 static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
@@ -327,7 +343,9 @@ static char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
     "$make_backup_copy", "$incremental_backup", "$show_matching",
     "$overtype_mode", "$read_only", "$locked", "$file_format",
     "$font_name", "$font_name_italic",
-    "$font_name_bold", "$font_name_bold_italic", "$sub_sep"};
+    "$font_name_bold", "$font_name_bold_italic", "$sub_sep",
+    "$min_font_width", "$max_font_width", "$top_line", "$n_display_lines",
+    "$display_width", "$active_pane", "$n_panes"};
 
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
@@ -3490,6 +3508,62 @@ static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
      /* This allows grabage collection to think this is allocated */
      /* but since it isn't, it won't get deleted */
     result->val.str = &subSepStr[1];
+    return True;
+}
+
+static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = TextGetMinFontWidth(window->textArea, window->highlightSyntax);
+    return True;
+}
+
+static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = TextGetMaxFontWidth(window->textArea, window->highlightSyntax);
+    return True;
+}
+
+static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = TextFirstVisibleLine(window->lastFocus);
+    return True;
+}
+
+static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = TextNumVisibleLines(window->lastFocus);
+    return True;
+}
+
+static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = TextVisibleWidth(window->lastFocus);
+    return True;
+}
+
+static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = WidgetToPaneIndex(window, window->lastFocus) + 1;
+    return True;
+}
+
+static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->nPanes + 1;
     return True;
 }
 
