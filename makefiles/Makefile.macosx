@@ -1,6 +1,7 @@
-# $Id: Makefile.macosx,v 1.5 2003/11/22 13:03:39 edg Exp $
+# $Id: Makefile.macosx,v 1.6 2004/07/07 01:39:42 n8gray Exp $
 # Makefile for MacOS X
-# Contributed from hopperj@macconnect.com
+# Based on a contribution from hopperj@macconnect.com
+# Maintained by n8gray@caltech.edu
 #
 # Note that there will probably be warnings about prebinding and/or 
 # duplicate symbol definitions, but the executable will work fine.

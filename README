@@ -1,6 +1,6 @@
                     NEdit Version 5.5BETA1, July 2004
 
-$Id: README,v 1.35 2004/07/07 01:14:02 n8gray Exp $
+$Id: README,v 1.36 2004/07/07 01:39:42 n8gray Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -265,7 +265,8 @@ Mac OS X Systems
 
 You will probably need to edit makefiles/Makefile.macosx to point NEdit at
 the correct version of Motif.  There are comments in the makefile to help you
-do this correctly.
+do this correctly.  Note that the developers use the OpenMotif 2.1.30 package
+available (at the time of writing) at:  http://msg.ucsf.edu:8100/~eric/
 
 
 SGI Systems
