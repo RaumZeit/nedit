@@ -1,4 +1,4 @@
-          Release Notes for NEdit Version 5.1.1, March 17, 1999
+          Release Notes for NEdit Version 5.2 Beta, February 2001
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -10,6 +10,30 @@ the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
 
 
+New Features in 5.2
+
+ NOTE: These features are currently in beta, and are being considered for
+ release.  They may or may not be delivered in the next official release.  As
+ of this time, these features may be incomplete and have bugs.  Please report
+ bugs to http://sourceforge.net/bugs/?group_id=11005, or send mail to
+ develop@nedit.org
+
+ - Support for high- and true-color systems.  NEdit now will automatically
+   select the best visual from your X server.  This reduces the chance of
+   running out of colors.
+ 
+ - ClearCase version-extended pathnames.
+
+ - Replacement across multiple windows.
+
+
+Bug Fixes in 5.2
+
+ - Fix a crash when entering an invalid line number in "Goto Line".
+ 
+ - Ignore the Caps-Lock key when invoking accelerators.
+
+  
 New Features in 5.1
 
  - Significant extensions to the regular expression syntax.  See details
