@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.66 2003/05/03 22:45:36 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.67 2003/05/04 23:54:11 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4755,43 +4755,6 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
 
 /* -------------------------------------------------------------------------- */
 
-/*
-** Returns true if a position was supplied, or no parameters were passed and
-** the position is that of the cursor. Otherwise false.
-*/
-static int checkPosParaOrCursor(WindowInfo *window, DataValue *argList,
-      int nArgs, int *pos, char **errMsg)
-{
-    if (nArgs > 1)
-      return wrongNArgsErr(errMsg);
-    else if (nArgs == 1 && !readIntArg(argList[0], pos, errMsg))
-      return False;
-    if (nArgs == 0)
-      *pos = TextGetCursorPos(window->lastFocus);
-    return True;
-}
-
-/*
-** Returns the rgb components of a color for the current widget.
-*/
-static int getColorNameValues(WindowInfo *window, char *colorName,
-      int *red, int *green, int *blue)
-{
-    XColor colorDef;
-    Widget w = window->textArea;
-    Display *display = XtDisplay(w);
-    int screenNum = XScreenNumberOfScreen(XtScreen(w));
-    Colormap cMap = DefaultColormap(display, screenNum);
-
-    /* Allocate and return the color cell, or print an error and fall through */
-    if (XParseColor(display, cMap,  colorName, &colorDef)) {
-      *red   = colorDef.red;
-      *green = colorDef.green;
-      *blue  = colorDef.blue;
-      return True;
-    }
-    return False;
-}
 
 /*
 ** Routines to get details directly from the window.
