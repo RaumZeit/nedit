@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.68 2001/12/10 04:57:59 edel Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.69 2001/12/12 17:07:46 edel Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -127,10 +127,12 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpAgainCB(Widget w, XtPointer clientData,
 	XtPointer callData);
 static void printCB(Widget w, XtPointer clientData, XtPointer callData);
+static char *stitch(Widget  parent, char **string_list,char **styleMap);
 static void hyperlinkEH(Widget w, XtPointer data, XEvent *event,
 	Boolean *continueDispatch);
 static void searchHelpText(Widget parent, int parentTopic, const char *searchFor,
 	int allSections, int startPos, int startTopic);
+static void changeWindowTopic(int existingTopic, int newTopic);
 static int findTopicFromShellWidget(Widget shellWidget);
 static void loadFontsAndColors(Widget parent, int style);
 
@@ -138,6 +140,10 @@ static void loadFontsAndColors(Widget parent, int style);
 /*================================= PROGRAMS =================================*/
 /*============================================================================*/
 
+/*
+** Create a string containing information on the build environment.  Returned
+** string must be freed by caller.
+*/
 static char *  getBuildInfo()
 {
     char * bldFormat =
@@ -150,12 +156,6 @@ static char *  getBuildInfo()
         ;
 
     char * bldInfoString = XtMalloc( strlen( bldFormat ) + 1024);
-
-    if( bldInfoString == NULL ) {
-       fputs( "nedit: memory corrupted!\n", stderr );
-       exit( EXIT_FAILURE);
-    }
-
     sprintf(bldInfoString, bldFormat,
             NEditVersion,
             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
@@ -168,8 +168,9 @@ static char *  getBuildInfo()
     return bldInfoString;
 }
 
-/*----------------------------------------------------------------------------*/
-
+/*
+** Initialization for help system data, needs to be done only once.
+*/
 void initHelpStyles( Widget parent )
 {
     static int styleTableInitialized = False;
@@ -218,10 +219,10 @@ void initHelpStyles( Widget parent )
     }
 }
 
-/*-----------------------------------------------------------------------
-* Help fonts are not loaded until they're actually needed.  This function
-* checks if the style's font is loaded, and loads it if it's not.
-*-----------------------------------------------------------------------*/
+/*
+** Help fonts are not loaded until they're actually needed.  This function
+** checks if the style's font is loaded, and loads it if it's not.
+*/
 static void loadFontsAndColors(Widget parent, int style)
 {
     XFontStruct *font;
@@ -246,9 +247,11 @@ static void loadFontsAndColors(Widget parent, int style)
     }
 }
 
-/*----------------------------------------------------------------------------*/
-
-char * stitch( 
+/*
+** Put together stored help strings to create the text and optionally the style
+** information for a given help topic.
+*/
+static char * stitch( 
 
     Widget  parent, 	 /* used for dynamic font/color allocation */
     char ** string_list, /* given help strings to stitch together */
@@ -327,8 +330,12 @@ char * stitch(
     return section;
 }
 
-/*----------------------------------------------------------------------------*/
-
+/*
+** Display help for subject "topic".  "parent" is a widget over which the help
+** dialog may be posted.  Help dialogs are preserved when popped down by the
+** user, and may appear posted over a previous parent, regardless of the parent
+** argument.
+*/
 void Help(Widget parent, enum HelpTopic topic)
 {
     if (HelpWindows[topic] != NULL)
@@ -337,7 +344,9 @@ void Help(Widget parent, enum HelpTopic topic)
     	HelpWindows[topic] = createHelpPanel(parent, topic);
 }
 
-
+/*
+** Create a new help window displaying a given subject, "topic"
+*/
 static Widget createHelpPanel(Widget parent, int topic)
 {
     Arg al[50];
@@ -469,7 +478,7 @@ static Widget createHelpPanel(Widget parent, int topic)
 
     /* Set up an event handler to process mouse clicks on hyperlinks */
     XtAddEventHandler( HelpTextPanes[topic], ButtonPressMask | ButtonReleaseMask,
-	    False, hyperlinkEH, (XtPointer) topic );
+	    False, hyperlinkEH, NULL );
 
     /* Make close command in window menu gracefully prompt for close */
     AddMotifCloseCallback(appShell, (XtCallbackProc)dismissCB, appShell);
@@ -477,7 +486,9 @@ static Widget createHelpPanel(Widget parent, int topic)
     return appShell;
 }
 
-
+/*
+** Callbacks for window controls
+*/
 static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int topic;
@@ -490,7 +501,6 @@ static void dismissCB(Widget w, XtPointer clientData, XtPointer callData)
     XtDestroyWidget(HelpWindows[topic]);
     HelpWindows[topic] = NULL;
 }
-
 
 static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -511,7 +521,6 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
     searchHelpText(HelpWindows[topic], topic, promptText, response == 2, 0, 0);
 }
 
-
 static void searchHelpAgainCB(Widget w, XtPointer clientData,
 	XtPointer callData)
 {
@@ -522,7 +531,6 @@ static void searchHelpAgainCB(Widget w, XtPointer clientData,
     searchHelpText(HelpWindows[topic], topic, LastSearchString,
 	    LastSearchWasAllTopics, LastSearchPos, LastSearchTopic);
 }
-
 
 static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -537,9 +545,12 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 	    HelpTitles[topic]);
 }
 
-/*----------------------------------------------------------------------------*/
 
-int is_known_link( char * link_name, int * topic, Href ** target )
+/*
+** Find the topic and text position within that topic targeted by a hyperlink
+** with name "link_name". Returns true if the link was successfully interpreted.
+*/
+static int is_known_link(char *link_name, int *topic, int *textPosition)
 {
     Href * hypertext;
     
@@ -550,7 +561,7 @@ int is_known_link( char * link_name, int * topic, Href ** target )
     {
         if( strcmp( link_name, HelpTitles[*topic] ) == 0 )
         {
-            *target = NULL;
+            *textPosition = 0;
             return 1;
         }
     }
@@ -563,7 +574,7 @@ int is_known_link( char * link_name, int * topic, Href ** target )
         if( strcmp( link_name, hypertext->source ) == 0 )
         {
             *topic  = hypertext->topic;
-            *target = hypertext;
+            *textPosition = hypertext->location;
             return 1;
         }
     }
@@ -571,18 +582,16 @@ int is_known_link( char * link_name, int * topic, Href ** target )
    return 0;
 }
 
-/*----------------------------------------------------------------------------*/
-
-void follow_hyperlink( 
-
-    textDisp * textD,
-    int        charPosition,
-    int        topic
-)
+/*
+** Find the text of a hyperlink from a clicked character position somewhere
+** within the hyperlink text, and display the help that it links to.
+*/
+static void follow_hyperlink(int topic, int charPosition)
 {
+    textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
     char * link_text;
     int    link_topic;
-    Href * target  = NULL;
+    int    link_pos;
     int end        = charPosition;
     int begin      = charPosition;
     char whatStyle = BufGetCharacter(textD->styleBuffer, end);
@@ -595,26 +604,24 @@ void follow_hyperlink(
 
     link_text = BufGetRange( textD->buffer, begin, end );
     
-    if( is_known_link( link_text, &link_topic, &target ) )
+    if( is_known_link( link_text, &link_topic, &link_pos ) )
     {
         Help( HelpWindows[topic], link_topic );
-        
-        if( target != NULL )
-        {
-            TextSetCursorPos(HelpTextPanes[link_topic], target->location);
-        }
+        TextSetCursorPos(HelpTextPanes[link_topic], link_pos);
     }
     XtFree( link_text );
 }
 
-/*----------------------------------------------------------------------------*/
-
+/*
+** Event handler for mouse presses over help windows.  Determines if the
+** mouse was pressed over a hyperlink, and if so dispatches the link
+*/
 static void hyperlinkEH(Widget w, XtPointer data, XEvent *event,
 	Boolean *continueDispatch)
 {
     XButtonEvent *e = (XButtonEvent *)event;
-    int topic = (int)data;
-    textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
+    int topic;
+    textDisp *textD = ((TextWidget)w)->text.textD;
     int clickedPos;
     static int pressX=0, pressY=0;
     
@@ -635,10 +642,21 @@ static void hyperlinkEH(Widget w, XtPointer data, XEvent *event,
     if (BufGetCharacter(textD->styleBuffer, clickedPos) != STL_NM_LINK)
     	return;
     
-    /* Button was pressed on a hyperlink.  ... Lookup and dispatch */
-    follow_hyperlink( textD, clickedPos, topic );
+    /* Find the topic being displayed by this widget */
+    for (topic = 0; topic < NUM_TOPICS; topic++)
+	if (HelpTextPanes[topic] == w)
+	    break;
+    if (topic == NUM_TOPICS)
+	return;
+    
+    /* Button was pressed on a hyperlink.  Lookup and dispatch */
+    follow_hyperlink(topic, clickedPos);
 }
 
+/*
+** Search the help text.  If allSections is true, searches all of the help
+** text, otherwise searches only in parentTopic.
+*/
 static void searchHelpText(Widget parent, int parentTopic, const char *searchFor,
 	int allSections, int startPos, int startTopic)
 {    
@@ -651,15 +669,15 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
     for (topic=startTopic; topic<NUM_TOPICS; topic++) {
 	if (!allSections && topic != parentTopic)
 	    continue;
-        helpText = stitch( parent, HelpText[topic], &styleData );
+        helpText = stitch(parent, HelpText[topic], NULL);
 	if (SearchString(helpText, searchFor, SEARCH_FORWARD,
 		SEARCH_LITERAL, False, topic == startTopic ? startPos : 0,
 		&beginMatch, &endMatch, NULL, GetPrefDelimiters())) {
 	    found = True;
-	    break;
+	    XtFree(helpText);
+    	    break;
 	}
-        XtFree( helpText );
-        XtFree( styleData );
+        XtFree(helpText);
     }
     if (!found) {
 	if (startPos != 0 || (allSections && startTopic != 0)) { /* Wrap search */
@@ -672,25 +690,9 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
     
     /* If the appropriate window is already up, bring it to the top, if not,
        make the parent window become this topic */
-    if (HelpWindows[topic] == NULL) {
-	XtVaSetValues(HelpWindows[parentTopic], XmNtitle, HelpTitles[topic],
-		NULL);
-	HelpWindows[topic] = HelpWindows[parentTopic];
-	HelpWindows[parentTopic] = NULL;
-	HelpStyleBuffers[topic] = HelpStyleBuffers[parentTopic];
-	HelpStyleBuffers[parentTopic] = NULL;
- 	HelpTextPanes[topic] = HelpTextPanes[parentTopic];
-	HelpTextPanes[parentTopic] = NULL;
-	TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
-    		NULL, NULL, 0, '\0', NULL, NULL);
-	BufSetAll( TextGetBuffer( HelpTextPanes[topic] ), helpText );
-	XtFree( helpText );
-	BufSetAll(HelpStyleBuffers[topic], styleData);
-	XtFree( styleData );
-	TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
-    		HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0',
-		NULL, NULL);
-   } else if (topic != parentTopic)
+    if (HelpWindows[topic] == NULL)
+	changeWindowTopic(parentTopic, topic);
+    else if (topic != parentTopic)
 	RaiseShellWindow(HelpWindows[topic]);
     BufSelect(TextGetBuffer(HelpTextPanes[topic]), beginMatch, endMatch);
     TextSetCursorPos(HelpTextPanes[topic], endMatch);
@@ -702,6 +704,41 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
     LastSearchWasAllTopics = allSections;
 }
 
+/*
+** Change a help window to display a new topic.  (Help window data is stored
+** and indexed by topic so if a given topic is already displayed or has been
+** positioned by the user, it can be found and popped back up in the same
+** place.)  To change the topic displayed, the stored data has to be relocated.
+*/
+static void changeWindowTopic(int existingTopic, int newTopic)
+{
+    char *helpText, *styleData;
+    
+    /* Relocate the window/widget/buffer information */
+    XtVaSetValues(HelpWindows[existingTopic], XmNtitle, HelpTitles[newTopic],
+	    NULL);
+    HelpWindows[newTopic] = HelpWindows[existingTopic];
+    HelpWindows[existingTopic] = NULL;
+    HelpStyleBuffers[newTopic] = HelpStyleBuffers[existingTopic];
+    HelpStyleBuffers[existingTopic] = NULL;
+    HelpTextPanes[newTopic] = HelpTextPanes[existingTopic];
+    HelpTextPanes[existingTopic] = NULL;
+    
+    /* Set the existing text widget to display the new text.  Because it's
+       highlighted, we have to turn off highlighting before changing the
+       displayed text to prevent the text widget from trying to apply the
+       old, mismatched, highlighting to the new text */
+    helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
+    TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
+    	    NULL, NULL, 0, '\0', NULL, NULL);
+    BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
+    XtFree(helpText);
+    BufSetAll(HelpStyleBuffers[newTopic], styleData);
+    XtFree(styleData);
+    TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
+    	    HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0',
+	    NULL, NULL);
+}
 
 static int findTopicFromShellWidget(Widget shellWidget)
 {
