@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.16 2001/10/31 17:25:06 edg Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.17 2001/12/04 18:03:39 amai Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -1036,7 +1036,10 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     selectPos = 0;
     for (i=0; i<nItems; i++) {
     	XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &itemString);
-    	ParseFilename(itemString, name, path);
+    	if (ParseFilename(itemString, name, path) != 0) {
+	   XtFree(itemString);
+	   return;
+	}
 	XtFree(itemString);
     	cmp = strncmp(name, keystrokes, nKeystrokes);
     	if (cmp == 0) {

@@ -1,3 +1,85 @@
+2001-12-04 17:50  amai
+
+	* source/file.c (1.39), source/menu.c (1.43), source/nc.c (1.16),
+	source/nedit.c (1.25), source/selection.c (1.15), source/tags.c
+	(1.25), util/DialogF.c (1.20), util/fileUtils.c (1.19):
+	ParseFilename() often gets called w/o the caller to ensure that the
+	arguments are proper.  Let it do some checks and have an useful
+	return value.
+
+2001-12-04 11:14  amai
+
+	* makefiles/Makefile.macosx (1.1): Add Makefile for MacOS X, as
+	found on our website
+
+2001-12-03 22:21  amai
+
+	* source/: help.c (1.67), nedit.c (1.24): Update source timestamp
+	and add -V to commandline help
+
+2001-12-03 22:18  amai
+
+	* source/nc.c (1.15): Resolve a mess of #ifdefs in handling
+	commandline args.  Implement -V|-version for nc
+
+2001-12-03 16:46  tringali
+
+	* source/: Makefile.common (1.10), help.c (1.66), linkdate.c (1.1):
+	Make build date more accurate by updating on actual link, not when
+	help.c was last compiled.
+
+2001-12-02 17:58  edg
+
+	* source/: textBuf.c (1.15), textSel.c (1.6): Applied SF patch
+	#487945: Fix for rectangular overstrike paste.
+
+2001-11-30 15:41  tringali
+
+	* source/: nedit.c (1.23), window.c (1.35): [487153] Let user
+	override font of statistics line
+
+2001-11-27 22:53  edg
+
+	* source/search.c (1.39): Enhancement to the (multi-file)
+	replacement dialog: all files are first checked for changes to set
+	correct sensitivity for the multi-file button and to generate an
+	up-to-date list of writable files in the multi-file dialog.
+
+2001-11-27 10:47  amai
+
+	* source/: help.c (1.65), menu.c (1.42), shell.c (1.18): Patch from
+	A. Riese SF Patch [ #434451 ] line numbers in shell commands
+
+2001-11-27 09:09  amai
+
+	* source/file.c (1.38), source/menu.c (1.41), util/prefFile.c
+	(1.12), util/utils.c (1.9), util/utils.h (1.4): Introduce
+	PrependHome() to create all paths of type $HOME/file without
+	overflow.  Fixes some leaks, other remain ...
+
+2001-11-26 21:40  amai
+
+	* util/: fileUtils.c (1.18), utils.c (1.8): Quit if a "safe"
+	getpw*() call fails. GetUserName() returns a safe, cached result
+
+2001-11-26 17:17  amai
+
+	* ChangeLog (1.14), README (1.20), source/help.c (1.64),
+	source/nc.c (1.14), source/nedit.c (1.22): Apply Patch from M.
+	Schwarzenberg: SF Patch [ #485610 ] -- open filenames starting with
+	a dash
+
+2001-11-26 14:54  amai
+
+	* util/fileUtils.c (1.17): Try to fix a potential memory
+	(security?!?) leak in ExpandTile()
+
+2001-11-26 14:17  amai
+
+	* util/utils.c (1.7): Cache return value of GetHomeDir() and return
+	a private reference.  Earlier we did return a string that could be
+	invalided before it was used!?
+
 2001-11-25 23:03  edg
 
 	* source/file.c (1.37): Crash fix: avoid closing windows twice when
