@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.25 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.26 2002/07/20 23:18:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -225,13 +225,20 @@ ResolvePath(const char * pathIn, char * pathResolved)
 	rlResult=readlink(pathIn, resolveBuf, MAXPATHLEN-1);
 #endif
 	if(rlResult<0) {
-	    if(errno==EINVAL) { 
-		/* It's not a symlink - we are done*/
-		strncpy(pathResolved, pathIn, MAXPATHLEN);
-		return TRUE;
-	    } else {
-	      	return FALSE; 
-	    }
+
+#ifndef __Lynx__
+  	    if (errno == EINVAL)
+#else
+	    if (errno == ENXIO)
+#endif
+        {
+            /* It's not a symlink - we are done */
+            strncpy(pathResolved, pathIn, MAXPATHLEN);
+            return TRUE;
+        } else
+        {
+            return FALSE;
+        }
 	} else if (rlResult==0) {
 	    return FALSE;
 	}
