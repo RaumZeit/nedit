@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.31 2002/12/10 12:29:19 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.32 2002/12/10 13:16:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -240,9 +240,9 @@ int main(int argc, char **argv)
     _wildcard(&argc, &argv);
 #endif
     
-    /* Read the preferences command line and (very) optional .nc file
-       into a database */
-    prefDB = CreatePreferencesDatabase(".nc", APP_CLASS, 
+    /* Read the preferences command line into a database (note that we
+       don't support the .nc file anymore) */
+    prefDB = CreatePreferencesDatabase(NULL, APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
     
     /* Process the command line before calling XtOpenDisplay, because the
