@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.31 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.32 2001/08/29 08:27:21 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -269,14 +269,14 @@ void RealizeWithoutForcingPosition(Widget shell)
 ** visual (particularly *background), and these must be avoided by widgets
 ** which are allowed to handle any visual.
 */
-void FindBestVisual(Display *display, const char *appName, char *appClass,
+void FindBestVisual(Display *display, const char *appName, const char *appClass,
 	Visual **visual, int *depth, Colormap *colormap)
 {
     char rsrcName[256], rsrcClass[256], *valueString, *type, *endPtr;
     XrmValue value;
     int screen = DefaultScreen(display);
     int reqDepth = -1;
-    VisualID reqID = -1;
+    long reqID = -1; /* should hold a 'VisualID' and a '-1' ... */
     int reqClass = -1;
     int installColormap = FALSE;
     int maxDepth, bestClass, bestVisual, nVis, i, j;
