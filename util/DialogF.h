@@ -12,6 +12,6 @@
 #define DF_MAX_MSG_LENGTH 2047		/* longest message length supported */
 #define DF_MAX_PROMPT_LENGTH 255	/* longest prompt string supported */
 
-unsigned DialogF(unsigned, Widget, unsigned, char*, ...);
+unsigned DialogF(int, Widget, unsigned, char*, ...);
 				/* variable # arguments */
 void SetDialogFPromptHistory(char **historyList, int nItems);
