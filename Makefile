@@ -1,17 +1,19 @@
 SHELL=/bin/sh
+#
 # Makefile for NEdit text editor
 #
-# Targets are the sufixes of the system-specific makefiles in directory
-# "makefiles".  For example, to build NEdit for Solaris, give the command
+# Targets are the suffixes of the system-specific makefiles in
+# the makefiles/ directory.
+# For example, to build NEdit for Solaris, give the command
 #
 #   make solaris
 #
-# Builds an intermediate library in util directory, then builds
-# the nedit executable in the source directory.
+# This builds an intermediate library in the util/ directory,
+# then builds the nedit and nc executables in the source/ directory.
 #
 
 all:
-	@echo "Please specify target"
+	@echo "Please specify target:"
 	@(cd makefiles && ls -C Makefile* | sed -e 's/Makefile.//g')
 
 .DEFAULT:
@@ -23,5 +25,5 @@ all:
 	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
 
 clean:
-	(cd util; $(MAKE) -f Makefile.common clean)
+	(cd util;   $(MAKE) -f Makefile.common clean)
 	(cd source; $(MAKE) -f Makefile.common clean)

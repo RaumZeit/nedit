@@ -28,7 +28,7 @@ Schwarzenberg, Himanshu Gohel, Steven C. Kapp, Michael Turomsha, John Fieber,
 Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou, and Seak, Teng-Fong.
 
 NEdit sources, executables, additional documentation, and contributed software
-are available from the nedit web site at http://nedit.org.
+are available from the NEdit web site at http://nedit.org.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -81,7 +81,7 @@ notes for details.
 BUILDING NEDIT
 
 Pre-built executables will be available for most major Unix and VMS systems, so
-check the nedit web page (http://nedit.org), first.  Building NEdit requires
+check the NEdit web page (http://nedit.org), first.  Building NEdit requires
 the Motif GUI library, e.g. libXm.a or libXm.so, which is a standard part
 of commercial Unix systems, but which requires separate installation on Linux
 and other free Unix variants.  A free version of Motif, called LessTif,
@@ -126,7 +126,7 @@ the directory, and issue the command:
 (where <machine type> is the Makefile suffix).  Alternatively, you can
 name the file "Makefile" and simply type "make".
 
-If no makefile exists for your system, check the nedit web site at:
+If no makefile exists for your system, check the NEdit web site at:
 http://nedit.org for more contributed Makefiles.  If you can't find one that's
 close, start from Makefile.generic.  See the comments in Makefile.generic for
 more porting information.
@@ -339,16 +339,16 @@ More information is available in the file nedit.doc in this kit, from NEdit's
 on-line help system, and from the enclosed FAQ file.  There is also a web page
 for NEdit at: http://nedit.org.  For discussion with other NEdit users, or to
 receive notification of new releases and news about news, you can subscribe to
-one or both of the nedit mailing lists, discuss@nedit.org, and
+one or both of the NEdit mailing lists, discuss@nedit.org, and
 announce@nedit.org.  The NEdit on-line help has information on subscribing
 under Help -> Mailing Lists.
 
 
 REPORTING BUGS
 
-The nedit developers subscribe to both discuss@nedit.org and develop@nedit.org,
+The NEdit developers subscribe to both discuss@nedit.org and develop@nedit.org,
 either of which may be used for reporting bugs.  If you're not sure, or you
-think the report might be of interest to the general nedit user community,
+think the report might be of interest to the general NEdit user community,
 send the report to discuss@nedit.org.  If it's something obvious and boring,
 like we misspelled "anemometer" in the on-line help, send it to develop.  If
 you don't want to subscribe to these lists, please add a note to your mail
