@@ -1,6 +1,6 @@
                     NEdit Version 5.3,  March 2002
 
-$Id: README,v 1.27 2002/03/11 22:21:10 edg Exp $
+$Id: README,v 1.28 2002/03/11 22:40:38 amai Exp $
 	     
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -208,7 +208,7 @@ PLATFORM SPECIFIC ISSUES
 
 Systems with LessTif, rather than Motif libraries
 
-As of Lesstif 0.92.26, NEdit is very stable with Lesstif. 
+As of Lesstif 0.93.18, NEdit is very stable with Lesstif. 
 You can get the latest LessTif version from http://www.lesstif.org.
 If you are having trouble building or running NEdit with LessTif,
 remember there are pre-compiled statically linked executables available
@@ -224,6 +224,9 @@ Known bugs which might show off in NEdit linked with LessTif include:
      completely as it should. (.89.9+)
   
   3) Secondary selection operations are not yet supported in text fields.
+
+  4) Status bar is blank after usage of Incremental Search field
+     (0.93.18+-)
 
 
 Linux Systems
