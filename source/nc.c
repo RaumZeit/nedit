@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.11 2001/08/27 09:08:07 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.12 2001/10/15 17:33:49 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -151,17 +151,32 @@ int main(int argc, char **argv)
        start a server (nc command line args parallel nedit's).  Include
        -svrname if nc wants a named server, so nedit will match. Special
        characters are protected from the shell by escaping EVERYTHING with \ */
-    for (i=1; i<argc; i++)
-    	length += 1 + strlen(argv[i])*2;
+    for (i=1; i<argc; i++) {
+    	length += 1 + strlen(argv[i])*4 + 2;
+    }
     commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
     outPtr = commandLine;
     for (i=1; i<argc; i++) {
+#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
+        *outPtr++ = '\'';
+#endif
     	for (c=argv[i]; *c!='\0'; c++) {
 #if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
-    	    *outPtr++ = '\\';
+            if (*c == '\'') {
+                *outPtr++ = '\'';
+                *outPtr++ = '\\';
+            }
 #endif
-    	    *outPtr++ = *c;
+            *outPtr++ = *c;
+#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
+            if (*c == '\'') {
+                *outPtr++ = '\'';
+            }
+#endif
     	}
+#if !defined(VMS) && !defined(__EMX__) /* Non-Unix shells don't want/need esc */
+        *outPtr++ = '\'';
+#endif
     	*outPtr++ = ' ';
     }
     *outPtr = '\0';
