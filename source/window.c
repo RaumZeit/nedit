@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.81 2003/05/16 05:23:50 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.82 2003/05/24 19:15:21 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -144,6 +144,25 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 static Widget containingPane(Widget w);
 
+/* Must be in same index order as enum enum colorTypes */
+struct mapEntry
+{
+    String          resource;
+    enum colorTypes color;
+};
+
+static const struct mapEntry colorResourceMap[] =
+{
+    { XmNforeground,             TEXT_FG_COLOR   },
+    { XmNbackground,             TEXT_BG_COLOR   },
+    { textNselectForeground,     SELECT_FG_COLOR },
+    { textNselectBackground,     SELECT_BG_COLOR },
+    { textNhighlightForeground,  HILITE_FG_COLOR },
+    { textNhighlightBackground,  HILITE_BG_COLOR },
+    { textNlineNumForeground,    LINENO_FG_COLOR },
+    { textNcursorForeground,     CURSOR_FG_COLOR },
+};                                
+
 /*
 ** Create a new editor window
 */
@@ -154,7 +173,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     WindowInfo *window;
     Pixel bgpix, fgpix;
     Arg al[20];
-    int ac;
+    int ac, c;
     XmString s1;
 #ifdef SGI_CUSTOM
     char sgi_title[MAXPATHLEN + 14 + SGI_WINDOW_TITLE_LEN] = SGI_WINDOW_TITLE; 
@@ -240,22 +259,13 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->flashTimeoutID = 0;
     window->fileClosedAtom = None;
     window->wasSelected = FALSE;
-    strncpy(window->colorNames[TEXT_FG_COLOR  ], 
-            GetPrefColorName(TEXT_FG_COLOR  ), MAX_COLOR_LEN);
-    strncpy(window->colorNames[TEXT_BG_COLOR  ], 
-            GetPrefColorName(TEXT_BG_COLOR  ), MAX_COLOR_LEN);
-    strncpy(window->colorNames[SELECT_FG_COLOR], 
-            GetPrefColorName(SELECT_FG_COLOR), MAX_COLOR_LEN);
-    strncpy(window->colorNames[SELECT_BG_COLOR], 
-            GetPrefColorName(SELECT_BG_COLOR), MAX_COLOR_LEN);
-    strncpy(window->colorNames[HILITE_FG_COLOR], 
-            GetPrefColorName(HILITE_FG_COLOR), MAX_COLOR_LEN);
-    strncpy(window->colorNames[HILITE_BG_COLOR], 
-            GetPrefColorName(HILITE_BG_COLOR), MAX_COLOR_LEN);
-    strncpy(window->colorNames[LINENO_FG_COLOR], 
-            GetPrefColorName(LINENO_FG_COLOR), MAX_COLOR_LEN);
-    strncpy(window->colorNames[CURSOR_FG_COLOR], 
-            GetPrefColorName(CURSOR_FG_COLOR), MAX_COLOR_LEN);
+
+#if 0    
+    for (c = 0; c < NUM_COLORS; c++) {
+        strncpy(window->colorNames[c], GetPrefColorName(c), MAX_COLOR_LEN);
+    }
+#endif
+    
     strcpy(window->fontName, GetPrefFontName());
     strcpy(window->italicFontName, GetPrefItalicFontName());
     strcpy(window->boldFontName, GetPrefBoldFontName());
@@ -1340,7 +1350,8 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
             cursorFgPix = AllocColor( window->textArea, cursorFg, 
                     &dummy, &dummy, &dummy);
     textDisp *textD;
-    
+
+#if 0    
     /* Update the names in the WindowInfo */
     strncpy(window->colorNames[TEXT_FG_COLOR  ], textFg  , MAX_COLOR_LEN);
     strncpy(window->colorNames[TEXT_BG_COLOR  ], textBg  , MAX_COLOR_LEN);
@@ -1350,6 +1361,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
     strncpy(window->colorNames[HILITE_BG_COLOR], hiliteBg, MAX_COLOR_LEN);
     strncpy(window->colorNames[LINENO_FG_COLOR], lineNoFg, MAX_COLOR_LEN);
     strncpy(window->colorNames[CURSOR_FG_COLOR], cursorFg, MAX_COLOR_LEN);
+#endif
     
     /* Update the main pane */
     XtVaSetValues(window->textArea,
@@ -1664,6 +1676,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
 {
     Widget text, sw, hScrollBar, vScrollBar, frame;
     int dummy;
+    int i;
         
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
@@ -1693,29 +1706,18 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNcontinuousWrap, window->wrapMode == CONTINUOUS_WRAP,
             textNoverstrike, window->overstrike,
             textNhidePointer, (Boolean) GetPrefTypingHidesPointer(),
-            XmNforeground, AllocColor(sw, window->colorNames[TEXT_FG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            XmNbackground, AllocColor(sw, window->colorNames[TEXT_BG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNselectForeground,
-                    AllocColor(sw, window->colorNames[SELECT_FG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNselectBackground,
-                    AllocColor(sw, window->colorNames[SELECT_BG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNhighlightForeground,
-                    AllocColor(sw, window->colorNames[HILITE_FG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNhighlightBackground,
-                    AllocColor(sw, window->colorNames[HILITE_BG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNlineNumForeground,
-                    AllocColor(sw, window->colorNames[LINENO_FG_COLOR], 
-                    &dummy, &dummy, &dummy),
-            textNcursorForeground,
-                    AllocColor(sw, window->colorNames[CURSOR_FG_COLOR], 
-                    &dummy, &dummy, &dummy),
             NULL);
+
+    for (i = 0; i < XtNumber(colorResourceMap); i++)
+    {
+        String colorName = GetPrefColorName(colorResourceMap[i].color);
+        if (strcmp("None", colorName))
+        {
+            Pixel color = AllocColor(sw, colorName, &dummy, &dummy, &dummy);
+            XtVaSetValues(text, colorResourceMap[i].resource, color, NULL);
+        }
+    }
+
     XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
                     hScrollBar, XmNverticalScrollBar, vScrollBar, NULL);
 

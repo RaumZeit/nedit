@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.33 2003/05/09 17:43:47 edg Exp $ */
+/* $Id: preferences.h,v 1.34 2003/05/24 19:15:20 tringali Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -22,12 +22,6 @@ enum helpFonts {HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT,
     BOLD_ITALIC_HELP_FONT, FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
     ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT, HELP_LINK_FONT,
     H1_HELP_FONT, H2_HELP_FONT, H3_HELP_FONT, NUM_HELP_FONTS
-};
-
-/* Identifiers for the different colors that can be adjusted.  Make sure
-   to keep this in synch with NUM_COLORS in nedit.h */
-enum colorTypes {TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR,
-        HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR
 };
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);

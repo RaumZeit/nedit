@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.76 2003/05/09 17:43:45 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.77 2003/05/24 19:15:20 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1026,8 +1026,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    wrapMarginCB, window, SHORT);
     createMenuItem(menuPane, "tabs", "Tabs...", 'T', tabsCB, window, SHORT);
     createMenuItem(menuPane, "textFont", "Text Fonts...", 'F', fontCB, window,
-    	    FULL);
-    createMenuItem(menuPane, "colors", "Colors...", 'C', colorCB, window,
     	    FULL);
     window->highlightItem = createMenuToggle(menuPane, "highlightSyntax",
 	    "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax",

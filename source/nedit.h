@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.38 2003/05/18 20:05:43 edg Exp $ */
+/* $Id: nedit.h,v 1.39 2003/05/24 19:15:20 tringali Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -49,8 +49,6 @@
 #define AUTOSAVE_OP_LIMIT 8	/* number of distinct editing operations user
 				   can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100	/* maximum length for a font name */
-#define NUM_COLORS 8            /* The number of adjustable colors (not
-                                   for syntax highlighting) */
 #define MAX_COLOR_LEN 30	/* maximum length for a color name */
 #define MAX_MARKS 36	    	/* max. # of bookmarks (one per letter & #) */
 #define MIN_LINE_NUM_COLS 4 	/* Min. # of columns in line number display */
@@ -161,6 +159,19 @@ typedef struct {
     int cursorPos;
     selection sel;
 } Bookmark;
+
+/* Identifiers for the different colors that can be adjusted. */
+enum colorTypes {
+    TEXT_FG_COLOR,
+    TEXT_BG_COLOR,
+    SELECT_FG_COLOR,
+    SELECT_BG_COLOR,
+    HILITE_FG_COLOR,
+    HILITE_BG_COLOR,
+    LINENO_FG_COLOR,
+    CURSOR_FG_COLOR,
+    NUM_COLORS
+};
 
 typedef struct _WindowInfo {
     struct _WindowInfo *next;
@@ -278,7 +289,7 @@ typedef struct _WindowInfo {
     Widget      beepOnSearchWrapDefItem;
     Widget	keepSearchDlogsDefItem;
     Widget	searchWrapsDefItem;
-    Widget  appendLFItem;
+    Widget      appendLFItem;
     Widget	sortOpenPrevDefItem;
     Widget	allTagsDefItem;
     Widget	smartTagsDefItem;
@@ -341,7 +352,6 @@ typedef struct _WindowInfo {
     int		undoOpCount;		/* count of stored undo operations */
     int		undoMemUsed;		/* amount of memory (in bytes)
     					   dedicated to the undo list */
-    char	colorNames[NUM_COLORS][MAX_COLOR_LEN]; /* Text color names */
     char	fontName[MAX_FONT_LEN];	/* names of the text fonts in use */
     char	italicFontName[MAX_FONT_LEN];
     char	boldFontName[MAX_FONT_LEN];
