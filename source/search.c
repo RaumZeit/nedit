@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.45 2002/03/14 17:18:54 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.46 2002/07/09 14:15:25 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4176,7 +4176,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 
     /* search from beginPos to end of string */
     if (ExecRE(compiledRE, NULL, string + beginPos, NULL, FALSE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters)) {
+    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
@@ -4193,7 +4193,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
     
     /* search from the beginning of the string to beginPos */
     if (ExecRE(compiledRE, NULL, string, string + beginPos, FALSE, '\0',
-	    string[beginPos], delimiters)) {
+	    string[beginPos], delimiters, string)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
@@ -4223,7 +4223,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     /* says begin searching from the far end of the file.		*/
     if (beginPos >= 0) {
 	if (ExecRE(compiledRE, NULL, string, string + beginPos, TRUE, '\0',
-		'\0', delimiters)) {
+		'\0', delimiters, string)) {
 	    *startPos = compiledRE->startp[0] - string;
 	    *endPos = compiledRE->endp[0] - string;
 	    if (searchExtent != NULL)
@@ -4244,7 +4244,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     	beginPos = 0;
     length = strlen(string); /* sadly, this means scanning entire string */
     if (ExecRE(compiledRE, NULL, string + beginPos, string + length, TRUE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters)) {
+    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtent != NULL)
@@ -4301,8 +4301,8 @@ static void resetReplaceTabGroup(WindowInfo *window)
 static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 	int searchType, int *left, int *right, int *searchExtent)
 {
-    int selLen, selStart, selEnd, startPos, endPos, extent;
-    int regexLookaheadContext = isRegexType(searchType) ? 1000 : 0;
+    int selLen, selStart, selEnd, startPos, endPos, extent, beginPos;
+    int regexLookContext = isRegexType(searchType) ? 1000 : 0;
     char *string;
     int found, isRect, rectStart, rectEnd, lineStart = 0;
     
@@ -4323,13 +4323,19 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
     /* get the selected text plus some additional context for regular
        expression lookahead */
     if (isRect) {
-    	string = BufGetRange(window->buffer, lineStart + rectStart,
-		lineStart + rectEnd + regexLookaheadContext);
+	int stringStart = lineStart + rectStart - regexLookContext;
+	if (stringStart < 0) stringStart = 0;
+    	string = BufGetRange(window->buffer, stringStart,
+		lineStart + rectEnd + regexLookContext);
     	selLen = rectEnd - rectStart;
+	beginPos = lineStart + rectStart - stringStart;
     } else {
-	string = BufGetRange(window->buffer, selStart,
-		selEnd + regexLookaheadContext);
+	int stringStart = selStart - regexLookContext;
+	if (stringStart < 0) stringStart = 0;
+	string = BufGetRange(window->buffer, stringStart,
+		selEnd + regexLookContext);
     	selLen = selEnd - selStart;
+	beginPos = selStart - stringStart;
     }
     if (*string == '\0') {
     	XtFree(string);
@@ -4340,13 +4346,13 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
     /* in an exact match, but the procedure SearchString does important */
     /* stuff like applying the correct matching algorithm)		*/
     found = SearchString(string, searchString, SEARCH_FORWARD, searchType,
-    	    FALSE, 0, &startPos, &endPos, &extent, GetWindowDelimiters(window));
+    	    FALSE, beginPos, &startPos, &endPos, &extent, GetWindowDelimiters(window));
     XtFree(string);
-    
+
     /* decide if it is an exact match */
     if (!found)
     	return FALSE;
-    if (startPos != 0 || endPos != selLen)
+    if (startPos != beginPos || endPos - beginPos != selLen )
     	return FALSE;
     
     /* return the start and end of the selection */
@@ -4378,7 +4384,8 @@ static void replaceUsingRE(const char *searchStr, const char *replaceStr,
     char *compileMsg;
     
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
-    ExecRE(compiledRE, NULL, sourceStr, NULL, False, prevChar, '\0',delimiters);
+    ExecRE(compiledRE, NULL, sourceStr, NULL, False, prevChar,
+   	   '\0',delimiters, sourceStr);
     SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
     free((char *)compiledRE);
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.28 2002/06/08 13:56:50 tringali Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.29 2002/07/09 14:15:24 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -147,10 +147,10 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
         const char *delimiters);
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters);
+    	const char *delimiters, const char* lookBehindTo);
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters);
+    	const char *delimiters, const char* lookBehindTo);
 static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
     	char style, const char *delimiters, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
@@ -283,7 +283,7 @@ void StartHighlighting(WindowInfo *window, int warn)
 	stringPtr = bufString = BufGetAll(window->buffer);
 	parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr,
     		window->buffer->length, &prevChar, False,
-    		GetWindowDelimiters(window));
+    		GetWindowDelimiters(window), bufString);
 	XtFree(bufString);
     }
     *stylePtr = '\0';
@@ -1060,7 +1060,7 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
     /* Parse it with pass 2 patterns */
     prevChar = getPrevChar(buf, beginSafety);
     parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety,
-    	    &prevChar, False, GetWindowDelimiters(window));
+    	    &prevChar, False, GetWindowDelimiters(window), string);
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
@@ -1231,7 +1231,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     stringPtr = &string[beginParse-beginSafety];
     stylePtr = &styleString[beginParse-beginSafety];
     parseString(pass1Patterns, &stringPtr, &stylePtr, endParse-beginParse,
-    	    &prevChar, False, delimiters);
+    	    &prevChar, False, delimiters, string);
 
     /* On non top-level patterns, parsing can end early */
     endParse = min(endParse, stringPtr-string + beginSafety);
@@ -1268,14 +1268,14 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	prevChar = getPrevChar(buf, beginSafety);
 	if (endPass2Safety == endSafety) {
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	endParse - beginSafety, &prevChar, False, delimiters);
+	    	endParse - beginSafety, &prevChar, False, delimiters, string);
 	    goto parseDone;
 	} else {
 	    tempLen = endPass2Safety - modStart;
 	    temp = XtMalloc(tempLen);
 	    strncpy(temp, &styleString[modStart-beginSafety], tempLen);
 	    passTwoParseString(pass2Patterns, string, styleString,
-		    modStart - beginSafety, &prevChar, False, delimiters);
+		    modStart - beginSafety, &prevChar, False, delimiters, string);
 	    strncpy(&styleString[modStart-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1288,7 +1288,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	if (beginSafety > modEnd) {
 	    prevChar = getPrevChar(buf, beginSafety);
 	    passTwoParseString(pass2Patterns, string, styleString,
-	    	    endParse - beginSafety, &prevChar, False, delimiters);
+	    	    endParse - beginSafety, &prevChar, False, delimiters, string);
 	} else {
 	    startPass2Safety = max(beginSafety,
 	    	    backwardOneContext(buf, contextRequirements, modEnd));
@@ -1299,7 +1299,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	    passTwoParseString(pass2Patterns,
 	    	    &string[startPass2Safety-beginSafety],
 	    	    &styleString[startPass2Safety-beginSafety],
-	    	    endParse-startPass2Safety, &prevChar, False, delimiters);
+	    	    endParse-startPass2Safety, &prevChar, False, delimiters, string);
 	    strncpy(&styleString[startPass2Safety-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1336,7 +1336,7 @@ parseDone:
 */
 static int parseString(highlightDataRec *pattern, char **string,
     	char **styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters)
+    	const char *delimiters, const char* lookBehindTo)
 {
     int i;
     char *stringPtr, *stylePtr, *startingStringPtr;
@@ -1350,7 +1350,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     stylePtr = *styleString;
     
     while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
-	    *string+length+1, False, *prevChar, '\0', delimiters)) {
+	    *string+length+1, False, *prevChar, '\0', delimiters, lookBehindTo)) {
     	
     	/* Combination of all sub-patterns and end pattern matched */
     	/* printf("combined patterns RE matched at %d\n",
@@ -1366,7 +1366,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	   done.  Fill in the style string, update the pointers, color the
 	   end expression if there were coloring sub-patterns, and return */
     	if (pattern->endRE != NULL && ExecRE(pattern->endRE, NULL, stringPtr,
-		stringPtr+1, False, *prevChar, '\0', delimiters)) {
+		stringPtr+1, False, *prevChar, '\0', delimiters, lookBehindTo)) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->endRE->endp[0],
     	    	    pattern->style, delimiters, prevChar);
 	    for (i=0;i<pattern->nSubPatterns; i++) {
@@ -1385,7 +1385,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	/* If the combined pattern matched this pattern's error pattern, we're
     	   done.  Fill in the style string, update the pointers, and return */
     	if (pattern->errorRE != NULL && ExecRE(pattern->errorRE, NULL,
-		stringPtr, stringPtr+1, False, *prevChar, '\0', delimiters)) {
+		stringPtr, stringPtr+1, False, *prevChar, '\0', delimiters, lookBehindTo)) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->errorRE->startp[0],
     	    	    pattern->style, delimiters, prevChar);
     	    *string = stringPtr;
@@ -1397,7 +1397,7 @@ static int parseString(highlightDataRec *pattern, char **string,
     	for (i=0; i<pattern->nSubPatterns; i++) {
 	    subPat = pattern->subPatterns[i];
 	    if (!subPat->colorOnly && ExecRE(subPat->startRE, NULL, stringPtr,
-	    	    stringPtr+1, False, *prevChar, '\0', delimiters))
+	    	    stringPtr+1, False, *prevChar, '\0', delimiters, lookBehindTo))
 	    	break;
 	}
     	if (i == pattern->nSubPatterns) {
@@ -1421,7 +1421,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 
    	    /* Parse to the end of the subPattern */
    	    parseString(subPat, &stringPtr, &stylePtr, length -
-   	    	    (stringPtr - *string), prevChar, False, delimiters);
+   	    	    (stringPtr - *string), prevChar, False, delimiters, lookBehindTo);
     	}
     	
     	/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -1467,7 +1467,7 @@ static int parseString(highlightDataRec *pattern, char **string,
 */
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
-    	const char *delimiters)
+    	const char *delimiters, const char *lookBehindTo)
 {
     int inParseRegion = False;
     char *stylePtr, *stringPtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
@@ -1492,7 +1492,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
     	    /* printf("pass2 parsing %d chars\n", strlen(stringPtr)); */
     	    parseString(pattern, &stringPtr, &stylePtr,
     	    	    min(parseEnd - parseStart, length - (parseStart - string)),
-    	    	    prevChar, False, delimiters);
+    	    	    prevChar, False, delimiters, lookBehindTo);
     	    *parseEnd = temp;
     	    inParseRegion = False;
     	}

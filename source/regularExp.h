@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.6 2001/08/25 15:24:52 amai Exp $ */
+/* $Id: regularExp.h,v 1.7 2002/07/09 14:15:25 edg Exp $ */
 /*----------------------------------------------------------------------*
  *  This is regularExp.h: NEdit Regular Expression Package Header File
  *----------------------------------------------------------------------*/
@@ -53,7 +53,9 @@ int ExecRE (
                                    to '\n' or '\0' if true beginning of text. */
    char    succ_char,           /* Character immediately after `end'.  Set
                                    to '\n' or '\0' if true beginning of text. */
-   const char   *delimiters);         /* Word delimiters to use (NULL for default) */
+   const char   *delimiters,    /* Word delimiters to use (NULL for default) */
+   const char   *look_behind_to); /* Boundary for look-behind; defaults to
+                                    "string" if NULL */
 
 /* Perform substitutions after a `regexp' match. */
 

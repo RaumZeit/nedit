@@ -1485,6 +1485,42 @@ Parenthetical Constructs
   general, and you want to exclude some special cases.  Simply precede the
   general expression with a negative look-ahead that covers the special cases
   that need to be filtered out.
+  
+3>Positive Look-Behind
+
+  Positive look-behind constructs are of the form `(?<=<regex>)' and implement
+  a zero width assertion of the enclosed regular expression in front of the
+  current matching position.  It is similar to a positive look-ahead assertion,
+  except for the fact the the match is attempted on the text preceeding the
+  current position, possibly even in front of the start of the matching range
+  of the entire regular expression.
+  
+  A restriction on look-behind expressions is the fact that the expression
+  must match a string of a bounded size.  In other words, `*', `+', and `{n,}'
+  quantifiers are not allowed inside the look-behind expression. Moreover,
+  matching performance is sensitive to the difference between the upper and
+  lower bound on the matching size.  The smaller the difference, the better the
+  performance.  This is especially important for regular expressions used in
+  highlight patterns.
+  
+  Another (minor) restriction is the fact that look-**ahead** patterns, nor
+  any construct that requires look-ahead information (such as word boundaries)
+  are supported at the end of a look-behind pattern (no error is raised, but
+  matching behaviour is unspecified). It is always possible to place these
+  look-ahead patterns immediately after the look-behind pattern, where they
+  will work as expected.
+  
+  Positive look-behind has similar applications as positive look-ahead.
+  
+3>Negative Look-Behind
+
+  Negative look-behind takes the form `(?<!<regex>)' and is exactly the same as
+  positive look-behind except that the enclosed regular expression must
+  NOT match. The same restrictions apply.
+  
+  Note however, that performance is even more sensitive to the distance 
+  between the size boundaries: a negative look-behind must not match for 
+  **any** possible size, so the matching engine must check **every** size.
 
 3>Case Sensitivity
 

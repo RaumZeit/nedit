@@ -1482,6 +1482,42 @@ general, and you want to exclude some special cases.  Simply precede the
 general expression with a negative look-ahead that covers the special cases
 that need to be filtered out.
 <P>
+<H3>Positive Look-Behind</H3>
+<P>
+Positive look-behind constructs are of the form `(?&#60;=&#60;regex&#62;)' and implement
+a zero width assertion of the enclosed regular expression in front of the
+current matching position.  It is similar to a positive look-ahead assertion,
+except for the fact the the match is attempted on the text preceeding the
+current position, possibly even in front of the start of the matching range
+of the entire regular expression.
+<P>
+A restriction on look-behind expressions is the fact that the expression
+must match a string of a bounded size.  In other words, `*', `+', and `{n,}'
+quantifiers are not allowed inside the look-behind expression. Moreover,
+matching performance is sensitive to the difference between the upper and
+lower bound on the matching size.  The smaller the difference, the better the
+performance.  This is especially important for regular expressions used in
+highlight patterns.
+<P>
+Another (minor) restriction is the fact that look-<B>ahead</B> patterns, nor
+any construct that requires look-ahead information (such as word boundaries)
+are supported at the end of a look-behind pattern (no error is raised, but
+matching behaviour is unspecified). It is always possible to place these
+look-ahead patterns immediately after the look-behind pattern, where they
+will work as expected.
+<P>
+Positive look-behind has similar applications as positive look-ahead.
+<P>
+<H3>Negative Look-Behind</H3>
+<P>
+Negative look-behind takes the form `(?&#60;!&#60;regex&#62;)' and is exactly the same as
+positive look-behind except that the enclosed regular expression must
+NOT match. The same restrictions apply.
+<P>
+Note however, that performance is even more sensitive to the distance 
+between the size boundaries: a negative look-behind must not match for 
+<B>any</B> possible size, so the matching engine must check <B>every</B> size.
+<P>
 <H3>Case Sensitivity</H3>
 <P>
 There are two parenthetical constructs that control case sensitivity:
@@ -1810,13 +1846,30 @@ or select Cancel Macro from the Macro menu.
 <H2> Macro Language </H2>
 <P>
 Macros can be called from Macro menu commands, window background menu
-commands, within the smart-indent framework, and from the .neditmacro file. 
+commands, within the smart-indent framework, from the autoload macro file and
+from the command line.
 Macro menu and window background menu commands are defined under Preferences
 -&#62; Default Settings -&#62; Customize Menus.  Help on creating items in these
-menus can be found in the section, Help -&#62; Customizing -&#62; Preferences.  The
-.neditmacro file is a file of macro commands and definitions which you can
-create in your home directory, and which NEdit will automatically load when
-it is first started.
+menus can be found in the section, Help -&#62; Customizing -&#62; Preferences.
+<P>
+The autoload macro file is a file of macro commands and definitions which
+NEdit will automatically execute when it is first started.  Its location is
+dependent on your environment:
+<UL>
+<LI> The default place for the file is '$HOME/.nedit/autoload.nm',
+<LI> if the variable $NEDIT_HOME is set in your environment it is located at
+</UL>
+<PRE>
+'$NEDIT_HOME/autoload.nm',
+</PRE>
+<UL>
+<LI> if you are using old-style run control files (i.e. $HOME/.nedit is a regular
+</UL>
+<PRE>
+file) it is located in $HOME/.neditmacro'.
+</PRE>
+(For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in
+'SYS$LOGIN:.neditmacro' otherwise.)
 <P>
 NEdit's macro language is a simple interpreter with integer arithmetic,
 dynamic strings, and C-style looping constructs (very similar to the
@@ -1962,7 +2015,7 @@ Users can define their own macro subroutines, using the define keyword:
 </PRE>
 <P>
 Macro definitions can not appear within other definitions, or within macro
-menu item definitions (usually they are found in the .neditmacro file).
+menu item definitions (usually they are found in the autoload macro file).
 <P>
 The arguments with which a user-defined subroutine or function was invoked,
 are presented as $1, $2, ... , $9.  The number of arguments can be read from
@@ -2060,10 +2113,10 @@ working with character strings, which are listed in the section called
 <P>
 Arrays may contain either strings, integers, or other arrays. Arrays are 
 associative, which means that they relate two pieces of information, the key
-and  the value. The key is always a string; if you use integers they are
-converted to strings.
+and  the value. The key is always a string; if you use an integer it is
+converted to a string.
 <P>
-To determine if a given key is in an array, use the in keyword.
+To determine if a given key is in an array, use the 'in' keyword.
 <P>
 <PRE>
       if ("6" in x)
@@ -2073,7 +2126,7 @@ To determine if a given key is in an array, use the in keyword.
 If the left side of the in keyword is an array, the result is true if every
 key in the left array is in the right array. Array values are not compared.
 <P>
-To iterate through all the keys of an array use the for looping construct.
+To iterate through all the keys of an array use the 'for' looping construct.
 Keys are not guaranteed in any particular order:
 <P>
 <PRE>
@@ -3498,9 +3551,8 @@ NEdit can be customized many different ways.  The most important
 user-settable options are presented in the Preferences menu, including all
 options that users might need to change during an editing session.  Options
 set in the Default Settings sub-menu of the Preferences menu can be preserved
-between sessions by selecting Save Defaults, which writes a file called
-.nedit in the user's home directory.  See the section titled "<A HREF="#Preferences">Preferences</A>"
-for more details.
+between sessions by selecting Save Defaults, which writes the changes to the
+preferences file.  See the section titled "<A HREF="#Preferences">Preferences</A>" for more details.
 <P>
 User defined commands can be added to NEdit's Shell, Macro, and window
 background menus.  Dialogs for creating items in these menus can be found
@@ -3528,11 +3580,11 @@ The Preferences menu allows you to set options for both the current editing
 window, and default values for newly created windows and future NEdit
 sessions.  Options in the Preferences menu itself (not in the Default
 Settings sub-menu) take effect immediately and refer to the current window
-only.  Options in the Default Settings sub-menu have no effect on the current
-window, but instead provide initial settings for future windows created using
-the New or Open commands.  Preferences set in the Default Settings sub-menu
-can also be saved in a file that is automatically read by NEdit at startup
-time, by selecting Save Defaults.
+only.  Options in the Default Settings sub-menu provide initial settings for
+future windows created using the New or Open commands; options affecting all
+windows are also set here.
+Preferences set in the Default Settings sub-menu can be saved in a file that
+is automatically read by NEdit at startup time, by selecting Save Defaults.
 <P>
 <H3>Preferences Menu</H3>
 <P>
@@ -3891,6 +3943,38 @@ the "Plain" non-language mode).  If the entry:
 also exists, this will always appear, meaning that the menu will always have
 two "Make Prototypes" entries, whatever the language mode.
 <P>
+<H3>The NEdit Preferences File</H3>
+<P>
+The NEdit saved preferences file is an X resource file, and its contents can
+be moved into another X resource file (see <A HREF="#X_Resources">X Resources</A>).  One reason for
+doing so would be to attach server specific preferences, such as a default
+font to a particular X server.  Another reason for moving preferences into the
+X resource file would be to keep preferences menu options and resource
+settable options together in one place.
+Though the files are the same format, additional resources should not be added
+to the preference file since NEdit modifies this file by overwriting it
+completely.  Note also that the contents of the preference file take
+precedence over the values of X resources.
+Using Save Defaults after moving the contents of your preference file to your
+.Xdefaults file will re-create the preference file, interfering with the
+options that you have moved.
+The location of NEdit's preferences file depends on your environment:
+<UL>
+<LI> The default place for the file is '$HOME/.nedit/nedit.rc',
+<LI> if the variable $NEDIT_HOME is set in your environment it is located at
+</UL>
+<PRE>
+'$NEDIT_HOME/nedit.rc',
+</PRE>
+<UL>
+<LI> you may also use old-style run control files; in this case, the preferences
+</UL>
+<PRE>
+are stored in $HOME/.nedit.
+</PRE>
+(For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in
+'SYS$LOGIN:.nedit' otherwise.)
+<P>
 <H3>Sharing Customizations with Other NEdit Users</H3>
 <P>
 If you have written macro or shell menu commands, highlight patterns, or
@@ -3905,18 +3989,20 @@ To load such a file, start NEdit with the command:
 <P>
 In the new NEdit session, verify that the imported patterns or macros do what
 you want, then select Preferences -&#62; Save Defaults.  Saving incorporates the
-changes into your own .nedit file, so the next time you run NEdit, you will
-not have to import the distribution file.
+changes into the nedit preferences file, so the next time you run NEdit, you
+will not have to import the distribution file.
 <P>
 Loading a customization file is automated, but creating one is not.  To
-produce a file to be imported by other users, you must make a copy of your
-own .nedit file, and edit it, by hand, to remove everything but the few items
-of interest to the recipient.  Leave only the individual resource(s), and
-within those resources, only the particular macro, pattern, style, etc, that
-you wish to exchange.  For example, to share a highlighting pattern set, you
-would include the patterns, any new styles you added, and language mode
-information only if the patterns are intended to support a new language
-rather than updating an existing one. For example:
+produce a file to be imported by other users, you must make a copy of your own
+NEdit configuration file, and edit it, by hand, to remove everything but the
+few items of interest to the recipient.  Leave only the individual
+resource(s), and within those resources, only the particular macro, pattern,
+style, etc, that you wish to exchange.
+<P>
+For example, to share a highlighting pattern set, you would include the
+patterns, any new styles you added, and language mode information only if the
+patterns are intended to support a new language rather than updating an
+existing one. For example:
 <P>
 <PRE>
      nedit.highlightPatterns:\
@@ -3963,26 +4049,11 @@ the X server, changes to the resource file are not available to application
 programs until you either run the xrdb program with the appropriate file as
 input, or re-start the X server.
 <P>
-<H3>The .nedit File</H3>
-<P>
-The .nedit (saved preferences) file is in the same format as an X resource
-file, and its contents can be moved into your X resource file.  One reason
-for doing so would be to attach server specific preferences, such as a
-default font to a particular X server.  Another reason for moving preferences
-into the X resource file would be to keep preferences menu options and
-resource settable options together in one place. Though the files are the
-same format, additional resources should not be added to the .nedit file,
-they will not be read, and NEdit modifies this file by overwriting it
-completely.  Note also that the contents of the .nedit file take precedence
-over the values of X resources.  Using Save Defaults after moving the
-contents of your .nedit file to your .Xdefaults file will re-create the
-.nedit file, interfering with the options that you have moved.
-<P>
 <H3>Selected X Resource Names</H3>
 <P>
 The following are selected NEdit resource names and default values for NEdit
 options not settable via the Preferences menu (for preference resource names,
-see your .nedit file):
+see your NEdit preference file):
 <P>
 <PRE>
 <B>nedit.tagFile</B>: (not defined) 
@@ -4035,6 +4106,14 @@ halfway off the keyboard because you can't figure out the bindings, set this
 to True.
 <P>
 <PRE>
+<B>nedit.typingHidesPointer</B>: False
+</PRE>
+<P>
+Setting this resource to True causes the mouse pointer to be hidden while
+over the text area. As soon as the mouse pointer is moved, it will reappear.
+This is useful to stop the mouse pointer from obscuring text.
+<P>
+<PRE>
 <B>nedit.overrideDefaultVirtualKeyBindings</B>: Auto
 </PRE>
 <P>
@@ -4078,7 +4157,7 @@ specific translation table entries.
 <P>
 Number of files listed in the Open Previous sub-menu of the File menu.
 Setting this to zero disables the Open Previous menu item and maintenance of
-the .neditdb file.
+the NEdit file history file.
 <P>
 <PRE>
 <B>nedit.printCommand</B>: (system specific)
@@ -4870,9 +4949,9 @@ specifically to any one.
 <B>-import file</B>
 </PRE>
 Loads an additional preferences file on top of the existing defaults saved in
-your .nedit file.  To incorporate macros, language modes, and highlight
+your preferences file.  To incorporate macros, language modes, and highlight
 patterns and styles written by other users, run NEdit with -import &#60;file&#62;,
-then re-save your .nedit file with Preferences -&#62; Save Defaults.
+then re-save your preference file with Preferences -&#62; Save Defaults.
 <P>
 <PRE>
 <B>-version</B>
@@ -4985,8 +5064,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit 5.3
-Jun 1, 2002
+NEdit release of Jul  9, 2002
+Jul 9, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
