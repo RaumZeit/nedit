@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.23 2001/03/12 15:15:14 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.24 2001/03/16 22:24:07 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -1322,7 +1322,7 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"no"};
+    static char *params[1] = {"none"};
 #if XmVersion >= 1002
     Widget menu = XmGetPostedFromWidget(XtParent(w));
 #else
