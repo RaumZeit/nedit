@@ -1,4 +1,10 @@
-/* $Id: userCmds.h,v 1.4 2001/08/15 08:56:33 amai Exp $ */
+/* $Id: userCmds.h,v 1.5 2002/07/11 21:18:12 slobasso Exp $ */
+
+#ifndef NEDIT_USERCMDS_H_INCLUDED
+#define NEDIT_USERCMDS_H_INCLUDED
+
+#include "nedit.h"
+
 void EditShellMenu(WindowInfo *window);
 void EditMacroMenu(WindowInfo *window);
 void EditBGMenu(WindowInfo *window);
@@ -18,3 +24,5 @@ void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive);
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive);
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
 void DimPasteReplayBtns(int sensitive);
+
+#endif /* NEDIT_USERCMDS_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.41 2002/07/05 22:28:11 uid71894 Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.42 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -30,6 +30,23 @@ static const char CVSID[] = "$Id: macro.c,v 1.41 2002/07/05 22:28:11 uid71894 Ex
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
+
+#include "macro.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "window.h"
+#include "preferences.h"
+#include "interpret.h"
+#include "parse.h"
+#include "search.h"
+#include "shell.h"
+#include "smartIndent.h"
+#include "userCmds.h"
+#include "selection.h"
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+#include "../util/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,24 +81,6 @@ static const char CVSID[] = "$Id: macro.c,v 1.41 2002/07/05 22:28:11 uid71894 Ex
 #include <Xm/PushB.h>
 #include <Xm/Text.h>
 #include <Xm/Separator.h>
-
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "window.h"
-#include "macro.h"
-#include "preferences.h"
-#include "rbTree.h"
-#include "interpret.h"
-#include "parse.h"
-#include "search.h"
-#include "shell.h"
-#include "smartIndent.h"
-#include "userCmds.h"
-#include "selection.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

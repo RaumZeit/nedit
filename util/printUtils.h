@@ -1,7 +1,7 @@
-/* $Id: printUtils.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: printUtils.h,v 1.7 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef PRINTUTILS_H_INCLUDED
-#define PRINTUTILS_H_INCLUDED
+#ifndef NEDIT_PRINTUTILS_H_INCLUDED
+#define NEDIT_PRINTUTILS_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -20,4 +20,4 @@ void PrintFile(Widget parent, const char *PrintFileName, const char *jobName, in
 void PrintFile(Widget parent, const char *PrintFileName, const char *jobName);
 #endif /*VMS*/
 
-#endif /* PRINTUTILS_H_INCLUDED */
+#endif /* NEDIT_PRINTUTILS_H_INCLUDED */

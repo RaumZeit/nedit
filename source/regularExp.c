@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.15 2002/07/09 14:15:25 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.16 2002/07/11 21:18:10 slobasso Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -60,13 +60,13 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.15 2002/07/09 14:15:25 edg Ex
 #include "../config.h"
 #endif
 
+#include "regularExp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-
-#include "regularExp.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

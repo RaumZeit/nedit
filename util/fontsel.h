@@ -1,7 +1,7 @@
-/* $Id: fontsel.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: fontsel.h,v 1.7 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef FONTSEL_H_INCLUDED
-#define FONTSEL_H_INCLUDED
+#ifndef NEDIT_FONTSEL_H_INCLUDED
+#define NEDIT_FONTSEL_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -57,4 +57,4 @@
 
 char    *FontSel(Widget parent, int showPropFont, const char *currFont);
 
-#endif /* FONTSEL_H_INCLUDED */
+#endif /* NEDIT_FONTSEL_H_INCLUDED */

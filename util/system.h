@@ -1,7 +1,7 @@
-/* $Id: system.h,v 1.10 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: system.h,v 1.11 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef SYSTEM_H_INCLUDED
-#define SYSTEM_H_INCLUDED
+#ifndef NEDIT_SYSTEM_H_INCLUDED
+#define NEDIT_SYSTEM_H_INCLUDED
 
 /*******************************************************************************
 *									       *
@@ -143,4 +143,4 @@
 #   define COMPILE_COMPILER "Unknown"
 #endif
 
-#endif /* SYSTEM_H_INCLUDED */
+#endif /* NEDIT_SYSTEM_H_INCLUDED */

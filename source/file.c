@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.45 2002/06/08 13:56:50 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.46 2002/07/11 21:18:09 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -30,6 +30,21 @@ static const char CVSID[] = "$Id: file.c,v 1.45 2002/06/08 13:56:50 tringali Exp
 #include "../config.h"
 #endif
 
+#include "file.h"
+#include "textBuf.h"
+#include "text.h"
+#include "window.h"
+#include "preferences.h"
+#include "undo.h"
+#include "menu.h"
+#include "tags.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+#include "../util/fileUtils.h"
+#include "../util/getfiles.h"
+#include "../util/printUtils.h"
+#include "../util/utils.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <limits.h>
@@ -56,22 +71,6 @@ static const char CVSID[] = "$Id: file.c,v 1.45 2002/06/08 13:56:50 tringali Exp
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
 #include <Xm/Label.h>
-
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
-#include "../util/printUtils.h"
-#include "../util/utils.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "window.h"
-#include "preferences.h"
-#include "undo.h"
-#include "menu.h"
-#include "file.h"
-#include "tags.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

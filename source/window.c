@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.53 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.54 2002/07/11 21:18:12 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -29,6 +29,31 @@ static const char CVSID[] = "$Id: window.c,v 1.53 2002/06/08 13:56:51 tringali E
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
+
+#include "window.h"
+#include "textBuf.h"
+#include "textSel.h"
+#include "text.h"
+#include "textDisp.h"
+#include "textP.h"
+#include "nedit.h"
+#include "menu.h"
+#include "file.h"
+#include "search.h"
+#include "undo.h"
+#include "preferences.h"
+#include "selection.h"
+#include "shell.h"
+#include "macro.h"
+#include "highlight.h"
+#include "smartIndent.h"
+#include "userCmds.h"
+#include "nedit.bm"
+#include "n.bm"
+#include "windowTitle.h"
+#include "../util/clearcase.h"
+#include "../util/misc.h"
+#include "../util/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,30 +92,6 @@ static const char CVSID[] = "$Id: window.c,v 1.53 2002/06/08 13:56:51 tringali E
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
-#include "../util/clearcase.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
-#include "textBuf.h"
-#include "textSel.h"
-#include "text.h"
-#include "textDisp.h"
-#include "textP.h"
-#include "nedit.h"
-#include "window.h"
-#include "menu.h"
-#include "file.h"
-#include "search.h"
-#include "undo.h"
-#include "preferences.h"
-#include "selection.h"
-#include "shell.h"
-#include "macro.h"
-#include "highlight.h"
-#include "smartIndent.h"
-#include "userCmds.h"
-#include "nedit.bm"
-#include "n.bm"
-#include "windowTitle.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

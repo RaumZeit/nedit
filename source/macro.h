@@ -1,4 +1,12 @@
-/* $Id: macro.h,v 1.3 2001/08/25 15:24:52 amai Exp $ */
+/* $Id: macro.h,v 1.4 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_MACRO_H_INCLUDED
+#define NEDIT_MACRO_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
 	
@@ -22,3 +30,5 @@ int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
 char *GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
+
+#endif /* NEDIT_MACRO_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.25 2002/03/14 17:41:02 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.26 2002/07/11 21:18:12 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -30,6 +30,22 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.25 2002/03/14 17:41:02 amai Exp
 #include "../config.h"
 #endif
 
+#include "userCmds.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "window.h"
+#include "menu.h"
+#include "shell.h"
+#include "macro.h"
+#include "file.h"
+#include "interpret.h"
+#include "parse.h"
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+#include "../util/managedList.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,23 +69,6 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.25 2002/03/14 17:41:02 amai Exp
 #include <Xm/SelectioB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeB.h>
-
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/managedList.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "preferences.h"
-#include "window.h"
-#include "menu.h"
-#include "shell.h"
-#include "macro.h"
-#include "file.h"
-#include "rbTree.h"
-#include "interpret.h"
-#include "parse.h"
-#include "userCmds.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

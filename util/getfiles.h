@@ -1,7 +1,7 @@
-/* $Id: getfiles.h,v 1.4 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: getfiles.h,v 1.5 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef GETFILES_H_INCLUDED
-#define GETFILES_H_INCLUDED
+#ifndef NEDIT_GETFILES_H_INCLUDED
+#define NEDIT_GETFILES_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -18,4 +18,4 @@ void SetFileDialogDefaultDirectory(char *dir);
 void SetFileDialogDefaultPattern(char *pattern);
 void SetGetEFTextFieldRemoval(int state);
 
-#endif /* GETFILES_H_INCLUDED */
+#endif /* NEDIT_GETFILES_H_INCLUDED */

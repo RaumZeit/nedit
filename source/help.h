@@ -1,3 +1,8 @@
+/* $Id: help.h,v 1.10 2002/07/11 21:18:09 slobasso Exp $ */
+
+#ifndef NEDIT_HELP_H_INCLUDED
+#define NEDIT_HELP_H_INCLUDED
+
 /*******************************************************************************
 *                                                                              *
 * help.h --  Nirvana Editor help display                                       *
@@ -27,6 +32,8 @@
 *******************************************************************************/
 
 #include "help_topic.h"
+
+#include <X11/Intrinsic.h>
 
 /*============================================================================*/
 /*                          VARIABLE TYPE DEFINITIONS                         */
@@ -70,3 +77,5 @@ extern const char linktime[];
 void Help(Widget parent, enum HelpTopic topic);
 void PrintVersion(void);
 void InstallHelpLinkActions(XtAppContext context);
+
+#endif /* NEDIT_HELP_H_INCLUDED */

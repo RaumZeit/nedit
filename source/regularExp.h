@@ -1,4 +1,8 @@
-/* $Id: regularExp.h,v 1.7 2002/07/09 14:15:25 edg Exp $ */
+/* $Id: regularExp.h,v 1.8 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_REGULAREXP_H_INCLUDED
+#define NEDIT_REGULAREXP_H_INCLUDED
+
 /*----------------------------------------------------------------------*
  *  This is regularExp.h: NEdit Regular Expression Package Header File
  *----------------------------------------------------------------------*/
@@ -75,3 +79,5 @@ void SetREDefaultWordDelimiters (
 /* Enable (or disable) brace counting quantifiers, e.g. `(foo){0,3}'. */
 
 void EnableCountingQuantifier (int is_enabled);
+
+#endif /* NEDIT_REGULAREXP_H_INCLUDED */

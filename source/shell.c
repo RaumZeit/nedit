@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.22 2002/06/26 23:37:50 slobasso Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.23 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -30,6 +30,18 @@ static const char CVSID[] = "$Id: shell.c,v 1.22 2002/06/26 23:37:50 slobasso Ex
 #include "../config.h"
 #endif
 
+#include "shell.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "window.h"
+#include "preferences.h"
+#include "file.h"
+#include "macro.h"
+#include "interpret.h"
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,19 +71,6 @@ static const char CVSID[] = "$Id: shell.c,v 1.22 2002/06/26 23:37:50 slobasso Ex
 #include <Xm/Text.h>
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
-
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "window.h"
-#include "preferences.h"
-#include "file.h"
-#include "shell.h"
-#include "macro.h"
-#include "rbTree.h"  /* used in interpret.h */
-#include "interpret.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

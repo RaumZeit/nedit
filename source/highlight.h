@@ -1,4 +1,12 @@
-/* $Id: highlight.h,v 1.5 2002/03/11 22:05:11 edg Exp $ */
+/* $Id: highlight.h,v 1.6 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_HIGHLIGHT_H_INCLUDED
+#define NEDIT_HIGHLIGHT_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+
 /* Pattern flags for modifying pattern matching behavior */
 #define PARSE_SUBPATS_FROM_START 1
 #define DEFER_PARSING 2
@@ -35,3 +43,5 @@ void UpdateHighlightStyles(WindowInfo *window);
 int TestHighlightPatterns(patternSet *patSet);
 Pixel AllocColor(Widget w, const char *colorName);
 void* GetHighlightInfo(WindowInfo *window, int pos);
+
+#endif /* NEDIT_HIGHLIGHT_H_INCLUDED */

@@ -1,6 +1,14 @@
-/* $Id: text.h,v 1.7 2002/06/20 21:32:32 slobasso Exp $ */
-#ifndef  Text_H
-#define  Text_H
+/* $Id: text.h,v 1.8 2002/07/11 21:18:11 slobasso Exp $ */
+
+#ifndef NEDIT_TEXT_H_INCLUDED
+#define NEDIT_TEXT_H_INCLUDED
+
+#include "textP.h"
+#include "textBuf.h"
+
+#include <X11/Intrinsic.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
 /* Resource strings */
 #define textNfont "font"
@@ -121,4 +129,5 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-#endif
+
+#endif /* NEDIT_TEXT_H_INCLUDED */

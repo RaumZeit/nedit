@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.57 2002/07/09 14:15:24 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.58 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -30,6 +30,26 @@ static const char CVSID[] = "$Id: preferences.c,v 1.57 2002/07/09 14:15:24 edg E
 #include "../config.h"
 #endif
 
+#include "preferences.h"
+#include "textBuf.h"
+#include "nedit.h"
+#include "text.h"
+#include "search.h"
+#include "window.h"
+#include "userCmds.h"
+#include "highlight.h"
+#include "highlightData.h"
+#include "help.h"
+#include "regularExp.h"
+#include "smartIndent.h"
+#include "windowTitle.h"
+#include "../util/prefFile.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+#include "../util/managedList.h"
+#include "../util/fontsel.h"
+#include "../util/utils.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -57,27 +77,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.57 2002/07/09 14:15:24 edg E
 #include <Xm/CascadeBG.h>
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
-
-#include "../util/prefFile.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/managedList.h"
-#include "../util/fontsel.h"
-#include "../util/utils.h"
-#include "../util/clearcase.h"
-#include "textBuf.h"
-#include "nedit.h"
-#include "text.h"
-#include "search.h"
-#include "preferences.h"
-#include "window.h"
-#include "userCmds.h"
-#include "highlight.h"
-#include "highlightData.h"
-#include "help.h"
-#include "regularExp.h"
-#include "smartIndent.h"
-#include "windowTitle.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

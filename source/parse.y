@@ -1,5 +1,11 @@
-/* $Id: parse.y,v 1.18 2001/12/24 09:18:36 amai Exp $ */
+/* $Id: parse.y,v 1.19 2002/07/11 21:18:10 slobasso Exp $ */
 %{
+#include "parse.h"
+#include "textBuf.h"
+#include "nedit.h"
+#include "rbTree.h"
+#include "interpret.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -13,12 +19,6 @@
 #endif
 #endif /*VMS*/
 
-#include "textBuf.h"
-#include "nedit.h"
-#include "rbTree.h"
-#include "interpret.h"
-#include "parse.h"
-
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.18 2001/12/24 09:18:36 amai Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.19 2002/07/11 21:18:10 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);

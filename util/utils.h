@@ -1,7 +1,15 @@
-/* $Id: utils.h,v 1.8 2002/07/05 22:28:11 uid71894 Exp $ */
+/* $Id: utils.h,v 1.9 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef UTILS_H_INCLUDED
-#define UTILS_H_INCLUDED
+#ifndef NEDIT_UTILS_H_INCLUDED
+#define NEDIT_UTILS_H_INCLUDED
+
+#include <sys/utsname.h>
+
+#ifdef VMS
+#include "vmsparam.h"
+#else
+#include <sys/param.h>
+#endif /*VMS*/
 
 extern const char *GetCurrentDir(void);
 extern const char *GetHomeDir(void);
@@ -29,4 +37,4 @@ enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
 #define MAXNODENAMELEN (MAXPATHLEN+2)
 #endif
 
-#endif /* UTILS_H_INCLUDED */
+#endif /* NEDIT_UTILS_H_INCLUDED */

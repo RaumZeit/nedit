@@ -1,7 +1,7 @@
-/* $Id: managedList.h,v 1.4 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: managedList.h,v 1.5 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef MANAGEDLIST_H_INCLUDED
-#define MANAGEDLIST_H_INCLUDED
+#ifndef NEDIT_MANAGEDLIST_H_INCLUDED
+#define NEDIT_MANAGEDLIST_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -23,4 +23,4 @@ void SelectManagedListItem(Widget listW, int itemIndex);
 void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *),
     	void *deleteConfirmArg);
 
-#endif /* MANAGEDLIST_H_INCLUDED */
+#endif /* NEDIT_MANAGEDLIST_H_INCLUDED */

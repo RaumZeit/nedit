@@ -1,4 +1,11 @@
-/* $Id: interpret.h,v 1.7 2001/12/24 09:18:36 amai Exp $ */
+/* $Id: interpret.h,v 1.8 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_INTERPRET_H_INCLUDED
+#define NEDIT_INTERPRET_H_INCLUDED
+
+#include "nedit.h"
+#include "rbTree.h"
+
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
@@ -113,3 +120,5 @@ void ModifyReturnedValue(RestartData *context, DataValue dv);
 WindowInfo *MacroRunWindow(void);
 WindowInfo *MacroFocusWindow(void);
 void SetMacroFocusWindow(WindowInfo *window);
+
+#endif /* NEDIT_INTERPRET_H_INCLUDED */

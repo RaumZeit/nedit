@@ -1,4 +1,12 @@
-/* $Id: windowTitle.h,v 1.1 2001/11/18 19:02:58 arnef Exp $ */
+/* $Id: windowTitle.h,v 1.2 2002/07/11 21:18:12 slobasso Exp $ */
+
+#ifndef NEDIT_WINDOWTITLE_H_INCLUDED
+#define NEDIT_WINDOWTITLE_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+
 /*******************************************************************************
 *                                                                              *
 * windowTitle.h -- Nirvana Editor window title customization                   *
@@ -36,3 +44,5 @@ char *FormatWindowTitle(const char* filename,
                         const char* titleFormat);
                         
 void EditCustomTitleFormat(Widget parent, WindowInfo *window);
+
+#endif /* NEDIT_WINDOWTITLE_H_INCLUDED */

@@ -1,14 +1,23 @@
-/* $Id: textP.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: textP.h,v 1.4 2002/07/11 21:18:12 slobasso Exp $ */
+
+#ifndef NEDIT_TEXTP_H_INCLUDED
+#define NEDIT_TEXTP_H_INCLUDED
+
 /*******************************************************************************
 *									       *
 * textP.h - Text Editing Widget	private include file			       *
 *									       *
 *******************************************************************************/
-#ifndef TEXTP_H
-#define TEXTP_H
 
-#include "text.h"
+#include "textBuf.h"
+#include "textDisp.h"
+
+#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
+#include <X11/X.h>
 #include <Xm/XmP.h>
+#include <Xm/PrimitiveP.h>
+#include <X11/CoreP.h>
 
 enum dragStates {NOT_CLICKED, PRIMARY_CLICKED, SECONDARY_CLICKED,
 	CLICKED_IN_SELECTION,  PRIMARY_DRAG, PRIMARY_RECT_DRAG, SECONDARY_DRAG,
@@ -104,4 +113,4 @@ typedef struct _TextRec {
    TextPart        text;
 } TextRec;
 
-#endif
+#endif /* NEDIT_TEXTP_H_INCLUDED */

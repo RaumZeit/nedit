@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.7 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.8 2002/07/11 21:18:12 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -30,6 +30,17 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.7 2002/06/08 13:56:51 tringa
 #include "../config.h"
 #endif
 
+#include "windowTitle.h"
+#include "textBuf.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "help.h"
+#include "../util/prefFile.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+#include "../util/utils.h"
+#include "../util/fileUtils.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -58,17 +69,6 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.7 2002/06/08 13:56:51 tringa
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
-
-#include "../util/prefFile.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/utils.h"
-#include "../util/fileUtils.h"
-#include "textBuf.h"
-#include "nedit.h"
-#include "windowTitle.h"
-#include "preferences.h"
-#include "help.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

@@ -1,5 +1,12 @@
-/* $Id: search.h,v 1.15 2002/01/05 16:45:25 amai Exp $ */
+/* $Id: search.h,v 1.16 2002/07/11 21:18:10 slobasso Exp $ */
 
+#ifndef NEDIT_SEARCH_H_INCLUDED
+#define NEDIT_SEARCH_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+#include <X11/X.h>
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
@@ -95,3 +102,5 @@ int StringToSearchType(const char * string, int *searchType);
 ** History of search actions.
 */
 extern int NHist;
+
+#endif /* NEDIT_SEARCH_H_INCLUDED */

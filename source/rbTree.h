@@ -1,4 +1,8 @@
-/* $Id: rbTree.h,v 1.2 2001/03/06 19:49:47 slobasso Exp $ */
+/* $Id: rbTree.h,v 1.3 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_RBTREE_H_INCLUDED
+#define NEDIT_RBTREE_H_INCLUDED
+
 typedef struct rbTreeNode {
     struct rbTreeNode *left;   /* left child */
     struct rbTreeNode *right;  /* right child */
@@ -31,3 +35,5 @@ rbTreeNode *rbTreePrevious(rbTreeNode *x);
 int rbTreeSize(rbTreeNode *base);
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode);
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode);
+
+#endif /* NEDIT_RBTREE_H_INCLUDED */

@@ -1,7 +1,7 @@
-/* $Id: vmsUtils.h,v 1.4 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: vmsUtils.h,v 1.5 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef VMSUTILS_H_INCLUDED
-#define VMSUTILS_H_INCLUDED
+#ifndef NEDIT_VMSUTILS_H_INCLUDED
+#define NEDIT_VMSUTILS_H_INCLUDED
 
 #ifdef VMS
 #ifndef __DESCRIP_LOADED
@@ -25,4 +25,4 @@ int ProcAlive(const unsigned int pID);
 
 #endif /*VMS*/
 
-#endif /* VMSUTILS_H_INCLUDED */
+#endif /* NEDIT_VMSUTILS_H_INCLUDED */

@@ -15,7 +15,6 @@
 
 #include "textBuf.h"
 #include "nedit.h"
-#include "rbTree.h"
 #include "interpret.h"
 #include "parse.h"
 
@@ -29,7 +28,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.2 2001/12/24 09:26:35 amai Exp $";
+static const char CVSID[] = "$Id: parse_noyacc.c,v 1.3 2002/07/11 21:18:10 slobasso Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);

@@ -1,4 +1,15 @@
-/* $Id: preferences.h,v 1.22 2002/06/08 13:56:51 tringali Exp $ */
+/* $Id: preferences.h,v 1.23 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_PREFERENCES_H_INCLUDED
+#define NEDIT_PREFERENCES_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+#include <X11/Xresource.h>
+#include <Xm/Xm.h>
+#include <X11/Xlib.h>
+
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -146,3 +157,5 @@ int GetPrefReplaceDefScope(void);
 void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
 int GetPrefOverrideVirtKeyBindings(void);
+
+#endif /* NEDIT_PREFERENCES_H_INCLUDED */

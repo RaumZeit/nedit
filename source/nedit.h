@@ -1,9 +1,20 @@
-/* $Id: nedit.h,v 1.24 2002/05/01 06:36:10 n8gray Exp $ */
+/* $Id: nedit.h,v 1.25 2002/07/11 21:18:10 slobasso Exp $ */
+
+#ifndef NEDIT_NEDIT_H_INCLUDED
+#define NEDIT_NEDIT_H_INCLUDED
+
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
 *									       *
 *******************************************************************************/
+
+#include "textBuf.h"
+
+#include <X11/Intrinsic.h>
+#include <Xm/Xm.h>
+#include <Xm/XmStrDefs.h>
+#include <sys/param.h>
 
 /* Tuning parameters */
 #define SEARCHMAX 511		/* Maximum length of search/replace strings */
@@ -381,3 +392,5 @@ extern WindowInfo *WindowList;
 extern Display *TheDisplay;
 extern char *ArgV0;
 extern Boolean IsServer;
+
+#endif /* NEDIT_NEDIT_H_INCLUDED */

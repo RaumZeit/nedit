@@ -1,4 +1,13 @@
-/* $Id: textDisp.h,v 1.10 2002/06/20 21:32:32 slobasso Exp $ */
+/* $Id: textDisp.h,v 1.11 2002/07/11 21:18:12 slobasso Exp $ */
+
+#ifndef NEDIT_TEXTDISP_H_INCLUDED
+#define NEDIT_TEXTDISP_H_INCLUDED
+
+#include "textBuf.h"
+
+#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
+
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -147,3 +156,5 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
+
+#endif /* NEDIT_TEXTDISP_H_INCLUDED */

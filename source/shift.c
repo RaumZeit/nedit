@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.12 2002/03/14 17:19:20 amai Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.13 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -30,6 +30,13 @@ static const char CVSID[] = "$Id: shift.c,v 1.12 2002/03/14 17:19:20 amai Exp $"
 #include "../config.h"
 #endif
 
+#include "shift.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "window.h"
+#include "../util/DialogF.h"
+
 #include <string.h>
 #include <limits.h>
 #include <ctype.h>
@@ -42,13 +49,6 @@ static const char CVSID[] = "$Id: shift.c,v 1.12 2002/03/14 17:19:20 amai Exp $"
 #endif /*VMS*/
 
 #include <Xm/Xm.h>
-
-#include "../util/DialogF.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "shift.h"
-#include "window.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.46 2002/07/09 14:15:25 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.47 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -30,6 +30,22 @@ static const char CVSID[] = "$Id: search.c,v 1.46 2002/07/09 14:15:25 edg Exp $"
 #include "../config.h"
 #endif
 
+#include "search.h"
+#include "regularExp.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "window.h" 
+#include "preferences.h"
+#include "file.h"
+#include "highlight.h"
+#ifdef REPLACE_SCOPE
+#include "textDisp.h"
+#include "textP.h"
+#endif
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,22 +76,6 @@ static const char CVSID[] = "$Id: search.c,v 1.46 2002/07/09 14:15:25 edg Exp $"
 #include <X11/Xatom.h>		/* for getting selection */
 #include <X11/keysym.h>
 #include <X11/X.h>		/* " " */
-
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "regularExp.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "search.h"
-#include "window.h" 
-#include "preferences.h"
-#include "file.h"
-#include "highlight.h"
-#ifdef REPLACE_SCOPE
-#include "textDisp.h"
-#include "textP.h"
-#endif
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

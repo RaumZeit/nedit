@@ -1,7 +1,7 @@
-/* $Id: vmsParam.h,v 1.3 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: vmsParam.h,v 1.4 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef VMSPARAM_H_INCLUDED
-#define VMSPARAM_H_INCLUDED
+#ifndef NEDIT_VMSPARAM_H_INCLUDED
+#define NEDIT_VMSPARAM_H_INCLUDED
 
 /*******************************************************************************
 *									       *
@@ -33,4 +33,4 @@
 
 #endif /*VMS*/
 
-#endif /* VMSPARAM_H_INCLUDED */
+#endif /* NEDIT_VMSPARAM_H_INCLUDED */

@@ -1,7 +1,7 @@
-/* $Id: DialogF.h,v 1.6 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: DialogF.h,v 1.7 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef DIALOGF_H_INCLUDED
-#define DIALOGF_H_INCLUDED
+#ifndef NEDIT_DIALOGF_H_INCLUDED
+#define NEDIT_DIALOGF_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -19,4 +19,4 @@ unsigned DialogF(int, Widget, unsigned, const char *, ...);
 				/* variable # arguments */
 void SetDialogFPromptHistory(char **historyList, int nItems);
 
-#endif /* DIALOGF_H_INCLUDED */
+#endif /* NEDIT_DIALOGF_H_INCLUDED */

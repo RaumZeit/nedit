@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.30 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.31 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -31,6 +31,19 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.30 2002/06/08 13:56:51 tri
 #include "../config.h"
 #endif
 
+#include "highlightData.h"
+#include "textBuf.h"
+#include "nedit.h"
+#include "highlight.h"
+#include "regularExp.h"
+#include "preferences.h"
+#include "help.h"
+#include "window.h"
+#include "regexConvert.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+#include "../util/managedList.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -51,19 +64,6 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.30 2002/06/08 13:56:51 tri
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/SeparatoG.h>
-
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/managedList.h"
-#include "textBuf.h"
-#include "nedit.h"
-#include "highlight.h"
-#include "regularExp.h"
-#include "preferences.h"
-#include "help.h"
-#include "window.h"
-#include "regexConvert.h"
-#include "highlightData.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

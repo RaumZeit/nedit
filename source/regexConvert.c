@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regexConvert.c,v 1.7 2002/03/14 17:18:25 amai Exp $";
+static const char CVSID[] = "$Id: regexConvert.c,v 1.8 2002/07/11 21:18:10 slobasso Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `ConvertSubstituteRE' -- regular expression parsing
  *
@@ -31,6 +31,8 @@ static const char CVSID[] = "$Id: regexConvert.c,v 1.7 2002/03/14 17:18:25 amai 
 #include "../config.h"
 #endif
 
+#include "regexConvert.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,8 +40,6 @@ static const char CVSID[] = "$Id: regexConvert.c,v 1.7 2002/03/14 17:18:25 amai 
 #include <limits.h>
 
 #include <X11/Intrinsic.h>
-
-#include "regexConvert.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

@@ -1,4 +1,12 @@
-/* $Id: file.h,v 1.9 2001/10/15 17:28:16 slobasso Exp $ */
+/* $Id: file.h,v 1.10 2002/07/11 21:18:09 slobasso Exp $ */
+
+#ifndef NEDIT_FILE_H_INCLUDED
+#define NEDIT_FILE_H_INCLUDED
+
+#include "nedit.h"
+
+#include <X11/Intrinsic.h>
+
 /* flags for EditExistingFile */
 #define CREATE 1
 #define SUPPRESS_CREATE_WARN 2
@@ -29,3 +37,5 @@ int CheckReadOnly(WindowInfo *window);
 void RemoveBackupFile(WindowInfo *window);
 void UniqueUntitledName(char *name);
 void CheckForChangesToFile(WindowInfo *window);
+
+#endif /* NEDIT_FILE_H_INCLUDED */

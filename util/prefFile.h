@@ -1,7 +1,7 @@
-/* $Id: prefFile.h,v 1.5 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: prefFile.h,v 1.6 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef PREFFILE_H_INCLUDED
-#define PREFFILE_H_INCLUDED
+#ifndef NEDIT_PREFFILE_H_INCLUDED
+#define NEDIT_PREFFILE_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 
@@ -29,4 +29,4 @@ void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
 int SavePreferences(Display *display, const char *fileName,
         const  char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
 
-#endif /* PREFFILE_H_INCLUDED */
+#endif /* NEDIT_PREFFILE_H_INCLUDED */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.39 2002/06/10 16:56:08 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.40 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -30,6 +30,20 @@ static const char CVSID[] = "$Id: tags.c,v 1.39 2002/06/10 16:56:08 slobasso Exp
 #include "../config.h"
 #endif
 
+#include "tags.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "window.h"
+#include "file.h"
+#include "preferences.h"
+#include "search.h"
+#include "selection.h"
+#include "../util/DialogF.h"
+#include "../util/fileUtils.h"
+#include "../util/misc.h"
+#include "../util/utils.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,20 +62,6 @@ static const char CVSID[] = "$Id: tags.c,v 1.39 2002/06/10 16:56:08 slobasso Exp
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
 #include <X11/Xatom.h>
-
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "window.h"
-#include "file.h"
-#include "preferences.h"
-#include "search.h"
-#include "selection.h"
-#include "tags.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.20 2002/03/14 17:19:00 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.21 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -28,6 +28,16 @@ static const char CVSID[] = "$Id: selection.c,v 1.20 2002/03/14 17:19:00 amai Ex
 #include "../config.h"
 #endif
 
+#include "selection.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "file.h"
+#include "window.h"
+#include "menu.h"
+#include "../util/DialogF.h"
+#include "../util/fileUtils.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -46,16 +56,6 @@ static const char CVSID[] = "$Id: selection.c,v 1.20 2002/03/14 17:19:00 amai Ex
 
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
-
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "selection.h"
-#include "file.h"
-#include "window.h"
-#include "menu.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

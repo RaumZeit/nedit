@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.29 2002/07/09 14:15:24 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.30 2002/07/11 21:18:09 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -31,6 +31,19 @@ static const char CVSID[] = "$Id: highlight.c,v 1.29 2002/07/09 14:15:24 edg Exp
 #include "../config.h"
 #endif
 
+#include "highlight.h"
+#include "textBuf.h"
+#include "textDisp.h"
+#include "text.h"
+#include "textP.h"
+#include "nedit.h"
+#include "regularExp.h"
+#include "highlightData.h"
+#include "preferences.h"
+#include "window.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
@@ -49,19 +62,6 @@ static const char CVSID[] = "$Id: highlight.c,v 1.29 2002/07/09 14:15:24 edg Exp
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
 #endif
-
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "textBuf.h"
-#include "textDisp.h"
-#include "text.h"
-#include "textP.h"
-#include "nedit.h"
-#include "regularExp.h"
-#include "highlight.h"
-#include "highlightData.h"
-#include "preferences.h"
-#include "window.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

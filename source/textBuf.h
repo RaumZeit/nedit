@@ -1,4 +1,8 @@
-/* $Id: textBuf.h,v 1.8 2002/02/24 21:16:30 edg Exp $ */
+/* $Id: textBuf.h,v 1.9 2002/07/11 21:18:11 slobasso Exp $ */
+
+#ifndef NEDIT_TEXTBUF_H_INCLUDED
+#define NEDIT_TEXTBUF_H_INCLUDED
+
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -123,3 +127,5 @@ int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
 int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
+
+#endif /* NEDIT_TEXTBUF_H_INCLUDED */

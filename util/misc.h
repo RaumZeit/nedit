@@ -1,7 +1,7 @@
-/* $Id: misc.h,v 1.12 2002/06/26 23:39:21 slobasso Exp $ */
+/* $Id: misc.h,v 1.13 2002/07/11 21:18:09 slobasso Exp $ */
 
-#ifndef MISC_H_INCLUDED
-#define MISC_H_INCLUDED
+#ifndef NEDIT_MISC_H_INCLUDED
+#define NEDIT_MISC_H_INCLUDED
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
@@ -86,4 +86,4 @@ Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
 Widget CreateShellWithBestVis(String appName, String appClass, 
 	WidgetClass class, Display *display, ArgList args, Cardinal nArgs);
 
-#endif /* MISC_H_INCLUDED */
+#endif /* NEDIT_MISC_H_INCLUDED */

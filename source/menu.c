@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.60 2002/07/05 22:28:11 uid71894 Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.61 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -30,6 +30,33 @@ static const char CVSID[] = "$Id: menu.c,v 1.60 2002/07/05 22:28:11 uid71894 Exp
 #include "../config.h"
 #endif
 
+#include "menu.h"
+#include "textBuf.h"
+#include "text.h"
+#include "nedit.h"
+#include "file.h"
+#include "window.h"
+#include "search.h"
+#include "selection.h"
+#include "undo.h"
+#include "shift.h"
+#include "help.h"
+#include "preferences.h"
+#include "tags.h"
+#include "userCmds.h"
+#include "shell.h"
+#include "macro.h"
+#include "highlight.h"
+#include "highlightData.h"
+#include "interpret.h"
+#include "smartIndent.h"
+#include "windowTitle.h"
+#include "../util/getfiles.h"
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+#include "../util/fileUtils.h"
+#include "../util/utils.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -49,34 +76,6 @@ static const char CVSID[] = "$Id: menu.c,v 1.60 2002/07/05 22:28:11 uid71894 Exp
 #include <Xm/RowColumn.h>
 #include <Xm/Separator.h>
 #include <Xm/MenuShell.h>
-
-#include "../util/getfiles.h"
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "textBuf.h"
-#include "text.h"
-#include "nedit.h"
-#include "file.h"
-#include "menu.h"
-#include "window.h"
-#include "search.h"
-#include "selection.h"
-#include "undo.h"
-#include "shift.h"
-#include "help.h"
-#include "preferences.h"
-#include "tags.h"
-#include "userCmds.h"
-#include "shell.h"
-#include "macro.h"
-#include "highlight.h"
-#include "highlightData.h"
-#include "rbTree.h"
-#include "interpret.h"
-#include "smartIndent.h"
-#include "windowTitle.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

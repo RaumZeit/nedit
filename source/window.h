@@ -1,4 +1,13 @@
-/* $Id: window.h,v 1.8 2001/11/18 19:02:58 arnef Exp $ */
+/* $Id: window.h,v 1.9 2002/07/11 21:18:12 slobasso Exp $ */
+
+#ifndef NEDIT_WINDOW_H_INCLUDED
+#define NEDIT_WINDOW_H_INCLUDED
+
+#include "nedit.h"
+#include "textBuf.h"
+
+#include <X11/Intrinsic.h>
+
 WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
@@ -35,3 +44,5 @@ WindowInfo *WidgetToWindow(Widget w);
 void AddSmallIcon(Widget shell);
 void SetTabDist(WindowInfo *window, int tabDist);
 void SetEmTabDist(WindowInfo *window, int emTabDist);
+
+#endif /* NEDIT_WINDOW_H_INCLUDED */

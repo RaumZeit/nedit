@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.79 2002/06/08 13:56:50 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.80 2002/07/11 21:18:09 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -31,6 +31,23 @@ static const char CVSID[] = "$Id: help.c,v 1.79 2002/06/08 13:56:50 tringali Exp
 #include "../config.h"
 #endif
 
+#include "help.h"
+#include "textBuf.h"
+#include "text.h"
+#include "textDisp.h"
+#include "textP.h"
+#include "textSel.h"
+#include "nedit.h"
+#include "search.h"
+#include "window.h"
+#include "preferences.h"
+#include "help_data.h"
+#include "file.h"
+#include "highlight.h"
+#include "../util/misc.h"
+#include "../util/DialogF.h"
+#include "../util/system.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -53,24 +70,6 @@ static const char CVSID[] = "$Id: help.c,v 1.79 2002/06/08 13:56:50 tringali Exp
 #include <X11/Xmu/Editres.h>
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
-
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/system.h"
-
-#include "textBuf.h"
-#include "text.h"
-#include "textDisp.h"
-#include "textP.h"
-#include "textSel.h"
-#include "nedit.h"
-#include "search.h"
-#include "window.h"
-#include "preferences.h"
-#include "help.h"
-#include "help_data.h"
-#include "file.h"
-#include "highlight.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

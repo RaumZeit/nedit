@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.24 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.25 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -30,6 +30,11 @@ static const char CVSID[] = "$Id: nc.c,v 1.24 2002/06/08 13:56:51 tringali Exp $
 #include "../config.h"
 #endif
 
+#include "../util/fileUtils.h"
+#include "../util/utils.h"
+#include "../util/prefFile.h"
+#include "../util/system.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -57,11 +62,6 @@ static const char CVSID[] = "$Id: nc.c,v 1.24 2002/06/08 13:56:51 tringali Exp $
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
-
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "../util/prefFile.h"
-#include "../util/system.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"

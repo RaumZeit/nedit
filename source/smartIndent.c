@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.15 2002/03/14 17:19:23 amai Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.16 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -30,6 +30,20 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.15 2002/03/14 17:19:23 amai 
 #include "../config.h"
 #endif
 
+#include "smartIndent.h"
+#include "textBuf.h"
+#include "nedit.h"
+#include "text.h"
+#include "preferences.h"
+#include "interpret.h"
+#include "macro.h"
+#include "window.h"
+#include "parse.h"
+#include "shift.h"
+#include "help.h"
+#include "../util/DialogF.h"
+#include "../util/misc.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -50,21 +64,6 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.15 2002/03/14 17:19:23 amai 
 #include <Xm/RowColumn.h>
 #include <Xm/SeparatoG.h>
 #include <Xm/PanedW.h>
-
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "textBuf.h"
-#include "nedit.h"
-#include "text.h"
-#include "preferences.h"
-#include "rbTree.h"
-#include "interpret.h"
-#include "macro.h"
-#include "window.h"
-#include "parse.h"
-#include "shift.h"
-#include "help.h"
-#include "smartIndent.h"
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
