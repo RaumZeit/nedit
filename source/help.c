@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.37 2001/05/03 09:42:59 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.38 2001/06/08 08:14:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -90,7 +90,7 @@ static const char *HelpTitles[NUM_TOPICS] = {
 
 static const char *HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n\
-May, 2001\n\
+June, 2001\n\
 \n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, \
