@@ -53,7 +53,7 @@
 #include <Xm/PrimitiveP.h>
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
-extern void _XEditResCheckMessages();
+/* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 #include "../util/DialogF.h"
 #include "../util/misc.h"
@@ -262,7 +262,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 
 #ifdef EDITRES
     XtAddEventHandler (appShell, (EventMask)0, True,
-	    _XEditResCheckMessages, NULL);
+		(XtEventHandler)_XEditResCheckMessages, NULL);
 #endif /* EDITRES */
 
 #ifndef SGI_CUSTOM
@@ -1441,7 +1441,8 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     UpdateMarkTable(window, pos, nInserted, nDeleted);
     
     /* Check and dim/undim selection related menu items */
-    if (window->wasSelected && !selected || !window->wasSelected && selected) {
+    if ((window->wasSelected && !selected) ||
+        (!window->wasSelected && selected)) {
     	window->wasSelected = selected;
     	XtSetSensitive(window->printSelItem, selected);
     	XtSetSensitive(window->cutItem, selected);
