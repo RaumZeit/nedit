@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.59 2003/06/06 17:06:10 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.60 2003/07/17 11:24:23 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -595,6 +595,11 @@ void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, Time time)
     
     /* Display the dialog */
     ManageDialogCenteredOnPointer(window->findDlog);
+
+    /* Workaround: LessTif (as of version 0.89) needs reminding of who had
+       the focus when the dialog was unmanaged.  When re-managed, focus is
+       lost and events fall through to the window below. */
+    XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
 }
 
 void DoReplaceMultiFileDlog(WindowInfo *window)
