@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.56 2002/04/19 16:22:51 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.57 2002/05/06 15:52:40 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2355,8 +2355,6 @@ static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
     updateTagsFileMenu(window);
 }
 
