@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.89 2003/03/21 18:31:29 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.90 2003/04/08 23:47:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -829,9 +829,9 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
     	return; /* shouldn't happen */
     SetDialogFPromptHistory(searchHistory, nHistoryStrings);
-    response = DialogF(DF_PROMPT, HelpWindows[topic], 3,
-	    "Search for:    (use up arrow key to recall previous)",
-    	    promptText, "This Section", "All Sections", "Cancel");
+    response = DialogF(DF_PROMPT, HelpWindows[topic], 3, "Find",
+            "Search for:    (use up arrow key to recall previous)", promptText,
+            "This Section", "All Sections", "Cancel");
     if (response == 3)
     	return;
     AddToHistoryList(promptText, &searchHistory, &nHistoryStrings);
@@ -1116,7 +1116,7 @@ static void searchHelpText(Widget parent, int parentTopic,
 	    searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
 	    return;
     	}
-	DialogF(DF_INF, parent, 1, "String Not Found", "Dismiss");
+	DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", "Dismiss");
 	return;
     }
     
