@@ -5,7 +5,7 @@
 #
 
 OBJS = DialogF.o getfiles.o printUtils.o misc.o fileUtils.o \
-	prefFile.o fontsel.o managedList.o
+	prefFile.o fontsel.o managedList.o utils.o
 
 all: libNUtil.a
 

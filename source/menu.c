@@ -67,6 +67,7 @@
 #include "highlightData.h"
 #include "interpret.h"
 #include "smartIndent.h"
+#include "../util/utils.h"
 
 /* File name for Open Previous file database */
 #ifdef VMS
@@ -3208,7 +3209,7 @@ void WriteNEditDB(void)
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
 #else
-    sprintf(fullName, "%s/%s", getenv("HOME"), NEDIT_DB_FILE_NAME);
+    sprintf(fullName, "%s/%s", GetHomeDir(), NEDIT_DB_FILE_NAME);
 #endif /*VMS*/
 
     /* open the file */
@@ -3259,7 +3260,7 @@ void ReadNEditDB(void)
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", NEDIT_DB_FILE_NAME);
 #else
-    sprintf(fullName, "%s/%s", getenv("HOME"), NEDIT_DB_FILE_NAME);
+    sprintf(fullName, "%s/%s", GetHomeDir(), NEDIT_DB_FILE_NAME);
 #endif /*VMS*/
 
     /* open the file */

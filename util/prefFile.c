@@ -35,6 +35,7 @@
 #endif
 #include <Xm/Xm.h>
 #include "prefFile.h"
+#include "../util/utils.h"
 
 #define N_BOOLEAN_STRINGS 13
 static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
@@ -126,7 +127,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName,
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", fileName);
 #else
-    sprintf(fullName, "%s/%s", getenv("HOME"), fileName);
+    sprintf(fullName, "%s/%s", GetHomeDir(), fileName);
 #endif /*VMS*/
     db = XrmGetFileDatabase(fullName);
     

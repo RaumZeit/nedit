@@ -44,6 +44,7 @@
 #include <pwd.h>
 #endif /*VMS*/
 #include "fileUtils.h"
+#include "../util/utils.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -131,19 +132,14 @@ int ExpandTilde(char *pathname)
     
 static int normalizePathname(char *pathname)
 {
-    char oldPathname[MAXPATHLEN], wd[MAXPATHLEN];
+    char oldPathname[MAXPATHLEN];
 
     /* if this is a relative pathname, prepend current directory */
     if (pathname[0] != '/') {
         /* make a copy of pathname to work from */
 	strcpy(oldPathname, pathname);
 	/* get the working directory and prepend to the path */
-	if (!getcwd(wd, MAXPATHLEN)) {
-  	   fprintf(stderr, "NEdit: failed to get working directory\n");
-	   strcpy(pathname, ".");
-	}
-	else
-	   strcpy(pathname, wd);
+      strcpy(pathname, GetCurrentDir());
 	strcat(pathname, "/");
 	strcat(pathname, oldPathname);
     }

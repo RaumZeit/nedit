@@ -52,6 +52,7 @@
 #include "search.h"
 #include "selection.h"
 #include "tags.h"
+#include "../util/utils.h"
 
 #define MAXLINE 2048
 #define MAX_TAG_LEN 256
@@ -221,10 +222,7 @@ int AddTagsFile(char *tagSpec)
     tagSpec = strcpy(tBuf,tagSpec);
     for (filename = strtok(tagSpec,":"); filename; filename = strtok(NULL,":")) {
 	if (*filename != '/') {
-	    if (!getcwd(pathName,MAXPATHLEN)) {
-		fprintf(stderr, "NEdit: failed to get working directory\n");
-		strcpy(pathName, ".");
-	    }
+          strcpy(pathName, GetCurrentDir());
 	    strcat(pathName,"/");
 	    strcat(pathName,filename);
 	} else

@@ -39,8 +39,8 @@
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#include <sys/utsname.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 #include <pwd.h>
 #endif

@@ -70,6 +70,7 @@
 #include "shell.h"
 #include "userCmds.h"
 #include "selection.h"
+#include "../util/utils.h"
 
 #define AUTO_LOAD_MACRO_FILE_NAME ".neditmacro"
 	
@@ -492,7 +493,7 @@ void ReadMacroInitFile(WindowInfo *window)
 #ifdef VMS
     sprintf(fullName, "%s%s", "SYS$LOGIN:", AUTO_LOAD_MACRO_FILE_NAME);
 #else
-    sprintf(fullName, "%s/%s", getenv("HOME"), AUTO_LOAD_MACRO_FILE_NAME);
+    sprintf(fullName, "%s/%s", GetHomeDir(), AUTO_LOAD_MACRO_FILE_NAME);
 #endif /*VMS*/
     ReadMacroFile(window, fullName, False);
 }

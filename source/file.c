@@ -851,7 +851,7 @@ static void backupFileName(WindowInfo *window, char *name)
     if (window->filenameSet)
     	sprintf(name, "%s~%s", window->path, window->filename);
     else
-    	sprintf(name, "%s/~%s", getenv("HOME"), window->filename);
+    	sprintf(name, "%s/~%s", GetHomeDir(), window->filename);
 #endif /*VMS*/
 }
 
