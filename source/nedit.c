@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.40 2003/03/21 18:31:28 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.41 2003/03/24 16:20:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -700,13 +700,14 @@ static void patchResourcesForVisual(void)
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
 {
     char newlocale[1024];
+    const char *lang = getenv("LANG");
     strcpy(newlocale, xnl);
 
 #ifndef LESSTIF_VERSION
-    if (xnl && *xnl == '\0')
+    if (xnl && *xnl == '\0' && lang)
     {
         char *utf_start = 0;
-        strcpy(newlocale, getenv("LANG"));
+        strcpy(newlocale, lang);
 
         if ((utf_start = strstr(newlocale, ".utf8")) || 
             (utf_start = strstr(newlocale, ".UTF-8")))
