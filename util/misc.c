@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.35 2001/11/21 16:36:01 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.36 2002/02/13 20:00:41 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -340,13 +340,16 @@ void FindBestVisual(Display *display, const char *appName, const char *appClass,
 	if (stripCaseCmp(value.addr, "Yes") || stripCaseCmp(value.addr, "True"))
 	    installColormap = TRUE;
     }
-    
+
+    visTemplate.screen = screen;
+        
     /* Generate a list of visuals to consider.  (Note, vestigial code for
        user-requested visual depth is left in, just in case that function
        might be needed again, but it does nothing)  */
     if (reqID != -1) {
 	visTemplate.visualid = reqID;
-	visList = XGetVisualInfo(display, VisualIDMask, &visTemplate, &nVis);
+	visList = XGetVisualInfo(display, VisualScreenMask|VisualIDMask,
+                                 &visTemplate, &nVis);
 	if (visList == NULL)
 	    fprintf(stderr, "VisualID resource value not valid\n");
     }
@@ -354,26 +357,28 @@ void FindBestVisual(Display *display, const char *appName, const char *appClass,
 	visTemplate.class = reqClass;
 	visTemplate.depth = reqDepth;
     	visList = XGetVisualInfo(display,
-		VisualClassMask | VisualDepthMask, &visTemplate, &nVis);
+		                 VisualScreenMask| VisualClassMask | VisualDepthMask,
+                                 &visTemplate, &nVis);
     	if (visList == NULL)
 	    fprintf(stderr, "Visual class/depth combination not available\n");
     }
     if (visList == NULL && reqClass != -1) {
  	visTemplate.class = reqClass;
-    	visList = XGetVisualInfo(display, VisualClassMask, &visTemplate, &nVis);
+    	visList = XGetVisualInfo(display, VisualScreenMask|VisualClassMask, 
+                                 &visTemplate, &nVis);
     	if (visList == NULL)
 	    fprintf(stderr,
 		    "Visual Class from resource \"visualID\" not available\n");
     }
     if (visList == NULL && reqDepth != -1) {
 	visTemplate.depth = reqDepth;
-	visTemplate.depth = reqDepth;
-    	visList = XGetVisualInfo(display, VisualDepthMask, &visTemplate, &nVis);
+    	visList = XGetVisualInfo(display, VisualScreenMask|VisualDepthMask,
+                                 &visTemplate, &nVis);
     	if (visList == NULL)
 	    fprintf(stderr, "Requested visual depth not available\n");
     }
     if (visList == NULL) {
-	visList = XGetVisualInfo(display, VisualNoMask, &visTemplate, &nVis);
+	visList = XGetVisualInfo(display, VisualScreenMask, &visTemplate, &nVis);
 	if (visList == NULL) {
 	    fprintf(stderr, "Internal Error: no visuals available?\n");
 	    *visual = DefaultVisual(display, screen);
