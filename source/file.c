@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.19 2001/06/22 14:32:35 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.20 2001/07/11 15:21:52 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1086,8 +1086,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     if (ferror(fp)) {
     	DialogF(DF_ERR, parent, 1, "%s not printed:\n%s", "Dismiss", 
 		jobName, errorString());
-	fclose(fp);
-	close(fd);
+	fclose(fp); /* should call close(fd) in turn! */
     	remove(tmpFileName);
 	return;
     }
