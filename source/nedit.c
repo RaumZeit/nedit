@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.60 2004/02/10 02:00:52 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.61 2004/02/10 14:25:41 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -313,8 +313,8 @@ static char *fallbackResources[] = {
     "*windowsMenu.lastDocument.acceleratorText: Alt+Home",
 #ifdef LESSTIF_VERSION
     /* LessTif doesn't like accelerators on virtual keysyms */
-    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>Left",
-    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>Right",
+    "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>Right",
+    "*windowsMenu.prevDocument.accelerator: ~Shift ~Ctrl Alt<Key>Left",
     "*windowsMenu.lastDocument.accelerator: ~Shift ~Ctrl Alt<Key>Home",
 #else
     "*windowsMenu.nextDocument.accelerator: ~Shift ~Ctrl Alt<Key>osfRight",
