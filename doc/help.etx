@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.52 2003/11/22 13:03:38 edg Exp $
+.. $Id: help.etx,v 1.53 2003/11/26 21:58:28 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4032,6 +4032,12 @@ X Resources
   
   Maximum time in milliseconds allowed between mouse clicks within double and
   triple click actions.
+
+**nedit.undoModifiesSelection**: True
+
+  By default, NEdit selects any text inserted or changed through a undo/redo
+  action.  Set this resource to False if you don't want your selection to be
+  touched.
 
 **nedit@*scrollBarPlacement**: BOTTOM_LEFT
   
