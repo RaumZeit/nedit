@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.80 2004/01/26 09:23:20 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.81 2004/02/03 08:18:52 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4516,9 +4516,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
             M_FAILURE("Second rangeset does not exist in %s");
         }
       
-        if (!RangesetAdd(targetRangeset, sourceRangeset)) {
-            M_FAILURE("Failed to merge rangesets in %s");
-        }
+        RangesetAdd(targetRangeset, sourceRangeset);
     }
     
     if (nArgs == 3) {
