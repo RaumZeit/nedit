@@ -1,4 +1,4 @@
-# $Id: Makefile.solaris,v 1.7 2002/01/05 02:09:06 edel Exp $
+# $Id: Makefile.solaris,v 1.8 2002/09/26 10:01:34 ajhood Exp $
 #
 # You may have to select the ANSI C compiler here
 #CC=gcc
@@ -14,6 +14,9 @@ AR=ar
 #
 # To evaluate an alternative layout for the Replace/Find dialog, add
 # -DREPLACE_SCOPE to the CFLAGS. See the README file for more information.
+#
+# To test if the Motif library exports the runtime version
+# add -DHAVE__XMVERSIONSTRING to CFLAGS
 #
 #CFLAGS=-g -I/usr/openwin/include -I/usr/dt/include \
     	-DUSE_DIRENT -DROWCOLPATCH -DNO_XMIM -DUSE_ACCESS

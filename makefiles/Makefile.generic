@@ -1,4 +1,4 @@
-# $Id: Makefile.generic,v 1.8 2002/03/14 17:15:16 amai Exp $
+# $Id: Makefile.generic,v 1.9 2002/09/26 10:01:33 ajhood Exp $
 #
 # Prototype System-Specific Makefile for NEdit
 #
@@ -90,6 +90,11 @@ AR=ar
 #                   replace operations. Eventually, one of these alternatives 
 #                   will probably disappear. Please let us know which one you
 #                   prefer (via the discuss mailing list, for instance).
+#
+# HAVE__XMVERSIONSTRING If the Motif library exports the runtime version this
+#                   will display both strings in the version info to help
+#                   confirm the compile time and run time versions are
+#                   compatible.
 #
 # NO_READLINK       Define if your system doesn't have the UNIX interface
 #                   readlink(2) - or just no symlinks at all.
