@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.45 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.46 2002/11/22 18:18:36 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -606,6 +606,8 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
 ** mouse pointer.  Whether it pops up the dialog centered under the pointer
 ** or in its default position centered over the parent widget, depends on
 ** the value set in the SetPointerCenteredDialogs call.
+** Additionally, this function constrains the size of the dialog to the
+** screen's size, to avoid insanely wide dialogs with obscured buttons.
 */ 
 void ManageDialogCenteredOnPointer(Widget dialogChild)
 {
@@ -613,46 +615,61 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     Window root, child;
     unsigned int mask;
     unsigned int width, height, borderWidth, depth;
-    int x, y, winX, winY, maxX, maxY;
+    int x, y, winX, winY, maxX, maxY, maxWidth, maxHeight;
     Boolean mappedWhenManaged;
-
-    /* If this feature is not enabled, just manage the dialog */
-    if (!PointerCenteredDialogsEnabled) {
-    	XtManageChild(dialogChild);
-    	return;
-    }
+    static const int slop = 25;
     
     /* Temporarily set value of XmNmappedWhenManaged
        to stop the dialog from popping up right away */
     XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
     XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
+
+    /* Ensure that the dialog doesn't get wider/taller than the screen.
+       We use a hard-coded "slop" size because we don't know the border
+       width until it's on screen, and by then it's too late.  Putting
+       this before managing the widgets allows it to get the geometry
+       right on the first pass and also prevents the user from
+       accidentally resizing too wide. */
+    maxWidth = XtScreen(shell)->width - slop;
+    maxHeight = XtScreen(shell)->height - slop;
+
+    XtVaSetValues(shell, 
+                  XmNmaxWidth, maxWidth,
+                  XmNmaxHeight, maxHeight,
+                  NULL);
     
     /* Manage the dialog */
     XtManageChild(dialogChild);
 
-    /* Get the pointer position (x, y) */
-    XQueryPointer(XtDisplay(shell), XtWindow(shell), &root, &child,
-	    &x, &y, &winX, &winY, &mask);
+    /* Only set the x/y position if the centering option is enabled.
+       Avoid getting the coordinates if not so, to save a few round-trips
+       to the server. */
+    if (PointerCenteredDialogsEnabled) {
+        /* Get the pointer position (x, y) */
+        XQueryPointer(XtDisplay(shell), XtWindow(shell), &root, &child,
+	        &x, &y, &winX, &winY, &mask);
 
-    /* Translate the pointer position (x, y) into a position for the new
-       window that will place the pointer at its center */
-    XGetGeometry(XtDisplay(shell), XtWindow(shell), &root, &winX, &winY,
-    	    &width, &height, &borderWidth, &depth);
-    width += 2 * borderWidth;
-    height += 2 * borderWidth;
-    x -= width/2;
-    y -= height/2;
+        /* Translate the pointer position (x, y) into a position for the new
+           window that will place the pointer at its center */
+        XGetGeometry(XtDisplay(shell), XtWindow(shell), &root, &winX, &winY,
+    	        &width, &height, &borderWidth, &depth);
+        width += 2 * borderWidth;
+        height += 2 * borderWidth;
+    
+	x -= width/2;
+	y -= height/2;
 
-    /* Ensure that the dialog remains on screen */
-    maxX = XtScreen(shell)->width - width;
-    maxY = XtScreen(shell)->height - height;
-    if (x < 0) x = 0;
-    if (x > maxX) x = maxX;
-    if (y < 0) y = 0;
-    if (y > maxY) y = maxY;
+	/* Ensure that the dialog remains on screen */
+	maxX = maxWidth - width;
+	maxY = maxHeight - height;
+	if (x < 0) x = 0;
+	if (x > maxX) x = maxX;
+	if (y < 0) y = 0;
+	if (y > maxY) y = maxY;
 
-    /* Set desired window position in the DialogShell */
-    XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
+       /* Set desired window position in the DialogShell */
+       XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
+    }
     
     /* Map the widget */
     XtMapWidget(shell);
