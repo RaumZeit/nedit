@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.60 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.61 2004/01/16 09:18:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2111,9 +2111,13 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 ** selected button without selection another radio button first.
 ** The workaround consist of faking a mouse click on the button that we 
 ** toggled by calling the Arm, Select, and Disarm action procedures.
+** 
+** A minor remaining issue is the fact that, if the workaround is used, 
+** it is not possible to change the state without notifying potential
+** XmNvalueChangedCallbacks. In practice, this doesn't seem to be a problem.
 **
 */
-void RadioButtonChangeStateNotified(Widget widget, Boolean state)
+void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify)
 {
    /* 
       The bug only exists in OpenMotif 2.x. Since it's quite hard to detect
@@ -2159,5 +2163,5 @@ void RadioButtonChangeStateNotified(Widget widget, Boolean state)
 #endif /* LESSTIF_VERSION */
     
     /* This is sufficient on non-OM platforms */
-    XmToggleButtonSetState(widget, state, True);
+    XmToggleButtonSetState(widget, state, notify);
 }

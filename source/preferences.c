@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.106 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.107 2004/01/16 09:18:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3248,8 +3248,8 @@ static void lmSetDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(LMDialog.delimitW, "");
     	XmTextSetString(LMDialog.tabW, "");
     	XmTextSetString(LMDialog.emTabW, "");
-    	XmToggleButtonSetState(LMDialog.defaultIndentW, True, True);
-    	XmToggleButtonSetState(LMDialog.defaultWrapW, True, True);
+    	RadioButtonChangeState(LMDialog.defaultIndentW, True, True);
+    	RadioButtonChangeState(LMDialog.defaultWrapW, True, True);
     } else {
     	XmTextSetString(LMDialog.nameW, strchr(lm->name, ':') == NULL ?
     	    	lm->name : strchr(lm->name, ':')+1);
@@ -3267,21 +3267,21 @@ static void lmSetDisplayedCB(void *item, void *cbArg)
     	    XmTextSetString(LMDialog.emTabW, "");
     	else
     	    SetIntText(LMDialog.emTabW, lm->emTabDist);
-    	XmToggleButtonSetState(LMDialog.defaultIndentW,
+    	RadioButtonChangeState(LMDialog.defaultIndentW,
     	    	lm->indentStyle == DEFAULT_INDENT, False);
-    	XmToggleButtonSetState(LMDialog.noIndentW,
+    	RadioButtonChangeState(LMDialog.noIndentW,
     	    	lm->indentStyle == NO_AUTO_INDENT, False);
-    	XmToggleButtonSetState(LMDialog.autoIndentW,
+    	RadioButtonChangeState(LMDialog.autoIndentW,
     	    	lm->indentStyle == AUTO_INDENT, False);
-    	XmToggleButtonSetState(LMDialog.smartIndentW,
+    	RadioButtonChangeState(LMDialog.smartIndentW,
     	    	lm->indentStyle == SMART_INDENT, False);
-    	XmToggleButtonSetState(LMDialog.defaultWrapW,
+    	RadioButtonChangeState(LMDialog.defaultWrapW,
     	    	lm->wrapStyle == DEFAULT_WRAP, False);
-    	XmToggleButtonSetState(LMDialog.noWrapW,
+    	RadioButtonChangeState(LMDialog.noWrapW,
     	    	lm->wrapStyle == NO_WRAP, False);
-    	XmToggleButtonSetState(LMDialog.newlineWrapW,
+    	RadioButtonChangeState(LMDialog.newlineWrapW,
     	    	lm->wrapStyle == NEWLINE_WRAP, False);
-    	XmToggleButtonSetState(LMDialog.contWrapW,
+    	RadioButtonChangeState(LMDialog.contWrapW,
     	    	lm->wrapStyle == CONTINUOUS_WRAP, False);
     }
 }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.38 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.39 2004/01/16 09:18:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1719,12 +1719,12 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd)
 	XmTextSetString(ucd->accTextW, "");
 	XmTextSetString(ucd->mneTextW, "");
 	if (ucd->dialogType == SHELL_CMDS) {
-	    XmToggleButtonSetState(ucd->selInpBtn, True, True);
-	    XmToggleButtonSetState(ucd->sameOutBtn, True, True);
-	    XmToggleButtonSetState(ucd->repInpBtn, False, False);
+	    RadioButtonChangeState(ucd->selInpBtn, True, True);
+	    RadioButtonChangeState(ucd->sameOutBtn, True, True);
+	    RadioButtonChangeState(ucd->repInpBtn, False, False);
 	    XtSetSensitive(ucd->repInpBtn, True);
-	    XmToggleButtonSetState(ucd->saveFirstBtn, False, False);
-	    XmToggleButtonSetState(ucd->loadAfterBtn, False, False);
+	    RadioButtonChangeState(ucd->saveFirstBtn, False, False);
+	    RadioButtonChangeState(ucd->loadAfterBtn, False, False);
 	}
     } else {
 	mneString[0] = f->mnemonic;
@@ -1734,24 +1734,24 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd)
 	XmTextSetString(ucd->cmdTextW, f->cmd);
 	XmTextSetString(ucd->accTextW, accString);
 	XmTextSetString(ucd->mneTextW, mneString);
-	XmToggleButtonSetState(ucd->selInpBtn, f->input==FROM_SELECTION, False);
+	RadioButtonChangeState(ucd->selInpBtn, f->input==FROM_SELECTION, False);
 	if (ucd->dialogType == SHELL_CMDS) {
-	    XmToggleButtonSetState(ucd->winInpBtn, f->input == FROM_WINDOW,
+	    RadioButtonChangeState(ucd->winInpBtn, f->input == FROM_WINDOW,
 	    	    False);
-	    XmToggleButtonSetState(ucd->eitherInpBtn, f->input == FROM_EITHER,
+	    RadioButtonChangeState(ucd->eitherInpBtn, f->input == FROM_EITHER,
 	    	    False);
-	    XmToggleButtonSetState(ucd->noInpBtn, f->input == FROM_NONE,
+	    RadioButtonChangeState(ucd->noInpBtn, f->input == FROM_NONE,
 	    	    False);
-	    XmToggleButtonSetState(ucd->sameOutBtn, f->output==TO_SAME_WINDOW,
+	    RadioButtonChangeState(ucd->sameOutBtn, f->output==TO_SAME_WINDOW,
 	    	    False);
-	    XmToggleButtonSetState(ucd->winOutBtn, f->output==TO_NEW_WINDOW,
+	    RadioButtonChangeState(ucd->winOutBtn, f->output==TO_NEW_WINDOW,
 	    	    False);
-	    XmToggleButtonSetState(ucd->dlogOutBtn, f->output==TO_DIALOG,
+	    RadioButtonChangeState(ucd->dlogOutBtn, f->output==TO_DIALOG,
 	    	    False);
-	    XmToggleButtonSetState(ucd->repInpBtn, f->repInput, False);
+	    RadioButtonChangeState(ucd->repInpBtn, f->repInput, False);
 	    XtSetSensitive(ucd->repInpBtn, f->output==TO_SAME_WINDOW);
-	    XmToggleButtonSetState(ucd->saveFirstBtn, f->saveFirst, False);
-	    XmToggleButtonSetState(ucd->loadAfterBtn, f->loadAfter, False);
+	    RadioButtonChangeState(ucd->saveFirstBtn, f->saveFirst, False);
+	    RadioButtonChangeState(ucd->loadAfterBtn, f->loadAfter, False);
 	}
     }
 }    

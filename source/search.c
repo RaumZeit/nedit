@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.63 2004/01/16 02:59:15 tksoh Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.64 2004/01/16 09:18:28 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -448,7 +448,7 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs,
        Notify to make sure that callbacks are called. 
        NOTE: due to an apparent bug in OpenMotif, the radio buttons may
        get stuck after resetting the scope to "In Window". Therefore we must
-       use RadioButtonChangeStateNotified(), which contains a workaround. */
+       use RadioButtonChangeState(), which contains a workaround. */
     if (window->wasSelected) {
 	/* If a selection exists, the default scope depends on the preference
            of the user. */
@@ -456,33 +456,33 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs,
 	   case REPL_DEF_SCOPE_SELECTION:
 		/* The user prefers selection scope, no matter what the
 		   size of the selection is. */	   
-		RadioButtonChangeStateNotified(window->replaceScopeSelToggle, 
-                                               True);
+		RadioButtonChangeState(window->replaceScopeSelToggle, 
+                                       True, True);
 		break;
 	   case REPL_DEF_SCOPE_SMART:
 		if (selectionSpansMultipleLines(window)) {
 		    /* If the selection spans multiple lines, the user most
 		       likely wants to perform a replacement in the selection */
-		    RadioButtonChangeStateNotified(window->replaceScopeSelToggle, 
-                                                   True);
+		    RadioButtonChangeState(window->replaceScopeSelToggle, 
+                                           True, True);
 		}
 		else {
 		    /* It's unlikely that the user wants a replacement in a
 		       tiny selection only. */
-		    RadioButtonChangeStateNotified(window->replaceScopeWinToggle,
-                                                   True);
+		    RadioButtonChangeState(window->replaceScopeWinToggle,
+                                           True, True);
 		}
 		break;
 	   default:
 	   	/* The user always wants window scope as default. */
-		RadioButtonChangeStateNotified(window->replaceScopeWinToggle, 
-                                               True);
+		RadioButtonChangeState(window->replaceScopeWinToggle, 
+                                       True, True);
 		break;
 	}
     }
     else {
        /* No selection -> always choose "In Window" as default. */
-	RadioButtonChangeStateNotified(window->replaceScopeWinToggle, True);
+	RadioButtonChangeState(window->replaceScopeWinToggle, True, True);
     }
 #endif
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.59 2003/12/28 17:25:55 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.60 2004/01/16 09:18:27 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -2001,18 +2001,18 @@ static void hsSetDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(HSDialog.nameW, "");
     	XmTextSetString(HSDialog.colorW, "");
     	XmTextSetString(HSDialog.bgColorW, "");
-    	XmToggleButtonSetState(HSDialog.plainW, True, False);
-    	XmToggleButtonSetState(HSDialog.boldW, False, False);
-    	XmToggleButtonSetState(HSDialog.italicW, False, False);
-    	XmToggleButtonSetState(HSDialog.boldItalicW, False, False);
+    	RadioButtonChangeState(HSDialog.plainW, True, False);
+    	RadioButtonChangeState(HSDialog.boldW, False, False);
+    	RadioButtonChangeState(HSDialog.italicW, False, False);
+    	RadioButtonChangeState(HSDialog.boldItalicW, False, False);
     } else {
     	XmTextSetString(HSDialog.nameW, hs->name);
     	XmTextSetString(HSDialog.colorW, hs->color);
     	XmTextSetString(HSDialog.bgColorW, hs->bgColor ? hs->bgColor : "");
-    	XmToggleButtonSetState(HSDialog.plainW, hs->font==PLAIN_FONT, False);
-    	XmToggleButtonSetState(HSDialog.boldW, hs->font==BOLD_FONT, False);
-    	XmToggleButtonSetState(HSDialog.italicW, hs->font==ITALIC_FONT, False);
-    	XmToggleButtonSetState(HSDialog.boldItalicW, hs->font==BOLD_ITALIC_FONT,
+    	RadioButtonChangeState(HSDialog.plainW, hs->font==PLAIN_FONT, False);
+    	RadioButtonChangeState(HSDialog.boldW, hs->font==BOLD_FONT, False);
+    	RadioButtonChangeState(HSDialog.italicW, hs->font==ITALIC_FONT, False);
+    	RadioButtonChangeState(HSDialog.boldItalicW, hs->font==BOLD_ITALIC_FONT,
     	        False);
     }
 }
@@ -3126,12 +3126,12 @@ static void setDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(HighlightDialog.startW, "");
     	XmTextSetString(HighlightDialog.endW, "");
     	XmTextSetString(HighlightDialog.errorW, "");
-    	XmToggleButtonSetState(HighlightDialog.topLevelW, True, False);
-    	XmToggleButtonSetState(HighlightDialog.deferredW, False, False);
-    	XmToggleButtonSetState(HighlightDialog.subPatW, False, False);
-    	XmToggleButtonSetState(HighlightDialog.colorPatW, False, False);
-    	XmToggleButtonSetState(HighlightDialog.simpleW, True, False);
-    	XmToggleButtonSetState(HighlightDialog.rangeW, False, False);
+    	RadioButtonChangeState(HighlightDialog.topLevelW, True, False);
+    	RadioButtonChangeState(HighlightDialog.deferredW, False, False);
+    	RadioButtonChangeState(HighlightDialog.subPatW, False, False);
+    	RadioButtonChangeState(HighlightDialog.colorPatW, False, False);
+    	RadioButtonChangeState(HighlightDialog.simpleW, True, False);
+    	RadioButtonChangeState(HighlightDialog.rangeW, False, False);
     	setStyleMenu("Plain");
     } else {
     	isSubpat = pat->subPatternOf != NULL;
@@ -3143,16 +3143,16 @@ static void setDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(HighlightDialog.startW, pat->startRE);
     	XmTextSetString(HighlightDialog.endW, pat->endRE);
     	XmTextSetString(HighlightDialog.errorW, pat->errorRE);
-    	XmToggleButtonSetState(HighlightDialog.topLevelW,
+    	RadioButtonChangeState(HighlightDialog.topLevelW,
     	    	!isSubpat && !isDeferred, False);
-    	XmToggleButtonSetState(HighlightDialog.deferredW,
+    	RadioButtonChangeState(HighlightDialog.deferredW,
     	    	!isSubpat && isDeferred, False);
-    	XmToggleButtonSetState(HighlightDialog.subPatW,
+    	RadioButtonChangeState(HighlightDialog.subPatW,
     	    	isSubpat && !isColorOnly, False);
-    	XmToggleButtonSetState(HighlightDialog.colorPatW,
+    	RadioButtonChangeState(HighlightDialog.colorPatW,
     	    	isSubpat && isColorOnly, False);
-    	XmToggleButtonSetState(HighlightDialog.simpleW, !isRange, False);
-    	XmToggleButtonSetState(HighlightDialog.rangeW, isRange, False);
+    	RadioButtonChangeState(HighlightDialog.simpleW, !isRange, False);
+    	RadioButtonChangeState(HighlightDialog.rangeW, isRange, False);
     	setStyleMenu(pat->style);
     }
     updateLabels();
