@@ -1,6 +1,6 @@
                     NEdit Version 5.5, October 2004
 
-$Id: README,v 1.46 2004/09/30 20:51:05 n8gray Exp $
+$Id: README,v 1.47 2004/09/30 20:52:02 n8gray Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -387,7 +387,6 @@ Preferences->Syntax Highlighting->Recognition Patterns menu, though.
 Next, some version specific upgrading issues are listed. Note that 
 non-incremental upgrading (eg., from 5.0 to 5.2) is supported too.
 
-=======
 * Upgrading from 5.4 to 5.5
   
   - Changes in the widget hierarchy, possibly effecting resource settings
