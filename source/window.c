@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.117 2004/02/13 12:32:40 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.118 2004/02/14 02:22:25 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3816,26 +3816,29 @@ void RaiseDocumentWindow(WindowInfo *window)
 }
 
 /*
-** Close all the tearoffs spawned from this menu
+** Close all the tearoffs spawned from this menu.
+** It works recursively to close the tearoffs of the submenus
 */
 static void closeTearOffs(Widget menuPane)
 {
     WidgetList itemList;
     Widget subMenuID;
-    int n;
     Cardinal nItems;
+    int n;
 
-    XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems,
-	    NULL);
-
+    /* close all submenu tearoffs */
+    XtVaGetValues(menuPane, XmNchildren, &itemList, 
+            XmNnumChildren, &nItems, NULL);
     for (n=0; n<(int)nItems; n++) {
     	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
 	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
 	    closeTearOffs(subMenuID);
-	    if (!XmIsMenuShell(XtParent(subMenuID)))
-    		_XmDismissTearOff(XtParent(subMenuID), NULL, NULL);    
 	}
     }
+
+    /* close tearoff for this menu */
+    if (!XmIsMenuShell(XtParent(menuPane)))
+    	_XmDismissTearOff(XtParent(menuPane), NULL, NULL);    
 }
 
 /*
