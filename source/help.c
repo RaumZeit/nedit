@@ -3811,10 +3811,6 @@ S: When you use the \"Filter\" field, include the file specification or a \
 complete directory specification, including the trailing \"/\" on Unix.  \
 (See Help in the Open... dialog).\n\
 \n\
-P: Keyboard shortcuts for menu items don't work.\n\
-S: Be sure the Caps Lock and Num Lock keys are both unlocked.  In Motif \
-programs, these keys prevent the menu accelerators from working.\n\
-\n\
 P: Find Again and Replace Again don't continue in the same direction \
 as the original Find or Replace.\n\
 S: Find Again and Replace Again don't use the direction of the original \
