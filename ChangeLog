@@ -1,7 +1,444 @@
+2004-02-03 08:18  edg
+
+	* source/macro.c (1.81): Fix for SF bug #889444: rangeset_add(rs1,
+	rs2) fails if rs1, rs2 is empty.
+
+2004-02-03 07:27  tksoh
+
+	* source/preferences.c (1.110): Bugfix: nedit.tabbedMode was not
+	saved to nedit.rc file.
+
+2004-01-29 11:03  tksoh
+
+	* source/smartIndent.c (1.31): Applied workaround for Motif
+	crash-with-tearoffs bug to Smart Indent dialog. Any more?
+
+2004-01-29 10:53  tksoh
+
+	* source/highlightData.c (1.61), source/window.c (1.106),
+	util/misc.c (1.62), util/misc.h (1.22): Applied workaround for
+	Motif crash-with-tearoffs bug to Syntax Highlighting Patterns
+	dialog.
+
+2004-01-28 01:50  tksoh
+
+	* doc/help.etx (1.58), source/help_data.h (1.52),
+	source/help_topic.h (1.44), source/preferences.c (1.109): A sort of
+	fix for SF Bug #883894: removed normal non-whitespace text
+	characters from the default backlighting list, so that those
+	characters will be displayed with the background color as defined
+	by the nedit.textBgColor resource - unless overridden by syntax
+	highlighting.
+
+2004-01-27 18:02  tksoh
+
+	* source/: userCmds.c (1.40), window.c (1.105): When switching
+	tabs, only update Macro/Shell/BG menus only if the language mode
+	has changed, to reduce flickers on the tearoffs.
+
+2004-01-27 17:44  tksoh
+
+	* source/preferences.c (1.108): Fix for SF bug #884862: typo in
+	class names of preference resources.
+
+2004-01-26 09:23  tksoh
+
+	* source/: macro.c (1.80), macro.h (1.6), nedit.h (1.44), shell.c
+	(1.29), shell.h (1.7), window.c (1.104): Mode message display was
+	not handled properly as we switch between documents.
+
+2004-01-20 03:31  tksoh
+
+	* source/window.c (1.103): fixed compiling warning on use of
+	undeclared function.
+
+2004-01-20 02:48  tksoh
+
+	* source/: rangeset.c (1.9), rangeset.h (1.4), window.c (1.102):
+	Transfer rangeset info when attaching/detaching tabs (Uwe Lehnert)
+
+2004-01-16 11:49  edg
+
+	* source/file.c (1.74): Fix for SF bug #878183: File deleted. 
+	Don't delete incremental backup files when incremental backups are
+	off.
+
+2004-01-16 09:18  edg
+
+	* source/highlightData.c (1.60), source/preferences.c (1.107),
+	source/search.c (1.64), source/userCmds.c (1.39), util/misc.c
+	(1.61), util/misc.h (1.21): Applied the "OpenMotif sticky radio
+	button" workaround to all radio buttons.
+
+2004-01-16 02:59  tksoh
+
+	* doc/help.etx (1.57), source/file.c (1.73), source/help_data.h
+	(1.51), source/help_topic.h (1.43), source/macro.c (1.79),
+	source/menu.c (1.86), source/nedit.c (1.58), source/nedit.h (1.43),
+	source/preferences.c (1.106), source/preferences.h (1.38),
+	source/search.c (1.63), source/server.c (1.24), source/userCmds.c
+	(1.38), source/window.c (1.101), source/window.h (1.14): Phase one
+	of Buffers-to-Documents conversion.
+
+2004-01-15 07:59  tksoh
+
+	* source/window.c (1.100): Bugfix: always update Macro & Shell
+	menus when raising a buffer,	     so that the keyboard shortcuts
+	are refreshed properly.
+	
+	We'll worry about the visual optimization later.
+
+2004-01-13 15:49  edg
+
+	* source/window.c (1.99): Prevent some (harmless) uninitialized
+	variable accesses when creating a geometry string.
+
+2004-01-13 14:46  tringali
+
+	* source/window.c (1.98): Workaround for bug in OpenMotif 2.1 and
+	2.2.  If you have an active tear-off menu from a TopLevelShell that
+	is a child of an ApplicationShell, and then close the parent
+	window, Motif crashes.	The problem doesn't happen if you close the
+	tear-offs first, so, we programatically close them before
+	destroying the shell widget.
+
+2004-01-13 02:45  tksoh
+
+	* source/preferences.c (1.105): Fixed coredump when changing
+	language mode via 'Language Mode' tearoff menu.
+
+2004-01-12 17:31  edg
+
+	* makefiles/Makefile.cygwin (1.8): Added check_tif_rule for Cygwin.
+
+2004-01-12 17:09  edg
+
+	* source/highlight.c (1.45): Bug fix for crash in highlighting
+	dialog, reported by Joerg Fischer.  Error pattern of color-only
+	patterns was copied erroneously.
+
+2004-01-10 06:12  tksoh
+
+	* source/userCmds.c (1.37): Fixed coredump when invoking
+	Macro/Shell/Background commands from tear-offs.
+
+2004-01-09 05:56  tksoh
+
+	* source/userCmds.c (1.36): Bugfix: when invoked by keyboard
+	shoft-cuts, macro and shell commands were always executed in the
+	first buffer created, or coredumped if the first buffer had been
+	closed.
+
+2004-01-08 06:19  tksoh
+
+	* source/: macro.c (1.78), macro.h (1.5), shell.c (1.28), shell.h
+	(1.6), window.c (1.97): Bugfix: cursor and statsline now reflect if
+	macro/shell commands are in progress in each individual buffer.
+
+2004-01-06 06:25  n8gray
+
+	* source/macro.c (1.77): Patch monkey see, patch monkey do.  Tony
+	says fix rangeset bug, patch monkey fix rangeset bug.  Ook.  Fixes
+	SF bug #871209
+
+2004-01-06 02:38  tksoh
+
+	* source/: menu.c (1.85), userCmds.c (1.35), window.c (1.96):
+	Improved handling of tear-off (Macro, Shell and Windows) menus:   
+	i) fixed shrink-expand bugs;   ii) tear-offs stay up when buffers
+	are closed.
+
+2004-01-02 10:32  tksoh
+
+	* source/window.c (1.95): window manager's size hints should follow
+	the top buffer.
+
+2003-12-31 02:25  tksoh
+
+	* source/window.c (1.94): Bugfix: bookmarks were lost when
+	detaching/attaching buffers. (Uwe Lehnert)
+
+2003-12-31 01:22  tksoh
+
+	* source/window.c (1.93): Bugfix for crash when navigating through
+	buffers.
+
+2003-12-30 15:32  tringali
+
+	* source/nedit.c (1.57): Also put back XmLFolder resources.
+
+2003-12-30 15:19  tringali
+
+	* source/nedit.c (1.56): Revert to fallback resources.	The merging
+	didn't work as I expected.
+
+2003-12-29 10:58  tksoh
+
+	* source/window.c (1.92): Applied temporary workaround for
+	disappearing-text-window bug when linking to Lesstif (ver 0.93.18 &
+	0.93.46 tested)
+
+2003-12-28 17:30  tringali
+
+	* source/nedit.c (1.55): New default resource scheme.  We enter
+	resources directly via Xrm calls, instead of fallback resources. 
+	This should avoid version skew problems when an app-defaults file
+	has been installed against our wishes.	In particular, when there
+	is an app-defaults file out there, we should now merge all the
+	built-in and external resources.  Fallback resources would simply
+	discard the built-in resources in favor of the ones in the file,
+	and this frequently would cause missing resources if the file was
+	out of date.
+
+2003-12-28 17:25  yooden
+
+	* source/: highlightData.c (1.59), preferences.c (1.104): Changes
+	LaTeX patterns (Jörg Fischer) and adds comment macro (Sergei
+	Haller).
+
+2003-12-28 17:25  tringali
+
+	* source/window.c (1.91): Remove hardcoded visual resources for tab
+	widget, in favor of resources that can be overridden.
+
+2003-12-28 16:26  yooden
+
+	* source/: help_data.h (1.50), help_topic.h (1.42), highlightData.c
+	(1.58): Adds $args[] to the NEdit Macro pattern.
+
+2003-12-26 10:14  tksoh
+
+	* source/window.c (1.90): bugfix: text colors not correctly set for
+	new tabs.
+
+2003-12-25 07:09  tksoh
+
+	* Makefile (1.13): Committed patch #569287: tabbed buffers mode.
+
+2003-12-25 06:55  tksoh
+
+	* Microline/XmL/Folder.c (1.2), Microline/XmL/FolderP.h (1.2),
+	Microline/XmL/Makefile.common (1.1),
+	Microline/XmL/Makefile.dependencies (1.1), Microline/XmL/XmL.h
+	(1.2), Xlt/BubbleButton.c (1.3), Xlt/BubbleButton.h (1.2),
+	Xlt/BubbleButtonP.h (1.2), Xlt/Makefile.common (1.1),
+	Xlt/Makefile.dependencies (1.1), Xlt/SlideC.c (1.2), doc/help.etx
+	(1.56), source/Makefile.common (1.16), source/file.c (1.72),
+	source/file.h (1.11), source/highlight.c (1.44), source/highlight.h
+	(1.12), source/interpret.c (1.36), source/macro.c (1.76),
+	source/menu.c (1.84), source/menu.h (1.8), source/nc.c (1.37),
+	source/nedit.c (1.54), source/nedit.h (1.42), source/preferences.c
+	(1.103), source/preferences.h (1.37), source/search.c (1.62),
+	source/search.h (1.21), source/selection.c (1.26), source/server.c
+	(1.23), source/shell.c (1.27), source/smartIndent.c (1.30),
+	source/tags.c (1.53), source/text.h (1.18), source/userCmds.c
+	(1.34), source/window.c (1.89), source/window.h (1.13): Committed
+	patch #569287: tabbed buffers mode.
+
+2003-12-24 07:41  tksoh
+
+	* Xlt/BubbleButton.c (1.2): Bugfix: XltNbubbleString could not be
+	changed after an XltBubbleButton	 widget has been created.
+
+2003-12-23 21:54  slobasso
+
+	* doc/help.etx (1.55): docs for new $args[] array and removed 9 arg
+	limit for macros
+
+2003-12-23 10:53  yooden
+
+	* source/file.c (1.71): Adds a warning to root if he wants to write
+	read-only files.
+
+2003-12-23 08:34  tksoh
+
+	* Xlt/: BubbleButton.c (1.1), BubbleButton.h (1.1), BubbleButtonP.h
+	(1.1), SlideC.c (1.1), SlideC.h (1.1), SlideCP.h (1.1): Importing
+	the original code for XltBubbleButton from the Xlt Widget Set
+	version 9.2.9 (http://xlt.soureforge.net).
+
+2003-12-21 01:43  tksoh
+
+	* Microline/: Makefile (1.1), Makefile.in (1.1), XmL/Folder.c
+	(1.1), XmL/Folder.h (1.1), XmL/FolderP.h (1.1), XmL/Grid.c (1.1),
+	XmL/Grid.h (1.1), XmL/GridP.h (1.1), XmL/GridUtil.c (1.1),
+	XmL/Makefile (1.1), XmL/Makefile.in (1.1), XmL/Progress.c (1.1),
+	XmL/Progress.h (1.1), XmL/ProgressP.h (1.1), XmL/Tree.c (1.1),
+	XmL/Tree.h (1.1), XmL/TreeP.h (1.1), XmL/XmL.c (1.1), XmL/XmL.h
+	(1.1), XmL/XmL.uih (1.1), examples/Makefile (1.1),
+	examples/Makefile.in (1.1), examples/demo.c (1.1),
+	examples/folder1.c (1.1), examples/folder2.c (1.1),
+	examples/folder3.c (1.1), examples/folder4.c (1.1),
+	examples/grid1.c (1.1), examples/grid2.c (1.1), examples/grid3.c
+	(1.1), examples/grid4.c (1.1), examples/grid5.c (1.1),
+	examples/grid6.c (1.1), examples/prog1.c (1.1), examples/prog2.c
+	(1.1), examples/prog3.c (1.1), examples/tree1.c (1.1),
+	examples/tree2.c (1.1), examples/tree3.c (1.1), examples/tree4.c
+	(1.1), examples/tree5.c (1.1), examples/uil1.c (1.1),
+	examples/uil1.uil (1.1), examples/util1.c (1.1), man/XmLArrayAdd.3x
+	(1.1), man/XmLArrayDel.3x (1.1), man/XmLArrayFree.3x (1.1),
+	man/XmLArrayGet.3x (1.1), man/XmLArrayGetCount.3x (1.1),
+	man/XmLArrayMove.3x (1.1), man/XmLArrayNew.3x (1.1),
+	man/XmLArrayReorder.3x (1.1), man/XmLArraySet.3x (1.1),
+	man/XmLArraySort.3x (1.1), man/XmLCreateFolder.3x (1.1),
+	man/XmLCreateGrid.3x (1.1), man/XmLCreateProgress.3x (1.1),
+	man/XmLCreateTree.3x (1.1), man/XmLCvtStringToUChar.3x (1.1),
+	man/XmLDateDaysInMonth.3x (1.1), man/XmLDateWeekDay.3x (1.1),
+	man/XmLDrawnButtonSetType.3x (1.1), man/XmLFolder.3x (1.1),
+	man/XmLFolderAddBitmapTab.3x (1.1),
+	man/XmLFolderAddBitmapTabForm.3x (1.1), man/XmLFolderAddTab.3x
+	(1.1), man/XmLFolderAddTabForm.3x (1.1),
+	man/XmLFolderSetActiveTab.3x (1.1), man/XmLFontListCopyDefault.3x
+	(1.1), man/XmLFontListGetDimensions.3x (1.1), man/XmLGrid.3x (1.1),
+	man/XmLGridAddColumns.3x (1.1), man/XmLGridAddRows.3x (1.1),
+	man/XmLGridColumnIsVisible.3x (1.1), man/XmLGridCopyPos.3x (1.1),
+	man/XmLGridCopySelected.3x (1.1), man/XmLGridDeleteAllColumns.3x
+	(1.1), man/XmLGridDeleteAllRows.3x (1.1),
+	man/XmLGridDeleteColumns.3x (1.1), man/XmLGridDeleteRows.3x (1.1),
+	man/XmLGridDeselectAllCells.3x (1.1),
+	man/XmLGridDeselectAllColumns.3x (1.1),
+	man/XmLGridDeselectAllRows.3x (1.1), man/XmLGridDeselectCell.3x
+	(1.1), man/XmLGridDeselectColumn.3x (1.1),
+	man/XmLGridDeselectRow.3x (1.1), man/XmLGridEditBegin.3x (1.1),
+	man/XmLGridEditCancel.3x (1.1), man/XmLGridEditComplete.3x (1.1),
+	man/XmLGridGetColumn.3x (1.1), man/XmLGridGetFocus.3x (1.1),
+	man/XmLGridGetRow.3x (1.1), man/XmLGridGetSelectedCellCount.3x
+	(1.1), man/XmLGridGetSelectedCells.3x (1.1),
+	man/XmLGridGetSelectedColumnCount.3x (1.1),
+	man/XmLGridGetSelectedColumns.3x (1.1),
+	man/XmLGridGetSelectedRow.3x (1.1),
+	man/XmLGridGetSelectedRowCount.3x (1.1),
+	man/XmLGridGetSelectedRows.3x (1.1), man/XmLGridMoveColumns.3x
+	(1.1), man/XmLGridMoveRows.3x (1.1), man/XmLGridPaste.3x (1.1),
+	man/XmLGridPastePos.3x (1.1), man/XmLGridRead.3x (1.1),
+	man/XmLGridReadPos.3x (1.1), man/XmLGridRedrawAll.3x (1.1),
+	man/XmLGridRedrawCell.3x (1.1), man/XmLGridRedrawColumn.3x (1.1),
+	man/XmLGridRedrawRow.3x (1.1), man/XmLGridReorderColumns.3x (1.1),
+	man/XmLGridReorderRows.3x (1.1), man/XmLGridRowColumnToXY.3x (1.1),
+	man/XmLGridRowIsVisible.3x (1.1), man/XmLGridSelectAllCells.3x
+	(1.1), man/XmLGridSelectAllColumns.3x (1.1),
+	man/XmLGridSelectAllRows.3x (1.1), man/XmLGridSelectCell.3x (1.1),
+	man/XmLGridSelectColumn.3x (1.1), man/XmLGridSelectRow.3x (1.1),
+	man/XmLGridSetFocus.3x (1.1), man/XmLGridSetStrings.3x (1.1),
+	man/XmLGridSetStringsPos.3x (1.1), man/XmLGridWrite.3x (1.1),
+	man/XmLGridWritePos.3x (1.1), man/XmLGridXYToRowColumn.3x (1.1),
+	man/XmLMessageBox.3x (1.1), man/XmLPixmapDraw.3x (1.1),
+	man/XmLProgress.3x (1.1), man/XmLRectIntersect.3x (1.1),
+	man/XmLShellOfWidget.3x (1.1), man/XmLSort.3x (1.1),
+	man/XmLStringDraw.3x (1.1), man/XmLStringDrawDirection.3x (1.1),
+	man/XmLTree.3x (1.1), man/XmLTreeAddRow.3x (1.1),
+	man/XmLTreeAddRows.3x (1.1), man/XmLWarning.3x (1.1): Importing
+	Mozilla's Microline3.0 (XmL) library on the
+	MozillaSourceClassic_19981026_BRANCH branch, which has been
+	recently relicensed as MPL 1.1/GPL 2.0/LGPL 2.1.
+	
+	The original source tree for Microline3.0 can be obtained here:
+	
+	   % cvs -d:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot \
+	     co -r MozillaSourceClassic_19981026_BRANCH \
+	     mozilla/cmd/xfe/Microline3.0/
+
+2003-12-19 23:23  slobasso
+
+	* source/: interpret.c (1.35), interpret.h (1.14), macro.c (1.75),
+	parse.y (1.27), parse_noyacc.c (1.8): added new $args[] array and
+	removed 9 arg limit for macros
+
+2003-12-13 18:16  yooden
+
+	* util/prefFile.c (1.22): Removes unneeded variable.
+
+2003-12-09 17:55  slobasso
+
+	* doc/: .cvsignore (1.3), help.etx (1.54), nedit.pod (1.3): docs
+	for -svrname change
+
+2003-12-09 12:57  edg
+
+	* source/nedit.c (1.53): Adapted the nedit.helpForm.* resource spec
+	to the changed widget hierarchy (now nedit.help.helpForm.*) to make
+	mouse navigation in help windows operational again.
+
+2003-12-07 22:48  yooden
+
+	* source/: highlightData.c (1.57), preferences.c (1.102): Adds a
+	'recursion level' to shell pattern set (see SF bug #770855).
+
+2003-12-07 15:56  yooden
+
+	* util/prefFile.c (1.21): Removes double file access to verify pref
+	file read.
+
+2003-12-05 00:05  slobasso
+
+	* source/nedit.c (1.52): default to server if server name is
+	supplied
+
+2003-12-05 00:01  slobasso
+
+	* source/nc.c (1.36): add missing trailing newline to usage
+
+2003-12-04 19:07  slobasso
+
+	* source/menu.c (1.83): first pass at neditdb corruption cleanup
+
+2003-12-04 09:52  edg
+
+	* source/window.c (1.88): Renamed the window shell from "text" to
+	"textShell" to avoid resource matching ambiguities with the real
+	text widget.
+
+2003-11-26 21:58  yooden
+
+	* doc/help.etx (1.53): Added documentation for
+	nedit.undoModifiesSelection
+
+2003-11-24 17:41  edg
+
+	* doc/Makefile (1.6): Remove generated man pages when cleaning.
+
+2003-11-22 13:03  edg
+
+	* ChangeLog (1.35), Makefile (1.12), README (1.32), ReleaseNotes
+	(1.23), doc/Makefile (1.5), doc/NEdit.ad (1.4), doc/help.etx
+	(1.52), doc/nc.pod (1.2), doc/nedit.pod (1.2), doc/setext (1.11),
+	makefiles/Makefile.bsdi (1.6), makefiles/Makefile.ccur (1.6),
+	makefiles/Makefile.freebsd (1.6), makefiles/Makefile.generic
+	(1.11), makefiles/Makefile.macosx (1.5), makefiles/Makefile.netbsd
+	(1.6), makefiles/Makefile.openbsd (1.4), makefiles/Makefile.solaris
+	(1.10), source/file.c (1.70), source/help_data.h (1.49),
+	source/help_topic.h (1.41), source/highlight.c (1.43),
+	source/highlight.h (1.11), source/highlightData.c (1.56),
+	source/interpret.c (1.34), source/macro.c (1.74), source/menu.c
+	(1.82), source/nc.c (1.35), source/nedit.c (1.51), source/nedit.h
+	(1.41), source/preferences.c (1.101), source/rangeset.c (1.8),
+	source/rangeset.h (1.3), source/search.c (1.61), source/search.h
+	(1.20), source/server.c (1.22), source/tags.c (1.52), source/text.c
+	(1.45), source/textBuf.c (1.29), source/textBuf.h (1.15),
+	source/textDisp.c (1.54), source/textDisp.h (1.24), source/window.c
+	(1.87), util/check_lin_tif.c (1.7), util/getfiles.c (1.27),
+	util/misc.c (1.60), util/prefFile.c (1.20), util/system.h (1.13):
+	Merged 5.4 release branch with main trunk.
+
+2003-11-20 18:37  edg
+
+	* ReleaseNotes, source/nc.c, source/server.c (BETA-5-4.[6,5,3])
+	(utags: REL-5-4): Fix for nc -lm and -geometry command line options
+	being dropped in some cases.
+
+2003-11-19 17:22  edg
+
+	* Makefile (tags: REL-5-4) (BETA-5-4.5): 5.4RC2 -> 5.4.
+
+2003-11-19 13:50  edg
+
+	* ChangeLog (tags: REL-5-4) (BETA-5-4.3): Regenerated (cvs2cl.pl -b
+	-r -t --accum --gmt).
+
 2003-11-19 13:44  edg
 
-	* README, ReleaseNotes, doc/nc.man, doc/nedit.man,
-	source/help_data.h, source/help_topic.h (BETA-5-4.[7,5,3,3,9,6]):
+	* README (tags: REL-5-4), ReleaseNotes, source/help_data.h (tags:
+	REL-5-4), source/help_topic.h (tags: REL-5-4) (BETA-5-4.[7,5,9,6]):
 	Bumped version number to 5.4.
 
 2003-11-18 15:11  edg
