@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.124 2004/08/04 08:05:35 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.125 2004/08/04 17:43:29 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -94,7 +94,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.124 2004/08/04 08:05:35 n8gr
 #define MENU_WIDGET(w) (w)
 #endif
 
-#define PREF_FILE_VERSION "5.4"
+#define PREF_FILE_VERSION "5.5"
 
 /* New styles added in 5.2 for auto-upgrade */
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
