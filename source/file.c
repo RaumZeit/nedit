@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.39 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.40 2001/12/07 10:50:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -351,13 +351,22 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     /* Get the length of the file, the protection mode, and the time of the
        last modification to the file */
     if (fstat(fileno(fp), &statbuf) != 0) {
+        fclose(fp);
 	DialogF(DF_ERR, window->shell, 1, "Error opening %s", "Dismiss", name);
 	return FALSE;
     }
     if (S_ISDIR(statbuf.st_mode))  {
+        fclose(fp);
 	DialogF(DF_ERR, window->shell, 1, "Can't open directory %s", "Dismiss", name);
 	return FALSE;
     }
+#ifdef S_ISBLK
+    if (S_ISBLK(statbuf.st_mode))  {
+        fclose(fp);
+	DialogF(DF_ERR, window->shell, 1, "Can't open block device %s", "Dismiss", name);
+	return FALSE;
+    }
+#endif
     fileLen = statbuf.st_size;
     window->fileMode = statbuf.st_mode;
     window->lastModTime = statbuf.st_mtime;
@@ -365,6 +374,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL) {
+        fclose(fp);
 	DialogF(DF_ERR, window->shell, 1, "File is too large to edit",
 	    	"Dismiss");
 	return FALSE;
@@ -373,6 +383,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     /* Read the file into fileString and terminate with a null */
     readLen = fread(fileString, sizeof(char), fileLen, fp);
     if (ferror(fp)) {
+        fclose(fp);
     	DialogF(DF_ERR, window->shell, 1, "Error reading %s:\n%s", "Dismiss",
     		name, errorString());
 	free(fileString);
