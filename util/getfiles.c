@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.15 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.16 2001/10/31 17:25:06 edg Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -601,7 +601,13 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 	DefaultPattern = cPattern;
 	XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
 	/* See note in existing file routines about Motif 2.x bug. */
+#ifdef VMS
+	/* VMS  won't return `/' as the 1st character of the full file spec.
+	 `:' terminates the device name and is not allowed elsewhere */
+	if (strchr(fileString, ':') != NULL) {
+#else
 	if (fileString[0] == '/') {
+#endif /* VMS */
 	    /* The directory name is already present in the file name or
 	       the user entered a full path name. */
 	    strcpy(filename, fileString);
