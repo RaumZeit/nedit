@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.30 2002/09/05 23:17:24 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.31 2002/10/15 11:00:41 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -726,6 +726,7 @@ static int numAllocatedStrings = 0;
 static int numAllocatedSparseArrayElements = 0;
 #endif
 
+/* Allocate a new string buffer of length chars */
 char *AllocString(int length)
 {
     char *mem;
@@ -737,6 +738,24 @@ char *AllocString(int length)
     ++numAllocatedStrings;
 #endif
     return mem + sizeof(char *) + 1;
+}
+
+/* Allocate a new string buffer of length chars, and copy in the string s */
+char *AllocStringNCpy(const char *s, int length)
+{
+    char *p = AllocString(length + 1);  /* add extra char for forced \0 */
+    if (!p)
+        return p;
+    if (!s)
+        s = "";
+    p[length] = '\0';                   /* forced \0 */
+    return strncpy(p, s, length);
+}
+
+/* Allocate a new copy of string s */
+char *AllocStringCpy(const char *s)
+{
+    return AllocStringNCpy(s, s ? strlen(s) : 0);
 }
 
 static SparseArrayEntry *allocateSparseArrayEntry(void)

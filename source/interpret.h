@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.10 2002/08/31 00:52:16 slobasso Exp $ */
+/* $Id: interpret.h,v 1.11 2002/10/15 11:00:41 ajhood Exp $ */
 
 #ifndef NEDIT_INTERPRET_H_INCLUDED
 #define NEDIT_INTERPRET_H_INCLUDED
@@ -119,6 +119,8 @@ int ContinueMacro(RestartData *continuation, DataValue *result, char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro(void);
 char *AllocString(int length);
+char *AllocStringNCpy(const char *s, int length);
+char *AllocStringCpy(const char *s);
 void GarbageCollectStrings(void);
 void FreeRestartData(RestartData *context);
 Symbol *PromoteToGlobal(Symbol *sym);

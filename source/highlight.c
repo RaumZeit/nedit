@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.34 2002/09/26 12:37:39 ajhood Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.35 2002/10/15 11:00:41 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -746,6 +746,7 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
       p->highlightName = pat->name; \
       p->styleName = pat->style; \
       p->colorName = ColorOfNamedStyle(pat->style); \
+      p->bgColorName = BgColorOfNamedStyle(pat->style); \
       p->isBold = FontOfNamedStyleIsBold(pat->style); \
       p->isItalic = FontOfNamedStyleIsItalic(pat->style); \
       /* And now for the more physical stuff */ \
@@ -753,6 +754,18 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
       p->red = r; \
       p->green = g; \
       p->blue = b; \
+      if (p->bgColorName) { \
+        p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b); \
+        p->bgRed = r; \
+        p->bgGreen = g; \
+        p->bgBlue = b; \
+      } \
+      else { \
+        p->bgColor = p->color; \
+        p->bgRed = r; \
+        p->bgGreen = g; \
+        p->bgBlue = b; \
+      } \
       p->font = FontOfNamedStyle(window, pat->style); \
     } while (0)
 
@@ -1122,14 +1135,70 @@ char *HighlightColorOfCode(WindowInfo *window, int hCode)
     return entry ? entry->colorName : "";
 }
 
+char *HighlightBackgroundColorOfCode(WindowInfo *window, int hCode)
+{
+    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+    return entry && entry->bgColorName ? entry->bgColorName : "";
+}
+
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-    *r = entry->red;
-    *g = entry->green;
-    *b = entry->blue;
-    return entry->color;
+    if (entry) {
+        *r = entry->red;
+        *g = entry->green;
+        *b = entry->blue;
+        return entry->color;
+    }
+    else
+    {
+        /* pick up foreground color of the (first) text widget of the window */
+        XColor colorDef;
+        Colormap cMap;
+        Display *display = XtDisplay(window->textArea);
+        *r = *g = *b = 0;
+        XtVaGetValues(window->textArea,
+                      XtNcolormap,   &cMap,
+                      XtNforeground, &colorDef.pixel,
+                      NULL);
+        if (XQueryColor(display, cMap, &colorDef)) {
+            *r = colorDef.red;
+            *g = colorDef.green;
+            *b = colorDef.blue;
+        }
+        return colorDef.pixel;
+    }
+}
+
+Pixel HighlightBackgroundColorValueOfCode(WindowInfo *window, int hCode,
+      int *r, int *g, int *b)
+{
+    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+    if (entry && entry->bgColorName) {
+        *r = entry->bgRed;
+        *g = entry->bgGreen;
+        *b = entry->bgBlue;
+        return entry->bgColor;
+    }
+    else
+    {
+        /* pick up background color of the (first) text widget of the window */
+        XColor colorDef;
+        Colormap cMap;
+        Display *display = XtDisplay(window->textArea);
+        *r = *g = *b = 0;
+        XtVaGetValues(window->textArea,
+                      XtNcolormap,   &cMap,
+                      XtNbackground, &colorDef.pixel,
+                      NULL);
+        if (XQueryColor(display, cMap, &colorDef)) {
+            *r = colorDef.red;
+            *g = colorDef.green;
+            *b = colorDef.blue;
+        }
+        return colorDef.pixel;
+    }
 }
 
 int HighlightCodeIsBold(WindowInfo *window, int hCode)

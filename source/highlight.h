@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.7 2002/09/26 12:37:39 ajhood Exp $ */
+/* $Id: highlight.h,v 1.8 2002/10/15 11:00:41 ajhood Exp $ */
 
 #ifndef NEDIT_HIGHLIGHT_H_INCLUDED
 #define NEDIT_HIGHLIGHT_H_INCLUDED
@@ -49,7 +49,10 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 char *HighlightNameOfCode(WindowInfo *window, int hCode);
 char *HighlightStyleOfCode(WindowInfo *window, int hCode);
 char *HighlightColorOfCode(WindowInfo *window, int hCode);
+char *HighlightBackgroundColorOfCode(WindowInfo *window, int hCode);
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
+      int *r, int *g, int *b);
+Pixel HighlightBackgroundColorValueOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b);
 int HighlightCodeIsBold(WindowInfo *window, int hCode);
 int HighlightCodeIsItalic(WindowInfo *window, int hCode);

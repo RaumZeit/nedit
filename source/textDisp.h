@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.16 2002/09/26 12:37:40 ajhood Exp $ */
+/* $Id: textDisp.h,v 1.17 2002/10/15 11:00:42 ajhood Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -26,6 +26,11 @@ typedef struct {
     Pixel color;
     Boolean underline;
     XFontStruct *font;
+    char *bgColorName;      /* background style coloring (name may be NULL) */
+    unsigned short bgRed;
+    unsigned short bgGreen;
+    unsigned short bgBlue;
+    Pixel bgColor;
 } styleTableEntry;
 
 typedef struct graphicExposeTranslationEntry {

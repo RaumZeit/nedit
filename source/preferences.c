@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.70 2002/09/27 12:19:57 ajhood Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.71 2002/10/15 11:00:41 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -4681,6 +4681,21 @@ int SkipDelimiter(char **inPtr, char **errMsg)
     *inPtr += strspn(*inPtr, " \t");
     if (**inPtr != ':') {
     	*errMsg = "syntax error";
+    	return False;
+    }
+    (*inPtr)++;
+    *inPtr += strspn(*inPtr, " \t");
+    return True;
+}
+
+/*
+** Skip an optional separator and its surrounding whitespace
+** return true if delimiter found
+*/
+int SkipOptSeparator(char separator, char **inPtr, char **errMsg)
+{
+    *inPtr += strspn(*inPtr, " \t");
+    if (**inPtr != separator) {
     	return False;
     }
     (*inPtr)++;

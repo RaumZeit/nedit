@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.39 2002/10/14 18:41:08 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.40 2002/10/15 11:00:42 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -120,7 +120,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
 	int rightClip, int leftCharIndex, int rightCharIndex);
 static void drawString(textDisp *textD, int style, int x, int y, int toX,
 	char *string, int nChars);
-static void clearRect(textDisp *textD, int style, int x, int y, 
+static void clearRect(textDisp *textD, GC gc, int x, int y, 
     	int width, int height);
 static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos,
@@ -1849,135 +1849,136 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
 static void drawString(textDisp *textD, int style, int x, int y, int toX,
 	char *string, int nChars)
 {
-    GC gc;
+    GC gc, bgGC;
     XGCValues gcValues;
     XFontStruct *fs = textD->fontStruct;
-    styleTableEntry *styleRec;
     Pixel bground = textD->bgPixel;
+    Pixel fground = textD->fgPixel;
     int underlineStyle = FALSE;
     
     /* Don't draw if widget isn't realized */
     if (XtWindow(textD->w) == 0)
     	return;
     
+    /* select a GC */
+    if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
+        gc = bgGC = textD->styleGC;
+    }
+    else if (style & HIGHLIGHT_MASK) {
+        gc = textD->highlightGC;
+        bgGC = textD->highlightBGGC;
+    }
+    else if (style & PRIMARY_MASK) {
+        gc = textD->selectGC;
+        bgGC = textD->selectBGGC;
+    }
+    else {
+        gc = bgGC = textD->gc;
+    }
+
+    if (gc == textD->styleGC) {
+        /* we have work to do */
+        styleTableEntry *styleRec;
+        /* Set font, color, and gc depending on style.  For normal text, GCs
+           for normal drawing, or drawing within a selection or highlight are
+           pre-allocated and pre-configured.  For syntax highlighting, GCs are
+           configured here, on the fly. */
+        if (style & STYLE_LOOKUP_MASK) {
+            styleRec = &textD->styleTable[(style & STYLE_LOOKUP_MASK) - 'A'];
+            underlineStyle = styleRec->underline;
+            fs = styleRec->font;
+            gcValues.font = fs->fid;
+            fground = styleRec->color;
+            /* here you could pick up specific select and highlight fground */
+        }
+        else {
+            styleRec = NULL;
+            gcValues.font = fs->fid;
+            fground = textD->fgPixel;
+        }
+        /* Background color priority order is:
+           1 Primary(Selection), 2 Highlight(Parens),
+           3 Rangeset, 4 SyntaxHighlightStyle,
+           5 Backlight (if NOT fill), 6 DefaultBackground */
+        bground =
+            style & PRIMARY_MASK   ? textD->selectBGPixel :
+            style & HIGHLIGHT_MASK ? textD->highlightBGPixel :
+            style & RANGESET_MASK  ?
+                      getRangesetColor(textD,
+                          (style&RANGESET_MASK)>>RANGESET_SHIFT,
+                            bground) :
+            styleRec && styleRec->bgColorName ? styleRec->bgColor :
+            (style & BACKLIGHT_MASK) && !(style & FILL_MASK) ?
+                      textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff] :
+            textD->bgPixel;
+        if (fground == bground) /* B&W kludge */
+            fground = textD->bgPixel;
+        /* set up gc for clearing using the foreground color entry */
+        gcValues.foreground = gcValues.background = bground;
+        XChangeGC(XtDisplay(textD->w), gc,
+                GCFont | GCForeground | GCBackground, &gcValues);
+    }
+
     /* Draw blank area rather than text, if that was the request */
     if (style & FILL_MASK) {
+        /* wipes out to right hand edge of widget */
 	if (toX >= textD->left)
-	    clearRect(textD, style, max(x, textD->left), y,
+	    clearRect(textD, bgGC, max(x, textD->left), y,
 		    toX - max(x, textD->left), textD->ascent + textD->descent);
         return;
     }
-    
-    /* Set font, color, and gc depending on style.  For normal text, GCs
-       for normal drawing, or drawing within a selection or highlight are
-       pre-allocated and pre-configured.  For syntax highlighting, GCs are
-       configured here, on the fly. */
-    if (style & STYLE_LOOKUP_MASK) {
-    	styleRec = &textD->styleTable[(style & STYLE_LOOKUP_MASK) - 'A'];
-	underlineStyle = styleRec->underline;
-    	fs = styleRec->font;
-    	gc = textD->styleGC ;
-	gcValues.font = fs->fid;
-	gcValues.foreground = styleRec->color;
-        if (style&BACKLIGHT_MASK)
-            bground = textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
-        gcValues.background =
-            style&PRIMARY_MASK ? textD->selectBGPixel :
-            style&HIGHLIGHT_MASK ? textD->highlightBGPixel :
-            style&RANGESET_MASK ?
-                getRangesetColor(textD, (style&RANGESET_MASK)>>RANGESET_SHIFT,
-                        bground) :
-            bground;
-    	if (gcValues.foreground == gcValues.background) /* B&W kludge */
-    	    gcValues.foreground = textD->bgPixel;
-    	XChangeGC(XtDisplay(textD->w), gc,
-    	    	GCFont | GCForeground | GCBackground, &gcValues);
-    } else if (style & HIGHLIGHT_MASK)
-    	gc = textD->highlightGC;
-    else if (style & PRIMARY_MASK)
-    	gc = textD->selectGC;
-    else if (style & RANGESET_MASK) {
-        /* Uses the syntax highlighting style GC, changing it as needed. */
-        fs = textD->fontStruct;
-        gc = textD->styleGC;
-        gcValues.font = fs->fid;
-        gcValues.foreground = textD->fgPixel;
-        if (style&BACKLIGHT_MASK)
-            bground = textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
-        gcValues.background = getRangesetColor(textD,
-                                (style&RANGESET_MASK)>>RANGESET_SHIFT, bground);
-        if (gcValues.foreground == gcValues.background) /* B&W kludge */
-            gcValues.foreground = textD->bgPixel;
-        XChangeGC(XtDisplay(textD->w), gc,
-                GCFont | GCForeground | GCBackground, &gcValues);
+
+    /* If any space around the character remains unfilled (due to use of
+       different sized fonts for highlighting), fill in above or below
+       to erase previously drawn characters */
+    if (fs->ascent < textD->ascent)
+    	clearRect(textD, bgGC, x, y, toX - x, textD->ascent - fs->ascent);
+    if (fs->descent < textD->descent)
+    	clearRect(textD, bgGC, x, y + textD->ascent + fs->descent, toX - x,
+    		textD->descent - fs->descent);
+
+    /* set up gc for writing text (set foreground properly) */
+    if (bgGC == textD->styleGC) {
+        gcValues.foreground = fground;
+        XChangeGC(XtDisplay(textD->w), gc, GCForeground, &gcValues);
     }
-    else if (style & BACKLIGHT_MASK) {
-        /* Uses the syntax highlighting style GC, changing it as needed. */
-        fs = textD->fontStruct;
-        gc = textD->styleGC;
-        gcValues.font = fs->fid;
-        gcValues.foreground = textD->fgPixel;
-        gcValues.background =
-                textD->bgClassPixel[(style>>BACKLIGHT_SHIFT) & 0xff];
-        if (gcValues.foreground == gcValues.background) /* B&W kludge */
-            gcValues.foreground = textD->bgPixel;
-        XChangeGC(XtDisplay(textD->w), gc,
-                GCFont | GCForeground | GCBackground, &gcValues);
-    }
-    else
-    	gc = textD->gc;
 
     /* Draw the string using gc and font set above */
     XDrawImageString(XtDisplay(textD->w), XtWindow(textD->w), gc, x,
     	    y + textD->ascent, string, nChars);
     
-    /* If any space around the character remains unfilled (due to use of
-       different sized fonts for highlighting), fill in above or below
-       to erase previously drawn characters */
-    if (fs->ascent < textD->ascent)
-    	clearRect(textD, style, x, y, toX - x, textD->ascent - fs->ascent);
-    if (fs->descent < textD->descent)
-    	clearRect(textD, style, x, y + textD->ascent + fs->descent, toX - x,
-    		textD->descent - fs->descent);
-
     /* Underline if style is secondary selection */
     if (style & SECONDARY_MASK || underlineStyle)
+    {
+        /* restore foreground in GC (was set to background by clearRect()) */
+        gcValues.foreground = fground;
+        XChangeGC(XtDisplay(textD->w), gc,
+                GCForeground, &gcValues);
+        /* draw underline */
     	XDrawLine(XtDisplay(textD->w), XtWindow(textD->w), gc, x,
     	    	y + textD->ascent, toX - 1, y + textD->ascent);
+    }
 }
 
 /*
 ** Clear a rectangle with the appropriate background color for "style"
 */
-static void clearRect(textDisp *textD, int style, int x, int y, 
+static void clearRect(textDisp *textD, GC gc, int x, int y, 
     	int width, int height)
 {
     /* A width of zero means "clear to end of window" to XClearArea */
     if (width == 0)
     	return;
     
-    if (style & HIGHLIGHT_MASK)
-    	XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w),
-    	    	textD->highlightBGGC, x, y, width, height);
-    else if (style & PRIMARY_MASK)
-    	XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w),
-    	    	textD->selectBGGC, x, y, width, height);
-    else if (style & RANGESET_MASK) {
-        /* Uses the syntax highlighting style GC, changing it as needed. */
-        GC gc = textD->styleGC;
-        XGCValues gcValues;
-        gcValues.foreground = getRangesetColor(textD,
-                (style&RANGESET_MASK)>>RANGESET_SHIFT, textD->bgPixel);
-        XChangeGC(XtDisplay(textD->w), gc,
-                GCForeground, &gcValues);
+    if (gc == textD->gc) {
+        XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, y,
+                width, height, False);
+    }
+    else {
         XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w),
                 gc, x, y, width, height);
     }
-    else
-    	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, y,
-    	    	width, height, False);
 }
-
 
 /*
 ** Draw a cursor with top center at x, y.

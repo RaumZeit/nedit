@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.35 2002/09/26 12:37:39 ajhood Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.36 2002/10/15 11:00:41 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -86,6 +86,7 @@ static const char *FontTypeNames[N_FONT_TYPES] =
 typedef struct {
     char *name;
     char *color;
+    char *bgColor;
     int font;
 } highlightStyleRec;
 
@@ -165,6 +166,7 @@ static struct {
     Widget shell;
     Widget nameW;
     Widget colorW;
+    Widget bgColorW;
     Widget recogW;
     Widget plainW, boldW, italicW, boldItalicW;
     Widget managedListW;
@@ -1015,6 +1017,11 @@ int LoadStylesString(char *inString)
 	    XtFree((char *)hs);
     	    return styleError(inString,inPtr, "color name required");
 	}
+        hs->bgColor = NULL;
+	if (SkipOptSeparator('/', &inPtr, &errMsg)) {
+    	    /* read bgColor */
+	    hs->bgColor = ReadSymbolicField(&inPtr); /* no error if fails */
+    	}
 	if (!SkipDelimiter(&inPtr, &errMsg)) {
 	    freeHighlightStyleRec(hs);
     	    return styleError(inString,inPtr, errMsg);
@@ -1076,6 +1083,10 @@ char *WriteStylesString(void)
     	BufInsert(outBuf, outBuf->length, style->name);
     	BufInsert(outBuf, outBuf->length, ":");
     	BufInsert(outBuf, outBuf->length, style->color);
+        if (style->bgColor) {
+            BufInsert(outBuf, outBuf->length, "/");
+            BufInsert(outBuf, outBuf->length, style->bgColor);
+        }
     	BufInsert(outBuf, outBuf->length, ":");
     	BufInsert(outBuf, outBuf->length, FontTypeNames[style->font]);
     	BufInsert(outBuf, outBuf->length, "\\n\\\n");
@@ -1234,9 +1245,11 @@ static void convertPatternExpr(char **patternRE, char *patSetName,
 */
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
 {
-    int fontNum = HighlightStyles[lookupNamedStyle(styleName)]->font;
+    int styleNo=lookupNamedStyle(styleName),fontNum;
     XFontStruct *font;
     
+    if (styleNo<0) return GetDefaultFontStruct(window->fontList);
+    fontNum = HighlightStyles[styleNo]->font;
     if (fontNum == BOLD_FONT)
     	font = window->boldFontStruct;
     else if (fontNum == ITALIC_FONT)
@@ -1252,13 +1265,19 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
 
 int FontOfNamedStyleIsBold(char *styleName)
 {
-    int fontNum = HighlightStyles[lookupNamedStyle(styleName)]->font;
+    int styleNo=lookupNamedStyle(styleName),fontNum;
+    
+    if (styleNo<0) return 0;
+    fontNum = HighlightStyles[styleNo]->font;
     return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
 int FontOfNamedStyleIsItalic(char *styleName)
 {
-    int fontNum = HighlightStyles[lookupNamedStyle(styleName)]->font;
+    int styleNo=lookupNamedStyle(styleName),fontNum;
+    
+    if (styleNo<0) return 0;
+    fontNum = HighlightStyles[styleNo]->font;
     return (fontNum == ITALIC_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
@@ -1270,7 +1289,21 @@ int FontOfNamedStyleIsItalic(char *styleName)
 char *ColorOfNamedStyle(const char *styleName)
 {
 /*YOO    fprintf(stderr, "Enter ColorOfNamedStyle()\n"); */
-    return HighlightStyles[lookupNamedStyle(styleName)]->color;
+    int styleNo=lookupNamedStyle(styleName);
+    
+    if (styleNo<0) return "black";
+    return HighlightStyles[styleNo]->color;
+}
+
+/*
+** Find the background color associated with a named style.
+*/
+char *BgColorOfNamedStyle(const char *styleName)
+{
+    int styleNo=lookupNamedStyle(styleName);
+
+    if (styleNo<0) return "";
+    return HighlightStyles[styleNo]->bgColor;
 }
 
 /*
@@ -1648,7 +1681,7 @@ void EditHighlightStyles(Widget parent, const char *initialStyle)
 #define HS_LEFT_MARGIN_POS 1
 #define HS_RIGHT_MARGIN_POS 99
 #define HS_H_MARGIN 10
-    Widget form, nameLbl, topLbl, colorLbl, fontLbl;
+    Widget form, nameLbl, topLbl, colorLbl, bgColorLbl, fontLbl;
     Widget fontBox, sep1, okBtn, applyBtn, dismissBtn;
     XmString s1;
     int i, ac;
@@ -1740,6 +1773,29 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     RemapDeleteKey(HSDialog.colorW);
     XtVaSetValues(colorLbl, XmNuserData, HSDialog.colorW, NULL);
     
+    bgColorLbl = XtVaCreateManagedWidget("bgColorLbl", xmLabelGadgetClass, form,
+    	    XmNlabelString,
+    	      s1=XmStringCreateSimple("Background Color (optional)"),
+    	    XmNmnemonic, 'G',
+    	    XmNalignment, XmALIGNMENT_BEGINNING,
+	    XmNleftAttachment, XmATTACH_POSITION,
+    	    XmNleftPosition, HS_LIST_RIGHT,
+	    XmNtopAttachment, XmATTACH_WIDGET,
+	    XmNtopOffset, HS_H_MARGIN,
+	    XmNtopWidget, HSDialog.colorW, NULL);
+    XmStringFree(s1);
+ 
+    HSDialog.bgColorW = XtVaCreateManagedWidget("bgColor",
+            xmTextWidgetClass, form,
+	    XmNleftAttachment, XmATTACH_POSITION,
+	    XmNleftPosition, HS_LIST_RIGHT,
+	    XmNtopAttachment, XmATTACH_WIDGET,
+	    XmNtopWidget, bgColorLbl,
+	    XmNrightAttachment, XmATTACH_POSITION,
+	    XmNrightPosition, HS_RIGHT_MARGIN_POS, NULL);
+    RemapDeleteKey(HSDialog.bgColorW);
+    XtVaSetValues(bgColorLbl, XmNuserData, HSDialog.bgColorW, NULL);
+    
     fontLbl = XtVaCreateManagedWidget("fontLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple("Font"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -1747,7 +1803,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, HS_H_MARGIN,
-	    XmNtopWidget, HSDialog.colorW, NULL);
+	    XmNtopWidget, HSDialog.bgColorW, NULL);
     XmStringFree(s1);
 
     fontBox = XtVaCreateManagedWidget("fontBox", xmRowColumnWidgetClass, form,
@@ -1927,6 +1983,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg)
     if (item == NULL) {
     	XmTextSetString(HSDialog.nameW, "");
     	XmTextSetString(HSDialog.colorW, "");
+    	XmTextSetString(HSDialog.bgColorW, "");
     	XmToggleButtonSetState(HSDialog.plainW, True, False);
     	XmToggleButtonSetState(HSDialog.boldW, False, False);
     	XmToggleButtonSetState(HSDialog.italicW, False, False);
@@ -1934,6 +1991,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg)
     } else {
     	XmTextSetString(HSDialog.nameW, hs->name);
     	XmTextSetString(HSDialog.colorW, hs->color);
+    	XmTextSetString(HSDialog.bgColorW, hs->bgColor ? hs->bgColor : "");
     	XmToggleButtonSetState(HSDialog.plainW, hs->font==PLAIN_FONT, False);
     	XmToggleButtonSetState(HSDialog.boldW, hs->font==BOLD_FONT, False);
     	XmToggleButtonSetState(HSDialog.italicW, hs->font==ITALIC_FONT, False);
@@ -2009,6 +2067,31 @@ static highlightStyleRec *readHSDialogFields(int silent)
 	return NULL;;
     }
     
+    /* read the background color field - this may be empty */
+    hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
+                        "bgColor", silent);
+    if (hs->bgColor && *hs->bgColor == '\0') {
+        XtFree(hs->bgColor);
+        hs->bgColor = NULL;
+    }
+
+    /* Verify that the background color (if present) is a valid X color spec */
+    if (hs->bgColor &&
+        !XParseColor(display, DefaultColormap(display, screenNum), 
+	    hs->bgColor, &rgb)) {
+	if (!silent) {
+	    DialogF(DF_WARN, HSDialog.shell, 1,
+		  "Invalid X background color specification: %s\n",
+                  "Dismiss", hs->bgColor);
+    	    XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+    	}
+    	XtFree(hs->name);
+    	XtFree(hs->color);
+    	XtFree(hs->bgColor);
+    	XtFree((char *)hs);
+	return NULL;;
+    }
+    
     /* read the font buttons */
     if (XmToggleButtonGetState(HSDialog.boldW))
     	hs->font = BOLD_FONT;
@@ -2038,6 +2121,12 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs)
     else {
 	newHS->color = XtMalloc(strlen(hs->color)+1);
 	strcpy(newHS->color, hs->color);
+    }
+    if (hs->bgColor == NULL)
+    	newHS->bgColor = NULL;
+    else {
+	newHS->bgColor = XtMalloc(strlen(hs->bgColor)+1);
+	strcpy(newHS->bgColor, hs->bgColor);
     }
     newHS->font = hs->font;
     return newHS;

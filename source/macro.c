@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.53 2002/10/10 22:04:42 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.54 2002/10/15 11:00:41 ajhood Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -4746,18 +4746,22 @@ static int getColorNameValues(WindowInfo *window, char *colorName,
 
 /*
 **  Returns an array containing information about the style of position $1.
-**      ["style"]   Name of style
-**      ["color"]   Color of style
-**      ["rgb"]     RGB representation of color of style
-**      ["bold"]    '1' if style is bold, '0' otherwise
-**      ["italic"]  '1' if style is italic, '0' otherwise 
+**      ["style"]       Name of style
+**      ["color"]       Color of style
+**      ["rgb"]         RGB representation of color of style
+**      ["bold"]        '1' if style is bold, '0' otherwise
+**      ["italic"]      '1' if style is italic, '0' otherwise 
+**      ["background"]   Background color of style if specified
+**      ["back_rgb"]     RGB representation of background color of style
 **
 **  Called Functions:
 **      local: readIntArg(), readStringArg(), wrongNArgsErr()
-**      global: AllocString(), ArrayInsert(), ArrayNew(), ColorOfNamedStyle(),
-**              FontOfNamedStyleIsBold(), FontOfNamedStyleIsItalic(),
-**              HighlightCodeOfPos(), HighlightNameOfCode(),
-**              HighlightStyleOfCode(),  HighlightColorValueOfCode()
+**      global: AllocString(), AllocStringNCpy(), AllocStringCpy(),
+**              ArrayInsert(), ArrayNew(), ColorOfNamedStyle(),
+**              BgColorOfNamedStyle(), FontOfNamedStyleIsBold(),
+**              FontOfNamedStyleIsItalic(), HighlightCodeOfPos(),
+**              HighlightStyleOfCode(), HighlightColorValueOfCode(),
+**              HighlightBackgroundColorValueOfCode()
 **
 */
 static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -4766,25 +4770,16 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
     int styleCode=0;
     char* styleName;
     int styleNameLen;
-    DataValue styleDV;
-    char* styleKey;
-    
-    char* colorName;
-    int colorNameLen;
-    DataValue colorDV;
-    char* colorKey;
-    
-    char colorValue[20];
-    int colorValueLen;
-    DataValue colorValDV;
-    char* colorValKey;
 
-    DataValue boldDV;
-    char* boldKey;
-    
-    DataValue italicDV;
-    char* italicKey;
-    
+    char* key;
+    DataValue intDV;
+    DataValue strDV;
+
+    char* colorName;
+    char colorValue[20];
+    int r, g, b;
+    Pixel pixel;
+
 /*YOO    fprintf(stderr, "Enter getStyleMS()\n"); */
     /* Validate number of arguments */
     if (nArgs != 1)
@@ -4840,113 +4835,80 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
 
 /*YOO    fprintf(stderr, "getStyleMS(): Init result array.\n"); */
     result->val.arrayPtr = ArrayNew();
-    
-    /* Prepare array element for style name */    
-    styleNameLen = strlen(styleName);
-    styleDV.tag = STRING_TAG;
-    styleDV.val.str = AllocString(styleNameLen + 1);
-    if (!styleDV.val.str)
-    {
-        *errMsg = "Failed to allocate element value: %s";
-        return False;
-    }
-    
-    /* Put style name in array */
-    strncpy(styleDV.val.str, styleName, styleNameLen + 1);
 
+    /* set up reusable data value records for strings and ints */
+    strDV.tag = STRING_TAG;
+    intDV.tag = INT_TAG;
+
+    /* Prepare array element for style name */    
+    key = AllocStringNCpy("style", 6);
+    strDV.val.str = AllocStringCpy(styleName);
     /* Insert array key */
-    styleKey = AllocString(6);
-    strncpy(styleKey, "style", 6);
-    if (!ArrayInsert(result, styleKey, &styleDV))
+    if (!strDV.val.str || !key || !ArrayInsert(result, key, &strDV))
     {
         *errMsg = "Array element 'style' failed to insert: %s";
         return False;
     }
 
-    /* Determine color name */
-/*YOO    fprintf(stderr, "getStyleMS(): Determine color name\n"); */
-    colorName = ColorOfNamedStyle(styleName);
-
     /* Prepare array element for color name */
-/*YOO    fprintf(stderr, "getStyleMS(): Prepare array element for color name.\n"); */
-    colorNameLen = strlen(colorName);
-    colorDV.tag = STRING_TAG;
-    colorDV.val.str = AllocString(colorNameLen + 1);
-/*YOO    fprintf(stderr, "getStyleMS(): Check for string.\n"); */
-    if (!colorDV.val.str)
-    {
-        *errMsg = "Failed to allocate element value: %s";
-        return False;
-    }
-    
-    /* Put color name in array */
-    strncpy(colorDV.val.str, colorName, colorNameLen + 1);
-
+    key = AllocStringNCpy("color", 6);
+    strDV.val.str = AllocStringCpy(ColorOfNamedStyle(styleName));
     /* Insert array key */
-    colorKey = AllocString(6);
-    strncpy(colorKey, "color", 6);
-    if (!ArrayInsert(result, colorKey, &colorDV))
+    if (!strDV.val.str || !key || !ArrayInsert(result, key, &strDV))
     {
         *errMsg = "Array element 'color' failed to insert: %s";
         return False;
     }
 
-    /* Determine color value */
+    /* Prepare array element for color value */
+    key = AllocStringNCpy("rgb", 4);
+    pixel = HighlightColorValueOfCode(window, styleCode, &r, &g, &b);
+    sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
+    strDV.val.str = AllocStringCpy(colorValue);
+    /* Insert array key */
+    if (!strDV.val.str || !key || !ArrayInsert(result, key, &strDV))
     {
-        int r, g, b;
-        Pixel pixel;
-/*AJH    fprintf(stderr, "getStyleMS(): Determine color value\n"); */
+        *errMsg = "Array element 'rgb' failed to insert: %s";
+        return False;
+    }
 
-        /* Prepare array element for color value */
-        pixel = HighlightColorValueOfCode(window, styleCode, &r, &g, &b);
-        sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
-/*AJH    fprintf(stderr, "getStyleMS(): Prepare array element for color value.\n"); */
-        colorValueLen = strlen(colorValue);
-        colorValDV.tag = STRING_TAG;
-        colorValDV.val.str = AllocString(colorValueLen + 1);
-/*AJH    fprintf(stderr, "getStyleMS(): Check for string.\n"); */
-        if (!colorValDV.val.str)
-        {
-            *errMsg = "Failed to allocate element colorValue: %s";
-            return False;
-        }
+    /* Prepare array element for background color name */
+    key = AllocStringNCpy("background", 11);
+    strDV.val.str = AllocStringCpy(BgColorOfNamedStyle(styleName));
+    /* Insert array key */
+    if (!strDV.val.str || !key || !ArrayInsert(result, key, &strDV))
+    {
+        *errMsg = "Array element 'background' failed to insert: %s";
+        return False;
+    }
 
-        /* Put color value in array */
-        strncpy(colorValDV.val.str, colorValue, colorValueLen + 1);
-
-        /* Insert array key */
-        colorValKey = AllocString(4);
-        strncpy(colorValKey, "rgb", 4);
-        if (!ArrayInsert(result, colorValKey, &colorValDV))
-        {
-            *errMsg = "Array element 'rgb' failed to insert: %s";
-            return False;
-        }
+    /* Prepare array element for background color value */
+    key = AllocStringNCpy("back_rgb", 9);
+    pixel = HighlightBackgroundColorValueOfCode(window, styleCode,&r,&g,&b);
+    sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
+    strDV.val.str = AllocStringCpy(colorValue);
+    /* Insert array key */
+    if (!strDV.val.str || !key || !ArrayInsert(result, key, &strDV))
+    {
+        *errMsg = "Array element 'back_rgb' failed to insert: %s";
+        return False;
     }
 
     /* Put boldness value in array */
-/*YOO    fprintf(stderr, "getStyleMS(): Put boldness value in array.\n"); */
-    boldDV.tag = INT_TAG;
-    boldDV.val.n = FontOfNamedStyleIsBold(styleName);
-
+    key = AllocStringNCpy("bold", 5);
+    intDV.val.n = FontOfNamedStyleIsBold(styleName);
     /* Insert array key */
-    boldKey = AllocString(5);
-    strncpy(boldKey, "bold", 5);
-    if (!ArrayInsert(result, boldKey, &boldDV))
+    if (!key || !ArrayInsert(result, key, &intDV))
     {
         *errMsg = "Array element 'bold' failed to insert: %s";
         return False;
     }
 
     /* Put italicity value in array */
-/*YOO    fprintf(stderr, "getStyleMS(): Put italicity value in array.\n"); */
-    italicDV.tag = INT_TAG;
-    italicDV.val.n = FontOfNamedStyleIsItalic(styleName);
-
+    key = AllocStringNCpy("italic", 7);
+    intDV.val.n = FontOfNamedStyleIsItalic(styleName);
     /* Insert array key */
-    italicKey = AllocString(7);
-    strncpy(italicKey, "italic", 7);
-    if (!ArrayInsert(result, italicKey, &italicDV))
+    if (!key || !ArrayInsert(result, key, &intDV))
     {
         *errMsg = "Array element 'italic' failed to insert: %s";
         return False;

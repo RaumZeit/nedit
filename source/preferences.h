@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.27 2002/09/26 12:37:40 ajhood Exp $ */
+/* $Id: preferences.h,v 1.28 2002/10/15 11:00:42 ajhood Exp $ */
 
 #ifndef NEDIT_PREFERENCES_H_INCLUDED
 #define NEDIT_PREFERENCES_H_INCLUDED
@@ -139,6 +139,7 @@ int ReadQuotedString(char **inPtr, char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(char **inPtr, char **errMsg);
+int SkipOptSeparator(char separator, char **inPtr, char **errMsg);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);
 int AllocatedStringsDiffer(const char *s1, const char *s2);

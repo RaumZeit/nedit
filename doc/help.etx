@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.33 2002/10/13 15:53:19 yooden Exp $
+.. $Id: help.etx,v 1.34 2002/10/15 11:00:39 ajhood Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2771,8 +2771,10 @@ Highlighting Information
 **get_style( pos )**
   returns an array containing the attributes of the character at position
   "pos". **"style"** (name of the highlight style), **"color"** (name of the
-  color), **"rgb"** (the color expressed in  red, green and blue values as
-  #rrggbb), **"bold"** (true or false) and **"italic"** (true or false)
+  color), **"rgb"** (the actual screen color expressed in red, green and blue
+  hexadecimal values as "#rrggbb"), **"bold"** (true or false) and **"italic"**
+  (true or false), **"background"** (name of the background color, if any) and
+  **"back_rgb"** (the background color values).
 
 **get_pattern( pos )**
   returns an array containing the attributes of the character at position

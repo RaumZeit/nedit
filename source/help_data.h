@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Oct 13, 2002 (Do NOT edit!)
+                 Generated on Oct 15, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -2598,8 +2598,10 @@ static char * htxt_hiliteInfo [] = {
 "\01A\01Bget_style( pos )\01A\n",
 "\01Ireturns an array containing the attributes of the character at position ",
 "\"pos\". \01J\"style\"\01I (name of the highlight style), \01J\"color\"\01I (name of the ",
-"color), \01J\"rgb\"\01I (the color expressed in  red, green and blue values as ",
-"#rrggbb), \01J\"bold\"\01I (true or false) and \01J\"italic\"\01I (true or false) ",
+"color), \01J\"rgb\"\01I (the actual screen color expressed in red, green and blue ",
+"hexadecimal values as \"#rrggbb\"), \01J\"bold\"\01I (true or false) and \01J\"italic\"\01I ",
+"(true or false), \01J\"background\"\01I (name of the background color, if any) and ",
+"\01J\"back_rgb\"\01I (the background color values). ",
 "\n\n",
 "\01A\01Bget_pattern( pos )\01A\n",
 "\01Ireturns an array containing the attributes of the character at position ",
@@ -5272,4 +5274,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Okt 13, 2002\n";
+static const char * NEditVersion = "NEdit release of Oct 15, 2002\n";
