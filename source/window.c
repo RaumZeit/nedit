@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.159 2004/06/11 10:16:45 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.160 2004/06/13 01:08:47 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -2763,13 +2763,30 @@ static void setPaneMinHeight(Widget w, int min)
 void UpdateWMSizeHints(WindowInfo *window)
 {
     Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
-    int marginHeight, marginWidth, totalHeight;
+    int marginHeight, marginWidth, totalHeight, nCols, nRows;
     XFontStruct *fs;
     int i, baseWidth, baseHeight, fontHeight, fontWidth;
     Widget hScrollBar;
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
-    /* Find the base (non-expandable) width and height of the editor window */
+    /* Find the dimensions of a single character of the text font */
+    XtVaGetValues(window->textArea, textNfont, &fs, NULL);
+    fontHeight = textD->ascent + textD->descent;
+    fontWidth = fs->max_bounds.width;
+
+    /* Find the base (non-expandable) width and height of the editor window.
+    
+       FIXME:
+       To workaround the shrinking-window bug on some WM such as Metacity,
+       which caused the window to shrink as we switch between documents 
+       using different font sizes on the documents in the same window, the 
+       base width, and similarly the base height, is ajusted such that:
+            shellWidth = baseWidth + cols * textWidth
+       There are two issues with this workaround:
+       1. the right most characters may appear partially obsure
+       2. the Col x Row info reported by the WM will be based on the fully
+          display text.
+    */
     XtVaGetValues(window->textArea, XmNheight, &textHeight,
             textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth,
             NULL);
@@ -2783,15 +2800,13 @@ void UpdateWMSizeHints(WindowInfo *window)
             totalHeight -= hScrollBarHeight;
         }
     }
+    
     XtVaGetValues(window->shell, XmNwidth, &shellWidth,
             XmNheight, &shellHeight, NULL);
-    baseWidth = shellWidth - textD->width;
-    baseHeight = shellHeight - totalHeight;
-    
-    /* Find the dimensions of a single character of the text font */
-    XtVaGetValues(window->textArea, textNfont, &fs, NULL);
-    fontHeight = textD->ascent + textD->descent;
-    fontWidth = fs->max_bounds.width;
+    nCols = textD->width / fontWidth;
+    nRows = totalHeight / fontHeight;
+    baseWidth = shellWidth - nCols * fontWidth;
+    baseHeight = shellHeight - nRows * fontHeight;
     
     /* Set the size hints in the shell widget */
     XtVaSetValues(window->shell, XmNwidthInc, fs->max_bounds.width,
