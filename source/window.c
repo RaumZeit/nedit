@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.116 2004/02/13 07:53:12 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.117 2004/02/13 12:32:40 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -104,6 +104,7 @@ static const char CVSID[] = "$Id: window.c,v 1.116 2004/02/13 07:53:12 tksoh Exp
 #include <Xm/ScrollBar.h>
 #include <Xm/PrimitiveP.h>
 #include <Xm/Frame.h>
+#include <Xm/CascadeB.h>
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
 /* extern void _XEditResCheckMessages(); */
@@ -131,12 +132,15 @@ static unsigned char close_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00,
    0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
+extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
+
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin);
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
 static int getTabPosition(Widget tab);
 static void setTabCloseButtonImage(Widget button);
 static Widget manageToolBars(Widget toolBarsForm);
+static void closeTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
 static void clickTabCB(Widget w, XtPointer *clientData, XtPointer callData);
@@ -3812,7 +3816,33 @@ void RaiseDocumentWindow(WindowInfo *window)
 }
 
 /*
-** raise the buffer in its shell window
+** Close all the tearoffs spawned from this menu
+*/
+static void closeTearOffs(Widget menuPane)
+{
+    WidgetList itemList;
+    Widget subMenuID;
+    int n;
+    Cardinal nItems;
+
+    XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems,
+	    NULL);
+
+    for (n=0; n<(int)nItems; n++) {
+    	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
+	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
+	    closeTearOffs(subMenuID);
+	    if (!XmIsMenuShell(XtParent(subMenuID)))
+    		_XmDismissTearOff(XtParent(subMenuID), NULL, NULL);    
+	}
+    }
+}
+
+/*
+** Raise a tabbed document within its shell window.
+**
+** NB: use RaiseDocumentWindow() to raise the doc and 
+**     its shell window.
 */
 void RaiseDocument(WindowInfo *window)
 {
@@ -3845,6 +3875,9 @@ void RaiseDocument(WindowInfo *window)
     XtManageChild(window->splitPane);
     XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
 
+    /* put away the bg menu tearoff of last active buffer */
+    closeTearOffs(win->bgMenuPane);
+    
     /* set tab as active */
     XmLFolderSetActiveTab(window->tabBar,
     	    getTabPosition(window->tab), False);
