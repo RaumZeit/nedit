@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.11 2001/03/16 20:28:48 amai Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.12 2001/03/19 14:43:18 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -221,8 +221,7 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*preferencesMenu.mnemonic: P",
     "*preferencesMenu.statisticsLine.accelerator: Alt<Key>a",
     "*preferencesMenu.statisticsLine.acceleratorText: Alt+A",
-    "*preferencesMenu.overtype.accelerator: Ctrl<Key>b",
-    "*preferencesMenu.overtype.acceleratorText: Ctrl+B",
+    "*preferencesMenu.overtype.acceleratorText: Insert",
     "*shellMenu.mnemonic: l",
     "*shellMenu.filterSelection.accelerator: Alt<Key>r",
     "*shellMenu.filterSelection.acceleratorText: Alt+R",
