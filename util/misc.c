@@ -484,9 +484,8 @@ Widget CreateShellWithBestVis(String appName, String appClass,
 }
 
 /*
-** Adds visual, colormap, and depth arguments to arglist obtained either from
-** parent widget.  Caller must free returned argument list with XtFree.
-** Returned arglist has argcount arguments + 3.
+** Calls one of the Motif widget creation routines, splicing in additional
+** arguments for visual, colormap, and depth.
 */
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
 	Widget parent, char *name, ArgList arglist, Cardinal  argcount)
@@ -497,21 +496,22 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
     ArgList al;
     Cardinal ac = argcount;
     Widget result;
+    Widget parentShell = parent;
     
     /* Find the application/dialog/menu shell at the top of the widget
        hierarchy, which has the visual resource being used */
     while (True) {
-    	if (XtIsShell(parent))
+    	if (XtIsShell(parentShell))
     	    break;
-    	if (parent == NULL) {
+    	if (parentShell == NULL) {
 	    fprintf(stderr, "failed to find shell\n");
 	    exit(1);
 	}
-    	parent = XtParent(parent);
+    	parentShell = XtParent(parentShell);
     }
 
     /* Add the visual, depth, and colormap resources to the argument list */
-    XtVaGetValues(parent, XtNvisual, &visual, XtNdepth, &depth,
+    XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth,
 	    XtNcolormap, &colormap, NULL);
     al = (ArgList)XtMalloc(sizeof(Arg) * (argcount + 3));
     if (argcount != 0)
