@@ -1,3 +1,7 @@
+2002-07-26 14:10  n8gray
+        
+        * Merged in calltips patch.
+
 2002-04-22 15:22  amai
 
 	* makefiles/Makefile.macosx (BETA-5-3.2): Fix line endings from

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.25 2002/07/11 21:18:11 slobasso Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.26 2002/07/26 21:39:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -33,15 +33,25 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.25 2002/07/11 21:18:11 slobasso
 #include "textDisp.h"
 #include "textBuf.h"
 #include "text.h"
+#include "nedit.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#ifdef VMS
+#include "../util/VMSparam.h"
+#else
+#ifndef __MVS__
+#include <sys/param.h>
+#endif
+#endif /*VMS*/
 
 #include <Xm/Xm.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
+#include <Xm/Label.h>
+#include <X11/Shell.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -132,6 +142,7 @@ static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
 static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
+static char *expandAllTabs( char *text, int tab_width );
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
@@ -194,6 +205,9 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
     textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
     textD->lineStarts[0] = 0;
+    textD->calltip = NULL;
+    textD->calltipShell = NULL;
+    textD->calltipID = 0;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
     textD->suppressResync = 0;
@@ -508,6 +522,9 @@ void TextDResize(textDisp *textD, int width, int height)
     /* Refresh the line number display to draw more line numbers, or
        erase extras */
     redrawLineNumbers(textD, True);
+    
+    /* Redraw the calltip */
+    TextDRedrawCalltip(textD, 0);
 }
 
 /*
@@ -2450,6 +2467,9 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
     /* Refresh line number display if its up and we've scrolled vertically */
     if (lineDelta != 0)
 	redrawLineNumbers(textD, False);
+    
+    /* Redraw the calltip */
+    TextDRedrawCalltip(textD, 0);
 
     HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, NULL);
 }
@@ -3348,4 +3368,199 @@ static void extendRangeForStyleMods(textDisp *textD, int *start, int *end)
        redraw characters exposed by possible font size changes */
     if (textD->fixedFontWidth == -1 && extended)
     	*end = BufEndOfLine(textD->buffer, *end) + 1;
+}
+
+
+/**********************  Calltip Functions ******************************/
+
+/*
+** Pop-down a calltip if one exists, else do nothing
+*/
+void TextDKillCalltip(textDisp *textD, int calltipID) {
+    if( textD->calltipID == 0 ) 
+        return;
+    if( calltipID == 0 || calltipID == textD->calltipID ) {
+        XtPopdown( textD->calltipShell );
+        textD->calltipID = 0;
+    }
+}
+
+/*
+** Is a calltip displayed?  Returns the calltip ID of the currently displayed 
+** calltip, or 0 if there is no calltip displayed.  If called with 
+** calltipID != 0, returns 0 unless there is a calltip being 
+** displayed with that calltipID.
+*/
+int TextDGetCalltipID(textDisp *textD, int calltipID) {
+    if( calltipID == 0 )
+        return textD->calltipID;
+    else {
+        if( calltipID == textD->calltipID)
+            return calltipID;
+        else
+            return 0;
+    }
+} 
+
+/*
+** Update the position of the current calltip if one exists, else do nothing
+*/
+void TextDRedrawCalltip(textDisp *textD, int calltipID) {
+    int lineHeight = textD->ascent + textD->descent;
+    Position txtX, txtY, txtBorderWidth, abs_x, abs_y;
+    int int_x, int_y;
+    
+    if( textD->calltipID == 0 ) 
+        return;
+    if( calltipID != 0 && calltipID != textD->calltipID )
+        return;
+    /* Get the location/dimensions of the text area */
+    XtVaGetValues(textD->w,
+        XmNx, &txtX,
+        XmNy, &txtY,
+        XmNborderWidth, &txtBorderWidth,
+        NULL);
+    if( textD->calltipAnchored ) {
+        /* Put it at the anchor position */
+        if (!TextDPositionToXY(textD, textD->calltipPos, &int_x, &int_y))
+            return;
+        int_y += lineHeight>>1;
+    } else {
+        /* Put it next to the cursor */
+        int_x = textD->cursorX;
+        int_y = textD->cursorY + lineHeight;
+    }
+    XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
+    XtVaSetValues( textD->calltipShell, 
+            XmNx, abs_x + txtBorderWidth, 
+            XmNy, abs_y + txtBorderWidth,
+            NULL );
+}
+
+/* 
+** Returns a new string with each \t replaced with tab_width spaces or
+** a pointer to text if there were no tabs.  Returns NULL on malloc failure.
+** Note that this is dumb replacement, not smart tab-like behavior!  The goal
+** is to prevent tabs from turning into squares in calltips, not to get the
+** formatting just right.
+*/
+static char *expandAllTabs( char *text, int tab_width ) {
+    int i, len, nTabs=0;
+    char *c, *cCpy, *textCpy;
+    
+    /* First count 'em */
+    for( c = text; *c; ++c )
+        if( *c == '\t' )
+            ++nTabs;
+    if( nTabs == 0 )
+        return text;
+
+    /* Allocate the new string */
+    len = strlen( text ) + ( tab_width - 1 )*nTabs;
+    textCpy = (char*)malloc( len );
+    if( !textCpy ) {
+        fprintf(stderr, 
+                "nedit: Out of heap memory in expandAllTabs!\n");
+        return NULL;
+    }
+    
+    /* Now replace 'em */
+    for( c = text, cCpy = textCpy;  *c;  ++c, ++cCpy) {
+        if( *c == '\t' ) {
+            for( i = 0; i < tab_width; ++i, ++cCpy )
+                *cCpy = ' ';
+            --cCpy;  /* Will be incremented in outer for loop */
+        } else
+            *cCpy = *c;
+    }
+    *cCpy = '\0';
+    return textCpy;
+}
+
+/*
+** Pop-up a calltip.  
+** If a calltip is already being displayed it is destroyed and replaced with
+** the new calltip.  Returns the ID of the calltip or 0 on failure.
+*/
+int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored, 
+        int pos) {
+    static int StaticCalltipID = 1;
+    int lineHeight = textD->ascent + textD->descent;
+    int int_x, int_y;
+    Position txtX, txtY, txtBorderWidth, abs_x, abs_y;
+    char *textCpy;
+    XmString str;
+    
+    /* Destroy any previous calltip */
+    TextDKillCalltip( textD, 0 );
+
+    /* Make sure the text isn't NULL */
+    if (text == NULL) return 0;
+    
+    /* Expand any tabs in the calltip and make it an XmString */
+    textCpy = expandAllTabs( text, BufGetTabDistance(textD->buffer) );
+    str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
+    if( textCpy != text )
+        free( textCpy );
+    
+    /* Get the location/dimensions of the text area */
+    XtVaGetValues(textD->w,
+        XmNx, &txtX,
+        XmNy, &txtY,
+        XmNborderWidth, &txtBorderWidth,
+        NULL);
+    
+    /* Create the calltip widget on first request */
+    if (textD->calltip == NULL) {
+        textD->calltipShell = XtVaCreatePopupShell(
+                "calltipshell", overrideShellWidgetClass, textD->w, 
+                XmNsaveUnder, True,
+                XmNallowShellResize, True,
+                NULL );
+                
+        /* Might want to make this a read-only XmText eventually so that 
+            users can copy from it */
+        textD->calltip = XtVaCreateManagedWidget( 
+                "calltip", xmLabelWidgetClass, textD->calltipShell,
+                XmNborderWidth, 1,              /* Thin borders */
+                XmNhighlightThickness, 0,
+                XmNalignment, XmALIGNMENT_BEGINNING,
+                NULL );
+    }
+    
+    /* Set the text on the label */
+    XtVaSetValues( textD->calltip, XmNlabelString, str, NULL );
+    XmStringFree( str );
+    
+    /* Figure out where to put the tip */
+    textD->calltipPos = pos;
+    textD->calltipAnchored = anchored;
+    if (anchored) {
+        /* Put it at the specified position */
+        if (!TextDPositionToXY(textD, pos, &int_x, &int_y)) {
+            XBell(TheDisplay, 0);
+            return 0;
+        }
+        int_y += lineHeight>>1; /* Above call gives us xy of middle of line */
+    } else {
+        /* Put it next to the cursor */
+        int_x = textD->cursorX;
+        int_y = textD->cursorY + lineHeight;
+    }
+    XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
+    XtVaSetValues( textD->calltipShell, 
+            XmNx, abs_x + txtBorderWidth, 
+            XmNy, abs_y + txtBorderWidth,
+            NULL );
+    /* Pop up the calltip */
+    XtPopup( textD->calltipShell, XtGrabNone );
+    textD->calltipID = StaticCalltipID;
+    
+    /* Increment the static calltip ID.  Macro variables can only be int, 
+        not unsigned, so have to work to keep it > 0 on overflow */
+    if(++StaticCalltipID <= 0) {
+        fprintf(stderr, "resetting global calltip ID\n");
+        StaticCalltipID = 1;
+    }
+    return textD->calltipID;
 }

@@ -2,7 +2,7 @@
                Nirvana Editor (NEdit) Help Documentation
                =========================================
 
-NEdit release of Jul  9, 2002                                               July 9, 2002
+NEdit release of Jul 26, 2002                                               July 26, 2002
 
   NEdit is a standard GUI (Graphical User Interface) style text editor for 
   programs and plain-text files. Users of Macintosh and MS Windows based text 
@@ -782,8 +782,8 @@ PROGRAMMING WITH NEDIT
   Though general in appearance, NEdit has many features intended specifically 
   for programmers. Major programming-related topics are listed in separate 
   sections under the heading: "Features for Programming": Syntax Highlighting, 
-  Tabs/Emulated Tabs, Finding_Declarations_(ctags)_, and Auto/Smart_Indent_. 
-  Minor topics related to programming are discussed below: 
+  Tabs/Emulated Tabs, Finding_Declarations_(ctags)_, Calltips_, and Auto/Smart 
+  Indent. Minor topics related to programming are discussed below: 
 
 
   LANGUAGE MODES
@@ -1053,6 +1053,69 @@ FINDING DECLARATIONS (CTAGS)
   To find the definition of a function or data structure once a tags file is 
   loaded, select the name anywhere it appears in your program (see "Selecting 
   Text") and choose "Find Definition" from the Search menu. 
+
+--------
+CALLTIPS
+--------
+
+  Calltips are little yellow boxes that pop up to remind you what the 
+  arguments and return type of a function are. More generally, they're a UI 
+  mechanism to present a small amount of crucial information in a prominent 
+  location. To display a calltip, select some text and choose "Show Calltip" 
+  from the Search menu. 
+
+  Calltips get their information from one of two places -- either a tags file 
+  (see "Finding Declarations (ctags)") or a calltips file. First, any loaded 
+  calltips files are searched for a definition, and if nothing is found then 
+  the tags database is searched. If a tag is found that matches the hilighted 
+  text then a calltip is displayed with the first few lines of the definition 
+  -- usually enough to show you what the arguments of a function are. 
+
+  You can load a calltips file by using choosing "Load Calltips File" from the 
+  File menu. You can unload a calltips file by selecting it from the "Unload 
+  Calltips File" submenu of the File menu. You can also choose one or more 
+  default calltips files to be loaded for each language mode using the 
+  "Default calltips file(s)" field of the Language Modes dialog. 
+
+  The calltips file format is very simple. calltips files are organized in 
+  blocks separated by blank lines. The first line of the block is the key, 
+  which is the word that is matched when a calltip is requested. The rest of 
+  the block is displayed as the calltip. 
+
+  Almost any text at all can appear in a calltip key or a calltip. There are 
+  no special characters that need to be escaped. The only issues to note are 
+  that trailing whitespace is ignored, and you cannot have a blank line inside 
+  a calltip. (Use a single period instead -- it'll be nearly invisible.) You 
+  should also avoid calltip keys that begin and end with '*' characters, since 
+  those are used to mark special blocks. 
+
+  There are five special block types--comment, include, language, alias, and 
+  version--which are distinguished by their first lines, "* comment *", "* 
+  include *", "* language *", "* alias *", and "* version *" respectively 
+  (without quotes). 
+
+  Comment blocks are ignored when reading calltips files. 
+
+  Include blocks specify additional calltips files to load, one per line. The 
+  ~ character can be used for your $HOME directory, but other shell shortcuts 
+  like * and ? can't be used. Include blocks allow you to make a calltips file 
+  for your project that includes, say, the calltips files for C, Motif, and 
+  Xt. 
+
+  Language blocks specify which language mode the calltips should be used 
+  with. When a calltip is requested it won't match tips from languages other 
+  than the current language mode. Language blocks only affect the tips listed 
+  after the block. 
+
+  Alias blocks allow a calltip to have multiple keys. The first line of the 
+  block is the key for the calltip to be displayed, and the rest of the lines 
+  are additional keys, one per line, that should also show the calltip. 
+
+  Version blocks are ignored for the time being. 
+
+  You can use calltips in your own macros using the calltip() and 
+  kill_calltip() macro subroutines and the $calltip_ID macro variable. See the 
+  Macro Subroutines section for details. 
 
 ===================
 REGULAR EXPRESSIONS
@@ -2097,6 +2160,10 @@ $auto_indent
   Contains the current preference for auto indent. Can be "off", "on" or 
   "auto". 
 
+$calltip_ID
+  Equals the ID of the currently displayed calltip, or 0 if no calltip is 
+  being displayed. 
+
 $cursor
   Position of the cursor in the current window. 
 
@@ -2244,6 +2311,17 @@ append_file( string, filename )
 beep()
   Ring the bell. 
 
+calltip( "text_or_key" [, mode [, pos]] )
+  Pops up a calltip. <pos> is an optional position in the buffer where the tip 
+  will be displayed. The upper-left corner of the calltip will appear below 
+  where the cursor would appear if it were at this position. <mode> is one of 
+  "tipText" (default), "tipKey", or "tagKey". "tipText" displays the text 
+  as-is, "tagKey" uses it as the key to look up a tag, then converts the tag 
+  to a calltip, and "tipKey uses it as the key to look up a calltip, then 
+  falls back to a tag if that fails. You'll usually use "tipKey" or "tipText". 
+  Returns the ID of the calltip if it was found and/or displayed correctly, 0 
+  otherwise. 
+
 clipboard_to_string()  
   Returns the contents of the clipboard as a macro string. Returns empty 
   string on error. 
@@ -2279,6 +2357,11 @@ get_selection()
 
 getenv( name )
   Gets the value of an environment variable. 
+
+kill_calltip( [calltip_ID] )
+  Kills any calltip that is being displayed in the window in which the macro 
+  is running. If there is no displayed calltip this does nothing. If a calltip 
+  ID is supplied then the calltip is killed only if its ID is calltip_ID. 
 
 length( string )
   Returns the length of a string 
@@ -3675,6 +3758,10 @@ nedit*textVertScrollBar
 
   Vertical scroll bar. 
 
+nedit*calltip
+
+  Calltip pop-ups. 
+
 -----------
 KEY BINDING
 -----------
@@ -4200,8 +4287,8 @@ CRASH RECOVERY
 VERSION
 -------
 
-NEdit release of Jul  9, 2002
-Jul 9, 2002
+NEdit release of Jul 26, 2002
+Jul 26, 2002
 
   NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim 
   Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max Vohlken, 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.59 2002/07/15 14:11:17 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.60 2002/07/26 21:39:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -43,6 +43,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.59 2002/07/15 14:11:17 edg E
 #include "regularExp.h"
 #include "smartIndent.h"
 #include "windowTitle.h"
+#include "tags.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
@@ -81,6 +82,8 @@ static const char CVSID[] = "$Id: preferences.c,v 1.59 2002/07/15 14:11:17 edg E
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
+
+#define PREF_FILE_VERSION "5.4"
 
 /* New styles added in 5.2 for auto-upgrade */
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
@@ -147,6 +150,7 @@ typedef struct {
     int nExtensions;
     char **extensions;
     char *recognitionExpr;
+    char *defTipsFile;
     char *delimiters;
     int wrapStyle;	
     int indentStyle;	
@@ -161,6 +165,7 @@ static struct {
     Widget nameW;
     Widget extW;
     Widget recogW;
+    Widget defTipsW;
     Widget delimitW;
     Widget managedListW;
     Widget tabW;
@@ -588,62 +593,62 @@ static PrefDescripRec PrefDescrip[] = {
     {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
 #endif /*VMS*/
 #ifdef VMS
-       "Ada:.ADA .AD .ADS .ADB .A::::::\n\
-        Awk:.AWK::::::\n\
-        C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-        C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-        CSS:CSS::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"\n\
-        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
-        Fortran:.F .F77 .FOR::::::\n\
-        Java:.JAVA::::::\n\
-        LaTeX:.TEX .STY .CLS .DTX .INS::::::\n\
-        Lex:.lex::::::\n\
-        Makefile:MAKEFILE:::None:8:8:\n\
-        Matlab:.m .oct .sci::::::\n\
-        NEdit Macro:.NM .NEDITMACRO::::::\n\
-        Pascal:.PAS .P .INT::::::\n\
-        Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"\n\
-        PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
-        Python:.PY:\"^#!.*python\":Auto:None:::\n\
-        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::\n\
-        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
-        SQL:.sql::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::\n\
-        Tcl:.TCL::Smart:None:::\n\
-        VHDL:.VHD .VHDL .VDL::::::\n\
-        Verilog:.V::::::\n\
-        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"\n\
-        X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
-        Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"",
+       "Ada:.ADA .AD .ADS .ADB .A:::::::\n\
+        Awk:.AWK:::::::\n\
+        C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
+        C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
+        CSS:CSS::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
+        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
+        Fortran:.F .F77 .FOR:::::::\n\
+        Java:.JAVA:::::::\n\
+        LaTeX:.TEX .STY .CLS .DTX .INS:::::::\n\
+        Lex:.lex:::::::\n\
+        Makefile:MAKEFILE:::None:8:8::\n\
+        Matlab:.m .oct .sci:::::::\n\
+        NEdit Macro:.NM .NEDITMACRO:::::::\n\
+        Pascal:.PAS .P .INT:::::::\n\
+        Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
+        PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
+        Python:.PY:\"^#!.*python\":Auto:None::::\n\
+        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
+        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
+        SQL:.sql:::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\"::::::\n\
+        Tcl:.TCL::Smart:None::::\n\
+        VHDL:.VHD .VHDL .VDL:::::::\n\
+        Verilog:.V:::::::\n\
+        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
+        X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
+        Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 #else
-       "Ada:.ada .ad .ads .adb .a::::::\n\
-        Awk:.awk::::::\n\
-        C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-        C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-        CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"\n\
-        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
-        Fortran:.f .f77 .for::::::\n\
-        Java:.java::::::\n\
-        JavaScript:.js::::::\n\
-        LaTeX:.tex .sty .cls .dtx .ins::::::\n\
-        Lex:.lex::::::\n\
-        Makefile:Makefile makefile .gmk:::None:8:8:\n\
-        Matlab:.m .oct .sci::::::\n\
-        NEdit Macro:.nm .neditmacro::::::\n\
-        Pascal:.pas .p .int::::::\n\
-        Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"\n\
-        PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
-        Python:.py:\"^#!.*python\":Auto:None:::\n\
-        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::\n\
-        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
-        SQL:.sql::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::\n\
-        Tcl:.tcl .tk .itcl .itk::Smart:None:::\n\
-        VHDL:.vhd .vhdl .vdl::::::\n\
-        Verilog:.v::::::\n\
-        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"\n\
-        X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\":::::\n\
-        Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"",
+       "Ada:.ada .ad .ads .adb .a:::::::\n\
+        Awk:.awk:::::::\n\
+        C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
+        C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
+        CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
+        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
+        Fortran:.f .f77 .for:::::::\n\
+        Java:.java:::::::\n\
+        JavaScript:.js:::::::\n\
+        LaTeX:.tex .sty .cls .dtx .ins:::::::\n\
+        Lex:.lex:::::::\n\
+        Makefile:Makefile makefile .gmk:::None:8:8::\n\
+        Matlab:.m .oct .sci:::::::\n\
+        NEdit Macro:.nm .neditmacro:::::::\n\
+        Pascal:.pas .p .int:::::::\n\
+        Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
+        PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
+        Python:.py:\"^#!.*python\":Auto:None::::\n\
+        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
+        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
+        SQL:.sql:::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\"::::::\n\
+        Tcl:.tcl .tk .itcl .itk::Smart:None::::\n\
+        VHDL:.vhd .vhdl .vdl:::::::\n\
+        Verilog:.v:::::::\n\
+        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
+        X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
+        Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 #endif
 	&TempStringPrefs.language, NULL, True},
     {"styles", "Styles", PREF_ALLOC_STRING, "Plain:black:Plain\n\
@@ -909,7 +914,7 @@ static int DoneWithWrapDialog;
 static WindowInfo *WrapDialogForWindow;
 static Widget WrapText, WrapTextLabel, WrapWindowToggle;
 
-static void translatePrefFormats(int convertOld);
+static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -946,7 +951,7 @@ static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fontDismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateFonts(fontDialog *fd);
 static int matchLanguageMode(WindowInfo *window);
-static int loadLanguageModesString(char *inString);
+static int loadLanguageModesString(char *inString, int fileVer);
 static char *writeLanguageModesString(void);
 static char *createExtString(char **extensions, int nExtensions);
 static char **readExtensionList(char **inPtr, int *nExtensions);
@@ -1025,18 +1030,23 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     }
     
     if (PrefData.prefFileRead && fileVer < 5003) {
-        fprintf(stderr, "NEdit: Converting .nedit file from pre-5.3 version.\n"
-                "    To keep, use Preferences -> Save Defaults\n");
 	updateShellCmdsTo5dot3();
         updatePatternsTo5dot3();
     }
-       
+    
+    if (PrefData.prefFileRead && fileVer < 5004) {
+        /* Add any conversions here */
+        /* Note that adding default tips file field happens while parsing
+            the language modes */
+        fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
+                "    To keep, use Preferences -> Save Defaults\n");
+    }
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
        in which nedit stores and uses.  If the preferences file was
        written by an older version of NEdit, update regular expressions in
        highlight patterns to quote braces and use & instead of \0 */
-    translatePrefFormats(requiresConversion);
+    translatePrefFormats(requiresConversion, fileVer);
 }
 
 /*
@@ -1051,7 +1061,7 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 ** legal substitution character).  Macros, so far can not be automatically
 ** converted, unfortunately.
 */
-static void translatePrefFormats(int convertOld)
+static void translatePrefFormats(int convertOld, int fileVer)
 {
     XFontStruct *font;
 
@@ -1085,7 +1095,7 @@ static void translatePrefFormats(int convertOld)
 	TempStringPrefs.styles = NULL;
     }
     if (TempStringPrefs.language != NULL) {
-	loadLanguageModesString(TempStringPrefs.language);
+	loadLanguageModesString(TempStringPrefs.language, fileVer);
     	XtFree(TempStringPrefs.language);
 	TempStringPrefs.language = NULL;
     }
@@ -1145,7 +1155,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
     TempStringPrefs.styles = WriteStylesString();
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
-    strcpy(PrefData.fileVersion, "5.3");
+    strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
     if (!SavePreferences(XtDisplay(parent), GetRCFileName(NEDIT_RC), HeaderText,
             PrefDescrip, XtNumber(PrefDescrip)))
     {
@@ -1183,7 +1193,8 @@ void ImportPrefFile(const char *filename, int convertOld)
     	{		
      	 OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
     	    	XtNumber(PrefDescrip));
-       translatePrefFormats(convertOld);
+         
+       translatePrefFormats(convertOld, -1);
        ImportedFile = XtNewString(filename);
       } else
       {
@@ -2300,7 +2311,7 @@ void EditLanguageModes(Widget parent)
 #define LEFT_MARGIN_POS 1
 #define RIGHT_MARGIN_POS 99
 #define H_MARGIN 5
-    Widget form, nameLbl, topLbl, extLbl, recogLbl, delimitLbl;
+    Widget form, nameLbl, topLbl, extLbl, recogLbl, delimitLbl, defTipsLbl;
     Widget okBtn, applyBtn, dismissBtn;
     Widget overrideFrame, overrideForm, delimitForm;
     Widget tabForm, tabLbl, indentBox, wrapBox;
@@ -2413,6 +2424,29 @@ characters of file to determine type from content)"),
 	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
     RemapDeleteKey(LMDialog.recogW);
     XtVaSetValues(recogLbl, XmNuserData, LMDialog.recogW, NULL);
+	    
+    defTipsLbl = XtVaCreateManagedWidget("defTipsLbl", xmLabelGadgetClass, form,
+    	    XmNlabelString, s1=MKSTRING(
+"Default calltips file(s) (separate w/colons)"),
+    	    XmNalignment, XmALIGNMENT_BEGINNING,
+    	    XmNmnemonic, 'c',
+	    XmNleftAttachment, XmATTACH_POSITION,
+    	    XmNleftPosition, LIST_RIGHT,
+	    XmNtopAttachment, XmATTACH_WIDGET,
+	    XmNtopOffset, H_MARGIN,
+	    XmNtopWidget, LMDialog.recogW, NULL);
+    XmStringFree(s1);
+ 
+    LMDialog.defTipsW = XtVaCreateManagedWidget("defTips", xmTextWidgetClass, 
+            form,
+	    XmNleftAttachment, XmATTACH_POSITION,
+	    XmNleftPosition, LIST_RIGHT,
+	    XmNtopAttachment, XmATTACH_WIDGET,
+	    XmNtopWidget, defTipsLbl,
+	    XmNrightAttachment, XmATTACH_POSITION,
+	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
+    RemapDeleteKey(LMDialog.defTipsW);
+    XtVaSetValues(defTipsLbl, XmNuserData, LMDialog.defTipsW, NULL);
 	    
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple("OK"),
@@ -2614,7 +2648,7 @@ characters of file to determine type from content)"),
 
     XtVaCreateManagedWidget("stretchForm", xmFormWidgetClass, form,
 	    XmNtopAttachment, XmATTACH_WIDGET,
-	    XmNtopWidget, LMDialog.recogW,
+	    XmNtopWidget, LMDialog.defTipsW,
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, LIST_RIGHT,
 	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2720,7 +2754,7 @@ static int updateLMList(void)
     if (!UpdateManagedList(LMDialog.managedListW, True))
     	return False;
 
-    /* Fix up language mode indecies in all open windows (which may change
+    /* Fix up language mode indices in all open windows (which may change
        if the currently selected mode is deleted or has changed position),
        and update word delimiters */
     for (window=WindowList; window!=NULL; window=window->next) {
@@ -2757,6 +2791,21 @@ static int updateLMList(void)
     	}
     }
     
+    /* Unload any default calltips file that is no longer a default. */
+    for (i=0; i<NLanguageModes; i++) {
+        if (!LanguageModes[i]->defTipsFile)
+            continue;
+        for (j=0; j<LMDialog.nLanguageModes; j++) {
+            if (!LMDialog.languageModeList[j]->defTipsFile)
+                continue;
+            if (!strcmp(LanguageModes[i]->defTipsFile, 
+                    LMDialog.languageModeList[j]->defTipsFile))
+                break;
+        }
+        if ( j==LMDialog.nLanguageModes )
+            DeleteTagsFile(LanguageModes[i]->defTipsFile, TIP);
+    }
+    
     /* Replace the old language mode list with the new one from the dialog */
     for (i=0; i<NLanguageModes; i++)
     	freeLanguageModeRec(LanguageModes[i]);
@@ -2764,9 +2813,14 @@ static int updateLMList(void)
     	LanguageModes[i] = copyLanguageModeRec(LMDialog.languageModeList[i]);
     NLanguageModes = LMDialog.nLanguageModes;
     
-    /* Update the menus in the window menu bars */
-    for (window=WindowList; window!=NULL; window=window->next)
+    /* Update the menus in the window menu bars and load any needed
+        calltips files */
+    for (window=WindowList; window!=NULL; window=window->next) {
     	updateLanguageModeSubmenu(window);
+        if (window->languageMode != PLAIN_LANGUAGE_MODE &&
+                LanguageModes[window->languageMode]->defTipsFile != NULL)
+            AddTagsFile(LanguageModes[window->languageMode]->defTipsFile, TIP);
+    }
     
     /* If a syntax highlighting dialog is up, update its menu */
     UpdateLanguageModeMenu();
@@ -2843,6 +2897,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(LMDialog.nameW, "");
     	XmTextSetString(LMDialog.extW, "");
     	XmTextSetString(LMDialog.recogW, "");
+        XmTextSetString(LMDialog.defTipsW, "");
     	XmTextSetString(LMDialog.delimitW, "");
     	XmTextSetString(LMDialog.tabW, "");
     	XmTextSetString(LMDialog.emTabW, "");
@@ -2855,6 +2910,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg)
     	XmTextSetString(LMDialog.extW, extStr);
     	XtFree(extStr);
     	XmTextSetString(LMDialog.recogW, lm->recognitionExpr);
+        XmTextSetString(LMDialog.defTipsW, lm->defTipsFile);
     	XmTextSetString(LMDialog.delimitW, lm->delimiters);
     	if (lm->tabDist == DEFAULT_TAB_DIST)
     	    XmTextSetString(LMDialog.tabW, "");
@@ -2895,6 +2951,8 @@ static void freeLanguageModeRec(languageModeRec *lm)
     XtFree(lm->name);
     if (lm->recognitionExpr != NULL)
     	XtFree(lm->recognitionExpr);
+    if (lm->defTipsFile != NULL)
+        XtFree(lm->defTipsFile);
     if (lm->delimiters != NULL)
     	XtFree(lm->delimiters);
     for (i=0; i<lm->nExtensions; i++)
@@ -2927,6 +2985,12 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm)
 	newLM->recognitionExpr = XtMalloc(strlen(lm->recognitionExpr)+1);
 	strcpy(newLM->recognitionExpr, lm->recognitionExpr);
     }
+    if (lm->defTipsFile == NULL)
+    	newLM->defTipsFile = NULL;
+    else {
+	newLM->defTipsFile = XtMalloc(strlen(lm->defTipsFile)+1);
+	strcpy(newLM->defTipsFile, lm->defTipsFile);
+    }
     if (lm->delimiters == NULL)
     	newLM->delimiters = NULL;
     else {
@@ -2957,6 +3021,7 @@ static languageModeRec *readLMDialogFields(int silent)
     lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
     lm->nExtensions = 0;
     lm->recognitionExpr = NULL;
+    lm->defTipsFile = NULL;
     lm->delimiters = NULL;
 
     /* read the name field */
@@ -2999,6 +3064,29 @@ static languageModeRec *readLMDialogFields(int silent)
  	    return NULL;    
 	}
 	XtFree((char *)compiledRE);
+    }
+    
+    /* Read the default calltips file for the language mode */
+    lm->defTipsFile = XmTextGetString(LMDialog.defTipsW);
+    if (*lm->defTipsFile == '\0') {
+        /* Empty string */
+    	XtFree(lm->defTipsFile);
+    	lm->defTipsFile = NULL;
+    } else {
+        /* Ensure that AddTagsFile will work */
+        if (AddTagsFile(lm->defTipsFile, TIP) == FALSE) {
+            if (!silent) {
+                DialogF(DF_WARN, LMDialog.shell, 1, "Can't read default "
+                        "calltips file(s):\n  \"%s\"\n", "Dismiss",
+                        lm->defTipsFile);
+     		XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
+            }
+            freeLanguageModeRec(lm);
+            return NULL;
+        } else
+            if (DeleteTagsFile(lm->defTipsFile, TIP) == FALSE)
+                fprintf(stderr, "nedit: Internal error: Trouble deleting " 
+                        "calltips file(s):\n  \"%s\"\n", lm->defTipsFile);
     }
     
     /* read tab spacing field */
@@ -3068,6 +3156,7 @@ static languageModeRec *readLMDialogFields(int silent)
     	 lm->wrapStyle = CONTINUOUS_WRAP;
     else
     	 lm->wrapStyle = DEFAULT_WRAP;
+    
     return lm;
 }
 
@@ -3691,6 +3780,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
     int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
     int oldMode = window->languageMode;
+    WindowInfo *wi;
     
     /* If the mode is the same, and changes aren't being forced (as might
        happen with Save As...), don't mess with already correct settings */
@@ -3699,6 +3789,25 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
     
     /* Change the mode name stored in the window */
     window->languageMode = mode;
+    
+    /* Unload oldMode's default calltips file if there are no more windows
+        in that mode and the mode has a default file */
+    if (oldMode != PLAIN_LANGUAGE_MODE && LanguageModes[oldMode]->defTipsFile) {
+        for (wi = WindowList; wi; wi = wi->next) 
+            if (wi->languageMode == oldMode) break;
+        if (!wi) DeleteTagsFile( LanguageModes[oldMode]->defTipsFile, TIP );
+    }
+    
+    /* Make sure we didn't accidentally delete a default calltips file that
+       also belongs another language mode (also load the tips file for the
+       new lang. mode) */
+    for (wi = WindowList; wi; wi = wi->next) {
+        i = wi->languageMode;
+        if (i != PLAIN_LANGUAGE_MODE && LanguageModes[i]->defTipsFile)
+            if (AddTagsFile( LanguageModes[i]->defTipsFile, TIP ) == FALSE)
+                fprintf( stderr, "Error loading default calltips file:\n"
+                         "  \"%s\"\n", LanguageModes[mode]->defTipsFile );
+    }
     
     /* Set delimiters for all text widgets */
     if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode]->delimiters == NULL)
@@ -3832,7 +3941,7 @@ static int matchLanguageMode(WindowInfo *window)
     return PLAIN_LANGUAGE_MODE;
 }
 
-static int loadLanguageModesString(char *inString)
+static int loadLanguageModesString(char *inString, int fileVer)
 {    
     char *errMsg, *styleName, *inPtr = inString;
     languageModeRec *lm;
@@ -3848,6 +3957,7 @@ static int loadLanguageModesString(char *inString)
 	lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
 	lm->nExtensions = 0;
 	lm->recognitionExpr = NULL;
+        lm->defTipsFile = NULL;
 	lm->delimiters = NULL;
 
 	/* read language mode name */
@@ -3926,9 +4036,20 @@ static int loadLanguageModesString(char *inString)
     	    return modeError(lm, inString, inPtr, errMsg);
     	
 	/* read the delimiters string */
-	if (*inPtr == '\n' || *inPtr == '\0')
+	if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':')
     	    lm->delimiters = NULL;
     	else if (!ReadQuotedString(&inPtr, &errMsg, &lm->delimiters))
+    	    return modeError(lm, inString, inPtr, errMsg);
+        
+        /* After 5.3 all language modes need a default tips file field */
+	if (!SkipDelimiter(&inPtr, &errMsg))
+            if (fileVer > 5003)
+    	        return modeError(lm, inString, inPtr, errMsg);
+
+        /* read the default tips file */
+	if (*inPtr == '\n' || *inPtr == '\0')
+    	    lm->defTipsFile = NULL;
+    	else if (!ReadQuotedString(&inPtr, &errMsg, &lm->defTipsFile))
     	    return modeError(lm, inString, inPtr, errMsg);
     	
    	/* pattern set was read correctly, add/replace it in the list */
@@ -3950,7 +4071,7 @@ static int loadLanguageModesString(char *inString)
    	inPtr += strspn(inPtr, " \t\n");
     	if (*inPtr == '\0')
     	    return True;
-    }
+    } /* End for(;;) */
 }
 
 static char *writeLanguageModesString(void)
@@ -3997,6 +4118,13 @@ static char *writeLanguageModesString(void)
     	    	    str=MakeQuotedString(LanguageModes[i]->delimiters));
     	    XtFree(str);
     	}
+    	BufInsert(outBuf, outBuf->length, ":");
+    	if (LanguageModes[i]->defTipsFile != NULL) {
+    	    BufInsert(outBuf, outBuf->length,
+    	    	    str=MakeQuotedString(LanguageModes[i]->defTipsFile));
+    	    XtFree(str);
+    	}
+        
     	BufInsert(outBuf, outBuf->length, "\n");
     }
     

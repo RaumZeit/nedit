@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.43 2002/07/15 14:11:17 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.44 2002/07/26 21:39:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -44,6 +44,8 @@ static const char CVSID[] = "$Id: macro.c,v 1.43 2002/07/15 14:11:17 edg Exp $";
 #include "smartIndent.h"
 #include "userCmds.h"
 #include "selection.h"
+#include "rbTree.h"
+#include "tags.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
@@ -205,6 +207,10 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     	XtPointer callData);
 static void stringDialogCloseCB(Widget w, XtPointer clientData,
     	XtPointer callData);
+static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
+       DataValue *result, char **errMsg);
+static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs,
+       DataValue *result, char **errMsg);
 /* T Balinski */
 static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 	DataValue *result, char **errMsg);
@@ -303,6 +309,8 @@ static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
+static int calltipIDMV(WindowInfo *window, DataValue *argList, int nArgs,
+    	DataValue *result, char **errMsg);
 static int readSearchArgs(DataValue *argList, int nArgs, int*searchDirection,
 	int *searchType, int *wrap, char **errMsg);
 static int wrongNArgsErr(char **errMsg);
@@ -313,7 +321,7 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
-#define N_MACRO_SUBRS 33
+#define N_MACRO_SUBRS 35
 static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
     	dialogMS, stringDialogMS, replaceRangeMS, replaceSelectionMS,
     	setCursorPosMS, getCharacterMS, minMS, maxMS, searchMS,
@@ -322,7 +330,7 @@ static BuiltInSubr MacroSubrs[N_MACRO_SUBRS] = {lengthMS, getRangeMS, tPrintMS,
 	replaceInStringMS, selectMS, selectRectangleMS, focusWindowMS,
 	shellCmdMS, stringToClipboardMS, clipboardToStringMS, toupperMS,
 	tolowerMS, listDialogMS, getenvMS,
-    stringCompareMS, splitMS};
+        stringCompareMS, splitMS, calltipMS, killCalltipMS};
 static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
     	"dialog", "string_dialog", "replace_range", "replace_selection",
     	"set_cursor_pos", "get_character", "min", "max", "search",
@@ -331,8 +339,8 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
 	"replace_in_string", "select", "select_rectangle", "focus_window",
 	"shell_command", "string_to_clipboard", "clipboard_to_string",
 	"toupper", "tolower", "list_dialog", "getenv",
-    "string_compare", "split"};
-#define N_SPECIAL_VARS 43
+    "string_compare", "split", "calltip", "kill_calltip"};
+#define N_SPECIAL_VARS 44
 static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
 	fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
     	selectionLeftMV, selectionRightMV, wrapMarginMV, tabDistMV,
@@ -345,7 +353,7 @@ static BuiltInSubr SpecialVars[N_SPECIAL_VARS] = {cursorMV, lineMV, columnMV,
         fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV,
         minFontWidthMV, maxFontWidthMV, topLineMV, numDisplayLinesMV,
         displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
-        serverNameMV};
+        serverNameMV, calltipIDMV};
 static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
 	"$file_name", "$file_path", "$text_length", "$selection_start",
 	"$selection_end", "$selection_left", "$selection_right",
@@ -359,7 +367,7 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$colu
     "$font_name_bold", "$font_name_bold_italic", "$sub_sep",
     "$min_font_width", "$max_font_width", "$top_line", "$n_display_lines",
     "$display_width", "$active_pane", "$n_panes", "$empty_array",
-    "$server_name"};
+    "$server_name", "$calltip_ID"};
 
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
@@ -2836,6 +2844,116 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
+}
+
+/*
+** A subroutine to put up a calltip
+** First arg is either text to be displayed or a key for tip/tag lookup.
+** Optional second arg is one of:
+**      "tipText": (default) Indicates first arg is text to be displayed in tip.
+**      "tipKey":   Indicates first arg is key in calltips database.  If key
+**                  is not found in tip database then the tags database is also 
+**                  searched.
+**      "tagKey":   Indicates first arg is key in tags database.  (Skips 
+**                  search in calltips database.)
+** Optional third arg is the buffer position beneath which to display the 
+**      upper-left corner of the tip.  Default (or -1) puts it under the cursor.
+** Returns 1 on success, 0 if no calltip matches the key, -1 on error
+**
+** Does this need to go on IgnoredActions?  I don't think so, since
+** showing a calltip may be part of the action you want to learn.
+*/
+static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    char stringStorage[25], *tipText, *txtMode;
+    int mode;
+    Boolean anchored = False, lookup = True;
+    int anchorPos;
+    
+    /* Read and check the string */
+    if (nArgs < 1) {
+        *errMsg = "%s subroutine called with too few arguments";
+        return False;
+    }
+    if (nArgs > 3) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return False;
+    }
+    
+    /* Read the tip text or key */
+    if (!readStringArg(argList[0], &tipText, stringStorage, errMsg))
+        return False;
+
+    /* Read the mode (one of "tipText", "tipKey", or "tagKey") */    
+    if (nArgs > 1) {
+        if (!readStringArg(argList[1], &txtMode, stringStorage, errMsg)){
+            return False;
+        }
+        if (!strcmp(txtMode, "tipText"))
+            mode = -1;
+        else if (!strcmp(txtMode, "tipKey"))
+            mode = TIP;
+        else if (!strcmp(txtMode, "tagKey"))
+            mode = TIP_FROM_TAG;
+        else {
+            *errMsg = "unrecognized argument to %s";
+            return False;
+        }
+    } else {
+        mode = -1;
+    }
+    
+    /* Read the anchor position (-1 for unanchored) */
+    if (nArgs > 2) {
+        if (!readIntArg(argList[2], &anchorPos, errMsg))
+            return False;
+    } else {
+        anchorPos = -1;
+    }
+    if (anchorPos > 0) anchored = True;
+    
+    result->tag = INT_TAG;
+    if (mode < 0) lookup = False;
+    /* Look up (maybe) a calltip and display it */
+    result->val.n = ShowTipString( window, tipText, anchored, anchorPos, lookup,
+                                 mode );
+
+    return True;
+}
+
+/*
+** A subroutine to kill the current calltip
+*/
+static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs,
+      DataValue *result, char **errMsg)
+{
+    int calltipID = 0;
+    
+    if (nArgs > 1) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return False;
+    }
+    if (nArgs > 0) {
+        if (!readIntArg(argList[0], &calltipID, errMsg))
+            return False;
+    }
+    
+    KillCalltip( window, calltipID );
+    
+    result->tag = NO_TAG;
+    return True;
+}
+
+/*
+ * A subroutine to get the ID of the current calltip, or 0 if there is none.
+ */
+static int calltipIDMV(WindowInfo *window, DataValue *argList, 
+        int nArgs, DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = GetCalltipID(window, 0);
+    return True;
 }
 
 /* T Balinski */

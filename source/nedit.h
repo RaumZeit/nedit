@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.25 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: nedit.h,v 1.26 2002/07/26 21:39:10 n8gray Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -206,6 +206,7 @@ typedef struct _WindowInfo {
     Widget      gotoSelItem;
     Widget	langModeCascade;
     Widget	findDefItem;
+    Widget	showTipItem;
     Widget	autoIndentOffItem;
     Widget	autoIndentItem;
     Widget	smartIndentItem;
@@ -229,6 +230,8 @@ typedef struct _WindowInfo {
     Widget  	prevOpenMenuItem;
     Widget  	unloadTagsMenuPane;
     Widget  	unloadTagsMenuItem;
+    Widget  	unloadTipsMenuPane;
+    Widget  	unloadTipsMenuItem;
     Widget	filterItem;
     Widget	autoIndentOffDefItem;
     Widget	autoIndentDefItem;

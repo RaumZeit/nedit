@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.33 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.34 2002/07/26 21:39:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -145,6 +145,8 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "nedit*XmList*background: #cccccc",
     "nedit*XmTextField*background: #cccccc",
     "nedit*XmTextField*foreground: black",
+    "nedit*calltip.background: LemonChiffon1",
+    "nedit*calltip.foreground: black",
     "*iSearchForm*highlightThickness: 1",
     "*fileMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*editMenu.tearOffModel: XmTEAR_OFF_ENABLED",
@@ -242,6 +244,8 @@ Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
     "*searchMenu.gotoMatchingShift.accelerator: Shift Ctrl<Key>m",
     "*searchMenu.findDefinition.accelerator: Ctrl<Key>d",
     "*searchMenu.findDefinition.acceleratorText: Ctrl+D",
+    "*searchMenu.showCalltip.accelerator: Ctrl<Key>apostrophe",
+    "*searchMenu.showCalltip.acceleratorText: Ctrl+'",    
     "*preferencesMenu.mnemonic: P",
     "*preferencesMenu.statisticsLine.accelerator: Alt<Key>a",
     "*preferencesMenu.statisticsLine.acceleratorText: Alt+A",
@@ -407,7 +411,7 @@ int main(int argc, char **argv)
        file resource is intended to be set and forgotten.  Running nedit in a
        directory without a tags should not cause it to spew out errors. */
     if (*GetPrefTagFile() != '\0')
-    	AddTagsFile(GetPrefTagFile());
+    	AddTagsFile(GetPrefTagFile(), TAG);
 
     /* Process any command line arguments (-tags, -do, -read, -create,
        +<line_number>, -line, -server, and files to edit) not already
@@ -419,7 +423,7 @@ int main(int argc, char **argv)
 	    continue;
 	} else if (opts && !strcmp(argv[i], "-tags")) {
     	    nextArg(argc, argv, &i);
-    	    if (!AddTagsFile(argv[i]))
+    	    if (!AddTagsFile(argv[i], TAG))
     	    	fprintf(stderr, "NEdit: Unable to load tags file\n");
     	} else if (opts && !strcmp(argv[i], "-do")) {
     	    nextArg(argc, argv, &i);

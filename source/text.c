@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.29 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.30 2002/07/26 21:39:10 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -1684,6 +1684,10 @@ static void processCancelAP(Widget w, XEvent *event, String *args,
 {
     int dragState = ((TextWidget)w)->text.dragState;
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
+    textDisp *textD = ((TextWidget)w)->text.textD;
+
+    /* If there's a calltip displayed, kill it. */
+    TextDKillCalltip(textD, 0);
     
     if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG)
     	BufUnselect(buf);
@@ -3305,6 +3309,9 @@ static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     TextDSetCursorStyle(textD, ((TextWidget)w)->text.motifDestOwner ?
     	    CARET_CURSOR : DIM_CURSOR);
     TextDUnblankCursor(textD);
+    
+    /* If there's a calltip displayed, kill it. */
+    TextDKillCalltip(textD, 0);
 
     /* Call any registered focus-out callbacks */
     XtCallCallbacks((Widget)w, textNlosingFocusCallback, (XtPointer)event);

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.11 2002/07/11 21:18:12 slobasso Exp $ */
+/* $Id: textDisp.h,v 1.12 2002/07/26 21:39:10 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -85,14 +85,22 @@ typedef struct _textDisp {
     	    	    	    	    	   for drawing colored/styled text */
     GC lineNumGC;   	    	    	/* GC for drawing line numbers */
     
+    Widget calltip;                     /* The Label widget for the calltip */
+    Widget calltipShell;                /* The Shell that holds the calltip */
+    Boolean calltipAnchored;            /* Is it anchored to a position */
+    int calltipPos;                     /* Position tip is anchored to */
+    int calltipID;                      /* ID of displayed calltip.  Equals
+                                           zero if none is displayed. */
     int suppressResync;			/* Suppress resynchronization of line
                                            starts during buffer updates */
     int nLinesDeleted;			/* Number of lines deleted during
 					   buffer modification (only used
-				           when resynchronization is suppressed) */
+				           when resynchronization is 
+                                           suppressed) */
     int modifyingTabDist;		/* Whether tab distance is being
     					   modified */
-    Boolean pointerHidden;              /* true if the mouse pointer is hidden */
+    Boolean pointerHidden;              /* true if the mouse pointer is 
+                                           hidden */
     graphicExposeTranslationEntry *graphicsExposeQueue;
 } textDisp;
 
@@ -156,5 +164,10 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
+int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored, 
+        int pos);
+void TextDKillCalltip(textDisp *textD, int calltipID);
+int TextDGetCalltipID(textDisp *textD, int calltipID);
+void TextDRedrawCalltip(textDisp *textD, int calltipID);
 
 #endif /* NEDIT_TEXTDISP_H_INCLUDED */
