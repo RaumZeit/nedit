@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.19 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.20 2001/12/13 13:27:00 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -66,6 +66,7 @@ static void copyThruSlash(char **toString, char **fromString);
 ** Return non-zero value if it fails, zero else.
 ** For now we assume that filename and pathname are at
 ** least MAXPATHLEN chars long.
+** To skip setting filename or pathname pass NULL for that argument.
 */
 int
 ParseFilename(const char *fullname, char *filename, char *pathname)
@@ -100,21 +101,28 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     /* move chars before / (or ] or :) into pathname,& after into filename */
     pathLen = i + 1;
     fileLen = fullLen - pathLen;
-    if (pathLen > MAXPATHLEN) {
-       return 1;
+    if (pathname) {
+      	if (pathLen > MAXPATHLEN) {
+            return 1;
+	}
+      	strncpy(pathname, fullname, pathLen);
+      	pathname[pathLen] = 0;
     }
-    strncpy(pathname, fullname, pathLen);
-    pathname[pathLen] = 0;
-    if (fileLen > MAXPATHLEN) {
-       return 2;
+    if (filename) {
+      	if (fileLen > MAXPATHLEN) {
+      	    return 2;
+      	}
+      	strncpy(filename, &fullname[pathLen], fileLen);
+      	filename[fileLen] = 0;
     }
-    strncpy(filename, &fullname[pathLen], fileLen);
-    filename[fileLen] = 0;
 
 #ifdef VMS
     return 0;
 #else     /* UNIX specific... Modify at a later date for VMS */
-    return NormalizePathname(pathname);
+    if(pathname)
+      	return NormalizePathname(pathname);
+    else
+      	return 0;
 #endif
 }
 

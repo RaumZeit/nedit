@@ -1,4 +1,4 @@
-/* $Id: tags.h,v 1.9 2001/11/16 09:39:26 amai Exp $ */
+/* $Id: tags.h,v 1.10 2001/12/13 13:27:00 amai Exp $ */
 typedef struct _tagFile {
     struct _tagFile *next;
     char *filename;
@@ -12,6 +12,6 @@ extern tagFile *TagsFileList;         /* list of loaded tags files */
 int AddRelTagsFile(const char *tagSpec, const char *windowPath);
 int AddTagsFile(const char *tagSpec);
 int DeleteTagsFile(const char *filename);
-int LookupTag(const char *name, const char **file, const char **searchString,
-              const char **tagPath);
+int LookupTag(const char *name, const char **file, 
+              const char **searchString, int * pos, const char **path);
 void FindDefinition(WindowInfo *window, Time time, const char *arg);
