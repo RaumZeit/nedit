@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.174 2004/09/15 22:50:58 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.175 2004/10/01 07:50:57 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -460,7 +460,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             xmToggleButtonWidgetClass, window->iSearchForm,
             XmNlabelString, s1=XmStringCreateSimple("RegExp"),
             XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
-            || GetPrefSearch() == SEARCH_REGEX,
+            || GetPrefSearch() == SEARCH_REGEX
+            || GetPrefSearch() == SEARCH_REGEX_SMARTCASE,
             XmNtopAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNtopOffset, 1, /* see openmotif note above */

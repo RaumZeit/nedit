@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.22 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: search.h,v 1.23 2004/10/01 07:50:57 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * search.h -- Nirvana Editor Search Header File                                *
@@ -86,10 +86,12 @@ void RemoveFromMultiReplaceDialog(WindowInfo *window);
 ** array  SearchMethodStrings defined in preferences.c (!!)
 **
 */
-enum SearchType {
-      	SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX, 
-	SEARCH_LITERAL_WORD, SEARCH_CASE_SENSE_WORD, SEARCH_REGEX_NOCASE,
-        N_SEARCH_TYPES /* must be last in enum SearchType */ };
+enum SearchType
+{
+    SEARCH_LITERAL, SEARCH_CASE_SENSE, SEARCH_REGEX, SEARCH_LITERAL_WORD,
+    SEARCH_CASE_SENSE_WORD, SEARCH_REGEX_NOCASE, SEARCH_REGEX_SMARTCASE,
+    N_SEARCH_TYPES /* must be last in enum SearchType */
+};
 
 #ifdef REPLACE_SCOPE
 /* Scope on which the replace operations apply */

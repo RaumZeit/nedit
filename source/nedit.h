@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.58 2004/08/20 19:33:20 n8gray Exp $ */
+/* $Id: nedit.h,v 1.59 2004/10/01 07:50:56 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -412,6 +412,7 @@ typedef struct _WindowInfo {
     Widget	searchLiteralWordDefItem;
     Widget	searchCaseSenseWordDefItem;
     Widget	searchRegexNoCaseDefItem;
+    Widget	searchRegexSmartCaseDefItem;
     Widget	searchRegexDefItem;
 #ifdef REPLACE_SCOPE
     Widget	replScopeWinDefItem;

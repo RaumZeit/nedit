@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.76 2004/08/20 19:33:08 n8gray Exp $
+.. $Id: help.etx,v 1.77 2004/10/01 07:50:54 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -262,6 +262,10 @@ Finding and Replacing Text
   content of any existing selection into the search text widget and triggers a new
   search.
   
+  All searches will default to the search mode selected in the preference menu.
+  (Default Setting -> Searching -> Default Search Style). You can choose a smart
+  case sensitivity here; this let all searches start insensitive, but changes to
+  case sensitive as soon as you enter an upper-case letter.
 
 3>Searching Backwards
 

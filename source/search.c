@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.71 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.72 2004/10/01 07:50:57 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -243,6 +243,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction,
       	int beginPos, int startPos); 
 static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, 
 	int initPos); 
+static void smartCaseToggle(const char* searchString, Widget toggleButton);
 
 typedef struct _charMatchTable {
     char c;
@@ -279,6 +280,7 @@ static char *searchTypeStrings[] = {
     "word",             /* SEARCH_LITERAL_WORD    */
     "caseWord",         /* SEARCH_CASE_SENSE_WORD */
     "regexNoCase",      /* SEARCH_REGEX_NOCASE    */
+    "regexSmartCase",   /* SEARCH_REGEX_SMARTCASE */
     NULL
 };
 
@@ -294,8 +296,9 @@ static void initToggleButtons(int searchType, Widget regexToggle,
 {
     /* Set the initial search type and remember the corresponding case
        sensitivity states in case sticky case sensitivity is required. */
-    switch (searchType) {
-      case SEARCH_LITERAL:
+    switch (searchType)
+    {
+        case SEARCH_LITERAL:
               *lastLiteralCase = False;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
@@ -304,8 +307,8 @@ static void initToggleButtons(int searchType, Widget regexToggle,
 		  XmToggleButtonSetState(*wordToggle, False, False);
                   XtSetSensitive(*wordToggle, True);
               }
-      break;
-      case SEARCH_CASE_SENSE:
+        break;
+        case SEARCH_CASE_SENSE:
               *lastLiteralCase = True;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
@@ -314,8 +317,8 @@ static void initToggleButtons(int searchType, Widget regexToggle,
                   XmToggleButtonSetState(*wordToggle, False, False);
                   XtSetSensitive(*wordToggle, True);
               }
-      break;
-      case SEARCH_LITERAL_WORD:
+        break;
+        case SEARCH_LITERAL_WORD:
               *lastLiteralCase = False;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
@@ -324,8 +327,8 @@ static void initToggleButtons(int searchType, Widget regexToggle,
                   XmToggleButtonSetState(*wordToggle,  True,  False);
                   XtSetSensitive(*wordToggle, True);
               }
-      break;
-      case SEARCH_CASE_SENSE_WORD:
+        break;
+        case SEARCH_CASE_SENSE_WORD:
               *lastLiteralCase = True;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, False, False);
@@ -334,8 +337,8 @@ static void initToggleButtons(int searchType, Widget regexToggle,
                   XmToggleButtonSetState(*wordToggle,  True,  False);
                   XtSetSensitive(*wordToggle, True);
               }
-      break;
-      case SEARCH_REGEX:
+        break;
+        case SEARCH_REGEX:
               *lastLiteralCase = False;
               *lastRegexCase   = True;
 	      XmToggleButtonSetState(regexToggle, True,  False);
@@ -344,17 +347,20 @@ static void initToggleButtons(int searchType, Widget regexToggle,
                   XmToggleButtonSetState(*wordToggle,  False, False);
                   XtSetSensitive(*wordToggle, False);
               }
-      break;
-      case SEARCH_REGEX_NOCASE:
-              *lastLiteralCase = False;
-              *lastRegexCase   = False;
-	      XmToggleButtonSetState(regexToggle, True,  False);
-	      XmToggleButtonSetState(caseToggle,  False, False);
-	      if (wordToggle) {
-                  XmToggleButtonSetState(*wordToggle,  False, False);
-                  XtSetSensitive(*wordToggle, False);
-              }
-      break;
+        break;
+        case SEARCH_REGEX_NOCASE:
+        case SEARCH_REGEX_SMARTCASE:
+            /* Smart case is no case for default setting */
+            *lastLiteralCase = False;
+            *lastRegexCase   = False;
+            XmToggleButtonSetState(regexToggle, True,  False);
+            XmToggleButtonSetState(caseToggle,  False, False);
+            if (wordToggle)
+            {
+                XmToggleButtonSetState(*wordToggle,  False, False);
+                XtSetSensitive(*wordToggle, False);
+            }
+        break;
     }
 }
 
@@ -2375,10 +2381,18 @@ static int textFieldNonEmpty(Widget w)
     return(nonEmpty);
 }
 
-static void rFindTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
+static void rFindTextValueChangedCB(Widget textWidget, WindowInfo* window,
+        XKeyEvent* event)
 {
-    window = WidgetToWindow(w);
+    char* searchString = XmTextGetString(textWidget);
+
     UpdateReplaceActionButtons(window);
+
+    /*  Switch to case-sensitive as soon as the user enters an upper-case
+        letter. We have check the whole string each time to catch clipboard
+        or selection inserts. */
+    smartCaseToggle(searchString, window->replaceCaseToggle);
+    XtFree(searchString);
 }
 
 static void rFindArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
@@ -2470,10 +2484,17 @@ static void fUpdateActionButtons(WindowInfo *window)
     XtSetSensitive(window->findBtn, buttonState);
 }
 
-static void findTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
+static void findTextValueChangedCB(Widget textWidget, WindowInfo* window,
+        XKeyEvent* event)
 {
-    window = WidgetToWindow(w);
+    char* searchString = XmTextGetString(textWidget);
     fUpdateActionButtons(window);
+
+    /*  Switch to case-sensitive as soon as the user enters an upper-case
+        letter. We have check the whole string each time to catch clipboard
+        or selection inserts. */
+    smartCaseToggle(searchString, window->findCaseToggle);
+    XtFree(searchString);
 }
 
 static void findArrowKeyCB(Widget w, WindowInfo *window, XKeyEvent *event)
@@ -2843,10 +2864,15 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     /* Use the passed method for searching, unless it is regex, since this
        kind of search is by definition a literal search */
     searchType = callDataItems->searchType;
-    if (searchType == SEARCH_REGEX )
-      searchType = SEARCH_CASE_SENSE;
-    else if (searchType == SEARCH_REGEX_NOCASE)
-	      searchType = SEARCH_LITERAL;
+    if (searchType == SEARCH_REGEX || searchType == SEARCH_REGEX_SMARTCASE)
+    {
+        /*  Here smart case must be sensitive, because the user
+            cannot modify the string to search for. */
+        searchType = SEARCH_CASE_SENSE;
+    } else if (searchType == SEARCH_REGEX_NOCASE)
+    {
+        searchType = SEARCH_LITERAL;
+    }
 
     /* search for it in the window */
     SearchAndSelect(window, callDataItems->direction, searchString,
@@ -2857,18 +2883,25 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
 /*
 ** Pop up and clear the incremental search line and prepare to search.
 */
-void BeginISearch(WindowInfo *window, int direction)
+void BeginISearch(WindowInfo* window, int direction)
 {
     window->iSearchStartPos = -1;
     XmTextSetString(window->iSearchText, "");
     XmToggleButtonSetState(window->iSearchRevToggle,
-	    direction == SEARCH_BACKWARD, FALSE);
+            direction == SEARCH_BACKWARD, FALSE);
+
     /* Note: in contrast to the replace and find dialogs, the regex and
        case toggles are not reset to their default state when the incremental
        search bar is redisplayed. I'm not sure whether this is the best
        choice. If not, an initToggleButtons() call should be inserted
        here. But in that case, it might be appropriate to have different
        default search modes for i-search and replace/find. */
+    
+    /* The 'Case' toggle button must be deactivated for smart cases. */
+    if (GetPrefSearch() == SEARCH_REGEX_SMARTCASE)
+    {
+        XmToggleButtonSetState(window->iSearchCaseToggle, False, False);
+    }
     TempShowISearch(window, TRUE);
     XmProcessTraversal(window->iSearchText, XmTRAVERSE_CURRENT);
 }
@@ -3150,28 +3183,36 @@ static void iSearchTextActivateCB(Widget w, WindowInfo *window,
 ** Called when user types in the incremental search line.  Redoes the
 ** search for the new search string.
 */
-static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
-	XmAnyCallbackStruct *callData) 
+static void iSearchTextValueChangedCB(Widget widget, WindowInfo *window,
+        XmAnyCallbackStruct *callData)
 {
     char *params[5];
     char *searchString;
     int searchType, direction, nParams;
-   
-    window = WidgetToWindow(w);
-    
+
+    window = WidgetToWindow(widget);
+
     /* Fetch the string, search type and direction from the incremental
        search bar widgets at the top of the window */
     searchString = XmTextGetString(window->iSearchText);
-    if(XmToggleButtonGetState(window->iSearchCaseToggle)) {
-      if(XmToggleButtonGetState(window->iSearchRegexToggle)) 
-	searchType = SEARCH_REGEX;
-      else 
-	searchType = SEARCH_CASE_SENSE;
-    } else {
-      if(XmToggleButtonGetState(window->iSearchRegexToggle)) 
-	searchType = SEARCH_REGEX_NOCASE;
-      else 
-	searchType = SEARCH_LITERAL;
+    
+    /*  Switch to case-sensitive as soon as the user enters an upper-case
+        letter. We have check the whole string each time to catch clipboard
+        or selection inserts. */
+    smartCaseToggle(searchString, window->iSearchCaseToggle);
+
+    if(XmToggleButtonGetState(window->iSearchCaseToggle))
+    {
+        if(XmToggleButtonGetState(window->iSearchRegexToggle)) 
+            searchType = SEARCH_REGEX;
+        else 
+            searchType = SEARCH_CASE_SENSE;
+    } else
+    {
+        if(XmToggleButtonGetState(window->iSearchRegexToggle)) 
+            searchType = SEARCH_REGEX_NOCASE;
+        else 
+            searchType = SEARCH_LITERAL;
     }
     direction = XmToggleButtonGetState(window->iSearchRevToggle) ?
 	    SEARCH_BACKWARD : SEARCH_FORWARD;
@@ -3998,7 +4039,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction,
 ** Search the text in "window", attempting to match "searchString"
 */
 int SearchWindow(WindowInfo *window, int direction, const char *searchString,
-	int searchType, int searchWrap, int beginPos, int *startPos, 
+        int searchType, int searchWrap, int beginPos, int *startPos,
         int *endPos, int *extentBW, int *extentFW)
 {
     char *fileString;
@@ -4881,10 +4922,11 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 	window->replaceLastLiteralCase = searchCaseSense;
 }
 
-static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
+static void iSearchCaseToggleCB(Widget toggleButton, XtPointer clientData,
+        XtPointer callData)
 {
-    WindowInfo * window = WidgetToWindow(w);
-    int searchCaseSense = XmToggleButtonGetState(w);
+    WindowInfo * window = WidgetToWindow(toggleButton);
+    int searchCaseSense = XmToggleButtonGetState(toggleButton);
     
     /* Save the state of the Case Sensitive button 
        depending on the state of the Regex button*/
@@ -4892,4 +4934,24 @@ static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
     	window->iSearchLastRegexCase = searchCaseSense;
     else
 	window->iSearchLastLiteralCase = searchCaseSense;
+}
+
+/*
+**  Will search a string for uppercase characters. If there is one,
+**  The toggleButton will be set to True.
+*/
+static void smartCaseToggle(const char* searchString, Widget toggleButton)
+{
+    if (GetPrefSearch() == SEARCH_REGEX_SMARTCASE)
+    {
+        int i;
+        for (i = 0; i < strlen(searchString); i++)
+        {
+            if (isupper(*(searchString + i)))
+            {
+                XmToggleButtonSetState(toggleButton, True, False);
+                break;
+            }
+        }
+    }
 }

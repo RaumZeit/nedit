@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.115 2004/09/15 22:50:57 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.116 2004/10/01 07:50:55 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -184,6 +184,8 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData);
+static void searchRegexSmartCaseCB(Widget toggleButton, WindowInfo* windowInfo,
+        caddr_t callData);
 static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData);
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -913,11 +915,16 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "caseSensitiveWord", "Literal, Case Sensitive, Whole Word", 't', searchCaseSenseWordCB, window,
     	    GetPrefSearch() == SEARCH_CASE_SENSE_WORD, FULL);
     window->searchRegexDefItem = createMenuToggle(subSubSubPane,
-    	    "regularExpression", "Regular Expression", 'R', searchRegexCB,
-    	    window, GetPrefSearch() == SEARCH_REGEX, FULL);
+            "regularExpression", "Regular Expression", 'R', searchRegexCB,
+            window, GetPrefSearch() == SEARCH_REGEX, FULL);
     window->searchRegexNoCaseDefItem = createMenuToggle(subSubSubPane,
-    	    "regularExpressionNoCase", "Regular Expression, Case Insensitive", 'I', searchRegexNoCaseCB, window,
-    	    GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
+            "regularExpressionNoCase", "Regular Expression, Case Insensitive",
+            'I', searchRegexNoCaseCB, window,
+            GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
+    window->searchRegexSmartCaseDefItem = createMenuToggle(subSubSubPane,
+            "regularExpressionSmartCase", "Regular Expression, Smart Case",
+            'S', searchRegexSmartCaseCB, window,
+            GetPrefSearch() == SEARCH_REGEX_SMARTCASE, FULL);
 #ifdef REPLACE_SCOPE
     subSubSubPane = createMenu(subSubPane, "defaultReplaceScope",
     	    "Default Replace Scope", 'R', NULL, FULL);
@@ -2517,6 +2524,37 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
     	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
 	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, True, False);
     	}
+    }
+}
+
+static void searchRegexSmartCaseCB(Widget toggleButton, WindowInfo* window,
+        caddr_t callData)
+{
+    WindowInfo* windowInfo;
+
+    /* Set the preference and make the other windows' menus agree */
+    if (XmToggleButtonGetState(toggleButton))
+    {
+        SetPrefSearch(SEARCH_REGEX_SMARTCASE);
+        for (windowInfo = WindowList;
+                windowInfo != NULL;
+                windowInfo = windowInfo->next)
+        {
+            XmToggleButtonSetState(windowInfo->searchLiteralDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchCaseSenseDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchLiteralWordDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchCaseSenseWordDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchRegexDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchRegexNoCaseDefItem,
+                    False, False);
+            XmToggleButtonSetState(windowInfo->searchRegexSmartCaseDefItem,
+                    True, False);
+        }
     }
 }
 

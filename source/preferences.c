@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.126 2004/08/20 19:33:20 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.127 2004/10/01 07:50:56 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -115,7 +115,7 @@ enum fontStatus {GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING};
 */
 static char *SearchMethodStrings[] = {
   	"Literal", "CaseSense", "RegExp", 
-	"LiteralWord", "CaseSenseWord", "RegExpNoCase", 
+	"LiteralWord", "CaseSenseWord", "RegExpNoCase", "RegExSmartCase",
 	NULL
 };
 
