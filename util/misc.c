@@ -267,7 +267,7 @@ void FindBestVisual(Display *display, char *appName, char *appClass,
     int maxDepth, bestClass, bestVisual, nVis, i, j;
     XVisualInfo visTemplate, *visList = NULL;
     static Visual *cachedVisual = NULL;
-    static Colormap cachedColormap = NULL;
+    static Colormap cachedColormap;
     static int cachedDepth = 0;
     int bestClasses[] = {StaticGray, GrayScale, StaticColor, PseudoColor,
     	    DirectColor, TrueColor};
@@ -479,7 +479,7 @@ Widget CreateShellWithBestVis(String appName, String appClass,
     XtSetArg(al[ac], XtNdepth, depth); ac++;
     XtSetArg(al[ac], XtNcolormap, colormap); ac++;
     result = XtAppCreateShell(appName, appClass, class, display, al, ac);
-    XtFree(al);
+    XtFree((char *)al);
     return result;
 }
 
@@ -520,7 +520,7 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
     XtSetArg(al[ac], XtNdepth, depth); ac++;
     XtSetArg(al[ac], XtNcolormap, colormap); ac++;
     result = (*createRoutine)(parent, name, al, ac);
-    XtFree(al);
+    XtFree((char *)al);
     return result;
 }
 
