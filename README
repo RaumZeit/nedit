@@ -1,6 +1,6 @@
                     NEdit Version 5.2+ beta,  November 2001
 
-$Id: README,v 1.18 2001/11/20 15:31:12 amai Exp $
+$Id: README,v 1.19 2001/11/20 15:53:04 amai Exp $
 	     
 NEdit is a multi-purpose text editor for the X Window System, which combines a
 standard, easy to use, graphical user interface with the thorough functionality
@@ -52,7 +52,7 @@ Version 5.2+ offers some new features and lots of bug fixes.
 The most significant enhancements in this release are:
 
  - Goto Line & Column
- -
+ - ...
 
  
 There are also several smaller improvements and bug fixes, see the file
@@ -63,9 +63,11 @@ BUILDING NEDIT
 
 Pre-built executables will be available for many operating systems, including
 most major Unix and VMS systems. Check out the NEdit web page at
+
   http://nedit.org
 
-Requirements to build NEdit from the sources are: 
+
+The requirements to build NEdit from the sources are: 
 
  - ANSI C89 system (compiler, headers, libraries)
  - make utility (eg, GNU make)
