@@ -1,3 +1,73 @@
+2003-06-06 18:04  edg
+
+	* source/: rangeset.c (1.7), textBuf.c (1.28): Fixed a rangeset
+	implementation flaw that caused all kinds of memory leaks in
+	different places. Buffers should not have rangeset modification
+	callbacks when there are no rangesets attached.
+
+2003-06-06 17:13  edg
+
+	* util/misc.c (1.57): Window group hints leak fixes.
+
+2003-06-06 17:07  edg
+
+	* source/nedit.c (1.49): Use proper resource class name to avoid
+	uninitialized memory read.
+
+2003-06-06 17:06  edg
+
+	* util/misc.h (1.19), ReleaseNotes (1.22), source/search.c (1.59),
+	util/misc.c (1.56): Workaround for OpenMotif radio button bug (SF
+	#678198).  (Tested with 6 different Motif flavours/versions).
+
+2003-06-05 22:01  n8gray
+
+	* doc/help.etx (1.49), source/help_data.h (1.47),
+	source/help_topic.h (1.40), source/macro.c (1.71): Changed
+	calltip() so that "tipKey", "tagKey", and "tipText" are
+	position-independent optional arguments.  .  WARNING: This WILL
+	break any existing calltip calls with more than one argument!!!  A
+	call like calltip(foo, "tipText", pos, bar, ...) needs to be
+	changed to calltip(foo, pos, "tipText", bar, ...) and calltip(foo,
+	"tipText") needs to be changed to calltip(foo, -1, "tipText").
+
+2003-06-04 15:34  slobasso
+
+	* source/: preferences.c (1.98), window.c (1.84): remove unused
+	variables
+
+2003-06-02 15:18  edg
+
+	* source/menu.c (1.79): Fixed wrong title in Exit dialog.
+
+2003-05-29 21:07  tringali
+
+	* util/fontsel.h (1.9): Match function declaration to definition
+
+2003-05-28 08:26  edg
+
+	* source/preferences.c (1.97): Added an automatic upgrade routine
+	for the changed "wc" shell command.
+
+2003-05-27 22:32  yooden
+
+	* source/preferences.c (1.96): Replaces csh-specific scriptlet with
+	awklet.
+
+2003-05-27 21:31  tringali
+
+	* source/window.c (1.83): Propogate colors to new windows on
+	opening (744294)
+
+2003-05-27 15:55  edg
+
+	* source/preferences.c (1.95): Automatically add Identifier2 text
+	drawing style when upgrading to 5.4.
+
+2003-05-26 09:10  edg
+
+	* ChangeLog (1.33): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
 2003-05-26 09:07  edg
 
 	* ReleaseNotes (1.21): Added bugs #559902, 561659, 526981, and
