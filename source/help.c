@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.50 2001/08/18 12:24:59 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.51 2001/08/28 22:24:20 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3009,54 +3009,91 @@ listed in the section called Macro Subroutines.\n\
 \n\
 Arrays and Array Operators\n\
 \n\
-Arrays may contain either strings, integers, or other arrays. Arrays \
-are associative, which means that they relate two pieces of information, \
-the key and the value. The key is always a string, although you can use \
-integers and strings, they are always converted to strings. Array keys \
-can also contain multiple sub-scripts:\n\
+Arrays may contain either strings, integers, or other arrays. Arrays are \
+associative, which means that they relate two pieces of information, the key and \
+the value. The key is always a string; if you use integers they are converted to \
+strings.\n\
 \n\
-    x[1,2,3] = \"string\"\n\
-    x[1 $sub_sep 2 $sub_sep 3] = \"string\"\n\
-    x[\"1\" $sub_sep \"2\" $sub_sep \"3\"] = \"string\"\n\
+To determine if a given key is in an array, use the in keyword.\n\
 \n\
-The sub-scripts are concatenated with $sub_sep. The above assignments \
-are eqivalent. To determine if a given key is in an array, use the in \
-keyword.\n\
+    if (\"6\" in x)\n\
+        <body>\n\
 \n\
-    if (\"6\" in x) <body>\n\
+If the left side of the in keyword is an array, the result is true if every key \
+in the left array is in the right array. Array values are not compared.\n\
 \n\
-If the left side of the in keyword is an array, the result is true if \
-every key in the left array is in the right array. Array values are \
-not compared.\n\
+To iterate through all the keys of an array use the for looping construct. Keys \
+are not guaranteed in any particular order:\n\
 \n\
-To iterate through all the keys of an array use the for looping \
-construct. Keys are not guarranteed in any particular order:\n\
-\n\
-    for (aKey in x) <body>\n\
+    for (aKey in x)\n\
+        <body>\n\
 \n\
 Elements can be removed from an array using the delete command:\n\
 \n\
     delete x[3] # deletes element with key 3\n\
-    delete x[] # deletes all elements\n\
+    delete x[]  # deletes all elements\n\
 \n\
-The number of elements in an array can be determined by referencing \
-the array with no sub-scripts:\n\
+The number of elements in an array can be determined by referencing the array \
+with no indices:\n\
 \n\
-    dialog(\"array x has \" x[] \" elements\")\n\
+    dialog(\"array x has \" x[] \" elements\", \"OK\")\n\
 \n\
-Arrays can be combined with some operators. All the following operators \
-only compare the keys of the arrays.\n\
+Arrays can be combined with some operators. All the following operators only \
+compare the keys of the arrays.\n\
 \n\
-   + merge arrays\n\
-   - remove keys\n\
-   & common keys\n\
-   | all keys that are not shared\n\
+    result = x + y\n\
+        Merge arrays: 'result' is a new array containing\n\
+        keys from both x and y. If duplicates are present\n\
+        values from y are used.\n\
+    result = x - y\n\
+        Remove keys: 'result' is a new array containing\n\
+        all keys from x that are not in y.\n\
+    result = x & y\n\
+        Common keys: 'result' is a new array containing\n\
+        all keys which are in both x and y. The values\n\
+        from y are used.\n\
+    result = x | y\n\
+        Unique keys: 'result' is a new array containing\n\
+        keys which exist in either x or y, but not both.\n\
 \n\
-When duplicate keys are encountered using the + and & operators, the \
-values from the array on the right side of the operators are used \
-for the result. All of the above operators are array only, meaning \
-both the left and right sides of the operator must be arrays. The \
-results are also arrays.\n\
+When duplicate keys are encountered using the + and & operators, the values \
+from the array on the right side of the operators are used for the result. All \
+of the above operators are array only, meaning both the left and right sides of \
+the operator must be arrays. The results are also arrays.\n\
+\n\
+Array keys can also contain multiple dimensions:\n\
+x[1, 1, 1] = \"string\"\n\
+These are used in the expected way, e.g.:\n\
+    for (i = 1; i < 3; i++)\n\
+    {\n\
+        for (j = 1; j < 3; j++)\n\
+        {\n\
+            x[i, j] = k++\n\
+        }\n\
+    }\n\
+gives the following array:\n\
+    x[1, 1] = 0\n\
+    x[1, 2] = 1\n\
+    x[2, 1] = 2\n\
+    x[2, 2] = 3\n\
+\n\
+Internally all indices are part of one string, separated by the string \
+$sub_sep (ASCII 0x18). The first key in the above example is in fact\n\
+    [\"1\" $sub_sep \"1\"]\n\
+\n\
+If you need to extract one of the keys, you can use split(), using \
+$sub_sep as the separator.\n\
+\n\
+You can also check for the existence of multi-dimensional array by \
+looking for $sub_sep in the key.\n\
+\n\
+Last, you need $sub_sep if you want to use the 'in' keyword.\n\
+    if ((1,2) in myArray)\n\
+    {..}\n\
+doesn't work, but\n\
+    if ((\"1\" $sub_sep \"2\") in myArray)\n\
+    {..}\n\
+does work.\n\
 \n\
 \n\
 LOOPING AND CONDITIONALS\n\
