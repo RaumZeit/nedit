@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.56 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.57 2003/12/07 22:48:07 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -796,7 +796,7 @@ static char *DefaultPatternSets[] = {
 	keywords2:\"END IF;|(?<!\\Y)(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>\":::Preprocessor1::\n\
 	comment2:\"/\\*\":\"\\*/\"::Comment::}",
     "Sh Ksh Bash:1:0{\n\
-        README:\"Shell syntax highlighting patterns, version 2.1, maintainer Thorsten Haude, nedit at thorstenhau.de\":::Flag::D\n\
+        README:\"Shell syntax highlighting patterns, version 2.2, maintainer Thorsten Haude, nedit at thorstenhau.de\":::Flag::D\n\
         escaped special characters:\"\\\\[\\\\\"\"$`']\":::Keyword::\n\
         single quoted string:\"'\":\"'\"::String1::\n\
         double quoted string:\"\"\"\":\"\"\"\"::String::\n\
@@ -804,6 +804,7 @@ static char *DefaultPatternSets[] = {
         dq command sub:\"`\":\"`\":\"\"\"\":Subroutine:double quoted string:\n\
         dq arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\":\"\"\"\":String:double quoted string:\n\
         dq new command sub:\"\\$\\(\":\"\\)\":\"\"\"\":Subroutine:double quoted string:\n\
+        dqncs single quoted string:\"'\":\"'\"::String1:dq new command sub:\n\
         dq variables:\"\\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)\":::Identifier1:double quoted string:\n\
         dq variables2:\"\\$\\{\":\"}\":\"\\n\":Identifier1:double quoted string:\n\
         arithmetic expansion:\"\\$\\(\\(\":\"\\)\\)\"::String::\n\

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.101 2003/11/22 13:03:40 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.102 2003/12/07 22:48:07 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -644,7 +644,7 @@ static PrefDescripRec PrefDescrip[] = {
         Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
         SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
         SQL:.sql:::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\"::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n\
         Tcl:.TCL::Smart:None::::\n\
         VHDL:.VHD .VHDL .VDL:::::::\n\
         Verilog:.V:::::::\n\
@@ -673,7 +673,7 @@ static PrefDescripRec PrefDescrip[] = {
         Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
         SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
         SQL:.sql:::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\"::::::\n\
+        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n\
         Tcl:.tcl .tk .itcl .itk::Smart:None::::\n\
         VHDL:.vhd .vhdl .vdl:::::::\n\
         Verilog:.v:::::::\n\
