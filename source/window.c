@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.115 2004/02/10 22:29:11 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.116 2004/02/13 07:53:12 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -2573,7 +2573,7 @@ void AllWindowsUnbusy(void)
 
     for (w=WindowList; w!=NULL; w=w->next)
     {
-        /* ClearModeMessage(w); */
+        ClearModeMessage(w);
         EndWait(w->shell);
     }
 
