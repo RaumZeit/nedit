@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.164 2004/07/23 18:40:55 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.165 2004/07/23 18:52:18 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4187,17 +4187,24 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
     
     window->nPanes = orgWin->nPanes;
     
+    /* Copy some parameters */
+    XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
+    	    textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
+	    textNlineNumCols, &lineNumCols, NULL);
+    XtVaSetValues(window->textArea, textNemulateTabs, emTabDist,
+    	    textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin,
+	    textNlineNumCols, lineNumCols, NULL);
+    
+    
     /* clone split panes, if any */
     textD = ((TextWidget)window->textArea)->text.textD;
     if (window->nPanes) {
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+	/* Unmanage & remanage the panedWindow so it recalculates pane 
+           heights */
     	XtUnmanageChild(window->splitPane);
 
 	/* Create a text widget to add to the pane and set its buffer and
 	   highlight data to be the same as the other panes in the orgWin */
-	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
-    		textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
-		textNlineNumCols, &lineNumCols, NULL);
 
 	for(i=0; i<orgWin->nPanes; i++) {
 	    text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
