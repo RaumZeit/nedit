@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.167 2004/08/09 16:48:10 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.168 2004/08/12 13:43:30 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3576,7 +3576,9 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
 	    CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
 	}
     	else {
-            int resp = DialogF(DF_QUES, window->shell, 2, "Close Window",
+            int resp = 1;
+            if (GetPrefWarnExit())
+                resp = DialogF(DF_QUES, window->shell, 2, "Close Window",
 	    	    "Close ALL documents in this window?", "Close", "Cancel");
 
             if (resp == 1)
