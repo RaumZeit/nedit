@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.61 2001/11/16 10:06:33 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.62 2001/11/16 11:02:16 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1428,8 +1428,9 @@ which allow users to traverse and activate menu items by typing keys when \
 the menu is pulled down.\n\
 \n\
 In the Shell Command field of the Shell Commands dialog, the % character \
-expands to the name (including directory path) of the file in the window.  \
-To include a % character in the command, use %%.\n\
+expands to the name (including directory path), and the # character \
+expands to the current line number of the file in the window.  \
+To include a % or # character in the command, use %% or ##, respectively.\n\
 \n\
 The Menu Entry field can contain special \
 characters for constructing hierarchical sub-menus, and for making items \

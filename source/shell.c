@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.16 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.17 2001/11/16 11:02:16 amai Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -127,8 +127,8 @@ static void createOutputDialog(Widget parent, char *text);
 static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure);
 static void measureText(char *text, int wrapWidth, int *rows, int *cols);
 static void truncateString(char *string, int length);
-static int substitutePercent(char *outStr, const char *inStr, const char *subsStr,
-	int outLen);
+static int substitutePercent(char *outStr, const char *inStr, const char *fileStr,
+	const char *lineStr, int outLen);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void safeBufReplace(textBuffer *buf, int *start, int *end, 
@@ -260,6 +260,8 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     char *text;
     char subsCommand[MAX_SHELL_CMD_LEN], fullName[MAXPATHLEN];
     int left, right, textLen;
+    int pos, line, column;
+    char lineNumber[11];
     WindowInfo *inWindow = window;
     Widget outWidget;
 
@@ -269,13 +271,19 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     	return;
     }
 
-    /* Substitute the current file name for % in the shell command */
+    /* Substitute the current file name for % and the current line number
+       for # in the shell command */
     strcpy(fullName, window->path);
     strcat(fullName, window->filename);
-    if (!substitutePercent(subsCommand, command, fullName,
+    pos = TextGetCursorPos(window->lastFocus);
+    TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+    sprintf(lineNumber, "%d", line);
+    
+    if (!substitutePercent(subsCommand, command, fullName, lineNumber,
     	    MAX_SHELL_CMD_LEN)) {
     	DialogF(DF_ERR, window->shell, 1,
-	   "Shell command is too long due to\nfilename substitutions with '%%'",
+	   "Shell command is too long due to\nfilename substitutions with '%%' or\n" \
+	   "line number substitutions with '#'",
 	    "OK");
 	return;
     }
@@ -1119,12 +1127,13 @@ static void truncateString(char *string, int length)
 }
 
 /*
-** Substitute the string subsStr in inStr wherever % appears, storing the
+** Substitute the string fileStr in inStr wherever % appears and
+** lineStr in inStr wherever # appears, storing the
 ** result in outStr.  Returns False if the resulting string would be
 ** longer than outLen
 */
-static int substitutePercent(char *outStr, const char *inStr,
-        const char *subsStr, int outLen)
+static int substitutePercent(char *outStr, const char *inStr, const char *fileStr,
+	const char *lineStr, int outLen)
 {
     const char *inChar, *c;
     char *outChar;
@@ -1136,11 +1145,21 @@ static int substitutePercent(char *outStr, const char *inStr,
     	    if (*(inChar+1) == '%') {
     	    	inChar += 2;
     	    	*outChar++ = '%';
-    	    } else {
-    		for (c=subsStr; *c!='\0'; c++)
+    	    } else  {
+    		for (c=fileStr; *c!='\0'; c++)
     	    	    *outChar++ = *c;
     		inChar++;
     	    }
+	} else if (*inChar == '#') {
+    	    if (*(inChar+1) == '#') {
+    	    	inChar += 2;
+    	    	*outChar++ = '#';
+    	    } else  {
+    		for (c=lineStr; *c!='\0'; c++)
+    	    	    *outChar++ = *c;
+    		inChar++;
+    	    }
+
     	} else
     	    *outChar++ = *inChar++;
     	if (outChar - outStr >= outLen)
