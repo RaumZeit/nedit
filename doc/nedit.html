@@ -1241,7 +1241,7 @@ search text.  NEdit regular expressions support the following anchor tokens:
 Note that the \B token ensures that the left and right characters are both
 delimiter characters, or that both left and right characters are
 non-delimiter characters.  Currently word anchors check only one character,
-e.g. the left word anchor `<' only asserts that the left character is a word
+e.g. the left word anchor `&#60;' only asserts that the left character is a word
 delimiter character.  Similarly the right word anchor checks the right
 character.
 <P>
@@ -1318,7 +1318,7 @@ this guarantees that the expression will match.
 <P>
 <H3>Comments</H3>
 <P>
-Comments are of the form `(?#<comment text>)' and can be inserted anywhere
+Comments are of the form `(?#&#60;comment text&#62;)' and can be inserted anywhere
 and have no effect on the execution of the regular expression.  They can be
 handy for documenting very complex regular expressions.  Note that a comment
 begins with `(?#' and ends at the first occurrence of an ending parenthesis,
@@ -1432,7 +1432,7 @@ used within a character class specification.
 <P>
 <H3>Capturing Parentheses</H3>
 <P>
-Capturing Parentheses are of the form `(<regex>)' and can be used to group
+Capturing Parentheses are of the form `(&#60;regex&#62;)' and can be used to group
 arbitrarily complex regular expressions.  Parentheses can be nested, but the
 total number of parentheses, nested or otherwise, is limited to 50 pairs. 
 The text that is matched by the regular expression between a matched set of
@@ -1443,7 +1443,7 @@ quantified by `*' or `+'.
 <P>
 <H3>Non-Capturing Parentheses</H3>
 <P>
-Non-Capturing Parentheses are of the form `(?:<regex>)' and facilitate
+Non-Capturing Parentheses are of the form `(?:&#60;regex&#62;)' and facilitate
 grouping only and do not incur the overhead of normal capturing parentheses. 
 They should not be counted when determining numbers for capturing parentheses
 which are used with backreferences and substitutions.  Because of the limit
@@ -1452,7 +1452,7 @@ use non-capturing parentheses when possible.
 <P>
 <H3>Positive Look-Ahead</H3>
 <P>
-Positive look-ahead constructs are of the form `(?=<regex>)' and implement a
+Positive look-ahead constructs are of the form `(?=&#60;regex&#62;)' and implement a
 zero width assertion of the enclosed regular expression.  In other words, a
 match of the regular expression contained in the positive look-ahead
 construct is attempted.  If it succeeds, control is passed to the next
@@ -1469,7 +1469,7 @@ succeed.
 <P>
 <H3>Negative Look-Ahead</H3>
 <P>
-Negative look-ahead takes the form `(?!<regex>)' and is exactly the same as
+Negative look-ahead takes the form `(?!&#60;regex&#62;)' and is exactly the same as
 positive look-ahead except that the enclosed regular expression must NOT
 match.  This can be particularly useful when you have an expression that is
 general, and you want to exclude some special cases.  Simply precede the
@@ -1490,7 +1490,7 @@ There are two parenthetical constructs that control case sensitivity:
                    different.
 </PRE>
 <P>
-Regular expressions are case sensitive by default, that is, `(?I<regex>)' is
+Regular expressions are case sensitive by default, that is, `(?I&#60;regex&#62;)' is
 assumed.  All regular expression token types respond appropriately to case
 insensitivity including character classes and backreferences.  There is some
 extra overhead involved when case insensitivity is in effect, but only to the
@@ -1524,13 +1524,13 @@ following parenthetical constructs:
                                             newlines
 </PRE>
 <P>
-`(?N<regex>)' is the default behavior.
+`(?N&#60;regex&#62;)' is the default behavior.
 <P>
 <H3>Notes on New Parenthetical Constructs</H3>
 <P>
 Except for plain parentheses, none of the parenthetical constructs capture
 text.  If that is desired, the construct must be wrapped with capturing
-parentheses, e.g. `((?i<regex))'.
+parentheses, e.g. `((?i&#60;regex))'.
 <P>
 All parenthetical constructs can be nested as deeply as desired, except for
 capturing parentheses which have a limit of 50 sets of parentheses,
@@ -1566,7 +1566,7 @@ except as follows.
 <P>
 The escape sequences described above for special characters, and octal and
 hexadecimal escapes are treated the same way by a substitution string. When
-the substitution string contains the `&' character, NEdit will substitute the
+the substitution string contains the `&#38;' character, NEdit will substitute the
 entire string that was matched by the `Find...' operation. Any of the first
 nine sub-expressions of the match string can also be inserted into the
 replacement string.  This is done by inserting a `\' followed by a digit from
@@ -1574,7 +1574,7 @@ replacement string.  This is done by inserting a `\' followed by a digit from
 within the regular expression.  These expressions are numbered left-to-right
 in order of their opening parentheses.
 <P>
-The capitalization of text inserted by `&' or `\1', `\2', ... `\9' can be
+The capitalization of text inserted by `&#38;' or `\1', `\2', ... `\9' can be
 altered by preceding them with `\U', `\u', `\L', or `\l'.  `\u' and `\l'
 change only the first character of the inserted entity, while `\U' and `\L'
 change the entire entity to upper or lower case, respectively.
@@ -4938,8 +4938,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Feb 13, 2002
-Feb 13, 2002
+NEdit release of Feb 15, 2002
+Feb 15, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
