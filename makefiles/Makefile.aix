@@ -6,7 +6,16 @@ AR=ar
 # modifying Makefile.common.
 #
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
-CFLAGS=-DIBM  -DIBM_FWRITE_BUG -DUSE_DIRENT
+#
+# -DFUNCPROTO is necessary for some AIX compilers (apparently not xlC)
+# that do not #define __STDC__ when in ANSI mode.  This causes the X
+# headers to skip function prototypes and use char* in place of void*.
+# This causes a lot of unnecessary casts to avoid warnings.  See bug
+# #130164 at:
+#
+# http://sourceforge.net/bugs/?func=detailbug&bug_id=130164&group_id=11005
+
+CFLAGS=-DIBM -DIBM_FWRITE_BUG -DUSE_DIRENT -DFUNCPROTO
 ARFLAGS=-urs
 LIBS= -lm -lXm -lXt -lX11 -lPW
 
