@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.109 2004/02/07 15:44:33 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.110 2004/02/08 01:46:23 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -638,8 +638,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     if (window->fontList == NULL)
         XtVaGetValues(stats, XmNfontList, &window->fontList, NULL);
 
-    manageToolBars(statsAreaForm);
-
     /* Create the menu bar */
     menuBar = CreateMenuBar(mainWin, window);
     window->menuBar = menuBar;
@@ -712,6 +710,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     showTabBar = GetShowTabBar(window);
     if (showTabBar)
     	XtManageChild(tabForm);
+
+    manageToolBars(statsAreaForm);
 
     if (showTabBar || window->showISearchLine || 
     	    window->showStats)
