@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.36 2002/11/12 10:04:29 ajhood Exp $
+.. $Id: help.etx,v 1.37 2002/12/12 17:25:42 slobasso Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2633,6 +2633,10 @@ Macro Subroutines
 **toupper( string )**
   Return an all upper-case version of string.
 
+**valid_number( string )**
+  Returns 1 if the string can be converted to a number without error
+  following the same rules that the implicit conversion would. Otherwise 0.
+
 **write_file( string, filename )**  
   Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on
   successful write, or 0 if unsuccessful.
@@ -2693,9 +2697,11 @@ Range Sets
 
 3>Range set functions
 
-**rangeset_defined( r )**
+**rangeset_defined( r, [index] )**
   Returns true if the range identified by the letter r is defined, false if
-  not.
+  not. If a non-negative index is supplied, this is used to set up the range
+  set macro variables for the range specified in the set; if index is greater
+  than the value of rangeset_get_count(r), the return value is false.
 
 **rangeset_inverse( r )**
   Changes the range set r so that it contains all ranges not in r. Returns the

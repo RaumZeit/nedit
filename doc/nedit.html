@@ -2905,6 +2905,12 @@ Return an all lower-case version of string.
 Return an all upper-case version of string.
 <P>
 <PRE>
+<B>valid_number( string )</B>
+</PRE>
+Returns 1 if the string can be converted to a number without error
+following the same rules that the implicit conversion would. Otherwise 0.
+<P>
+<PRE>
 <B>write_file( string, filename )</B>  
 </PRE>
 Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on
@@ -2982,10 +2988,12 @@ end position of most recently accessed range (or -1).
 <H3>Range set functions</H3>
 <P>
 <PRE>
-<B>rangeset_defined( r )</B>
+<B>rangeset_defined( r, [index] )</B>
 </PRE>
 Returns true if the range identified by the letter r is defined, false if
-not.
+not. If a non-negative index is supplied, this is used to set up the range
+set macro variables for the range specified in the set; if index is greater
+than the value of rangeset_get_count(r), the return value is false.
 <P>
 <PRE>
 <B>rangeset_inverse( r )</B>
@@ -5525,8 +5533,8 @@ dialog (or use the Unix unix2dos command outside of NEdit).
 <H2> Version </H2>
 <P>
 <PRE>
-NEdit release of Oct 15, 2002
-Nov 12, 2002
+NEdit release of Apr 19, 2002
+Dec 11, 2002
 </PRE>
 <P>
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,

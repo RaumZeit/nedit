@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Nov 13, 2002 (Do NOT edit!)
+                 Generated on Dec 11, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -2462,6 +2462,10 @@ static char * htxt_macro_subrs [] = {
 "\01A\01Btoupper( string )\01A\n",
 "\01IReturn an all upper-case version of string. ",
 "\n\n",
+"\01A\01Bvalid_number( string )\01A\n",
+"\01IReturns 1 if the string can be converted to a number without error ",
+"following the same rules that the implicit conversion would. Otherwise 0. ",
+"\n\n",
 "\01A\01Bwrite_file( string, filename )\01A  \n",
 "\01IWrites a string (parameter 1) to a file named in parameter 2. Returns 1 on ",
 "successful write, or 0 if unsuccessful. ",
@@ -2520,9 +2524,11 @@ static char * htxt_rangeset [] = {
 "\n\n",
 "\01RRange set functions\01I",
 "\n\n",
-"\01A\01Brangeset_defined( r )\01A\n",
+"\01A\01Brangeset_defined( r, [index] )\01A\n",
 "\01IReturns true if the range identified by the letter r is defined, false if ",
-"not. ",
+"not. If a non-negative index is supplied, this is used to set up the range ",
+"set macro variables for the range specified in the set; if index is greater ",
+"than the value of rangeset_get_count(r), the return value is false. ",
 "\n\n",
 "\01A\01Brangeset_inverse( r )\01A\n",
 "\01IChanges the range set r so that it contains all ranges not in r. Returns the ",
@@ -5278,4 +5284,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit 5.4DEV\nNov 13, 2002\n";
+static const char * NEditVersion = "NEdit release of Apr 19, 2002\n";
