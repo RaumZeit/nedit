@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.49 2003/02/15 02:33:27 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.50 2003/02/18 20:17:05 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -213,6 +213,47 @@ void SetDeleteRemap(int state)
     RemapDeleteEnabled = state;
 }
 
+
+/* 
+** The routine adds the passed in top-level Widget's window to our
+** window group.  On the first call a dummy unmapped window will
+** be created to be our leader.  This must not be called before the
+** Widget has be realized and should be called before the window is
+** mapped.
+*/
+void SetWindowGroup(Widget shell) {
+    static int firstTime = True;
+    static Window groupLeader;
+    Display *display = XtDisplay(shell);
+    XWMHints *wmHints;
+
+    if (firstTime) {
+    	/* Create a dummy window to be the group leader for our windows */
+        String name, class;
+    	XClassHint *classHint;
+	
+    	groupLeader = XCreateSimpleWindow(display, 
+                RootWindow(display, DefaultScreen(display)), 
+		1, 1, 1, 1, 0, 0, 0);
+		
+	/* Set it's class hint so it will be identified correctly by the 
+	   window manager */
+    	XtGetApplicationNameAndClass(display, &name, &class);
+	classHint = XAllocClassHint();
+	classHint->res_name = name;
+	classHint->res_class = class;
+	XSetClassHint(display, groupLeader, classHint);
+	
+    	firstTime = False;
+    }
+
+    /* Set the window group hint for this shell's window */
+    wmHints = XAllocWMHints();
+    wmHints->window_group = groupLeader;
+    wmHints->flags = WindowGroupHint;
+    XSetWMHints(display, XtWindow(shell), wmHints);
+}
+
 /*
 ** This routine resolves a window manager protocol incompatibility between
 ** the X toolkit and several popular window managers.  Using this in place
@@ -253,6 +294,10 @@ void RealizeWithoutForcingPosition(Widget shell)
 	XSetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints);
     }
     XFree(hints);
+    
+    /* Set WindowGroupHint so the NEdit icons can be grouped; this
+       seems to be necessary starting with Gnome 2.0  */
+    SetWindowGroup(shell);
     
     /* Map the widget */
     XtMapWidget(shell);
