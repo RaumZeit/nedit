@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Apr 13, 2004 (Do NOT edit!)
+                 Generated on Apr 16, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -3458,6 +3458,12 @@ static char * htxt_preferences [] = {
 "essential for users who set their window managers so keyboard focus ",
 "follows the mouse. ",
 "\n\n",
+"\01A\01BAuto-Scroll Near Window Top/Bottom\01A\n",
+"\01IWhen this option is enabled the window will automatically scroll when the ",
+"cursor comes 4 lines from the top or bottom of the window (except at the ",
+"beginning of the file).  The number of lines can be customized with the ",
+"nedit.autoScrollVPadding resource. ",
+"\n\n",
 "\01A\01BWarnings\01A\n",
 "\01IOptions for controlling the popping up of warning dialogs: ",
 "\n\n",
@@ -3878,10 +3884,11 @@ static char * htxt_resources [] = {
 "cursor, makes the cursor in the text editing area of the window heavier and ",
 "darker. ",
 "\n\n",
-"\01A\01Bnedit*text.cursorVPadding\01A: 0\n",
+"\01A\01Bnedit.autoScrollVPadding\01A: 4\n",
 "\01I\n",
 "Number of lines to keep the cursor away from the top or bottom line of the ",
-"window.  Keyboard operations that would cause the cursor to get closer than ",
+"window when the \"Auto-Scroll Near Window Top/Bottom\" feature is enabled. ",
+"Keyboard operations that would cause the cursor to get closer than ",
 "this distance cause the window to scroll up or down instead, except at the ",
 "beginning of the file.  Mouse operations are not affected. ",
 "\n\n",

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.62 2004/03/25 07:12:46 n8gray Exp $
+.. $Id: help.etx,v 1.63 2004/04/17 03:51:48 n8gray Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3658,6 +3658,12 @@ Preferences
   essential for users who set their window managers so keyboard focus
   follows the mouse.
 
+**Auto-Scroll Near Window Top/Bottom**
+  When this option is enabled the window will automatically scroll when the
+  cursor comes 4 lines from the top or bottom of the window (except at the
+  beginning of the file).  The number of lines can be customized with the
+  nedit.autoScrollVPadding resource.
+
 **Warnings**
   Options for controlling the popping up of warning dialogs:
   
@@ -4079,10 +4085,11 @@ X Resources
   cursor, makes the cursor in the text editing area of the window heavier and
   darker.
 
-**nedit@*text.cursorVPadding**: 0
+**nedit.autoScrollVPadding**: 4
   
   Number of lines to keep the cursor away from the top or bottom line of the 
-  window.  Keyboard operations that would cause the cursor to get closer than
+  window when the "Auto-Scroll Near Window Top/Bottom" feature is enabled.
+  Keyboard operations that would cause the cursor to get closer than
   this distance cause the window to scroll up or down instead, except at the 
   beginning of the file.  Mouse operations are not affected.
 
