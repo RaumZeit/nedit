@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.23 2002/12/12 17:25:59 slobasso Exp $ */
+/* $Id: parse.y,v 1.24 2003/04/10 18:39:21 tringali Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -10,6 +10,7 @@
 #include "rbTree.h"
 #include "interpret.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -37,7 +38,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.23 2002/12/12 17:25:59 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.24 2003/04/10 18:39:21 tringali Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
