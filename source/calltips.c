@@ -86,7 +86,7 @@ int GetCalltipID(WindowInfo *window, int calltipID) {
 } 
 
 #define CALLTIP_EDGE_GUARD 5
-Boolean offscreenV(XWindowAttributes *screenAttr, int top, int height) {
+static Boolean offscreenV(XWindowAttributes *screenAttr, int top, int height) {
     return (top < CALLTIP_EDGE_GUARD || 
             top + height >= screenAttr->height - CALLTIP_EDGE_GUARD);
 }

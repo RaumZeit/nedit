@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.70 2004/10/15 13:57:46 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.71 2004/10/18 19:27:26 arnef Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -239,7 +239,7 @@ void SetDeleteRemap(int state)
 ** Widget has be realized and should be called before the window is
 ** mapped.
 */
-void SetWindowGroup(Widget shell) {
+static void setWindowGroup(Widget shell) {
     static int firstTime = True;
     static Window groupLeader;
     Display *display = XtDisplay(shell);
@@ -317,7 +317,7 @@ void RealizeWithoutForcingPosition(Widget shell)
     
     /* Set WindowGroupHint so the NEdit icons can be grouped; this
        seems to be necessary starting with Gnome 2.0  */
-    SetWindowGroup(shell);
+    setWindowGroup(shell);
     
     /* Map the widget */
     XtMapWidget(shell);

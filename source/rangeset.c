@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.11 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: rangeset.c,v 1.12 2004/10/18 19:27:24 arnef Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -198,7 +198,7 @@ void RangesetRefreshRange(Rangeset *rangeset, int start, int end)
 	BufCheckDisplay(rangeset->buf, start, end);
 }
 
-void RangesetRefreshAllRanges(Rangeset *rangeset)
+static void rangesetRefreshAllRanges(Rangeset *rangeset)
 {
     int i;
 
@@ -1121,7 +1121,7 @@ int RangesetAssignColorName(Rangeset *rangeset, char *color_name)
     rangeset->color_name = cp;
     rangeset->color_set = 0;
 
-    RangesetRefreshAllRanges(rangeset);
+    rangesetRefreshAllRanges(rangeset);
     return 1;
 }
 

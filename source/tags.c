@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.61 2004/10/18 15:54:12 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.62 2004/10/18 19:27:24 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -900,7 +900,7 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void findDefinitionHelper(WindowInfo *window, Time time, const char *arg,
+static void findDefinitionHelper(WindowInfo *window, Time time, const char *arg,
                    int search_type)
 {
     if(arg)

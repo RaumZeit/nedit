@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.60 2004/10/07 22:34:11 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.61 2004/10/18 19:27:24 arnef Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -179,7 +179,7 @@ static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
 static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
 static Pixel allocBGColor(Widget w, char *colorName, int *ok);
-Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
+static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
         Position left, Position top, Position width, Position height,
@@ -3624,7 +3624,7 @@ static Pixel allocBGColor(Widget w, char *colorName, int *ok)
     return AllocColor(w, colorName, &r, &g, &b);
 }
 
-Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground)
+static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground)
 {
     textBuffer *buf;
     RangesetTable *tab;

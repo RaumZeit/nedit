@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.179 2004/10/08 21:55:51 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.180 2004/10/18 19:27:25 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3796,7 +3796,7 @@ void RaiseDocumentWindow(WindowInfo *window)
 /*
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
-void redisplayTearOffs(Widget menuPane)
+static void redisplayTearOffs(Widget menuPane)
 {
     WidgetList itemList;
     Widget subMenuID;

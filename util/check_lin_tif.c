@@ -68,7 +68,7 @@
  *      the code to do different things based on that info is disabled.  If
  *      we do come across a version of lesstif that works in one mode but not
  *      the other then we should revive the commented-out code.
-char *good_lesstif_1_2_versions[] = {
+static char *good_lesstif_1_2_versions[] = {
     "0.92.32",
     "0.93.0",
     "0.93.12",
@@ -81,7 +81,7 @@ char *good_lesstif_1_2_versions[] = {
  * These are versions of LessTif that are known to be stable with NEdit in
  * Motif 2.1 mode.
  */
-char *good_lesstif_2_1_versions[] = {
+static char *good_lesstif_2_1_versions[] = {
     "0.92.32",
     "0.93.0",
     "0.93.12",
@@ -93,7 +93,7 @@ char *good_lesstif_2_1_versions[] = {
 /* 
  * These are versions of LessTif that are known NOT to be stable with NEdit in
  * Motif 1.2 mode.
-char *bad_lesstif_1_2_versions[] = {
+static char *bad_lesstif_1_2_versions[] = {
     "0.93.25",
     "0.93.29",
     "0.93.34"
@@ -109,7 +109,7 @@ char *bad_lesstif_1_2_versions[] = {
  * These are versions of LessTif that are known NOT to be stable with NEdit in
  * Motif 2.1 mode.
  */
-char *bad_lesstif_2_1_versions[] = {
+static char *bad_lesstif_2_1_versions[] = {
     "0.93.25",
     "0.93.29",
     "0.93.34"
@@ -122,7 +122,7 @@ char *bad_lesstif_2_1_versions[] = {
 };
 
 /* Print out a message listing the known-good versions */
-void good_versions() {
+static void good_versions(void) {
     int i;
     fprintf(stderr, "\nNEdit is known to work with LessTif versions:\n");
     for (i=0; good_lesstif_2_1_versions[i]; i++) {
@@ -140,7 +140,7 @@ void good_versions() {
 
 /* We assume that the lesstif version is the string after the last
     space. */
-char* get_lesstif_rev(char *vs) {
+static char* get_lesstif_rev(char *vs) {
     char *rev;
     
     rev = strrchr(vs, ' ');
@@ -153,7 +153,7 @@ char* get_lesstif_rev(char *vs) {
 
 /* Check to see if the user has overridden our warnings.  If they haven't,
     tell them how to do so if they're brave (or foolish :-). */
-void finish(int exitcode, char *tif) {
+static void finish(int exitcode, char *tif) {
     
     good_versions();
     if (exitcode == 1) {
