@@ -2,7 +2,7 @@
 
 	* ChangeLog (1.27): Update.
 
-002-10-29 15:49  edg
+2002-10-29 15:49  edg
 
 	* source/server.c (1.20): Fix for crash when sending a macro
 	command to the server through nc, while another command is still
