@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 16, 2005 (Do NOT edit!)
+                 Generated on Feb 18, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -1257,14 +1257,16 @@ static char * htxt_basicSyntax [] = {
 "matching type (see below.) ",
 "\n\n",
 "The following quantifiers are maximal matching, or \"greedy\", in that they ",
-"match as much text as possible. ",
+"match as much text as possible (but don't exclude shorter matches if that ",
+"is necessary to achieve an overall match). ",
 "\n\n",
 "\01A     *   Match zero or more\n",
 "     +   Match one  or more\n",
 "     ?   Match zero or one\n",
 "\01I\n",
 "The following quantifiers are minimal matching, or \"lazy\", in that they match ",
-"as little text as possible. ",
+"as little text as possible (but don't exclude longer matches if that is ",
+"necessary to achieve an overall match). ",
 "\n\n",
 "\01A     *?   Match zero or more\n",
 "     +?   Match one  or more\n",
@@ -5640,7 +5642,7 @@ HelpMenu H_M [] =
 Href H_R [] =
 {
     { &H_R[ 1],     54, HELP_TAGS,                "ctag support", "ctags" },
-    { NULL,       5625, HELP_BASICSYNTAX,         "Alternation", "alternation" }
+    { NULL,       5794, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Feb  9, 2005\n";
+static const char * NEditVersion = "NEdit release of Feb 18, 2005\n";

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.87 2005/02/16 05:09:31 ajbj Exp $
+.. $Id: help.etx,v 1.88 2005/02/18 11:10:30 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1404,14 +1404,16 @@ Basic Regular Expression Syntax
   matching type (see below.)
 
   The following quantifiers are maximal matching, or "greedy", in that they
-  match as much text as possible.
+  match as much text as possible (but don't exclude shorter matches if that
+  is necessary to achieve an overall match).
 
      *   Match zero or more
      +   Match one  or more
      ?   Match zero or one
 
   The following quantifiers are minimal matching, or "lazy", in that they match
-  as little text as possible.
+  as little text as possible (but don't exclude longer matches if that is
+  necessary to achieve an overall match).
 
      *?   Match zero or more
      +?   Match one  or more
