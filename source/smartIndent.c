@@ -30,7 +30,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -707,9 +709,11 @@ Preferences -> Language Mode.", "Dismiss", modeName);
     	    return;
 	initialized = True;
     }
-    if (!ReadMacroString(window, indentMacros->initMacro,
-	    "smart indent initialization macro"))
-    	return;
+    if (indentMacros->initMacro != NULL) {
+	if (!ReadMacroString(window, indentMacros->initMacro,
+    	    	"smart indent initialization macro"))
+    	    return;
+    }
     
     /* Compile the newline and modify macros and attach them to the window */
     winData = (windowSmartIndentData *)XtMalloc(sizeof(windowSmartIndentData));
@@ -1769,7 +1773,6 @@ int LoadSmartIndentString(char *inString)
 	}
 	
 	/* read the modify macro */
-	inPtr + strspn(inPtr, " \t\n");
 	is.modMacro = readSIMacro(&inPtr);
 	if (is.modMacro == NULL) {
     	    XtFree(is.lmName);

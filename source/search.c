@@ -30,7 +30,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <X11/Shell.h>
@@ -1588,7 +1590,7 @@ static void iSearchTextKeyEH(Widget w, WindowInfo *window,
 
     /* if the index is out of range, beep and return */
     if (index != 0 && historyIndex(index) == -1) {
-	XBell(TheDisplay, 100);
+	XBell(TheDisplay, 0);
 	return;
     }
 
@@ -1968,10 +1970,10 @@ int ReplaceInSelection(WindowInfo *window, char *searchString,
 	/* if the selection is rectangular, verify that the found
 	   string is in the rectangle */
 	if (isRect) {
-	    lineStart = BufStartOfLine(tempBuf, startPos+realOffset);
-	    if (BufCountDispChars(tempBuf, lineStart, startPos+realOffset) <
-	    	    rectStart || BufCountDispChars(tempBuf, lineStart,
-	    	    endPos+realOffset) > rectEnd) {
+	    lineStart = BufStartOfLine(window->buffer, selStart+startPos);
+	    if (BufCountDispChars(window->buffer, lineStart, selStart+startPos) <
+		    rectStart || BufCountDispChars(window->buffer, lineStart,
+		    selStart+endPos) > rectEnd) {
 		if (fileString[endPos] == '\0')
 		    break;
 		beginPos = (startPos == endPos) ? endPos+1 : endPos;

@@ -45,7 +45,9 @@
 #include "../util/VMSparam.h"
 #include "../util/VMSUtils.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include "../util/misc.h"
 #include "../util/printUtils.h"

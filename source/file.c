@@ -37,7 +37,9 @@
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #include <unistd.h>
 #include <fcntl.h>
 #endif /*VMS*/

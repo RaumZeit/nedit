@@ -27,7 +27,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -2066,11 +2068,11 @@ o  Upper case words with possible punctuation.\n\
 \n\
     -background color (or -bg color) -- Background color.\n\
         (background color for text can be set separately\n\
-        with -xrm \"nedit*text:background color\").\n\
+        with -xrm \"nedit*text.background: color\").\n\
 \n\
     -foreground color (or -fg color) -- Foreground color.\n\
         (foreground color for text can be set separately\n\
-        with -xrm \"nedit*text:foreground color\").\n\
+        with -xrm \"nedit*text.foreground: color\").\n\
 \n\
     -xrm resourcestring -- Set the value of an X resource\n\
         to override a default value (see Customizing NEdit).\n\

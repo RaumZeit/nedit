@@ -27,7 +27,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #if !defined(DONT_HAVE_GLOB) && !defined(USE_MOTIF_GLOB) && !defined(VMS)
 #include <glob.h>

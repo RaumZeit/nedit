@@ -27,7 +27,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <limits.h>
 #include <ctype.h>
@@ -258,15 +260,7 @@ void FillSelection(WindowInfo *window)
     filledText = fillParagraphs(text, rightMargin, buf->tabDist, buf->useTabs,
 	    buf->nullSubsChar, &len, False);
     XtFree(text);
-    
-    /* If this is a rectangular fill, trim any trailing newlines */
-    if (hasSelection && isRect) {
-    	for (c=&filledText[len-1]; c>=filledText && *c=='\n'; c--) {
-    	    *c = '\0';
-    	    len--;
-    	}
-    }
-    
+        
     /* Replace the text in the window */
     if (hasSelection && isRect) {
         BufReplaceRect(buf, left, right, rectStart, INT_MAX, filledText);
@@ -594,6 +588,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     int col, cleanedLen, indentLen, leadIndentLen, nLines = 1;
     int inWhitespace, inMargin;
     
+    printf("text: %s\n", text);
     /* remove leading spaces, convert newlines to spaces */
     cleanedText = XtMalloc(strlen(text)+1);
     outPtr = cleanedText;
@@ -620,6 +615,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     }
     cleanedLen = outPtr - cleanedText;
     *outPtr = '\0';
+    printf("cleaned text: %s\n", cleanedText);
     
     /* Put back newlines breaking text at word boundaries within the margins.
        Algorithm: scan through characters, counting columns, and when the
@@ -648,7 +644,8 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     	}
     }
     nLines++;
-    
+    printf("filled text: %s\n", cleanedText);
+
     /* produce a string to prepend to lines to indent them to the left margin */
     leadIndentStr = makeIndentString(firstLineIndent, tabDist,
 	    allowTabs, &leadIndentLen);
@@ -674,6 +671,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     if (*(outPtr-1) == ' ')
     	*(outPtr-1) = '\n';
     *outPtr = '\0';
+    printf("indented text: %s\n", outText);
     
     /* clean up, return result */
     XtFree(cleanedText);

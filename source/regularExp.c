@@ -523,7 +523,7 @@ regexp * CompileRE (char *exp, char **errorText) {
                This is a real issue since the first BRANCH node usually points
                to the end of the compiled regex code. */
 
-            sprintf  (Error_Text, "regexp > %lu bytes\0", MAX_COMPILED_SIZE);
+            sprintf  (Error_Text, "regexp > %lu bytes", MAX_COMPILED_SIZE);
             REG_FAIL (Error_Text);
          }
 
@@ -604,7 +604,7 @@ static unsigned char * chunk (int paren, int *flag_param) {
 
    if (paren == PAREN) {
       if (Total_Paren >= NSUBEXP) {
-         sprintf (Error_Text, "number of ()'s > %d\0", (int) NSUBEXP);
+         sprintf (Error_Text, "number of ()'s > %d", (int) NSUBEXP);
          REG_FAIL (Error_Text);
       }
 
@@ -840,10 +840,10 @@ static unsigned char * piece (int *flag_param) {
                digit_present [i]++;
             } else {
                if (i == 0) {
-                  sprintf (Error_Text, "min operand of {%lu%c,???} > 65535\0",
+                  sprintf (Error_Text, "min operand of {%lu%c,???} > 65535",
                            min_max [0], *Reg_Parse);
                } else {
-                  sprintf (Error_Text, "max operand of {%lu,%lu%c} > 65535\0",
+                  sprintf (Error_Text, "max operand of {%lu,%lu%c} > 65535",
                            min_max [0], min_max [1], *Reg_Parse);
                }
 
@@ -871,7 +871,7 @@ static unsigned char * piece (int *flag_param) {
          REG_FAIL ("{0,0} is an invalid range");
       } else if (digit_present [1] && (min_max [1] == REG_ZERO)) {
          if (digit_present [0]) {
-            sprintf (Error_Text, "{%lu,0} is an invalid range\0", min_max [0]);
+            sprintf (Error_Text, "{%lu,0} is an invalid range", min_max [0]);
             REG_FAIL (Error_Text);
          } else {
             REG_FAIL ("{,0} is an invalid range");
@@ -886,7 +886,7 @@ static unsigned char * piece (int *flag_param) {
       } else if (min_max [1] != REG_INFINITY && min_max [0] > min_max [1]) {
          /* Disallow a backward range. */
 
-         sprintf (Error_Text, "{%lu,%lu} is an invalid range\0",
+         sprintf (Error_Text, "{%lu,%lu} is an invalid range",
                   min_max [0], min_max [1]);
          REG_FAIL (Error_Text);
       }
@@ -917,7 +917,7 @@ static unsigned char * piece (int *flag_param) {
          *flag_param = flags_local;
          return (ret_val);
       } else if (Num_Braces > UCHAR_MAX) {
-         sprintf (Error_Text, "number of {m,n} constructs > %d\0", UCHAR_MAX);
+         sprintf (Error_Text, "number of {m,n} constructs > %d", UCHAR_MAX);
          REG_FAIL (Error_Text);
       }
    }
@@ -930,10 +930,10 @@ static unsigned char * piece (int *flag_param) {
 
    if (!(flags_local & HAS_WIDTH)) {
       if (brace_present) {
-         sprintf (Error_Text, "{%lu,%lu} operand could be empty\0",
+         sprintf (Error_Text, "{%lu,%lu} operand could be empty",
                   min_max [0], min_max [1]);
       } else {
-         sprintf (Error_Text, "%c operand could be empty\0", op_code);
+         sprintf (Error_Text, "%c operand could be empty", op_code);
       }
 
       REG_FAIL (Error_Text);
@@ -1294,9 +1294,9 @@ static unsigned char * piece (int *flag_param) {
 
    if (IS_QUANTIFIER (*Reg_Parse)) {
       if (op_code == '{') {
-         sprintf (Error_Text, "nested quantifiers, {m,n}%c\0", *Reg_Parse);
+         sprintf (Error_Text, "nested quantifiers, {m,n}%c", *Reg_Parse);
       } else {
-         sprintf (Error_Text, "nested quantifiers, %c%c\0", op_code, *Reg_Parse);
+         sprintf (Error_Text, "nested quantifiers, %c%c", op_code, *Reg_Parse);
       }
 
       REG_FAIL (Error_Text);
@@ -1407,7 +1407,7 @@ static unsigned char * atom (int *flag_param) {
                ret_val = chunk (NO_NEWLINE, &flags_local);
             } else {
                sprintf (Error_Text,
-                        "invalid grouping syntax, \"(?%c...)\"\0",
+                        "invalid grouping syntax, \"(?%c...)\"",
                         *Reg_Parse);
 
                REG_FAIL (Error_Text);
@@ -1432,7 +1432,7 @@ static unsigned char * atom (int *flag_param) {
       case '?':
       case '+':
       case '*':
-         sprintf (Error_Text, "%c follows nothing\0", *(Reg_Parse - 1));
+         sprintf (Error_Text, "%c follows nothing", *(Reg_Parse - 1));
          REG_FAIL (Error_Text);
 
       case '{':
@@ -1518,14 +1518,14 @@ static unsigned char * atom (int *flag_param) {
                                                     NULL,
                                                     CHECK_CLASS_ESCAPE)) {
                            sprintf (Error_Text,
-                                    "\\%c is not allowed as range operand\0",
+                                    "\\%c is not allowed as range operand",
                                     *Reg_Parse);
 
                            REG_FAIL (Error_Text);
                         } else {
                            sprintf (
                               Error_Text,
-                              "\\%c is an invalid char class escape sequence\0",
+                              "\\%c is an invalid char class escape sequence",
                               *Reg_Parse);
 
                            REG_FAIL (Error_Text);
@@ -1581,7 +1581,7 @@ static unsigned char * atom (int *flag_param) {
                            of a character class range (see comment above.) */
 
                         sprintf (Error_Text,
-                                 "\\%c not allowed as range operand\0",
+                                 "\\%c not allowed as range operand",
                                  *Reg_Parse);
 
                         REG_FAIL (Error_Text);
@@ -1593,7 +1593,7 @@ static unsigned char * atom (int *flag_param) {
                      }
                   } else {
                      sprintf (Error_Text,
-                              "\\%c is an invalid char class escape sequence\0",
+                              "\\%c is an invalid char class escape sequence",
                               *Reg_Parse);
 
                      REG_FAIL (Error_Text);
@@ -1705,7 +1705,7 @@ static unsigned char * atom (int *flag_param) {
                            so generate our own here. */
 
                         sprintf (Error_Text,
-                                 "\\%c is an invalid escape sequence\0",
+                                 "\\%c is an invalid escape sequence",
                                  *Reg_Parse);
                      }
 
@@ -2350,7 +2350,7 @@ static unsigned char * back_ref (
    /* Make sure parentheses for requested back-reference are complete. */
 
    if (!is_cross_regex && !TEST_BIT (Closed_Parens, paren_no)) {
-      sprintf (Error_Text, "\\%d is an illegal back reference\0", paren_no);
+      sprintf (Error_Text, "\\%d is an illegal back reference", paren_no);
       return NULL;
    }
 

@@ -29,7 +29,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <errno.h>
 #include <string.h>
@@ -643,7 +645,12 @@ static PrefDescripRec PrefDescrip[] = {
     	"-adobe-courier-bold-o-normal--12-*-*-*-*-*-*",
     	PrefData.boldItalicFontString,
     	(void *)sizeof(PrefData.boldItalicFontString), True},
-    {"shell", "Shell", PREF_STRING, "/bin/csh",
+    {"shell", "Shell", PREF_STRING,
+#ifdef __MVS__
+    	"/bin/sh"
+#else
+        "/bin/csh",
+#endif
     	PrefData.shell, (void *)sizeof(PrefData.shell), False},
     {"geometry", "Geometry", PREF_STRING, "",
     	PrefData.geometry, (void *)sizeof(PrefData.geometry), False},
@@ -2538,7 +2545,8 @@ static void freeLanguageModeRec(languageModeRec *lm)
     	XtFree(lm->delimiters);
     for (i=0; i<lm->nExtensions; i++)
     	XtFree(lm->extensions[i]);
-    XtFree((char *)lm->extensions);
+    if (lm->nExtensions != 0)
+	XtFree((char *)lm->extensions);
     XtFree((char *)lm);
 }
 

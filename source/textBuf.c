@@ -93,11 +93,23 @@ static char *unexpandTabs(char *text, int startIndent, int tabDist,
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 
+#ifdef __MVS__
+static char *ControlCodeTable[64] = {
+     "nul", "soh", "stx", "etx", "sel", "ht", "rnl", "del",
+     "ge", "sps", "rpt", "vt", "ff", "cr", "so", "si",
+     "dle", "dc1", "dc2", "dc3", "res", "nl", "bs", "poc",
+     "can", "em", "ubs", "cu1", "ifs", "igs", "irs", "ius",
+     "ds", "sos", "fs", "wus", "byp", "lf", "etb", "esc",
+     "sa", "sfe", "sm", "csp", "mfa", "enq", "ack", "bel",
+     "x30", "x31", "syn", "ir", "pp", "trn", "nbs", "eot",
+     "sbs", "it", "rff", "cu3", "dc4", "nak", "x3e", "sub"};
+#else
 static char *ControlCodeTable[32] = {
      "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
      "bs", "ht", "nl", "vt", "np", "cr", "so", "si",
      "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
      "can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
+#endif
 
 /*
 ** Create an empty text buffer
@@ -847,18 +859,26 @@ int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
 	return nSpaces;
     }
     
-    /* Convert control codes to readable character sequences */
-    /*... is this safe with international character sets? */
+    /* Convert ASCII (and EBCDIC in the __MVS__ (OS/390) case) control
+    /* codes to readable character sequences */
+    if (c == nullSubsChar) {
+	sprintf(outStr, "<nul>");
+    	return 5;
+    }
+#ifdef __MVS__
+    if (((unsigned char)c) <= 63) {
+    	sprintf(outStr, "<%s>", ControlCodeTable[c]);
+    	return strlen(outStr);
+    }
+#else
     if (((unsigned char)c) <= 31) {
     	sprintf(outStr, "<%s>", ControlCodeTable[c]);
     	return strlen(outStr);
     } else if (c == 127) {
     	sprintf(outStr, "<del>");
     	return 5;
-    } else if (c == nullSubsChar) {
-	sprintf(outStr, "<nul>");
-    	return 5;
     }
+#endif
     
     /* Otherwise, just return the character */
     *outStr = c;
@@ -875,13 +895,13 @@ int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
 int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar)
 {
     /* Note, this code must parallel that in BufExpandCharacter */
-    if (c == '\t')
+    if (c == nullSubsChar)
+    	return 5;
+    else if (c == '\t')
 	return tabDist - (indent % tabDist);
     else if (((unsigned char)c) <= 31)
     	return strlen(ControlCodeTable[c]) + 2;
     else if (c == 127)
-    	return 5;
-    else if (c == nullSubsChar)
     	return 5;
     return 1;
 }
@@ -1298,10 +1318,8 @@ static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
     outStr = XtMalloc(expReplLen + expInsLen +
     	    nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
     
-    /* Loop over all lines in the buffer between start and end removing the
-       text between rectStart and rectEnd and padding appropriately.  Trim
-       trailing space from line (whitespace at the ends of lines otherwise
-       tends to multiply, since additional padding is added to maintain it */
+    /* Loop over all lines in the buffer between start and end inserting
+       text at column, splitting tabs and adding padding appropriately */
     outPtr = outStr;
     lineStart = start;
     insPtr = insText;
@@ -1314,8 +1332,13 @@ static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
     		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
     	XtFree(line);
     	XtFree(insLine);
+#if 0   /* Earlier comments claimed that trailing whitespace could multiply on
+	   the ends of lines, but insertColInLine looks like it should never
+	   add space unnecessarily, and this trimming interfered with
+	   paragraph filling, so lets see if it works without it. MWE */
     	for (c=outPtr+len-1; c>outPtr && isspace((unsigned char)*c); c--)
     	    len--;
+#endif
 	outPtr += len;
 	*outPtr++ = '\n';
     	lineStart = lineEnd < buf->length ? lineEnd + 1 : buf->length;

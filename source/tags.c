@@ -33,7 +33,9 @@
 #include "../util/VMSparam.h"
 #include <unistd.h>
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>

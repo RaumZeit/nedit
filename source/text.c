@@ -793,7 +793,8 @@ static void resize(TextWidget w)
     int lineNumAreaWidth = w->text.lineNumCols == 0 ? 0 : w->text.marginWidth +
 		fs->max_bounds.width * w->text.lineNumCols;
 
-    w->text.columns = (width - marginWidth*2) / fs->max_bounds.width;
+    w->text.columns = (width - marginWidth*2 - lineNumAreaWidth) /
+    	    fs->max_bounds.width;
     w->text.rows = (height - marginHeight*2) / (fs->ascent + fs->descent);
     
     /* Reject widths and heights less than a character, which the text
@@ -882,13 +883,16 @@ static Boolean setValues(TextWidget current, TextWidget request,
     if (new->text.lineNumCols != current->text.lineNumCols || reconfigure) {
 	int marginWidth = new->text.marginWidth;
 	int charWidth = new->text.fontStruct->max_bounds.width;
-	if (new->text.lineNumCols == 0)
+	int lineNumCols = new->text.lineNumCols;
+	if (lineNumCols == 0) {
 	    TextDSetLineNumberArea(new->text.textD, 0, 0, marginWidth);
-	else
-	    TextDSetLineNumberArea(new->text.textD, marginWidth,
-		    charWidth * new->text.lineNumCols,
-		    2*marginWidth + charWidth * new->text.lineNumCols);
-	/* redraw = True; */
+	    new->text.columns = (new->core.width - marginWidth*2) / charWidth;
+	} else {
+	    TextDSetLineNumberArea(new->text.textD, marginWidth, charWidth *
+	    	    lineNumCols, 2*marginWidth + charWidth * lineNumCols);
+    	    new->text.columns = (new->core.width - marginWidth*3 -
+	    	    charWidth * lineNumCols) / charWidth;
+	}
     }
     
     return redraw;
@@ -2778,7 +2782,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
     		BufStartOfLine(buf, sel->start), sel->rectStart);
     	endPos = BufCountForwardDispChars(buf,
     		BufStartOfLine(buf, sel->end), sel->rectEnd);
-    	if (abs(origPos - startPos) < abs(origPos - endPos))
+    	if (abs(newPos - startPos) < abs(newPos - endPos))
     	    anchor = endPos;
     	else
     	    anchor = startPos;
@@ -2793,7 +2797,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
 	endPos = BufEndOfLine(buf, max(sel->end, newPos));
 	BufRectSelect(buf, startPos, endPos, startCol, endCol);
     } else if (sel->selected) { /* plain -> plain */
-    	if (abs(origPos - sel->start) < abs(origPos - sel->end))
+        if (abs(newPos - sel->start) < abs(newPos - sel->end))
     	    anchor = sel->end;
     	else
     	    anchor = sel->start;

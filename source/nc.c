@@ -36,7 +36,9 @@
 #include "../util/VMSparam.h"
 #include "../util/VMSutils.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <unistd.h>

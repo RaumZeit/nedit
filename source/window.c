@@ -29,7 +29,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <limits.h>
 #include <math.h>
@@ -539,16 +541,16 @@ void CloseWindow(WindowInfo *window)
     patchRowCol(window->menuBar);
 #endif
     
+    /* free the undo and redo lists */
+    ClearUndoList(window);
+    ClearRedoList(window);
+    
     /* remove and deallocate all of the widgets associated with window */
     XtDestroyWidget(window->shell);
     
     /* remove the window from the global window list, update window menus */
     removeFromWindowList(window);
     InvalidateWindowMenus();
-    
-    /* free the undo and redo lists */
-    ClearUndoList(window);
-    ClearRedoList(window);
     
     /* deallocate the window data structure */
     XtFree((char *)window);

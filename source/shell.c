@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/types.h>
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>

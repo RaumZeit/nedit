@@ -30,7 +30,9 @@
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
@@ -763,6 +765,12 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
        just colors and fonts for sub-expressions of the parent pattern */
     for (i=0; i<nPatterns; i++) {
         compiledPats[i].colorOnly = patternSrc[i].flags & COLOR_ONLY;
+	if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
+	    DialogF(DF_WARN, dialogParent, 1,
+   		   "Color-only pattern \"%s\" may not have subpatterns",
+   		   "Dismiss", patternSrc[i].name);
+ 	    return NULL;
+	}
         nSubExprs = 0;
         if (patternSrc[i].startRE != NULL) {
             ptr = patternSrc[i].startRE;
@@ -1254,6 +1262,9 @@ static int parseString(highlightDataRec *pattern, char **string,
     
     stringPtr = *string;
     stylePtr = *styleString;
+    
+            if (pattern->subPatternRE == NULL) i = i / 0;
+    
     while(ExecRE(pattern->subPatternRE, NULL, stringPtr, anchored ? *string+1 :
 	    *string+length+1, False, *prevChar, '\0', delimiters)) {
     	
