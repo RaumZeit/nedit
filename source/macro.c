@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.37 2001/12/13 13:14:31 amai Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.38 2001/12/24 11:50:24 amai Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -120,8 +120,8 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
 	XEvent *event, String *params, Cardinal *numParams);
 static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 	XEvent *event, String *params, Cardinal *numParams);
-static char *actionToString(char *actionName, XEvent *event, String *params,
-	Cardinal numParams);
+static char *actionToString(Widget w, char *actionName, XEvent *event,
+	String *params, Cardinal numParams);
 static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
@@ -1355,7 +1355,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
     }
     
     /* Record the action and its parameters */
-    actionString = actionToString(actionName, event, params, *numParams);
+    actionString = actionToString(w, actionName, event, params, *numParams);
     if (actionString != NULL) {
 	BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
 	XtFree(actionString);
@@ -1392,7 +1392,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 	return;
         
     /* Record the action and its parameters */
-    actionString = actionToString(actionName, event, params, *numParams);
+    actionString = actionToString(w, actionName, event, params, *numParams);
     if (actionString != NULL) {
 	if (LastCommand != NULL)
 	    XtFree(LastCommand);
@@ -1404,12 +1404,12 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 ** Create a macro string to represent an invocation of an action routine.
 ** Returns NULL for non-operational or un-recordable actions.
 */
-static char *actionToString(char *actionName, XEvent *event, String *params,
-	Cardinal numParams)
+static char *actionToString(Widget w, char *actionName, XEvent *event,
+	String *params, Cardinal numParams)
 {
     char chars[20], *charList[1], *outStr, *outPtr;
     KeySym keysym;
-    int i, nChars, nParams, length, nameLength;
+    int i, nChars, nParams, length, nameLength, status;
     
     if (isIgnoredAction(actionName) || isRedundantAction(actionName) ||
 	    isMouseAction(actionName))
@@ -1419,9 +1419,18 @@ static char *actionToString(char *actionName, XEvent *event, String *params,
     if (!strcmp(actionName, "self_insert") ||
     	    !strcmp(actionName, "self-insert")) {
     	actionName = "insert_string";
+#ifdef NO_XMIM
 	nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, NULL);
 	if (nChars == 0)
 	    return NULL;
+#else
+
+	nChars = XmImMbLookupString(w, (XKeyEvent *)event,
+				    chars, 19, &keysym, &status);
+	if (nChars == 0 || status == XLookupNone ||
+		status == XLookupKeySym || status == XBufferOverflow)
+	    return NULL;
+#endif
     	chars[nChars] = '\0';
     	charList[0] = chars;
     	params = charList;
