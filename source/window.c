@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.31 2001/08/17 11:01:59 amai Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.32 2001/08/20 20:36:03 tringali Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -435,8 +435,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
        recognize Caps Lock and Num Lock as modifiers, and don't trigger if
        they are engaged */ 
-    AccelLockBugPatch(appShell, menuBar);
-        
+    AccelLockBugPatch(mainWin, menuBar);
+
     /* Create paned window to manage split window behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
