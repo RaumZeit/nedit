@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.70 2003/11/22 13:03:39 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.71 2003/12/23 10:53:57 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -815,7 +815,21 @@ static int doSave(WindowInfo *window)
     struct stat statbuf;
     FILE *fp;
     int fileLen, result;
-    
+
+    /*  Check for root and warn him if he wants to write to a file with
+        none of the write bits set.  */
+    if ((0 == getuid()) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH)))
+    {
+        result = DialogF(DF_WARN, window->shell, 2, "Writing Read-only File",
+                "File '%s' is marked as read-only.\n"
+                "Do you want to save anyway?",
+                "Save", "Cancel", window->filename);
+        if (1 != result)
+        {
+            return True;
+        }
+    }
+
     /* Get the full name of the file */
     strcpy(fullname, window->path);
     strcat(fullname, window->filename);
