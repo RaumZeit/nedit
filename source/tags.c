@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.38 2002/06/08 13:56:51 tringali Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.39 2002/06/10 16:56:08 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -716,7 +716,6 @@ static void findDef(WindowInfo *window, const char *value) {
 */
 void FindDefinition(WindowInfo *window, Time time, const char *arg)
 {
-#if 1 /* This was on the mainline */
     if (arg) {
         findDef(window, arg);
     }
@@ -724,19 +723,6 @@ void FindDefinition(WindowInfo *window, Time time, const char *arg)
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
             (XtSelectionCallbackProc)findDefCB, window, time);
     }
-#else /* This was on the 5.3 branch */
-    tagMark = arg;
-    currentWindow = window;
-    if(tagMark == NULL)
-    {
-        XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-	        (XtSelectionCallbackProc)findDefCB, window, time);
-    }
-    else
-    {
-        findAllDialogAP(window->textArea, tagMark); 
-    }
-#endif
 }
 
 /*	Callback function for FindDefinition */
