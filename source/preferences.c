@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.117 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.118 2004/04/15 22:32:31 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -284,6 +284,8 @@ static struct prefData {
     XFontStruct *boldItalicFontStruct;
     int sortTabs;		/* sort tabs alphabetically */
     int repositionDialogs;	/* w. to reposition dialogs under the pointer */
+    int autoScroll;             /* w. to autoscroll near top/bottom of screen */
+    int autoScrollVPadding;     /* how close to get before autoscrolling */
     int sortOpenPrevMenu;   	/* whether to sort the "Open Previous" menu */
     int appendLF;       /* Whether to append LF at the end of each file */
     int mapDelete;		/* whether to map delete to backspace */
@@ -780,6 +782,10 @@ static PrefDescripRec PrefDescrip[] = {
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True",
     	&PrefData.repositionDialogs, NULL, True},
 #endif
+    {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False",
+    	&PrefData.autoScroll, NULL, True},
+    {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4",
+    	&PrefData.autoScrollVPadding, NULL, False},
     {"appendLF", "AppendLF", PREF_BOOLEAN, "True",
         &PrefData.appendLF, NULL, True},
     {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True",
@@ -1794,6 +1800,26 @@ void SetPrefRepositionDialogs(int state)
 int GetPrefRepositionDialogs(void)
 {
     return PrefData.repositionDialogs;
+}
+
+void SetPrefAutoScroll(int state)
+{
+    WindowInfo *w = WindowList;
+    int margin = state ? PrefData.autoScrollVPadding : 0;
+    
+    setIntPref(&PrefData.autoScroll, state);
+    for(w = WindowList; w != NULL; w = w->next)
+        SetAutoScroll(w, margin);
+}
+
+int GetPrefAutoScroll(void)
+{
+    return PrefData.autoScroll;
+}
+
+int GetVerticalAutoScroll(void)
+{
+    return PrefData.autoScroll ? PrefData.autoScrollVPadding : 0;
 }
 
 void SetPrefAppendLF(int state)

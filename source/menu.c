@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.99 2004/03/25 17:37:32 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.100 2004/04/15 22:32:30 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -172,6 +172,7 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void autoScrollDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void modWarnRealDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void exitWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -1006,6 +1007,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->reposDlogsDefItem = createMenuToggle(subPane, "popupsUnderPointer",
     	    "Popups Under Pointer", 'P', reposDlogsDefCB, window,
     	    GetPrefRepositionDialogs(), FULL);
+    window->autoScrollDefItem = createMenuToggle(subPane, "autoScroll",
+    	    "Auto Scroll Near Window Top/Bottom", 0, autoScrollDefCB, window,
+    	    GetPrefAutoScroll(), FULL);
     subSubPane = createMenu(subPane, "warnings", "Warnings", 'r', NULL, FULL);
     window->modWarnDefItem = createMenuToggle(subSubPane,
 	    "filesModifiedExternally", "Files Modified Externally", 'F',
@@ -2191,6 +2195,20 @@ static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     for (win=WindowList; win!=NULL; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->reposDlogsDefItem, state, False);
+    }
+}
+
+static void autoScrollDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefAutoScroll(state);
+    /* XXX: Should we ensure auto-scroll now if needed? */
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (IsTopDocument(win))
+    	    XmToggleButtonSetState(win->autoScrollDefItem, state, False);
     }
 }
 

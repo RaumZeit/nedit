@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.20 2004/03/25 04:27:01 tksoh Exp $ */
+/* $Id: window.h,v 1.21 2004/04/15 22:32:31 n8gray Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -33,6 +33,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
 void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);
+void SetAutoScroll(WindowInfo *window, int margin);
 void SplitWindow(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 int WidgetToPaneIndex(WindowInfo *window, Widget w);

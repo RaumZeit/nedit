@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.142 2004/04/14 20:33:22 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.143 2004/04/15 22:32:31 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -737,7 +737,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
               GetPrefColorName(HILITE_BG_COLOR),
               GetPrefColorName(LINENO_FG_COLOR),
               GetPrefColorName(CURSOR_FG_COLOR));
-
+    
     /* Create the right button popup menu (note: order is important here,
        since the translation for popping up this menu was probably already
        added in createTextArea, but CreateBGMenu requires window->textArea
@@ -1200,6 +1200,7 @@ void SplitWindow(WindowInfo *window)
             textNlineNumCols, &lineNumCols, NULL);
     text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
             delimiters, wrapMargin, lineNumCols);
+    
     TextSetBuffer(text, window->buffer);
     if (window->highlightData != NULL)
     	AttachHighlightToWidget(text, window);
@@ -1934,6 +1935,18 @@ void SetWrapMargin(WindowInfo *window, int margin)
         XtVaSetValues(window->textPanes[i], textNwrapMargin, margin, NULL);
 }
 
+/* 
+** Set the auto-scroll margin
+*/
+void SetAutoScroll(WindowInfo *window, int margin)
+{
+    int i;
+    
+    XtVaSetValues(window->textArea, textNcursorVPadding, margin, NULL);
+    for (i=0; i<window->nPanes; i++)
+        XtVaSetValues(window->textPanes[i], textNcursorVPadding, margin, NULL);
+}
+    
 /*
 ** Recover the window pointer from any widget in the window, by searching
 ** up the widget hierarcy for the top level container widget where the
@@ -2241,6 +2254,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNcontinuousWrap, window->wrapMode == CONTINUOUS_WRAP,
             textNoverstrike, window->overstrike,
             textNhidePointer, (Boolean) GetPrefTypingHidesPointer(),
+            textNcursorVPadding, GetVerticalAutoScroll(),
             NULL);
 
     XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
