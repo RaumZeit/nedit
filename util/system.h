@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.8 2001/10/21 15:13:07 tringali Exp $ */
+/* $Id: system.h,v 1.9 2001/11/20 13:25:06 amai Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -133,6 +133,8 @@
 #   define COMPILE_COMPILER "Metrowerks CodeWarrior"
 #elif defined (__WATCOMC__)
 #   define COMPILE_COMPILER "Watcom C/C++"
+#elif defined (__INTEL_COMPILER)
+#   define COMPILE_COMPILER "Intel C++"
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif

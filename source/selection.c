@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.13 2001/11/16 11:13:42 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.14 2001/11/20 13:25:06 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -80,7 +80,7 @@ static void maintainPosition(int *position, int modPos, int nInserted,
 int StringToLineAndCol(const char *text, int *lineNum, int *column ) {
     char *endptr;
     long  tempNum;
-    int   textLen, gotLine = -1;
+    int   textLen;
 
     /* Get line number */
     tempNum = strtol( text, &endptr, 10 );
