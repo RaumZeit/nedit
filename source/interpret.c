@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.27 2002/08/10 23:48:55 tringali Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.28 2002/08/23 00:52:22 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2096,6 +2096,7 @@ static int beginArrayIter(void)
     Symbol *array;
     DataValue *iteratorValPtr;
     DataValue *arrayValPtr;
+    DataValue procValue;
 
     array = (Symbol *)*PC;
     PC++;
@@ -2119,6 +2120,16 @@ static int beginArrayIter(void)
         }
         else {
             return(execError("can't iterate non-array",  array->name));
+        }
+    }
+    else if (array->type == PROC_VALUE_SYM) {
+        char *errMsg;
+        
+        if ((array->value.val.subr)(FocusWindow, NULL, 0, &procValue, &errMsg)) {
+            arrayValPtr = &procValue;
+        }
+        else {
+            return(execError(errMsg, array->name));
         }
     }
     else {
