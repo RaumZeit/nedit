@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.67 2003/07/25 06:50:44 tksoh Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.68 2003/11/08 00:15:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1327,7 +1327,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
-    formatForm = XtVaCreateManagedWidget("formatBtns", xmFormWidgetClass,
+    formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass,
 	    fileSB, NULL);
     formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
 	    formatForm,
