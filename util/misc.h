@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.14 2002/08/12 21:21:36 tringali Exp $ */
+/* $Id: misc.h,v 1.15 2002/09/05 17:48:43 tringali Exp $ */
 
 #ifndef NEDIT_MISC_H_INCLUDED
 #define NEDIT_MISC_H_INCLUDED
@@ -62,7 +62,7 @@ void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddToHistoryList(char *newItem, char ***historyList, int *nItems);
 void CreateGeometryString(char *string, int x, int y,
 	int width, int height, int bitmask);
-void FindBestVisual(Display *display, const char *appName, const char *appClass,
+Boolean FindBestVisual(Display *display, const char *appName, const char *appClass,
 	Visual **visual, int *depth, Colormap *colormap);
 Widget CreateDialogShell(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);

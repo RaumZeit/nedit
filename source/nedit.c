@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.34 2002/07/26 21:39:10 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.35 2002/09/05 17:48:43 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -85,6 +85,7 @@ static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
 static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
+static void patchResourcesForVisual(void);
 
 WindowInfo *WindowList = NULL;
 Display *TheDisplay = NULL;
@@ -102,51 +103,57 @@ Boolean IsServer = False;
 #define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-*"
 
 static char *fallbackResources[] = {
+    /* Try to avoid Motif's horrificly ugly default colors and fonts,
+       if the user's environment provides no usable defaults.  We try
+       to choose a Windows-y default color setting here.  Editable text 
+       fields are forced to a fixed-pitch font for usability. */
+    "*FontList: " NEDIT_DEFAULT_FONT,
+    "*XmText.FontList: " NEDIT_FIXED_FONT,
+    "*XmTextField.FontList: " NEDIT_FIXED_FONT,
+    "*XmList.FontList: " NEDIT_FIXED_FONT,
+    "*XmFileSelectionBox*XmList.FontList: " NEDIT_FIXED_FONT,
+    "*background: #b3b3b3",
+    "*foreground: black",
+    "*XmText*foreground: black",
+    "*XmText*background: #e5e5e5",
+    "*XmList*foreground: black",
+    "*XmList*background: #e5e5e5",
+    "*XmTextField*foreground: black",
+    "*XmTextField*background: #e5e5e5",
+    "*XmText.translations: #override\\n"
+        "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
+    "*XmTextField.translations: #override\\n"
+        "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"
+        "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
+
+    /* NEdit-specific widgets.  Theses things should probably be manually
+       jammed into the database, rather than fallbacks.  We really want
+       the accelerators to be there even if someone creates an app-defaults
+       file against our wishes. */
+
+    "*text.lineNumForeground: #777777",
+    "*text.background: #e5e5e5",
+    "*text.foreground: black",
+    "*text.highlightBackground: red",
+    "*text.highlightForeground: black",
     "*menuBar.marginHeight: 0",
     "*menuBar.shadowThickness: 1",
     "*pane.sashHeight: 11",
     "*pane.sashWidth: 11",
     "*text.selectionArrayCount: 3",
-    "nedit*fontList: " NEDIT_DEFAULT_FONT,
-    "nedit*XmList.fontList: " NEDIT_FIXED_FONT,
-    /* This should not be necessary, but some default in LessTif is
-       overriding the resource above, and specifying the app-name fixes it */
-    "nedit*XmText.fontList: " NEDIT_FIXED_FONT,
-    /* Same with this, both Solaris Motif and LessTif seem to have some
-       very specific defaults for file selection box fonts */
-    "nedit*XmFileSelectionBox*XmList.fontList: " NEDIT_FIXED_FONT,
-    "nedit*XmTextField.fontList: " NEDIT_FIXED_FONT,
-    "nedit*background: #b3b3b3",
-    "nedit*foreground: black",
-    "nedit*text.lineNumForeground: #777777",
-    "nedit*text.background: #e5e5e5",
-    "nedit*text.foreground: black",
-    "nedit*text.highlightBackground: red",
-    "nedit*text.highlightForeground: black",
-    "nedit*XmText*foreground: black",
-    "nedit*XmText*background: #cccccc",
-    "nedit*helpText.background: #cccccc",
-    "nedit*helpText.foreground: black",
-    "nedit*helpText.selectBackground: #b3b3b3",
-    "nedit*statsLine.background: #b3b3b3",
-    "nedit*statsLine.fontList: " NEDIT_DEFAULT_FONT,
-    "nedit*helpText.font: " NEDIT_FIXED_FONT,
-    "*XmText.translations: #override \
-Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
-    "*XmTextField.translations: #override \
-Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n\
-Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n",
-    "nedit*XmList*foreground: black",
-    "nedit*XmList*background: #cccccc",
-    "nedit*XmTextField*background: #cccccc",
-    "nedit*XmTextField*foreground: black",
-    "nedit*calltip.background: LemonChiffon1",
-    "nedit*calltip.foreground: black",
+    "*helpText.background: #cccccc",
+    "*helpText.foreground: black",
+    "*helpText.selectBackground: #b3b3b3",
+    "*statsLine.background: #b3b3b3",
+    "*statsLine.FontList: " NEDIT_DEFAULT_FONT,
+    "*helpText.font: " NEDIT_FIXED_FONT,
+    "*calltip.background: LemonChiffon1",
+    "*calltip.foreground: black",
     "*iSearchForm*highlightThickness: 1",
     "*fileMenu.tearOffModel: XmTEAR_OFF_ENABLED",
     "*editMenu.tearOffModel: XmTEAR_OFF_ENABLED",
@@ -366,6 +373,8 @@ int main(int argc, char **argv)
 	XtWarning ("NEdit: Can't open display\n");
 	exit(EXIT_FAILURE);
     }
+
+    patchResourcesForVisual();
     
     /* Initialize global symbols and subroutines used in the macro language */
     InitMacroGlobals();
@@ -615,4 +624,42 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
 	for (k=0; maskArgs[k]!=NULL; k++)
 	    if (argv[i][0]==' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
     		argv[i][0] = '-';
+}
+
+static void patchResourcesForVisual(void)
+{
+    int         i;
+    Visual     *visual;
+    int         depth;
+    Colormap    map;
+    Boolean     usingDefaultVisual;
+    XrmDatabase db;
+    
+    if (!TheDisplay)
+        return;
+
+    db = XtDatabase(TheDisplay);
+    
+    usingDefaultVisual = FindBestVisual(TheDisplay,
+                                        APP_NAME,
+                                        APP_CLASS,
+                                        &visual,
+                                        &depth,
+                                        &map);
+
+    if (!usingDefaultVisual)
+    {
+        for (i = 0; i < XtNumber(fallbackResources)-1; i++)
+        {
+            if (strstr(fallbackResources[i], "*background:") ||
+                strstr(fallbackResources[i], "*foreground:"))
+            {
+                /* Qualify by application name to prevent them from being
+                   converted against the wrong colormap. */
+                char buf[1024] = "*" APP_NAME;
+                strcat(buf, fallbackResources[i]);
+                XrmPutLineResource(&db, buf);
+            }
+        }
+    }
 }

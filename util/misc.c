@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.42 2002/08/12 21:21:36 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.43 2002/09/05 17:48:43 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -290,8 +290,10 @@ void RealizeWithoutForcingPosition(Widget shell)
 ** visual is that some color resources are still converted with the default
 ** visual (particularly *background), and these must be avoided by widgets
 ** which are allowed to handle any visual.
+**
+** Returns True if the best visual is the default, False otherwise.
 */
-void FindBestVisual(Display *display, const char *appName, const char *appClass,
+Boolean FindBestVisual(Display *display, const char *appName, const char *appClass,
 	Visual **visual, int *depth, Colormap *colormap)
 {
     char rsrcName[256], rsrcClass[256], *valueString, *type, *endPtr;
@@ -314,7 +316,7 @@ void FindBestVisual(Display *display, const char *appName, const char *appClass,
 	*visual = cachedVisual;
 	*depth = cachedDepth;
 	*colormap = cachedColormap;
-	return;
+	return (*visual == DefaultVisual(display, screen));
     }
     
     /* Read the visualID and installColormap resources for the application.
@@ -397,7 +399,7 @@ void FindBestVisual(Display *display, const char *appName, const char *appClass,
 	    *visual = DefaultVisual(display, screen);
 	    *depth =  DefaultDepth(display, screen);
     	    *colormap = DefaultColormap(display, screen);
-    	    return;
+    	    return True;
 	}
     }
     
@@ -444,6 +446,8 @@ void FindBestVisual(Display *display, const char *appName, const char *appClass,
     if (visList != NULL) {
        XFree(visList);
     }
+    
+    return (*visual == DefaultVisual(display, screen));
 }
 
 /*
