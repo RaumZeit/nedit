@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.46 2004/03/31 15:02:09 tksoh Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.47 2004/06/10 17:01:25 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -609,7 +609,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     if (!NamedStyleExists("Plain"))
     {
         DialogF(DF_WARN, window->shell, 1, "Highlight Style",
-                "Highlight style \"plain\" is missing", "Dismiss");
+                "Highlight style \"Plain\" is missing", "Dismiss");
         return NULL;
     }
 
@@ -680,7 +680,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     	    sizeof(highlightPattern) * nPass1Patterns);
     p2Ptr = pass2PatternSrc = (highlightPattern *)XtMalloc(
     	    sizeof(highlightPattern) * nPass2Patterns);
-    p1Ptr->name = p2Ptr->name = "top";
+    p1Ptr->name = p2Ptr->name = "";
     p1Ptr->startRE = p2Ptr->startRE = NULL;
     p1Ptr->endRE = p2Ptr->endRE = NULL;
     p1Ptr->errorRE = p2Ptr->errorRE = NULL;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.61 2004/01/29 10:53:36 tksoh Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.62 2004/06/10 17:01:26 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1909,7 +1909,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     HSDialog.managedListW = CreateManagedList(form, "list", args, ac,
     	    (void **)HSDialog.highlightStyleList, &HSDialog.nHighlightStyles,
     	    MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, NULL, hsSetDisplayedCB,
-    	    NULL, hsFreeItemCB);
+    	    form, hsFreeItemCB);
     XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, NULL);
  
     /* Set initial default button */
@@ -2006,6 +2006,28 @@ static void hsSetDisplayedCB(void *item, void *cbArg)
     	RadioButtonChangeState(HSDialog.italicW, False, False);
     	RadioButtonChangeState(HSDialog.boldItalicW, False, False);
     } else {
+        if (strcmp(hs->name, "Plain") == 0) {
+            /* you should not be able to delete the reserved style "Plain" */
+            int i, others = 0;
+            int nList = HSDialog.nHighlightStyles;
+            highlightStyleRec **list = HSDialog.highlightStyleList;
+            /* do we have other styles called Plain? */
+            for (i = 0; i < nList; i++) {
+                if (list[i] != hs && strcmp(list[i]->name, "Plain") == 0) {
+                      others++;
+                }
+            }
+            if (others == 0) {
+                /* this is the last style entry named "Plain" */
+                Widget form = (Widget)cbArg;
+                Widget list = NULL;
+                Widget deleteBtn = XtNameToWidget(form, "*delete");
+                /* disable delete button */
+                if (deleteBtn) {
+                    XtSetSensitive(deleteBtn, False);
+                }
+            }
+        }
     	XmTextSetString(HSDialog.nameW, hs->name);
     	XmTextSetString(HSDialog.colorW, hs->color);
     	XmTextSetString(HSDialog.bgColorW, hs->bgColor ? hs->bgColor : "");

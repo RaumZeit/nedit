@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.85 2004/04/30 14:35:16 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.86 2004/06/10 17:01:26 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -5222,7 +5222,7 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
 **      ["style"]       Name of style
 **      ["extent"]      Forward distance from position over which style applies
 ** We only supply the pattern name if the includeName parameter is set:
-**      ["pattern"]       Name of pattern
+**      ["pattern"]     Name of pattern
 **
 */
 static int fillPatternResult(DataValue *result, char **errMsg,
@@ -5240,20 +5240,12 @@ static int fillPatternResult(DataValue *result, char **errMsg,
 
     if (includeName) {
         /* insert pattern name */
-        /* The "top" pattern is a special case. We hide it from the user 
-           (implementation detail). This may change in the future */
-        if (strcmp(patternName, "top") == 0) {
-            DV.val.str.rep = PERM_ALLOC_STR("");
-            DV.val.str.len = 0;
+        if (preallocatedPatternName) {
+            DV.val.str.rep = patternName;
+            DV.val.str.len = strlen(patternName);
         }
         else {
-            if (preallocatedPatternName) {
-                DV.val.str.rep = patternName;
-                DV.val.str.len = strlen(patternName);
-            }
-            else {
-                AllocNStringCpy(&DV.val.str, patternName);
-            }
+            AllocNStringCpy(&DV.val.str, patternName);
         }
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
