@@ -102,6 +102,8 @@ extern "C" {
 #define XmCRotateWhenLeftRight "RotateWhenLeftRight"
 #define XmNtabBarHeight "tabBarHeight"
 #define XmCTabBarHeight "TabBarHeight"
+#define XmNmaxTabWidth "maxTabWidth"
+#define XmCmaxTabWidth "MaxTabWidth"
 #define XmNtabCount "tabCount"
 #define XmCTabCount "TabCount"
 #define XmNtabPlacement "tabPlacement"
@@ -151,6 +153,7 @@ typedef struct
 
 #define XmRESIZE_STATIC  10
 #define XmRESIZE_DYNAMIC 11
+#define XmRESIZE_PACK 12
 
 /* Grid resources */
 
@@ -229,7 +232,9 @@ typedef struct
 #define XmCSimpleHeadings "SimpleHeadings"
 #define XmNsimpleWidths "simpleWidths"
 #define XmCSimpleWidths "SimpleWidths"
+#ifndef XmNselectCallback /* OM 2.2.3 defines this too. */
 #define XmNselectCallback "selectCallback"
+#endif
 #define XmNselectForeground "selectForeground"
 #define XmCSelectForeground "SelectForeground"
 #define XmNselectBackground "selectBackground"
