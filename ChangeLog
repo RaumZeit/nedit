@@ -1,3 +1,194 @@
+2003-05-26 09:07  edg
+
+	* ReleaseNotes (1.21): Added bugs #559902, 561659, 526981, and
+	582469.
+
+2003-05-26 08:16  edg
+
+	* source/search.c (1.58): Committed SF patch #559902: Show Matching
+	Range Bugfix (Tom Heathcote).
+
+2003-05-25 15:55  edg
+
+	* doc/help.etx (1.48), source/help_data.h (1.46),
+	source/help_topic.h (1.39), source/highlightData.c (1.52),
+	source/macro.c (1.70), source/menu.c (1.78), source/preferences.c
+	(1.94), source/preferences.h (1.35): Removed and disabled some of
+	the backlighting functionality and marked it as being experimental
+	(for the 5.4 release).
+
+2003-05-24 19:15  tringali
+
+	* source/: menu.c (1.77), nedit.h (1.39), preferences.c (1.93),
+	preferences.h (1.34), window.c (1.82): Simplified the color dialog
+	box so that all colors are global.  Plug some leaks when parsing
+	color names.  Table-drive color settings to reduce duplicate code.
+
+2003-05-24 18:36  tringali
+
+	* util/check_lin_tif.c (1.5): Allow Motif 2.1.x instead of just
+	update level 30.  We've delivered NEdit with these configurations
+	and they work fine.
+
+2003-05-24 13:11  yooden
+
+	* source/highlightData.c (1.51): Fixed missing escape in NEdit
+	Macro highlighting pattern.
+
+2003-05-23 14:27  tringali
+
+	* source/nedit.c (1.48): Avoid a crash when trying to drag widgets
+	(not text) in non-default visual.  This appears to be a OSF Motif
+	bug so we just disable dragging entirely.  Not a great solution.
+
+2003-05-23 10:58  edg
+
+	* ReleaseNotes (1.20): Added bug #715767.
+
+2003-05-23 07:48  edg
+
+	* source/preferences.c (1.92): Removed autoload.nm from NEdit macro
+	recognition patterns again (covered by .nm) and made the upgrade
+	routines also work for people who already upgraded to the post-5.3
+	preference format.
+
+2003-05-22 22:12  yooden
+
+	* source/: preferences.c (1.91), highlightData.c (1.50): New
+	version of NEdit Macro syntax highlighting patterns.
+
+2003-05-22 22:00  edg
+
+	* source/highlightData.c (1.49): Small update to the Python
+	highlighting patterns (due to changed delimiters).
+
+2003-05-22 21:56  edg
+
+	* source/preferences.c (1.90): Defined a non-default set of
+	delimiters for Python mode.  Added autoload.nm to the recognition
+	patterns for NEdit Macro mode.	Added nedit.rc to the recognition
+	patterns for X Resources mode.	Added a 5.3 to 5.4 upgrade routine
+	for the 3 changes above.
+
+2003-05-20 05:41  n8gray
+
+	* source/macro.c (1.69): Committing Tom Heathcote's minor rangeset
+	patch.	If it breaks everything blame him.  :-)
+
+2003-05-20 00:27  n8gray
+
+	* Makefile (1.11), makefiles/Makefile.aix (1.7),
+	makefiles/Makefile.bsdi (1.5), makefiles/Makefile.ccur (1.5),
+	makefiles/Makefile.convex (1.5), makefiles/Makefile.cygwin (1.7),
+	makefiles/Makefile.dcosx (1.5), makefiles/Makefile.dec (1.6),
+	makefiles/Makefile.depend (1.5), makefiles/Makefile.freebsd (1.5),
+	makefiles/Makefile.generic (1.10), makefiles/Makefile.hpux (1.5),
+	makefiles/Makefile.linux (1.11), makefiles/Makefile.lynx (1.6),
+	makefiles/Makefile.m88k.svr4 (1.5), makefiles/Makefile.macosx
+	(1.4), makefiles/Makefile.netbsd (1.5), makefiles/Makefile.openbsd
+	(1.3), makefiles/Makefile.os2 (1.14), makefiles/Makefile.osf (1.6),
+	makefiles/Makefile.qnx (1.3), makefiles/Makefile.reliant (1.5),
+	makefiles/Makefile.sco (1.6), makefiles/Makefile.sgi (1.5),
+	makefiles/Makefile.solaris (1.9), makefiles/Makefile.sunos (1.5),
+	makefiles/Makefile.superux (1.5), makefiles/Makefile.uhc (1.5),
+	makefiles/Makefile.ultrix (1.5), makefiles/Makefile.unicos (1.7),
+	makefiles/Makefile.unixware (1.6), util/Makefile.common (1.8),
+	util/check_lin_tif.c (1.4): Added verify_config target to all
+	Makefiles.  On most platforms it does nothing, but on Linux it
+	triggers a check of the *tif version.  This should also probably be
+	enabled on openbsd, freebsd, and any other platform where
+	OpenMotif/Lesstif use is common, but I'll leave that to people more
+	familiar with those platforms.
+
+2003-05-19 21:55  slobasso
+
+	* source/highlightData.c (1.48): Adjusted Nedit Macro Language
+	highlighting: removed delete from actions and added to keywords and
+	added the following items Variables: calltip_ID Macro Routines:
+	calltip, kill_calltip Actions: focus_pane, unload_tags_file,
+	goto_matching, select_to_matching,    set_auto_indent,
+	set_em_tab_dist, set_fonts, set_highlight_syntax,   
+	set_incremental_backup, set_incremental_search_line, set_locked,   
+	set_make_backup_copy, set_overtype_mode, set_show_line_numbers,   
+	set_show_matching, set_match_syntax_based, set_statistics_line,   
+	set_tab_dist, set_use_tabs, set_wrap_margin, set_wrap_text
+
+2003-05-19 08:03  edg
+
+	* doc/help.etx (1.47), source/help_data.h (1.45),
+	source/help_topic.h (1.38): Added missing replace_all()
+	documentation (Tom Heathcote) and removed the "experimental"
+	classification for smart indent.
+
+2003-05-18 20:05  edg
+
+	* source/: nedit.c (1.47), nedit.h (1.38): Workaround for KDE's
+	FONTLIST bug (and for the various BACKGROUND and FOREGROUND
+	resource values).
+
+2003-05-16 17:15  n8gray
+
+	* util/check_lin_tif.c (1.3): Added 92.32 to known-good LessTif.
+	
+	Feel free to do this yourselves!  :-)  It's pretty easy to do.
+
+2003-05-16 16:58  edg
+
+	* source/highlightData.c (1.47): Updated Python patterns (no
+	updated delimiters yet).
+
+2003-05-16 16:51  slobasso
+
+	* util/.cvsignore (1.2): added check_lin_tif
+
+2003-05-16 16:50  slobasso
+
+	* source/nedit.c (1.46): removed unused variable warning
+
+2003-05-16 16:47  slobasso
+
+	* source/: text.c (1.43), text.h (1.17), textDisp.c (1.53),
+	textDisp.h (1.23): re-commit graphics expose code and added window
+	obscurred hack back in that was erroneously removed. This should
+	put us back where we were without reintroducing a bug that was
+	fixed.
+
+2003-05-16 15:11  tringali
+
+	* source/: text.c (1.42), text.h (1.16), textDisp.c (1.52),
+	textDisp.h (1.22): Removed explicit handling of GraphicsExpose
+	events that was causing incomplete redraws, reverting to older
+	algorithm.  (I've extracted the code into a patch and will post it
+	back on SF to address the problem it was trying to fix.)
+
+2003-05-16 13:47  tringali
+
+	* util/misc.c (1.55): Fix for missing icons (via C. Rasmussen)
+
+2003-05-16 05:23  tksoh
+
+	* source/window.c (1.81): Fix for SF bug #715767: remaining panes
+	resized incorrectly after closing a splitpane.
+
+2003-05-15 19:47  n8gray
+
+	* util/check_lin_tif.c (1.2): Modified copyright notice to be more
+	consistent with the rest of NEdit.
+
+2003-05-15 19:42  n8gray
+
+	* Makefile (1.10), makefiles/Makefile.linux (1.10),
+	source/Makefile.common (1.15), source/help.c (1.95),
+	util/Makefile.common (1.7), util/check_lin_tif.c (1.1): Added code
+	to detect the version of Motif/Lesstif being built against and
+	complain if it's known-bad or unknown.	There's probably room for
+	improvement in both the build and detection portions of this code.
+
+2003-05-15 07:36  edg
+
+	* ChangeLog (1.32): Regenerated (please only update with cvs2cl.pl
+	-b -r -t --accum --gmt).
+
 2003-05-15 07:33  edg
 
 	* source/parse_noyacc.c (1.7): Copied the recent modifications of
