@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.23 2001/03/12 15:15:13 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.24 2001/03/12 15:24:57 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3464,8 +3464,8 @@ Set auto indent mode for the current window.\n\
 \n\
 set_em_tab_dist(em-tab-distance)\n\
 Set the emulated tab size. An em-tab-distance value of \
-0 means no emulated tabs. Em-tab-distance must be smaller \
-than 1000.\n\
+0 or -1 translates to no emulated tabs. Em-tab-distance must \
+be smaller than 1000.\n\
 \n\
 set_fonts(font-name, italic-font-name, bold-font-name, bold-italic-font-name)\n\
 Set all the fonts used for the current window.\n\
@@ -3494,7 +3494,6 @@ This only affects the locked status of a file, not it's read-only \
 status. Permissions are NOT changed. \
 A value of 0 turns it off and a value of 1 turns it on. \
 If no parameters are supplied the option is toggled.\n\
-\n\
 \n\
 set_make_backup_copy([0 | 1])\n\
 Set whether backup copies are made during saves for the current window. \
