@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.6 2001/04/06 13:03:31 amai Exp $ */
+/* $Id: interpret.h,v 1.7 2001/12/24 09:18:36 amai Exp $ */
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
@@ -94,8 +94,8 @@ Symbol *InstallSymbol(const char *name, int type, DataValue value);
 Program *FinishCreatingProgram(void);
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 void StartLoopAddrList(void);
-void AddBreakAddr(Inst *addr);
-void AddContinueAddr(Inst *addr);
+int AddBreakAddr(Inst *addr);
+int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
 /* Routines for executing programs */

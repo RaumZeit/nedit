@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.17 2001/12/13 13:14:32 amai Exp $ */
+/* $Id: parse.y,v 1.18 2001/12/24 09:18:36 amai Exp $ */
 %{
 #include <string.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.17 2001/12/13 13:14:32 amai Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.18 2001/12/24 09:18:36 amai Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -40,6 +40,8 @@ static Symbol *matchesActionRoutine(char **inPtr);
 
 static char *ErrMsg;
 static char *InPtr;
+extern Inst *LoopStack[]; /* addresses of break, cont stmts */
+extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
 %}
 
@@ -109,9 +111,9 @@ stmt:     simpstmt '\n' blank
                   ADD_OP(OP_BRANCH); ADD_BR_OFF($1+3);
                   SET_BR_OFF($1+6, GetPC());}
         | BREAK '\n' blank
-    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddBreakAddr(GetPC()-1); }
+    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddBreakAddr(GetPC()-1)) { yyerror("break outside loop"); YYERROR; } }
         | CONTINUE '\n' blank
-    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddContinueAddr(GetPC()-1); }
+    	        { ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddContinueAddr(GetPC()-1)) { yyerror("continue outside loop"); YYERROR; } }
         | RETURN expr '\n' blank { ADD_OP(OP_RETURN); }
         | RETURN '\n' blank { ADD_OP(OP_RETURN_NO_VAL); }
         ; 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.20 2001/12/13 13:14:30 amai Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.21 2001/12/24 09:18:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -359,16 +359,20 @@ void StartLoopAddrList(void)
     addLoopAddr(NULL);
 }
 
-void AddBreakAddr(Inst *addr)
+int AddBreakAddr(Inst *addr)
 {
+    if (LoopStackPtr == LoopStack) return 1;
     addLoopAddr(addr);
     *addr = NEEDS_BREAK;
+    return 0;
 }
 
-void AddContinueAddr(Inst *addr)
+int AddContinueAddr(Inst *addr)
 {   
+    if (LoopStackPtr == LoopStack) return 1;
     addLoopAddr(addr);
     *addr = NEEDS_CONTINUE;
+    return 0;
 }
 
 static void addLoopAddr(Inst *addr)
