@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.139 2004/04/14 00:14:52 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.140 2004/04/14 00:49:47 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -852,7 +852,7 @@ static Widget addTab(Widget folder, WindowInfo *window, const char *string)
 	    xrwsBubbleButtonWidgetClass, folder,
 	    XmNmarginWidth, 0,
 	    XmNmarginHeight, 0,
-  	    XmNalignment, XmALIGNMENT_BEGINNING,
+  	    /* XmNalignment, XmALIGNMENT_BEGINNING, */
   	    XmNlabelString, s1,
   	    XltNbubbleString, s1,
 	    XltNshowBubble, GetPrefToolTips(),
