@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.63 2004/02/19 06:23:14 tksoh Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.64 2004/02/19 06:33:03 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -346,7 +346,7 @@ static const char cmdLineHelp[] =
 	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
 	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
 	      [-import file] [-background color] [-foreground color]\n\
-	      [-V|-version] [-tabbed] [-untabbed]\n\
+	      [-tabbed] [-untabbed] [-group] [-V|-version]\n\
 	      [--] [file...]\n";
 #else
 "";
