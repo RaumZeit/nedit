@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Aug 30, 2002 (Do NOT edit!)
+                 Generated on Aug 31, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2002 Mark Edel                                            *
@@ -1704,11 +1704,9 @@ static char * htxt_macro_lang [] = {
 "NEdit will automatically execute when it is first started.  Its location is ",
 "dependent on your environment: ",
 "    * The default place for the file is '$HOME/.nedit/autoload.nm',\n",
-"    * if the variable $NEDIT_HOME is set in your environment it is located at\n",
-"\01A'$NEDIT_HOME/autoload.nm',\n",
-"\01I    * if you are using old-style run control files (i.e. $HOME/.nedit is a regular\n",
-"\01Afile) it is located in $HOME/.neditmacro'.\n",
-"\01I(For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in ",
+"    * if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/autoload.nm',\n",
+"    * if you are using old-style run control files (i.e. $HOME/.nedit is a regular file) it is located in $HOME/.neditmacro'.\n",
+"(For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in ",
 "'SYS$LOGIN:.neditmacro' otherwise.) ",
 "\n\n",
 "NEdit's macro language is a simple interpreter with integer arithmetic, ",
@@ -3300,11 +3298,9 @@ static char * htxt_preferences [] = {
 "options that you have moved. ",
 "The location of NEdit's preferences file depends on your environment: ",
 "    * The default place for the file is '$HOME/.nedit/nedit.rc',\n",
-"    * if the variable $NEDIT_HOME is set in your environment it is located at\n",
-"\01A'$NEDIT_HOME/nedit.rc',\n",
-"\01I    * you may also use old-style run control files; in this case, the preferences\n",
-"\01Aare stored in $HOME/.nedit.\n",
-"\01I(For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in ",
+"    * if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/nedit.rc',\n",
+"    * you may also use old-style run control files; in this case, the preferences are stored in $HOME/.nedit.\n",
+"(For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in ",
 "'SYS$LOGIN:.nedit' otherwise.) ",
 "\n\n",
 "\01RSharing Customizations with Other NEdit Users\01I",
@@ -4990,4 +4986,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Aug 30, 2002\n";
+static const char * NEditVersion = "NEdit release of Aug 31, 2002\n";
