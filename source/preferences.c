@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.63 2002/08/10 23:52:55 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.64 2002/08/19 21:41:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -84,12 +84,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.63 2002/08/10 23:52:55 tring
 #endif
 
 #define PREF_FILE_VERSION "5.4"
-/* Undefine PREF_FILE_ALPHA to activate release code.
-   Bump alpha version each time a preferences file upgrade is required. 
-   
-      alpha 1: calltips patch
-*/
-#define PREF_FILE_ALPHA 1
 
 /* New styles added in 5.2 for auto-upgrade */
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
@@ -1006,14 +1000,13 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
     int requiresConversion;
     int major;              /* The integral part of version number */
     int minor;              /* fractional part of version number */
-    int alpha = 0;          /* Development sub-versions */
     int fileVer = 0;        /* Both combined into an integer */
     int nparsed;
     
     /* Load preferences */
     RestorePreferences(prefDB, appDB, APP_NAME,
     	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-    
+
     /* If the preferences file was written by an older version of NEdit,
        warn the user that it will be converted. */
     requiresConversion = PrefData.prefFileRead &&
@@ -1027,15 +1020,16 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
             fileVer = 0;    /* Pre-5.1 */
         }
         else {
-            nparsed = sscanf(PrefData.fileVersion, "%d.%da%d", &major, &minor,
-          		     &alpha);
+            /* Note: do not change the format of this.  Older executables
+               need to read this field for forward compatability. */
+            nparsed = sscanf(PrefData.fileVersion, "%d.%d", &major, &minor);
             if (nparsed >= 2) {
                 /* Use OSF-style numbering scheme */
                 fileVer = major * 1000 + minor;
             }
         }
     }
-    
+
     if (PrefData.prefFileRead && fileVer < 5002) {
 	updatePatternsTo5dot2();
     }
@@ -1045,34 +1039,18 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
         updatePatternsTo5dot3();
     }
 
-#ifdef PREF_FILE_ALPHA
-    /* Development code */
-    if (PrefData.prefFileRead && fileVer <= 5004) {
-	switch (alpha) {
-	    case 0: /* Calltips - no conversion needed. Note that adding 
-		       default tips file field happens while parsing the 
-		       language modes */
-		/* fall through */
-	    case 1: /* Whatever comes next */
-		/* fall through */
-	    default:
-		break;
-	}
-	if (alpha < PREF_FILE_ALPHA) {
-            fprintf(stderr, "NEdit: Converting .nedit file to 5.4a%d version.\n"
-                    "    To keep, use Preferences -> Save Defaults\n", 
-		    PREF_FILE_ALPHA);
-	}
-    }
-#else
-    /* Release code */
-    if (PrefData.prefFileRead && (fileVer < 5004 || 
-	                          (fileVer == 5004 && alpha > 0))) {
-	/* Add all necessary 5.3 -> 5.4 conversions here */
+    /* Note that we don't care about unreleased file versions.  Anyone
+       who is running a CVS or alpha version of NEdit is resposnbile
+       for managing the preferences file themselves.  Otherwise, it
+       gets impossible to track the number of "in-between" file formats.
+       We only do auto-upgrading for a real release. */
+
+    if (PrefData.prefFileRead && (fileVer < 5004)) {
+	/* Add all necessary 5.3 -> 5.4 conversions here
         fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
+        */
     }
-#endif /* PREF_FILE_ALPHA */
    
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
@@ -1188,11 +1166,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
     TempStringPrefs.styles = WriteStylesString();
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
-#ifdef PREF_FILE_ALPHA
-    sprintf(PrefData.fileVersion, "%sa%d", PREF_FILE_VERSION, PREF_FILE_ALPHA);
-#else
     strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-#endif /* PREF_FILE_ALPHA */
     if (!SavePreferences(XtDisplay(parent), GetRCFileName(NEDIT_RC), HeaderText,
             PrefDescrip, XtNumber(PrefDescrip)))
     {
