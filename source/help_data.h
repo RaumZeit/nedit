@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jan 16, 2004 (Do NOT edit!)
+                 Generated on Jan 28, 2004 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2004 Mark Edel                                            *
@@ -3944,7 +3944,7 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Color for hyperlinks in the help text ",
 "\n\n",
-"\01A\01Bnedit.backlightCharTypes\01A:  0-8,10-31,127:red;9:#dedede;32-126,160-255:#f0f0f0;128-159:orange\n",
+"\01A\01Bnedit.backlightCharTypes\01A:  0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange\n",
 "\01I\n",
 "\01JNOTE: backlighting is \01Lexperimental\01J\01I (see \"\01QProgramming with NEdit\01I\"). ",
 "\n\n",
