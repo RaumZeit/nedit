@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.18 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.19 2001/04/16 16:36:30 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -123,7 +123,7 @@ static void patchedRemoveChild(Widget child);
 WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 {
     Widget appShell, mainWin, menuBar, pane, text, stats, statsForm;
-    Widget iSearchRadioBox, iSearchLabel;
+    Widget iSearchLabel;
     WindowInfo *window;
     Arg al[20];
     int ac;
@@ -293,6 +293,16 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
     if(window->showISearchLine || window->showStats)
 	XtManageChild(statsForm);
        	    
+    /* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
+       the i-search bar was active, and the i-search text widget was focussed,
+       and the window's width was resized to nearly zero. 
+       In theory, it is possible to avoid this by imposing a minimum
+       width constraint on the nedit windows, but that width would have to
+       be at least 30 characters, which is probably unacceptable.
+       Amazingly, adding a top offset of 1 pixel to the toggle buttons of 
+       the i-search bar, while keeping the the top offset of the text widget 
+       to 0 seems to avoid avoid the crash. */
+       
     window->iSearchForm = XtVaCreateWidget("iSearchForm", 
        	    xmFormWidgetClass, statsForm,
 	    XmNleftAttachment, XmATTACH_FORM,
@@ -313,50 +323,51 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNleftOffset, 5,
 	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNtopOffset, 1, /* see openmotif note above, for aligment 
+                                with toggle buttons below */
 	    XmNbottomAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
-    iSearchRadioBox = XtVaCreateManagedWidget("iSearchRadioBox",
-    	    xmRowColumnWidgetClass, window->iSearchForm,
-    	    XmNorientation, XmHORIZONTAL,
-    	    XmNpacking, XmPACK_TIGHT,
-	    XmNradioBehavior, False,
-	    XmNmarginHeight, 0,
-	    XmNrightAttachment, XmATTACH_FORM,
-	    XmNrightOffset, 5,
-	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNbottomAttachment, XmATTACH_FORM, NULL);
-    
-    window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
-      	    xmToggleButtonWidgetClass, iSearchRadioBox,
-	    XmNlabelString, s1=XmStringCreateSimple("RegExp"),
-	    XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
-      	    || GetPrefSearch() == SEARCH_REGEX,
-	    XmNmarginHeight, 0, NULL);
-    XmStringFree(s1);
-    XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback,
-	    (XtCallbackProc)focusToISearchTextCB, window);
     
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
-      	    xmToggleButtonWidgetClass, iSearchRadioBox,
+      	    xmToggleButtonWidgetClass, window->iSearchForm,
 	    XmNlabelString, s1=XmStringCreateSimple("Case"),
 	    XmNset, GetPrefSearch() == SEARCH_CASE_SENSE 
       	    || GetPrefSearch() == SEARCH_REGEX
       	    || GetPrefSearch() == SEARCH_CASE_SENSE_WORD,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNtopOffset, 1, /* see openmotif note above */
+            XmNrightAttachment, XmATTACH_FORM,
 	    XmNmarginHeight, 0, NULL);
     XmStringFree(s1);
+    
     XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback,
+	    (XtCallbackProc)focusToISearchTextCB, window);
+    window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
+      	    xmToggleButtonWidgetClass, window->iSearchForm,
+	    XmNlabelString, s1=XmStringCreateSimple("RegExp"),
+	    XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
+      	    || GetPrefSearch() == SEARCH_REGEX,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNtopOffset, 1, /* see openmotif note above */
+            XmNrightAttachment, XmATTACH_WIDGET,
+            XmNrightWidget, window->iSearchCaseToggle,
+	    XmNmarginHeight, 0, NULL);
+    XmStringFree(s1);
+    XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)focusToISearchTextCB, window);
     
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
       	    xmToggleButtonWidgetClass, window->iSearchForm,
 	    XmNlabelString, s1=XmStringCreateSimple("Rev"),
 	    XmNset, False,
-	    XmNmarginHeight, 0,
-	    XmNrightAttachment, XmATTACH_WIDGET,
-	    XmNrightWidget, iSearchRadioBox,
-	    XmNrightOffset, 5,
 	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNbottomAttachment, XmATTACH_FORM, NULL);
+	    XmNbottomAttachment, XmATTACH_FORM,
+	    XmNtopOffset, 1, /* see openmotif note above */
+            XmNrightAttachment, XmATTACH_WIDGET,
+            XmNrightWidget, window->iSearchRegexToggle,
+	    XmNmarginHeight, 0, NULL);
     XmStringFree(s1);
     XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)focusToISearchTextCB, window);
@@ -371,7 +382,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 	    XmNrightWidget, window->iSearchRevToggle,
 	    XmNrightOffset, 5,
 	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNtopOffset, 0,
+	    XmNtopOffset, 0, /* see openmotif note above */
 	    XmNbottomAttachment, XmATTACH_FORM,
 	    XmNbottomOffset, 0, NULL);
     RemapDeleteKey(window->iSearchText);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.32 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.33 2001/04/16 16:36:30 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -4600,6 +4600,12 @@ static Widget createHelpPanel(Widget parent, int topic)
     appShell = CreateShellWithBestVis(APP_NAME, APP_CLASS,
 	    applicationShellWidgetClass, TheDisplay, al, ac);
     AddSmallIcon(appShell);
+    /* With openmotif 2.1.30, a crash may occur when the text widget of the
+       help window is (slowly) resized to a zero width. By imposing a 
+       minimum _window_ width, we can work around this problem. The minimum 
+       width should be larger than the width of the scrollbar. 50 is probably 
+       a safe value; this leaves room for a few characters */
+    XtVaSetValues(appShell, XtNminWidth, 50, NULL);
     form = XtVaCreateManagedWidget("helpForm", xmFormWidgetClass, appShell, NULL);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     
