@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.72 2002/01/05 01:48:21 edel Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.73 2002/01/10 12:49:08 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -93,7 +93,7 @@ static int LastSearchWasAllTopics = False;
    The NEdit text widget uses the first help style, 'A', to calculate window
    width, so making 'A' a fixed font will yield window widths calibrated to
    match width-dependent fixed font layouts in the help text. */
-enum helpFonts StyleFonts[] =
+static enum helpFonts StyleFonts[] =
 {
     /* Fixed fonts, styles: 'A', 'B', 'C', 'D' */
     FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
@@ -116,7 +116,7 @@ enum helpFonts StyleFonts[] =
     H1_HELP_FONT, H2_HELP_FONT,  H3_HELP_FONT
 };
 
-int StyleUnderlines[] =
+static int StyleUnderlines[] =
 {
     /* Fixed fonts, styles: 'A', 'B', 'C', 'D' */
     False, False, False, False,
@@ -195,7 +195,7 @@ static char *  getBuildInfo()
 /*
 ** Initialization for help system data, needs to be done only once.
 */
-void initHelpStyles( Widget parent )
+static void initHelpStyles( Widget parent )
 {
     static int styleTableInitialized = False;
     
