@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.33 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.34 2001/09/05 11:44:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -203,6 +203,7 @@ static struct prefData {
     int showMatchingStyle;	/* how to flash matching parenthesis */
     int highlightSyntax;    	/* whether to highlight syntax by default */
     int smartTags;  	    	/* look for tag in current window first */
+    int alwaysCheckRelativeTagsSpecs; /* for every new opened file of session */
     int stickyCaseSenseBtn;     /* whether Case Word Btn is sticky to Regex Btn */
     int prefFileRead;	    	/* detects whether a .nedit existed */
 #ifdef SGI_CUSTOM
@@ -740,6 +741,8 @@ static PrefDescripRec PrefDescrip[] = {
       (void *)sizeof(PrefData.bgMenuBtn), False},
     {"smartTags", "SmartTags", PREF_BOOLEAN, "True",
     	&PrefData.smartTags, NULL, True},
+    {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", 
+      	PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, NULL, False},
     {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False",
     	&PrefData.prefFileRead, NULL, True},
 #ifdef SGI_CUSTOM
@@ -1391,6 +1394,11 @@ void SetPrefSmartTags(int state)
 int GetPrefSmartTags(void)
 {
     return PrefData.smartTags;
+}
+
+int GetPrefAlwaysCheckRelativeTagsSpecs(void)
+{
+    return PrefData.alwaysCheckRelativeTagsSpecs;
 }
 
 char *GetPrefDelimiters(void)

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.28 2001/08/29 00:01:45 slobasso Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.29 2001/09/05 11:44:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -182,6 +182,8 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     /* Add the name to the convenience menu of previously opened files */
     strcpy(fullname, path);
     strcat(fullname, name);
+    if(GetPrefAlwaysCheckRelativeTagsSpecs())
+      	AddRelTagsFile(GetPrefTagFile(), path);
     AddToPrevOpenMenu(fullname);
     
     /* Decide what language mode to use, trigger language specific actions */

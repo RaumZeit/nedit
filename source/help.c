@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.53 2001/08/29 15:56:27 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.54 2001/09/05 11:44:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -574,7 +574,9 @@ in which case NEdit will load it starting from the current directory.  The \
 second option allows you to have different tags files for different \
 projects, each automatically loaded depending on the directory you're in \
 when you start NEdit.  Setting the name to \"tags\" is an obvious choice \
-since this is the name that ctags uses.\n\
+since this is the name that ctags uses.  It is also possible to make NEdit \
+looking for tags files specified with a relative path every time a file is \
+opened by setting the X resource nedit.alwaysCheckRelativeTagsSpecs.\n\
 \n\
 To unload a tags file, select \"Un-load Tags File\" from the File menu \
 and choose from the list of tags files.  NEdit will keep track of tags \
@@ -2387,12 +2389,23 @@ for NEdit options not settable via the Preferences menu (for preference \
 resource names, see your .nedit file):\n\
 \n\
     nedit.tagFile: (not defined) -- The name of a file\n\
+        (or multiple files separated by a colon character)\n\
         of the type produced by Exuberant Ctags or the\n\
 	Unix ctags command, which NEdit will load at\n\
 	startup time (see Features for Programmers).  The\n\
 	tag file provides a database from which NEdit can\n\
 	automatically open files containing the definition\n\
 	of a particular subroutine or data type.\n\
+\n\
+    nedit.alwaysCheckRelativeTagsSpecs: True -- If there\n\
+   	are tag file(s) (see nedit.tagFile above) specified\n\
+   	using a relative path and this resource is set to\n\
+   	True then for every new opened file is checked if\n\
+   	relatively to the file's directory the relative tag\n\
+   	specification matches. If so the tags file will be \n\
+	load.  If this resource is set to False then relative\n\
+	tag file specifications are evaluated only once on\n\
+	NEdit startup.\n\
 \n\
     nedit.shell: /bin/csh -- (Unix systems only) The Unix\n\
         shell (command interpreter) to use for executing\n\

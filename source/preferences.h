@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.13 2001/08/28 11:29:21 amai Exp $ */
+/* $Id: preferences.h,v 1.14 2001/09/05 11:44:25 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -62,6 +62,7 @@ void SetPrefTagFile(const char *tagFileName);
 char *GetPrefTagFile(void);
 int GetPrefSmartTags(void);
 void SetPrefSmartTags(int state);
+int GetPrefAlwaysCheckRelativeTagsSpecs(void);
 void SetPrefFont(char *fontName);
 void SetPrefBoldFont(char *fontName);
 void SetPrefItalicFont(char *fontName);

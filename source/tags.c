@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.16 2001/08/28 11:41:04 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.17 2001/09/05 11:44:25 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -82,7 +82,6 @@ static void findAllDialogAP(Widget dialogParent, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, const char *name,
                                char *label, int nArgs, char *args[]);
-static char *normalizePathname(char *str);
 
 /* Parsed list of tags read by LoadTagsFile.  List is terminated by a tag
    structure with the name field == NULL */
@@ -154,7 +153,9 @@ static int addTag(const char *name, const char *file, const char *search,
         strcpy(newfile,file);
     else
         sprintf(newfile,"%s%s", path, file);
-    normalizePathname(newfile);
+    
+    NormalizePathname(newfile);
+    CompressPathname(newfile);
    
     if (Tags == NULL) Tags = (tag **)calloc(DefTagHashSize, sizeof(tag*));
 	
@@ -165,7 +166,8 @@ static int addTag(const char *name, const char *file, const char *search,
 	if (*t->file != '/') {
 	    char tmpfile[MAXPATHLEN];
 	    sprintf(tmpfile, "%s%s", t->path, t->file);
-	    normalizePathname(tmpfile);
+	    NormalizePathname(tmpfile);
+	    CompressPathname(tmpfile);
 	    if (strcmp(newfile, tmpfile)) continue;
 	}
 	return FALSE;
@@ -217,11 +219,61 @@ static int delTag(const char *name, const char *file, const char *search,int ind
     return del>0;
 }
 
+/* used  in AddRelTagsFile and AddTagsFile */
+static int tagFileIndex = 0; 
+
+/*  
+** AddRelTagsFile():  Rescan tagSpec for relative tag file specs 
+** (not starting with [/~]) and extend tag files list if in
+** windowPath a tags file matching the relative spec has been found.
+*/
+int AddRelTagsFile(char *tagSpec, char *windowPath) 
+{
+    tagFile *t;
+    int added=0;
+    struct stat statbuf;
+    char *filename;
+    char tBuf[MAXPATHLEN];
+    char pathName[MAXPATHLEN];
+
+    tagSpec = strcpy(tBuf,tagSpec);
+    for (filename = strtok(tagSpec,":"); filename; filename = strtok(NULL,":")){
+      	if (*filename == '/' || *filename == '~')
+	    continue;
+	if(windowPath && *windowPath) 
+	    strcpy(pathName, windowPath);
+	else 
+	    strcpy(pathName, GetCurrentDir());
+	strcat(pathName,"/");
+	strcat(pathName,filename);
+	NormalizePathname(pathName);
+      	CompressPathname(pathName);
+
+	for (t = TagsFileList; t && strcmp(t->filename,pathName); t = t->next);
+	if (t) {
+	    added=1;
+	    continue;
+	}
+	if (stat(pathName,&statbuf) != 0)
+	    continue;
+	t = (tagFile *) malloc(sizeof(tag));
+	t->filename = STRSAVE(pathName);
+	t->loaded = 0;
+	t->date = statbuf.st_mtime;
+	t->index = ++tagFileIndex;
+	t->next = TagsFileList;
+	TagsFileList = t;
+	added=1;
+    }
+    if (added)
+	return TRUE;
+    return FALSE;
+} 
+
 /*  AddTagsFile():  Add a file spec to the list of tag files to manage
  */
 int AddTagsFile(char *tagSpec)
 {
-    static int fileIndex = 0;
     tagFile *t;
     int added=0;
     struct stat statbuf;
@@ -237,7 +289,9 @@ int AddTagsFile(char *tagSpec)
 	    strcat(pathName,filename);
 	} else
 	    strcpy(pathName,filename);
-	normalizePathname(pathName);
+	NormalizePathname(pathName);
+      	CompressPathname(pathName);
+
 	for (t = TagsFileList; t && strcmp(t->filename,pathName); t = t->next);
 	if (t) {
 	    added=1;
@@ -249,7 +303,7 @@ int AddTagsFile(char *tagSpec)
 	t->filename = STRSAVE(pathName);
 	t->loaded = 0;
 	t->date = statbuf.st_mtime;
-	t->index = ++fileIndex;
+	t->index = ++tagFileIndex;
 	t->next = TagsFileList;
 	TagsFileList = t;
 	added=1;
@@ -287,6 +341,7 @@ static int loadTagsFile(char *tagSpec, int index)
     char unused[MAXPATHLEN], tmpPath[MAXPATHLEN];
     char *filename;
     char *tagPath=NULL;
+    char *tmpTagSpec;
     int nRead;
     WindowInfo *w;
     
@@ -296,7 +351,10 @@ static int loadTagsFile(char *tagSpec, int index)
  *  Nedit.tags: <tagfile>:<tagfile>
  */
     
-    for (filename = strtok(tagSpec,":"); filename; filename = strtok(NULL,":")) {
+    /*  tagSpec has to be copied, because otherwise strtok places NULL-characters in it!*/
+    tmpTagSpec=malloc(strlen(tagSpec)+1);
+    strcpy(tmpTagSpec, tagSpec);
+    for (filename = strtok(tmpTagSpec,":"); filename; filename = strtok(NULL,":")) {
 
 	/* Open the file */
 	if ((fp = fopen(filename, "r")) == NULL) continue;
@@ -318,6 +376,7 @@ static int loadTagsFile(char *tagSpec, int index)
 	}
 	fclose(fp);
     }
+    free(tmpTagSpec);
     if (tagPath == NULL) return FALSE;
     
     /* Undim the "Find Definition" and "Clear All Tags Data" menu item in the existing windows */
@@ -736,30 +795,6 @@ static Widget createSelectMenu(Widget parent, const char *name,
     ManageDialogCenteredOnPointer(menu);
     return menu;
 }
-
-/* remove './' '../' & '//' from pathnames */
-static char *normalizePathname(char *str)
-{
-    char *r, *p=str;
-    char result[MAXPATHLEN+1];
-    r = result;
-
-    while (*p) {
-	if (!strncmp(p,"../",3))
-	    p += 3;
-	else if (!strncmp(p,"./",2))
-	    p += 2;
-	else if (!strncmp(p,"//",2))
-	    p += 2;
-	else
-	    *r = *p;
-	r++; p++;
-    }
-    *r = '\0';
-    strcpy(str, result);
-    return str;
-}
-
 
 /*--------------------------------------------------------------------------
 
