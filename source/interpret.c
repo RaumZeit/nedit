@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.25 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.26 2002/07/31 23:34:05 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1869,7 +1869,8 @@ struct SparseArrayEntry *ArrayNew(void)
 }
 
 /*
-** insert a DataValue into an array, allocate the array in needed
+** insert a DataValue into an array, allocate the array if needed
+** keyStr must be a string that was allocated with AllocString()
 */
 int ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
 {
