@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.90 2004/10/18 15:54:11 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.91 2004/11/05 08:44:31 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1817,6 +1817,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     char stringStorage[TYPE_INT_STR_SIZE(int)], *string;
     WindowInfo *w;
     char fullname[MAXPATHLEN];
+    char normalizedString[MAXPATHLEN];
 
     /* Read the argument representing the window to focus to, and translate
        it into a pointer to a real WindowInfo */
@@ -1829,15 +1830,16 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     else if (!strcmp(string, "next"))
 	w = window->next;
     else {
+	strcpy(&normalizedString[0], string);
 	for (w=WindowList; w != NULL; w = w->next) {
 	    sprintf(fullname, "%s%s", w->path, w->filename);
-            if (1 == NormalizePathname(string))
+            if (1 == NormalizePathname(normalizedString))
             {
                 /*  Something is broken with the input pathname. */
                 *errMsg = "Pathname too long in focus_window()";
                 return False;
             }
-	    if (!strcmp(string, fullname))
+	    if (!strcmp(normalizedString, fullname))
 		break;
 	}
     }
