@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Nov 21, 2003 (Do NOT edit!)
+                 Generated on Dec 28, 2003 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2003 Mark Edel                                            *
@@ -1827,7 +1827,7 @@ static char * htxt_macro_lang [] = {
 "\n\n",
 "\01A     function_name(arg1, arg2, ...)\n",
 "\01I\n",
-"where arg1, arg2, etc. represent up to 9 argument values which are passed to ",
+"where arg1, arg2, etc. represent the argument values which are passed to ",
 "the routine being called.  A function or subroutine call can be on a line by ",
 "itself, as above, or if it returns a value, can be invoked within a character ",
 "or numeric expression: ",
@@ -1876,8 +1876,10 @@ static char * htxt_macro_lang [] = {
 "menu item definitions (usually they are found in the autoload macro file). ",
 "\n\n",
 "The arguments with which a user-defined subroutine or function was invoked, ",
-"are presented as $1, $2, ... , $9.  The number of arguments can be read from ",
-"$n_args. ",
+"are presented as $1, $2, ... , $9 or $args[expr], where expr can be evaluated ",
+"to an integer from 1 to the number of arguments.  The number of arguments can ",
+"be read from $n_args or $args[]. The array $args[expr] is the only way to ",
+"access arguments beyond the first 9. ",
 "\n\n",
 "To return a value from a subroutine, and/or to exit from the subroutine ",
 "before the end of the subroutine body, use the return statement: ",
@@ -3661,6 +3663,11 @@ static char * htxt_resources [] = {
 "options not settable via the Preferences menu (for preference resource names, ",
 "see your NEdit preference file): ",
 "\n\n",
+"\01A\01Bnedit.bufferMode\01A: True\n",
+"\01I\n",
+"When set to True, run NEdit in buffer mode. Same as running NEdit with ",
+"the \01K-buffers\01I command line option. ",
+"\n\n",
 "\01A\01Bnedit.tagFile\01A: (not defined) \n",
 "\01I\n",
 "This can be the name of a file, or multiple files separated by a colon (:) ",
@@ -3833,6 +3840,12 @@ static char * htxt_resources [] = {
 "\01I\n",
 "Maximum time in milliseconds allowed between mouse clicks within double and ",
 "triple click actions. ",
+"\n\n",
+"\01A\01Bnedit.undoModifiesSelection\01A: True\n",
+"\01I\n",
+"By default, NEdit selects any text inserted or changed through a undo/redo ",
+"action.  Set this resource to False if you don't want your selection to be ",
+"touched. ",
 "\n\n",
 "\01A\01Bnedit*scrollBarPlacement\01A: BOTTOM_LEFT\n",
 "\01I\n",
@@ -4296,8 +4309,23 @@ static char * htxt_command_line [] = {
 "      [-\01Biconic\01A] [-\01Bnoiconic\01A] [-\01Bdisplay\01A [host]:server[.screen]\n",
 "      [-\01Bxrm\01A resourcestring] [-\01Bsvrname\01A name] [-\01Bimport\01A file]\n",
 "      [-\01Bbackground\01A color] [-\01Bforeground\01A color] [-\01BV\01A|-\01Bversion\01A]\n",
+"      [-\01Bbuffer\01A] [-\01Bnobuffer\01A] [-\01Bwin\01A file]\n",
 "      [--] [file...]\n",
 "\01I\n",
+"\01A\01B-buffer\01A\n",
+"\01IRun NEdit in buffer mode - allow multiple buffers (files) per window. ",
+"\n\n",
+"\01A\01B-nobuffer\01A\n",
+"\01IDisable buffer mode, run NEdit in normal (one file per window) mode. ",
+"\n\n",
+"\01A\01B-win\01A\n",
+"\01IIn \01Kbuffer mode\01I, files are opened as new tabs by default, use -win to ",
+"open files in new windows. ",
+"\n\n",
+"\01JNote\01I: this option is \01Knon-sticky\01I, i.e. it applies only to the ",
+"\01Kfirst\01I file specified immediate after the option. This allows users ",
+"to open group of files in the same window. ",
+"\n\n",
 "\01A\01B-read\01A\n",
 "\01IOpen the file Read Only regardless of the actual file protection. ",
 "\n\n",
@@ -4390,7 +4418,8 @@ static char * htxt_command_line [] = {
 "\01IWhen starting NEdit in server mode, name the server, such that it responds to ",
 "requests only when nc is given a corresponding -svrname argument.  By naming ",
 "servers, you can run several simultaneously, and direct files and commands ",
-"specifically to any one. ",
+"specifically to any one. Specifying a non-empty name automatically designates ",
+"this session as an NEdit server, as though -server were specified. ",
 "\n\n",
 "\01A\01B-import file\01A\n",
 "\01ILoads an additional preferences file on top of the existing defaults saved in ",
@@ -5354,4 +5383,4 @@ Href H_R [] =
     { NULL,       5699, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Nov 21, 2003\n";
+static const char * NEditVersion = "NEdit release of Dez 28, 2003\n";
