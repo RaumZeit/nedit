@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.20 2001/12/13 13:27:00 amai Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.21 2002/03/01 17:12:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -209,7 +209,11 @@ ResolvePath(const char * pathIn, char * pathResolved)
 #else
     /* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
     for(loops=0; loops<MAXSYMLINKS; loops++) {
+#ifdef UNICOS
+	rlResult=readlink((char *)pathIn, resolveBuf, MAXPATHLEN-1);
+#else
 	rlResult=readlink(pathIn, resolveBuf, MAXPATHLEN-1);
+#endif
 	if(rlResult<0) {
 	    if(errno==EINVAL) { 
 		/* It's not a symlink - we are done*/
