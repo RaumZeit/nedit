@@ -1,3 +1,98 @@
+2001-08-01 09:40  amai
+
+	* source/help.c: Again hardcode a string about the development
+        version "August 2001".  Build time may be misleading ...
+
+2001-08-01 01:16  slobasso
+
+	* source/macro.c: fixed problem where closing window while learning
+        would make it impossible to finish or cancel learing.
+
+2001-07-31 13:58  amai
+
+	* source/text.c: Fix minor warnings
+
+2001-07-31 09:46  amai
+
+	* util/managedList.c: Don't name variables 'index', may be an
+        interface in BSD-like libc
+
+2001-07-31 09:43  amai
+
+	* util/getfiles.c: Fix lint warning: "getfiles.c", line 716:
+        warning: args redefinition hides earlier one
+
+2001-07-31 09:40  amai
+
+	* util/fontsel.c: Don't use 'index' as name for variable; may be a
+        call in a BSD-like libc
+
+2001-07-29 19:51  amai
+
+	* source/highlight.c: Experimental patch to fix "mismatched" memory
+	handling calls as indicated by "purify". Probably not complete and
+        should be checked again with purify _now_!
+
+2001-07-28 21:53  tringali
+
+	* Makefile: #442517: add explanatory text how to use make
+
+2001-07-25 20:37  tringali
+
+	* source/help.c: Add more detailed info about Motif (runtime
+        version number)
+
+2001-07-25 20:36  tringali
+
+	* util/system.h: Use "Digital/Tru64 Unix" in place of OSF/1
+
+2001-07-25 20:36  tringali
+
+	* doc/: nc.man, nedit.man: Update authors for 5.2
+
+2001-07-25 20:05  slobasso
+
+	* util/misc.c: made changes so that Num_Lock's mod mask is found
+        rather than assuming Mod3
+
+2001-07-25 16:36  amai
+
+	* source/textBuf.c: Attempt to fix memory leak reported by Thorsten
+        Haude
+
+2001-07-25 15:03  amai
+
+	* util/misc.c: Try to fix small memory leak reported by Thorsten
+        Haude
+
+2001-07-25 09:49  amai
+
+	* util/system.h: Add "EMX=OS/2"
+
+2001-07-25 09:39  amai
+
+	* source/Makefile.dependencies, util/Makefile.dependencies: Update
+        dependency lists
+
+2001-07-24 23:55  tringali
+
+	* util/system.h: Add host compliation information to help
+
+2001-07-24 23:54  tringali
+
+	* source/: help.c, tags.c, tags.h: - Use shared strings for lower
+	memory use with large tags files.  - Add compilation host
+        information to help, update authors
+
+2001-07-24 21:27  slobasso
+
+	* util/misc.c: Fix array size define to match actual array size.
+        Incorrect size could result in infinite loop.
+
+2001-07-18 15:01  amai
+
+	* ChangeLog: Update
+
 2001-07-18 15:00  amai
 
 	* source/: search.c, search.h, window.c: Shrink two function names
