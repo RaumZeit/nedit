@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.43 2002/02/05 18:16:58 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.44 2002/02/23 20:01:35 edg Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -815,7 +815,6 @@ void ShowLineNumbers(WindowInfo *window, int state)
     } else {
 	XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
 	XtVaGetValues(window->textArea, textNmarginWidth, &marginWidth, NULL);
-	XtVaSetValues(window->shell, XmNwidthInc, 1, NULL);
 	XtVaSetValues(window->shell, XmNwidth,
 		windowWidth - textD->left + marginWidth, NULL);
 	for (i=0; i<=window->nPanes; i++) {
@@ -1809,7 +1808,6 @@ void UpdateLineNumDisp(WindowInfo *window)
 	oldWidth = textD->left - marginWidth;
 	newWidth = reqCols * fontWidth + marginWidth;
 	XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
-	XtVaSetValues(window->shell, XmNwidthInc, 1, NULL);
 	XtVaSetValues(window->shell, XmNwidth,
 		windowWidth + newWidth-oldWidth, NULL);
 	UpdateWMSizeHints(window);
