@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.13 2001/08/09 13:34:27 amai Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.14 2001/08/09 18:39:41 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -733,8 +733,6 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    XmNlabelString, s1=MKSTRING("Paste Learn/\nReplay Macro"),
     	    XmNmnemonic, 'P',
     	    XmNsensitive, GetReplayMacro() != NULL,
-    	    XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-	    XmNtopWidget, ucd->accTextW,
      	    XmNleftAttachment, XmATTACH_POSITION,
    	    XmNleftPosition, RIGHT_MARGIN_POS-20,
     	    XmNrightAttachment, XmATTACH_POSITION,
