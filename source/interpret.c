@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.26 2002/07/31 23:34:05 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.27 2002/08/10 23:48:55 tringali Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -198,12 +198,12 @@ void InitMacroGlobals(void)
     /* Add action routines from NEdit menus and text widget */
     actions = GetMenuActions(&nActions);
     for (i=0; i<nActions; i++) {
-    	dv.val.ptr = (void *)actions[i].proc;
+    	dv.val.xtproc = actions[i].proc;
     	InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
     }
     actions = TextGetActions(&nActions);
     for (i=0; i<nActions; i++) {
-    	dv.val.ptr = (void *)actions[i].proc;
+    	dv.val.xtproc = actions[i].proc;
     	InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
     }
     
@@ -441,7 +441,7 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
     /* Push arguments and call information onto the stack */
     for (i=0; i<nArgs; i++)
     	*(context->stackP++) = args[i];
-    context->stackP->val.ptr = NULL;
+    context->stackP->val.subr = NULL;
     context->stackP->tag = NO_TAG;
     context->stackP++;
     *(context->stackP++) = noValue;
@@ -534,10 +534,10 @@ void RunMacroAsSubrCall(Program *prog)
     /* See subroutine "call" for a description of the stack frame for a
        subroutine call */
     StackP->tag = NO_TAG;
-    StackP->val.ptr = PC;
+    StackP->val.inst = PC;
     StackP++;
     StackP->tag = NO_TAG;
-    StackP->val.ptr = FrameP;
+    StackP->val.dataval = FrameP;
     StackP++;
     StackP->tag = NO_TAG;
     StackP->val.n = 0;
@@ -985,7 +985,7 @@ static int pushSymVal(void)
     } else if (s->type == PROC_VALUE_SYM) {
 	DataValue result;
 	char *errMsg;
-	if (!((BuiltInSubr)s->value.val.ptr)(FocusWindow, NULL, 0,
+	if (!(s->value.val.subr)(FocusWindow, NULL, 0,
 	    	&result, &errMsg))
 	    return execError(errMsg, s->name);
     	*StackP = result;
@@ -1515,7 +1515,7 @@ static int callSubroutine(void)
     	
     	/* Call the function and check for preemption */
     	PreemptRequest = False;
-	if (!((BuiltInSubr)sym->value.val.ptr)(FocusWindow, argList,
+	if (!(sym->value.val.subr)(FocusWindow, argList,
 	    	nArgs, &result, &errMsg))
 	    return execError(errMsg, sym->name);
     	if (*PC == fetchRetVal) {
@@ -1536,10 +1536,10 @@ static int callSubroutine(void)
     */
     if (sym->type == MACRO_FUNCTION_SYM) {
     	StackP->tag = NO_TAG;
-    	StackP->val.ptr = PC;
+    	StackP->val.inst = PC;
     	StackP++;
     	StackP->tag = NO_TAG;
-    	StackP->val.ptr = FrameP;
+    	StackP->val.dataval = FrameP;
     	StackP++;
     	StackP->tag = NO_TAG;
     	StackP->val.n = nArgs;
@@ -1587,7 +1587,7 @@ static int callSubroutine(void)
 
     	/* Call the action routine and check for preemption */
     	PreemptRequest = False;
-    	((XtActionProc)sym->value.val.ptr)(FocusWindow->lastFocus,
+    	(sym->value.val.xtproc)(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
     	if (*PC == fetchRetVal)
     	    return execError("%s does not return a value", sym->name);
@@ -1636,8 +1636,8 @@ static int returnValOrNone(int valOnStack)
     
     /* get stored return information */
     nArgs = (--StackP)->val.n;
-    FrameP = (--StackP)->val.ptr;
-    PC = (--StackP)->val.ptr;
+    FrameP = (--StackP)->val.dataval;
+    PC = (--StackP)->val.inst;
     
     /* pop past function arguments */
     StackP -= nArgs;

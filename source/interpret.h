@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.8 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: interpret.h,v 1.9 2002/08/10 23:48:55 tringali Exp $ */
 
 #ifndef NEDIT_INTERPRET_H_INCLUDED
 #define NEDIT_INTERPRET_H_INCLUDED
@@ -30,12 +30,24 @@ enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
 
 #define ARRAY_DIM_SEP "\034"
 
-typedef struct {
+struct DataValueTag;
+struct ProgramTag;
+
+typedef int (*Inst)(void);
+
+typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList, 
+        int nArgs, struct DataValueTag *result, char **errMsg);
+
+typedef struct DataValueTag {
     char tag;
     union {
         int n;
         char *str;
-        void *ptr;
+        BuiltInSubr subr;
+        struct ProgramTag* prog;
+        XtActionProc xtproc;
+        Inst* inst;
+        struct DataValueTag* dataval;
         struct SparseArrayEntry *arrayPtr;
     } val;
 } DataValue;
@@ -54,9 +66,7 @@ typedef struct SymbolRec {
     struct SymbolRec *next;     /* to link to another */  
 } Symbol;
 
-typedef int (*Inst)(void);
-
-typedef struct {
+typedef struct ProgramTag {
     Symbol *localSymList;
     Inst *code;
 } Program;
@@ -70,9 +80,6 @@ typedef struct {
     WindowInfo *runWindow;
     WindowInfo *focusWindow;
 } RestartData;
-
-typedef int (*BuiltInSubr)(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, char **errMsg);
 
 void InitMacroGlobals(void);
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.47 2002/08/01 00:53:46 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.48 2002/08/10 23:48:55 tringali Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -429,11 +429,11 @@ void RegisterMacroSubroutines(void)
     /* Install symbols for built-in routines and variables, with pointers
        to the appropriate c routines to do the work */
     for (i=0; i<N_MACRO_SUBRS; i++) {
-    	subrPtr.val.ptr = (void *)MacroSubrs[i];
+    	subrPtr.val.subr = MacroSubrs[i];
     	InstallSymbol(MacroSubrNames[i], C_FUNCTION_SYM, subrPtr);
     }
     for (i=0; i<N_SPECIAL_VARS; i++) {
-    	subrPtr.val.ptr = (void *)SpecialVars[i];
+    	subrPtr.val.subr = SpecialVars[i];
     	InstallSymbol(SpecialVarNames[i], PROC_VALUE_SYM, subrPtr);
     }
     
@@ -763,15 +763,15 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 	    if (runWindow != NULL) {
 		sym = LookupSymbol(subrName);
 		if (sym == NULL) {
-		    subrPtr.val.ptr = prog;
+		    subrPtr.val.prog = prog;
 		    subrPtr.tag = NO_TAG;
 		    sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
 		} else {
 	    	    if (sym->type == MACRO_FUNCTION_SYM)
-		    	FreeProgram((Program *)sym->value.val.ptr);
+		    	FreeProgram(sym->value.val.prog);
 		    else
 			sym->type = MACRO_FUNCTION_SYM;
-	    	    sym->value.val.ptr = prog;
+	    	    sym->value.val.prog = prog;
 		}
 	    }
 	    inPtr = stoppedAt;
