@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.36 2004/10/08 22:26:40 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.37 2004/11/02 12:55:26 edg Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1158,7 +1158,7 @@ static void createOutputDialog(Widget parent, char *text)
     ac = 0;
     XtSetArg(al[ac], XmNlabelString, st1=MKSTRING("OK")); ac++;
     XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN); ac++;
-    XtSetArg(al[ac], XmNhighlightThickness, 0);  ac++;
+    XtSetArg(al[ac], XmNhighlightThickness, 2);  ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
     button = XmCreatePushButtonGadget(form, "ok", al, ac);
@@ -1173,11 +1173,11 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNrows, rows);  ac++;
     XtSetArg(al[ac], XmNcolumns, cols);  ac++;
     XtSetArg(al[ac], XmNresizeHeight, False);  ac++;
-    XtSetArg(al[ac], XmNtraversalOn, False); ac++;
+    XtSetArg(al[ac], XmNtraversalOn, True); ac++;
     XtSetArg(al[ac], XmNwordWrap, True);  ac++;
     XtSetArg(al[ac], XmNscrollHorizontal, False);  ac++;
     XtSetArg(al[ac], XmNscrollVertical, hasScrollBar);  ac++;
-    XtSetArg(al[ac], XmNhighlightThickness, 0);  ac++;
+    XtSetArg(al[ac], XmNhighlightThickness, 2);  ac++;
     XtSetArg(al[ac], XmNspacing, 0);  ac++;
     XtSetArg(al[ac], XmNeditMode, XmMULTI_LINE_EDIT);  ac++;
     XtSetArg(al[ac], XmNeditable, False);  ac++;
@@ -1189,10 +1189,22 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
     textW = XmCreateScrolledText(form, "outText", al, ac);
     AddMouseWheelSupport(textW);
+    MakeSingleLineTextW(textW); /* Binds <Return> to activate() */
     XtManageChild(textW);
     
     XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", NULL);
     ManageDialogCenteredOnPointer(form);
+
+#ifdef LESSTIF_VERSION
+    /*
+     * The Lesstif text widget blocks activate() calls in multi-line mode,
+     * so we put the original focus on the Ok button such that the user
+     * can simply hit Return to dismiss the dialog. 
+     */
+    XmProcessTraversal(button, XmTRAVERSE_CURRENT);
+#else
+    XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
+#endif
 }
 
 /*
