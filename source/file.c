@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.22 2001/08/04 20:49:20 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.23 2001/08/08 22:31:14 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -696,16 +696,6 @@ static int doSave(WindowInfo *window)
     fgetname(fp, fullname);
 #endif
     
-#if 0 /* This is a big change conceptually for version 5.1.  NEdit no longer
-         carries the original protection settings through to the file write,
-	 it will now allow external protection changes.  Everyone seems to
-    	 think this is better, and I'm pretty sure it is, but we'll see how
-	 the testing goes. */
-    /* set the protection for the file */
-    if (window->fileMode)
-    	fchmod(fileno(fp), window->fileMode);
-#endif
-    
     /* get the text buffer contents and its length */
     fileString = BufGetAll(window->buffer);
     fileLen = window->buffer->length;
@@ -1070,13 +1060,8 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
         return;
     }
 
-    /* Set more restrictive permissions (using default permissions was
-       somewhat of a security hole, because permissions were independent
-       of those of the original file being edited */
-#ifdef NO_FCHMOD
+#ifdef VMS
     chmod(tmpFileName, S_IRUSR | S_IWUSR);    
-#else
-    fchmod(fileno(fp), S_IRUSR | S_IWUSR);    
 #endif
     
     /* write to the file */
