@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.68 2004/04/14 09:44:00 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.69 2004/04/17 10:32:24 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -428,6 +428,10 @@ int main(int argc, char **argv)
 
     XtSetMappedWhenManaged(TheAppShell, False);
     XtRealizeWidget(TheAppShell);
+
+#ifndef NO_SESSION_RESTART
+    AttachSessionMgrHandler(TheAppShell);
+#endif
     
     patchResourcesForVisual();
     patchResourcesForKDEbug();

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.143 2004/04/15 22:32:31 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.144 2004/04/17 10:32:25 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -177,7 +177,7 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
 static void closeCB(Widget w, WindowInfo *window, XtPointer callData);
-static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData);
+static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData);
 static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
@@ -220,7 +220,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
     int x = 0, y = 0, bitmask, showTabBar;
-    static Atom wmpAtom, syAtom = 0;
     static int firstTime = True;
     unsigned char* invalidBindings = NULL;
     XmFontList fontList;
@@ -787,17 +786,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* Make close command in window menu gracefully prompt for close */
     AddMotifCloseCallback(winShell, (XtCallbackProc)closeCB, window);
     
-#ifndef NO_SESSION_RESTART
-    /* Add wm protocol callback for making nedit restartable by session
-       managers.  Doesn't yet handle multiple-desktops or iconifying right. */
-    if (syAtom == 0) {
-        wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", FALSE);
-        syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", FALSE);
-    }
-    XmAddProtocolCallback(winShell, wmpAtom, syAtom,
-            (XtCallbackProc)saveYourselfCB, (XtPointer)window);
-#endif
-        
     /* Make window resizing work in nice character heights */
     UpdateWMSizeHints(window);
     
@@ -2417,35 +2405,26 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData)
     CloseDocumentWindow(w, window, callData);
 }
 
-static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData) 
+#ifndef NO_SESSION_RESTART
+static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 {
-    WindowInfo *win, **revWindowList;
+    WindowInfo *win, *topWin, **revWindowList;
     char geometry[MAX_GEOM_STRING_LEN];
     int argc = 0, maxArgc, nWindows, i;
     char **argv;
     int wasIconic = False;
-    
-    window = WidgetToWindow(w);
-    
-    /* Only post a restart command on the first window in the window list so
-       session manager can restart the whole set of windows in one executable,
-       rather than one nedit per file.  Even if the restart command is not on
-       this window, the protocol demands that we set the window's WM_COMMAND
-       property in response to the "save yourself" message */
-    if (window != WindowList) {
-        XSetCommand(TheDisplay, XtWindow(window->shell), NULL, 0);
-        return;
-    }
-   
+    int n, nItems;
+    WidgetList children;
+
     /* Allocate memory for an argument list and for a reversed list of
        windows.  The window list is reversed for IRIX 4DWM and any other
        window/session manager combination which uses window creation
        order for re-associating stored geometry information with
        new windows created by a restored application */
-    maxArgc = 1;
+    maxArgc = 4;  /* nedit -server -svrname name */
     nWindows = 0;
     for (win=WindowList; win!=NULL; win=win->next) {
-        maxArgc += 4;
+        maxArgc += 5;  /* -iconic -group -geometry WxH+x+y filename */
         nWindows++;
     }
     argv = (char **)XtMalloc(maxArgc*sizeof(char *));
@@ -2462,33 +2441,71 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
             argv[argc++] = XtNewString(GetPrefServerName());
         }
     }
-    for (i=0; i<nWindows; i++) {
-        win = revWindowList[i];
-        getGeometryString(win, geometry);
+
+    /* editor windows are popup-shell children of top-level appShell */
+    XtVaGetValues(appShell, XmNchildren, &children, 
+    	    XmNnumChildren, &nItems, NULL);
+
+    for (n=nItems-1; n>=0; n--) {
+    	WidgetList tabs;
+	int tabCount;
+	
+	if (strcmp(XtName(children[n]), "textShell") ||
+	  ((topWin = WidgetToWindow(children[n])) == NULL))
+	    continue;   /* skip non-editor windows */ 
+
+	/* create a group for each window */
+        getGeometryString(topWin, geometry);
+        argv[argc++] = XtNewString("-group");
         argv[argc++] = XtNewString("-geometry");
         argv[argc++] = XtNewString(geometry);
-        if (IsIconic(win)) {
+        if (IsIconic(topWin)) {
             argv[argc++] = XtNewString("-iconic");
             wasIconic = True;
         } else if (wasIconic) {
             argv[argc++] = XtNewString("-noiconic");
             wasIconic = False;
-        }
-        if (win->filenameSet) {
-            argv[argc] = XtMalloc(strlen(win->path) +
-                    strlen(win->filename) + 1);
-            sprintf(argv[argc++], "%s%s", win->path, win->filename);
-        }
+	}
+	
+	/* add filename of each tab in window... */
+    	XtVaGetValues(topWin->tabBar, XmNtabWidgetList, &tabs,
+            	XmNtabCount, &tabCount, NULL);
+
+    	for (i=0; i< tabCount; i++) {
+	    win = TabToWindow(tabs[i]);
+            if (win->filenameSet) {
+		/* add filename */
+        	argv[argc] = XtMalloc(strlen(win->path) +
+                	strlen(win->filename) + 1);
+        	sprintf(argv[argc++], "%s%s", win->path, win->filename);
+            }
+	}
     }
+
     XtFree((char *)revWindowList);
-    
+
     /* Set the window's WM_COMMAND property to the created command line */
-    XSetCommand(TheDisplay, XtWindow(window->shell), argv, argc);
+    XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
     for (i=0; i<argc; i++)
         XtFree(argv[i]);
     XtFree((char *)argv);
 }
 
+void AttachSessionMgrHandler(Widget appShell)
+{
+    static Atom wmpAtom, syAtom = 0;
+
+    /* Add wm protocol callback for making nedit restartable by session
+       managers.  Doesn't yet handle multiple-desktops or iconifying right. */
+    if (syAtom == 0) {
+        wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", FALSE);
+        syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", FALSE);
+    }
+    XmAddProtocolCallback(appShell, wmpAtom, syAtom,
+            (XtCallbackProc)saveYourselfCB, (XtPointer)appShell);
+}
+#endif /* NO_SESSION_RESTART */
+        
 /*
 ** Returns true if window is iconic (as determined by the WM_STATE property
 ** on the shell window.  I think this is the most reliable way to tell,

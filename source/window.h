@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.21 2004/04/15 22:32:31 n8gray Exp $ */
+/* $Id: window.h,v 1.22 2004/04/17 10:32:25 tksoh Exp $ */
 
 #ifndef NEDIT_WINDOW_H_INCLUDED
 #define NEDIT_WINDOW_H_INCLUDED
@@ -8,6 +8,7 @@
 
 #include <X11/Intrinsic.h>
 
+void AttachSessionMgrHandler(Widget appShell);
 WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
 int NWindows(void);
