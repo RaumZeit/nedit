@@ -68,15 +68,15 @@
 #define APP_CLASS "NEditClient"
 
 static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id);
-static void startServer(char *message, char *commandLine);
+static void startServer(const char *message, const char *commandLine);
 static char *parseCommandLine(int argc, char **argv);
-static char *getUserName(void);
-static void getHostName(char *hostname);
+static const char *getUserName(void);
+static const char *getHostName(void);
 static void nextArg(int argc, char **argv, int *argIndex);
 
 Display *TheDisplay;
 
-static char cmdLineHelp[] =
+static const char cmdLineHelp[] =
 #ifndef VMS
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
@@ -122,8 +122,8 @@ int main(int argc, char **argv)
     XEvent event;
     XPropertyEvent *e = (XPropertyEvent *)&event;
     Atom serverExistsAtom, serverRequestAtom;
-    char *userName, propName[24+MAXNODENAMELEN+MAXUSERNAMELEN+MAXPATHLEN];
-    char hostName[MAXNODENAMELEN+1];
+    const char *userName, *hostName;
+    char propName[24+MAXNODENAMELEN+MAXUSERNAMELEN+MAXPATHLEN];
     char serverName[MAXPATHLEN+2];
     XrmDatabase prefDB;
 
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
        concatenating NEDIT_SERVER_REQUEST_, and NEDIT_SERVER_EXITS_
        with hostname,  user name and optional server name */
     userName = getUserName();
-    getHostName(hostName);
+    hostName = getHostName();
     if (Preferences.serverName[0] != '\0') {
     	serverName[0] = '_';
     	strcpy(&serverName[1], Preferences.serverName);
@@ -266,7 +266,7 @@ static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id)
 /*
 ** Prompt the user about starting a server, with "message", then start server
 */
-static void startServer(char *message, char *commandLineArgs)
+static void startServer(const char *message, const char *commandLineArgs)
 {
     char c, *commandLine;
 #ifdef VMS
@@ -468,7 +468,7 @@ static char *parseCommandLine(int argc, char **argv)
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
 */
-static char *getUserName(void)
+static const char *getUserName(void)
 {
 #ifdef VMS
     return cuserid(NULL);
@@ -480,15 +480,20 @@ static char *getUserName(void)
        results in the user-name of the original terminal being used, which is
        not correct when the user uses the su command.  Now, getpwuid only: */
     struct passwd *passwdEntry;
+
     passwdEntry = getpwuid(getuid());
+    if (!passwdEntry) {
+       perror("nc: getpwuid() failed ");
+       exit(1);
+    }
     return passwdEntry->pw_name;
 #endif
 }
 
 /*
-** Writes the hostname of the current system in string "hostname".
+** Returns the hostname of the current system in static string.
 */
-static void getHostName(char *hostname)
+static const char *getHostName(void)
 {
 #ifdef VMS
     /* This should be simple, but uname is not supported in the DEC C RTL and
@@ -500,6 +505,7 @@ static void getHostName(char *hostname)
     unsigned long int syiItemCode = SYI$_NODENAME;	/* get Nodename */
     unsigned long int unused = 0;
     unsigned short int hostnameLen = MAXNODENAMELEN+1;
+    static char hostname[MAXNODENAMELEN+1];
     
     hostnameDesc = NulStrWrtDesc(hostname, MAXNODENAMELEN+1);
     syi_status = lib$getsyi(&syiItemCode, &unused, hostnameDesc, &hostnameLen,
@@ -510,11 +516,19 @@ static void getHostName(char *hostname)
     } else
     	hostname[hostnameLen] = '\0';
     FreeStrDesc(hostnameDesc);
+    return hostname;
 #else
     struct utsname nameStruct;
-
-    uname(&nameStruct);
+    static char hostname[MAXNODENAMELEN+1];
+    int rc;
+    
+    rc=uname(&nameStruct);
+    if (rc<0) {
+       perror("nc: uname() failed ");
+       exit(1);
+    }
     strcpy(hostname, nameStruct.nodename);
+    return hostname;
 #endif
 }
 
