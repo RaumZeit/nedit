@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.10 2001/04/03 22:59:38 edg Exp $ */
+/* $Id: nedit.h,v 1.11 2001/04/09 21:38:22 edg Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -289,6 +289,7 @@ typedef struct _WindowInfo {
     int		rHistIndex, fHistIndex;	/* history placeholders for */
     int     	iSearchHistIndex;	/*   find and replace dialogs */
     int     	iSearchStartPos;    	/* start pos. of current incr. search */
+    int       	iSearchLastBeginPos;    /* beg. pos. last match of current i.s.*/
     int     	nMarks;     	    	/* number of active bookmarks */
     XtIntervalId markTimeoutID;	    	/* backup timer for mark event handler*/
     Bookmark	markTable[MAX_MARKS];	/* marked locations in window */

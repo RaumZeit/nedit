@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.23 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.24 2001/04/09 21:38:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -199,6 +199,10 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData,
 	XtPointer callData);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, 
 	XtPointer callData);
+static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, 
+      	int beginPos, int startPos); 
+static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, 
+	int initPos); 
 
 typedef struct _charMatchTable {
     char c;
@@ -878,7 +882,6 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace all in:"));
     	    argcnt++;
-    XtSetArg(args[argcnt], XmNmnemonic, 't'); argcnt++;
     label3 = XmCreateLabel(allForm, "label3", args, argcnt);
     XmStringFree(st1);
     XtManageChild(label3);
@@ -2488,6 +2491,15 @@ int SearchAndSelect(WindowInfo *window, int direction, char *searchString,
 	}
     }
 
+    /* when the i-search bar is active and search is repeated there 
+       (Return), the action "find" is called (not: "find_incremental").
+       "find" calls this function SearchAndSelect.
+       To keep track of the iSearchLastBeginPos correctly in the
+       repeated i-search case it is necessary to call the following
+       function here, otherwise there are no beeps on the repeated
+       incremental search wraps.  */
+    iSearchRecordLastBeginPos(window, direction, beginPos);
+
     /* do the search.  SearchWindow does appropriate dialogs and beeps */
     if (!SearchWindow(window, direction, searchString, searchType, searchWrap,
     	    beginPos, &startPos, &endPos, NULL))
@@ -2627,6 +2639,18 @@ void EndISearch(WindowInfo *window)
     TempShowISearch(window, FALSE);
 }
 
+/* 
+** Reset window->iSearchLastBeginPos to the resulting initial
+** search begin position for incremental searches.
+*/
+static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, 
+	int initPos) 
+{
+    window->iSearchLastBeginPos = initPos;
+    if (direction == SEARCH_BACKWARD) 
+      	window->iSearchLastBeginPos--;
+}      
+
 /*
 ** Search for "searchString" in "window", and select the matching text in
 ** the window when found (or beep or put up a dialog if not found).  If
@@ -2641,13 +2665,20 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction,
 
     /* If there's a search in progress, start the search from the original
        starting position, otherwise search from the cursor position. */
-    if (!continued || window->iSearchStartPos == -1)
+    if (!continued || window->iSearchStartPos == -1) {
 	window->iSearchStartPos = TextGetCursorPos(window->lastFocus);
+	iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos);
+    }
     beginPos = window->iSearchStartPos;
 
-    /* If the search string is empty, clear the selection, set the cursor
-       back to what would be the beginning of the search, and return. */
+    /* If the search string is empty, beep eventually if text wrapped
+       back to the initial position, re-init iSearchLastBeginPos, 
+       clear the selection, set the cursor back to what would be the 
+       beginning of the search, and return. */
     if(searchString[0] == 0) {
+     	int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos-1:beginPos;
+      	iSearchTryBeepOnWrap(window, direction, beepBeginPos, beepBeginPos);
+	iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos);
 	BufUnselect(window->buffer);
 	TextSetCursorPos(window->lastFocus, beginPos);
 	return TRUE;
@@ -2672,6 +2703,8 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction,
 	    beginPos, &startPos, &endPos, NULL))
 	return FALSE;
 
+    window->iSearchLastBeginPos = startPos;
+
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
@@ -2679,6 +2712,8 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction,
 	if (!SearchWindow(window, direction, searchString, searchType, searchWrap,
 	    beginPos+1, &startPos, &endPos, NULL))
 	    return FALSE;
+
+    window->iSearchLastBeginPos = startPos;
 
     /* select the text found string */
     BufSelect(window->buffer, startPos, endPos);
@@ -3539,6 +3574,26 @@ char *ReplaceAllInString(char *inString, char *searchString,
     return outString;
 }
 
+/* 
+** If this is an incremental search and BeepOnSearchWrap is on:
+** Emit a beep if the search wrapped over BOF/EOF compared to
+** the last startPos of the current incremental search.
+*/
+static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, 
+	int beginPos, int startPos) 
+{
+    if(GetPrefBeepOnSearchWrap())  {
+	if(direction == SEARCH_FORWARD) {
+	    if(  (startPos >= beginPos && window->iSearchLastBeginPos < beginPos)
+	       ||(startPos < beginPos && window->iSearchLastBeginPos >= beginPos)) 
+	    XBell(TheDisplay, 0);
+	} else {
+	    if(  (startPos <= beginPos && window->iSearchLastBeginPos > beginPos)
+	       ||(startPos > beginPos && window->iSearchLastBeginPos <= beginPos))
+	    XBell(TheDisplay, 0);
+	}
+    }
+}
 
 /*
 ** Search the text in "window", attempting to match "searchString"
@@ -3600,25 +3655,28 @@ int SearchWindow(WindowInfo *window, int direction, char *searchString,
 			    return False;
 			}
 		    }
+                    found = SearchString(fileString, searchString, direction,
+			searchType, FALSE, fileEnd, startPos, endPos, extent,
+			GetWindowDelimiters(window));
         	}
 	    }
             if (!found)
                 DialogF(DF_INF, window->shell,1,"String was not found","OK");
         }
     } else { /* no dialogs */
-	if(GetPrefBeepOnSearchWrap() && searchWrap) {
+	if(GetPrefBeepOnSearchWrap() && searchWrap && window->iSearchStartPos == -1) {
 	    found = SearchString(fileString, searchString, direction, searchType,
 		    FALSE, beginPos, startPos, endPos, extent,
 		    GetWindowDelimiters(window));
 	    if (!found) {
 		fileEnd = window->buffer->length - 1;
 		if (direction == SEARCH_FORWARD && beginPos != 0) {
-			    XBell(TheDisplay, 0);
+		    XBell(TheDisplay, 0);
 		    found = SearchString(fileString, searchString, direction,
 			    searchType, FALSE, 0, startPos, endPos, extent,
 			    GetWindowDelimiters(window));
 		} else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
-			    XBell(TheDisplay, 0);
+		    XBell(TheDisplay, 0);
 		    found = SearchString(fileString, searchString, direction,
 			    searchType, FALSE, fileEnd, startPos, endPos, extent,
 			    GetWindowDelimiters(window));
@@ -3630,7 +3688,10 @@ int SearchWindow(WindowInfo *window, int direction, char *searchString,
 	    found = SearchString(fileString, searchString, direction,
 		    searchType, searchWrap, beginPos, startPos, endPos, extent,
 		    GetWindowDelimiters(window));
-	    if (!found)
+	    if (found) {
+	      	if(window->iSearchStartPos != -1)
+	      	    iSearchTryBeepOnWrap(window, direction, beginPos, *startPos);
+	    } else
 		XBell(TheDisplay, 0);
 	}
     }
