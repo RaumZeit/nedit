@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.123 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.124 2004/08/04 08:05:35 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1187,18 +1187,13 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
        We only do auto-upgrading for a real release. */
 
     if (PrefData.prefFileRead && (fileVer < 5004)) {
-        /* There are some implict conversions done later - show this
-           message even if there's no explicit call to upgrade. */
-        fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
-                "    To keep, use Preferences -> Save Defaults\n");
         migrateColorResources(prefDB, appDB);
         updateShellCmdsTo5dot4();
         updatePatternsTo5dot4();
     }
     if (PrefData.prefFileRead && (fileVer < 5005)) {
-        /* Uncomment this in the next release
         fprintf(stderr, "NEdit: Converting .nedit file to 5.5 version.\n"
-                "    To keep, use Preferences -> Save Defaults\n"); */
+                "    To keep, use Preferences -> Save Defaults\n");
         updateMacroCmdsTo5dot5();
     }
     /* Migrate colors if there's no config file yet */
