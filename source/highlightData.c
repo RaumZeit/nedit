@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.19 2001/08/16 18:33:47 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.20 2001/08/23 14:59:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -71,7 +71,8 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.19 2001/08/16 18:33:47 slo
 /* Names for the fonts that can be used for syntax highlighting */
 #define N_FONT_TYPES 4
 enum fontTypes {PLAIN_FONT, ITALIC_FONT, BOLD_FONT, BOLD_ITALIC_FONT};
-char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bold Italic"};
+static const char *FontTypeNames[N_FONT_TYPES] =
+   {"Plain", "Italic", "Bold", "Bold Italic"};
 
 typedef struct {
     char *name;

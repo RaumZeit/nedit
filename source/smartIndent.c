@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.12 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.13 2001/08/23 14:59:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -131,8 +131,8 @@ static int checkSmartIndentCommonDialogData(void);
 static int updateSmartIndentData(void);
 static char *readSIMacro(char **inPtr);
 static smartIndentRec *copyIndentSpec(smartIndentRec *is);
-void freeIndentSpec(smartIndentRec *is);
-int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
+static void freeIndentSpec(smartIndentRec *is);
+static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
 
 #define N_DEFAULT_INDENT_SPECS 4
 static smartIndentRec DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
@@ -1896,7 +1896,7 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is)
     return ris;
 }
 
-void freeIndentSpec(smartIndentRec *is)
+static void freeIndentSpec(smartIndentRec *is)
 {
     XtFree(is->lmName);
     if (is->initMacro != NULL) XtFree(is->initMacro);
@@ -1904,7 +1904,7 @@ void freeIndentSpec(smartIndentRec *is)
     if (is->modMacro != NULL)XtFree(is->modMacro);
 }
 
-int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
+static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
 {
     return AllocatedStringsDiffer(is1->initMacro, is2->initMacro) ||
 	    AllocatedStringsDiffer(is1->newlineMacro, is2->newlineMacro) ||

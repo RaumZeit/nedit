@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.16 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.17 2001/08/23 14:59:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -139,12 +139,12 @@ static SparseArrayEntryWrapper *AllocatedSparseArrayEntries = NULL;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
-static char *StackOverflowMsg = "macro stack overflow";
-static char *StackUnderflowMsg = "macro stack underflow";
-static char *StringToNumberMsg = "string could not be converted to number";
+static const char *StackOverflowMsg = "macro stack overflow";
+static const char *StackUnderflowMsg = "macro stack underflow";
+static const char *StringToNumberMsg = "string could not be converted to number";
 
 /* Temporary global data for use while accumulating programs */
-Symbol *LocalSymList = NULL;		 /* symbols local to the program */
+static Symbol *LocalSymList = NULL;		 /* symbols local to the program */
 static Inst Prog[PROGRAM_SIZE]; 	 /* the program */
 static Inst *ProgP;			 /* next free spot for code gen. */
 static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */

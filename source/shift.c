@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.8 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.9 2001/08/23 14:59:14 amai Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -54,7 +54,7 @@ static char *fillParagraphs(char *text, int rightMargin, int tabDist,
 static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
 	int rightMargin, int tabDist, int allowTabs, char nullSubsChar,
 	int *filledLen);
-char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
+static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static int atTabStop(int pos, int tabDist);
 static int nextTab(int pos, int tabDist);
 static int countLines(char *text);
@@ -678,7 +678,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     return outText;
 }
 
-char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars)
+static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars)
 {
     char *indentString, *outPtr;
     int i;
