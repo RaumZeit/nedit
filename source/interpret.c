@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.31 2002/10/15 11:00:41 ajhood Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.32 2002/12/12 17:25:49 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -123,17 +123,35 @@ static int deleteArrayElement(void);
 static void freeSymbolTable(Symbol *symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
-static int stringToNum(const char *string, int *number);
 static rbTreeNode *arrayEmptyAllocator(void);
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
 static SparseArrayEntry *allocateSparseArrayEntry(void);
+
 /*#define DEBUG_ASSEMBLY*/
-#ifdef DEBUG_ASSEMBLY
-static void disasm(Program *prog, int nInstr);
-#endif
+/*#define DEBUG_STACK*/
+
+#if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
+#define DEBUG_DISASSEMBLER
+static void disasm(Inst *inst, int nInstr);
+#endif /* #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK) */
+
+#ifdef DEBUG_ASSEMBLY   /* for disassembly */
+#define DISASM(i, n)    disasm(i, n)
+#else /* #ifndef DEBUG_ASSEMBLY */
+#define DISASM(i, n)
+#endif /* #ifndef DEBUG_ASSEMBLY */
+
+#ifdef DEBUG_STACK      /* for run-time instruction and stack trace */
+static void stackdump(int n, int extra);
+#define STACKDUMP(n, x) stackdump(n, x)
+#define DISASM_RT(i, n) disasm(i, n)
+#else /* #ifndef DEBUG_STACK */
+#define STACKDUMP(n, x)
+#define DISASM_RT(i, n)
+#endif /* #ifndef DEBUG_STACK */
 
 /* Global symbols and function definitions */
 static Symbol *GlobalSymList = NULL;
@@ -156,7 +174,7 @@ static const char *StackUnderflowMsg = "macro stack underflow";
 static const char *StringToNumberMsg = "string could not be converted to number";
 
 /* Temporary global data for use while accumulating programs */
-static Symbol *LocalSymList = NULL;		 /* symbols local to the program */
+static Symbol *LocalSymList = NULL;	 /* symbols local to the program */
 static Inst Prog[PROGRAM_SIZE]; 	 /* the program */
 static Inst *ProgP;			 /* next free spot for code gen. */
 static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */
@@ -264,9 +282,7 @@ Program *FinishCreatingProgram(void)
     for (s = newProg->localSymList; s != NULL; s = s->next)
 	s->value.val.n = fpOffset++;
     
-#ifdef DEBUG_ASSEMBLY
-    disasm(newProg, ProgP - Prog);
-#endif
+    DISASM(newProg->code, ProgP - Prog);
     
     return newProg;
 }
@@ -347,13 +363,14 @@ Inst *GetPC(void)
 */
 void SwapCode(Inst *start, Inst *boundary, Inst *end)
 {
-    char *temp;
-    
-    temp = XtMalloc((boundary - start) * sizeof(Inst*));
-    memcpy(temp, start, (boundary-start) * sizeof(Inst*));
-    memmove(start, boundary, (end-boundary) * sizeof(Inst*));
-    memcpy(start+(end-boundary), temp, (boundary-start) * sizeof(Inst*));
-    XtFree(temp);
+    #define reverseCode(L, H) \
+    do { register Inst t, *l = L, *h = H - 1; \
+         while (l < h) { t = *h; *h-- = *l; *l++ = t; } } while (0)
+    /* double-reverse method: reverse elements of both parts then whole lot */
+    /* eg abcdefABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba */
+    reverseCode(start, boundary);   /* 1 */
+    reverseCode(boundary, end);     /* 2 */
+    reverseCode(start, end);        /* 3 */
 }
 
 /*
@@ -534,8 +551,8 @@ void RunMacroAsSubrCall(Program *prog)
     Symbol *s;
     static DataValue noValue = {NO_TAG, {0}};
 
-    /* See subroutine "call" for a description of the stack frame for a
-       subroutine call */
+    /* See subroutine "callSubroutine" for a description of the stack frame
+       for a subroutine call */
     StackP->tag = NO_TAG;
     StackP->val.inst = PC;
     StackP++;
@@ -614,7 +631,7 @@ void SetMacroFocusWindow(WindowInfo *window)
 */
 Symbol *InstallIteratorSymbol()
 {
-    char symbolName[10 + (sizeof(int) * 3) + 2];
+    char symbolName[10 + TYPE_INT_STR_SIZE(int)];
     DataValue value;
     static int interatorNameIndex = 0;
 
@@ -626,7 +643,7 @@ Symbol *InstallIteratorSymbol()
 }
 
 /*
-** Lookup a constant string by it's value. This allows reuse of string
+** Lookup a constant string by its value. This allows reuse of string
 ** constants and fixing a leak in the interpreter.
 */
 Symbol *LookupStringConstSymbol(const char *value)
@@ -641,6 +658,25 @@ Symbol *LookupStringConstSymbol(const char *value)
         }
     }
     return(NULL);
+}
+
+/*
+** install string str in the global symbol table with a string name
+*/
+Symbol *InstallStringConstSymbol(const char *str)
+{
+    static int stringConstIndex = 0;
+    char stringName[35];
+    DataValue value;
+    Symbol *sym = LookupStringConstSymbol(str);
+    if (sym) {
+        return sym;
+    }
+
+    sprintf(stringName, "string #%d", stringConstIndex++);
+    value.tag = STRING_TAG;
+    value.val.str = AllocStringCpy(str);
+    return(InstallSymbol(stringName, CONST_SYM, value));
 }
 
 /*
@@ -660,7 +696,7 @@ Symbol *LookupSymbol(const char *name)
 }
 
 /*
-** install s in symbol table
+** install symbol name in symbol table
 */
 Symbol *InstallSymbol(const char *name, int type, DataValue value)
 {
@@ -782,9 +818,15 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr)
             globalSEUse = (SparseArrayEntry *)rbTreeNext((rbTreeNode *)globalSEUse)) {
 
             ((SparseArrayEntryWrapper *)globalSEUse)->inUse = 1;
-            *(globalSEUse->key - 1) = 1;
+            /* test first because it may be read-only static string */
+            if (!(*(globalSEUse->key - 1))) {
+                *(globalSEUse->key - 1) = 1;
+            }
             if (globalSEUse->value.tag == STRING_TAG) {
-                *(globalSEUse->value.val.str - 1) = 1;
+                /* test first because it may be read-only static string */
+                if (!(*(globalSEUse->value.val.str - 1))) {
+                    *(globalSEUse->value.val.str - 1) = 1;
+                }
             }
             else if (globalSEUse->value.tag == ARRAY_TAG) {
                 MarkArrayContentsAsUsed((SparseArrayEntry *)globalSEUse->value.val.arrayPtr);
@@ -806,8 +848,9 @@ void GarbageCollectStrings(void)
     Symbol *s;
 
     /* mark all strings as unreferenced */
-    for (p = AllocatedStrings; p != NULL; p = *((char **)p))
+    for (p = AllocatedStrings; p != NULL; p = *((char **)p)) {
     	*(p + sizeof(char *)) = 0;
+    }
     
     for (thisAP = AllocatedSparseArrayEntries;
         thisAP != NULL; thisAP = (SparseArrayEntryWrapper *)thisAP->next) {
@@ -816,12 +859,17 @@ void GarbageCollectStrings(void)
 
     /* Sweep the global symbol list, marking which strings are still
        referenced */
-    for (s = GlobalSymList; s != NULL; s = s->next)
-    	if (s->value.tag == STRING_TAG)
-    	    *(s->value.val.str - 1) = 1;
+    for (s = GlobalSymList; s != NULL; s = s->next) {
+    	if (s->value.tag == STRING_TAG) {
+            /* test first because it may be read-only static string */
+            if (!(*(s->value.val.str - 1))) {
+    	        *(s->value.val.str - 1) = 1;
+            }
+        }
         else if (s->value.tag == ARRAY_TAG) {
             MarkArrayContentsAsUsed((SparseArrayEntry *)s->value.val.arrayPtr);
         }
+    }
 
     /* Collect all of the strings which remain unreferenced */
     next = AllocatedStrings;
@@ -832,7 +880,8 @@ void GarbageCollectStrings(void)
     	if (*(p + sizeof(char *)) != 0) {
     	    *((char **)p) = AllocatedStrings;
     	    AllocatedStrings = p;
-    	} else {
+    	}
+        else {
 #ifdef TRACK_GARBAGE_LEAKS
             --numAllocatedStrings;
 #endif
@@ -848,7 +897,7 @@ void GarbageCollectStrings(void)
         if (thisAP->inUse != 0) {
             thisAP->next = (struct SparseArrayEntryWrapper *)AllocatedSparseArrayEntries;
             AllocatedSparseArrayEntries = thisAP;
-       }
+        }
         else {
 #ifdef TRACK_GARBAGE_LEAKS
             --numAllocatedSparseArrayElements;
@@ -858,7 +907,7 @@ void GarbageCollectStrings(void)
     }
 
 #ifdef TRACK_GARBAGE_LEAKS
-    printf("str count = %d\nary count %d\n", numAllocatedStrings, numAllocatedSparseArrayElements);
+    printf("str count = %d\nary count = %d\n", numAllocatedStrings, numAllocatedSparseArrayElements);
 #endif
 }
 
@@ -874,6 +923,7 @@ static void saveContext(RestartData *context)
     context->runWindow = InitiatingWindow;
     context->focusWindow = FocusWindow;
 }
+
 static void restoreContext(RestartData *context)
 {
     Stack = context->stack;
@@ -914,7 +964,7 @@ static void freeSymbolTable(Symbol *symTab)
 	return execError(StackUnderflowMsg, ""); \
     --StackP; \
     if (StackP->tag == STRING_TAG) { \
-    	if (!stringToNum(StackP->val.str, &number)) \
+    	if (!StringToNum(StackP->val.str, &number)) \
     	    return execError(StringToNumberMsg, ""); \
     } else if (StackP->tag == INT_TAG) \
         number = StackP->val.n; \
@@ -926,7 +976,7 @@ static void freeSymbolTable(Symbol *symTab)
 	return execError(StackUnderflowMsg, ""); \
     --StackP; \
     if (StackP->tag == INT_TAG) { \
-    	string = AllocString(21); \
+    	string = AllocString(TYPE_INT_STR_SIZE(int)); \
     	sprintf(string, "%d", StackP->val.n); \
     } else if (StackP->tag == STRING_TAG) \
         string = StackP->val.str; \
@@ -935,7 +985,7 @@ static void freeSymbolTable(Symbol *symTab)
    
 #define PEEK_STRING(string, peekIndex) \
     if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
-        string = AllocString(21); \
+        string = AllocString(TYPE_INT_STR_SIZE(int)); \
         sprintf(string, "%d", (StackP - peekIndex - 1)->val.n); \
     } \
     else if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
@@ -947,7 +997,7 @@ static void freeSymbolTable(Symbol *symTab)
 
 #define PEEK_INT(number, peekIndex) \
     if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
-        if (!stringToNum((StackP - peekIndex - 1)->val.str, &number)) { \
+        if (!StringToNum((StackP - peekIndex - 1)->val.str, &number)) { \
     	    return execError(StringToNumberMsg, ""); \
         } \
     } else if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
@@ -973,6 +1023,8 @@ static void freeSymbolTable(Symbol *symTab)
 
 #define BINARY_NUMERIC_OPERATION(operator) \
     int n1, n2; \
+    DISASM_RT(PC-1, 1); \
+    STACKDUMP(2, 3); \
     POP_INT(n2) \
     POP_INT(n1) \
     PUSH_INT(n1 operator n2) \
@@ -980,15 +1032,27 @@ static void freeSymbolTable(Symbol *symTab)
 
 #define UNARY_NUMERIC_OPERATION(operator) \
     int n; \
+    DISASM_RT(PC-1, 1); \
+    STACKDUMP(1, 3); \
     POP_INT(n) \
     PUSH_INT(operator n) \
     return STAT_OK;
 
+/*
+** copy a symbol's value onto the stack
+** Before: Prog->  [Sym], next, ...
+**         Stack-> next, ...
+** After:  Prog->  Sym, [next], ...
+**         Stack-> [SymValue], next, ...
+*/
 static int pushSymVal(void)
 {
     Symbol *s;
     int nArgs, argNum;
-    
+
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(0, 3);
+
     s = (Symbol *)*PC++;
     if (s->type == LOCAL_SYM) {
     	*StackP = *(FrameP + s->value.val.n);
@@ -1021,12 +1085,24 @@ static int pushSymVal(void)
     return STAT_OK;
 }
 
+/*
+** Push an array (by reference) onto the stack
+** Before: Prog->  [ArraySym], makeEmpty, next, ...
+**         Stack-> next, ...
+** After:  Prog->  ArraySym, makeEmpty, [next], ...
+**         Stack-> [elemValue], next, ...
+** makeEmpty is either true (1) or false (0): if true, and the element is not
+** present in the array, create it.
+*/
 static int pushArraySymVal(void)
 {
     Symbol *sym;
     DataValue *dataPtr;
     int initEmpty;
     
+    DISASM_RT(PC-1, 3);
+    STACKDUMP(0, 3);
+
     sym = (Symbol *)*PC;
     PC++;
     initEmpty = (int)*PC;
@@ -1058,11 +1134,22 @@ static int pushArraySymVal(void)
     return(STAT_OK);
 }
 
-static int assign(void)      /* assign top value to next symbol */
+/*
+** assign top value to next symbol
+**
+** Before: Prog->  [symbol], next, ...
+**         Stack-> [value], next, ...
+** After:  Prog->  symbol, [next], ...
+**         Stack-> next, ...
+*/
+static int assign(void)
 {
     Symbol *sym;
     DataValue *dataPtr;
     
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(1, 3);
+
     sym = (Symbol *)(*PC++);
     if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
         if (sym->type == ARG_SYM)
@@ -1088,8 +1175,16 @@ static int assign(void)      /* assign top value to next symbol */
     return STAT_OK;
 }
 
+/*
+** copy the top value of the stack
+** Before: Stack-> value, next, ...
+** After:  Stack-> value, value, next, ...
+*/
 static int dupStack(void)
 {
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(1, 3);
+
     if (StackP >= &Stack[STACK_SIZE])
     	return execError(StackOverflowMsg, "");
     *StackP = *(StackP - 1);
@@ -1102,12 +1197,17 @@ static int dupStack(void)
 ** in which all the keys from both the right and left are copied
 ** the values from the right array are used in the result array when the
 ** keys are the same
+** Before: Stack-> value2, value1, next, ...
+** After:  Stack-> resValue, next, ...
 */
 static int add(void)
 {
     DataValue leftVal, rightVal, resultArray;
     int n1, n2;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     PEEK(rightVal, 0)
     if (rightVal.tag == ARRAY_TAG) {
         PEEK(leftVal, 1)
@@ -1169,12 +1269,17 @@ static int add(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in the left array but not in the right
 ** are copied
+** Before: Stack-> value2, value1, next, ...
+** After:  Stack-> resValue, next, ...
 */
 static int subtract(void)
 {
     DataValue leftVal, rightVal, resultArray;
     int n1, n2;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     PEEK(rightVal, 0)
     if (rightVal.tag == ARRAY_TAG) {
         PEEK(leftVal, 1)
@@ -1226,6 +1331,15 @@ static int subtract(void)
     return(STAT_OK);
 }
 
+/*
+** Other binary operators
+** Before: Stack-> value2, value1, next, ...
+** After:  Stack-> resValue, next, ...
+**
+** Other unary operators
+** Before: Stack-> value, next, ...
+** After:  Stack-> resValue, next, ...
+*/
 static int multiply(void)
 {
     BINARY_NUMERIC_OPERATION(*)
@@ -1234,17 +1348,33 @@ static int multiply(void)
 static int divide(void)
 {
     int n1, n2;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     POP_INT(n2)
     POP_INT(n1)
-    if (n2 == 0) 
+    if (n2 == 0) {
 	return execError("division by zero", "");
+    }
     PUSH_INT(n1 / n2)
     return STAT_OK;
 }
 
 static int modulo(void)
 {
-    BINARY_NUMERIC_OPERATION(%)
+    int n1, n2;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
+    POP_INT(n2)
+    POP_INT(n1)
+    if (n2 == 0) {
+	return execError("modulo by zero", "");
+    }
+    PUSH_INT(n1 % n2)
+    return STAT_OK;
 }
 
 static int negate(void)
@@ -1284,10 +1414,16 @@ static int le(void)
 
 /*
 ** verify that compares are between integers and/or strings only
+** Before: Stack-> value1, value2, next, ...
+** After:  Stack-> resValue, next, ...
+** where resValue is 1 for true, 0 for false
 */
 static int eq(void)
 {
     DataValue v1, v2;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
 
     POP(v1)
     POP(v2)
@@ -1299,7 +1435,7 @@ static int eq(void)
     }
     else if (v1.tag == STRING_TAG && v2.tag == INT_TAG) {
         int number;
-        if (!stringToNum(v1.val.str, &number)) {
+        if (!StringToNum(v1.val.str, &number)) {
             v1.val.n = 0;
         }
         else {
@@ -1308,7 +1444,7 @@ static int eq(void)
     }
     else if (v2.tag == STRING_TAG && v1.tag == INT_TAG) {
         int number;
-        if (!stringToNum(v2.val.str, &number)) {
+        if (!StringToNum(v2.val.str, &number)) {
             v1.val.n = 0;
         }
         else {
@@ -1323,6 +1459,7 @@ static int eq(void)
     return(STAT_OK);
 }
 
+/* negated eq() call */
 static int ne(void)
 {
     eq();
@@ -1333,12 +1470,17 @@ static int ne(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in both the right or left are copied
 ** the values from the right array are used in the result array
+** Before: Stack-> value2, value1, next, ...
+** After:  Stack-> resValue, next, ...
 */
 static int bitAnd(void)
 { 
     DataValue leftVal, rightVal, resultArray;
     int n1, n2;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     PEEK(rightVal, 0)
     if (rightVal.tag == ARRAY_TAG) {
         PEEK(leftVal, 1)
@@ -1388,12 +1530,17 @@ static int bitAnd(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in either the right or left but not both
 ** are copied
+** Before: Stack-> value2, value1, next, ...
+** After:  Stack-> resValue, next, ...
 */
 static int bitOr(void)
 { 
     DataValue leftVal, rightVal, resultArray;
     int n1, n2;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     PEEK(rightVal, 0)
     if (rightVal.tag == ARRAY_TAG) {
         PEEK(leftVal, 1)
@@ -1465,9 +1612,18 @@ static int not(void)
     UNARY_NUMERIC_OPERATION(!)
 }
 
+/*
+** raise one number to the power of another
+** Before: Stack-> raisedBy, number, next, ...
+** After:  Stack-> result, next, ...
+*/
 static int power(void)
 {
     int n1, n2, n3;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     POP_INT(n2)
     POP_INT(n1)
     /*  We need to round to deal with pow() giving results slightly above
@@ -1501,10 +1657,19 @@ static int power(void)
     return errCheck("exponentiation");
 }
 
+/*
+** concatenate two top items on the stack
+** Before: Stack-> str2, str1, next, ...
+** After:  Stack-> result, next, ...
+*/
 static int concat(void)
 {
     char *s1, *s2, *out;
     int len1, len2;
+
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     POP_STRING(s2)
     POP_STRING(s1)
     len1 = strlen(s1);
@@ -1526,25 +1691,12 @@ static int concat(void)
 ** PC is set to point to the new function. For a built-in routine, the
 ** arguments are popped off the stack, and the routine is just called.
 **
-**
-**   The call stack for a subroutine call looks like
-**
-**   SP after return -> arg1
-**      		arg2
-**      		arg3
-**      		.
-**      		.
-**      		.
-**    SP before call -> ReturnAddress
-**      		Saved FP
-**      		nArgs
-**      	  FP -> local1
-**      		local2
-**      		local3
-**      		.
-**      		.
-**      		.
-**     SP after call ->
+** Before: Prog->  [subrSym], nArgs, next, ...
+**         Stack-> argN-arg1, next, ...
+** After:  Prog->  next, ...            -- (built-in called subr)
+**         Stack-> retVal?, next, ...
+**    or:  Prog->  (in called)next, ... -- (macro code called subr)
+**         Stack-> symN-sym1(FP), nArgs, oldFP, retPC, argN-arg1, next, ...
 */
 static int callSubroutine(void)
 {
@@ -1557,6 +1709,9 @@ static int callSubroutine(void)
     sym = (Symbol *)*PC++;
     nArgs = (int)*PC++;
     
+    DISASM_RT(PC-3, 3);
+    STACKDUMP(nArgs, 3);
+
     if (nArgs > MAX_ARGS)
     	return execError("too many arguments to subroutine %s (max 9)",
     	    	sym->name);
@@ -1565,16 +1720,14 @@ static int callSubroutine(void)
     ** If the subroutine is built-in, call the built-in routine
     */
     if (sym->type == C_FUNCTION_SYM) {
-    	DataValue result, argList[MAX_ARGS];
-    
-	/* pop arguments off the stack and put them in the argument list */
-	for (i=nArgs-1; i>=0; i--) {
-    	    POP(argList[i])
-	}
-    	
+    	DataValue result;
+
+        /* "pop" stack back to the first argument in the call stack */
+    	StackP -= nArgs;
+
     	/* Call the function and check for preemption */
     	PreemptRequest = False;
-	if (!(sym->value.val.subr)(FocusWindow, argList,
+	if (!sym->value.val.subr(FocusWindow, StackP,
 	    	nArgs, &result, &errMsg))
 	    return execError(errMsg, sym->name);
     	if (*PC == fetchRetVal) {
@@ -1646,7 +1799,7 @@ static int callSubroutine(void)
 
     	/* Call the action routine and check for preemption */
     	PreemptRequest = False;
-    	(sym->value.val.xtproc)(FocusWindow->lastFocus,
+    	sym->value.val.xtproc(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
     	if (*PC == fetchRetVal)
     	    return execError("%s does not return a value", sym->name);
@@ -1667,6 +1820,7 @@ static int fetchRetVal(void)
     return execError("internal error: frv", NULL);
 }
 
+/* see comments for returnValOrNone() */
 static int returnNoVal(void)
 {
     return returnValOrNone(False);
@@ -1678,6 +1832,10 @@ static int returnVal(void)
 
 /*
 ** Return from a subroutine call
+** Before: Prog->  [next], ...
+**         Stack-> retVal?, ...(FP), nArgs, oldFP, retPC, argN-arg1, next, ...
+** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
+**         Stack-> retVal?, next, ...
 */
 static int returnValOrNone(int valOnStack)
 {
@@ -1685,6 +1843,9 @@ static int returnValOrNone(int valOnStack)
     static DataValue noValue = {NO_TAG, {0}};
     int nArgs;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(StackP - FrameP + FrameP[-1].val.n + 3, 3);
+
     /* return value is on the stack */
     if (valOnStack) {
     	POP(retVal);
@@ -1725,9 +1886,15 @@ static int returnValOrNone(int valOnStack)
 
 /*
 ** Unconditional branch offset by immediate operand
+**
+** Before: Prog->  [branchDest], next, ..., (branchdest)next
+** After:  Prog->  branchDest, next, ..., (branchdest)[next]
 */
 static int branch(void)
 {
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(0, 3);
+
     PC += (int)*PC;
     return STAT_OK;
 }
@@ -1735,12 +1902,19 @@ static int branch(void)
 /*
 ** Conditional branches if stack value is True/False (non-zero/0) to address
 ** of immediate operand (pops stack)
+**
+** Before: Prog->  [branchDest], next, ..., (branchdest)next
+** After:  either: Prog->  branchDest, [next], ...
+** After:  or:     Prog->  branchDest, next, ..., (branchdest)[next]
 */
 static int branchTrue(void)
 {
     int value;
     Inst *addr;
     
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(1, 3);
+
     POP_INT(value)
     addr = PC + (int)*PC;
     PC++;
@@ -1754,6 +1928,9 @@ static int branchFalse(void)
     int value;
     Inst *addr;
     
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(1, 3);
+
     POP_INT(value)
     addr = PC + (int)*PC;
     PC++;
@@ -1767,9 +1944,15 @@ static int branchFalse(void)
 ** Ignore the address following the instruction and continue.  Why? So
 ** some code that uses conditional branching doesn't have to figure out
 ** whether to store a branch address.
+**
+** Before: Prog->  [branchDest], next, ...
+** After:  Prog->  branchDest, [next], ...
 */
 static int branchNever(void)
 {
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(0, 3);
+
     PC++;
     return STAT_OK;
 }
@@ -2056,6 +2239,11 @@ SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator)
 
 /*
 ** evaluate an array element and push the result onto the stack
+**
+** Before: Prog->  [nDim], next, ...
+**         Stack-> indnDim, ... ind1, ArraySym, next, ...
+** After:  Prog->  nDim, [next], ...
+**         Stack-> indexedArrayVal, next, ...
 */
 static int arrayRef(void)
 {
@@ -2066,6 +2254,9 @@ static int arrayRef(void)
     
     nDim = (int)*PC;
     PC++;
+
+    DISASM_RT(PC-2, 2);
+    STACKDUMP(nDim, 3);
 
     if (nDim > 0) {
         errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
@@ -2099,6 +2290,11 @@ static int arrayRef(void)
 
 /*
 ** assign to an array element of a referenced array on the stack
+**
+** Before: Prog->  [nDim], next, ...
+**         Stack-> rhs, indnDim, ... ind1, ArraySym, next, ...
+** After:  Prog->  nDim, [next], ...
+**         Stack-> next, ...
 */
 static int arrayAssign(void)
 {
@@ -2109,6 +2305,9 @@ static int arrayAssign(void)
     
     nDim = (int)*PC;
     PC++;
+
+    DISASM_RT(PC-2, 1);
+    STACKDUMP(nDim, 3);
 
     if (nDim > 0) {
         POP(srcValue)
@@ -2142,6 +2341,14 @@ static int arrayAssign(void)
     return(execError("empty operator []", NULL));
 }
 
+/*
+** for use with assign-op operators (eg a[i,j] += k
+**
+** Before: Prog->  [binOp], nDim, next, ...
+**         Stack-> [rhs], indnDim, ... ind1, next, ...
+** After:  Prog->  binOp, nDim, [next], ...
+**         Stack-> [rhs], arrayValue, next, ...
+*/
 static int arrayRefAndAssignSetup(void)
 {
     int errNum;
@@ -2153,6 +2360,9 @@ static int arrayRefAndAssignSetup(void)
     PC++;
     nDim = (int)*PC;
     PC++;
+
+    DISASM_RT(PC-3, 3);
+    STACKDUMP(nDim + 1, 3);
 
     if (binaryOp) {
         POP(moveExpr)
@@ -2186,12 +2396,24 @@ static int arrayRefAndAssignSetup(void)
 
 /*
 ** setup symbol values for array iteration in interpreter
+**
+** Before: Prog->  [iter], ARRAY_ITER, iterVar, iter, endLoopBranch, next, ...
+**         Stack-> [arrayVal], next, ...
+** After:  Prog->  iter, [ARRAY_ITER], iterVar, iter, endLoopBranch, next, ...
+**         Stack-> [next], ...
+** Where: 
+**      iter is a symbol which gives the position of the iterator value in
+**              the stack frame
+**      arrayVal is the data value holding the array in question
 */
 static int beginArrayIter(void)
 {
     Symbol *iterator;
     DataValue *iteratorValPtr;
     DataValue arrayVal;
+
+    DISASM_RT(PC-1, 2);
+    STACKDUMP(1, 3);
 
     iterator = (Symbol *)*PC;
     PC++;
@@ -2219,6 +2441,22 @@ static int beginArrayIter(void)
 ** then move iterator to next node
 ** this allows iterators to progress even if you delete any node in the array
 ** except the item just after the current key
+**
+** Before: Prog->  iter, ARRAY_ITER, [iterVar], iter, endLoopBranch, next, ...
+**         Stack-> [next], ...
+** After:  Prog->  iter, ARRAY_ITER, iterVar, iter, endLoopBranch, [next], ...
+**         Stack-> [next], ...      (unchanged)
+** Where: 
+**      iter is a symbol which gives the position of the iterator value in
+**              the stack frame (set up by BEGIN_ARRAY_ITER); that value refers
+**              to the array and a position within it
+**      iterVal is the programmer-visible symbol which will take the current
+**              key value
+**      endLoopBranch is the instruction offset to the instruction following the
+**              loop (measured from itself)
+**      arrayVal is the data value holding the array in question
+** The return-to-start-of-loop branch (at the end of the loop) should address
+** the ARRAY_ITER instruction
 */
 static int arrayIter(void)
 {
@@ -2228,6 +2466,9 @@ static int arrayIter(void)
     DataValue *itemValPtr;
     SparseArrayEntry *thisEntry;
     Inst *branchAddr;
+
+    DISASM_RT(PC-1, 4);
+    STACKDUMP(0, 3);
 
     item = (Symbol *)*PC;
     PC++;
@@ -2268,11 +2509,16 @@ static int arrayIter(void)
 }
 
 /*
-** deletermine if a key or keys exists in an array
+** determine if a key or keys exists in an array
 ** if the left argument is a string or integer a single check is performed
 ** if the key exists, 1 is pushed onto the stack, otherwise 0
 ** if the left argument is an array 1 is pushed onto the stack if every key
 ** in the left array exists in the right array, otherwise 0
+**
+** Before: Prog->  [next], ...
+**         Stack-> [ArraySym], inSymbol, next, ...
+** After:  Prog->  [next], ...      -- (unchanged)
+**         Stack-> next, ...
 */
 static int inArray(void)
 {
@@ -2280,6 +2526,9 @@ static int inArray(void)
     char *keyStr;
     int inResult = 0;
     
+    DISASM_RT(PC-1, 1);
+    STACKDUMP(2, 3);
+
     POP(theArray)
     if (theArray.tag != ARRAY_TAG) {
         return(execError("operator in on non-array", NULL));
@@ -2308,6 +2557,12 @@ static int inArray(void)
 
 /*
 ** remove a given key from an array unless nDim is 0, then all keys are removed
+**
+** for use with assign-op operators (eg a[i,j] += k
+** Before: Prog->  [nDim], next, ...
+**         Stack-> [indnDim], ... ind1, arrayValue, next, ...
+** After:  Prog->  nDim, [next], ...
+**         Stack-> next, ...
 */
 static int deleteArrayElement(void)
 {
@@ -2317,6 +2572,9 @@ static int deleteArrayElement(void)
 
     nDim = (int)*PC;
     PC++;
+
+    DISASM_RT(PC-2, 2);
+    STACKDUMP(nDim + 1, 3);
 
     if (nDim > 0) {
         int errNum;
@@ -2370,80 +2628,175 @@ static int execError(const char *s1, const char *s2)
     return STAT_ERROR;
 }
 
-static int stringToNum(const char *string, int *number)
+int StringToNum(const char *string, int *number)
 {
-    int i;
-    const char *c;
+    const char *c = string;
     
-    /*... this is still not finished */
-    for (c=string, i=0; *c != '\0'; i++, c++)
-    	if (!(isdigit((unsigned char)*c) || *c != ' ' || *c != '\t'))
-    	    return False;
-    if (sscanf(string, "%d", number) != 1) {
-    	*number = 0;
+    while (*c == ' ' || *c == '\t') {
+        ++c;
+    }
+    if (*c == '+' || *c == '-') {
+        ++c;
+    }
+    while (isdigit((unsigned char)*c)) {
+        ++c;
+    }
+    while (*c == ' ' || *c == '\t') {
+        ++c;
+    }
+    if (*c) {
+        /* if everything went as expected, we should be at end, but we're not */
+        return False;
+    }
+    if (number) {
+        if (sscanf(string, "%d", number) != 1) {
+            /* This case is here to support old behavior */
+    	    *number = 0;
+        }
     }
     return True;
 }
 
-#ifdef DEBUG_ASSEMBLY /* For debugging code generation */
-static void disasm(Program *prog, int nInstr)
+#ifdef DEBUG_DISASSEMBLER   /* dumping values in disassembly or stack dump */
+static void dumpVal(DataValue dv)
 {
-    static const char *opNames[N_OPS] = {"returnNoVal", "returnVal", "pushSymVal",
-        "dupStack", "add", "subtract", "multiply", "divide", "modulo",
-        "negate", "increment", "decrement", "gt", "lt", "ge", "le", "eq",
-        "ne", "bitAnd", "bitOr", "and", "or", "not", "power", "concat",
-        "assign", "callSubroutine", "fetchRetVal", "branch", "branchTrue",
-        "branchFalse", "branchNever", "arrayRef", "arrayAssign",
-        "beginArrayIter", "arrayIter", "inArray", "deleteArrayElement",
-        "pushArraySymVal", "arrayRefAndAssignSetup"};
+    switch (dv.tag) {
+        case INT_TAG:
+            printf("i=%d", dv.val.n);
+            break;
+        case STRING_TAG:
+            {
+                int k;
+                char s[21];
+                char *src = dv.val.str;
+                if (!src) {
+                    printf("s=<NULL>");
+                }
+                else {
+                    for (k = 0; src[k] && k < sizeof s - 1; k++) {
+                        s[k] = isprint(src[k]) ? src[k] : '?';
+                    }
+                    s[k] = 0;
+                    printf("s=\"%s\"%s[%d]", s,
+                           src[k] ? "..." : "", strlen(src));
+                }
+            }
+            break;
+        case ARRAY_TAG:
+            printf("<array>");
+            break;
+        case NO_TAG:
+            if (!dv.val.inst) {
+                printf("<no value>");
+            }
+            else {
+                printf("?%8p", dv.val.inst);
+            }
+            break;
+        default:
+            printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, dv.val.inst);
+            break;
+    }
+}
+#endif /* #ifdef DEBUG_DISASSEMBLER */
+
+#ifdef DEBUG_DISASSEMBLER /* For debugging code generation */
+static void disasm(Inst *inst, int nInstr)
+{
+    static const char *opNames[N_OPS] = {
+        "RETURN_NO_VAL",                /* returnNoVal */
+        "RETURN",                       /* returnVal */
+        "PUSH_SYM",                     /* pushSymVal */
+        "DUP",                          /* dupStack */
+        "ADD",                          /* add */
+        "SUB",                          /* subtract */
+        "MUL",                          /* multiply */
+        "DIV",                          /* divide */
+        "MOD",                          /* modulo */
+        "NEGATE",                       /* negate */
+        "INCR",                         /* increment */
+        "DECR",                         /* decrement */
+        "GT",                           /* gt */
+        "LT",                           /* lt */
+        "GE",                           /* ge */
+        "LE",                           /* le */
+        "EQ",                           /* eq */
+        "NE",                           /* ne */
+        "BIT_AND",                      /* bitAnd */
+        "BIT_OR",                       /* bitOr */
+        "AND",                          /* and */
+        "OR",                           /* or */
+        "NOT",                          /* not */
+        "POWER",                        /* power */
+        "CONCAT",                       /* concat */
+        "ASSIGN",                       /* assign */
+        "SUBR_CALL",                    /* callSubroutine */
+        "FETCH_RET_VAL",                /* fetchRetVal */
+        "BRANCH",                       /* branch */
+        "BRANCH_TRUE",                  /* branchTrue */
+        "BRANCH_FALSE",                 /* branchFalse */
+        "BRANCH_NEVER",                 /* branchNever */
+        "ARRAY_REF",                    /* arrayRef */
+        "ARRAY_ASSIGN",                 /* arrayAssign */
+        "BEGIN_ARRAY_ITER",             /* beginArrayIter */
+        "ARRAY_ITER",                   /* arrayIter */
+        "IN_ARRAY",                     /* inArray */
+        "ARRAY_DELETE",                 /* deleteArrayElement */
+        "PUSH_ARRAY_SYM",               /* pushArraySymVal */
+        "ARRAY_REF_ASSIGN_SETUP"        /* arrayRefAndAssignSetup */
+    };
     int i, j;
     
+    printf("\n");
     for (i=0; i<nInstr; i++) {
-        printf("%x ", (int)&prog->code[i]);
+        printf("Prog %8p ", &inst[i]);
         for (j=0; j<N_OPS; j++) {
-            if (prog->code[i] == OpFns[j]) {
-                printf("%s", opNames[j]);
+            if (inst[i] == OpFns[j]) {
+                printf("%22s ", opNames[j]);
                 if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
-                    printf(" %s", ((Symbol *)prog->code[i+1])->name);
-                    i++;
+                    Symbol *sym = (Symbol *)inst[i+1];
+                    printf("%s", sym->name);
+                    if (sym->value.tag == STRING_TAG &&
+                        strncmp(sym->name, "string #", 8) == 0) {
+                        dumpVal(sym->value);
+                    }
+                    ++i;
                 } else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
                         j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-                    printf(" (%d) %x", (int)prog->code[i+1],
-                            (int)(&prog->code[i+1] + (int)prog->code[i+1]));
-                    i++;
+                    printf("to=(%d) %x", (int)inst[i+1],
+                            (int)(&inst[i+1] + (int)inst[i+1]));
+                    ++i;
                 } else if (j == OP_SUBR_CALL) {
-                    printf(" %s (%d arg)", ((Symbol *)prog->code[i+1])->name,
-                            (int)prog->code[i+2]);
+                    printf("%s (%d arg)", ((Symbol *)inst[i+1])->name,
+                            (int)inst[i+2]);
                     i += 2;
                 } else if (j == OP_BEGIN_ARRAY_ITER) {
-                    printf(" %s in",
-                            ((Symbol *)prog->code[i+1])->name);
-                    i += 1;
+                    printf("%s in",
+                            ((Symbol *)inst[i+1])->name);
+                    ++i;
                 } else if (j == OP_ARRAY_ITER) {
-                    printf(" %s = %s++ (%d) %x",
-                            ((Symbol *)prog->code[i+1])->name,
-                            ((Symbol *)prog->code[i+2])->name,
-                            (int)prog->code[i+3],
-                            (int)(&prog->code[i+3] + (int)prog->code[i+3]));
+                    printf("%s = %s++ end-loop=(%d) %x",
+                            ((Symbol *)inst[i+1])->name,
+                            ((Symbol *)inst[i+2])->name,
+                            (int)inst[i+3],
+                            (int)(&inst[i+3] + (int)inst[i+3]));
                     i += 3;
                 } else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
                             j == OP_ARRAY_ASSIGN) {
-                    printf(" %d",
-                            ((int)prog->code[i+1]));
-                    i += 1;
+                    printf("nDim=%d",
+                            ((int)inst[i+1]));
+                    ++i;
                 } else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
-                    printf(" %d",
-                            ((int)prog->code[i+1]));
-                    i += 1;
-                    printf(" %d",
-                            ((int)prog->code[i+1]));
-                    i += 1;
+                    printf("binOp=%s ",
+                            ((int)inst[i+1]) ? "true" : "false");
+                    printf("nDim=%d",
+                            ((int)inst[i+2]));
+                    i += 2;
                 } else if (j == OP_PUSH_ARRAY_SYM) {
-                    printf(" %s", ((Symbol *)prog->code[i+1])->name);
-                    i += 1;
-                    printf(" %d",
-                            ((int)prog->code[i+1]));
-                    i += 1;
+                    printf("%s", ((Symbol *)inst[++i])->name);
+                    printf(" %s",
+                            (int)inst[i+1] ? "createAndRef" : "refOnly");
+                    ++i;
                 }
 
                 printf("\n");
@@ -2451,7 +2804,44 @@ static void disasm(Program *prog, int nInstr)
             }
         }
         if (j == N_OPS)
-            printf("%x\n", (int)prog->code[i]);
+            printf("%x\n", (int)inst[i]);
     }
 }
-#endif /* ifdef DEBUG_ASSEMBLY */
+#endif /* #ifdef DEBUG_DISASSEMBLER */
+
+#ifdef DEBUG_STACK  /* for run-time stack dumping */
+static void stackdump(int n, int extra)
+{
+    /* Stack-> symN-sym1(FP), nArgs, oldFP, retPC, argN-arg1, next, ... */
+    int nArgs = FrameP[-1].val.n;
+    int i, offset;
+    char buffer[20];
+    printf("Stack ----->\n");
+    for (i = 0; i < n + extra; i++) {
+        char *pos = "";
+        DataValue *dv = &StackP[-i - 1];
+        if (dv < Stack) {
+            printf("--------------Stack base--------------\n");
+            break;
+        }
+        offset = dv - FrameP;
+
+        printf("%4.4s", i < n ? ">>>>" : "");
+        printf("%8p ", dv);
+        switch (offset) {
+            case 0:     pos = "FrameP"; break;  /* first local symbol value */
+            case -1:    pos = "NArgs";  break;  /* number of arguments */
+            case -2:    pos = "OldFP";  break;
+            case -3:    pos = "RetPC";  break;
+            default:
+                if (offset < -3 && offset >= -3 - nArgs) {
+                    sprintf(pos = buffer, "Arg%d", offset + 4 + nArgs);
+                }
+                break;
+        }
+        printf("%-6s ", pos);
+        dumpVal(*dv);
+        printf("\n");
+    }
+}
+#endif /* ifdef DEBUG_STACK */
