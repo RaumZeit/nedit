@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.82 2003/05/24 19:15:21 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.83 2003/05/27 21:31:31 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -144,25 +144,6 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 static Widget containingPane(Widget w);
 
-/* Must be in same index order as enum enum colorTypes */
-struct mapEntry
-{
-    String          resource;
-    enum colorTypes color;
-};
-
-static const struct mapEntry colorResourceMap[] =
-{
-    { XmNforeground,             TEXT_FG_COLOR   },
-    { XmNbackground,             TEXT_BG_COLOR   },
-    { textNselectForeground,     SELECT_FG_COLOR },
-    { textNselectBackground,     SELECT_BG_COLOR },
-    { textNhighlightForeground,  HILITE_FG_COLOR },
-    { textNhighlightBackground,  HILITE_BG_COLOR },
-    { textNlineNumForeground,    LINENO_FG_COLOR },
-    { textNcursorForeground,     CURSOR_FG_COLOR },
-};                                
-
 /*
 ** Create a new editor window
 */
@@ -246,11 +227,11 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->backlightCharTypes = NULL;
     window->backlightChars = GetPrefBacklightChars();
     if (window->backlightChars) {
-      char *cTypes = GetPrefBacklightCharTypes();
-      if (cTypes && window->backlightChars) {
-          if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
-              strcpy(window->backlightCharTypes, cTypes);
-      }
+        char *cTypes = GetPrefBacklightCharTypes();
+        if (cTypes && window->backlightChars) {
+            if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+                strcpy(window->backlightCharTypes, cTypes);
+        }
     }
     window->modeMessageDisplayed = FALSE;
     window->ignoreModify = FALSE;
@@ -260,12 +241,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->fileClosedAtom = None;
     window->wasSelected = FALSE;
 
-#if 0    
-    for (c = 0; c < NUM_COLORS; c++) {
-        strncpy(window->colorNames[c], GetPrefColorName(c), MAX_COLOR_LEN);
-    }
-#endif
-    
     strcpy(window->fontName, GetPrefFontName());
     strcpy(window->italicFontName, GetPrefItalicFontName());
     strcpy(window->boldFontName, GetPrefBoldFontName());
@@ -564,6 +539,17 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtManageChild(text);
     window->textArea = text;
     window->lastFocus = text;
+
+    /* Set the initial colors from the globals. */
+    SetColors(window,
+              GetPrefColorName(TEXT_FG_COLOR  ),
+              GetPrefColorName(TEXT_BG_COLOR  ),
+              GetPrefColorName(SELECT_FG_COLOR),
+              GetPrefColorName(SELECT_BG_COLOR),
+              GetPrefColorName(HILITE_FG_COLOR),
+              GetPrefColorName(HILITE_BG_COLOR),
+              GetPrefColorName(LINENO_FG_COLOR),
+              GetPrefColorName(CURSOR_FG_COLOR));
 
     /* Create the right button popup menu (note: order is important here,
        since the translation for popping up this menu was probably already
@@ -1351,18 +1337,6 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
                     &dummy, &dummy, &dummy);
     textDisp *textD;
 
-#if 0    
-    /* Update the names in the WindowInfo */
-    strncpy(window->colorNames[TEXT_FG_COLOR  ], textFg  , MAX_COLOR_LEN);
-    strncpy(window->colorNames[TEXT_BG_COLOR  ], textBg  , MAX_COLOR_LEN);
-    strncpy(window->colorNames[SELECT_FG_COLOR], selectFg, MAX_COLOR_LEN);
-    strncpy(window->colorNames[SELECT_BG_COLOR], selectBg, MAX_COLOR_LEN);
-    strncpy(window->colorNames[HILITE_FG_COLOR], hiliteFg, MAX_COLOR_LEN);
-    strncpy(window->colorNames[HILITE_BG_COLOR], hiliteBg, MAX_COLOR_LEN);
-    strncpy(window->colorNames[LINENO_FG_COLOR], lineNoFg, MAX_COLOR_LEN);
-    strncpy(window->colorNames[CURSOR_FG_COLOR], cursorFg, MAX_COLOR_LEN);
-#endif
-    
     /* Update the main pane */
     XtVaSetValues(window->textArea,
             XmNforeground, textFgPix,
@@ -1707,16 +1681,6 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNoverstrike, window->overstrike,
             textNhidePointer, (Boolean) GetPrefTypingHidesPointer(),
             NULL);
-
-    for (i = 0; i < XtNumber(colorResourceMap); i++)
-    {
-        String colorName = GetPrefColorName(colorResourceMap[i].color);
-        if (strcmp("None", colorName))
-        {
-            Pixel color = AllocColor(sw, colorName, &dummy, &dummy, &dummy);
-            XtVaSetValues(text, colorResourceMap[i].resource, color, NULL);
-        }
-    }
 
     XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
                     hScrollBar, XmNverticalScrollBar, vScrollBar, NULL);
