@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.39 2003/01/10 15:33:53 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.40 2003/03/21 18:31:28 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -83,6 +83,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.39 2003/01/10 15:33:53 tringali Ex
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
+static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure);
 static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void patchResourcesForVisual(void);
@@ -102,27 +103,31 @@ Boolean IsServer = False;
    RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
    and so reverts to "fixed".  Yech. */
 
-#define NEDIT_DEFAULT_FONT "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1"
-#define NEDIT_FIXED_FONT   "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
+#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1"
+#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1"
+#define NEDIT_DEFAULT_FG        "black"
+#define NEDIT_DEFAULT_TEXT_BG   "#e5e5e5"
+#define NEDIT_DEFAULT_BG        "#b3b3b3"
 
 static char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
        if the user's environment provides no usable defaults.  We try
        to choose a Windows-y default color setting here.  Editable text 
        fields are forced to a fixed-pitch font for usability. */
-    "*FontList: " NEDIT_DEFAULT_FONT,
-    "*XmText.FontList: " NEDIT_FIXED_FONT,
-    "*XmTextField.FontList: " NEDIT_FIXED_FONT,
-    "*XmList.FontList: " NEDIT_FIXED_FONT,
-    "*XmFileSelectionBox*XmList.FontList: " NEDIT_FIXED_FONT,
-    "*background: #b3b3b3",
-    "*foreground: black",
-    "*XmText*foreground: black",
-    "*XmText*background: #e5e5e5",
-    "*XmList*foreground: black",
-    "*XmList*background: #e5e5e5",
-    "*XmTextField*foreground: black",
-    "*XmTextField*background: #e5e5e5",
+    "*FontList: "               NEDIT_DEFAULT_FONT,
+    "*XmText.FontList: "        NEDIT_FIXED_FONT,
+    "*XmTextField.FontList: "   NEDIT_FIXED_FONT,
+    "*XmList.FontList: "        NEDIT_FIXED_FONT,
+    "*XmFileSelectionBox*XmList.FontList: " 
+                                NEDIT_FIXED_FONT,
+    "*background: "             NEDIT_DEFAULT_BG,
+    "*foreground: "             NEDIT_DEFAULT_FG,
+    "*XmText.foreground: "      NEDIT_DEFAULT_FG,
+    "*XmText.background: "      NEDIT_DEFAULT_TEXT_BG,
+    "*XmList.foreground: "      NEDIT_DEFAULT_FG,
+    "*XmList.background: "      NEDIT_DEFAULT_TEXT_BG,
+    "*XmTextField.foreground: " NEDIT_DEFAULT_FG,
+    "*XmTextField.background: " NEDIT_DEFAULT_TEXT_BG,
     "*XmText.translations: #override\\n"
         "Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"
         "Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"
@@ -144,8 +149,8 @@ static char *fallbackResources[] = {
        file against our wishes. */
 
     "*text.lineNumForeground: #777777",
-    "*text.background: #e5e5e5",
-    "*text.foreground: black",
+    "*text.background: ", NEDIT_DEFAULT_TEXT_BG,
+    "*text.foreground: ", NEDIT_DEFAULT_FG,
     "*text.highlightBackground: red",
     "*text.highlightForeground: black",
     "*textFrame.shadowThickness: 1",
@@ -159,8 +164,8 @@ static char *fallbackResources[] = {
     "*text.selectionArrayCount: 3",
     "*helpText.background: #cccccc",
     "*helpText.foreground: black",
-    "*helpText.selectBackground: #b3b3b3",
-    "*statsLine.background: #b3b3b3",
+    "*helpText.selectBackground: " NEDIT_DEFAULT_BG,
+    "*statsLine.background: " NEDIT_DEFAULT_BG,
     "*statsLine.FontList: " NEDIT_DEFAULT_FONT,
     "*helpText.font: " NEDIT_FIXED_FONT,
     "*calltip.background: LemonChiffon1",
@@ -342,7 +347,7 @@ int main(int argc, char **argv)
 
     /* Set locale for C library, X, and Motif input functions. 
        Reverts to "C" if requested locale not available. */
-    XtSetLanguageProc(NULL, NULL, NULL);
+    XtSetLanguageProc(NULL, neditLanguageProc, NULL);
  
     /* Initialize X toolkit (does not open display yet) */
     XtToolkitInitialize();
@@ -682,4 +687,45 @@ static void patchResourcesForVisual(void)
             }
         }
     }
+}
+
+/*
+** It seems OSF Motif cannot handle locales with UTF-8 at the end, crashing
+** in various places.  The easiest one to find is to open the File Open
+** dialog box.  So we lop off UTF-8 if it's there and continue.  Newer 
+** versions of Linux distros (e.g., RedHat 8) set the default language to
+** to have "UTF-8" at the end, so users were seeing these crashes.
+*/
+
+static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
+{
+    char newlocale[1024];
+    strcpy(newlocale, xnl);
+
+#ifndef LESSTIF_VERSION
+    if (xnl && *xnl == '\0')
+    {
+        char *utf_start = 0;
+        strcpy(newlocale, getenv("LANG"));
+
+        if ((utf_start = strstr(newlocale, ".utf8")) || 
+            (utf_start = strstr(newlocale, ".UTF-8")))
+        {
+            *utf_start = '\0'; /* Samurai chop */
+            XtWarning("UTF8 locale not supported.");
+        }
+    }
+#endif
+        
+    if (! setlocale(LC_ALL, newlocale))
+	XtWarning("locale not supported by C library, locale unchanged");
+
+    if (! XSupportsLocale()) {
+	XtWarning("locale not supported by Xlib, locale set to C");
+	setlocale(LC_ALL, "C");
+    }
+    if (! XSetLocaleModifiers(""))
+	XtWarning("X locale modifiers not supported, using default");
+
+    return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
 }

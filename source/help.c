@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.88 2003/03/20 13:02:34 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.89 2003/03/21 18:31:29 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -48,6 +48,7 @@ static const char CVSID[] = "$Id: help.c,v 1.88 2003/03/20 13:02:34 edg Exp $";
 #include "../util/DialogF.h"
 #include "../util/system.h"
 
+#include <locale.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -223,13 +224,17 @@ static const char *getBuildInfo(void)
         "Running Motif: %d.%d [%s]\n"
         "       Server: %s %d\n"
         "       Visual: %s\n"
+        "       Locale: %s\n"
        ;
     const char * visualClass[] = {"StaticGray",  "GrayScale",
                                   "StaticColor", "PseudoColor",
                                   "TrueColor",   "DirectColor"};
-    if (bldInfoString==NULL)
+    const char *locale;
+
+    if (bldInfoString == NULL)
     {
-        char        visualStr[30]="";
+        char visualStr[500] = "<unknown>";
+
         if (TheDisplay) {
             Visual     *visual;
             int         depth;
@@ -243,17 +248,21 @@ static const char *getBuildInfo(void)
                     visual->visualid,
                     usingDefaultVisual ? ", Default" : "");
         }
-       bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
-       sprintf(bldInfoString, bldFormat,
-            NEditVersion,
-            COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-            linkdate, linktime,
-            XmVERSION, XmREVISION, XmUPDATE_LEVEL,
-            XmVERSION_STRING,
-            xmUseVersion/1000, xmUseVersion%1000,
-            _XmVersionString,
-            ServerVendor(TheDisplay), VendorRelease(TheDisplay),
-            visualStr);
+
+        bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
+        locale = setlocale(LC_MESSAGES, "");
+
+        sprintf(bldInfoString, bldFormat,
+             NEditVersion,
+             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+             linkdate, linktime,
+             XmVERSION, XmREVISION, XmUPDATE_LEVEL,
+             XmVERSION_STRING,
+             xmUseVersion/1000, xmUseVersion%1000,
+             _XmVersionString,
+             ServerVendor(TheDisplay), VendorRelease(TheDisplay),
+             visualStr,
+             locale ? locale : "None");
 
         atexit(freeBuildInfo);
     }
