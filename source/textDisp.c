@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.10 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.11 2001/11/16 10:06:34 amai Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -799,6 +799,61 @@ void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row,
 	int *column)
 {
     xyToUnconstrainedPos(textD, x, y, row, column, CURSOR_POS);
+}
+
+/*
+** Translate line and column to the nearest row and column number for
+** positioning the cursor.  This, of course, makes no sense when the font
+** is proportional, since there are no absolute columns.
+*/
+int TextDLineAndColToPos(textDisp *textD, int lineNum, int column)
+{
+    int i, lineStart, lineEnd, charIndex, outIndex, charLen;
+    char *lineStr, expandedChar[MAX_EXP_CHAR_LEN];
+
+    /* Count lines */
+    if (lineNum < 1)
+        lineNum = 1;
+    lineEnd = -1;
+    for (i=1; i<=lineNum && lineEnd<textD->buffer->length; i++) {
+        lineStart = lineEnd + 1;
+        lineEnd = BufEndOfLine(textD->buffer, lineStart);
+    }
+
+    /* If line is beyond end of buffer, position at last character in buffer */
+    if ( lineNum >= i ) {
+      return lineEnd;
+    }
+
+    /* Start character index at zero */
+    charIndex=0;
+
+    /* Only have to count columns if column isn't zero (or negative) */
+    if (column > 0) {
+      /* Count columns, expanding each character */
+      lineStr = BufGetRange(textD->buffer, lineStart, lineEnd);
+      outIndex = 0;
+      for(i=lineStart; i<lineEnd; i++, charIndex++) {
+          charLen = BufExpandCharacter(lineStr[charIndex], outIndex,
+                  expandedChar, textD->buffer->tabDist,
+                  textD->buffer->nullSubsChar);
+          if ( outIndex+charLen >= column ) break;
+          outIndex+=charLen;
+      }
+
+      /* If the column is in the middle of an expanded character, put cursor
+       * in front of character if in first half of character, and behind
+       * character if in last half of character
+       */
+      if (column >= outIndex + ( charLen / 2 ))
+        charIndex++;
+
+      /* If we are beyond the end of the line, back up one space */
+      if ((i>=lineEnd)&&(charIndex>0)) charIndex--;
+    }
+
+    /* Position is the start of the line plus the index into line buffer */
+    return lineStart + charIndex;
 }
 
 /*

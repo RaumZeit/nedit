@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.5 2001/03/09 16:58:59 slobasso Exp $ */
+/* $Id: textDisp.h,v 1.6 2001/11/16 10:06:34 amai Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -103,6 +103,7 @@ int TextDXYToPosition(textDisp *textD, int x, int y);
 int TextDXYToCharPos(textDisp *textD, int x, int y);
 void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row,
 	int *column);
+int TextDLineAndColToPos(textDisp *textD, int lineNum, int column);
 int TextDOffsetWrappedColumn(textDisp *textD, int row, int column);
 int TextDOffsetWrappedRow(textDisp *textD, int row);
 int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y);

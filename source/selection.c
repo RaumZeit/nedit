@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.11 2001/08/23 17:57:05 amai Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.12 2001/11/16 10:06:34 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -23,6 +23,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.11 2001/08/23 17:57:05 amai Ex
 * Written by Mark Edel							       *
 *									       *
 *******************************************************************************/
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -70,17 +71,56 @@ static void maintainSelection(selection *sel, int pos, int nInserted,
 static void maintainPosition(int *position, int modPos, int nInserted,
     	int nDeleted);
 
+/*
+** Extract the line and column number from the text string.
+** Set the line and/or column number to -1 if not specified, and return -1 if
+** both line and column numbers are not specified.
+*/
+int StringToLineAndCol(const char *text, int *lineNum, int *column ) {
+    char *endptr;
+    long  tempNum;
+    int   textLen, gotLine = -1;
+
+    /* Get line number */
+    tempNum = strtol( text, &endptr, 10 );
+
+    /* If user didn't specify a line number, set lineNum to -1 */
+    if      ( endptr  == text    ) { *lineNum = -1;      }
+    else if ( tempNum >= INT_MAX ) { *lineNum = INT_MAX; }
+    else if ( tempNum <  0       ) { *lineNum = 0;       }
+    else                           { *lineNum = tempNum; }
+
+    /* Find the next digit */
+    for ( textLen = strlen( endptr ); textLen > 0; endptr++, textLen-- ) {
+        if ( isdigit( *endptr ) || *endptr == '-' ) {
+            break;
+        }
+    }
+
+    /* Get column */
+    if ( *endptr != '\0' ) {
+        tempNum = strtol( endptr, NULL, 10 );
+        if      ( tempNum >= INT_MAX ) { *column = INT_MAX; }
+        else if ( tempNum <  0       ) { *column = 0;       }
+        else                           { *column = tempNum; }
+    }
+    else { *column = -1; }
+
+    return *lineNum == -1 && *column == -1 ? -1 : 0;
+}
+
 void GotoLineNumber(WindowInfo *window)
 {
     char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
-    int lineNum, nRead, response;
+    int lineNum, column, response;
     
-    response = DialogF(DF_PROMPT, window->shell, 2, "Goto Line Number:",
+    response = DialogF(DF_PROMPT, window->shell, 2,
+    		       "Goto Line (and/or Column)  Number:",
     		       lineNumText, "OK", "Cancel");
     if (response == 2)
     	return;
-    nRead = sscanf(lineNumText, "%d", &lineNum);
-    if (nRead != 1) {
+
+    if ( StringToLineAndCol( lineNumText, &lineNum, &column ) == -1 ) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -137,7 +177,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     	Atom *type, char *value, int *length, int *format)
 {
     char lineText[21];
-    int nRead, lineNum;
+    int rc, lineNum, column, position, curCol;
     
     /* skip if we can't get the selection data, or it's obviously not a number */
     if (*type == XT_CONVERT_FAIL || value == NULL) {
@@ -159,14 +199,34 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     strncpy(lineText, value, *length);
     lineText[*length] = '\0';
     
-    nRead = sscanf(lineText, "%d", &lineNum);
+    rc = StringToLineAndCol( lineText, &lineNum, &column );
     XtFree(value);
-    if (nRead != 1) {
+    if (rc == -1) {
     	XBell(TheDisplay, 0);
 	return;
     }
 
+    /* User specified column, but not line number */
+    if ( lineNum == -1 ) {
+        position = TextGetCursorPos(widget);
+        if (TextPosToLineAndCol(widget, position, &lineNum,
+                                 &curCol) == False) {
+            XBell(TheDisplay, 0);
+            return;
+        }
+    }
+    /* User didn't specify a column */
+    else if ( column == -1 ) {
     SelectNumberedLine(window, lineNum);
+        return;
+    }
+
+    position = TextLineAndColToPos(widget, lineNum, column );
+    if ( position == -1 ) {
+        XBell(TheDisplay, 0);
+        return;
+    }
+    TextSetCursorPos(widget, position);
 }
 
 static void fileCB(Widget widget, WindowInfo *window, Atom *sel,

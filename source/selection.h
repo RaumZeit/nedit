@@ -1,4 +1,5 @@
-/* $Id: selection.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: selection.h,v 1.4 2001/11/16 10:06:34 amai Exp $ */
+int StringToLineAndCol(const char *text, int *lineNum, int *column );
 void GotoSelectedLineNumber(WindowInfo *window, Time time);
 void GotoLineNumber(WindowInfo *window);
 void SelectNumberedLine(WindowInfo *window, int lineNum);

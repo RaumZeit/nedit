@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.4 2001/03/09 16:58:59 slobasso Exp $ */
+/* $Id: text.h,v 1.5 2001/11/16 10:06:34 amai Exp $ */
 #ifndef  Text_H
 #define  Text_H
 
@@ -95,6 +95,7 @@ typedef struct {
 /* User callable routines */
 void TextSetBuffer(Widget w, textBuffer *buffer);
 textBuffer *TextGetBuffer(Widget w);
+int TextLineAndColToPos(Widget w, int lineNum, int column);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
 int TextGetCursorPos(Widget w);

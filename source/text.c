@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.18 2001/10/15 17:24:37 slobasso Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.19 2001/11/16 10:06:34 amai Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -985,6 +985,14 @@ void TextSetBuffer(Widget w, textBuffer *buffer)
 textBuffer *TextGetBuffer(Widget w)
 {
     return ((TextWidget)w)->text.textD->buffer;
+}
+
+/*
+** Translate a line number and column into a position
+*/
+int TextLineAndColToPos(Widget w, int lineNum, int column)
+{
+    return TextDLineAndColToPos(((TextWidget)w)->text.textD, lineNum, column );
 }
 
 /*

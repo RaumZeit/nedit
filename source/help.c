@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.60 2001/11/10 00:00:24 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.61 2001/11/16 10:06:33 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -507,7 +507,9 @@ To find a particular line in a source file by line number, choose Goto \
 Line #... from the Search menu.  You can also directly select the line \
 number text in the compiler message in the terminal emulator window \
 (xterm, decterm, winterm, etc.) where you ran the compiler, and choose \
-Goto Selected from the Search menu.\n\
+Goto Selected from the Search menu.  In either case, you can go to a \
+specific column in that line by specifying a second number.  You can \
+use any non numeric separator between the two numbers.\n\
 \n\
 To find out the line number of a particular line in your file, turn on \
 Statistics Line in the Preferences menu and position the insertion point \

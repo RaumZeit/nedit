@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.38 2001/10/27 20:19:02 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.39 2001/11/16 10:06:34 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -2826,13 +2826,32 @@ static void replaceFindSameAP(Widget w, XEvent *event, String *args,
 
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
-    int lineNum;
+    int lineNum, column, position, curCol;
     
-    if (*nArgs == 0 || sscanf(args[0], "%d", &lineNum) != 1) {
-    	fprintf(stderr,"NEdit: goto_line_number action requires line number\n");
+    if (*nArgs == 0 || StringToLineAndCol( args[0], &lineNum, &column ) == -1) {
+    	fprintf(stderr,"NEdit: goto_line_number action requires line and/or column number\n");
     	return;
     }
+    /* User specified column, but not line number */
+    if ( lineNum == -1 ) {
+        position = TextGetCursorPos(w);
+        if (TextPosToLineAndCol(w, position, &lineNum,
+                                 &curCol) == False) {
+            return;
+        }
+    }
+    /* User didn't specify a column */
+    else if ( column == -1 ) {
     SelectNumberedLine(WidgetToWindow(w), lineNum);
+        return;
+    }
+
+    position = TextLineAndColToPos(w, lineNum, column );
+    if ( position == -1 ) {
+        return;
+    }
+    TextSetCursorPos(w, position);
+    return;
 }
 
 static void gotoDialogAP(Widget w, XEvent *event, String *args,
