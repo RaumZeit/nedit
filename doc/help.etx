@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.54 2003/12/09 17:55:58 slobasso Exp $
+.. $Id: help.etx,v 1.55 2003/12/23 21:54:05 slobasso Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1995,7 +1995,7 @@ Macro Language
 
      function_name(arg1, arg2, ...)
 
-  where arg1, arg2, etc. represent up to 9 argument values which are passed to
+  where arg1, arg2, etc. represent the argument values which are passed to
   the routine being called.  A function or subroutine call can be on a line by
   itself, as above, or if it returns a value, can be invoked within a character
   or numeric expression:
@@ -2044,8 +2044,10 @@ Macro Language
   menu item definitions (usually they are found in the autoload macro file).
 
   The arguments with which a user-defined subroutine or function was invoked,
-  are presented as $1, $2, ... , $9.  The number of arguments can be read from
-  $n_args.
+  are presented as $1, $2, ... , $9 or $args[expr], where expr can be evaluated
+  to an integer from 1 to the number of arguments.  The number of arguments can
+  be read from $n_args or $args[]. The array $args[expr] is the only way to
+  access arguments beyond the first 9.
 
   To return a value from a subroutine, and/or to exit from the subroutine
   before the end of the subroutine body, use the return statement:
