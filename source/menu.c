@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.105 2004/06/11 10:16:44 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.106 2004/06/28 08:23:22 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -62,6 +62,8 @@ static const char CVSID[] = "$Id: menu.c,v 1.105 2004/06/11 10:16:44 edg Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/types.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -4740,7 +4742,7 @@ static int cmpStrPtr(const void *strA, const void *strB)
 }
 
 #ifdef VMS
-    static char neditDBBadFilenameChars[] = "\n\t*?()[]{}!@#%^&:;' ";
+    static char neditDBBadFilenameChars[] = "\n\t*?(){}!@#%^&' ";
 #else
     static char neditDBBadFilenameChars[] = "\n";
 #endif
@@ -4772,7 +4774,24 @@ void WriteNEditDB(void)
 
     /* open the file */
     if ((fp = fopen(fullName, "w")) == NULL) {
+#ifdef VMS
+        /* When the version number, ";1" is specified as part of the file
+           name, fopen(fullName, "w"), will only open for writing if the 
+           file does not exist. Using, fopen(fullName, "r+"), opens an
+           existing file for "update" - read/write pointer is placed at the
+           beginning of file. 
+           By calling ftruncate(), we discard the old contents and avoid 
+           trailing garbage in the file if the new contents is shorter. */
+        if ((fp = fopen(fullName, "r+")) == NULL) {
+            return;
+        }
+        if (ftruncate(fileno(fp), 0) != 0) {
+            fclose(fp);
+            return;
+        }
+#else
         return;
+#endif        
     }
 
     /* write the file header text to the file */
