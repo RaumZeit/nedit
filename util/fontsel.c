@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.12 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.13 2001/11/01 20:22:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -821,7 +821,6 @@ static void	getSizePart(const char *font, char *buff1, int inPixels)
 		else
 			sprintf(buff1, "%4.1f", temp);
 	}
-printf("getSizePart(%s, %i)=%s\n", font, inPixels, buff1);
 }
 
 
