@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.19 2001/09/21 09:58:19 amai Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.20 2001/10/04 10:16:15 amai Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -70,9 +70,9 @@ static int loadTagsFile(const char *tagSpec, int index);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file,
-                   const char *searchString);
-static int fakeRegExSearch(WindowInfo *window, char *searchString, 
-    int *start, int *end);
+                   const char *searchString, const char * tag);
+static int fakeRegExSearch(WindowInfo *window, const char *searchString, 
+    int *startPos, int *endPos);
 static unsigned hashAddr(const char *key);
 static int addTag(const char *name, const char *file, const char *search,
                   const  char *path, int index);
@@ -176,9 +176,8 @@ static int addTag(const char *name, const char *file, const char *search,
     }
 	
     t = (tag *) malloc(sizeof(tag));
-    setTag(t, name, file, search);
+    setTag(t, name, file, search, path);
     t->index = index;
-    t->path = path;
     t->next = Tags[addr];
     Tags[addr] = t;
     return TRUE;
@@ -214,6 +213,7 @@ static int delTag(const char *name, const char *file, const char *search,
 	    rcs_free(t->name);
 	    rcs_free(t->file);
 	    rcs_free(t->searchString);
+	    rcs_free(t->path);
 	    free(t);
 	    t = NULL;
 	    del++;
@@ -345,7 +345,12 @@ int DeleteTagsFile(const char *filename)
     return FALSE;
 }
 
-/*	Load the tags file into the hash table */
+/*  
+** Load tags file(s) into the hash table. Multiple tags files can be loaded. 
+** They can be specified by separating them with colons.  
+** The .Xdefaults would look like this:
+**   Nedit.tags: <tagfile>:<tagfile>
+*/
 static int loadTagsFile(const char *tagSpec, int index)
 {
     FILE *fp = NULL;
@@ -354,16 +359,16 @@ static int loadTagsFile(const char *tagSpec, int index)
     char *filename;
     char *tagPath=tmpPath;
     char *tmpTagSpec;
+    char *posTagREEnd, *posTagRENull;
     int nRead;
     WindowInfo *w;
     
-/*
- *  This modification allows multiple tags files to be loaded.  Multiple tags files can be
- *  specified by separating them with colons.  The .Xdefaults would look like this:
- *  Nedit.tags: <tagfile>:<tagfile>
- */
     
-    /*  tagSpec has to be copied, because otherwise strtok places NULL-characters in it!*/
+    
+    
+    /*  tagSpec has to be copied, because otherwise strtok places 
+    **  NULL-characters in it!
+    */
     tmpTagSpec=malloc(strlen(tagSpec)+1);
     strcpy(tmpTagSpec, tagSpec);
     for (filename = strtok(tmpTagSpec,":"); filename; filename = strtok(NULL,":")) {
@@ -377,11 +382,46 @@ static int loadTagsFile(const char *tagSpec, int index)
 	
 	/* Read the file and store its contents */
 	while (fgets(line, MAXLINE, fp)) {
-	    nRead = sscanf(line, "%s\t%s\t%[^\n;]", name, file, searchString);
+	    nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
 	    if (nRead != 3) 
 		continue;
 	    if ( *name == '!' )
 		continue;
+	    
+	    /* 
+	    ** Guess the end of searchString:
+	    ** Try to handle original ctags and exuberant ctags format: 
+	    */
+	    if(searchString[0] == '/' || searchString[0] == '?') {
+	      
+		/* Situations: /<ANY expr>/\0     
+		**             ?<ANY expr>?\0          --> original ctags 
+		**             /<ANY expr>/;"  <flags>
+		**	       ?<ANY expr>?;"  <flags> --> exuberant ctags 
+		*/
+		posTagREEnd = strrchr(searchString, ';');
+		posTagRENull = strchr(searchString, 0); 
+		if(!posTagREEnd || (posTagREEnd[1] != '"') || 
+	      	    (posTagRENull[-1] == searchString[0])) {
+		    /*	-> original ctags format = exuberant ctags format 1 */
+		    posTagREEnd = posTagRENull;
+                } else {
+		    /* looks like exuberant ctags format 2 */
+		    *posTagREEnd = 0;
+		}
+
+		/* 
+		** Hide the last delimiter:
+		**   /<expression>/    becomes   /<expression>
+		**   ?<expression>?    becomes   ?<expression>
+		** This will save a little work in fakeRegExSearch.
+		*/
+		if(posTagREEnd > (searchString+2)) {
+	      	    posTagREEnd--;
+		    if(searchString[0] == *posTagREEnd)
+			*posTagREEnd=0;
+		}
+	    }
 	    addTag(name, file, searchString, tagPath, index);
 	}
 	fclose(fp);
@@ -391,7 +431,9 @@ static int loadTagsFile(const char *tagSpec, int index)
        /* Nothing read in?! */
        return FALSE;
     }
-    /* Undim the "Find Definition" and "Clear All Tags Data" menu item in the existing windows */
+    /* Undim the "Find Definition" and "Clear All Tags Data" menu item 
+    ** in the existing windows 
+    */
     for (w=WindowList; w!=NULL; w=w->next) {
 	XtSetSensitive(w->findDefItem, TRUE);
     }
@@ -488,86 +530,81 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
 
 /*	store all of the info into a pre-allocated tags struct */
 static void setTag(tag *t, const char *name, const char *file,
-                   const char *searchString)
+                   const char *searchString, const char *path)
 {
     t->name         = rcs_strdup(name);
     t->file         = rcs_strdup(file);
     t->searchString = rcs_strdup(searchString);
+    t->path         = rcs_strdup(path);
 }
 
 /*
-** regex searching is not available on all platforms.  To use built in
-** case sensitive searching, this routine fakes enough to handle the
-** search characters presented in ctags files
+** ctags search expressions are literal strings with a search direction flag, 
+** line starting "^" and ending "$" delimiters. This routine translates them 
+** into NEdit compatible regular expressions and does the search.
 */
-static int fakeRegExSearch(WindowInfo *window, char *searchString, 
-    int *start, int *end)
+static int fakeRegExSearch(WindowInfo *window, const char *searchString, 
+    int *startPos, int *endPos)
 {
-    int startPos, endPos, found=FALSE, hasBOL, hasEOL, fileLen, searchLen, dir;
-    char *fileString, searchSubs[MAXLINE];
+    int found, searchStartPos, dir;
+    char *fileString, searchSubs[3*MAXLINE+3], *outPtr;
+    const char *inPtr;
     
-    /* get the entire (sigh) text buffer from the text area widget */
-    fileString = BufGetAll(window->buffer);
-    fileLen = window->buffer->length;
-
-    /* remove / .. / or ? .. ? and substitute ^ and $ with \n */
-    searchLen = strlen(searchString);
-    if (searchString[0] == '/')
-	dir = FORWARD;
-    else if (searchString[0] == '?')
-	dir = BACKWARD;
-    else {
+    /* determine search direction and start position */
+    if (searchString[0] == '/') {
+	dir = SEARCH_FORWARD;
+	searchStartPos = 0;
+    } else if (searchString[0] == '?') {
+	dir = SEARCH_BACKWARD;
+	searchStartPos = window->buffer->length;
+    } else {
 	fprintf(stderr, "NEdit: Error parsing tag file search string");
 	return FALSE;
     }
-    searchLen -= 2;
-    strncpy(searchSubs, &searchString[1], searchLen);
-    searchSubs[searchLen] = '\0';
-    hasBOL = searchSubs[0] == '^';
-    hasEOL = searchSubs[searchLen-1] == '$';
-    if (hasBOL) searchSubs[0] = '\n';
-    if (hasEOL) searchSubs[searchLen-1] = '\n';
 
-    /* search for newline-substituted string in the file */
-    if (dir==FORWARD)
-	found = SearchString(fileString, searchSubs, SEARCH_FORWARD,
-	    SEARCH_CASE_SENSE, False, 0, &startPos, &endPos, NULL, NULL);
-    else
-	found = SearchString(fileString, searchSubs, SEARCH_BACKWARD,
-	    SEARCH_CASE_SENSE, False, fileLen, &startPos, &endPos, NULL, NULL);
-    if (found) {
-	if (hasBOL) startPos++;
-	if (hasEOL) endPos--;
+    /* get the entire (sigh) text buffer from the text area widget */
+    fileString = BufGetAll(window->buffer);
+        
+    /* Build the search regex. */
+    inPtr=searchString+1; /* searchString[0] is / or ? --> search direction */
+    outPtr=searchSubs; 
+    if(*inPtr == '^') {
+      	/* If the first char is a caret then it's a RE line start delimiter */
+      	*outPtr++ = *inPtr++;
     }
+    while(*inPtr) {
+      	if(strchr("()-[]<>{}.|^*+?&\\", *inPtr) || (*inPtr == '$' && inPtr[1])){
+	    /* Escape RE Meta Characters to match them literally.
+	       Don't escape $ if it's the last charcter of the search expr.
+	     */
+	    *outPtr++ = '\\';
+	    *outPtr++ = *inPtr++;
+      	} else if (isspace(*inPtr)) { /* collect multiple spaces  */
+	    *outPtr++ = '\\';
+	    *outPtr++ = 's';
+	    *outPtr++ = '+';
+	    do { inPtr++ ; } while(isspace(*inPtr));
+	} else {              /* simply copy all other characters */
+	    *outPtr++ = *inPtr++;
+	}
+    }
+    *outPtr=0; /* Terminate searchSubs */
     
-    /* if not found: ^ may match beginning of file, $ may match end */
-    if (!found && hasBOL) {
-	found = strncmp(&searchSubs[1], fileString, searchLen-1);
-	if (found) {
-	    startPos = 0;
-	    endPos = searchLen - 2;
-	}
-    }
-    if (!found && hasEOL) {     
-	found = strncmp(searchSubs, fileString+fileLen-searchLen+1,
-	     searchLen-1);
-	if (found) {
-	    startPos = fileLen-searchLen+2;
-	    endPos = fileLen;
-	}
-    }
+    found = SearchString(fileString, searchSubs, dir, SEARCH_REGEX, 
+      	    False, searchStartPos, startPos, endPos, NULL, NULL);
 
     /* free the text buffer copy returned from XmTextGetString */
     XtFree(fileString);
     
     /* return the result */
-    if (!found) {
+    if (found) {
+        /* *startPos and *endPos are set in SearchString*/
+	return TRUE;
+    } else {
+        /* startPos, endPos left untouched by SearchString if search failed. */
 	XBell(TheDisplay, 0);
-    return FALSE;
+      	return FALSE;
     }
-    *start = startPos;
-    *end = endPos;
-    return TRUE;
 }
 
 /*	Handles tag "collisions". Prompts user with a list of collided
@@ -596,7 +633,7 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	strcpy(tagSearch[nTags],searchString);
 	ParseFilename(tagFiles[nTags], filename, pathname);
 	if (GetPrefSmartTags() && !strcmp(currentWindow->filename,filename)
-				      && !strcmp(currentWindow->path,pathname)) {
+			       && !strcmp(currentWindow->path,pathname)   ) {
 	    if (nTags) {
 		strcpy(tagFiles[0],tagFiles[nTags]);
 		strcpy(tagSearch[0],tagSearch[nTags]);
@@ -609,7 +646,8 @@ static void findAllDialogAP(Widget dialogParent, const char *string)
 	    nTag=nTags;
 	}
 	if (++nTags >= MAXDUPTAGS) {
-	    DialogF(DF_WARN, dialogParent,1,"Too many duplicate tags, first %d shown","OK",MAXDUPTAGS);
+	    DialogF(DF_WARN, dialogParent,1,
+	      	    "Too many duplicate tags, first %d shown","OK",MAXDUPTAGS);
 	    break;
 	}
 	string = NULL;
