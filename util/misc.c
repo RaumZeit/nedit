@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.18 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.19 2001/04/24 21:10:43 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -834,16 +834,24 @@ void SimulateButtonPress(Widget widget)
     keyEvent.type = KeyPress;
     keyEvent.xkey.serial = 1;
     keyEvent.xkey.send_event = True;
-    keyEvent.xkey.display = XtDisplay(widget);
-    keyEvent.xkey.window = XtWindow(widget);
 
     if (XtIsSubclass(widget, xmGadgetClass))
     {
-        XtCallActionProc(XtParent(widget), "ManagerGadgetSelect",
+        /* On some Motif implementations, asking a gadget for its
+           window will crash, rather than return the window of its
+           parent. */
+        Widget parent = XtParent(widget);
+        keyEvent.xkey.display = XtDisplay(parent);
+        keyEvent.xkey.window = XtWindow(parent);
+
+        XtCallActionProc(parent, "ManagerGadgetSelect",
                          &keyEvent, NULL, 0);
     }                 
     else
     {
+        keyEvent.xkey.display = XtDisplay(widget);
+        keyEvent.xkey.window = XtWindow(widget);
+
         XtCallActionProc(widget, "ArmAndActivate", &keyEvent, NULL, 0);
     }
 }
