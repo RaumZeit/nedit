@@ -1,3 +1,129 @@
+2002-03-01 17:12  amai
+
+	* util/fileUtils.c (1.21): Add a UNICOS-specific call to readlink()
+
+2002-03-01 17:04  amai
+
+	* util/fontsel.c (1.14): Replace rint(x) by floor(x+0.5)
+
+2002-03-01 16:04  amai
+
+	* makefiles/Makefile.unicos (1.5): Patch from Paolo Palazzi to
+	compile on UNICOS 10.0.1.0
+
+2002-02-27 14:44  edg
+
+	* source/window.c (1.45): Setfont: fixed a bug with the window
+	getting the wrong width when changing the font size under fvwm (or
+	any other ICCCM2 compliant window manager). Fix provided by Dominik
+	Vogt of fvwm.
+
+2002-02-27 11:26  edg
+
+	* source/text.c (1.23): Replaced the "None" modifiers by "~Alt
+	~Shift ~Ctrl ~Meta", because "None" also excludes lock keys and
+	prevents PageUp/PageDown from responding when, for instance, the
+	NumLock key is on (so I didn't mix up my binaries after all :-).
+
+2002-02-25 17:28  edg
+
+	* source/text.c (1.22): Reverted the last change. I've probably
+	mixed up my NEdit binaries.
+
+2002-02-25 14:29  edg
+
+	* source/text.c (1.21): Removed the recently introduced None
+	modifiers in default key bindings.  They don't seem to be
+	recognized by all Motif versions, causing the PageUp/PageDown keys
+	to stop working.
+
+2002-02-25 10:32  edg
+
+	* source/textDisp.c (1.19): Fix for SF #522263: segfault fix
+	(Nathaniel Gray).
+
+2002-02-24 21:16  edg
+
+	* source/: textBuf.c (1.18), textBuf.h (1.8): Fix for #522038:
+	Internal error when splitting window.  Allowed more than one
+	pre-delete callback per window (I originally thought that only one
+	was necessary).
+
+2002-02-23 20:01  edg
+
+	* source/window.c (1.44): Avoid temporarily invalid WM size hints.
+	They seem to amplify the effects of a bug in fvwm2 (SF #496526:
+	Very wide nedit window with fvwm).
+
+2002-02-21 18:53  tringali
+
+	* source/text.c (1.20): Fix broken PageUp and PageDown keys on
+	systems that bind osfPageLeft to Ctrl-PageUp.
+
+2002-02-20 13:03  amai
+
+	* source/help.c (1.76): Make getBuildInfo() to return a static
+	string.
+
+2002-02-16 14:39  edg
+
+	* source/help_data.h (1.7): Regenerated with fixed setext (fixes
+	some style problems).
+
+2002-02-16 14:37  edg
+
+	* doc/setext (1.7): Style transition fixes by Steven Haehn.
+
+2002-02-15 09:41  edg
+
+	* doc/nedit.html (1.4), source/help_data.h (1.6),
+	source/help_topic.h (1.4): Regenerated with fixed setext.
+
+2002-02-15 09:37  edg
+
+	* doc/setext (1.6): Applied bug fixes in help and html generation
+	(provided by Steven Haehn).
+
+2002-02-14 21:08  edg
+
+	* source/preferences.c (1.46): Bumped .nedit file version to 5.3.
+
+2002-02-14 21:04  edg
+
+	* README (1.24): Synchronized author list with help.etx.
+
+2002-02-14 20:24  amai
+
+	* README (1.23), ReleaseNotes (1.13): Re-arrange some text
+
+2002-02-14 14:28  tringali
+
+	* source/preferences.c (1.45): Oops, helvetica fonts aren't italic,
+	they're oblique.
+
+2002-02-13 23:10  edg
+
+	* README (1.22), ReleaseNotes (1.12): Preparation of 5.3 release.
+
+2002-02-13 23:07  edg
+
+	* source/nc.c (1.21): Preparation of 5.3 release.
+
+2002-02-13 20:47  tringali
+
+	* source/preferences.c (1.44): Change help fonts to be like the
+	defaults we have in nedit.c to reduce the likelihood of them being
+	missing or defective.
+
+2002-02-13 20:00  tringali
+
+	* util/misc.c (1.36): Fix for [ #478234 ] nedit crash with Xwindows
+	on 2nd screen
+
+2002-02-13 18:03  edg
+
+	* ChangeLog (1.21): Update.
+
 2002-02-13 14:14  edg
 
 	* source/textDisp.c (1.18): Fix for SF bug #516920: line numbering
@@ -94,6 +220,11 @@
 	source/server.c (1.13), source/tags.c (1.30), source/textDisp.c
 	(1.14), source/textDrag.c (1.5), source/undo.c (1.8): Add some
 	explicit #include <string.h>
+
+2002-01-23 16:54  tringali
+
+	* source/help.c (1.74): Change parenthesis style to match the rest
+	of nedit source code.
 
 2002-01-23 16:53  tringali
 
