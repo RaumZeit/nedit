@@ -2207,8 +2207,9 @@ int SearchWindow(WindowInfo *window, int direction, char *searchString,
     fileString = BufGetAll(window->buffer);
     
     /* search the string copied from the text area widget, and present
-       dialogs, or just beep */
-    if (GetPrefSearchDlogs()) {
+       dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
+       an incremental search is in progress.  A parameter would be better. */
+    if (GetPrefSearchDlogs() && window->iSearchStartPos == -1) {
     	found = SearchString(fileString, searchString, direction, searchType,
     	    	FALSE, beginPos, startPos, endPos, extent,
 		GetWindowDelimiters(window));

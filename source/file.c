@@ -45,6 +45,8 @@
 #include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
 #include <Xm/RowColumn.h>
+#include <Xm/Form.h>
+#include <Xm/Label.h>
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
@@ -81,11 +83,13 @@ static int bckError(WindowInfo *window, char *errString, char *file);
 static int fileWasModifiedExternally(WindowInfo *window);
 static char *errorString(void);
 static void addWrapNewlines(WindowInfo *window);
-static void dosFormatCB(Widget w, XtPointer clientData, XtPointer callData);
+static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static int isDosFormat(char *fileString);
+static int formatOfFile(char *fileString);
 static void convertFromDosFileString(char *inString, int *length);
+static void convertFromMacFileString(char *fileString, int length);
 static int convertToDosFileString(char **fileString, int *length);
+static void convertToMacFileString(char *fileString, int length);
 #ifdef VMS
 void removeVersionNumber(char *fileName);
 #endif /*VMS*/
@@ -342,12 +346,12 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 	/* we read it successfully, so continue */
     }
     
-    /* Detect and convert DOS format files */
-    if (isDosFormat(fileString)) {
-	window->fileFormat = DOS_FILE_FORMAT;
+    /* Detect and convert DOS and Macintosh format files */
+    window->fileFormat = formatOfFile(fileString);
+    if (window->fileFormat == DOS_FILE_FORMAT)
 	convertFromDosFileString(fileString, &readLen);
-    } else
-	window->fileFormat = UNIX_FILE_FORMAT;
+    else if (window->fileFormat == MAC_FILE_FORMAT)
+	convertFromMacFileString(fileString, readLen);
     
     /* Display the file contents in the text widget */
     window->ignoreModify = True;
@@ -441,9 +445,13 @@ int IncludeFile(WindowInfo *window, char *name)
     }
     fileString[readLen] = 0;
     
-    /* Detect and convert DOS format files */
-    if (isDosFormat(fileString))
-	convertFromDosFileString(fileString, &readLen);
+    /* Detect and convert DOS and Macintosh format files */
+    switch (formatOfFile(fileString)) {
+        case DOS_FILE_FORMAT:
+	    convertFromDosFileString(fileString, &readLen); break;
+        case MAC_FILE_FORMAT:
+	    convertFromMacFileString(fileString, readLen); break;
+    }
     
     /* If the file contained ascii nulls, re-map them */
     if (!BufSubstituteNullChars(fileString, readLen, window->buffer))
@@ -670,16 +678,18 @@ static int doSave(WindowInfo *window)
     /* If null characters are substituted for, put them back */
     BufUnsubstituteNullChars(fileString, window->buffer);
     
-    /* If the file is to be saved in DOS format, reconvert */
+    /* If the file is to be saved in DOS or Macintosh format, reconvert */
     if (window->fileFormat == DOS_FILE_FORMAT) {
 	if (!convertToDosFileString(&fileString, &fileLen)) {
 	    DialogF(DF_ERR, window->shell, 1, "Out of memory!  Try\n"
 		    "saving in Unix format", "Dismiss");
 	    return FALSE;
 	}
-    }
+    } else if (window->fileFormat == MAC_FILE_FORMAT)
+	convertToMacFileString(fileString, fileLen);
  	
-    /* add a terminating newline if the file doesn't already have one */
+    /* add a terminating newline if the file doesn't already have one for
+       Unix utilities which get confused otherwise */
     if (window->fileFormat == UNIX_FILE_FORMAT && fileLen != 0 &&
 	    fileString[fileLen-1] != '\n')
     	fileString[fileLen++] = '\n'; 	 /* null terminator no longer needed */
@@ -1099,7 +1109,8 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     int n, retVal;
     Arg args[20];
     XmString s1, s2;
-    Widget fileSB, formatBtns, formatToggle, wrapToggle;
+    Widget fileSB, wrapToggle;
+    Widget formatForm, formatBtns, unixFormat, dosFormat, macFormat;
     char *savedDefaultDir;
     
     *fileFormat = window->fileFormat;
@@ -1122,23 +1133,57 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     fileSB = XmCreateFileSelectionDialog(window->shell,"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
-    formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
+    formatForm = XtVaCreateManagedWidget("formatBtns", xmFormWidgetClass,
 	    fileSB, 0);
-    formatToggle = XtVaCreateManagedWidget("dosFormat",
+    formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
+	    formatForm,
+	    XmNradioBehavior, XmONE_OF_MANY,
+	    XmNorientation, XmHORIZONTAL,
+	    XmNpacking, XmPACK_TIGHT,
+	    XmNtopAttachment, XmATTACH_FORM,
+	    XmNleftAttachment, XmATTACH_FORM, 0);
+    XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
+	    XmNlabelString, s1=XmStringCreateSimple("Format:"), 0);
+    XmStringFree(s1);
+    unixFormat = XtVaCreateManagedWidget("unixFormat",
 	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
-	    s1=XmStringCreateSimple("MS DOS Format"),
+	    s1=XmStringCreateSimple("Unix"),
+	    XmNset, *fileFormat == UNIX_FILE_FORMAT,
+	    XmNuserData, UNIX_FILE_FORMAT,
+    	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
+	    XmNmnemonic, 'U', 0);
+    XmStringFree(s1);
+    XtAddCallback(unixFormat, XmNvalueChangedCallback, setFormatCB,
+    	    fileFormat);
+    dosFormat = XtVaCreateManagedWidget("dosFormat",
+	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
+	    s1=XmStringCreateSimple("DOS"),
 	    XmNset, *fileFormat == DOS_FILE_FORMAT,
+	    XmNuserData, DOS_FILE_FORMAT,
+    	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
+	    XmNmnemonic, 'D', 0);
+    XmStringFree(s1);
+    XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB,
+    	    fileFormat);
+    macFormat = XtVaCreateManagedWidget("macFormat",
+	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
+	    s1=XmStringCreateSimple("Macintosh"),
+	    XmNset, *fileFormat == MAC_FILE_FORMAT,
+	    XmNuserData, MAC_FILE_FORMAT,
     	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNmnemonic, 'M', 0);
-    XtAddCallback(formatToggle, XmNvalueChangedCallback, dosFormatCB,
-    	    fileFormat);
     XmStringFree(s1);
+    XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB,
+    	    fileFormat);
     if (window->wrapMode == CONTINUOUS_WRAP) {
 	wrapToggle = XtVaCreateManagedWidget("addWrap",
-	    	xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
+	    	xmToggleButtonWidgetClass, formatForm, XmNlabelString,
 	    	s1=XmStringCreateSimple("Add line breaks where wrapped"),
-    		XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-		XmNmnemonic, 'A', 0);
+    		XmNalignment, XmALIGNMENT_BEGINNING,
+		XmNmnemonic, 'A',
+		XmNtopAttachment, XmATTACH_WIDGET,
+		XmNtopWidget, formatBtns,
+		XmNleftAttachment, XmATTACH_FORM, 0);
 	XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB,
     	    	addWrap);
 	XmStringFree(s1);
@@ -1249,10 +1294,16 @@ void CheckForChangesToFile(WindowInfo *window)
     }
 
     /* Warn the user if the file has been modified, unless checking is
-       turned off or the user has already been warned */
+       turned off or the user has already been warned.  Popping up a dialog
+       from a focus callback (which is how this routine is usually called)
+       seems to catch Motif off guard, and if the timing is just right, the
+       dialog can be left with a still active pointer grab from a Motif menu
+       which is still in the process of popping down.  The workaround, below,
+       of calling XUngrabPointer is inelegant but seems to fix the problem. */
     if (window->lastModTime != 0 && window->lastModTime != statbuf.st_mtime &&
 	    GetPrefWarnFileMods()) {
     	window->lastModTime = 0;	/* Inhibit further warnings */
+	XUngrabPointer(XtDisplay(window->shell), timestamp);
 	if (window->fileChanged)
 	    resp = DialogF(DF_WARN, window->shell, 2,
 		    "%s has been modified by another program.  Reload\n"
@@ -1327,12 +1378,13 @@ void removeVersionNumber(char *fileName)
 #endif /*VMS*/
 
 /*
-** Callback procedure for MS DOS File Format toggle button.
+** Callback procedure for File Format toggle buttons.  Format is stored
+** in userData field of widget button
 */
-static void dosFormatCB(Widget w, XtPointer clientData, XtPointer callData)
+static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    *((int *)clientData) = XmToggleButtonGetState(w) ? DOS_FILE_FORMAT :
-	    UNIX_FILE_FORMAT;
+    if (XmToggleButtonGetState(w))
+	XtVaGetValues(w, XmNuserData, clientData, 0);
 }
 
 /*
@@ -1402,34 +1454,39 @@ static void addWrapNewlines(WindowInfo *window)
 
 /*
 ** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
-** characters, to determine whether fileString represents a MS DOS format file.
-** If there's any ambiguity (a newline in the sample not paired with a return),
-** the file is judged to be in Unix format.
+** characters, to determine whether fileString represents a MS DOS or Macintosh
+** format file.  If there's ANY ambiguity (a newline in the sample not paired
+** with a return in an otherwise DOS looking file, or a newline appearing in
+** the sampled portion of a Macintosh looking file), the file is judged to be
+** Unix format.
 */
-static int isDosFormat(char *fileString)
+static int formatOfFile(char *fileString)
 {
     char *p;
-    int nLines = 0;
+    int nNewlines = 0, nReturns = 0;
     
     for (p=fileString; *p!='\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
 	if (*p == '\n') {
-	    nLines++;
+	    nNewlines++;
 	    if (p == fileString || *(p-1) != '\r')
 		return UNIX_FILE_FORMAT;
-	    if (nLines >= FORMAT_SAMPLE_LINES)
+	    if (nNewlines >= FORMAT_SAMPLE_LINES)
 		return DOS_FILE_FORMAT;
-	}
+	} else if (*p == '\r')
+	    nReturns++;
     }
-    if (nLines > 0)
+    if (nNewlines > 0)
 	return DOS_FILE_FORMAT;
+    if (nReturns > 1)
+	return MAC_FILE_FORMAT;
     return UNIX_FILE_FORMAT;
 }
 
 /*
 ** Converts a string (which may represent the entire contents of the file)
-** from DOS to Unix format.  Conversion is done in-place (the resulting string
-** will always be shorter), and passed length will be modified to reflect the
-** new length.
+** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
+** In the DOS case, the length will be shorter, and passed length will be
+** modified to reflect the new length.
 */
 static void convertFromDosFileString(char *fileString, int *length)
 {
@@ -1442,6 +1499,15 @@ static void convertFromDosFileString(char *fileString, int *length)
     }
     *outPtr = '\0';
     *length = outPtr - fileString;
+}
+static void convertFromMacFileString(char *fileString, int length)
+{
+    char *inPtr = fileString;
+    while (inPtr < fileString + length) {
+        if (*inPtr == '\r' )
+            *inPtr = '\n';
+        inPtr++;
+    }
 }
 
 /*
@@ -1488,4 +1554,19 @@ static int convertToDosFileString(char **fileString, int *length)
     *fileString = outString;
     *length = outLength;
     return TRUE;
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file)
+** from Unix to Macintosh format.
+*/
+static void convertToMacFileString(char *fileString, int length)
+{
+    char *inPtr = fileString;
+    
+    while (inPtr < fileString + length) {
+	if (*inPtr == '\n' )
+            *inPtr = '\r';
+	inPtr++;
+    }
 }

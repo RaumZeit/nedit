@@ -60,6 +60,7 @@ static char *InPtr;
 
 program:  blank stmts { ADD_OP(OP_RETURN_NO_VAL); return 0; }
     	| blank '{' blank stmts '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
+	| blank '{' blank '}' { ADD_OP(OP_RETURN_NO_VAL); return 0; }
 	| error { return 1; }
 	;
 block:   '{' blank stmts '}' blank

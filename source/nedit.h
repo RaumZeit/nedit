@@ -51,7 +51,7 @@
 
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
-enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT};
+enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT};
 
 #define CHARSET (XmStringCharSet)XmSTRING_DEFAULT_CHARSET
 
@@ -282,3 +282,4 @@ typedef struct _WindowInfo {
 extern WindowInfo *WindowList;
 extern Display *TheDisplay;
 extern char *ArgV0;
+Boolean IsServer;

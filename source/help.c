@@ -86,8 +86,8 @@ static char *HelpTitles[NUM_TOPICS] = {
 "Tabs Dialog"};
 
 static char *HelpText[NUM_TOPICS] = {
-"NEdit Version 5.1.1\n\
-March 17, 2000\n\
+"NEdit Version 5.2 DEVELOPMENT version\n\
+March 29, 2000\n\
 \n\
 NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad, \
 Jim Clark, Arnulfo Zepeda-Navratil, \
@@ -1834,7 +1834,7 @@ regardless of nesting level.\n\
 Back References\n\
 \n\
 Backreferences allow you to match text captured by a set of capturing \
-parenthesis at some latter position in your regular expression.  A \
+parenthesis at some later position in your regular expression.  A \
 backreference is specified using a single backslash followed by a single \
 digit from 1 to 9 (example: \\3).  Backreferences have similar syntax to \
 substitutions (see below), but are different from substitutions in that \
@@ -3653,7 +3653,7 @@ sequences or internal comments.\n\
 \n\
 There is no depth limit in nesting hierarchical sub-patterns, but \
 beyond the third level of nesting, automatic re-parsing will sometimes \
-have to re-parse more than the requested context distance to guaranty \
+have to re-parse more than the requested context distance to guarantee \
 a correct parse (which can slow down the maximum rate at which the user \
 can type if large sections of text are matched only by deeply nested \
 patterns).\n\
@@ -3700,12 +3700,12 @@ and interpreted as introducing a string.\n\
 Pattern Context Requirements\n\
 \n\
 The context requirements of a pattern set state how much additional \
-text around any change must be examined to guaranty that \
+text around any change must be examined to guarantee that \
 the patterns will match what they are intended to match.  Context \
 requirements are a promise by NEdit to the pattern writer, that the \
 regular expressions in his/her patterns will be matched against at \
 least <line context> lines and <character context> characters, around \
-any modified text.  Combining line and character requirements guaranty \
+any modified text.  Combining line and character requirements guarantee \
 that both will be met.\n\
 \n\
 Automatic re-parsing happens on EVERY KEYSTROKE, so the amount of \

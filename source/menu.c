@@ -92,6 +92,7 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData);
+static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
 static void overstrikeCB(Widget w, WindowInfo *window, XtPointer callData);
 static void highlightCB(Widget w, WindowInfo *window, XtPointer callData);
 static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -641,9 +642,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "gotoMarkShift", gotoMarkCB, window);
     createMenuSeparator(menuPane, "sep3", FULL);
     createMenuItem(menuPane, "gotoMatching", "Goto Matching (..)", 'M',
-    	    doActionCB, "goto_matching", FULL);
-    createFakeMenuItem(menuPane, "gotoMatchingShift",
-	    doActionCB, "select_to_matching");
+    	    gotoMatchingCB, window, FULL);
+    createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
     window->findDefItem = createMenuItem(menuPane, "findDefinition",
     	    "Find Definition", 'D', doActionCB, "find_definition", FULL);
     XtSetSensitive(window->findDefItem, TagsFileList != NULL);
@@ -690,7 +690,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    wrapMarginDefCB, window, SHORT);
     
     /* Smart Tags sub menu */
-    subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'T',
+    subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'C',
 	    NULL, FULL);
     window->allTagsDefItem = createMenuRadioToggle(subSubPane, "showall",
 	    "Show All", 'A', showAllTagsDefCB, window, !GetPrefSmartTags(),
@@ -705,7 +705,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Customize Menus sub menu */
     subSubPane = createMenu(subPane, "customizeMenus", "Customize Menus",
-    	    'C', NULL, FULL);
+    	    'u', NULL, FULL);
 #ifndef VMS
     createMenuItem(subSubPane, "shellMenu", "Shell Menu...", 'S',
     	    shellDefCB, window, FULL);
@@ -717,15 +717,15 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     /* Search sub menu */
     subSubPane = createMenu(subPane, "searching", "Searching",
-    	    'S', NULL, FULL);
+    	    'g', NULL, FULL);
     window->searchDlogsDefItem = createMenuToggle(subSubPane, "verbose",
     	    "Verbose", 'V', searchDlogsDefCB, window,
     	    GetPrefSearchDlogs(), SHORT);
     window->keepSearchDlogsDefItem = createMenuToggle(subSubPane,
     	    "keepDialogsUp", "Keep Dialogs Up", 'K',
     	    keepSearchDlogsDefCB, window, GetPrefKeepSearchDlogs(), SHORT);
-    subSubSubPane = AddSubMenu(subSubPane, "defaultSearchStyle",
-    	    "Default Search Style", 'D');
+    subSubSubPane = createMenu(subSubPane, "defaultSearchStyle",
+    	    "Default Search Style", 'D', NULL, FULL);
     XtVaSetValues(subSubSubPane, XmNradioBehavior, True, 0); 
     window->searchLiteralDefItem = createMenuToggle(subSubSubPane, "literal",
     	    "Literal", 'L', searchLiteralCB, window,
@@ -754,10 +754,10 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Statistics Line", 'S', statsLineDefCB, window, GetPrefStatsLine(),
     	    SHORT);
     window->iSearchLineDefItem = createMenuToggle(subPane,
-	    "incrementalSearchLine", "Incremental Search Line", 'S',
+	    "incrementalSearchLine", "Incremental Search Line", 'i',
 	    iSearchLineDefCB, window, GetPrefISearchLine(), FULL);
     window->lineNumsDefItem = createMenuToggle(subPane, "showLineNumbers",
-    	    "Show Line Numbers", 'n', lineNumsDefCB, window, GetPrefLineNums(),
+    	    "Show Line Numbers", 'N', lineNumsDefCB, window, GetPrefLineNums(),
     	    SHORT);
     window->saveLastDefItem = createMenuToggle(subPane, "preserveLastVersion",
     	    "Make Backup Copy (*.bck)", 'e', preserveDefCB, window,
@@ -782,8 +782,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 	    exitWarnDefCB, window, GetPrefWarnExit(), FULL);
     
     /* Initial Window Size sub menu (simulates radioBehavior) */
-    subSubPane = AddSubMenu(subPane, "initialwindowSize",
-    	    "Initial Window Size", 'I');
+    subSubPane = createMenu(subPane, "initialwindowSize",
+    	    "Initial Window Size", 'z', NULL, FULL);
     /* XtVaSetValues(subSubPane, XmNradioBehavior, True, 0);  */
     window->size24x80DefItem = btn = createMenuToggle(subSubPane, "24X80",
     	    "24 x 80", '2', size24x80CB, window, False, SHORT);
@@ -816,8 +816,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
     	    statsCB, window, GetPrefStatsLine(), SHORT);
     createMenuToggle(menuPane, "incremntalSearchLine","Incremental Search Line",
-	    'S', iSearchCB, window, GetPrefISearchLine(), FULL);
-    createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'i',
+	    'I', iSearchCB, window, GetPrefISearchLine(), FULL);
+    createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'N',
     	    lineNumsCB, window, GetPrefLineNums(), SHORT);
     CreateLanguageModeSubMenu(window, menuPane, "languageMode",
     	    "Language Mode", 'L');
@@ -1144,6 +1144,14 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
     else
     	XtCallActionProc(window->lastFocus, "goto_mark_dialog", event, params,
 		extend ? 1 : 0);
+}
+
+static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
+{
+    XtCallActionProc(((WindowInfo *)clientData)->lastFocus,
+    	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
+    	    ? "select_to_matching" : "goto_matching",
+    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
 }
 
 static void overstrikeCB(Widget w, WindowInfo *window, XtPointer callData)
@@ -2713,7 +2721,7 @@ static Widget createMenu(Widget parent, char *name, char *label,
 {
     Widget menu, cascade;
     XmString st1;
-    
+
     menu = XmCreatePulldownMenu(parent, name, NULL, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple(label),

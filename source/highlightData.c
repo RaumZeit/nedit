@@ -436,9 +436,9 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 	Debug Line:\"^D\":\"$\"::Preprocessor::\n\
 	String:\"'\":\"'\":\"\\n([^ \\t]| [^ \\t]|  [^ \\t]|   [^ \\t]|    [^ \\t]|     [ \\t0]| *\\t[^1-9])\":String::\n\
         Keywords:\"<(?iaccept|automatic|backspace|block|call|close|common|continue|data|decode|delete|dimension|do|else|elseif|encode|enddo|end *file|endif|end|entry|equivalence|exit|external|format|function|go *to|if|implicit|include|inquire|intrinsic|logical|map|none|on|open|parameter|pause|pointer|print|program|read|record|return|rewind|save|static|stop|structure|subroutine|system|then|type|union|unlock|virtual|volatile|while|write)>\":::Keyword::D\n\
-      	Data Types:\"<(?ibyte|character|complex|double *complex|double *precision|double|integer|real)(\\*[0-9]+)?>\":::Keyword::D\n\
-      	F90 Keywords:\"<(?iallocatable|allocate|case|case|cycle|deallocate|elsewhere|namelist|recursive|rewrite|select|where|intent|optional)>\":::Keyword::D\n\
-      	Continuation:\"^(     [^ \\t0]|( |  |   |    )?\\t[1-9])\":::Flag::\n\
+        Data Types:\"<(?ibyte|character|complex|double *complex|double *precision|double|integer|logical|real)(\\*[0-9]+)?>\":::Keyword::D\n\
+        F90 Keywords:\"<(?iallocatable|allocate|case|case|cycle|deallocate|elsewhere|module|namelist|private|public|recursive|rewrite|select|where|intent|optional)>\":::Keyword::D\n\
+        Continuation:\"^(     [^ \\t0]|( |  |   |    )?\\t[1-9])\":::Flag::\n\
       	Continuation in String:\"\\n(     [^ \\t0]|( |  |   |    )?\\t[1-9])\":::Flag:String:}",
      "Tcl:1:0 {\n\
         Comment:\"^[\n\t ]*#\":\"$\"::Comment::\n\
@@ -725,7 +725,7 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
         Character Literals:\"'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
         Numeric Literals:\"<(((2#|8#|10#|16#)[_0-9a-fA-F]*#)|[0-9.]+)>\":::Numeric Const::\n\
 	Predefined Types:\"<(?ialias|constant|signal|variable|subtype|type|resolved|boolean|string|integer|natural|time)>\":::Storage Type::D\n\
-	Predefined SubTypes:\"<(?istd_logic|std_sogic_vector|std_ulogic|std_ulogic_vector|bit|bit_vector)>\":::Storage Type::D\n\
+	Predefined SubTypes:\"<(?istd_logic|std_logic_vector|std_ulogic|std_ulogic_vector|bit|bit_vector)>\":::Storage Type::D\n\
         Reserved Words:\"<(?iabs|access|after|all|and|architecture|array|assert|attribute|begin|block|body|buffer|bus|case|component|configuration|disconnect|downto|else|elsif|end|entity|error|exit|failure|file|for|function|generate|generic|guarded|if|in|inout|is|label|library|linkage|loop|map|mod|nand|new|next|nor|not|note|null|of|on|open|or|others|out|package|port|procedure|process|range|record|register|rem|report|return|select|severity|then|to|transport|units|until|use|wait|warning|when|while|with|xor|group|impure|inertial|literal|postponed|pure|reject|rol|ror|shared|sla|sll|sra|srl|unaffected|xnor)>\":::Keyword::D\n\
 	Identifiers:\"<([a-zA-Z][a-zA-Z0-9_]*)>\":::Plain::D\n\
 	Flag Special Comments:\"--\\<[^a-zA-Z0-9]+\\>\":::Flag:Comments:\n\

@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
+#include <unistd.h>
 #else
 #include <sys/param.h>
 #endif /*VMS*/

@@ -355,6 +355,7 @@ WindowInfo *CreateWindow(char *name, char *geometry, int iconic)
 	    XmNtopOffset, 0,
 	    XmNbottomAttachment, XmATTACH_FORM,
 	    XmNbottomOffset, 0, 0);
+    RemapDeleteKey(window->iSearchText);
 
     SetISearchTextCallbacks(window);
     
@@ -1133,14 +1134,17 @@ void SetWindowModified(WindowInfo *window, int modified)
 void UpdateWindowTitle(WindowInfo *window)
 {
     char *title, *iconTitle;
+    char *serverName = IsServer ? GetPrefServerName() : "";
     
     title = XtMalloc(strlen(window->filename) + strlen(getClearCaseViewTag()) +
-    	    23);  /* strlen(" (read only, modified)")+1 */
+    	    strlen(serverName) + 26); /*strlen(" -- (read only, modified)")+1 */
     iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
     /* Set the window title, adding annotations for "modified" or "read-only",
-       and possibly a ClearCase view tag. */
+       and possibly a server name and/or ClearCase view tag. */
     strcpy(title, getClearCaseViewTag());
+    if (serverName[0] != '\0')
+	sprintf(&title[strlen(title)], "-%s- ", serverName);
     strcat(title, window->filename);
     if (window->readOnly && window->fileChanged)
     	strcat(title, " (read only, modified)");
@@ -1541,6 +1545,13 @@ static void saveYourselfCB(Widget w, WindowInfo *window, XtPointer callData)
 	
     /* Create command line arguments for restoring each window in the list */
     argv[argc++] = XtNewString(ArgV0);
+    if (IsServer) {
+	argv[argc++] = XtNewString("-server");
+	if (GetPrefServerName()[0] != '\0') {
+	    argv[argc++] = XtNewString("-svrname");
+	    argv[argc++] = XtNewString(GetPrefServerName());
+	}
+    }
     for (i=0; i<nWindows; i++) {
 	win = revWindowList[i];
 	getGeometryString(win, geometry);
@@ -1688,7 +1699,7 @@ void UpdateLineNumDisp(WindowInfo *window)
 void UpdateStatsLine(WindowInfo *window)
 {
     int line, pos, colNum;
-    char *string, *dos;
+    char *string, *format;
     Widget statW = window->statsLine;
 #ifdef SGI_CUSTOM
     char *sleft, *smid, *sright;
@@ -1703,16 +1714,17 @@ void UpdateStatsLine(WindowInfo *window)
     /* Compose the string to display. If line # isn't available, leave it off */
     pos = TextGetCursorPos(window->lastFocus);
     string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
-    dos = window->fileFormat == DOS_FILE_FORMAT ? " DOS" : "";
+    format = window->fileFormat == DOS_FILE_FORMAT ? " DOS" :
+	    (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
     if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum))
     	sprintf(string, "%s%s%s %d bytes", window->path, window->filename,
-		dos, window->buffer->length);
+		format, window->buffer->length);
     else if (window->showLineNumbers)
 	sprintf(string, "%s%s%s byte %d, col %d, %d bytes", window->path,
-    	    	window->filename, dos, pos, colNum, window->buffer->length);
+    	    	window->filename, format, pos, colNum, window->buffer->length);
     else
     	sprintf(string, "%s%s%s line %d, col %d, %d bytes", window->path,
-    	    	window->filename, dos, line, colNum, window->buffer->length);
+    	    	window->filename, format, line, colNum, window->buffer->length);
     
     /* Change the text in the stats line */
 #ifdef SGI_CUSTOM
@@ -1917,10 +1929,16 @@ static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id)
 }
 
 /*
-** If user has ClearCase and is in a view, CLEARCASE_ROOT will be set
-** and the view name can be extracted.  This check is safe and efficient
-** enough that it doesn't impact non-clearcase users, so it is not
-** conditionally compiled.  (Thanks to Max Vohlken)
+** Return a string showing the clearcase view name, pre-formated for the
+** window title.  If clearcase is not in use, or a view is not set, or the
+** view name is identical to the server name, an empty string is returned.
+** The returned string is statically allocated.  (Obviously, this is not a
+** general purpose routine, it is tailored just for the window title.)
+**
+** If user has ClearCase and is in a view, CLEARCASE_ROOT will be set and
+** the view name can be extracted.  This check is safe and efficient enough
+** that it doesn't impact non-clearcase users, so it is not conditionally
+** compiled. (Thanks to Max Vohlken)
 */
 static char *getClearCaseViewTag(void)
 {
@@ -1931,20 +1949,30 @@ static char *getClearCaseViewTag(void)
     if (viewTag != NULL)
         return viewTag;
 
+    /* Extract the view name from the CLEARCASE_ROOT environment variable */
     envPtr = getenv("CLEARCASE_ROOT");
     if (envPtr == NULL) {
 	viewTag = "";
 	return viewTag;
     }
-    
     tagPtr = strrchr(envPtr, '/');
     if (tagPtr == NULL) {
 	viewTag = "";
 	return viewTag;
     }
+    tagPtr++;
     
-    viewTag = XtMalloc(strlen(tagPtr+1) + 4);
-    sprintf(viewTag, "{%s} ", tagPtr+1);
+    /* Don't put the name in the title if it's the same as the server name,
+       because that's how clearcase views are normally handled in server
+       mode, and server-mode users would always see the view name twice. */
+    if (IsServer && !strcmp(GetPrefServerName(), tagPtr)) {
+	viewTag = "";
+	return viewTag;
+    }
+    
+    /* Format the string for the window title */
+    viewTag = XtMalloc(strlen(tagPtr) + 4);
+    sprintf(viewTag, "{%s} ", tagPtr);
     return viewTag;
 }
 

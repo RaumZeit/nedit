@@ -116,6 +116,7 @@ static int getAbsTopLineNum(textDisp *textD);
 static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
+static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Position left, Position top, Position width, Position height,
@@ -1147,7 +1148,7 @@ int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines)
     	    	    True);
     	nLines -= retLines;
     	pos = lineStart - 1;
-    	if (pos <= 0)
+    	if (pos < 0)
     	    return 0;
     	nLines -= 1;
     }
@@ -2735,21 +2736,19 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	int *retLines, int *retLineStart, int *retLineEnd)
 {
     int lineStart, newLineStart, b, p, colNum, wrapMargin;
-    int maxWidth, width, countPixels, expLen, i, foundBreak;
+    int maxWidth, width, countPixels, i, foundBreak;
     int nLines = 0, tabDist = textD->buffer->tabDist;
-    int fontWidth = textD->fontStruct->max_bounds.width;
     unsigned char c;
-    char expChar[MAX_EXP_CHAR_LEN], nullSubsChar = textD->buffer->nullSubsChar;
+    char nullSubsChar = textD->buffer->nullSubsChar;
     
     /* If the font is fixed, or there's a wrap margin set, it's more efficient
        to measure in columns, than to count pixels.  Determine if we can count
        in columns (countPixels == False) or must count pixels (countPixels ==
        True), and set the wrap target for either pixels or columns */
-    if (textD->fontStruct->min_bounds.width == fontWidth ||
-    	    textD->wrapMargin != 0) {
+    if (textD->fixedFontWidth != -1 || textD->wrapMargin != 0) {
     	countPixels = False;
 	wrapMargin = textD->wrapMargin != 0 ? textD->wrapMargin :
-            	textD->width / fontWidth;
+            	textD->width / textD->fixedFontWidth;
         maxWidth = INT_MAX;
     } else {
     	countPixels = True;
@@ -2797,11 +2796,8 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	    width = 0;
     	} else {
     	    colNum += BufCharWidth(c, colNum, tabDist, nullSubsChar);
-    	    if (countPixels) {
-    	    	expLen = BufExpandCharacter(c, colNum, expChar, tabDist,
-			nullSubsChar);
-    	    	width += XTextWidth(textD->fontStruct, expChar, expLen);
-    	    }
+    	    if (countPixels)
+    	    	width += measurePropChar(textD, c, colNum, p);
     	}
 
     	/* If character exceeded wrap margin, find the break point
@@ -2816,9 +2812,8 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	    	    	colNum = 0;
     	    	    	width = 0;
     	    	    	for (i=b+1; i<p+1; i++) {
-    	    	    	    expLen = BufGetExpandedChar(buf, i, colNum,expChar);
-    	    	    	    width += XTextWidth(textD->fontStruct, expChar,
-    	    	    	    	    expLen);
+    	    	    	    width += measurePropChar(textD,
+				    BufGetCharacter(buf, i), colNum, i);
     	    	    	    colNum++;
     	    	    	}
     	    	    } else
@@ -2830,11 +2825,8 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     	    if (!foundBreak) { /* no whitespace, just break at margin */
     	    	newLineStart = max(p, lineStart+1);
     	    	colNum = BufCharWidth(c, colNum, tabDist, nullSubsChar);
-    	    	if (countPixels) {
-   	    	    expLen = BufExpandCharacter(c, colNum, expChar, tabDist,
-			    nullSubsChar);
-    	    	    width = XTextWidth(textD->fontStruct, expChar, expLen);
-    	    	}
+    	    	if (countPixels)
+   	    	    width = measurePropChar(textD, c, colNum, p);
     	    }
     	    if (p >= maxPos) {
     		*retPos = maxPos;
@@ -2863,6 +2855,40 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
     *retLineEnd = buf->length;
 }
 
+/*
+** Measure the width in pixels of a character "c" at a particular column
+** "colNum" and buffer position "pos".  This is for measuring characters in
+** proportional or mixed-width highlighting fonts.
+**
+** A note about proportional and mixed-width fonts: the mixed width and
+** proportional font code in nedit does not get much use in general editing,
+** because nedit doesn't allow per-language-mode fonts, and editing programs
+** in a proportional font is usually a bad idea, so very few users would
+** choose a proportional font as a default.  There are still probably mixed-
+** width syntax highlighting cases where things don't redraw properly for
+** insertion/deletion, though static display and wrapping and resizing
+** should now be solid because they are now used for online help display.
+*/
+static int measurePropChar(textDisp *textD, char c, int colNum, int pos)
+{
+    int charLen, style;
+    char expChar[MAX_EXP_CHAR_LEN];
+    textBuffer *styleBuf = textD->styleBuffer;
+    
+    charLen = BufExpandCharacter(c, colNum, expChar, 
+	    textD->buffer->tabDist, textD->buffer->nullSubsChar);
+    if (styleBuf == NULL) {
+	style = 0;
+    } else {
+	style = (unsigned char)BufGetCharacter(styleBuf, pos);
+	if (style == textD->unfinishedStyle) {
+    	    /* encountered "unfinished" style, trigger parsing */
+    	    (textD->unfinishedHighlightCB)(textD, pos, textD->highlightCBArg);
+    	    style = (unsigned char)BufGetCharacter(styleBuf, pos);
+	}
+    }
+    return stringWidth(textD, expChar, charLen, style);
+}
 
 /*
 ** Finds both the end of the current line and the start of the next line.  Why?

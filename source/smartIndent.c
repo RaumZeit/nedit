@@ -1182,7 +1182,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     if (indentSpecsDiffer(oldMacros, newMacros)) {
 	resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3,
       "Smart indent macros for language mode\n%s were changed.  Apply changes?",
-		"Apply", "Discard", "Cancel", oldMacros->lmName);
+		"Apply", "Discard", "Cancel", SmartIndentDialog.langModeName);
 	if (resp == 3) {
 	    SetLangModeMenu(SmartIndentDialog.lmOptMenu,
 		    SmartIndentDialog.langModeName);

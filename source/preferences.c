@@ -497,7 +497,7 @@ static PrefDescripRec PrefDescrip[] = {
 #endif /*VMS*/
 #ifdef VMS
        "C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
-	C++:.CC .HH .I::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
+	C++:.CC .HH .I .CXX .HXX::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"\n\
 	Java:.JAVA::::::\n\
 	Ada:.ADA .AD .ADS .ADB .A::::::\n\
 	Fortran:.F .F77 .FOR::::::\n\
@@ -509,9 +509,9 @@ static PrefDescripRec PrefDescrip[] = {
 	Awk:.AWK::::::\n\
 	Tcl:.TCL::::::\n\
 	Makefile:MAKEFILE::::::\n\
-	SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
+	SGML HTML:.sgml .sgm .html .htm .shtm .shtml:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
 	LaTeX:.TEX .STY .CLS .DTX .INS::::::\n\
-	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\:::::\"/%(){}[]<>\"\n\
+	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!:::::\"/%(){}[]<>\"\n\
 	SQL:.sql::::::\n\
 	Matlab:.m .oct .sci::::::\n\
 	VHDL:.VHD .VHDL .VDL::::::\n\
@@ -535,7 +535,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Sh Ksh Bash:.sh .bash .ksh .profile:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/(sh|ksh|bash)\":::::\n\
 	Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\":::::\n\
 	Makefile:Makefile makefile .gmk:::None:8:8:\n\
-	SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
+	SGML HTML:.sgml .sgm .html .htm .shtm .shtml:\"\\<[Hh][Tt][Mm][Ll]\\>\":::::\n\
 	LaTeX:.tex .sty .cls .dtx .ins::::::\n\
 	PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"\n\
 	SQL:.sql::::::\n\

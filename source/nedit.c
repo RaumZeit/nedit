@@ -72,6 +72,7 @@ void unmaskArgvKeywords(int argc, char **argv, char **maskArgs);
 WindowInfo *WindowList = NULL;
 Display *TheDisplay;
 char *ArgV0;
+Boolean IsServer = False;
 
 static char *fallbackResources[] = {
     "*menuBar.marginHeight: 0",
@@ -258,7 +259,7 @@ static char cmdLineHelp[] =
 int main(int argc, char **argv)
 {
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
-    int isServer = FALSE, gotoLine = False, macroFileRead = False;
+    int gotoLine = False, macroFileRead = False;
     int iconic = False;
     char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -403,7 +404,7 @@ int main(int argc, char **argv)
     	    else
     	    	gotoLine = True;
     	} else if (!strcmp(argv[i], "-server")) {
-    	    isServer = True;
+    	    IsServer = True;
 	} else if (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon")) {
     	    iconic = True;
 	} else if (!strcmp(argv[i], "-noiconic")) {
@@ -481,11 +482,11 @@ int main(int argc, char **argv)
     AddLastCommandActionHook(context);
 
     /* Set up communication port and write ~/.nedit_server_process file */
-    if (isServer)
+    if (IsServer)
     	InitServerCommunication();
 
     /* Process events. */
-    if (isServer)
+    if (IsServer)
     	ServerMainLoop(context);
     else
     	XtAppMainLoop(context);

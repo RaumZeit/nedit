@@ -68,9 +68,9 @@
    with pass2 patterns */
 #define EQUIVALENT_STYLE(style1, style2, firstPass2Style) (style1 == style2 || \
     	(style1 == UNFINISHED_STYLE && \
-    	 (style2 == PLAIN_STYLE || style2 >= firstPass2Style)) || \
+    	 (style2 == PLAIN_STYLE || (unsigned char)style2 >= firstPass2Style)) || \
     	(style2 == UNFINISHED_STYLE && \
-    	 (style1 == PLAIN_STYLE || style1 >= firstPass2Style)))
+    	 (style1 == PLAIN_STYLE || (unsigned char)style1 >= firstPass2Style)))
 
 /* Scanning context can be reduced (with big efficiency gains) if we
    know that patterns can't cross line boundaries, which is implied
@@ -104,7 +104,7 @@ typedef struct {
 typedef struct {
     highlightDataRec *pass1Patterns;
     highlightDataRec *pass2Patterns;
-    char *majorStyles;
+    char *parentStyles;
     reparseContext contextRequirements;
     styleTableEntry *styleTable;
     int nStyles;
@@ -141,11 +141,11 @@ static Pixel allocColor(Widget w, char *colorName);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 static char getPrevChar(textBuffer *buf, int pos);
-regexp *compileREAndWarn(Widget parent, char *re);
-static int startOfMajorStyle(char *majorStyles, textBuffer *styleBuf, int pos,
-    	int limit);
+static regexp *compileREAndWarn(Widget parent, char *re);
+static int parentStyleOf(char *parentStyles, int style);
+static int isParentStyle(char *parentStyles, int style1, int style2);
 static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
-    	reparseContext *context, char *majorStyles, int *pos);
+    	reparseContext *context, char *parentStyles, int *pos);
 static int backwardOneContext(textBuffer *buf, reparseContext *context,
     	int fromPos);
 static int forwardOneContext(textBuffer *buf, reparseContext *context,
@@ -465,7 +465,7 @@ static void freeHighlightData(windowHighlightData *hd)
     	freePatterns(hd->pass1Patterns);
     if (hd->pass2Patterns != NULL)
     	freePatterns(hd->pass2Patterns);
-    XtFree(hd->majorStyles);
+    XtFree(hd->parentStyles);
     BufFree(hd->styleBuffer);
     XtFree((char *)hd->styleTable);
     XtFree((char *)hd);
@@ -526,7 +526,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
 {
     int i, nPass1Patterns, nPass2Patterns;
     int noPass1, noPass2;
-    char *majorStyles, *majorStylesPtr;
+    char *parentStyles, *parentStylesPtr, *parentName;
     highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
     styleTableEntry *styleTable, *styleTablePtr;
     textBuffer *styleBuf;
@@ -647,16 +647,22 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
     for (i=1; i<nPass2Patterns; i++)
     	pass2Pats[i].style = 'B' + (noPass1 ? 0 : nPass1Patterns-1) + i;
     
-    /* Create table for finding top level style from sub-pattern styles */
-    majorStylesPtr = majorStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 1);
-    *majorStylesPtr++ = PLAIN_STYLE;
-    *majorStylesPtr++ = PLAIN_STYLE;
-    for (i=1; i<nPass1Patterns; i++)
-	*majorStylesPtr++ = pass1Pats[findTopLevelParentIndex(pass1PatternSrc,
-    	    	    nPass1Patterns, i)].style;
-    for (i=1; i<nPass2Patterns; i++)
-	*majorStylesPtr++ = pass2Pats[findTopLevelParentIndex(pass2PatternSrc,
-    	    	    nPass2Patterns, i)].style;
+    /* Create table for finding parent styles */
+    parentStylesPtr = parentStyles = XtMalloc(nPass1Patterns+nPass2Patterns+2);
+    *parentStylesPtr++ = '\0';
+    *parentStylesPtr++ = '\0';
+    for (i=1; i<nPass1Patterns; i++) {
+	parentName = pass1PatternSrc[i].subPatternOf;
+	*parentStylesPtr++ = parentName == NULL ? PLAIN_STYLE :
+		pass1Pats[indexOfNamedPattern(pass1PatternSrc,
+		nPass1Patterns, parentName)].style;
+    }
+    for (i=1; i<nPass2Patterns; i++) {
+	parentName = pass2PatternSrc[i].subPatternOf;
+	*parentStylesPtr++ = parentName == NULL ? PLAIN_STYLE :
+		pass2Pats[indexOfNamedPattern(pass2PatternSrc,
+		nPass2Patterns, parentName)].style;
+    }
     
     /* Set up table for mapping colors and fonts to syntax */
     styleTablePtr = styleTable = (styleTableEntry *)XtMalloc(
@@ -697,7 +703,7 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
     highlightData =(windowHighlightData *)XtMalloc(sizeof(windowHighlightData));
     highlightData->pass1Patterns = pass1Pats;
     highlightData->pass2Patterns = pass2Pats;
-    highlightData->majorStyles = majorStyles;
+    highlightData->parentStyles = parentStyles;
     highlightData->styleTable = styleTable;
     highlightData->nStyles = styleTablePtr - styleTable;
     highlightData->styleBuffer = styleBuf;
@@ -925,7 +931,7 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     reparseContext *context = &highlightData->contextRequirements;
     highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
     char *string, *styleString, *stringPtr, *stylePtr, c, prevChar;
-    int firstPass2Style = pass2Patterns[1].style;
+    int firstPass2Style = (unsigned char)pass2Patterns[1].style;
     
     /* If there are no pass 2 patterns to process, do nothing (but this
        should never be triggered) */
@@ -939,7 +945,8 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     beginSafety = backwardOneContext(buf, context, beginParse);
     for (p=beginParse; p>=beginSafety; p--) {
     	c = BufGetCharacter(styleBuf, p);
-    	if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && c < firstPass2Style) {
+    	if (c != UNFINISHED_STYLE && c != PLAIN_STYLE &&
+		(unsigned char)c < firstPass2Style) {
     	    beginSafety = p + 1;
     	    break;
     	}
@@ -953,11 +960,12 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
     endSafety = forwardOneContext(buf, context, endParse);
     for (p=pos; p<endSafety; p++) {
     	c = BufGetCharacter(styleBuf, p);
-    	if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && c < firstPass2Style) {
+    	if (c != UNFINISHED_STYLE && c != PLAIN_STYLE &&
+		(unsigned char)c < firstPass2Style) {
     	    endParse = min(endParse, p);
     	    endSafety = p;
     	    break;
-    	} else if (c != UNFINISHED_STYLE && p < endParse) {
+    	} else if ((unsigned char)c != UNFINISHED_STYLE && p < endParse) {
     	    endParse = p;
     	    if (c < firstPass2Style)
     	    	endSafety = p;
@@ -996,88 +1004,67 @@ static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
 static void incrementalReparse(windowHighlightData *highlightData,
     	textBuffer *buf, int pos, int nInserted, char *delimiters)
 {
-    int beginParse, endParse, endAt, lastMod, posInStyle, nPasses;
+    int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
     textBuffer *styleBuf = highlightData->styleBuffer;
     highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
     highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
     reparseContext *context = &highlightData->contextRequirements;
-    char *majorStyles = highlightData->majorStyles;
+    char *parentStyles = highlightData->parentStyles;
 
     /* Find the position "beginParse" at which to begin reparsing.  This is
        far enough back in the buffer such that the guranteed number of
        lines and characters of context are examined. */
     beginParse = pos;
-    posInStyle = !moveBackwardToEnsureContext(buf, styleBuf, context,
-    	    majorStyles, &beginParse);
+    parseInStyle = moveBackwardToEnsureContext(buf, styleBuf, context,
+    	    parentStyles, &beginParse);
 
-    /*
-    ** If moveBackwardToEnsureContext left us inside of a styled
-    ** region, it must be re-parsed first before proceeding to the
-    ** general parsing of unstyled text below.  Parsing extends forward
-    ** until nothing is changed within one context distance of the last
-    ** change.
-    **
-    ** This is clumsily organized as: parse your way out of the current
-    ** (major) style, then parse unstyled text separately, but with similar
-    ** code. It is not general enough to parse its way out of multiple levels
-    ** of nested styles.  Originally, I thought this should be possible, but
-    ** if a section were parsed with a deeply nested pattern, I don't know
-    ** how to tell at what level to resume after the pattern is finished,
-    ** without re-starting from the beginning of the style.  We can't simply
-    ** trust the original styles to be correct in case something really did
-    ** change in the new parsing.  This might somehow be deduced from the
-    ** existing style BEFORE the section began, but this is getting very
-    ** complicated and hard to test.
-    */
+    /* Find the position "endParse" at which point it is safe to stop
+       parsing, unless styles are getting changed beyond the last
+       modification */
     lastMod = pos + nInserted;
     endParse = forwardOneContext(buf, context, lastMod);
-    if (posInStyle) {
-    	for (nPasses=0; ; nPasses++) {
-    	    /* printf("parsing within %c from %d to %d\n",
-    	    	    BufGetCharacter(styleBuf, beginParse), beginParse,
-    	    	    endParse); */
-    	    endAt = parseBufferRange(patternOfStyle(pass1Patterns,
-    	    	    majorStyles[BufGetCharacter(styleBuf, beginParse)-'A']),
-    	    	    NULL, buf, styleBuf, context, beginParse, endParse,
-    	    	    delimiters);
-	    if (endAt < endParse) {
-	    	beginParse = endAt;
-	    	endParse = forwardOneContext(buf, context,
-	    	    	max(endAt, max(lastModified(styleBuf), lastMod)));
-	    	break;
-	    } else if (lastModified(styleBuf) <= lastMod)
-	    	return;
-	    lastMod = lastModified(styleBuf);
-    	    endParse = min(buf->length, forwardOneContext(buf, context, lastMod)
-    	    	    + (REPARSE_CHUNK_SIZE << nPasses));
-	    /* printf("falling back: "); */
-	 }   	
-    }
     
     /*
     ** Parse the buffer from beginParse, until styles compare
     ** with originals for one full context distance.  Distance increases
-    ** by powers of two until nothing changes from previous step.
+    ** by powers of two until nothing changes from previous step.  If
+    ** parsing ends before endParse, start again one level up in the
+    ** pattern hierarchy
     */
     for (nPasses=0; ; nPasses++) {
 	
 	/* Parse forward from beginParse to one context beyond the end
 	   of the last modification */
-    	/* printf("parsing from %d to %d\n", beginParse, endParse); */
-	parseBufferRange(pass1Patterns, pass2Patterns, buf, styleBuf,
-	    	context, beginParse, endParse, delimiters);
-    	if (endParse == buf->length || lastModified(styleBuf) <= lastMod)
-    	    return;
-    	
-    	/* Continue expanding region by powers of 2 * REPARSE_CHUNK_SIZE
-    	   until all changes have been propagated */
-    	lastMod = lastModified(styleBuf);
-    	beginParse = startOfMajorStyle(majorStyles, styleBuf, lastMod-1,
-    	    	beginParse);
-    	endParse = min(buf->length, forwardOneContext(buf, context, lastMod)
-    	    	+ (REPARSE_CHUNK_SIZE << nPasses));
-    	/* printf("falling back: "); */
-    }
+    	endAt = parseBufferRange(patternOfStyle(pass1Patterns, parseInStyle),
+    	    	pass2Patterns, buf, styleBuf, context, beginParse, endParse,
+		delimiters);
+	
+	/* If parse completed at this level, move one style up in the
+	   hierarchy and start again from where the previous parse left off. */
+	if (endAt < endParse) {
+	    beginParse = endAt;
+	    endParse = forwardOneContext(buf, context,
+	    	    max(endAt, max(lastModified(styleBuf), lastMod)));
+	    if (IS_PLAIN(parseInStyle)) {
+		fprintf(stderr,
+			"NEdit internal error: incr. reparse fell short\n");
+		return;
+	    }
+	    parseInStyle = parentStyleOf(parentStyles, parseInStyle);
+	    
+	/* One context distance beyond last style changed means we're done */
+	} else if (lastModified(styleBuf) <= lastMod) {
+	    return;
+	    
+	/* Styles are changing beyond the modification, continue extending
+	   the end of the parse range by powers of 2 * REPARSE_CHUNK_SIZE and
+	   reparse until nothing changes */
+	} else {
+	    lastMod = lastModified(styleBuf);
+    	    endParse = min(buf->length, forwardOneContext(buf, context, lastMod)
+    	    	    + (REPARSE_CHUNK_SIZE << nPasses));
+	}
+    }	
 }
 
 /*
@@ -1103,7 +1090,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     char *string, *styleString, *stringPtr, *stylePtr, *temp, prevChar;
     int endSafety, endPass2Safety, startPass2Safety, tempLen;
     int modStart, modEnd, beginSafety, beginStyle, p, style;
-    int firstPass2Style = pass2Patterns==NULL?INT_MAX:pass2Patterns[1].style;
+    int firstPass2Style = pass2Patterns == NULL ? INT_MAX :
+	    (unsigned char)pass2Patterns[1].style;
     
     /* Begin parsing one context distance back (or to the last style change) */
     beginStyle = pass1Patterns->style;
@@ -1126,7 +1114,6 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     	    }
     	}
     }
-    	
     
     /* Parse one parse context beyond requested end to gurantee that parsing
        at endParse is complete, unless patterns can't cross line boundaries,
@@ -1389,16 +1376,16 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
 {
     int inParseRegion = False;
     char *stylePtr, *stringPtr, temp, *parseStart, *parseEnd, *s, *c;
-    int firstPass2Style = pattern[1].style;
+    int firstPass2Style = (unsigned char)pattern[1].style;
     
     for (c = string, s = styleString; ; c++, s++) {
     	if (!inParseRegion && *c != '\0' && (*s == UNFINISHED_STYLE ||
-    	    	*s == PLAIN_STYLE || *s >= firstPass2Style)) {
+    	    	*s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style)) {
     	    parseStart = c;
     	    inParseRegion = True;
     	}
     	if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE ||
-    	    	*s == PLAIN_STYLE || *s >= firstPass2Style))) {
+    	    	*s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style))) {
     	    parseEnd = c;
 	    if (parseStart != string)
 	    	*prevChar = *(parseStart-1);
@@ -1466,7 +1453,7 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     for (c=styleString, pos=startPos; pos<modStart && pos<endPos; c++, pos++) {
     	bufChar = BufGetCharacter(styleBuf, pos);
     	if (*c != bufChar && !(bufChar == UNFINISHED_STYLE &&
-    	    	(*c == PLAIN_STYLE || *c >= firstPass2Style))) {
+    	    	(*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
     	    if (pos < minPos) minPos = pos;
     	    if (pos > maxPos) maxPos = pos;
     	}
@@ -1475,7 +1462,7 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	    pos<endPos; c++, pos++) {
     	bufChar = BufGetCharacter(styleBuf, pos);
     	if (*c != bufChar && !(bufChar == UNFINISHED_STYLE &&
-    	    	(*c == PLAIN_STYLE || *c >= firstPass2Style))) {
+    	    	(*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
     	    if (pos < minPos) minPos = pos;
     	    if (pos+1 > maxPos) maxPos = pos+1;
     	}
@@ -1512,11 +1499,11 @@ static Pixel allocColor(Widget w, char *colorName)
 {
     XColor colorDef;
     Display *display = XtDisplay(w);
-    int screenNum = XScreenNumberOfScreen(XtScreen(w));
-    Colormap cMap = DefaultColormap(display, screenNum);
+    Colormap cMap;
     Pixel foreground;
 
     /* Allocate and return the color cell, or print an error and fall through */
+    XtVaGetValues(w, XtNcolormap, &cMap, 0);
     if (XParseColor(display, cMap,  colorName, &colorDef)) {
 	if (XAllocColor(display, cMap, &colorDef))
 	    return colorDef.pixel;
@@ -1541,7 +1528,7 @@ static char getPrevChar(textBuffer *buf, int pos)
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-regexp *compileREAndWarn(Widget parent, char *re)
+static regexp *compileREAndWarn(Widget parent, char *re)
 {
     regexp *compiledRE;
     char *compileMsg;
@@ -1556,115 +1543,103 @@ regexp *compileREAndWarn(Widget parent, char *re)
     return compiledRE;
 }
 
-/*
-** Begin with character at pos and scan backwards through "styleBuf" looking
-** for the next change in style.  Returns the position 1st character of the
-** style pointed to by "pos"
-*/
-static int startOfMajorStyle(char *majorStyles, textBuffer *styleBuf, int pos,
-    	int limit)
+static int parentStyleOf(char *parentStyles, int style)
 {
-    int i;
-    char style, startStyle;
-    
-    /* Find the style of the character at pos */
-    startStyle = BufGetCharacter(styleBuf, pos);
-    
-    if (IS_PLAIN(startStyle))
-    	return pos;
+    return parentStyles[style-'A'];
+}
 
-    /* Find the top level style corresponding to startStyle */
-    startStyle = majorStyles[startStyle - 'A'];
+static int isParentStyle(char *parentStyles, int style1, int style2)
+{
+    int p;
     
-    /* Scan backwards, comparing major (top level) styles in hierarchy,
-       until the style changes */
-    for (i=pos-1; i>=limit; i--) {
-    	style = BufGetCharacter(styleBuf, i);
-    	if (majorStyles[style-'A'] != startStyle)
-    	    return i + 1;
-    }
-    return limit;
+    for (p = parentStyleOf(parentStyles, style2); p != '\0';
+	    p = parentStyleOf(parentStyles, p))
+	if (style1 == p)
+	    return TRUE;
+    return FALSE;
 }
 
 /*
-** Back up position pointed to by "pos" enough that parsing from that point on
-** will satisfy context gurantees for pattern matching for modifications at
-** pos.  If that can't be done without extending beyond 2X the requested
-** context because a styled region extends back from with the context region,
-** return False and set pos to the first position outside of the context
-** region from which parsing of the styled region can safely be resumed using
-** the patterns for the major (top-level) style at that position.
+** Back up position pointed to by "pos" enough that parsing from that point
+** on will satisfy context gurantees for pattern matching for modifications
+** at pos.  Returns the style with which to begin parsing.  The caller is
+** guranteed that parsing may safely BEGIN with that style, but not that it
+** will continue at that level.
 **
-** The requirement that parsing can resume using major style patterns means
-** that the returned position may be considerably farther than two context
-** distances back from pos.  This means there can be significant performance
-** penalties for patterns which allow sub-styles (anything below major styles)
-** to match significant ranges of text.  A comment in incremental re-parse
-** explains this decision further.
+** A point for concern here is that this routine can be fooled if a
+** continuous style run of more than one context distance in length is
+** produced by multiple pattern matches which abut, rather than by a single
+** continuous match.  In this  case the position returned by this routine
+** could be unsafe, or worse (but yet more unlikely), the returned style
+** could be a color-only pattern.  In practice this doesn't happen, but it
+** might be worth protecting against, and we're not...
 */
 static int moveBackwardToEnsureContext(textBuffer *buf, textBuffer *styleBuf,
-    	reparseContext *context, char *majorStyles, int *pos)
+    	reparseContext *context, char *parentStyles, int *pos)
 {
-    int style, overlapStyle, overlapMajorStyle, checkBackTo;
-    int safeParseStart, maxSafeParseStart, i;
+    int style, safeStartStyle, checkBackTo, safeParseStart, i;
     
-    /* Back up far enough to ensure that expressions can match any characters
-       within the pattern's guranteed context back from the change */
+    /* We must begin at least one context distance back from the change */
     *pos = backwardOneContext(buf, context, *pos);
     
     /* If the new position is outside of any styles or at the beginning of
        the buffer, this is a safe place to begin parsing, and we're done */
     if (*pos == 0)
-    	return True;
-    overlapStyle = BufGetCharacter(styleBuf, *pos);
-    if (IS_PLAIN(overlapStyle))
-    	return True;
+    	return PLAIN_STYLE;
+    safeStartStyle = BufGetCharacter(styleBuf, *pos);
+    if (IS_PLAIN(safeStartStyle))
+    	return PLAIN_STYLE;
     
     /*
-    ** The new position is inside of a styled region, meaning, its
-    ** pattern could potentially be affected by the modification.
+    ** The new position is inside of a styled region, meaning, its pattern
+    ** could potentially be affected by the modification.
     **
     ** Follow the style back by enough context to ensure that if we don't find
     ** its beginning, at least we've found a safe place to begin parsing
-    ** WITHIN the encroaching style.
+    ** within the styled region.
     **
-    ** A safe starting position within a style is one which is preceded by a
-    ** the major style (i.e. not the middle of a sub-style), and is far enough
-    ** from the beginning and end of the style to gurantee that it's not
-    ** within the start or end expression match.
+    ** A safe starting position within a style either at a style
+    ** boundary, or far enough from the beginning and end of the style to guaranty
+    ** that it's not within the start or end expression match.
     */   
-    checkBackTo = 0;
-    maxSafeParseStart = backwardOneContext(buf, context, *pos);
-    safeParseStart = 0;
-    overlapMajorStyle = majorStyles[overlapStyle-'A'];
+    safeParseStart = backwardOneContext(buf, context, *pos);
+    checkBackTo = backwardOneContext(buf, context, safeParseStart);
     for (i = *pos-1; ; i--) {
     	
     	/* The start of buffer is certainly a safe place to parse from */
     	if (i == 0) {
     	    *pos = 0;
-    	    return True;
+    	    return PLAIN_STYLE;
     	}
     	
-    	/* If the start of the style is encountered, no internal parsing
-    	   of the style is required */
+    	/* If the style is preceded by a parent style, it's safe to parse
+	   with the parent style. */
     	style = BufGetCharacter(styleBuf, i);
-    	if (overlapMajorStyle != majorStyles[style-'A']) {
+	if (isParentStyle(parentStyles, style, safeStartStyle)) {
     	    *pos = i + 1;
-    	    return True;
+    	    return style;
     	}
-    	
-    	/* A point preceded by the major style is safe for parsing witin the
-    	   style, but only after we've ensured that it's far enough from the
-    	   beginning and end of the style that it's not in the middle of the
-    	   start or end expression matches */
-    	if (i <= maxSafeParseStart && safeParseStart == 0 &&
-    	    	style == overlapMajorStyle) {
-    	    safeParseStart = i + 1;
-    	    checkBackTo = backwardOneContext(buf, context, i);
+	
+	/* If the style is preceded by a child style, it's safe to resume
+	   parsing with the original style */
+    	if (isParentStyle(parentStyles, safeStartStyle, style)) {
+	    *pos = i + 1;
+    	    return safeStartStyle;
     	}
+	
+	/* If the style is preceded by an unrelated style, it's safe to
+	   resume parsing with PLAIN_STYLE */
+	if (safeStartStyle != style) {
+	    *pos = i + 1;
+    	    return PLAIN_STYLE;
+    	}
+	
+	/* If the style didn't change for one whole context distance, on
+	   either side of safeParseStart, safeParseStart is a safe place
+	   to start parsing */
     	if (i == checkBackTo) {
     	    *pos = safeParseStart;
-    	    return False;
+    	    return safeStartStyle;
     	}
     }
 }
@@ -1741,6 +1716,8 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style)
     for (i=0; patterns[i].style!=0; i++)
     	if (patterns[i].style == style)
     	    return &patterns[i];
+    if (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
+	return &patterns[0];
     return NULL;
 }
 
