@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.31 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.32 2004/10/14 21:55:53 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -340,7 +340,7 @@ static void processServerCommandString(char *string)
     char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *doCommand, *geometry, *langMode, *inPtr;
     int editFlags, stringLen = strlen(string);
-    int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed;
+    int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed = -1;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
     WindowInfo *window, *lastFile = NULL;
     long currentDesktop = QueryCurrentDesktop(TheDisplay, 
