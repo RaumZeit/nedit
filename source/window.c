@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.37 2001/12/19 14:51:28 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.38 2001/12/24 09:26:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -807,7 +807,7 @@ void ShowLineNumbers(WindowInfo *window, int state)
     window->showLineNumbers = state;
     
     /* Just setting window->showLineNumbers is sufficient to tell
-       UpdataLineNumDisp to expand the line number areas and the window
+       UpdateLineNumDisp to expand the line number areas and the window
        size for the number of lines required.  To hide the line number
        display, set the width to zero, and contract the window width. */
     if (state) {

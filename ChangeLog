@@ -1,3 +1,70 @@
+2001-12-24 09:18  amai
+
+	* source/: interpret.c (1.21), interpret.h (1.7), parse.y (1.18):
+	Apply SF Patch [ #496413 ] preliminary patch for #495293 from A.
+	Hood which in turn fixes SF Bug [ #495293 ] continue outside of
+	loop causes segfault
+
+2001-12-20 15:38  amai
+
+	* source/: comnedit.com (1.7), parse.c_noyacc (1.8), parse_noyacc.c
+	(1.1): Rename our fallback version of the parse.c code to have a
+	reasonable file extension. Update VMS command file accordingly
+
+2001-12-19 17:08  tringali
+
+	* source/help.c (1.71): Fix incorrect array size that crashes on
+	platforms where sizeof(char*) != sizeof(int)
+
+2001-12-19 14:51  tringali
+
+	* source/: window.c (1.37), nedit.c (1.28): Back out frame around
+	text patch; doesn't work well with LessTif
+
+2001-12-18 18:53  tringali
+
+	* source/: nedit.c (1.27), window.c (1.36): Put frame around text
+	widget, for consistent look with XmScrolledText Patch courtesy of
+	C. Rasmussen (If you don't like it, disable it with
+	*pane*XmFrame.shadowThickness: 0)
+
+2001-12-17 16:28  amai
+
+	* source/selection.c (1.18): Fix compilation problem
+
+2001-12-16 04:31  ajhood
+
+	* source/selection.c (1.17):  Modified Files:
+		selection.c
+	replacing sprintf lost the path name when opening files
+
+2001-12-14 14:35  edel
+
+	* source/help_topic.h (1.1): Separated auto-generated part of
+	help.h into different file, help_topic.h.
+
+2001-12-14 05:14  edel
+
+	* doc/: Makefile (1.2), help.etx (1.2), nedit.doc (1.9), nedit.html
+	(1.2), setext (1.2): Rearranged styles to put fixed fonts first,
+	for sizing help text widget.
+
+2001-12-14 05:12  edel
+
+	* source/: Makefile.dependencies (1.14), help.c (1.70), help.h
+	(1.8), help_data.h (1.2): Rearanged help fonts so window is sized
+	to match fixed-width formatting.  Fixed underlined fonts not
+	working.
+
+2001-12-13 15:44  amai
+
+	* source/tags.c (1.28): Drop // comments from last check-in
+
+2001-12-13 13:31  amai
+
+	* ChangeLog (1.16), source/help.h (1.7): Add prototype to help.h to
+	fix build warning
+
 2001-12-13 13:27  amai
 
 	* source/tags.c (1.27), source/tags.h (1.10), util/fileUtils.c

@@ -29,7 +29,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.1 2001/12/20 15:38:26 amai Exp $";
+static const char CVSID[] = "$Id: parse_noyacc.c,v 1.2 2001/12/24 09:26:35 amai Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -40,9 +40,11 @@ static Symbol *matchesActionRoutine(char **inPtr);
 
 static char *ErrMsg;
 static char *InPtr;
+extern Inst *LoopStack[]; /* addresses of break, cont stmts */
+extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
 
-# line 46 "parse.y"
+# line 48 "parse.y"
 typedef union  {
     Symbol *sym;
     Inst *inst;
@@ -93,7 +95,7 @@ YYSTYPE yylval, yyval;
 typedef int yytabelem;
 # define YYERRCODE 256
 
-# line 254 "parse.y"
+# line 256 "parse.y"
  /* User Subroutines Section */
 
 
@@ -1128,298 +1130,298 @@ yyparse()
 		switch(yytmp){
 
 case 1:
-# line 79 "parse.y"
-{ ADD_OP(OP_RETURN_NO_VAL); return 0; } /*NOTREACHED*/ break;
-case 2:
-# line 80 "parse.y"
-{ ADD_OP(OP_RETURN_NO_VAL); return 0; } /*NOTREACHED*/ break;
-case 3:
 # line 81 "parse.y"
 { ADD_OP(OP_RETURN_NO_VAL); return 0; } /*NOTREACHED*/ break;
-case 4:
+case 2:
 # line 82 "parse.y"
+{ ADD_OP(OP_RETURN_NO_VAL); return 0; } /*NOTREACHED*/ break;
+case 3:
+# line 83 "parse.y"
+{ ADD_OP(OP_RETURN_NO_VAL); return 0; } /*NOTREACHED*/ break;
+case 4:
+# line 84 "parse.y"
 { return 1; } /*NOTREACHED*/ break;
 case 11:
-# line 93 "parse.y"
+# line 95 "parse.y"
 { SET_BR_OFF(yypvt[-3].inst, GetPC()); } /*NOTREACHED*/ break;
 case 12:
-# line 95 "parse.y"
+# line 97 "parse.y"
 { SET_BR_OFF(yypvt[-6].inst, (yypvt[-2].inst+1)); SET_BR_OFF(yypvt[-2].inst, GetPC()); } /*NOTREACHED*/ break;
 case 13:
-# line 96 "parse.y"
+# line 98 "parse.y"
 { ADD_OP(OP_BRANCH); ADD_BR_OFF(yypvt[-5].inst);
                 SET_BR_OFF(yypvt[-3].inst, GetPC()); FillLoopAddrs(GetPC(), yypvt[-5].inst); } /*NOTREACHED*/ break;
 case 14:
-# line 99 "parse.y"
+# line 101 "parse.y"
 { FillLoopAddrs(GetPC()+2+(yypvt[-3].inst-(yypvt[-5].inst+1)), GetPC());
     	          SwapCode(yypvt[-5].inst+1, yypvt[-3].inst, GetPC());
     	          ADD_OP(OP_BRANCH); ADD_BR_OFF(yypvt[-7].inst); SET_BR_OFF(yypvt[-5].inst, GetPC()); } /*NOTREACHED*/ break;
 case 15:
-# line 103 "parse.y"
+# line 105 "parse.y"
 { Symbol *iterSym = InstallIteratorSymbol();
                   ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(yypvt[-1].sym); ADD_SYM(iterSym);
                   ADD_OP(OP_ARRAY_ITER); ADD_SYM(yypvt[-3].sym); ADD_SYM(iterSym);
                   ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 case 16:
-# line 108 "parse.y"
+# line 110 "parse.y"
 { FillLoopAddrs(GetPC()+2, GetPC());
                   ADD_OP(OP_BRANCH); ADD_BR_OFF(yypvt[-8].inst+3);
                   SET_BR_OFF(yypvt[-8].inst+6, GetPC());} /*NOTREACHED*/ break;
 case 17:
-# line 112 "parse.y"
-{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddBreakAddr(GetPC()-1); } /*NOTREACHED*/ break;
-case 18:
 # line 114 "parse.y"
-{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); AddContinueAddr(GetPC()-1); } /*NOTREACHED*/ break;
+{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddBreakAddr(GetPC()-1)) { yyerror("break outside loop"); YYERROR; } } /*NOTREACHED*/ break;
+case 18:
+# line 116 "parse.y"
+{ ADD_OP(OP_BRANCH); ADD_BR_OFF(0); if(AddContinueAddr(GetPC()-1)) { yyerror("continue outside loop"); YYERROR; } } /*NOTREACHED*/ break;
 case 19:
-# line 115 "parse.y"
+# line 117 "parse.y"
 { ADD_OP(OP_RETURN); } /*NOTREACHED*/ break;
 case 20:
-# line 116 "parse.y"
+# line 118 "parse.y"
 { ADD_OP(OP_RETURN_NO_VAL); } /*NOTREACHED*/ break;
 case 21:
-# line 118 "parse.y"
+# line 120 "parse.y"
 { ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 22:
-# line 119 "parse.y"
+# line 121 "parse.y"
 { ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 23:
-# line 120 "parse.y"
+# line 122 "parse.y"
 { ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 24:
-# line 121 "parse.y"
+# line 123 "parse.y"
 { ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 25:
-# line 122 "parse.y"
+# line 124 "parse.y"
 { ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 26:
-# line 123 "parse.y"
+# line 125 "parse.y"
 { ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 27:
-# line 124 "parse.y"
+# line 126 "parse.y"
 { ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN);
     	    	ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 28:
-# line 126 "parse.y"
+# line 128 "parse.y"
 { ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN);
     	    	ADD_SYM(yypvt[-2].sym); } /*NOTREACHED*/ break;
 case 29:
-# line 129 "parse.y"
+# line 131 "parse.y"
 { ADD_OP(OP_ARRAY_DELETE); ADD_SYM(yypvt[-3].sym); ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 30:
-# line 131 "parse.y"
+# line 133 "parse.y"
 { ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-5].sym); ADD_IMMED((void *)yypvt[-3].nArgs); } /*NOTREACHED*/ break;
 case 31:
-# line 132 "parse.y"
+# line 134 "parse.y"
 { ADD_OP(OP_PUSH_SYM);
                 ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 32:
-# line 135 "parse.y"
+# line 137 "parse.y"
 { ADD_OP(OP_ADD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-6].sym);
                   ADD_IMMED((void *)yypvt[-4].nArgs);} /*NOTREACHED*/ break;
 case 33:
-# line 137 "parse.y"
+# line 139 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym);
                   ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 34:
-# line 140 "parse.y"
+# line 142 "parse.y"
 { ADD_OP(OP_SUB); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-6].sym);
                   ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 35:
-# line 143 "parse.y"
+# line 145 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF);
                   ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 36:
-# line 146 "parse.y"
+# line 148 "parse.y"
 { ADD_OP(OP_MUL); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-6].sym);
                   ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 37:
-# line 149 "parse.y"
+# line 151 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF);
                   ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 38:
-# line 152 "parse.y"
+# line 154 "parse.y"
 { ADD_OP(OP_DIV); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-6].sym);
                   ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 39:
-# line 155 "parse.y"
+# line 157 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF);
                   ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 40:
-# line 158 "parse.y"
+# line 160 "parse.y"
 { ADD_OP(OP_MOD); ADD_OP(OP_ARRAY_ASSIGN); ADD_SYM(yypvt[-6].sym);
                   ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 41:
-# line 161 "parse.y"
+# line 163 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF);
                   ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 42:
-# line 164 "parse.y"
+# line 166 "parse.y"
 { ADD_OP(OP_BIT_AND); ADD_OP(OP_ARRAY_ASSIGN);
                 ADD_SYM(yypvt[-6].sym); ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 43:
-# line 167 "parse.y"
+# line 169 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-3].sym); ADD_OP(OP_ARRAY_REF);
                   ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 44:
-# line 170 "parse.y"
+# line 172 "parse.y"
 { ADD_OP(OP_BIT_OR); ADD_OP(OP_ARRAY_ASSIGN);
                   ADD_SYM(yypvt[-6].sym); ADD_IMMED((void *)yypvt[-4].nArgs); } /*NOTREACHED*/ break;
 case 45:
-# line 172 "parse.y"
+# line 174 "parse.y"
 { ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal(yypvt[-3].sym)); ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 46:
-# line 174 "parse.y"
+# line 176 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
 case 47:
-# line 176 "parse.y"
+# line 178 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-1].sym); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-1].sym); } /*NOTREACHED*/ break;
 case 48:
-# line 178 "parse.y"
+# line 180 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
 case 49:
-# line 180 "parse.y"
+# line 182 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-1].sym); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-1].sym); } /*NOTREACHED*/ break;
 case 50:
-# line 183 "parse.y"
+# line 185 "parse.y"
 { yyval.sym = yypvt[-0].sym; ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
 case 51:
-# line 185 "parse.y"
-{ yyval.inst = GetPC(); } /*NOTREACHED*/ break;
-case 52:
-# line 186 "parse.y"
-{ yyval.inst = GetPC(); } /*NOTREACHED*/ break;
-case 53:
 # line 187 "parse.y"
 { yyval.inst = GetPC(); } /*NOTREACHED*/ break;
-case 54:
+case 52:
+# line 188 "parse.y"
+{ yyval.inst = GetPC(); } /*NOTREACHED*/ break;
+case 53:
 # line 189 "parse.y"
+{ yyval.inst = GetPC(); } /*NOTREACHED*/ break;
+case 54:
+# line 191 "parse.y"
 { yyval.nArgs = 0;} /*NOTREACHED*/ break;
 case 55:
-# line 190 "parse.y"
+# line 192 "parse.y"
 { yyval.nArgs = 1; } /*NOTREACHED*/ break;
 case 56:
-# line 191 "parse.y"
+# line 193 "parse.y"
 { yyval.nArgs = yypvt[-2].nArgs + 1; } /*NOTREACHED*/ break;
 case 58:
-# line 194 "parse.y"
+# line 196 "parse.y"
 { ADD_OP(OP_CONCAT); } /*NOTREACHED*/ break;
 case 59:
-# line 196 "parse.y"
-{ ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
-case 60:
-# line 197 "parse.y"
-{ ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
-case 61:
 # line 198 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
-case 62:
+case 60:
 # line 199 "parse.y"
+{ ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
+case 61:
+# line 200 "parse.y"
+{ ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
+case 62:
+# line 201 "parse.y"
 { ADD_OP(OP_SUBR_CALL);
 	    	ADD_SYM(PromoteToGlobal(yypvt[-3].sym)); ADD_IMMED((void *)yypvt[-1].nArgs);
 		ADD_OP(OP_FETCH_RET_VAL);} /*NOTREACHED*/ break;
 case 64:
-# line 204 "parse.y"
+# line 206 "parse.y"
 { ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yypvt[-1].nArgs); } /*NOTREACHED*/ break;
 case 65:
-# line 205 "parse.y"
+# line 207 "parse.y"
 { ADD_OP(OP_ADD); } /*NOTREACHED*/ break;
 case 66:
-# line 206 "parse.y"
+# line 208 "parse.y"
 { ADD_OP(OP_SUB); } /*NOTREACHED*/ break;
 case 67:
-# line 207 "parse.y"
+# line 209 "parse.y"
 { ADD_OP(OP_MUL); } /*NOTREACHED*/ break;
 case 68:
-# line 208 "parse.y"
+# line 210 "parse.y"
 { ADD_OP(OP_DIV); } /*NOTREACHED*/ break;
 case 69:
-# line 209 "parse.y"
+# line 211 "parse.y"
 { ADD_OP(OP_MOD); } /*NOTREACHED*/ break;
 case 70:
-# line 210 "parse.y"
+# line 212 "parse.y"
 { ADD_OP(OP_POWER); } /*NOTREACHED*/ break;
 case 71:
-# line 211 "parse.y"
+# line 213 "parse.y"
 { ADD_OP(OP_NEGATE); } /*NOTREACHED*/ break;
 case 72:
-# line 212 "parse.y"
+# line 214 "parse.y"
 { ADD_OP(OP_GT); } /*NOTREACHED*/ break;
 case 73:
-# line 213 "parse.y"
+# line 215 "parse.y"
 { ADD_OP(OP_GE); } /*NOTREACHED*/ break;
 case 74:
-# line 214 "parse.y"
+# line 216 "parse.y"
 { ADD_OP(OP_LT); } /*NOTREACHED*/ break;
 case 75:
-# line 215 "parse.y"
+# line 217 "parse.y"
 { ADD_OP(OP_LE); } /*NOTREACHED*/ break;
 case 76:
-# line 216 "parse.y"
+# line 218 "parse.y"
 { ADD_OP(OP_EQ); } /*NOTREACHED*/ break;
 case 77:
-# line 217 "parse.y"
+# line 219 "parse.y"
 { ADD_OP(OP_NE); } /*NOTREACHED*/ break;
 case 78:
-# line 218 "parse.y"
+# line 220 "parse.y"
 { ADD_OP(OP_BIT_AND); } /*NOTREACHED*/ break;
 case 79:
-# line 219 "parse.y"
+# line 221 "parse.y"
 { ADD_OP(OP_BIT_OR); } /*NOTREACHED*/ break;
 case 80:
-# line 221 "parse.y"
+# line 223 "parse.y"
 { ADD_OP(OP_AND); SET_BR_OFF(yypvt[-1].inst, GetPC()); } /*NOTREACHED*/ break;
 case 81:
-# line 223 "parse.y"
+# line 225 "parse.y"
 { ADD_OP(OP_OR); SET_BR_OFF(yypvt[-1].inst, GetPC()); } /*NOTREACHED*/ break;
 case 82:
-# line 224 "parse.y"
+# line 226 "parse.y"
 { ADD_OP(OP_NOT); } /*NOTREACHED*/ break;
 case 83:
-# line 225 "parse.y"
+# line 227 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); ADD_OP(OP_INCR);
     	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
 case 84:
-# line 227 "parse.y"
+# line 229 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-1].sym); ADD_OP(OP_DUP);
 	    	ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-1].sym); } /*NOTREACHED*/ break;
 case 85:
-# line 229 "parse.y"
+# line 231 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-0].sym); ADD_OP(OP_DECR);
 	    	ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-0].sym); } /*NOTREACHED*/ break;
 case 86:
-# line 231 "parse.y"
+# line 233 "parse.y"
 { ADD_OP(OP_PUSH_SYM); ADD_SYM(yypvt[-1].sym); ADD_OP(OP_DUP);
 	    	ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM(yypvt[-1].sym); } /*NOTREACHED*/ break;
 case 87:
-# line 233 "parse.y"
+# line 235 "parse.y"
 { ADD_OP(OP_IN_ARRAY); } /*NOTREACHED*/ break;
 case 88:
-# line 235 "parse.y"
+# line 237 "parse.y"
 { yyval.inst = GetPC(); StartLoopAddrList(); } /*NOTREACHED*/ break;
 case 89:
-# line 237 "parse.y"
+# line 239 "parse.y"
 { StartLoopAddrList(); yyval.inst = GetPC(); } /*NOTREACHED*/ break;
 case 90:
-# line 239 "parse.y"
+# line 241 "parse.y"
 { ADD_OP(OP_BRANCH); yyval.inst = GetPC(); ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 case 91:
-# line 241 "parse.y"
+# line 243 "parse.y"
 { ADD_OP(OP_BRANCH_NEVER); yyval.inst = GetPC(); ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 case 92:
-# line 242 "parse.y"
+# line 244 "parse.y"
 { ADD_OP(OP_BRANCH_FALSE); yyval.inst = GetPC(); ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 case 93:
-# line 244 "parse.y"
+# line 246 "parse.y"
 { ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); yyval.inst = GetPC();
     	    	ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 case 94:
-# line 247 "parse.y"
+# line 249 "parse.y"
 { ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); yyval.inst = GetPC();
     	    	ADD_BR_OFF(0); } /*NOTREACHED*/ break;
 }
