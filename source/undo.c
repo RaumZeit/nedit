@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: undo.c,v 1.15 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: undo.c,v 1.16 2004/03/02 12:47:22 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * undo.c -- Nirvana Editor undo command					       *
@@ -73,7 +73,7 @@ static void freeUndoRecord(UndoInfo *undo);
 void Undo(WindowInfo *window)
 {
     UndoInfo *undo = window->undo;
-	int restoredTextLength;
+    int restoredTextLength;
     
     /* return if nothing to undo */
     if (undo == NULL)
@@ -91,13 +91,17 @@ void Undo(WindowInfo *window)
     	    (undo->oldText != NULL ? undo->oldText : ""));
     
     restoredTextLength = undo->oldText != NULL ? strlen(undo->oldText) : 0;
-    /* position the cursor in the focus pane after the changed text
-       to show the user where the undo was done */
-    TextSetCursorPos(window->lastFocus, undo->startPos + restoredTextLength);
-
+    if (!window->buffer->primary.selected || GetPrefUndoModifiesSelection()) {
+	/* position the cursor in the focus pane after the changed text
+	   to show the user where the undo was done */
+	TextSetCursorPos(window->lastFocus, undo->startPos + 
+	        restoredTextLength);
+    }
+    
     if (GetPrefUndoModifiesSelection()) {
         if (restoredTextLength > 0) {
-    	    BufSelect(window->buffer, undo->startPos, undo->startPos + restoredTextLength);
+    	    BufSelect(window->buffer, undo->startPos, undo->startPos + 
+	            restoredTextLength);
         }
         else {
     	    BufUnselect(window->buffer);
@@ -136,14 +140,18 @@ void Redo(WindowInfo *window)
     BufReplace(window->buffer, redo->startPos, redo->endPos,
     	    (redo->oldText != NULL ? redo->oldText : ""));
     
- 	restoredTextLength = redo->oldText != NULL ? strlen(redo->oldText) : 0;
-    /* position the cursor in the focus pane after the changed text
-       to show the user where the redo was done */
-    TextSetCursorPos(window->lastFocus, redo->startPos + restoredTextLength);
-
+    restoredTextLength = redo->oldText != NULL ? strlen(redo->oldText) : 0;
+    if (!window->buffer->primary.selected || GetPrefUndoModifiesSelection()) {
+	/* position the cursor in the focus pane after the changed text
+	   to show the user where the undo was done */
+	TextSetCursorPos(window->lastFocus, redo->startPos + 
+	        restoredTextLength);
+    }
     if (GetPrefUndoModifiesSelection()) {
+
         if (restoredTextLength > 0) {
-    	    BufSelect(window->buffer, redo->startPos, redo->startPos + restoredTextLength);
+    	    BufSelect(window->buffer, redo->startPos, redo->startPos + 
+	            restoredTextLength);
         }
         else {
     	    BufUnselect(window->buffer);
@@ -165,9 +173,10 @@ void Redo(WindowInfo *window)
 ** SaveUndoInformation stores away the changes made to the text buffer.  As a
 ** side effect, it also increments the autoSave operation and character counts
 ** since it needs to do the classification anyhow.
+**
+** Note: This routine must be kept efficient.  It is called for every 
+**       character typed.
 */
-/* Note: This routine must be kept efficient.  It is called for every character
-   typed. */
 void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 	int nDeleted, const char *deletedText)
 {
