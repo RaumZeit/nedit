@@ -2,10 +2,10 @@
 *                                                                              *
 * help_topic.h --  Nirvana Editor help display                                 *
 *                                                                              *
-                 Generated on Dec 13, 2001 (Do NOT edit!)
+                 Generated on Jan 4, 2002 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2001 Mark Edel                                            *
+* Copyright (c) 1999-2002 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -28,7 +28,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define MAX_HEADING   6
+#define MAX_HEADING   3
 #define STL_HD        16+1
 #define STL_LINK      16
 #define STL_NM_HEADER 'R'
