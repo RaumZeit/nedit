@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.15 2002/02/01 15:03:29 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.16 2002/02/03 16:41:06 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -77,6 +77,7 @@ static int inSelection(selection *sel, int pos, int lineStartPos,
 static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
 	int *column, int posType);
+static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted,
 	int nRestyled, char *deletedText, void *cbArg);
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
@@ -103,6 +104,7 @@ static GC allocateGC(Widget w, unsigned long valueMask,
 static void releaseGC(Widget w, GC gc);
 static void resetClipRectangles(textDisp *textD);
 static int visLineLength(textDisp *textD, int visLineNum);
+static void measureDeletedLines(textDisp *textD, int pos, int nDeleted);
 static void findWrapRange(textDisp *textD, char *deletedText, int pos,
     	int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
     	int *linesInserted, int *linesDeleted);
@@ -185,6 +187,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->lineStarts[0] = 0;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
+    textD->suppressResync = 0;
+    textD->nLinesDeleted = 0;
     
     /* Attach an event handler to the widget so we can know the visibility
        (used for choosing the fastest drawing method) */
@@ -193,8 +197,10 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     
     /* Attach the callback to the text buffer for receiving modification
        information */
-    if (buffer != NULL)
-    	BufAddModifyCB(buffer, bufModifiedCB, textD);
+    if (buffer != NULL) {
+	BufAddModifyCB(buffer, bufModifiedCB, textD);
+	BufAddPreDeleteCB(buffer, bufPreDeleteCB, textD);
+    }
     
     /* Initialize the scroll bars and attach movement callbacks */
     if (vScrollBar != NULL) {
@@ -231,6 +237,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 void TextDFree(textDisp *textD)
 {
     BufRemoveModifyCB(textD->buffer, bufModifiedCB, textD);
+    BufRemovePreDeleteCB(textD->buffer, bufPreDeleteCB, textD);
     releaseGC(textD->w, textD->gc);
     releaseGC(textD->w, textD->selectGC);
     releaseGC(textD->w, textD->highlightGC);
@@ -253,12 +260,14 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
     if (textD->buffer != NULL) {
     	bufModifiedCB(0, 0, textD->buffer->length, 0, NULL, textD);
     	BufRemoveModifyCB(textD->buffer, bufModifiedCB, textD);
+    	BufRemovePreDeleteCB(textD->buffer, bufPreDeleteCB, textD);
     }
     
     /* Add the buffer to the display, and attach a callback to the buffer for
        receiving modification information when the buffer contents change */
     textD->buffer = buffer;
     BufAddModifyCB(buffer, bufModifiedCB, textD);
+    BufAddPreDeleteCB(buffer, bufPreDeleteCB, textD);
     
     /* Update the display */
     bufModifiedCB(0, buffer->length, 0, 0, NULL, textD);
@@ -1287,6 +1296,23 @@ int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines)
     	    return 0;
     	nLines -= 1;
     }
+}
+
+/*
+** Callback attached to the text buffer to receive delete information before
+** the modifications are actually made.
+*/
+static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg)
+{
+    textDisp *textD = (textDisp *)cbArg;
+    if (textD->continuousWrap && textD->fixedFontWidth == -1)
+	/* Note: we must perform this measurement, even if there is not a
+	   single character deleted; the number of "deleted" lines is the
+	   number of visual lines spanned by the real line in which the 
+	   modification takes place. */
+	measureDeletedLines(textD, pos, nDeleted);
+    else
+	textD->suppressResync = 0; /* Probably not needed, but just in case */
 }
 
 /*
@@ -2799,6 +2825,15 @@ static void findWrapRange(textDisp *textD, char *deletedText, int pos,
     	    *modRangeEnd = lineStart;
     	    break;
     	}
+        
+	/* Don't try to resync in continuous wrap mode with non-fixed font
+	   sizes; it would result in a chicken-and-egg dependency between
+	   the calculations for the inserted and the deleted lines. 
+           If we're in that mode, the number of deleted lines is calculated in
+           advance, without resynchronization, so we shouldn't resynchronize
+           for the inserted lines either. */
+	if (textD->suppressResync)
+	    continue;
     	
     	/* check for synchronization with the original line starts array
     	   before pos, if so, the modified range can begin later */
@@ -2839,7 +2874,26 @@ static void findWrapRange(textDisp *textD, char *deletedText, int pos,
        necessary because wrapping can occur outside of the modified region
        as a result of adding or deleting text in the region. This is done by
        creating a textBuffer containing the deleted text and the necessary
-       additional context, and calling the wrappedLineCounter on it. */
+       additional context, and calling the wrappedLineCounter on it.
+       
+       NOTE: This must not be done in continuous wrap mode when the font
+	     width is not fixed. In that case, the calculation would try
+	     to access style information that is no longer available (deleted
+	     text), or out of date (updated highlighting), possibly leading 
+	     to completely wrong calculations and/or even crashes eventually.
+	     (This is not theoretical; it really happened.)
+	     
+	     In that case, the calculation of the number of deleted lines
+	     has happened before the buffer was modified (only in that case,
+	     because resynchronization of the line starts is impossible
+	     in that case, which makes the whole calculation less efficient).
+    */
+    if (textD->suppressResync) {
+	*linesDeleted = textD->nLinesDeleted;
+	textD->suppressResync = 0;
+	return;
+    }
+
     length = (pos-countFrom) + nDeleted +(countTo-(pos+nInserted));
     deletedTextBuf = BufCreatePreallocated(length);
     BufCopyFromBuf(textD->buffer, deletedTextBuf, countFrom, pos, 0);
@@ -2853,6 +2907,85 @@ static void findWrapRange(textDisp *textD, char *deletedText, int pos,
 	    countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
     BufFree(deletedTextBuf);
     *linesDeleted = retLines;
+    textD->suppressResync = 0;
+}
+
+/*
+** This is a stripped-down version of the findWrapRange() function above,
+** intended to be used to calculate the number of "deleted" lines during
+** a buffer modification. It is called _before_ the modification takes place.
+** 
+** This function should only be called in continuous wrap mode with a
+** non-fixed font width. In that case, it is impossible to calculate
+** the number of deleted lines, because the necessary style information 
+** is no longer available _after_ the modification. In other cases, we
+** can still perform the calculation afterwards (possibly even more
+** efficiently).
+*/
+static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
+{
+    int retPos, retLines, retLineStart, retLineEnd;
+    textBuffer *buf = textD->buffer;
+    int nVisLines = textD->nVisibleLines;
+    int *lineStarts = textD->lineStarts;
+    int countFrom, lineStart;
+    int visLineNum = 0, nLines = 0, i;
+    
+    /*
+    ** Determine where to begin searching: either the previous newline, or
+    ** if possible, limit to the start of the (original) previous displayed
+    ** line, using information from the existing line starts array
+    */
+    if (pos >= textD->firstChar && pos <= textD->lastChar) {
+    	for (i=nVisLines-1; i>0; i--)
+    	    if (lineStarts[i] != -1 && pos >= lineStarts[i])
+    		break;
+    	if (i > 0) {
+    	    countFrom = lineStarts[i-1];
+    	    visLineNum = i-1;
+    	} else
+    	    countFrom = BufStartOfLine(buf, pos);
+    } else
+    	countFrom = BufStartOfLine(buf, pos);
+    
+    /*
+    ** Move forward through the (new) text one line at a time, counting
+    ** displayed lines, and looking for either a real newline, or for the
+    ** line starts to re-sync with the original line starts array
+    */
+    lineStart = countFrom;
+    while (True) {
+    	/* advance to the next line.  If the line ended in a real newline
+    	   or the end of the buffer, that's far enough */
+    	wrappedLineCounter(textD, buf, lineStart, buf->length, 1, True, 0,
+    	    	&retPos, &retLines, &retLineStart, &retLineEnd);
+    	if (retPos >= buf->length) {
+    	    if (retPos != retLineEnd)
+    	    	nLines++;
+    	    break;
+    	} else
+    	    lineStart = retPos;
+    	nLines++;
+    	if (lineStart > pos + nDeleted &&
+    	    	BufGetCharacter(buf, lineStart-1) == '\n') {
+    	    break;
+    	}
+	
+	/* Unlike in the findWrapRange() function above, we don't try to 
+	   resync with the line starts, because we don't know the length 
+	   of the inserted text yet, nor the updated style information. 
+	   
+	   Because of that, we also shouldn't resync with the line starts
+	   after the modification either, because we must perform the
+	   calculations for the deleted and inserted lines in the same way. 
+	   
+	   This can result in some unnecessary recalculation and redrawing
+	   overhead, and therefore we should only use this two-phase mode
+	   of calculation when it's really needed (continuous wrap + variable
+	   font width). */
+    }
+    textD->nLinesDeleted = nLines;
+    textD->suppressResync = 1;
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.15 2001/12/02 17:58:43 edg Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.16 2002/02/03 16:41:06 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -59,6 +59,7 @@ static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
 static void overlayRectInLine(const char *line, const char *insLine, int rectStart,
     	int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr,
     	int *outLen, int *endOffset);
+static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted);
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
 	int nInserted, int nRestyled, char *deletedText);
 static void redisplaySelection(textBuffer *buf, selection *oldSelection,
@@ -151,6 +152,8 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->modifyProcs = NULL;
     buf->cbArgs = NULL;
     buf->nModifyProcs = 0;
+    buf->preDeleteProc = NULL;
+    buf->preDeleteCbArg = NULL;
     buf->nullSubsChar = '\0';
 #ifdef PURIFY
     {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
@@ -194,6 +197,9 @@ void BufSetAll(textBuffer *buf, const char *text)
 {
     int length, deletedLength;
     char *deletedText;
+    length = strlen(text);
+
+    callPreDeleteCBs(buf, 0, buf->length);
     
     /* Save information for redisplay, and get rid of the old buffer */
     deletedText = BufGetAll(buf);
@@ -201,7 +207,6 @@ void BufSetAll(textBuffer *buf, const char *text)
     XtFree(buf->buf);
     
     /* Start a new buffer with a gap of PREFERRED_GAP_SIZE in the center */
-    length = strlen(text);
     buf->buf = XtMalloc(length + PREFERRED_GAP_SIZE);
     buf->length = length;
     buf->gapStart = length/2;
@@ -285,6 +290,9 @@ void BufInsert(textBuffer *buf, int pos, const char *text)
     if (pos > buf->length) pos = buf->length;
     if (pos < 0 ) pos = 0;
 
+    /* Even if nothing is deleted, we must call these callbacks */
+    callPreDeleteCBs(buf, pos, 0);
+
     /* insert and redisplay */
     nInserted = insert(buf, pos, text);
     buf->cursorPosHint = pos + nInserted;
@@ -298,11 +306,12 @@ void BufInsert(textBuffer *buf, int pos, const char *text)
 void BufReplace(textBuffer *buf, int start, int end, const char *text)
 {
     char *deletedText;
-    int nInserted;
+    int nInserted = strlen(text);
     
+    callPreDeleteCBs(buf, start, end-start);
     deletedText = BufGetRange(buf, start, end);
     delete(buf, start, end);
-    nInserted = insert(buf, start, text);
+    insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
     callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
     XtFree(deletedText);
@@ -323,6 +332,7 @@ void BufRemove(textBuffer *buf, int start, int end)
     if (end > buf->length) end = buf->length;
     if (end < 0) end = 0;
 
+    callPreDeleteCBs(buf, start, end-start);
     /* Remove and redisplay */
     deletedText = BufGetRange(buf, start, end);
     delete(buf, start, end);
@@ -383,6 +393,7 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     lineStartPos = BufStartOfLine(buf, startPos);
     nDeleted = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) -
     	    lineStartPos;
+    callPreDeleteCBs(buf, lineStartPos, nDeleted);
     deletedText = BufGetRange(buf, lineStartPos, lineStartPos + nDeleted);
     insertCol(buf, column, lineStartPos, text, &insertDeleted, &nInserted,
     	    &buf->cursorPosHint);
@@ -415,6 +426,7 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
         rectEnd = rectStart + textWidth(text, buf->tabDist, buf->nullSubsChar);     lineStartPos = BufStartOfLine(buf, startPos);
     nDeleted = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) -
     	    lineStartPos;
+    callPreDeleteCBs(buf, lineStartPos, nDeleted);
     deletedText = BufGetRange(buf, lineStartPos, lineStartPos + nDeleted);
     overlayRect(buf, lineStartPos, rectStart, rectEnd, text, &insertDeleted,
     	    &nInserted, &buf->cursorPosHint);
@@ -446,6 +458,8 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
        columnar delete and insert operations will replace whole lines */
     start = BufStartOfLine(buf, start);
     end = BufEndOfLine(buf, end);
+    
+    callPreDeleteCBs(buf, start, end-start);
     
     /* If more lines will be deleted than inserted, pad the inserted text
        with newlines to make it as long as the number of deleted lines.  This
@@ -505,6 +519,7 @@ void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart,
     
     start = BufStartOfLine(buf, start);
     end = BufEndOfLine(buf, end);
+    callPreDeleteCBs(buf, start, end-start);
     deletedText = BufGetRange(buf, start, end);
     deleteRect(buf, start, end, rectStart, rectEnd, &nInserted,
     	    &buf->cursorPosHint);
@@ -587,6 +602,7 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
     /* Change the tab setting */
     buf->tabDist = tabDist;
     
+    callPreDeleteCBs(buf, 0, buf->length);
     /* Force any display routines to redisplay everything (unfortunately,
        this means copying the whole buffer contents to provide "deletedText" */
     deletedText = BufGetAll(buf);
@@ -800,6 +816,34 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     XtFree((char *)buf->cbArgs);
     buf->modifyProcs = newModifyProcs;
     buf->cbArgs = newCBArgs;
+}
+
+/*
+** Add a callback routine to be called before text is deleted from the buffer.
+*/
+void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
+	void *cbArg)
+{
+    /* Currently only one callback is supported (because only one 
+       is needed in a special case). Extend this if ever needed. */
+    if (buf->preDeleteProc != NULL) {
+	fprintf(stderr, "Internal Error: trying to install more than one"
+		"pre-delete CB\n");
+	return;
+    }
+    buf->preDeleteProc = bufPreDeleteCB;
+    buf->preDeleteCbArg = cbArg;
+}
+
+void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
+	void *cbArg)
+{
+    if (buf->preDeleteProc != bufPreDeleteCB) {
+	fprintf(stderr, "Internal Error: can't find pre-delete CB\n");
+	return;
+    }
+    buf->preDeleteProc = NULL;
+    buf->preDeleteCbArg = NULL;
 }
 
 /*
@@ -1882,6 +1926,18 @@ static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
     for (i=0; i<buf->nModifyProcs; i++)
     	(*buf->modifyProcs[i])(pos, nInserted, nDeleted, nRestyled,
     		deletedText, buf->cbArgs[i]);
+}
+
+/*
+** Call the stored pre-delete callback procedure(s) for this buffer to update 
+** the changed area(s) on the screen and any other listeners.
+*/
+static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted)
+{
+    /* Currently, only one pre-delete procedure is supported (needed only
+       under special circumstances). */
+    if (buf->preDeleteProc)
+       (*buf->preDeleteProc)(pos, nDeleted, buf->preDeleteCbArg);
 }
 
 /*

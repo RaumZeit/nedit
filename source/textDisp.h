@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.6 2001/11/16 10:06:34 amai Exp $ */
+/* $Id: textDisp.h,v 1.7 2002/02/03 16:41:06 edg Exp $ */
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -71,6 +71,12 @@ typedef struct _textDisp {
     GC styleGC;     	    	    	/* GC with color and font unspecified
     	    	    	    	    	   for drawing colored/styled text */
     GC lineNumGC;   	    	    	/* GC for drawing line numbers */
+    
+    int suppressResync;			/* Suppress resynchronization of line
+                                           starts during buffer updates */
+    int nLinesDeleted;			/* Number of lines deleted during
+					   buffer modification (only used
+				           when resynchronization is suppressed) */
 } textDisp;
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,

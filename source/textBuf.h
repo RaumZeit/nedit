@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.6 2001/11/22 21:01:05 amai Exp $ */
+/* $Id: textBuf.h,v 1.7 2002/02/03 16:41:06 edg Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -14,6 +14,7 @@ typedef struct {
 
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted,
 	int nRestyled, char *deletedText, void *cbArg);
+typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
 typedef struct _textBuffer {
     int length; 	        /* length of the text in the buffer (the length
@@ -32,6 +33,9 @@ typedef struct _textBuffer {
     bufModifyCallbackProc	/* procedures to call when buffer is */
     	    *modifyProcs;	/*    modified to redisplay contents */
     void **cbArgs;		/* caller arguments for modifyProcs above */
+    bufPreDeleteCallbackProc	/* procedure to call before text is deleted */
+	 preDeleteProc;		/* from the buffer; at most one is supported. */
+    void *preDeleteCbArg;	/* caller argument for pre-delete proc above */
     int cursorPosHint;		/* hint for reasonable cursor position after
     				   a buffer modification operation */
     char nullSubsChar;	    	/* NEdit is based on C null-terminated strings,
@@ -96,6 +100,10 @@ void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
 	void *cbArg);
 void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
 	void *cbArg);
+void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
+	void *cbArg);
+void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc 
+	bufPreDeleteCB,	void *cbArg);
 char *BufGetLineText(textBuffer *buf, int pos);
 int BufStartOfLine(textBuffer *buf, int pos);
 int BufEndOfLine(textBuffer *buf, int pos);
