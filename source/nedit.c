@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.45 2003/05/02 19:19:01 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.46 2003/05/16 16:50:11 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -704,34 +704,38 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
 {
 #define MAX_ENV_LENGTH 1024
     char newlocale[MAX_ENV_LENGTH];
-    const char *lang = getenv("LANG");
     strcpy(newlocale, xnl);
 
 #ifndef LESSTIF_VERSION
-    if (xnl && *xnl == '\0' && lang)
     {
-        char *utf_start = 0;
-        strncpy(newlocale, lang, MAX_ENV_LENGTH - 1);
-        newlocale[MAX_ENV_LENGTH - 1] = '\0';
+        const char *lang = getenv("LANG");
 
-        if ((utf_start = strstr(newlocale, ".utf8")) || 
-            (utf_start = strstr(newlocale, ".UTF-8")))
+        if (xnl && *xnl == '\0' && lang)
         {
-            *utf_start = '\0'; /* Samurai chop */
-            XtWarning("UTF8 locale not supported.");
+            char *utf_start = 0;
+            strncpy(newlocale, lang, MAX_ENV_LENGTH - 1);
+            newlocale[MAX_ENV_LENGTH - 1] = '\0';
+
+            if ((utf_start = strstr(newlocale, ".utf8")) || 
+                (utf_start = strstr(newlocale, ".UTF-8")))
+            {
+                *utf_start = '\0'; /* Samurai chop */
+                XtWarning("UTF8 locale not supported.");
+            }
         }
     }
 #endif
         
-    if (! setlocale(LC_ALL, newlocale))
-	XtWarning("locale not supported by C library, locale unchanged");
+    if (! setlocale(LC_ALL, newlocale)) {
+        XtWarning("locale not supported by C library, locale unchanged");
+    }
 
     if (! XSupportsLocale()) {
-	XtWarning("locale not supported by Xlib, locale set to C");
-	setlocale(LC_ALL, "C");
+        XtWarning("locale not supported by Xlib, locale set to C");
+        setlocale(LC_ALL, "C");
     }
     if (! XSetLocaleModifiers(""))
-	XtWarning("X locale modifiers not supported, using default");
+        XtWarning("X locale modifiers not supported, using default");
 
     return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
 }
