@@ -109,8 +109,10 @@ static void addAccelGrabs(Widget topWidget, Widget w);
 static void addAccelGrab(Widget topWidget, Widget w);
 static int parseAccelString(char *string, KeySym *keysym,
 	unsigned int *modifiers);
-static void lockCB(Widget w, XtPointer callData, XKeyEvent *event,
+static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
+static int findAndActivateAccel(Widget w, unsigned int keyCode,
+	unsigned int modifiers, XEvent *event);
 static void removeWhiteSpace(char *string);
 static int stripCaseCmp(char *str1, char *str2);
 static void warnHandlerCB(String message);
@@ -691,8 +693,7 @@ void RemoveDialogMnemonicHandler(Widget dialog)
 */
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer)
 {
-    XtAddEventHandler(topWidget, KeyPressMask, False,
-    	    (XtEventHandler)lockCB, topMenuContainer);
+    XtAddEventHandler(topWidget, KeyPressMask, False, lockCB, topMenuContainer);
     addAccelGrabs(topWidget, topMenuContainer);
 }
 
@@ -1601,19 +1602,19 @@ static int parseAccelString(char *string, KeySym *keySym,
 
 /*
 ** Event handler for patching around Motif's lock + accelerator problem.
-** Looks for a menu item in the patched menu hierarchy and invokes
-** SimulateButtonPress on it to invoke its action.
+** Looks for a menu item in the patched menu hierarchy and invokes its
+** ArmAndActivate action.
 */
-static void lockCB(Widget w, XtPointer callData, XKeyEvent *event,
+static void lockCB(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch)
 {
     Widget topMenuWidget = (Widget)callData;
     *continueDispatch = TRUE;
-    if (!(event->state & (LockMask | Mod3Mask)))
+    if (!(((XKeyEvent *)event)->state & (LockMask | Mod3Mask)))
 	return;
 
-    if (!findAndActivateAccel(topMenuWidget, event->keycode,
-	    event->state & ~(LockMask | Mod3Mask)))
+    if (!findAndActivateAccel(topMenuWidget, ((XKeyEvent *)event)->keycode,
+	    ((XKeyEvent *)event)->state & ~(LockMask | Mod3Mask), event))
 	*continueDispatch = FALSE;
 }
 
@@ -1622,7 +1623,7 @@ static void lockCB(Widget w, XtPointer callData, XKeyEvent *event,
 ** accelerator matching keyCode + modifiers, and do its action
 */
 static int findAndActivateAccel(Widget w, unsigned int keyCode,
-	unsigned int modifiers)
+	unsigned int modifiers, XEvent *event)
 {
 
     WidgetList children;
@@ -1636,12 +1637,12 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		&numChildren, NULL);
 	for (i=0; i<numChildren; i++)
-    	    if (findAndActivateAccel(children[i], keyCode, modifiers))
+    	    if (findAndActivateAccel(children[i], keyCode, modifiers, event))
 		return TRUE;
     } else if (XtClass(w) == xmCascadeButtonWidgetClass) {
 	XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
 	if (menu != NULL)
-	    if (findAndActivateAccel(menu, keyCode, modifiers))
+	    if (findAndActivateAccel(menu, keyCode, modifiers, event))
 		return TRUE;
     } else {
 	XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
@@ -1651,7 +1652,7 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 	    if (keyCode == XKeysymToKeycode(XtDisplay(w), keysym) &&
 		    modifiers == mods) {
 		if (XtIsSensitive(w)) {
-		    SimulateButtonPress(w);
+		    XtCallActionProc(w, "ArmAndActivate", event, NULL, 0);
 		    return TRUE;
 		}
 	    }
