@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.78 2003/05/25 15:55:36 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.79 2003/06/02 15:18:14 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2679,7 +2679,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	    }
         }
         sprintf(ptr, "\n\nExit NEdit?");
-        resp = DialogF(DF_QUES, window->shell, 2, "Error", "%s", "Exit",
+        resp = DialogF(DF_QUES, window->shell, 2, "Exit", "%s", "Exit",
                 "Cancel", exitMsg);
         if (resp == 2)
                 return;
