@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.26 2004/10/01 08:13:55 yooden Exp $ */
+/* $Id: window.h,v 1.27 2004/10/07 22:34:12 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * window.h -- Nirvana Editor Window header file                                *
@@ -56,12 +56,10 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 	const char *boldName, const char *boldItalicName);
 void SetColors(WindowInfo *window, const char *textFg, const char *textBg,  
         const char *selectFg, const char *selectBg, const char *hiliteFg, 
-        const char *hiliteBg, const char *lineNoFg, const char *cursorFg,
-        const char* wrapMarginFg);
+        const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
 void SetWrapMargin(WindowInfo *window, int margin);
-void SetShowWrapMargin(WindowInfo *window, int state);
 void SetAutoScroll(WindowInfo *window, int margin);
 void SplitPane(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);

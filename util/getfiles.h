@@ -1,4 +1,4 @@
-/* $Id: getfiles.h,v 1.8 2004/10/01 08:06:51 yooden Exp $ */
+/* $Id: getfiles.h,v 1.9 2004/10/07 22:34:12 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * getfiles.h -- Nirvana Editor File Handling Header File                       *
@@ -41,12 +41,5 @@ char *GetFileDialogDefaultPattern(void);
 void SetFileDialogDefaultDirectory(char *dir);
 void SetFileDialogDefaultPattern(char *pattern);
 void SetGetEFTextFieldRemoval(int state);
-
-typedef struct 
-{
-   Bool showHidden;
-   char** cachedDirList;
-   char** cachedFileList;
-} fsbUserDataStruct;
 
 #endif /* NEDIT_GETFILES_H_INCLUDED */

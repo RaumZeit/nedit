@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.119 2004/10/02 11:31:39 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.120 2004/10/07 22:34:10 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -172,7 +172,6 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
-static void showHiddenFilesCB(Widget w, WindowInfo* window, caddr_t callData);
 static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -185,8 +184,6 @@ static void searchCaseSenseCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchLiteralWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchCaseSenseWordCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData);
-static void searchRegexSmartCaseCB(Widget toggleButton, WindowInfo* windowInfo,
-        caddr_t callData);
 static void searchRegexCB(Widget w, WindowInfo *window, caddr_t callData);
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -391,8 +388,6 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setWrapMarginAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
-static void setShowWrapMarginAP(Widget w, XEvent *event, String *args,
-    Cardinal *nArgs);
 static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
@@ -567,7 +562,6 @@ static XtActionsRec Actions[] = {
     {"set_auto_indent", setAutoIndentAP},
     {"set_wrap_text", setWrapTextAP},
     {"set_wrap_margin", setWrapMarginAP},
-    {"set_show_wrap_margin", setShowWrapMarginAP},
     {"set_highlight_syntax", setHighlightSyntaxAP},
 #ifndef VMS
     {"set_make_backup_copy", setMakeBackupCopyAP},
@@ -815,9 +809,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /*
     ** Preferences menu, Default Settings sub menu
-    **
-    ** Mnemonics:   L, A, W, C, T, F, u, d, g, H, S, i, N, e, B, M, o, P, r, z
-    **              A, B, C, d, e, F, g, H, i, L, M, N, o, P, r, S, T, u, W, z
     */
     menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, NULL,
     	    SHORT);
@@ -922,16 +913,11 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "caseSensitiveWord", "Literal, Case Sensitive, Whole Word", 't', searchCaseSenseWordCB, window,
     	    GetPrefSearch() == SEARCH_CASE_SENSE_WORD, FULL);
     window->searchRegexDefItem = createMenuToggle(subSubSubPane,
-            "regularExpression", "Regular Expression", 'R', searchRegexCB,
-            window, GetPrefSearch() == SEARCH_REGEX, FULL);
+    	    "regularExpression", "Regular Expression", 'R', searchRegexCB,
+    	    window, GetPrefSearch() == SEARCH_REGEX, FULL);
     window->searchRegexNoCaseDefItem = createMenuToggle(subSubSubPane,
-            "regularExpressionNoCase", "Regular Expression, Case Insensitive",
-            'I', searchRegexNoCaseCB, window,
-            GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
-    window->searchRegexSmartCaseDefItem = createMenuToggle(subSubSubPane,
-            "regularExpressionSmartCase", "Regular Expression, Smart Case",
-            'S', searchRegexSmartCaseCB, window,
-            GetPrefSearch() == SEARCH_REGEX_SMARTCASE, FULL);
+    	    "regularExpressionNoCase", "Regular Expression, Case Insensitive", 'I', searchRegexNoCaseCB, window,
+    	    GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
 #ifdef REPLACE_SCOPE
     subSubSubPane = createMenu(subSubPane, "defaultReplaceScope",
     	    "Default Replace Scope", 'R', NULL, FULL);
@@ -1004,13 +990,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Show Matching sub menu */
     subSubPane = createMenu(subPane, "showMatching", "Show Matching (..)", 'M',
-        NULL, FULL);
+	    NULL, FULL);
     window->showMatchingOffDefItem = createMenuRadioToggle(subSubPane, "off",
-        "Off", 'O', showMatchingOffDefCB, window, 
-        GetPrefShowMatching() == NO_FLASH, SHORT);
+	    "Off", 'O', showMatchingOffDefCB, window, 
+            GetPrefShowMatching() == NO_FLASH, SHORT);
     window->showMatchingDelimitDefItem = createMenuRadioToggle(subSubPane,
-        "delimiter", "Delimiter", 'D', showMatchingDelimitDefCB, window,
-        GetPrefShowMatching() == FLASH_DELIMIT, SHORT);
+	    "delimiter", "Delimiter", 'D', showMatchingDelimitDefCB, window,
+	    GetPrefShowMatching() == FLASH_DELIMIT, SHORT);
     window->showMatchingRangeDefItem = createMenuRadioToggle(subSubPane,
 	    "range", "Range", 'R', showMatchingRangeDefCB, window,
 	    GetPrefShowMatching() == FLASH_RANGE, SHORT);
@@ -1018,11 +1004,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->matchSyntaxBasedDefItem = createMenuToggle(subSubPane, 
 	   "matchSyntax", "Syntax Based", 'S', matchSyntaxBasedDefCB, window,
 	    GetPrefMatchSyntaxBased(), SHORT);
-
-    /* Show Hidden Files */
-    window->showHiddenFilesItem = createMenuToggle(subPane,
-            "showHiddenFilesItem", "Show hidden Files", 'y', showHiddenFilesCB,
-            NULL, GetPrefShowHiddenFiles(), FULL);
 
     /* Append LF at end of files on save */
     window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
@@ -2000,15 +1981,12 @@ static void showMatchingRangeDefCB(Widget w, WindowInfo *window, caddr_t callDat
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
-    for (win=WindowList; win!=NULL; win=win->next)
-    {
-        if (!IsTopDocument(win))
-        {
-            continue;
-        }
-        XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
-        XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
-        XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
+    for (win=WindowList; win!=NULL; win=win->next) {
+    	if (!IsTopDocument(win))
+	    continue;
+	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingDelimitDefItem, False, False);
+	XmToggleButtonSetState(win->showMatchingRangeDefItem, True, False);
     }
 }
 
@@ -2176,18 +2154,6 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     for (win=WindowList; win!=NULL; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
-    }
-}
-
-static void showHiddenFilesCB(Widget w, WindowInfo* window, caddr_t callData)
-{
-    WindowInfo *win;
-    int state = XmToggleButtonGetState(w);
-
-    SetPrefShowHiddenFiles(state);
-    for (win = WindowList; win != NULL; win = win->next)
-    {
-        XmToggleButtonSetState(win->showHiddenFilesItem, state, False);
     }
 }
 
@@ -2551,37 +2517,6 @@ static void searchRegexNoCaseCB(Widget w, WindowInfo *window, caddr_t callData)
     	    XmToggleButtonSetState(win->searchRegexDefItem, False, False);
 	    XmToggleButtonSetState(win->searchRegexNoCaseDefItem, True, False);
     	}
-    }
-}
-
-static void searchRegexSmartCaseCB(Widget toggleButton, WindowInfo* window,
-        caddr_t callData)
-{
-    WindowInfo* windowInfo;
-
-    /* Set the preference and make the other windows' menus agree */
-    if (XmToggleButtonGetState(toggleButton))
-    {
-        SetPrefSearch(SEARCH_REGEX_SMARTCASE);
-        for (windowInfo = WindowList;
-                windowInfo != NULL;
-                windowInfo = windowInfo->next)
-        {
-            XmToggleButtonSetState(windowInfo->searchLiteralDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchCaseSenseDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchLiteralWordDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchCaseSenseWordDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchRegexDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchRegexNoCaseDefItem,
-                    False, False);
-            XmToggleButtonSetState(windowInfo->searchRegexSmartCaseDefItem,
-                    True, False);
-        }
     }
 }
 
@@ -4081,19 +4016,6 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args,
     }
     else {
         fprintf(stderr, "nedit: set_wrap_margin requires argument\n");
-    }
-}
-
-static void setShowWrapMarginAP(Widget w, XEvent *event, String *args,
-    Cardinal *nArgs)
-{
-    WindowInfo *window = WidgetToWindow(w);
-    int showWrapMargin = 0;
-    
-    if (*nArgs > 0) {
-        if (sscanf(args[0], "%d", &showWrapMargin) == 1) {
-            SetShowWrapMargin(window, showWrapMargin);
-        }
     }
 }
 

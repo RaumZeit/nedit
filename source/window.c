@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.176 2004/10/01 08:13:55 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.177 2004/10/07 22:34:12 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -262,7 +262,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->autoSave = GetPrefAutoSave();
     window->saveOldVersion = GetPrefSaveOldVersion();
     window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-    window->showWrapMargin = GetPrefShowWrapMargin();
     window->overstrike = False;
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
@@ -461,8 +460,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             xmToggleButtonWidgetClass, window->iSearchForm,
             XmNlabelString, s1=XmStringCreateSimple("RegExp"),
             XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
-            || GetPrefSearch() == SEARCH_REGEX
-            || GetPrefSearch() == SEARCH_REGEX_SMARTCASE,
+            || GetPrefSearch() == SEARCH_REGEX,
             XmNtopAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNtopOffset, 1, /* see openmotif note above */
@@ -703,9 +701,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
               GetPrefColorName(HILITE_FG_COLOR),
               GetPrefColorName(HILITE_BG_COLOR),
               GetPrefColorName(LINENO_FG_COLOR),
-              GetPrefColorName(CURSOR_FG_COLOR),
-              GetPrefColorName(WRAPMARGIN_FG_COLOR));
-
+              GetPrefColorName(CURSOR_FG_COLOR));
+    
     /* Create the right button popup menu (note: order is important here,
        since the translation for popping up this menu was probably already
        added in createTextArea, but CreateBGMenu requires window->textArea
@@ -1175,7 +1172,7 @@ void SplitPane(WindowInfo *window)
     TextDSetColors( newTextD, textD->fgPixel, textD->bgPixel, 
             textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel,
             textD->highlightBGPixel, textD->lineNumFGPixel, 
-            textD->cursorFGPixel, textD->wrapMarginFGPixel);
+            textD->cursorFGPixel );
     
     /* Set the minimum pane height in the new pane */
     UpdateMinPaneHeights(window);
@@ -1813,8 +1810,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 
 void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
         const char *selectFg, const char *selectBg, const char *hiliteFg, 
-        const char *hiliteBg, const char *lineNoFg, const char *cursorFg,
-        const char* wrapMarginFg)
+        const char *hiliteBg, const char *lineNoFg, const char *cursorFg)
 {
     int i, dummy;
     Pixel   textFgPix   = AllocColor( window->textArea, textFg, 
@@ -1832,8 +1828,6 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
             lineNoFgPix = AllocColor( window->textArea, lineNoFg, 
                     &dummy, &dummy, &dummy),
             cursorFgPix = AllocColor( window->textArea, cursorFg, 
-                    &dummy, &dummy, &dummy),
-            wrapMarginFgPix = AllocColor( window->textArea, wrapMarginFg, 
                     &dummy, &dummy, &dummy);
     textDisp *textD;
 
@@ -1844,8 +1838,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
             NULL);
     textD = ((TextWidget)window->textArea)->text.textD;
     TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
-            hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix,
-            wrapMarginFgPix);
+            hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
     /* Update any additional panes */
     for (i=0; i<window->nPanes; i++) {
         XtVaSetValues(window->textPanes[i],
@@ -1854,8 +1847,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
                 NULL);
         textD = ((TextWidget)window->textPanes[i])->text.textD;
         TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
-                hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix,
-                wrapMarginFgPix);
+                hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
     }
     
     /* Redo any syntax highlighting */
@@ -1891,14 +1883,11 @@ void SetAutoWrap(WindowInfo *window, int state)
                 textNcontinuousWrap, contWrap, NULL);
     window->wrapMode = state;
     
-    if (IsTopDocument(window))
-    {
-        XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
-        XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
-        XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
+    if (IsTopDocument(window)) {
+	XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
+	XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
+	XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
     }
-
-    SetShowWrapMargin(window, window->showWrapMargin);
 }
 
 /*
@@ -1925,31 +1914,6 @@ void SetAutoScroll(WindowInfo *window, int margin)
         XtVaSetValues(window->textPanes[i], textNcursorVPadding, margin, NULL);
 }
     
-/*
-** Set show-wrap-margin style, one of NEVER, ALWAYS, ON-WRAP
-*/
-void SetShowWrapMargin(WindowInfo *window, int state)
-{
-    int i;
-    int alwaysShowWrapMargin = (state == SHOW_WRAP_MARGIN_ALWAYS);
-    int onWrapShowWrapMargin = (state == SHOW_WRAP_MARGIN_ON_WRAP);
-    int autoWrap = (window->wrapMode == NEWLINE_WRAP);
-    int contWrap = (window->wrapMode == CONTINUOUS_WRAP);
-    /* true or false only. not never/always/on-wrap. text widget does need to know
-       exact details. it just needs to know that wrap margin should be shown */
-    int showWrapMargin = (alwaysShowWrapMargin ||
-            (onWrapShowWrapMargin && autoWrap) ||
-            (onWrapShowWrapMargin && contWrap) );
-
-    XtVaSetValues(window->textArea, textNshowWrapMargin, showWrapMargin, NULL);
-    for (i=0; i<window->nPanes; i++)
-        XtVaSetValues(window->textPanes[i], 
-                textNshowWrapMargin, showWrapMargin, NULL);
-    /* never/always/on-wrap needs to be stored in window settings, for generating
-       menu, etc */
-    window->showWrapMargin = state;
-}
-
 /*
 ** Recover the window pointer from any widget in the window, by searching
 ** up the widget hierarcy for the top level container widget where the
@@ -2228,15 +2192,6 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int lineNumCols)
 {
     Widget text, sw, hScrollBar, vScrollBar, frame;
-    int alwaysShowWrapMargin = (window->showWrapMargin == SHOW_WRAP_MARGIN_ALWAYS);
-    int onWrapShowWrapMargin = (window->showWrapMargin == SHOW_WRAP_MARGIN_ON_WRAP);
-    int autoWrap = (window->wrapMode == NEWLINE_WRAP);
-    int contWrap = (window->wrapMode == CONTINUOUS_WRAP);
-    /* true or false only. not never/always/on-wrap. text widget does need to know
-       exact details. it just needs to know that wrap margin should be shown */
-    int showWrapMargin = (alwaysShowWrapMargin ||
-            (onWrapShowWrapMargin && autoWrap) ||
-            (onWrapShowWrapMargin && contWrap) );
         
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
@@ -2260,7 +2215,6 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNreadOnly, IS_ANY_LOCKED(window->lockReasons),
             textNwordDelimiters, delimiters,
             textNwrapMargin, wrapMargin,
-            textNshowWrapMargin, showWrapMargin,
             textNautoIndent, window->indentStyle == AUTO_INDENT,
             textNsmartIndent, window->indentStyle == SMART_INDENT,
             textNautoWrap, window->wrapMode == NEWLINE_WRAP,
@@ -3256,7 +3210,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->autoSave = GetPrefAutoSave();
     window->saveOldVersion = GetPrefSaveOldVersion();
     window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-    window->showWrapMargin = GetPrefShowWrapMargin();
     window->overstrike = False;
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
@@ -3359,8 +3312,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
               GetPrefColorName(HILITE_FG_COLOR),
               GetPrefColorName(HILITE_BG_COLOR),
               GetPrefColorName(LINENO_FG_COLOR),
-              GetPrefColorName(CURSOR_FG_COLOR),
-              GetPrefColorName(WRAPMARGIN_FG_COLOR));
+              GetPrefColorName(CURSOR_FG_COLOR));
     
     /* Create the right button popup menu (note: order is important here,
        since the translation for popping up this menu was probably already
@@ -4121,8 +4073,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
             TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, 
                     textD->selectFGPixel, textD->selectBGPixel,
                     textD->highlightFGPixel,textD->highlightBGPixel,
-                    textD->lineNumFGPixel, textD->cursorFGPixel,
-                    textD->wrapMarginFGPixel);
+                    textD->lineNumFGPixel, textD->cursorFGPixel);
 	}
         
 	/* Set the minimum pane height in the new pane */

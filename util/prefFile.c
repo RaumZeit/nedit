@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.24 2004/10/01 08:13:56 yooden Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.25 2004/10/07 22:34:12 yooden Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -304,7 +304,7 @@ int SavePreferences(Display *display, const char *fullName,
 static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
 {
     int i;
-    char *cleanStr, *endPtr, **enumStrings, *cleanEnumStr;
+    char *cleanStr, *endPtr, **enumStrings;
     
     switch (rsrcDescrip->dataType) {
       case PREF_INT:
@@ -340,21 +340,18 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
       	*(int *)rsrcDescrip->valueAddr = False;
     	return False;
       case PREF_ENUM:
-        cleanStr = removeWhiteSpace(string);
-        enumStrings = (char **)rsrcDescrip->arg;
-        for (i=0; enumStrings[i]!=NULL; i++) {
-            cleanEnumStr = removeWhiteSpace(enumStrings[i]);
-            if (!strcmp(cleanEnumStr, cleanStr)) {
-                *(int *)rsrcDescrip->valueAddr = i;
-                XtFree(cleanStr);
-                XtFree(cleanEnumStr);
-                return True;
-            }
-            XtFree(cleanEnumStr);
-        }
-        XtFree(cleanStr);
-        *(int *)rsrcDescrip->valueAddr = 0;
-        return False;
+      	cleanStr = removeWhiteSpace(string);
+      	enumStrings = (char **)rsrcDescrip->arg;
+      	for (i=0; enumStrings[i]!=NULL; i++) {
+      	    if (!strcmp(enumStrings[i], cleanStr)) {
+      	    	*(int *)rsrcDescrip->valueAddr = i;
+      	    	XtFree(cleanStr);
+      	    	return True;
+      	    }
+      	}
+      	XtFree(cleanStr);
+      	*(int *)rsrcDescrip->valueAddr = 0;
+    	return False;
       case PREF_STRING:
 	if ((int)strlen(string) >= (int)rsrcDescrip->arg)
       	    return False;

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.61 2004/10/01 08:13:54 yooden Exp $ */
+/* $Id: nedit.h,v 1.62 2004/10/07 22:34:10 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -50,9 +50,9 @@
 #define NEDIT_DEFAULT_HI_BG     "red"   /*   matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
-#define NEDIT_DEFAULT_WRAPMARGIN_FG "black"
 #define NEDIT_DEFAULT_HELP_FG   "black"
 #define NEDIT_DEFAULT_HELP_BG   "rgb:cc/cc/cc"
+
 
 /* Tuning parameters */
 #define SEARCHMAX 511		/* Maximum length of search/replace strings */
@@ -101,9 +101,7 @@ enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
 enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
 enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
                        VIRT_KEY_OVERRIDE_ALWAYS };
-enum showWrapMarginEnums {SHOW_WRAP_MARGIN_NEVER, SHOW_WRAP_MARGIN_ALWAYS,
-                          SHOW_WRAP_MARGIN_ON_WRAP};
- 
+
 #define NO_FLASH_STRING		"off"
 #define FLASH_DELIMIT_STRING	"delimiter"
 #define FLASH_RANGE_STRING	"range"
@@ -187,7 +185,6 @@ enum colorTypes {
     HILITE_BG_COLOR,
     LINENO_FG_COLOR,
     CURSOR_FG_COLOR,
-    WRAPMARGIN_FG_COLOR,
     NUM_COLORS
 };
 
@@ -391,7 +388,6 @@ typedef struct _WindowInfo {
     Widget      beepOnSearchWrapDefItem;
     Widget	keepSearchDlogsDefItem;
     Widget	searchWrapsDefItem;
-    Widget  showHiddenFilesItem;
     Widget      appendLFItem;
     Widget	sortOpenPrevDefItem;
     Widget	allTagsDefItem;
@@ -416,7 +412,6 @@ typedef struct _WindowInfo {
     Widget	searchLiteralWordDefItem;
     Widget	searchCaseSenseWordDefItem;
     Widget	searchRegexNoCaseDefItem;
-    Widget	searchRegexSmartCaseDefItem;
     Widget	searchRegexDefItem;
 #ifdef REPLACE_SCOPE
     Widget	replScopeWinDefItem;
@@ -491,8 +486,6 @@ typedef struct _WindowInfo {
     char	indentStyle;		/* whether/how to auto indent */
     char	wrapMode;		/* line wrap style: NO_WRAP,
     	    	    	    	    	   NEWLINE_WRAP or CONTINUOUS_WRAP */
-    int         showWrapMargin;         /* show wrap margin style: NEVER,
-                                           ALWAYS, ON-WRAP as enums */
     Boolean	overstrike;		/* is overstrike mode turned on ? */
     char 	showMatchingStyle; 	/* How to show matching parens:
 					   NO_FLASH, FLASH_DELIMIT, or

@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.44 2004/10/01 08:13:54 yooden Exp $ */
+/* $Id: preferences.h,v 1.45 2004/10/07 22:34:11 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -59,8 +59,6 @@ void SetPrefWrap(int state);
 int GetPrefWrap(int langMode);
 void SetPrefWrapMargin(int margin);
 int GetPrefWrapMargin(void);
-void SetPrefShowWrapMargin(int state);
-int GetPrefShowWrapMargin(void);
 void SetPrefSearchDlogs(int state);
 int GetPrefSearchDlogs(void);
 void SetPrefKeepSearchDlogs(int state);
@@ -121,8 +119,6 @@ void SetPrefBacklightCharTypes(char *types);
 char *GetPrefBacklightCharTypes(void);
 void SetPrefRepositionDialogs(int state);
 int GetPrefRepositionDialogs(void);
-void SetPrefShowHiddenFiles(int state);
-int GetPrefShowHiddenFiles(void);
 void SetPrefAutoScroll(int state);
 int GetPrefAutoScroll(void);
 int GetVerticalAutoScroll(void);
