@@ -1,5 +1,5 @@
-#define PERMANENT_MENU_ITEM 1
-#define TEMPORARY_MENU_ITEM 2
+#define PERMANENT_MENU_ITEM (XtPointer)1
+#define TEMPORARY_MENU_ITEM (XtPointer)2
 
 Widget CreateMenuBar(Widget parent, WindowInfo *window);
 void InstallMenuActions(XtAppContext context);

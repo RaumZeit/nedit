@@ -2996,9 +2996,9 @@ static void updateWindowMenu(WindowInfo *window)
     /* While it is not possible on some systems (ibm at least) to substitute
        a new menu pane, it is possible to substitute menu items, as long as
        at least one remains in the menu at all times. This routine assumes
-       that the menu contains permanent items marked with the value PERMANENT
-       _MENU_ITEM in the userData resource, and adds and removes items which
-       it marks with the value TEMPORARY_MENU_ITEM */
+       that the menu contains permanent items marked with the value
+       PERMANENT_MENU_ITEM in the userData resource, and adds and removes items
+       which it marks with the value TEMPORARY_MENU_ITEM */
     
     /* Go thru all of the items in the menu and rename them to
        match the window list.  Delete any extras */
