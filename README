@@ -1,6 +1,6 @@
                     NEdit Version 5.5RC1, July 2004
 
-$Id: README,v 1.39 2004/07/24 17:41:59 yooden Exp $
+$Id: README,v 1.40 2004/07/27 18:23:48 n8gray Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -64,25 +64,16 @@ John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou,
 Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.
 
 
-VERSION 5.4
+VERSION 5.5
 
-Version 5.4 offers several new features:
+Version 5.5 offers one major new feature along with a few others:
 
-  - Calltips
-  - Rangesets
-  - Backlighting
-  - Highlighting information macros
-  - Full mouse wheel support (on XFree86 servers)
-  - Look-behind matching for regular expressions
-  - Regular expression and syntax highlighting speed-ups
-  - Flexible resource file location
-  - Color dialog
-  - Option to auto-hide mouse pointer while typing
-  - Option to keep cursor away from top and bottom of the screen
-  - Check for real changes of externally modified files
-  - Synchronized interaction between nc and nedit
-  - Several smaller improvements on usability and speed
-  - Several smaller improvements to the macro language
+  - Tabbed Windows  (How long has this been on the wish list?  :-)
+  - A menu item for enabling auto-scrolling
+  - Find and Clear buttons for the interactive search bar
+  - Improved Latex & Python syntax highlighting patterns
+  - Superuser receives a warning when trying to overwrite a read-only file
+  - Various bug fixes and performance improvements
 
 For a more detailed description of these new features and a list of 
 important bug fixes, see the ReleaseNotes file for more details.
@@ -285,10 +276,14 @@ from the contrib sub-directory of the NEdit distribution directory.
 
 Mac OS X Systems
 
-You will probably need to edit makefiles/Makefile.macosx to point NEdit at
-the correct version of Motif.  There are comments in the makefile to help you
-do this correctly.  Note that the developers use the OpenMotif 2.1.30 package
-available (at the time of writing) at:  http://msg.ucsf.edu:8100/~eric/
+NEdit is an X Window application and thus requires an X Window server, such as 
+Apple's X11.app or XFree86.org's XDarwin, to be running.
+
+If you are building NEdit yourself, you will probably need to edit
+makefiles/Makefile.macosx to select the correct version of Motif.  There are
+comments in the makefile to help you do this correctly.  Note that the
+developers use the OpenMotif 2.1.30 package available (at the time of writing)
+at:  http://msg.ucsf.edu:8100/~eric/
 
 
 SGI Systems
