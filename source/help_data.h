@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Feb 10, 2005 (Do NOT edit!)
+                 Generated on Feb 16, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -1824,12 +1824,40 @@ static char * htxt_macro_lang [] = {
 "     \\\" Double quote  \\b Backspace        \\a Alert\n",
 "     \\n Newline       \\r Carriage return  \\v Vertical tab\n",
 "\01I\n",
+"Also allowed is the escape control character sequence: ",
+"\n\n",
+"\01A     \\e Escape (ASCII or EBCDIC,\n",
+"                depending on NEdit compilation settings)\n",
+"\01I\n",
 "For example, to send output to the terminal from which NEdit was started, a ",
 "newline character is necessary because, like printf, t_print requires ",
 "explicit newlines, and also buffers its output on a per-line basis: ",
 "\n\n",
 "\01A     t_print(\"a = \" a \"\\n\")\n",
 "\01I\n",
+"Other characters can be expressed as backslash-escape sequences in macro ",
+"strings. The format is the same as for regular expressions, described in the ",
+"paragraphs headed \"Octal and Hex Escape Sequences\" of the section ",
+"\"\01QMetacharacters\01I\", except that an octal escape sequence can start with any ",
+"octal digit, not just 0, so the single character string \"\\0033\" is the same ",
+"as \"\\33\", \"\\x1B\" and \"\\e\" (for an ASCII version of NEdit). ",
+"\n\n",
+"Note that if you want to define a regular expression in a macro string, ",
+"you need to \"double-up\" the backslashes for the metacharacters with ",
+"special meaning in regular expressions. For example, the expression ",
+"\n\n",
+"\01A     (?N(\\s|/\\*(?n(?:(?!\\*/).)*)\\*/|//.*\\n|\\n)+)\n",
+"\01I\n",
+"which matches whitespace or C/C++/Java-style comments, should be written as ",
+"a macro string as ",
+"\n\n",
+"\01A     \"(?N(\\\\s|/\\\\*(?n(?:(?!\\\\*/).)*)\\\\*/|//.*\\n|\\n)+)\"\n",
+"\01I\n",
+"(The \"\\n\"s towards the end add literal newline characters to the string. The ",
+"regular expression interpretation treats the newlines as themselves. It can ",
+"also interpret the sequence \"\\\\n\" as a newline, although the macro string here ",
+"would then contain a literal backslash followed by a lowercase `N'.) ",
+"\n\n",
 "\01RVariables\01I",
 "\n\n",
 "Variable names must begin either with a letter (local variables), or a $ ",
