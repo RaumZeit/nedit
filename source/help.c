@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.73 2002/01/10 12:49:08 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.74 2002/01/23 16:54:19 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -170,16 +170,16 @@ static void loadFontsAndColors(Widget parent, int style);
 */
 static char *  getBuildInfo()
 {
-    char * bldFormat =
-        "\n%s\n"
+    const char * bldFormat =
+        "%s\n"
         "     Built on: %s, %s, %s\n"
         "     Built at: %s, %s\n"
         "   With Motif: %d [%s]\n"
         "Running Motif: %d\n"
         "       Server: %s %d\n"
-        ;
+       ;
 
-    char * bldInfoString = XtMalloc( strlen( bldFormat ) + 1024);
+    char * bldInfoString = XtMalloc (strlen (bldFormat)  + 1024);
     sprintf(bldInfoString, bldFormat,
             NEditVersion,
             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
@@ -195,17 +195,17 @@ static char *  getBuildInfo()
 /*
 ** Initialization for help system data, needs to be done only once.
 */
-static void initHelpStyles( Widget parent )
+static void initHelpStyles (Widget parent) 
 {
     static int styleTableInitialized = False;
     
-    if( ! styleTableInitialized )
+    if (! styleTableInitialized) 
     {
         Pixel black = BlackPixelOfScreen(XtScreen(parent));
         int   styleIndex;
         char ** line;
 
-        for( styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++ )
+        for (styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++) 
         {
             HelpStyleInfo[ styleIndex ].color     = black;
             HelpStyleInfo[ styleIndex ].underline = StyleUnderlines[styleIndex];
@@ -220,7 +220,7 @@ static void initHelpStyles( Widget parent )
         * This special case is needed to incorporate this 
         * dynamically created information into the static help.
         *-------------------------------------------------------*/
-        for( line = HelpText[ HELP_VERSION ]; *line != NULL; *line++ )
+        for (line = HelpText[ HELP_VERSION ]; *line != NULL; *line++) 
         {
             /*--------------------------------------------------
             * If and when this printf format is found in the
@@ -228,13 +228,13 @@ static void initHelpStyles( Widget parent )
             * build information. Then stitching the help text
             * will have the final count of characters to use.
             *--------------------------------------------------*/
-            if( strstr( *line, "%s" ) != NULL )
+            if (strstr (*line, "%s")  != NULL) 
             {
                 char * bldInfo  = getBuildInfo();
-                char * text     = XtMalloc( strlen( *line ) + strlen( bldInfo ));
-                sprintf( text, *line, bldInfo );
+                char * text     = XtMalloc (strlen (*line)  + strlen (bldInfo) );
+                sprintf (text, *line, bldInfo);
                 *line = text;
-                XtFree( bldInfo );
+                XtFree (bldInfo);
                 break;
             }
         }
@@ -259,7 +259,6 @@ static void loadFontsAndColors(Widget parent, int style)
 		fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
 			"available, cannot continue\n");
 		exit(EXIT_FAILURE);
-		return;
 	    }
 	}
 	HelpStyleInfo[style - STYLE_PLAIN].font = font;
@@ -273,7 +272,7 @@ static void loadFontsAndColors(Widget parent, int style)
 ** Put together stored help strings to create the text and optionally the style
 ** information for a given help topic.
 */
-static char * stitch( 
+static char * stitch (
 
     Widget  parent, 	 /* used for dynamic font/color allocation */
     char ** string_list, /* given help strings to stitch together */
@@ -290,9 +289,9 @@ static char * stitch(
     /*----------------------------------------------------
     * How many characters are there going to be displayed?
     *----------------------------------------------------*/
-    for( crnt_line = string_list; *crnt_line != NULL; crnt_line++ )
+    for (crnt_line = string_list; *crnt_line != NULL; crnt_line++) 
     {
-        for( cp = *crnt_line; *cp != EOS; cp++ )
+        for (cp = *crnt_line; *cp != EOS; cp++) 
         {
             /*---------------------------------------------
             * The help text has embedded style information
@@ -301,7 +300,7 @@ static char * stitch(
             * This style information is not to be included
             * in the character counting below.
             *---------------------------------------------*/
-            if( *cp != STYLE_MARKER ) {
+            if (*cp != STYLE_MARKER)  {
                 total_size++;
             }
             else {
@@ -314,26 +313,26 @@ static char * stitch(
     * Get the needed space, one area for the help text being
     * stitched together, another for the styles to be applied.
     *--------------------------------------------------------*/
-    sp  = section   = XtMalloc( total_size +1 );
-    sdp = styleData = (styleMap) ? XtMalloc( total_size +1 ) : NULL;
+    sp  = section   = XtMalloc (total_size +1);
+    sdp = styleData = (styleMap) ? XtMalloc (total_size +1)  : NULL;
     *sp = EOS;
     
     /*--------------------------------------------
     * Fill in the newly acquired contiguous space
     * with help text and style information.
     *--------------------------------------------*/
-    for( crnt_line = string_list; *crnt_line != NULL; crnt_line++ )
+    for (crnt_line = string_list; *crnt_line != NULL; crnt_line++) 
     {
-        for( cp = *crnt_line; *cp != EOS; cp++ )
+        for (cp = *crnt_line; *cp != EOS; cp++) 
         {
-            if( *cp == STYLE_MARKER ) {
+            if (*cp == STYLE_MARKER)  {
                 style = *(++cp);
 		loadFontsAndColors(parent, style);
             } 
             else {
                 *(sp++)  = *cp;
                 
-                if( styleMap )
+                if (styleMap) 
                     *(sdp++) = style;
             }
         }
@@ -344,7 +343,7 @@ static char * stitch(
     /*-----------------------------------------
     * Only deal with style map, when available.
     *-----------------------------------------*/
-    if( styleMap ) {
+    if (styleMap)  {
         *styleMap = styleData;
         *sdp      = EOS;
     }
@@ -467,21 +466,21 @@ static Widget createHelpPanel(Widget parent, int topic)
     	    XmNverticalScrollBar, vScrollBar, NULL);
             
     /* Initialize help style information, if it hasn't already been init'd */
-    initHelpStyles( parent );
+    initHelpStyles (parent);
     
     /* Put together the text to display and separate it into parallel text
        and style data for display by the widget */
-    helpText = stitch( parent, HelpText[topic], &styleData );
+    helpText = stitch (parent, HelpText[topic], &styleData);
     
     /* Stuff the text into the widget's text buffer */
-    BufSetAll( TextGetBuffer( HelpTextPanes[topic] ), helpText );
-    XtFree( helpText );
+    BufSetAll (TextGetBuffer (HelpTextPanes[topic]) , helpText);
+    XtFree (helpText);
     
     /* Create a style buffer for the text widget and fill it with the style
        data which was generated along with the text content */
     HelpStyleBuffers[topic] = BufCreate(); 
     BufSetAll(HelpStyleBuffers[topic], styleData);
-    XtFree( styleData );
+    XtFree (styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
     	    HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', NULL, NULL);
     
@@ -499,8 +498,8 @@ static Widget createHelpPanel(Widget parent, int topic)
     RealizeWithoutForcingPosition(appShell);
 
     /* Set up an event handler to process mouse clicks on hyperlinks */
-    XtAddEventHandler( HelpTextPanes[topic], ButtonPressMask | ButtonReleaseMask,
-	    False, hyperlinkEH, NULL );
+    XtAddEventHandler (HelpTextPanes[topic], ButtonPressMask | ButtonReleaseMask,
+	    False, hyperlinkEH, NULL);
 
     /* Make close command in window menu gracefully prompt for close */
     AddMotifCloseCallback(appShell, (XtCallbackProc)dismissCB, appShell);
@@ -579,9 +578,9 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
     /*------------------------------
     * Direct topic links found here.
     *------------------------------*/
-    for( *topic=0; HelpTitles[*topic] != NULL; (*topic)++ )
+    for (*topic=0; HelpTitles[*topic] != NULL; (*topic)++) 
     {
-        if( strcmp( link_name, HelpTitles[*topic] ) == 0 )
+        if (strcmp (link_name, HelpTitles[*topic])  == 0) 
         {
             *textPosition = 0;
             return 1;
@@ -591,9 +590,9 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
     /*------------------------------------
     * Links internal to topics found here.
     *------------------------------------*/
-    for( hypertext = &H_R[0]; hypertext != NULL; hypertext = hypertext->next )
+    for (hypertext = &H_R[0]; hypertext != NULL; hypertext = hypertext->next) 
     {
-        if( strcmp( link_name, hypertext->source ) == 0 )
+        if (strcmp (link_name, hypertext->source)  == 0) 
         {
             *topic  = hypertext->topic;
             *textPosition = hypertext->location;
@@ -621,17 +620,17 @@ static void follow_hyperlink(int topic, int charPosition)
     /*--------------------------------------------------
     * Locate beginning and ending of current text style.
     *--------------------------------------------------*/
-    while( whatStyle == BufGetCharacter(textD->styleBuffer, ++end) );
-    while( whatStyle == BufGetCharacter(textD->styleBuffer, begin-1) ) begin--;
+    while (whatStyle == BufGetCharacter(textD->styleBuffer, ++end));
+    while (whatStyle == BufGetCharacter(textD->styleBuffer, begin-1))  begin--;
 
-    link_text = BufGetRange( textD->buffer, begin, end );
+    link_text = BufGetRange (textD->buffer, begin, end);
     
-    if( is_known_link( link_text, &link_topic, &link_pos ) )
+    if (is_known_link (link_text, &link_topic, &link_pos) ) 
     {
-        Help( HelpWindows[topic], link_topic );
+        Help (HelpWindows[topic], link_topic);
         TextSetCursorPos(HelpTextPanes[link_topic], link_pos);
     }
-    XtFree( link_text );
+    XtFree (link_text);
 }
 
 /*
@@ -784,14 +783,14 @@ extern void XmRegisterConverters(void);
 #endif
 
 /* Print version info to stdout */
-void PrintVersion(void) {
-
+void PrintVersion(void)
+{
     char *text;
   
 #if XmVersion < 2001
     XmRegisterConverters();  /* see comment above */
 #endif
     text = getBuildInfo();
-    puts( text );
-    XtFree( text );
+    puts (text);
+    XtFree (text);
 }
