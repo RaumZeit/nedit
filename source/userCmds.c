@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.36 2004/01/09 05:56:54 tksoh Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.37 2004/01/10 06:12:45 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -1632,7 +1632,7 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     int index;
     char *params[1];
 
-    window = WidgetToWindow(w);
+    window = WidgetToWindow(MENU_WIDGET(w));
     
     /* get the index of the shell command and verify that it's in range */
     XtVaGetValues(w, XmNuserData, &userData, NULL);
@@ -1651,7 +1651,7 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     int index;
     char *params[1];
 
-    window = WidgetToWindow(w);
+    window = WidgetToWindow(MENU_WIDGET(w));
 
     /* Don't allow users to execute a macro command from the menu (or accel)
        if there's already a macro command executing.  NEdit can't handle
@@ -1683,7 +1683,7 @@ static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     int index;
     char *params[1];
 
-    window = WidgetToWindow(w);
+    window = WidgetToWindow(MENU_WIDGET(w));
 
     /* Same remark as for macro menu commands (see above). */
     if (window->macroCmdData != NULL) {
