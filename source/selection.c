@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.17 2001/12/16 04:31:35 ajhood Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.18 2001/12/17 16:28:46 amai Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -326,13 +326,15 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
       for (i=0; i<nFiles; i++) {
 	  if (ParseFilename(nameList[i], filename, pathname) != 0) {
 	      XBell(TheDisplay, 0);
-          else
+	  }
+        else {
     	      EditExistingFile(WindowList, filename, pathname, 0, NULL, 
 	                       False, NULL);
 	  }
       }
-      for (i=0; i<nFiles; i++)
-	  XtFree(nameList[i]);
+      for (i=0; i<nFiles; i++) {
+	   XtFree(nameList[i]);
+	}
       XtFree((char *)nameList);
     }
 #else
