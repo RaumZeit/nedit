@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.36 2003/12/25 06:55:07 tksoh Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.37 2004/04/30 14:35:16 edg Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -686,7 +686,7 @@ Symbol *LookupStringConstSymbol(const char *value)
     for (s = GlobalSymList; s != NULL; s = s->next) {
         if (s->type == CONST_SYM &&
             s->value.tag == STRING_TAG &&
-            !strcmp(s->value.val.str, value)) {
+            !strcmp(s->value.val.str.rep, value)) {
             return(s);
         }
     }
@@ -708,7 +708,7 @@ Symbol *InstallStringConstSymbol(const char *str)
 
     sprintf(stringName, "string #%d", stringConstIndex++);
     value.tag = STRING_TAG;
-    value.val.str = AllocStringCpy(str);
+    AllocNStringCpy(&value.val.str, str);
     return(InstallSymbol(stringName, CONST_SYM, value));
 }
 
@@ -809,6 +809,28 @@ char *AllocString(int length)
     return mem + sizeof(char *) + 1;
 }
 
+int AllocNString(NString *string, int length)
+{
+    char *mem;
+    
+    mem = XtMalloc(length + sizeof(char *) + 1);
+    if (!mem) {
+        string->rep = 0;
+        string->len = 0;
+        return False;
+    }
+      
+    *((char **)mem) = AllocatedStrings;
+    AllocatedStrings = mem;
+#ifdef TRACK_GARBAGE_LEAKS
+    ++numAllocatedStrings;
+#endif
+    string->rep = mem + sizeof(char *) + 1;
+    string->rep[length-1] = '\0';                /* forced \0 */
+    string->len = length-1;
+    return True;
+}
+
 /* Allocate a new string buffer of length chars, and copy in the string s */
 char *AllocStringNCpy(const char *s, int length)
 {
@@ -821,10 +843,31 @@ char *AllocStringNCpy(const char *s, int length)
     return strncpy(p, s, length);
 }
 
+int AllocNStringNCpy(NString *string, const char *s, int length)
+{
+    if (!AllocNString(string, length + 1)) /* add extra char for forced \0 */
+      return False;
+    if (!s)
+        s = "";
+    strncpy(string->rep, s, length);
+    string->len = strlen(string->rep); /* re-calculate! */
+    return True;
+}
+
 /* Allocate a new copy of string s */
 char *AllocStringCpy(const char *s)
 {
     return AllocStringNCpy(s, s ? strlen(s) : 0);
+}
+
+int AllocNStringCpy(NString *string, const char *s)
+{
+    size_t length = s ? strlen(s) : 0;
+    if (!AllocNString(string, length + 1))
+        return False;
+    if (s)
+        strncpy(string->rep, s, length);
+    return True;
 }
 
 static SparseArrayEntry *allocateSparseArrayEntry(void)
@@ -857,8 +900,8 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr)
             }
             if (globalSEUse->value.tag == STRING_TAG) {
                 /* test first because it may be read-only static string */
-                if (!(*(globalSEUse->value.val.str - 1))) {
-                    *(globalSEUse->value.val.str - 1) = 1;
+                if (!(*(globalSEUse->value.val.str.rep - 1))) {
+                    *(globalSEUse->value.val.str.rep - 1) = 1;
                 }
             }
             else if (globalSEUse->value.tag == ARRAY_TAG) {
@@ -895,8 +938,8 @@ void GarbageCollectStrings(void)
     for (s = GlobalSymList; s != NULL; s = s->next) {
     	if (s->value.tag == STRING_TAG) {
             /* test first because it may be read-only static string */
-            if (!(*(s->value.val.str - 1))) {
-    	        *(s->value.val.str - 1) = 1;
+            if (!(*(s->value.val.str.rep - 1))) {
+    	        *(s->value.val.str.rep - 1) = 1;
             }
         }
         else if (s->value.tag == ARRAY_TAG) {
@@ -997,7 +1040,7 @@ static void freeSymbolTable(Symbol *symTab)
 	return execError(StackUnderflowMsg, ""); \
     --StackP; \
     if (StackP->tag == STRING_TAG) { \
-    	if (!StringToNum(StackP->val.str, &number)) \
+    	if (!StringToNum(StackP->val.str.rep, &number)) \
     	    return execError(StringToNumberMsg, ""); \
     } else if (StackP->tag == INT_TAG) \
         number = StackP->val.n; \
@@ -1012,7 +1055,7 @@ static void freeSymbolTable(Symbol *symTab)
     	string = AllocString(TYPE_INT_STR_SIZE(int)); \
     	sprintf(string, "%d", StackP->val.n); \
     } else if (StackP->tag == STRING_TAG) \
-        string = StackP->val.str; \
+        string = StackP->val.str.rep; \
     else \
         return(execError("can't convert array to string", NULL));
    
@@ -1047,11 +1090,12 @@ static void freeSymbolTable(Symbol *symTab)
     StackP->val.n = number; \
     StackP++;
     
-#define PUSH_STRING(string) \
+#define PUSH_STRING(string, length) \
     if (StackP >= &Stack[STACK_SIZE]) \
     	return execError(StackOverflowMsg, ""); \
     StackP->tag = STRING_TAG; \
-    StackP->val.str = string; \
+    StackP->val.str.rep = string; \
+    StackP->val.str.len = length; \
     StackP++;
 
 #define BINARY_NUMERIC_OPERATION(operator) \
@@ -1535,11 +1579,11 @@ static int eq(void)
         v1.val.n = v1.val.n == v2.val.n;
     }
     else if (v1.tag == STRING_TAG && v2.tag == STRING_TAG) {
-        v1.val.n = !strcmp(v1.val.str, v2.val.str);
+        v1.val.n = !strcmp(v1.val.str.rep, v2.val.str.rep);
     }
     else if (v1.tag == STRING_TAG && v2.tag == INT_TAG) {
         int number;
-        if (!StringToNum(v1.val.str, &number)) {
+        if (!StringToNum(v1.val.str.rep, &number)) {
             v1.val.n = 0;
         }
         else {
@@ -1548,7 +1592,7 @@ static int eq(void)
     }
     else if (v2.tag == STRING_TAG && v1.tag == INT_TAG) {
         int number;
-        if (!StringToNum(v2.val.str, &number)) {
+        if (!StringToNum(v2.val.str.rep, &number)) {
             v1.val.n = 0;
         }
         else {
@@ -1781,7 +1825,7 @@ static int concat(void)
     out = AllocString(len1 + len2 + 1);
     strncpy(out, s1, len1);
     strcpy(&out[len1], s2);
-    PUSH_STRING(out)
+    PUSH_STRING(out, len1 + len2)
     return STAT_OK;
 }
 
@@ -1863,7 +1907,7 @@ static int callSubroutine(void)
         *(StackP++) = noValue; /* cached arg array */
         
     	FrameP = StackP;
-    	prog = (Program *)sym->value.val.str;
+    	prog = (Program *)sym->value.val.str.rep;
     	PC = prog->code;
 	for (s = prog->localSymList; s != NULL; s = s->next) {
 	    FP_GET_SYM_VAL(FrameP, s) = noValue;
@@ -2123,7 +2167,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams)
             keyLength += TYPE_INT_STR_SIZE(tmpVal.val.n);
         }
         else if (tmpVal.tag == STRING_TAG) {
-            keyLength += strlen(tmpVal.val.str);
+            keyLength += tmpVal.val.str.len;
         }
         else {
             return(execError("can only index array with string or int.", NULL));
@@ -2140,7 +2184,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams)
             sprintf(&((*keyString)[strlen(*keyString)]), "%d", tmpVal.val.n);
         }
         else if (tmpVal.tag == STRING_TAG) {
-            strcat(*keyString, tmpVal.val.str);
+            strcat(*keyString, tmpVal.val.str.rep);
         }
         else {
             return(execError("can only index array with string or int.", NULL));
@@ -2605,7 +2649,8 @@ static int arrayIter(void)
     thisEntry = (SparseArrayEntry *)iteratorValPtr->val.arrayPtr;
     if (thisEntry && thisEntry->nodePtrs.color != -1) {
         itemValPtr->tag = STRING_TAG;
-        itemValPtr->val.str = thisEntry->key;
+        itemValPtr->val.str.rep = thisEntry->key;
+        itemValPtr->val.str.len = strlen(thisEntry->key);
         
         iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateNext(thisEntry);
     }

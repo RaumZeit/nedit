@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.84 2004/03/25 04:27:01 tksoh Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.85 2004/04/30 14:35:16 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -106,7 +106,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.84 2004/03/25 04:27:01 tksoh Exp $
 /* The following definitions cause an exit from the macro with a message */
 /* added if (1) to remove compiler warnings on solaris */
 #define M_FAILURE(s)  do { *errMsg = s; if (1) return False; } while (0)
-#define M_STR_ALLOC_ASSERT(xDV) do { if (xDV.tag == STRING_TAG && !xDV.val.str) { *errMsg = "Failed to allocate value: %s"; return(False); } } while (0)
+#define M_STR_ALLOC_ASSERT(xDV) do { if (xDV.tag == STRING_TAG && !xDV.val.str.rep) { *errMsg = "Failed to allocate value: %s"; return(False); } } while (0)
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
 
 /* Data attached to window during shell command execution with
@@ -1838,7 +1838,8 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* If no matching window was found, return empty string and do nothing */
     if (w == NULL) {
 	result->tag = STRING_TAG;
-	result->val.str = PERM_ALLOC_STR("");
+	result->val.str.rep = PERM_ALLOC_STR("");
+        result->val.str.len = 0;
 	return True;
     }
 	
@@ -1851,8 +1852,8 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* Return the name of the window */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(w->path)+strlen(w->filename)+1);
-    sprintf(result->val.str, "%s%s", w->path, w->filename);
+    AllocNString(&result->val.str, strlen(w->path)+strlen(w->filename)+1);
+    sprintf(result->val.str.rep, "%s%s", w->path, w->filename);
     return True;
 }
 
@@ -1883,10 +1884,12 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Copy text from buffer (this extra copy could be avoided if textBuf.c
        provided a routine for writing into a pre-allocated string) */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(to - from + 1);
+    AllocNString(&result->val.str, to - from + 1);
     rangeText = BufGetRange(buf, from, to);
     BufUnsubstituteNullChars(rangeText, buf);
-    strcpy(result->val.str, rangeText);
+    strcpy(result->val.str.rep, rangeText);
+    /* Note: after the un-substitution, it is possible that strlen() != len,
+       but that's because strlen() can't deal with 0-characters. */
     XtFree(rangeText);
     return True;
 }
@@ -1911,10 +1914,11 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Return the character in a pre-allocated string) */
     result->tag = STRING_TAG;
-    result->val.str =  AllocString(2);
-    result->val.str[0] = BufGetCharacter(buf, pos);
-    result->val.str[1] = '\0';
-    BufUnsubstituteNullChars(result->val.str, buf);
+    AllocNString(&result->val.str, 2);
+    result->val.str.rep[0] = BufGetCharacter(buf, pos);
+    BufUnsubstituteNullChars(result->val.str.rep, buf);
+    /* Note: after the un-substitution, it is possible that strlen() != len,
+       but that's because strlen() can't deal with 0-characters. */
     return True;
 }
 
@@ -2022,7 +2026,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs != 0 && nArgs != 1)
       	return wrongNArgsErr(errMsg);
     if (nArgs == 1) {
-        if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str, "any")) {
+        if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str.rep, "any")) {
 	    *errMsg = "Unrecognized argument to %s";
 	    return False;
     	}
@@ -2036,8 +2040,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 	
     /* Return the text as an allocated string */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(selText) + 1);
-    strcpy(result->val.str, selText);
+    AllocNStringCpy(&result->val.str, selText);
     XtFree(selText);
     return True;
 }
@@ -2095,11 +2098,10 @@ static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs,
     replaceLen = strlen(replStr);
     outLen = length - (to - from) + replaceLen;
     result->tag = STRING_TAG;
-    result->val.str = AllocString(outLen+1);
-    strncpy(result->val.str, string, from);
-    strncpy(&result->val.str[from], replStr, replaceLen);
-    strncpy(&result->val.str[from + replaceLen], &string[to], length - to);
-    result->val.str[outLen] = '\0';
+    AllocNString(&result->val.str, outLen+1);
+    strncpy(result->val.str.rep, string, from);
+    strncpy(&result->val.str.rep[from], replStr, replaceLen);
+    strncpy(&result->val.str.rep[from + replaceLen], &string[to], length - to);
     return True;
 }
 
@@ -2130,9 +2132,7 @@ static int substringMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Allocate a new string and copy the sub-string into it */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(to - from + 1);
-    strncpy(result->val.str, &string[from], to - from);
-    result->val.str[to - from] = '\0';
+    AllocNStringNCpy(&result->val.str, &string[from], to - from);
     return True;
 }
 
@@ -2151,10 +2151,9 @@ static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Allocate a new string and copy an uppercased version of the string it */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(length + 1);
+    AllocNString(&result->val.str, length + 1);
     for (i=0; i<length; i++)
-    	result->val.str[i] = toupper((unsigned char)string[i]);
-    result->val.str[length] = '\0';
+    	result->val.str.rep[i] = toupper((unsigned char)string[i]);
     return True;
 }
 
@@ -2173,10 +2172,9 @@ static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Allocate a new string and copy an lowercased version of the string it */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(length + 1);
+    AllocNString(&result->val.str, length + 1);
     for (i=0; i<length; i++)
-    	result->val.str[i] = tolower((unsigned char)string[i]);
-    result->val.str[length] = '\0';
+    	result->val.str.rep[i] = tolower((unsigned char)string[i]);
     return True;
 }
 
@@ -2224,19 +2222,21 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
     if (XmClipboardInquireLength(TheDisplay, XtWindow(window->shell), "STRING",
     	    &length) != ClipboardSuccess) {
     	result->tag = STRING_TAG;
-    	result->val.str = PERM_ALLOC_STR("");
+    	result->val.str.rep = PERM_ALLOC_STR("");
+    	result->val.str.len = 0;
 	return True;
     }
 
     /* Allocate a new string to hold the data */
     result->tag = STRING_TAG;
-    result->val.str = AllocString((int)length + 1);
+    AllocNString(&result->val.str, (int)length + 1);
 
     /* Copy the clipboard contents to the string */
     if (XmClipboardRetrieve(TheDisplay, XtWindow(window->shell), "STRING",
-    	    result->val.str, length, &retLength, &id) != ClipboardSuccess)
+    	    result->val.str.rep, length, &retLength, &id) != ClipboardSuccess)
     	retLength = 0;
-    result->val.str[retLength] = '\0';
+    result->val.str.rep[retLength] = '\0';
+    result->val.str.len = retLength;
 
     return True;
 }
@@ -2268,8 +2268,8 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (fstat(fileno(fp), &statbuf) != 0)
     	goto error;
     result->tag = STRING_TAG;
-    result->val.str = AllocString(statbuf.st_size+1);
-    readLen = fread(result->val.str, sizeof(char), statbuf.st_size+1, fp);
+    AllocNString(&result->val.str, statbuf.st_size+1);
+    readLen = fread(result->val.str.rep, sizeof(char), statbuf.st_size+1, fp);
     if (ferror(fp))
 	goto error;
     if(!feof(fp)){
@@ -2278,7 +2278,7 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
         char *buffer;
         
         buffer = XtMalloc(readLen * sizeof(char));
-        memcpy(buffer, result->val.str, readLen * sizeof(char));
+        memcpy(buffer, result->val.str.rep, readLen * sizeof(char));
         while (!feof(fp)){
             buffer = XtRealloc(buffer, (readLen+chunkSize)*sizeof(char));
             readLen += fread(&buffer[readLen], sizeof(char), chunkSize, fp);
@@ -2287,11 +2287,10 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
 	        goto error;
             }
         }
-        result->val.str = AllocString(readLen + 1);
-        memcpy(result->val.str, buffer, readLen * sizeof(char));
+        AllocNString(&result->val.str, readLen + 1);
+        memcpy(result->val.str.rep, buffer, readLen * sizeof(char));
         XtFree(buffer);
     }
-    result->val.str[readLen] = '\0';
     fclose(fp);
     
     /* Return the results */
@@ -2306,7 +2305,8 @@ errorNoClose:
     ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[READ_STATUS]->value.val.n = False;
     result->tag = STRING_TAG;
-    result->val.str = PERM_ALLOC_STR("");
+    result->val.str.rep = PERM_ALLOC_STR("");
+    result->val.str.len = 0;
     return True;
 }
 
@@ -2387,10 +2387,11 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs > 8)
     	return wrongNArgsErr(errMsg);
     newArgList[0].tag = STRING_TAG;
-    newArgList[0].val.str = BufGetAll(window->buffer);
+    newArgList[0].val.str.rep = BufGetAll(window->buffer);
+    newArgList[0].val.str.len = window->buffer->length;
     memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
     retVal = searchStringMS(window, newArgList, nArgs+1, result, errMsg);
-    XtFree(newArgList[0].val.str);
+    XtFree(newArgList[0].val.str.rep);
     return retVal;
 }
 
@@ -2424,10 +2425,7 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (!readSearchArgs(&argList[3], nArgs-3, &direction, &type, &wrap, errMsg))
     	return False;
     
-    /* This is potentially costly, but it is necessary to protect us from
-       illegal memory accesses if beginPos is too large (or negative). Note:
-       matching at position "len" is allowed: a $ matches end of string. */
-    len = beginPos ? strlen(string) : 0; /* avoid strlen if beginPos == 0 */
+    len = argList[0].val.str.len;
     if (beginPos > len) {
 	if (direction == SEARCH_FORWARD) {
 	    if (wrap) {
@@ -2517,23 +2515,26 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
         if (force) {
             /* Just copy the original DataValue */
             if (argList[0].tag == STRING_TAG) {
-                result->val.str = argList[0].val.str;
+                result->val.str.rep = argList[0].val.str.rep;
+                result->val.str.len = argList[0].val.str.len;
             }
             else {
-                result->val.str = AllocStringCpy(string);
+                AllocNStringCpy(&result->val.str, string);
             }
         }
         else {
-            result->val.str = PERM_ALLOC_STR("");
+            result->val.str.rep = PERM_ALLOC_STR("");
+            result->val.str.len = 0;
         }
     }
     else {
-	replaceEnd = copyStart + replacedLen;
-	result->val.str = AllocString(replaceEnd + strlen(&string[copyEnd])+1);
-	strncpy(result->val.str, string, copyStart);
-	strcpy(&result->val.str[copyStart], replacedStr);
-	strcpy(&result->val.str[replaceEnd], &string[copyEnd]);
-	XtFree(replacedStr);
+	size_t remainder = strlen(&string[copyEnd]);
+        replaceEnd = copyStart + replacedLen;
+	AllocNString(&result->val.str, replaceEnd + remainder + 1);
+	strncpy(result->val.str.rep, string, copyStart);
+	strcpy(&result->val.str.rep[copyStart], replacedStr);
+	strcpy(&result->val.str.rep[replaceEnd], &string[copyEnd]);
+        XtFree(replacedStr);
     }
     return True;
 }
@@ -2690,8 +2691,7 @@ static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs,
 	
     /* Return the text as an allocated string */
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(value) + 1);
-    strcpy(result->val.str, value);
+    AllocNStringCpy(&result->val.str, value);
     return True;
 }
 
@@ -2740,8 +2740,7 @@ void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int statu
     if (cmdData == NULL)
     	return;
     retVal.tag = STRING_TAG;
-    retVal.val.str = AllocString(strlen(outText)+1);
-    strcpy(retVal.val.str, outText);
+    AllocNStringCpy(&retVal.val.str, outText);
     ModifyReturnedValue(cmdData->context, retVal);
     ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
@@ -3032,8 +3031,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     text = XmTextGetString(XmSelectionBoxGetChild(cmdData->dialog,
     	    XmDIALOG_TEXT));
     retVal.tag = STRING_TAG;
-    retVal.val.str = AllocString(strlen(text)+1);
-    strcpy(retVal.val.str, text);
+    AllocNStringCpy(&retVal.val.str, text);
     XtFree(text);
     ModifyReturnedValue(cmdData->context, retVal);
     
@@ -3071,7 +3069,8 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
 
     /* Return an empty string */
     retVal.tag = STRING_TAG;
-    retVal.val.str = PERM_ALLOC_STR("");
+    retVal.val.str.rep = PERM_ALLOC_STR("");
+    retVal.val.str.len = 0;
     ModifyReturnedValue(cmdData->context, retVal);
     
     /* Return button number 0 in the global variable $string_dialog_button */
@@ -3470,6 +3469,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     int btnNum;
     int n_sel, *seltable, sel_index = 0;
     Widget theList;
+    size_t length;
 
     /* shouldn't happen, but would crash if it did */
     if (cmdData == NULL)
@@ -3488,9 +3488,11 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
 
     if (!n_sel) {
       text = PERM_ALLOC_STR("");
+      length = 0;
     }
     else {
-      text = AllocString(strlen((char *)text_lines[sel_index]) + 1);
+      length = strlen((char *)text_lines[sel_index]);
+      text = AllocString(length + 1);
       strcpy(text, text_lines[sel_index]);
     }
 
@@ -3500,7 +3502,8 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     XtFree((XtPointer)text_lines);
 
     retVal.tag = STRING_TAG;
-    retVal.val.str = text;
+    retVal.val.str.rep = text;
+    retVal.val.str.len = length;
     ModifyReturnedValue(cmdData->context, retVal);
     
     /* Find the index of the button which was pressed (stored in the userData
@@ -3547,7 +3550,8 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
 
     /* Return an empty string */
     retVal.tag = STRING_TAG;
-    retVal.val.str = PERM_ALLOC_STR("");
+    retVal.val.str.rep = PERM_ALLOC_STR("");
+    retVal.val.str.len = 0;
     ModifyReturnedValue(cmdData->context, retVal);
     
     /* Return button number 0 in the global variable $list_dialog_button */
@@ -3689,13 +3693,10 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         elementEnd = found ? foundStart : strLength;
         elementLen = elementEnd - beginPos;
         element.tag = STRING_TAG;
-        element.val.str = AllocString(elementLen + 1);
-        if (!element.val.str) {
+        if (!AllocNStringNCpy(&element.val.str, &sourceStr[beginPos], elementLen)) {
             *errMsg = "failed to allocate element value: %s";
             return(False);
         }
-        strncpy(element.val.str, &sourceStr[beginPos], elementLen);
-        element.val.str[elementLen] = 0;
 
         if (!ArrayInsert(result, allocIndexStr, &element)) {
             M_ARRAY_INSERT_FAILURE();
@@ -3713,7 +3714,8 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
         strcpy(allocIndexStr, indexStr);
         element.tag = STRING_TAG;
-        element.val.str = PERM_ALLOC_STR("");
+        element.val.str.rep = PERM_ALLOC_STR("");
+        element.val.str.len = 0;
 
         if (!ArrayInsert(result, allocIndexStr, &element)) {
             M_ARRAY_INSERT_FAILURE();
@@ -3742,7 +3744,7 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
           *errMsg = "%s not called with a string parameter";
           return False;
       }
-      backlightString = argList[0].val.str;
+      backlightString = argList[0].val.str.rep;
     }
     else
       return wrongNArgsErr(errMsg);
@@ -3794,8 +3796,7 @@ static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->filename) + 1);
-    strcpy(result->val.str, window->filename);
+    AllocNStringCpy(&result->val.str, window->filename);
     return True;
 }
 
@@ -3803,8 +3804,7 @@ static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->path) + 1);
-    strcpy(result->val.str, window->path);
+    AllocNStringCpy(&result->val.str, window->path);
     return True;
 }
 
@@ -3911,7 +3911,8 @@ static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
             break;
     }
     result->tag = STRING_TAG;
-    result->val.str = res;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
     return True;
 }
 
@@ -3936,7 +3937,8 @@ static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
             break;
     }
     result->tag = STRING_TAG;
-    result->val.str = res;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
     return True;
 }
 
@@ -3985,7 +3987,8 @@ static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
             break;
     }
     result->tag = STRING_TAG;
-    result->val.str = res;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
     return True;
 }
 
@@ -4033,7 +4036,8 @@ static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
             return False;
     }
     result->tag = STRING_TAG;
-    result->val.str = res;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
     return True;
 }
 
@@ -4041,8 +4045,7 @@ static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->fontName) + 1);
-    strcpy(result->val.str, window->fontName);
+    AllocNStringCpy(&result->val.str, window->fontName);
     return True;
 }
 
@@ -4050,8 +4053,7 @@ static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->italicFontName) + 1);
-    strcpy(result->val.str, window->italicFontName);
+    AllocNStringCpy(&result->val.str, window->italicFontName);
     return True;
 }
 
@@ -4059,8 +4061,7 @@ static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->boldFontName) + 1);
-    strcpy(result->val.str, window->boldFontName);
+    AllocNStringCpy(&result->val.str, window->boldFontName);
     return True;
 }
 
@@ -4068,8 +4069,7 @@ static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArg
     DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(window->boldItalicFontName) + 1);
-    strcpy(result->val.str, window->boldItalicFontName);
+    AllocNStringCpy(&result->val.str, window->boldItalicFontName);
     return True;
 }
 
@@ -4077,7 +4077,8 @@ static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
     result->tag = STRING_TAG;
-    result->val.str = PERM_ALLOC_STR(ARRAY_DIM_SEP);
+    result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
+    result->val.str.len = strlen(result->val.str.rep);
     return True;
 }
 
@@ -4148,11 +4149,8 @@ static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
 {
-    char *serverName = GetPrefServerName();
-    
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(serverName) + 1);
-    strcpy(result->val.str, serverName);
+    AllocNStringCpy(&result->val.str, GetPrefServerName());
     return True;
 }
 
@@ -4199,8 +4197,7 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs,
     if (lmName == NULL)
     	lmName = "Plain";
     result->tag = STRING_TAG;
-    result->val.str = AllocString(strlen(lmName) + 1);
-    strcpy(result->val.str, lmName);
+    AllocNStringCpy(&result->val.str, lmName);
     return True;
 }
 
@@ -4213,8 +4210,7 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
     result->tag = STRING_TAG;
     if (!backlightString || !window->backlightChars)
       backlightString = "";
-    result->val.str = AllocString(strlen(backlightString) + 1);
-    strcpy(result->val.str, backlightString);
+    AllocNStringCpy(&result->val.str, backlightString);
     return True;
 } */
 
@@ -4720,28 +4716,21 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("Failed to insert array element \"count\" in %s");
         
     element.tag = STRING_TAG;
-    element.val.str = AllocString(strlen(color) + 1);
-    if (element.val.str == NULL)
+    if (!AllocNStringCpy(&element.val.str, color))
         M_FAILURE("Failed to allocate array value \"color\" in %s");
-    strcpy(element.val.str, color);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &element))
         M_FAILURE("Failed to insert array element \"color\" in %s");
   
     element.tag = STRING_TAG;
-    element.val.str = AllocString(strlen(name) + 1);
-    if (element.val.str == NULL) {
+    if (!AllocNStringCpy(&element.val.str, name))
         M_FAILURE("Failed to allocate array value \"name\" in %s");
-    }
-    strcpy(element.val.str, name);
     if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
         M_FAILURE("Failed to insert array element \"name\" in %s");
     }
   
     element.tag = STRING_TAG;
-    element.val.str = AllocString(strlen(mode) + 1);
-    if (element.val.str == NULL)
+    if (!AllocNStringCpy(&element.val.str, mode))
         M_FAILURE("Failed to allocate array value \"mode\" in %s");
-    strcpy(element.val.str, mode);
     if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
         M_FAILURE("Failed to insert array element \"mode\" in %s");
   
@@ -5062,10 +5051,11 @@ static int fillStyleResult(DataValue *result, char **errMsg,
     if (includeName) {
         /* insert style name */
         if (preallocatedStyleName) {
-            DV.val.str = styleName;
+            DV.val.str.rep = styleName;
+            DV.val.str.len = strlen(styleName);
         }
         else {
-            DV.val.str = AllocStringCpy(styleName);
+            AllocNStringCpy(&DV.val.str, styleName);
         }
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
@@ -5074,7 +5064,7 @@ static int fillStyleResult(DataValue *result, char **errMsg,
     }
 
     /* insert color name */
-    DV.val.str = AllocStringCpy(ColorOfNamedStyle(styleName));
+    AllocNStringCpy(&DV.val.str, ColorOfNamedStyle(styleName));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5086,7 +5076,7 @@ static int fillStyleResult(DataValue *result, char **errMsg,
     if (patCode) {
         HighlightColorValueOfCode(window, patCode, &r, &g, &b);
         sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
-        DV.val.str = AllocStringCpy(colorValue);
+        AllocNStringCpy(&DV.val.str, colorValue);
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -5094,7 +5084,7 @@ static int fillStyleResult(DataValue *result, char **errMsg,
     }
 
     /* Prepare array element for background color name */
-    DV.val.str = AllocStringCpy(BgColorOfNamedStyle(styleName));
+    AllocNStringCpy(&DV.val.str, BgColorOfNamedStyle(styleName));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5106,7 +5096,7 @@ static int fillStyleResult(DataValue *result, char **errMsg,
     if (patCode) {
         GetHighlightBGColorOfCode(window, patCode, &r, &g, &b);
         sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
-        DV.val.str = AllocStringCpy(colorValue);
+        AllocNStringCpy(&DV.val.str, colorValue);
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -5253,14 +5243,16 @@ static int fillPatternResult(DataValue *result, char **errMsg,
         /* The "top" pattern is a special case. We hide it from the user 
            (implementation detail). This may change in the future */
         if (strcmp(patternName, "top") == 0) {
-            DV.val.str = PERM_ALLOC_STR("");
+            DV.val.str.rep = PERM_ALLOC_STR("");
+            DV.val.str.len = 0;
         }
         else {
             if (preallocatedPatternName) {
-                DV.val.str = patternName;
+                DV.val.str.rep = patternName;
+                DV.val.str.len = strlen(patternName);
             }
             else {
-                DV.val.str = AllocStringCpy(patternName);
+                AllocNStringCpy(&DV.val.str, patternName);
             }
         }
         M_STR_ALLOC_ASSERT(DV);
@@ -5270,7 +5262,7 @@ static int fillPatternResult(DataValue *result, char **errMsg,
     }
 
     /* insert style name */
-    DV.val.str = AllocStringCpy(styleName);
+    AllocNStringCpy(&DV.val.str, styleName);
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5434,12 +5426,12 @@ static int readIntArg(DataValue dv, int *result, char **errMsg)
     	*result = dv.val.n;
     	return True;
     } else if (dv.tag == STRING_TAG) {
-	for (c=dv.val.str; *c != '\0'; c++) {
+	for (c=dv.val.str.rep; *c != '\0'; c++) {
     	    if (!(isdigit((unsigned char)*c) || *c == ' ' || *c == '\t')) {
     		goto typeError;
     	    }
     	}
-	sscanf(dv.val.str, "%d", result);
+	sscanf(dv.val.str.rep, "%d", result);
 	return True;
     }
     
@@ -5459,7 +5451,7 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage,
     	char **errMsg)
 {
     if (dv.tag == STRING_TAG) {
-    	*result = dv.val.str;
+    	*result = dv.val.str.rep;
     	return True;
     } else if (dv.tag == INT_TAG) {
 	sprintf(stringStorage, "%d", dv.val.n);

@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.14 2003/12/19 23:23:30 slobasso Exp $ */
+/* $Id: interpret.h,v 1.15 2004/04/30 14:35:16 edg Exp $ */
 
 #ifndef NEDIT_INTERPRET_H_INCLUDED
 #define NEDIT_INTERPRET_H_INCLUDED
@@ -39,11 +39,16 @@ typedef int (*Inst)(void);
 typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList, 
         int nArgs, struct DataValueTag *result, char **errMsg);
 
+typedef struct NStringTag {
+  char *rep;
+  size_t len;
+} NString;
+
 typedef struct DataValueTag {
     enum typeTags tag;
     union {
         int n;
-        char *str;
+        struct NStringTag str;
         BuiltInSubr subr;
         struct ProgramTag* prog;
         XtActionProc xtproc;
@@ -126,6 +131,9 @@ void PreemptMacro(void);
 char *AllocString(int length);
 char *AllocStringNCpy(const char *s, int length);
 char *AllocStringCpy(const char *s);
+int AllocNString(NString *string, int length);
+int AllocNStringNCpy(NString *string, const char *s, int length);
+int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings(void);
 void FreeRestartData(RestartData *context);
 Symbol *PromoteToGlobal(Symbol *sym);
