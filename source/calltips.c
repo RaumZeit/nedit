@@ -32,6 +32,7 @@
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"
+#include "../util/misc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -258,11 +259,13 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
     
     /* Create the calltip widget on first request */
     if (textD->calltipW == NULL) {
-        textD->calltipShell = XtVaCreatePopupShell(
-                "calltipshell", overrideShellWidgetClass, textD->w, 
-                XmNsaveUnder, True,
-                XmNallowShellResize, True,
-                NULL );
+        Arg args[10];
+        int argcnt = 0;
+        XtSetArg(args[argcnt], XmNsaveUnder, True); argcnt++;
+        XtSetArg(args[argcnt], XmNallowShellResize, True); argcnt++;
+        
+        textD->calltipShell = CreatePopupShellWithBestVis("calltipshell", 
+             overrideShellWidgetClass, textD->w, args, argcnt);
                 
         /* Might want to make this a read-only XmText eventually so that 
             users can copy from it */

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.51 2003/04/07 22:51:42 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.52 2003/04/10 20:28:48 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -132,6 +132,8 @@ static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
+static ArgList addParentVisArgs(Widget parent, ArgList arglist, 
+   Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine,
 	Widget parent, char *name, ArgList arglist, Cardinal  argcount);
 
@@ -604,19 +606,29 @@ Widget CreateShellWithBestVis(String appName, String appClass,
     return result;
 }
 
+
+Widget CreatePopupShellWithBestVis(String shellName, WidgetClass class,
+    Widget parent, ArgList arglist, Cardinal argcount)
+{
+   Widget result;
+   ArgList al = addParentVisArgs(parent, arglist, &argcount);
+   result = XtCreatePopupShell(shellName, class, parent, al, argcount);
+   XtFree((char *)al);
+   return result;
+}
+
 /*
-** Calls one of the Motif widget creation routines, splicing in additional
-** arguments for visual, colormap, and depth.
+** Extends an argument list for widget creation with additional arguments
+** for visual, colormap, and depth. The original argument list is not altered
+** and it's the caller's responsability to free the returned list.
 */
-static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
-	Widget parent, char *name, ArgList arglist, Cardinal  argcount)
+static ArgList addParentVisArgs(Widget parent, ArgList arglist, 
+   Cardinal *argcount)
 {
     Visual *visual;
     int depth;
     Colormap colormap;
     ArgList al;
-    Cardinal ac = argcount;
-    Widget result;
     Widget parentShell = parent;
     
     /* Find the application/dialog/menu shell at the top of the widget
@@ -634,13 +646,26 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
     /* Add the visual, depth, and colormap resources to the argument list */
     XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth,
 	    XtNcolormap, &colormap, NULL);
-    al = (ArgList)XtMalloc(sizeof(Arg) * (argcount + 3));
-    if (argcount != 0)
-    	memcpy(al, arglist, sizeof(Arg) * argcount);
-    XtSetArg(al[ac], XtNvisual, visual); ac++;
-    XtSetArg(al[ac], XtNdepth, depth); ac++;
-    XtSetArg(al[ac], XtNcolormap, colormap); ac++;
-    result = (*createRoutine)(parent, name, al, ac);
+    al = (ArgList)XtMalloc(sizeof(Arg) * ((*argcount) + 3));
+    if ((*argcount) != 0)
+    	memcpy(al, arglist, sizeof(Arg) * (*argcount));
+    XtSetArg(al[*argcount], XtNvisual, visual); (*argcount)++;
+    XtSetArg(al[*argcount], XtNdepth, depth); (*argcount)++;
+    XtSetArg(al[*argcount], XtNcolormap, colormap); (*argcount)++;
+    return al;
+}
+
+
+/*
+** Calls one of the Motif widget creation routines, splicing in additional
+** arguments for visual, colormap, and depth.
+*/
+static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
+	Widget parent, char *name, ArgList arglist, Cardinal argcount)
+{
+    Widget result;
+    ArgList al = addParentVisArgs(parent, arglist, &argcount);
+    result = (*createRoutine)(parent, name, al, argcount);
     XtFree((char *)al);
     return result;
 }
