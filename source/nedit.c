@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.35 2002/09/05 17:48:43 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.36 2002/09/05 23:15:44 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -628,7 +628,7 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
 
 static void patchResourcesForVisual(void)
 {
-    int         i;
+    Cardinal    i;
     Visual     *visual;
     int         depth;
     Colormap    map;
@@ -649,15 +649,17 @@ static void patchResourcesForVisual(void)
 
     if (!usingDefaultVisual)
     {
-        for (i = 0; i < XtNumber(fallbackResources)-1; i++)
+        for (i = 1; i < XtNumber(fallbackResources); ++i)
         {
-            if (strstr(fallbackResources[i], "*background:") ||
-                strstr(fallbackResources[i], "*foreground:"))
+            Cardinal resIndex = i - 1;
+            
+            if (strstr(fallbackResources[resIndex], "*background:") ||
+                strstr(fallbackResources[resIndex], "*foreground:"))
             {
                 /* Qualify by application name to prevent them from being
                    converted against the wrong colormap. */
                 char buf[1024] = "*" APP_NAME;
-                strcat(buf, fallbackResources[i]);
+                strcat(buf, fallbackResources[resIndex]);
                 XrmPutLineResource(&db, buf);
             }
         }
