@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.74 2002/11/13 21:57:44 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.75 2002/11/28 23:22:29 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1158,6 +1158,19 @@ static void translatePrefFormats(int convertOld, int fileVer)
 
 void SaveNEditPrefs(Widget parent, int quietly)
 {
+    const char* prefFileName = GetRCFileName(NEDIT_RC);
+    if (prefFileName == NULL)
+    {
+        /*  GetRCFileName() might return NULL if an error occurs during
+            creation of the preference file directory. */
+        DialogF(DF_WARN,
+                parent,
+                1,
+                "Unable to save preferences: Cannot determine filename.",
+                "Dismiss");
+        return;
+    }
+
     if (!quietly) {
         if (DialogF(DF_INF, parent, 2, ImportedFile == NULL ?
                 "Default preferences will be saved in the file:\n"
@@ -1168,7 +1181,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 "%s\n"
                 "SAVING WILL INCORPORATE SETTINGS\n"
                 "FROM FILE: %s", "OK", "Cancel",
-                GetRCFileName(NEDIT_RC), ImportedFile) == 2)
+                prefFileName, ImportedFile) == 2)
         return;
     }    
 #ifndef VMS
@@ -1182,7 +1195,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
     strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-    if (!SavePreferences(XtDisplay(parent), GetRCFileName(NEDIT_RC), HeaderText,
+    if (!SavePreferences(XtDisplay(parent), prefFileName, HeaderText,
             PrefDescrip, XtNumber(PrefDescrip)))
     {
         DialogF(DF_WARN,
@@ -1190,7 +1203,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 1,
                 "Unable to save preferences in %s",
                 "Dismiss",
-                GetRCFileName(NEDIT_RC));
+                prefFileName);
     }
 
 #ifndef VMS

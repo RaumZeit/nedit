@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.66 2002/11/08 20:22:45 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.67 2002/11/28 23:22:28 yooden Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -4260,6 +4260,13 @@ void WriteNEditDB(void)
     static char fileHeader[] =
     	    "# File name database for NEdit Open Previous command\n";
     
+    if (fullName == NULL)
+    {
+        /*  GetRCFileName() might return NULL if an error occurs during
+            creation of the preference file directory. */
+        return;
+    }
+
     /* If the Open Previous command is disabled, just return */
     if (GetPrefMaxPrevOpenFiles() == 0)
     	return;
@@ -4299,6 +4306,13 @@ void ReadNEditDB(void)
     static char badFilenameChars[] = "\n\t*?()[]{}";
 #endif
     
+    if (fullName == NULL)
+    {
+        /*  GetRCFileName() might return NULL if an error occurs during
+            creation of the preference file directory. */
+        return;
+    }
+
     /* If the Open Previous command is disabled, just return */
     if (GetPrefMaxPrevOpenFiles() == 0)
     	return;

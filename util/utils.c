@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.18 2002/10/26 00:06:42 yooden Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.19 2002/11/28 23:22:29 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -254,10 +254,11 @@ extern int Max3(int i1, int i2, int i3)
 **      - fullPath points to a buffer of at least MAXPATHLEN
 **
 **  Returns:
+**      - NULL if an error occurs while creating a directory
 **      - Pointer to a static array containing the file name
-**      - Exits when the intended rc file directory can not be created
+**
 */
-const char* GetRCFileName(const int type)
+const char* GetRCFileName(int type)
 {
     static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
     static int namesDetermined = False;
@@ -299,9 +300,9 @@ const char* GetRCFileName(const int type)
                     if (mkdir(defaultNEditHome, 0777) != 0)
                     {
                         perror("nedit: Error while creating rc file directory"
-                                " $HOME/" DEFAULT_NEDIT_HOME
+                                " $HOME/" DEFAULT_NEDIT_HOME "\n"
                                 " (Make sure all parent directories exist.)");
-                        exit(EXIT_FAILURE);
+                        return NULL;
                     }
                 }
 
@@ -323,8 +324,8 @@ const char* GetRCFileName(const int type)
                 if (mkdir(nedit_home, 0777) != 0)
                 {
                     perror("nedit: Error while creating rc file directory $NEDIT_HOME\n"
-                            "(Make sure all parent directories exist.)");
-                    exit(EXIT_FAILURE);
+                            "nedit: (Make sure all parent directories exist.)");
+                    return NULL;
                 }
             }
 #endif /* #ifndef VMS */
