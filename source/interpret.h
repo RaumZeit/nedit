@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.4 2001/03/05 15:00:13 slobasso Exp $ */
+/* $Id: interpret.h,v 1.5 2001/03/26 15:46:48 slobasso Exp $ */
 #define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
@@ -71,12 +71,13 @@ void InitMacroGlobals(void);
 
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
-int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
-void arrayDelete(DataValue *theArray, char *keyStr);
-void arrayDeleteAll(DataValue *theArray);
-int arraySize(DataValue *theArray);
-int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
-int copyArray(DataValue *dstArray, DataValue *srcArray);
+struct SparseArrayEntry *ArrayNew(void);
+int ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
+void ArrayDelete(DataValue *theArray, char *keyStr);
+void ArrayDeleteAll(DataValue *theArray);
+int ArraySize(DataValue *theArray);
+int ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
+int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */

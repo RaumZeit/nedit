@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.11 2001/03/06 19:49:47 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.12 2001/03/26 15:46:48 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1000,7 +1000,7 @@ static int assign(void)      /* assign top value to next symbol */
     else
         dataPtr = &sym->value;
     if (StackP->tag == ARRAY_TAG) {
-        copyArray(dataPtr, StackP);
+        ArrayCopy(dataPtr, StackP);
     }
     else {
         *dataPtr = *StackP;
@@ -1034,7 +1034,7 @@ static int add(void)
         if (leftVal.tag == ARRAY_TAG) {
             SparseArrayEntry *leftIter, *rightIter;
             resultArray.tag = ARRAY_TAG;
-            resultArray.val.arrayPtr = NULL;
+            resultArray.val.arrayPtr = ArrayNew();
             
             POP(rightVal)
             POP(leftVal)
@@ -1046,25 +1046,25 @@ static int add(void)
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
                     if (compareResult < 0) {
-                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                         leftIter = arrayIterateNext(leftIter);
                     }
                     else if (compareResult > 0) {
-                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                         rightIter = arrayIterateNext(rightIter);
                     }
                     else {
-                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                         leftIter = arrayIterateNext(leftIter);
                         rightIter = arrayIterateNext(rightIter);
                     }
                 }
                 else if (leftIter) {
-                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                     leftIter = arrayIterateNext(leftIter);
                 }
                 else {
-                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                     rightIter = arrayIterateNext(rightIter);
                 }
                 if (!insertResult) {
@@ -1101,7 +1101,7 @@ static int subtract(void)
         if (leftVal.tag == ARRAY_TAG) {
             SparseArrayEntry *leftIter, *rightIter;
             resultArray.tag = ARRAY_TAG;
-            resultArray.val.arrayPtr = NULL;
+            resultArray.val.arrayPtr = ArrayNew();
             
             POP(rightVal)
             POP(leftVal)
@@ -1113,7 +1113,7 @@ static int subtract(void)
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
                     if (compareResult < 0) {
-                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                         leftIter = arrayIterateNext(leftIter);
                     }
                     else if (compareResult > 0) {
@@ -1125,7 +1125,7 @@ static int subtract(void)
                     }
                 }
                 else if (leftIter) {
-                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                     leftIter = arrayIterateNext(leftIter);
                 }
                 if (!insertResult) {
@@ -1265,7 +1265,7 @@ static int bitAnd(void)
         if (leftVal.tag == ARRAY_TAG) {
             SparseArrayEntry *leftIter, *rightIter;
             resultArray.tag = ARRAY_TAG;
-            resultArray.val.arrayPtr = NULL;
+            resultArray.val.arrayPtr = ArrayNew();
             
             POP(rightVal)
             POP(leftVal)
@@ -1282,7 +1282,7 @@ static int bitAnd(void)
                     rightIter = arrayIterateNext(rightIter);
                 }
                 else {
-                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                     leftIter = arrayIterateNext(leftIter);
                     rightIter = arrayIterateNext(rightIter);
                 }
@@ -1320,7 +1320,7 @@ static int bitOr(void)
         if (leftVal.tag == ARRAY_TAG) {
             SparseArrayEntry *leftIter, *rightIter;
             resultArray.tag = ARRAY_TAG;
-            resultArray.val.arrayPtr = NULL;
+            resultArray.val.arrayPtr = ArrayNew();
             
             POP(rightVal)
             POP(leftVal)
@@ -1332,11 +1332,11 @@ static int bitOr(void)
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
                     if (compareResult < 0) {
-                        insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                        insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                         leftIter = arrayIterateNext(leftIter);
                     }
                     else if (compareResult > 0) {
-                        insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                        insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                         rightIter = arrayIterateNext(rightIter);
                     }
                     else {
@@ -1345,11 +1345,11 @@ static int bitOr(void)
                     }
                 }
                 else if (leftIter) {
-                    insertResult = arrayInsert(&resultArray, leftIter->key, &leftIter->value);
+                    insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
                     leftIter = arrayIterateNext(leftIter);
                 }
                 else {
-                    insertResult = arrayInsert(&resultArray, rightIter->key, &rightIter->value);
+                    insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
                     rightIter = arrayIterateNext(rightIter);
                 }
                 if (!insertResult) {
@@ -1661,12 +1661,12 @@ static int branchNever(void)
 ** this does not duplicate the key/node data since they are never
 ** modified, only replaced
 */
-int copyArray(DataValue *dstArray, DataValue *srcArray)
+int ArrayCopy(DataValue *dstArray, DataValue *srcArray)
 {
     SparseArrayEntry *srcIter;
     
     dstArray->tag = ARRAY_TAG;
-    dstArray->val.arrayPtr = NULL;
+    dstArray->val.arrayPtr = ArrayNew();
     
     srcIter = arrayIterateFirst(srcArray);
     while (srcIter) {
@@ -1674,16 +1674,16 @@ int copyArray(DataValue *dstArray, DataValue *srcArray)
             int errNum;
             DataValue tmpArray;
             
-            errNum = copyArray(&tmpArray, &srcIter->value);
+            errNum = ArrayCopy(&tmpArray, &srcIter->value);
             if (errNum != STAT_OK) {
                 return(errNum);
             }
-            if (!arrayInsert(dstArray, srcIter->key, &tmpArray)) {
+            if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
                 return(execError("array copy failed", NULL));
             }
         }
         else {
-            if (!arrayInsert(dstArray, srcIter->key, &srcIter->value)) {
+            if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
                 return(execError("array copy failed", NULL));
             }
         }
@@ -1804,10 +1804,15 @@ static void arrayDisposeNode(rbTreeNode *src)
     src->color = -1;
 }
 
+struct SparseArrayEntry *ArrayNew(void)
+{
+	return((struct SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator));
+}
+
 /*
 ** insert a DataValue into an array, allocate the array in needed
 */
-int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
+int ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
 {
     SparseArrayEntry tmpEntry;
     rbTreeNode *insertedNode;
@@ -1816,7 +1821,7 @@ int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
     tmpEntry.value = *theValue;
     
     if (theArray->val.arrayPtr == NULL) {
-        theArray->val.arrayPtr = (struct SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator);
+        theArray->val.arrayPtr = ArrayNew();
     }
     if (theArray->val.arrayPtr != NULL) {
         insertedNode = rbTreeInsert((rbTreeNode *)(theArray->val.arrayPtr),
@@ -1835,7 +1840,7 @@ int arrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
 /*
 ** remove a node from an array whose key matches keyStr
 */
-void arrayDelete(DataValue *theArray, char *keyStr)
+void ArrayDelete(DataValue *theArray, char *keyStr)
 {
     SparseArrayEntry searchEntry;
 
@@ -1849,7 +1854,7 @@ void arrayDelete(DataValue *theArray, char *keyStr)
 /*
 ** remove all nodes from an array
 */
-void arrayDeleteAll(DataValue *theArray)
+void ArrayDeleteAll(DataValue *theArray)
 {
     
     if (theArray->val.arrayPtr) {
@@ -1867,7 +1872,7 @@ void arrayDeleteAll(DataValue *theArray)
 /*
 ** returns the number of elements (nodes containing values) of an array
 */
-int arraySize(DataValue *theArray)
+int ArraySize(DataValue *theArray)
 {
     if (theArray->val.arrayPtr) {
         return(rbTreeSize((rbTreeNode *)theArray->val.arrayPtr));
@@ -1881,7 +1886,7 @@ int arraySize(DataValue *theArray)
 ** retrieves an array node whose key matches
 ** returns 1 for success 0 for not found
 */
-int arrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
+int ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
 {
     SparseArrayEntry searchEntry;
     rbTreeNode *foundNode;
@@ -1949,7 +1954,7 @@ static int arrayRef(void)
 
         POP(srcArray)
         if (srcArray.tag == ARRAY_TAG) {
-            if (!arrayGet(&srcArray, keyString, &valueItem)) {
+            if (!ArrayGet(&srcArray, keyString, &valueItem)) {
                 return(execError("referenced array value not in array", NULL));
             }
             PUSH(valueItem)
@@ -1962,7 +1967,7 @@ static int arrayRef(void)
     else {
         POP(srcArray)
         if (srcArray.tag == ARRAY_TAG) {
-            PUSH_INT(arraySize(&srcArray))
+            PUSH_INT(ArraySize(&srcArray))
             return(STAT_OK);
         }
         else {
@@ -2010,9 +2015,9 @@ static int arrayAssign(void)
 
         if (dstPtr->tag != ARRAY_TAG) {
             dstPtr->tag = ARRAY_TAG;
-            dstPtr->val.arrayPtr = NULL;
+            dstPtr->val.arrayPtr = ArrayNew();
         }
-        if (arrayInsert(dstPtr, keyString, &srcValue)) {
+        if (ArrayInsert(dstPtr, keyString, &srcValue)) {
             return(STAT_OK);
         }
         else {
@@ -2154,13 +2159,13 @@ static int inArray(void)
         inResult = 1;
         iter = arrayIterateFirst(&leftArray);
         while (inResult && iter) {
-            inResult = inResult && arrayGet(&theArray, iter->key, &theValue);
+            inResult = inResult && ArrayGet(&theArray, iter->key, &theValue);
             iter = arrayIterateNext(iter);
         }
     }
     else {
         POP_STRING(keyStr)
-        if (arrayGet(&theArray, keyStr, &theValue)) {
+        if (ArrayGet(&theArray, keyStr, &theValue)) {
             inResult = 1;
         }
     }
@@ -2206,11 +2211,11 @@ static int deleteArrayElement(void)
             return(errNum);
         }
 
-        arrayDelete(dstPtr, keyString);
+        ArrayDelete(dstPtr, keyString);
         return(STAT_OK);
     }
     else {
-        arrayDeleteAll(dstPtr);
+        ArrayDeleteAll(dstPtr);
         return(STAT_OK);
     }
 }

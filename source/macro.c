@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.16 2001/03/13 16:48:22 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.17 2001/03/26 15:46:48 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -3131,7 +3131,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
     
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = ArrayNew();
 
     beginPos = 0;
     indexNum = 0;
@@ -3159,7 +3159,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         strncpy(element.val.str, &sourceStr[beginPos], elementLen);
         element.val.str[elementLen] = 0;
 
-        if (!arrayInsert(result, allocIndexStr, &element)) {
+        if (!ArrayInsert(result, allocIndexStr, &element)) {
             *errMsg = "array element failed to insert: %s";
             return(False);
         }
@@ -3183,7 +3183,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
         element.val.str[0] = 0;
 
-        if (!arrayInsert(result, allocIndexStr, &element)) {
+        if (!ArrayInsert(result, allocIndexStr, &element)) {
             *errMsg = "array element failed to insert: %s";
             return(False);
         }
