@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.5 2004/05/04 07:41:18 edg Exp $
+ * $Id: BubbleButton.c,v 1.6 2004/07/13 11:35:41 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -44,11 +44,13 @@
 #include <BubbleButtonP.h>
 #include <SlideC.h>
 
+#include "../util/misc.h"
+
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.5 2004/05/04 07:41:18 edg Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.6 2004/07/13 11:35:41 edg Exp $";
 
 /*
    Widget methods, forward declarations
@@ -230,14 +232,15 @@ static void
 initialize(Widget request, Widget new_w, ArgList args, Cardinal *num_args)
 {
 Widget Shell;
+Arg arg[10];
+int argcnt = 0;
 
     BubbleButton_Timer(new_w) = (XtIntervalId)NULL;
     BubbleButton_DurationTimer(new_w) = (XtIntervalId)NULL;
     BubbleButton_Swapped(new_w) = False;
     BubbleButton_Slider(new_w) = NULL;
-    Shell = XtCreatePopupShell("BubbleShell", transientShellWidgetClass,
-    		new_w,
-    		NULL, 0);
+    Shell = CreatePopupShellWithBestVis("BubbleShell", 
+             transientShellWidgetClass, new_w, arg, argcnt);
     XtVaSetValues(Shell,
     	XmNoverrideRedirect, True,
     	NULL);
