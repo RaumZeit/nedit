@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.66 2002/08/22 08:10:37 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.67 2002/08/22 23:52:15 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1461,7 +1461,6 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
     int left, right, isRect, rectStart, rectEnd, horizOffset;
     int scrollOffset, leftX, rightX, y, rows, margin;
     int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
-    textBuffer *buf = window->buffer;
     textDisp *textD = ((TextWidget)textPane)->text.textD;
     int topChar = TextFirstVisiblePos(textPane);
     int lastChar = TextLastVisiblePos(textPane);
