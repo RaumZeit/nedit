@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.29 2001/08/23 14:39:30 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.30 2001/08/25 11:55:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -390,7 +390,7 @@ void FindBestVisual(Display *display, const char *appName, char *appClass,
 	    if (visList[i].visual == DefaultVisual(display, screen))
 		bestVisual = i;
 	    if (visList[bestVisual].visual != DefaultVisual(display, screen)) {
-		for (j = 0; j < XtNumber(bestClasses); j++) {
+		for (j = 0; j < (int)XtNumber(bestClasses); j++) {
 		    if (visList[i].class == bestClasses[j] && j > bestClass) {
 			bestClass = j;
 			bestVisual = i;
@@ -1368,7 +1368,7 @@ static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
 	    passTxt[pos+j] = passTxt[pos];
     if (j < 0)				/* compress case */
 	for (pos = txtVerStr->startPos + numCharsTyped; 
-			     pos <= strlen(passTxt)+1; ++pos)
+			     pos <= (int)strlen(passTxt)+1; ++pos)
 	    passTxt[pos] = passTxt[pos-j];
     /* then copy text to be inserted into passTxt */
     for (pos = txtVerStr->startPos, i = 0; i < numCharsTyped; ++i) {
@@ -1511,7 +1511,7 @@ static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo)
 	if (!isMenu) {
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		    &numChildren, NULL);
-	    for (i=0; i<numChildren; i++)
+	    for (i=0; i<(int)numChildren; i++)
     		addMnemonicGrabs(dialog, children[i], unmodifiedToo);
     	}
     } else {
@@ -1563,7 +1563,7 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode)
 	if (!isMenu) {
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		    &numChildren, NULL);
-	    for (i=0; i<numChildren; i++)
+	    for (i=0; i<(int)numChildren; i++)
     		findAndActivateMnemonic(children[i], keycode);
     	}
     } else {
@@ -1604,7 +1604,7 @@ static void addAccelGrabs(Widget topWidget, Widget w)
     if (XtIsComposite(w)) {
 	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		&numChildren, NULL);
-	for (i=0; i<numChildren; i++)
+	for (i=0; i<(int)numChildren; i++)
     	    addAccelGrabs(topWidget, children[i]);
     } else if (XtClass(w) == xmCascadeButtonWidgetClass) {
 	XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
@@ -1753,7 +1753,7 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
     if (XtIsComposite(w)) {
 	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		&numChildren, NULL);
-	for (i=0; i<numChildren; i++)
+	for (i=0; i<(int)numChildren; i++)
     	    if (findAndActivateAccel(children[i], keyCode, modifiers, event))
 		return TRUE;
     } else if (XtClass(w) == xmCascadeButtonWidgetClass) {

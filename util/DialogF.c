@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.17 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.18 2001/08/25 11:55:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -192,7 +192,7 @@ unsigned DialogF (int dialog_type, Widget parent, unsigned n,
     else
     	df.apply_up = 0;		/* Apply button will not be managed */
 
-    for (argcount = 0; argcount < n; ++argcount) {   /* Set up button labels */
+    for (argcount = 0; argcount < (int)n; ++argcount) {   /* Set up button labels */
 	but_lbl = va_arg(var, char *);
 	but_lbl_xms[num_but_lbls] = XmStringCreateLtoR (but_lbl, 
 		XmSTRING_DEFAULT_CHARSET);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.9 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: prefFile.c,v 1.10 2001/08/25 11:55:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *
@@ -342,7 +342,7 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
       	*(int *)rsrcDescrip->valueAddr = 0;
     	return False;
       case PREF_STRING:
-	if (strlen(string) >= (int)rsrcDescrip->arg)
+	if ((int)strlen(string) >= (int)rsrcDescrip->arg)
       	    return False;
 	strncpy(rsrcDescrip->valueAddr, string, (int)rsrcDescrip->arg);
       	return True;
