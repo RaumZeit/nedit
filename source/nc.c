@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.16 2001/12/04 17:50:37 amai Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.17 2001/12/05 10:16:42 amai Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -68,12 +68,12 @@ static void printNcVersion(void);
 static Display *TheDisplay;
 
 static const char cmdLineHelp[] =
-#ifndef VMS
+#ifdef VMS
+"";
+#else
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
            [-geometry geometry] [-iconic] [-V|-version] [--] [file...]\n";
-#else
-"";
 #endif /*VMS*/
 
 /* Structure to hold X Resource values */
@@ -171,12 +171,12 @@ int main(int argc, char **argv)
     	*outPtr++ = ' ';
     }
     *outPtr = '\0';
-#endif
+#endif /* VMS */
 
     /* Convert command line arguments into a command string for the server */
     commandString = parseCommandLine(argc, argv);
     if (commandString == NULL) {
-        XtWarning ("nc: Invalid commandline argument\n");
+        fprintf(stderr, "nc: Invalid commandline argument\n");
 	exit(EXIT_FAILURE);
     }
     /* Open the display and find the root window */
@@ -331,7 +331,7 @@ static int startServer(const char *message, const char *commandLineArgs)
 #else
 #if defined(__EMX__)  /* OS/2 */
     /* Unfortunately system() calls a shell determined by the environment
-       variables COMSPEC and EMXSHELL. We have to figure out which one */
+       variables COMSPEC and EMXSHELL. We have to figure out which one. */
     {
     char *sh, *base;
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
@@ -501,7 +501,7 @@ static char *parseCommandLine(int argc, char **argv)
     	    outPtr += strlen(geometry);
     	    *outPtr++ = '\n';
 	    toDoCommand = "";
-#endif
+#endif /* VMS */
     	}
     }
 #ifdef VMS
