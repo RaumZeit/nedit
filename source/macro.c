@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.22 2001/04/16 23:20:11 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.23 2001/04/17 18:47:55 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -370,10 +370,11 @@ static char* MouseActions[] = {"grab_focus", "extend_adjust", "extend_start",
 /* List of actions to not record because they 
    generate further actions, more suitable for recording */
 static char* RedundantActions[] = {"open_dialog", "save_as_dialog",
-	"include_file_dialog", "load_tags_file_dialog", "find_dialog",
-	"replace_dialog", "goto_line_number_dialog", "control_code_dialog",
-	"filter_selection_dialog", "execute_command_dialog", "repeat_dialog",
-	"revert_to_saved_dialog", "start_incremental_find"};
+    "revert_to_saved_dialog", "include_file_dialog", "load_macro_file_dialog",
+    "load_tags_file_dialog", "find_dialog", "replace_dialog",
+    "goto_line_number_dialog", "mark_dialog", "goto_mark_dialog",
+    "control_code_dialog", "filter_selection_dialog", "execute_command_dialog",
+    "repeat_dialog", "start_incremental_find"};
 
 /* The last command executed (used by the Repeat command) */
 static char *LastCommand = NULL;
