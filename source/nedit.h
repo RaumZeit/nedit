@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.20 2002/01/08 14:33:11 amai Exp $ */
+/* $Id: nedit.h,v 1.21 2002/03/02 17:02:22 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -231,6 +231,7 @@ typedef struct _WindowInfo {
     Widget      beepOnSearchWrapDefItem;
     Widget	keepSearchDlogsDefItem;
     Widget	searchWrapsDefItem;
+    Widget  appendLFItem;
     Widget	sortOpenPrevDefItem;
     Widget	allTagsDefItem;
     Widget	smartTagsDefItem;

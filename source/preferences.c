@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.46 2002/02/14 21:08:10 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.47 2002/03/02 17:02:22 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -224,6 +224,7 @@ static struct prefData {
     XFontStruct *boldItalicFontStruct;
     int repositionDialogs;	/* w. to reposition dialogs under the pointer */
     int sortOpenPrevMenu;   	/* whether to sort the "Open Previous" menu */
+    int appendLF;       /* Whether to append LF at the end of each file */
     int mapDelete;		/* whether to map delete to backspace */
     int stdOpenDialog;		/* w. to retain redundant text field in Open */
     char tagFile[MAXPATHLEN];	/* name of tags file to look for at startup */
@@ -677,6 +678,8 @@ static PrefDescripRec PrefDescrip[] = {
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True",
     	&PrefData.repositionDialogs, NULL, True},
 #endif
+    {"appendLF", "AppendLF", PREF_BOOLEAN, "True",
+        &PrefData.appendLF, NULL, True},
     {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True",
     	&PrefData.sortOpenPrevMenu, NULL, True},
     {"statisticsLine", "StatisticsLine", PREF_BOOLEAN, "False",
@@ -1451,6 +1454,16 @@ void SetPrefRepositionDialogs(int state)
 int GetPrefRepositionDialogs(void)
 {
     return PrefData.repositionDialogs;
+}
+
+void SetPrefAppendLF(int state)
+{
+    setIntPref(&PrefData.appendLF, state);
+}
+
+int GetPrefAppendLF(void)
+{
+    return PrefData.appendLF;
 }
 
 void SetPrefSortOpenPrevMenu(int state)

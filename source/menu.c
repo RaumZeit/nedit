@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.50 2002/01/15 17:05:23 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.51 2002/03/02 17:02:22 yooden Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -148,6 +148,7 @@ static void beepOnSearchWrapDefCB(Widget w, WindowInfo *window, caddr_t callData
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
 static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -871,6 +872,11 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->showMatchingRangeDefItem = createMenuRadioToggle(subSubPane,
 	    "range", "Range", 'R', showMatchingRangeDefCB, window,
 	    GetPrefShowMatching() == FLASH_RANGE, SHORT);
+
+    /* Append LF at end of files on save */
+    window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
+            "Append Line Feed on Save", 'v', appendLFCB, NULL,
+            GetPrefAppendLF(), FULL);
 
     window->sortOpenPrevDefItem = createMenuToggle(subPane, "sortOpenPrevMenu",
     	    "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window,
@@ -1814,6 +1820,18 @@ static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefSearchWraps(state);
     for (win=WindowList; win!=NULL; win=win->next)
     	XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
+}
+
+static void appendLFCB(Widget w, WindowInfo* window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    SetPrefAppendLF(state);
+    for (win = WindowList; win != NULL; win = win->next)
+    {
+        XmToggleButtonSetState(win->appendLFItem, state, False);
+    }
 }
 
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)

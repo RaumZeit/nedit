@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.41 2001/12/24 09:46:57 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.42 2002/03/02 17:02:22 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -736,10 +736,13 @@ static int doSave(WindowInfo *window)
 	convertToMacFileString(fileString, fileLen);
  	
     /* add a terminating newline if the file doesn't already have one for
-       Unix utilities which get confused otherwise */
-    if (window->fileFormat == UNIX_FILE_FORMAT && fileLen != 0 &&
-	    fileString[fileLen-1] != '\n')
-    	fileString[fileLen++] = '\n'; 	 /* null terminator no longer needed */
+    Unix utilities which get confused otherwise */
+    if (window->fileFormat == UNIX_FILE_FORMAT && fileLen != 0
+            && fileString[fileLen-1] != '\n'
+            && GetPrefAppendLF())
+    {
+        fileString[fileLen++] = '\n';   /* null terminator no longer needed */
+    }
     
     /* write to the file */
 #ifdef IBM_FWRITE_BUG

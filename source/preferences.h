@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.17 2002/01/05 01:48:21 edel Exp $ */
+/* $Id: preferences.h,v 1.18 2002/03/02 17:02:22 yooden Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -65,6 +65,8 @@ void SetPrefHighlightSyntax(int state);
 int GetPrefHighlightSyntax(void);
 void SetPrefRepositionDialogs(int state);
 int GetPrefRepositionDialogs(void);
+void SetPrefAppendLF(int state);
+int GetPrefAppendLF(void);
 void SetPrefSortOpenPrevMenu(int state);
 int GetPrefSortOpenPrevMenu(void);
 void SetPrefTagFile(const char *tagFileName);

@@ -803,11 +803,12 @@ File Format
   Customizing -> Preferences, and Basic Operation -> Shifting and Filling.
 
   The last and most minute of format differences is the terminating newline. 
-  NEdit, like vi and approximately half of Unix editors, enforces a final
-  terminating newline on all of the files that it writes.  NEdit does this
-  because some Unix compilers and utilities require it, and fail in various
-  ways on files which do not have it.  Emacs does not enforce this rule.  Users
-  are divided on which is best.
+  Some Unix compilers and utilities require a final terminating newline on all
+  files they read and fail in various ways on files which do not have it.  Vi
+  and approximately half of Unix editors enforce the terminating newline on all
+  files that they write; Emacs does not enforce this rule.  Users are divided
+  on which is best.  NEdit makes the final terminating newline optional
+  (Preferences -> Default Settings -> Append Line Feed on Save).
    ----------------------------------------------------------------------
 
 Features for Programming
@@ -3161,7 +3162,11 @@ Preferences
 
 **Syntax Highlighting**
   Program and configure enhanced text display for new or supported languages
-  (See Features for Programming -> Syntax Highlighting).
+  (See Features for Programming -> Syntax_Highlighting_).
+
+**Append Line Feed on Save**
+  Some UNIX tools expect that files end with a line feed. If this option is
+  activated, NEdit will append one if required.
 
 **Sort Open Prev. Menu**
   Option to order the File -> Open Previous menu alphabetically, versus in
