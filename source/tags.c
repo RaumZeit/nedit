@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.43 2002/08/12 21:21:36 tringali Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.44 2002/09/04 08:40:01 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -144,11 +144,10 @@ tagFile *TagsFileList = NULL;
 static tag **Tips = NULL;
 tagFile *TipsFileList = NULL;
 
-static int searchMode = TAG;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
-static int nTags = 0;               /* The number of tags that match a search */
+static int searchMode = TAG;
 static const char *tagName;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
@@ -1154,7 +1153,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
     const char *fileToSearch, *searchString, *tagPath;
     char **dupTagsList;
     int startPos, i, pathMatch=0,samePath=0,
-            langMode;
+            langMode, nMatches=0;
     tagFile *FileList;
     
     if (searchMode == TIP)
@@ -1167,7 +1166,6 @@ static int findAllMatches(WindowInfo *window, const char *string)
         XBell(TheDisplay, 0);
         return -1;
     }
-    nTags=0;
     tagName=string;
 
     /* First look up all of the matching tags */
@@ -1183,29 +1181,29 @@ static int findAllMatches(WindowInfo *window, const char *string)
             continue;
         }
         if (*fileToSearch == '/') 
-            strcpy(tagFiles[nTags], fileToSearch);
+            strcpy(tagFiles[nMatches], fileToSearch);
         else 
-            sprintf(tagFiles[nTags],"%s%s",tagPath,fileToSearch);
-        strcpy(tagSearch[nTags],searchString);
-        tagPosInf[nTags]=startPos;
-        ParseFilename(tagFiles[nTags], filename, pathname);
+            sprintf(tagFiles[nMatches],"%s%s",tagPath,fileToSearch);
+        strcpy(tagSearch[nMatches],searchString);
+        tagPosInf[nMatches]=startPos;
+        ParseFilename(tagFiles[nMatches], filename, pathname);
         /* Is this match in the current file?  If so, use it! */
         if (GetPrefSmartTags() && !strcmp(window->filename,filename)
                                && !strcmp(window->path,pathname)   ) {
-            if (nTags) {
-                strcpy(tagFiles[0],tagFiles[nTags]);
-                strcpy(tagSearch[0],tagSearch[nTags]);
-                tagPosInf[0]=tagPosInf[nTags];
+            if (nMatches) {
+                strcpy(tagFiles[0],tagFiles[nMatches]);
+                strcpy(tagSearch[0],tagSearch[nMatches]);
+                tagPosInf[0]=tagPosInf[nMatches];
             }
-            nTags = 1;
+            nMatches = 1;
             break;
         }
         /* Is this match in the same dir. as the current file? */
         if (!strcmp(window->path,pathname)) {
             samePath++;
-            pathMatch=nTags;
+            pathMatch=nMatches;
         }
-        if (++nTags >= MAXDUPTAGS) {
+        if (++nMatches >= MAXDUPTAGS) {
             DialogF(DF_WARN, dialogParent,1,
                     "Too many duplicate tags, first %d shown","OK",MAXDUPTAGS);
             break;
@@ -1215,37 +1213,37 @@ static int findAllMatches(WindowInfo *window, const char *string)
     }
 
     /* Did we find any matches? */
-    if (!nTags) {
+    if (!nMatches) {
         return 0;
     }
     
     /* Only one of the matches is in the same dir. as this file.  Use it. */
-    if (GetPrefSmartTags() && samePath == 1 && nTags > 1) {
+    if (GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
         strcpy(tagFiles[0],tagFiles[pathMatch]);
         strcpy(tagSearch[0],tagSearch[pathMatch]);
         tagPosInf[0]=tagPosInf[pathMatch];
-        nTags = 1;
+        nMatches = 1;
     }
     
     /*  If all of the tag entries are the same file, just use the first.
      */
     if (GetPrefSmartTags()) {
-        for (i=1; i<nTags; i++) 
+        for (i=1; i<nMatches; i++) 
             if (strcmp(tagFiles[i],tagFiles[i-1]))
                 break;
-        if (i==nTags) 
-            nTags = 1;
+        if (i==nMatches) 
+            nMatches = 1;
     }
     
-    if (nTags>1) {
-        if (!(dupTagsList = (char **) malloc(sizeof(char *) * nTags))) {
+    if (nMatches>1) {
+        if (!(dupTagsList = (char **) malloc(sizeof(char *) * nMatches))) {
             fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
             XBell(TheDisplay, 0);
             return -1;
         }
-        for (i=0; i<nTags; i++) {
+        for (i=0; i<nMatches; i++) {
             ParseFilename(tagFiles[i], filename, pathname);
-            if ((i<nTags-1 && !strcmp(tagFiles[i],tagFiles[i+1])) ||
+            if ((i<nMatches-1 && !strcmp(tagFiles[i],tagFiles[i+1])) ||
                     (i>0 && !strcmp(tagFiles[i],tagFiles[i-1]))) {
                 if(*(tagSearch[i]) && (tagPosInf[i] != -1)) { /* etags */
                     sprintf(temp,"%2d. %s%s %8i %s", i+1, pathname, 
@@ -1266,9 +1264,9 @@ static int findAllMatches(WindowInfo *window, const char *string)
             }
             strcpy(dupTagsList[i],temp);
         }
-        createSelectMenu(dialogParent,"tagList","Duplicate Tags",nTags,
+        createSelectMenu(dialogParent,"tagList","Duplicate Tags",nMatches,
                 dupTagsList);
-        for (i=0; i<nTags; i++)
+        for (i=0; i<nMatches; i++)
             free(dupTagsList[i]);
         free(dupTagsList);
         return 1;
@@ -1374,7 +1372,7 @@ static void showMatchingCalltip( Widget parent, int i )
     fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL) {
         fclose(fp);
-        DialogF(DF_ERR, parent, 1, "File is too large to edit",
+        DialogF(DF_ERR, parent, 1, "File is too large to load",
                 "Dismiss");
         return;
     }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.35 2002/09/04 05:58:52 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.36 2002/09/04 08:40:01 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -3462,10 +3462,12 @@ int TextDGetCalltipID(textDisp *textD, int calltipID) {
 /*
 ** Update the position of the current calltip if one exists, else do nothing
 */
+#define CALLTIP_EDGE_GUARD 5
 void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     int lineHeight = textD->ascent + textD->descent;
-    Position txtX, txtY, txtBorderWidth, abs_x, abs_y;
-    int int_x, int_y;
+    Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
+    XWindowAttributes screenAttr;
+    int rel_x, rel_y;
     
     if( textD->calltipID == 0 ) 
         return;
@@ -3475,24 +3477,52 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     XtVaGetValues(textD->w,
         XmNx, &txtX,
         XmNy, &txtY,
-        XmNborderWidth, &txtBorderWidth,
         NULL);
     if( textD->calltipAnchored ) {
         /* Put it at the anchor position */
-        if (!TextDPositionToXY(textD, textD->calltipPos, &int_x, &int_y))
+        if (!TextDPositionToXY(textD, textD->calltipPos, &rel_x, &rel_y))
             return;
     } else {
-        /* Put it on a line near the cursor, preserving its original x pos. */
-        if (!TextDPositionToXY(textD, textD->cursorPos, &int_x, &int_y))
+        /* Put underneath the cursor, preserving its original x pos. */
+        if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y))
             return;
-        int_x = textD->calltipPos;
+        rel_x = textD->calltipPos;
     }
-    int_y += lineHeight/2;
-    XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
-    XtVaSetValues( textD->calltipShell, 
-            XmNx, abs_x + txtBorderWidth, 
-            XmNy, abs_y + txtBorderWidth,
-            NULL );
+
+    XtVaGetValues(textD->calltipShell, XmNwidth, &tipWidth, XmNheight, 
+            &tipHeight, XmNborderWidth, &borderWidth, NULL);
+    rel_x += borderWidth;
+    rel_y += lineHeight/2 + borderWidth;
+    /* To implement "center", "left", and "right", adjust rel_x here */
+    /* Ditto for "above" with rel_y */
+    
+    XtTranslateCoords(textD->w, rel_x, rel_y, &abs_x, &abs_y);
+    /* fprintf(stderr, "%i, %i -> %i, %i -> ", rel_x, rel_y, abs_x, abs_y); */
+
+    /* To implement "strict" mode, skip the rest of this function until the 
+        last XtVaSetValues */
+    
+    XGetWindowAttributes(XtDisplay(textD->w), 
+            RootWindowOfScreen(XtScreen(textD->w)), &screenAttr);
+
+    /* make sure tip doesn't run off right or left side of screen */
+    if (abs_x + tipWidth >= screenAttr.width - CALLTIP_EDGE_GUARD)
+    	abs_x = screenAttr.width - tipWidth - CALLTIP_EDGE_GUARD;
+    if (abs_x < CALLTIP_EDGE_GUARD)
+        abs_x = CALLTIP_EDGE_GUARD;
+
+    /* If tip runs off bottom of screen, move it above line */
+    rel_y = abs_y;
+    if (abs_y + tipHeight >= screenAttr.height - CALLTIP_EDGE_GUARD)
+    	abs_y -= tipHeight + lineHeight + 2*borderWidth;
+    
+    /* Unless it goes off the top of screen.  If both ways go off the edge
+        then we prefer to put it below the line. */
+    if (abs_y < CALLTIP_EDGE_GUARD)
+        abs_y = rel_y;
+    
+    /* fprintf(stderr, "%i, %i\n", abs_x, abs_y); */
+    XtVaSetValues( textD->calltipShell, XmNx, abs_x, XmNy, abs_y, NULL );
 }
 
 /* 
@@ -3543,9 +3573,8 @@ static char *expandAllTabs( char *text, int tab_width ) {
 int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored, 
         int pos) {
     static int StaticCalltipID = 1;
-    int lineHeight = textD->ascent + textD->descent;
-    int int_x, int_y;
-    Position txtX, txtY, txtBorderWidth, abs_x, abs_y;
+    int rel_x, rel_y;
+    Position txtX, txtY;
     char *textCpy;
     XmString str;
     
@@ -3567,7 +3596,6 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
     XtVaGetValues(textD->w,
         XmNx, &txtX,
         XmNy, &txtY,
-        XmNborderWidth, &txtBorderWidth,
         NULL);
     
     /* Create the calltip widget on first request */
@@ -3596,34 +3624,32 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
     textD->calltipAnchored = anchored;
     if (anchored) {
         /* Put it at the specified position */
-        if (!TextDPositionToXY(textD, pos, &int_x, &int_y)) {
+        /* If position is not displayed, return 0 */
+        if (pos < textD->firstChar || pos > textD->lastChar ) {
             XBell(TheDisplay, 0);
             return 0;
         }
         textD->calltipPos = pos;
     } else {
         /* Put it next to the cursor */
-        if (!TextDPositionToXY(textD, textD->cursorPos, &int_x, &int_y)) {
+        if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y)) {
             XBell(TheDisplay, 0);
             return 0;
         }
         /* Store the x-offset for use when redrawing */
-        textD->calltipPos = int_x;
+        textD->calltipPos = rel_x;
     }
-    int_y += lineHeight/2; /* TextDPositionToXY gives xy of middle of line */
-    XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
-    XtVaSetValues( textD->calltipShell, 
-            XmNx, abs_x + txtBorderWidth, 
-            XmNy, abs_y + txtBorderWidth,
-            NULL );
-    /* Pop up the calltip */
-    XtPopup( textD->calltipShell, XtGrabNone );
-    textD->calltipID = StaticCalltipID;
-    
+
     /* Increment the static calltip ID.  Macro variables can only be int, 
         not unsigned, so have to work to keep it > 0 on overflow */
+    textD->calltipID = StaticCalltipID;
     if(++StaticCalltipID <= 0)
         StaticCalltipID = 1;
     
+    /* Realize the calltip's shell so that its width & height are known */
+    XtRealizeWidget( textD->calltipShell );
+    /* Move the calltip and pop it up */
+    TextDRedrawCalltip(textD, 0);
+    XtPopup( textD->calltipShell, XtGrabNone );
     return textD->calltipID;
 }
