@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.7 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.8 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -60,7 +60,7 @@ static void copyThruSlash(char **toString, char **fromString);
 /*
 ** Decompose a Unix file name into a file name and a path
 */
-int ParseFilename(char *fullname, char *filename, char *pathname)
+int ParseFilename(const char *fullname, char *filename, char *pathname)
 {
     int fullLen = strlen(fullname);
     int i, pathLen, fileLen;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.8 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: printUtils.c,v 1.9 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *
@@ -137,8 +137,8 @@ static Widget	Text1;
 static Widget	Text2;
 static Widget	Text3;
 static Widget	Text4;
-static char *PrintFileName;
-static char *PrintJobName;
+static const char *PrintFileName;
+static const char *PrintJobName;
 static char PrintCommand[MAX_PCMD_STR];	/* print command string */
 static char CopiesOption[MAX_OPT_STR];	/* # of copies argument string */
 static char QueueOption[MAX_OPT_STR];	/* queue name argument string */
@@ -185,9 +185,9 @@ static struct printPrefDescrip PrintPrefDescrip = {
 **	jobName		Title for the print banner page
 */
 #ifdef VMS
-void PrintFile(Widget parent, char *printFile, char *jobName, int delete)
+void PrintFile(Widget parent, const char *printFile, const char *jobName, int delete)
 #else
-void PrintFile(Widget parent, char *printFile, char *jobName)
+void PrintFile(Widget parent, const char *printFile, const char *jobName)
 #endif /*VMS*/
 {
     /* In case the program hasn't called LoadPrintPreferences, set up the

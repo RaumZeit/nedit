@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.22 2001/04/04 19:38:33 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.23 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -153,23 +153,23 @@ static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
 	XmAnyCallbackStruct *callData);
 static void iSearchTextKeyEH(Widget w, WindowInfo *window,
 	XKeyEvent *event, Boolean *continueDispatch);
-static int searchLiteral(char *string, char *searchString, int caseSense, 
+static int searchLiteral(const char *string, const char *searchString, int caseSense, 
 	int direction, int wrap, int beginPos, int *startPos, int *endPos,
 	int *searchExtent);
-static int searchLiteralWord(char *string, char *searchString, int caseSense,
+static int searchLiteralWord(const char *string, const char *searchString, int caseSense,
  	int direction, int wrap, int beginPos, int *startPos, int *endPos, 
-        char * delimiters);
-static int searchRegex(char *string, char *searchString, int direction,
+        const char * delimiters);
+static int searchRegex(const char *string, const char *searchString, int direction,
 	int wrap, int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags);
-static int forwardRegexSearch(char *string, char *searchString, int wrap,
+	const char *delimiters, int defaultFlags);
+static int forwardRegexSearch(const char *string, const char *searchString, int wrap,
 	int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags);
-static int backwardRegexSearch(char *string, char *searchString, int wrap,
+	const char *delimiters, int defaultFlags);
+static int backwardRegexSearch(const char *string, const char *searchString, int wrap,
 	int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags);
-static void upCaseString(char *outString, char *inString);
-static void downCaseString(char *outString, char *inString);
+	const char *delimiters, int defaultFlags);
+static void upCaseString(char *outString, const char *inString);
+static void downCaseString(char *outString, const char *inString);
 static void resetFindTabGroup(WindowInfo *window);
 static void resetReplaceTabGroup(WindowInfo *window);
 static int searchMatchesSelection(WindowInfo *window, char *searchString,
@@ -3650,9 +3650,9 @@ int SearchWindow(WindowInfo *window, int direction, char *searchString,
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-int SearchString(char *string, char *searchString, int direction,
+int SearchString(const char *string, const char *searchString, int direction,
        int searchType, int wrap, int beginPos, int *startPos, int *endPos,
-       int *searchExtent, char *delimiters)
+       int *searchExtent, const char *delimiters)
 {
     switch (searchType) {
       case SEARCH_CASE_SENSE_WORD:
@@ -3718,9 +3718,9 @@ int StringToSearchType(const char * string, int *searchType)
 **  will suffice in that case.
 **  
 */
-static int searchLiteralWord(char *string, char *searchString, int caseSense, 
+static int searchLiteralWord(const char *string, const char *searchString, int caseSense, 
 	int direction, int wrap, int beginPos, int *startPos, int *endPos, 
-        char * delimiters)
+        const char * delimiters)
 {
 /* This is critical code for the speed of searches.			    */
 /* For efficiency, we define the macro DOSEARCH with the guts of the search */
@@ -3751,7 +3751,7 @@ static int searchLiteralWord(char *string, char *searchString, int caseSense,
 	} \
     }
 
-    register char *filePtr, *tempPtr, *ucPtr, *lcPtr;
+    register const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
     char lcString[SEARCHMAX], ucString[SEARCHMAX];
 						
     int cignore_L=0, cignore_R=0;
@@ -3817,7 +3817,7 @@ static int searchLiteralWord(char *string, char *searchString, int caseSense,
 }
 
 
-static int searchLiteral(char *string, char *searchString, int caseSense, 
+static int searchLiteral(const char *string, const char *searchString, int caseSense, 
 	int direction, int wrap, int beginPos, int *startPos, int *endPos,
 	int *searchExtent)
 {
@@ -3844,7 +3844,7 @@ static int searchLiteral(char *string, char *searchString, int caseSense,
 	} \
     } \
 
-    register char *filePtr, *tempPtr, *ucPtr, *lcPtr;
+    register const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
     char lcString[SEARCHMAX], ucString[SEARCHMAX];
 
     /* SEARCHMAX was fine in the original NEdit, but it should be done away with
@@ -3895,9 +3895,9 @@ static int searchLiteral(char *string, char *searchString, int caseSense,
     }
 }
 
-static int searchRegex(char *string, char *searchString, int direction,
+static int searchRegex(const char *string, const char *searchString, int direction,
 	int wrap, int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags)
+	const char *delimiters, int defaultFlags)
 {
     if (direction == SEARCH_FORWARD)
 	return forwardRegexSearch(string, searchString, wrap, 
@@ -3907,9 +3907,9 @@ static int searchRegex(char *string, char *searchString, int direction,
 	    beginPos, startPos, endPos, searchExtent, delimiters, defaultFlags);
 }
 
-static int forwardRegexSearch(char *string, char *searchString, int wrap,
+static int forwardRegexSearch(const char *string, const char *searchString, int wrap,
 	int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags)
+	const char *delimiters, int defaultFlags)
 {
     regexp *compiledRE = NULL;
     char *compileMsg;
@@ -3953,9 +3953,9 @@ static int forwardRegexSearch(char *string, char *searchString, int wrap,
     return FALSE;
 }
 
-static int backwardRegexSearch(char *string, char *searchString, int wrap,
+static int backwardRegexSearch(const char *string, const char *searchString, int wrap,
 	int beginPos, int *startPos, int *endPos, int *searchExtent,
-	char *delimiters, int defaultFlags)
+	const char *delimiters, int defaultFlags)
 {
     regexp *compiledRE = NULL;
     char *compileMsg;
@@ -4003,9 +4003,10 @@ static int backwardRegexSearch(char *string, char *searchString, int wrap,
     return FALSE;
 }
 
-static void upCaseString(char *outString, char *inString)
+static void upCaseString(char *outString, const char *inString)
 {
-    char *outPtr, *inPtr;
+    char *outPtr;
+    const char *inPtr;
     
     for (outPtr=outString, inPtr=inString; *inPtr!=0; inPtr++, outPtr++) {
     	*outPtr = toupper((unsigned char)*inPtr);
@@ -4013,9 +4014,10 @@ static void upCaseString(char *outString, char *inString)
     *outPtr = 0;
 }
 
-static void downCaseString(char *outString, char *inString)
+static void downCaseString(char *outString, const char *inString)
 {
-    char *outPtr, *inPtr;
+    char *outPtr;
+    const char *inPtr;
     
     for (outPtr=outString, inPtr=inString; *inPtr!=0; inPtr++, outPtr++) {
     	*outPtr = tolower((unsigned char)*inPtr);

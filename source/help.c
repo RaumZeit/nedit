@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.28 2001/04/03 08:06:25 amai Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.29 2001/04/06 09:49:55 amai Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -49,7 +49,7 @@ static const char CVSID[] = "$Id: help.c,v 1.28 2001/04/03 08:06:25 amai Exp $";
 #include "help.h"
 #include "file.h"
 
-static char *HelpTitles[NUM_TOPICS] = {
+static const char *HelpTitles[NUM_TOPICS] = {
 "Version",
 "Getting Started",
 "Finding and Replacing Text",
@@ -88,7 +88,7 @@ static char *HelpTitles[NUM_TOPICS] = {
 "Distribution Policy",
 "Tabs Dialog"};
 
-static char *HelpText[NUM_TOPICS] = {
+static const char *HelpText[NUM_TOPICS] = {
 "NEdit Version 5.2 DEVELOPMENT version\n\
 April, 2001\n\
 \n\
@@ -4541,7 +4541,7 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpAgainCB(Widget w, XtPointer clientData,
 	XtPointer callData);
 static void printCB(Widget w, XtPointer clientData, XtPointer callData);
-static void searchHelpText(Widget parent, int parentTopic, char *searchFor,
+static void searchHelpText(Widget parent, int parentTopic, const char *searchFor,
 	int allSections, int startPos, int startTopic);
 static int findTopicFromShellWidget(Widget shellWidget);
 
@@ -4718,7 +4718,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 	    HelpTitles[topic]);
 }
 
-static void searchHelpText(Widget parent, int parentTopic, char *searchFor,
+static void searchHelpText(Widget parent, int parentTopic, const char *searchFor,
 	int allSections, int startPos, int startTopic)
 {    
     int topic, beginMatch, endMatch;

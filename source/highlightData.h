@@ -1,5 +1,5 @@
-/* $Id: highlightData.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
-patternSet *FindPatternSet(char *langModeName);
+/* $Id: highlightData.h,v 1.4 2001/04/06 09:49:56 amai Exp $ */
+patternSet *FindPatternSet(const char *langModeName);
 int LoadHighlightString(char *inString, int convertOld);
 char *WriteHighlightString(void);
 int LoadStylesString(char *inString);

@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.3 2001/02/26 23:38:03 edg Exp $ */
+/* $Id: textBuf.h,v 1.4 2001/04/06 09:49:56 amai Exp $ */
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
@@ -45,20 +45,20 @@ textBuffer *BufCreate(void);
 textBuffer *BufCreatePreallocated(int requestedSize);
 void BufFree(textBuffer *buf);
 char *BufGetAll(textBuffer *buf);
-void BufSetAll(textBuffer *buf, char *text);
+void BufSetAll(textBuffer *buf, const char *text);
 char *BufGetRange(textBuffer *buf, int start, int end);
 char BufGetCharacter(textBuffer *buf, int pos);
 char *BufGetTextInRect(textBuffer *buf, int start, int end,
 	int rectStart, int rectEnd);
-void BufInsert(textBuffer *buf, int pos, char *text);
+void BufInsert(textBuffer *buf, int pos, const char *text);
 void BufRemove(textBuffer *buf, int start, int end);
-void BufReplace(textBuffer *buf, int start, int end, char *text);
+void BufReplace(textBuffer *buf, int start, int end, const char *text);
 void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
     	int fromEnd, int toPos);
-void BufInsertCol(textBuffer *buf, int column, int startPos, char *text,
+void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     	int *charsInserted, int *charsDeleted);
 void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
-	int rectEnd, char *text);
+	int rectEnd, const char *text);
 void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd);
 void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,

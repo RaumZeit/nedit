@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.11 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.12 2001/04/06 09:49:55 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -409,7 +409,7 @@ it, but not modify or re-save its contents.", "View", "Cancel");
     return TRUE;
 }   
 
-int IncludeFile(WindowInfo *window, char *name)
+int IncludeFile(WindowInfo *window, const char *name)
 {
     struct stat statbuf;
     int fileLen, readLen;
@@ -654,10 +654,12 @@ static int doSave(WindowInfo *window)
     /* open the file */
 #ifdef VMS
     fp = fopen(fullname, "w", "rfm = stmlf");
-#elif WRITES_DOS_TEXT
+#else
+#ifdef WRITES_DOS_TEXT
     fp = fopen(fullname, "wb");
 #else
     fp = fopen(fullname, "w");
+#endif /* WRITES_DOS_TEXT */
 #endif /* VMS */
     if (fp == NULL) {
     	DialogF(DF_WARN, window->shell, 1, "Unable to save %s:\n%s", "Dismiss",
@@ -1023,7 +1025,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
 ** Print a string (length is required).  parent is the dialog parent, for
 ** error dialogs, and jobName is the print title.
 */
-void PrintString(char *string, int length, Widget parent, char *jobName)
+void PrintString(const char *string, int length, Widget parent, const char *jobName)
 {
     char tmpFileName[L_tmpnam];    /* L_tmpnam defined in stdio.h */
     FILE *fp;

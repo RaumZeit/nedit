@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.20 2001/04/04 19:38:32 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.21 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -736,7 +736,7 @@ static XrmOptionDescRec OpTable[] = {
     {"-svrname", ".serverName", XrmoptionSepArg, (caddr_t)NULL},
 };
 
-static char HeaderText[] = "\
+static const char HeaderText[] = "\
 ! Preferences file for NEdit\n\
 !\n\
 ! This file is overwritten by the \"Save Defaults...\" command in NEdit \n\
@@ -814,8 +814,8 @@ static char *createExtString(char **extensions, int nExtensions);
 static char **readExtensionList(char **inPtr, int *nExtensions);
 static void updateLanguageModeSubmenu(WindowInfo *window);
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
-static int modeError(languageModeRec *lm, char *stringStart, char *stoppedAt,
-	char *message);
+static int modeError(languageModeRec *lm, const char *stringStart,
+	const char *stoppedAt, char *message);
 static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -832,11 +832,12 @@ static void freeLanguageModeRec(languageModeRec *lm);
 static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
 static void spliceString(char **intoString, char *insertString, char *atExpr);
-static int regexFind(char *inString, char *expr);
-static int regexReplace(char **inString, char *expr, char *replaceWith);
+static int regexFind(const char *inString, const char *expr);
+static int regexReplace(char **inString, const char *expr,
+	const char *replaceWith);
 
 #ifdef SGI_CUSTOM
-static int shortPrefToDefault(Widget parent, char *settingName,int *setDefault);
+static int shortPrefToDefault(Widget parent, char *settingName, int *setDefault);
 #endif
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
@@ -1003,7 +1004,7 @@ FROM FILE: %s", "OK", "Cancel", ImportedFile) == 2)
 ** Load an additional preferences file on top of the existing preferences
 ** derived from defaults, the .nedit file, and X resources.
 */
-void ImportPrefFile(char *filename, int convertOld)
+void ImportPrefFile(const char *filename, int convertOld)
 {
     XrmDatabase db;
     
@@ -1539,7 +1540,7 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
 ** Lookup a language mode by name, returning the index of the language
 ** mode or PLAIN_LANGUAGE_MODE if the name is not found
 */
-int FindLanguageMode(char *languageName)
+int FindLanguageMode(const char *languageName)
 {
     int i;
  
@@ -3896,9 +3897,10 @@ int ReadQuotedString(char **inPtr, char **errMsg, char **string)
 **
 ** Returns an allocated string which must be freed by the caller with XtFree.
 */
-char *EscapeSensitiveChars(char *string)
+char *EscapeSensitiveChars(const char *string)
 {
-    char *c, *outStr, *outPtr;
+    const char *c;
+    char *outStr, *outPtr;
     int length = 0;
 
     /* calculate length and allocate returned string */
@@ -3932,9 +3934,10 @@ char *EscapeSensitiveChars(char *string)
 ** characters with two double quotes.  Enables the string to be read back
 ** by ReadQuotedString.
 */
-char *MakeQuotedString(char *string)
+char *MakeQuotedString(const char *string)
 {
-    char *c, *outStr, *outPtr;
+    const char *c;
+    char *outStr, *outPtr;
     int length = 0;
 
     /* calculate length and allocate returned string */
@@ -4031,7 +4034,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
 ** Set the language mode menu in option menu "optMenu" to
 ** show a particular language mode
 */
-void SetLangModeMenu(Widget optMenu, char *modeName)
+void SetLangModeMenu(Widget optMenu, const char *modeName)
 {
     int i;
     Cardinal nItems;
@@ -4152,7 +4155,7 @@ int SkipDelimiter(char **inPtr, char **errMsg)
 ** lm (if non-null), prints a formatted message explaining where the
 ** error is, and returns False;
 */
-static int modeError(languageModeRec *lm, char *stringStart, char *stoppedAt,
+static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt,
 	char *message)
 {
     if (lm != NULL)
@@ -4167,11 +4170,12 @@ static int modeError(languageModeRec *lm, char *stringStart, char *stoppedAt,
 ** to stderr, or displayed in a dialog.  For stderr, pass toDialog as NULL.
 ** For a dialog, pass the dialog parent in toDialog.
 */
-int ParseError(Widget toDialog, char *stringStart, char *stoppedAt,
-	char *errorIn, char *message)
+int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
+	const char *errorIn, const char *message)
 {
     int len, nNonWhite = 0;
-    char *c, *errorLine;
+    const char *c;
+    char *errorLine;
     
     for (c=stoppedAt; c>=stringStart; c--) {
     	if (c == stringStart)
@@ -4200,7 +4204,7 @@ int ParseError(Widget toDialog, char *stringStart, char *stoppedAt,
 /*
 ** Make a new copy of a string, if NULL, return NULL
 */
-char *CopyAllocatedString(char *string)
+char *CopyAllocatedString(const char *string)
 {
     char *newString;
     
@@ -4214,7 +4218,7 @@ char *CopyAllocatedString(char *string)
 /*
 ** Compare two strings which may be NULL
 */
-int AllocatedStringsDiffer(char *s1, char *s2)
+int AllocatedStringsDiffer(const char *s1, const char *s2)
 {
     if (s1 == NULL && s2 == NULL)
     	return False;
@@ -4314,7 +4318,7 @@ static void spliceString(char **intoString, char *insertString, char *atExpr)
 ** Simplified regular expression search routine which just returns true
 ** or false depending on whether inString matches expr
 */
-static int regexFind(char *inString, char *expr)
+static int regexFind(const char *inString, const char *expr)
 {
     int beginPos, endPos;
     return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
@@ -4327,7 +4331,7 @@ static int regexFind(char *inString, char *expr)
 ** inString with XtMalloc.  If expr is not found, does nothing and
 ** returns false.
 */
-static int regexReplace(char **inString, char *expr, char *replaceWith)
+static int regexReplace(char **inString, const char *expr, const char *replaceWith)
 {
     int beginPos, endPos, newLen;
     char *newString;

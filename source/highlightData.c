@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.11 2001/03/30 17:54:13 slobasso Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.12 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -76,7 +76,7 @@ typedef struct {
     int font;
 } highlightStyleRec;
 
-static int styleError(char *stringStart, char *stoppedAt, char *message);
+static int styleError(const char *stringStart, const char *stoppedAt, char *message);
 static int lookupNamedStyle(char *styleName);
 static highlightPattern *readHighlightPatterns(char **inPtr, int withBraces,
     	char **errMsg, int *nPatterns);
@@ -784,7 +784,8 @@ static char *DefaultPatternSets[N_DEFAULT_PATTERN_SETS] = {
 */
 int LoadStylesString(char *inString)
 {    
-    char *errMsg, *fontStr, *inPtr = inString;
+    char *errMsg, *fontStr;
+    char *inPtr = inString;
     highlightStyleRec *hs;
     int i;
 
@@ -1070,7 +1071,7 @@ int NamedStyleExists(char *styleName)
 ** Look through the list of pattern sets, and find the one for a particular
 ** language.  Returns NULL if not found.
 */
-patternSet *FindPatternSet(char *langModeName)
+patternSet *FindPatternSet(const char *langModeName)
 {
     int i;
     
@@ -1415,7 +1416,7 @@ static patternSet *highlightError(char *stringStart, char *stoppedAt,
     ParseError(NULL, stringStart, stoppedAt, "highlight pattern", message);
     return NULL;
 }
-static int styleError(char *stringStart, char *stoppedAt, char *message)
+static int styleError(const char *stringStart, const char *stoppedAt, char *message)
 {
     ParseError(NULL, stringStart, stoppedAt, "style specification", message);
     return False;

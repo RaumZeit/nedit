@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.4 2001/04/02 20:52:09 edg Exp $ */
+/* $Id: regularExp.h,v 1.5 2001/04/06 09:49:56 amai Exp $ */
 /*----------------------------------------------------------------------*
  *  This is regularExp.h: NEdit Regular Expression Package Header File
  *----------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ typedef enum {
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 
 regexp * CompileRE (
-   char  *exp,         /* String containing the regex specification. */
+   const char  *exp,         /* String containing the regex specification. */
    char **errorText,   /* Text of any error message produced. */
    int  defaultFlags); /* Flags for default RE-operation */
 
@@ -45,15 +45,15 @@ int ExecRE (
                                    implement back references across regular
                                    expressions for use in syntax
                                    highlighting.*/
-   char   *string,              /* Text to search within. */
-   char   *end,                 /* Pointer to the end of `string'.  If NULL will
+   const char   *string,              /* Text to search within. */
+   const char   *end,                 /* Pointer to the end of `string'.  If NULL will
                                    scan from `string' until '\0' is found. */
    int     reverse,             /* Backward search. */
    char    prev_char,           /* Character immediately prior to `string'.  Set
                                    to '\n' or '\0' if true beginning of text. */
    char    succ_char,           /* Character immediately after `end'.  Set
                                    to '\n' or '\0' if true beginning of text. */
-   char   *delimiters);         /* Word delimiters to use (NULL for default) */
+   const char   *delimiters);         /* Word delimiters to use (NULL for default) */
 
 /* Perform substitutions after a `regexp' match. */
 

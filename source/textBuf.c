@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.6 2001/03/19 16:30:07 slobasso Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.7 2001/04/06 09:49:56 amai Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -35,25 +35,25 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.6 2001/03/19 16:30:07 slobasso E
                                    in the buffer where text might be inserted
                                    if the user is typing sequential chars) */
 
-static void histogramCharacters(char *string, int length, char hist[256],
+static void histogramCharacters(const char *string, int length, char hist[256],
 	int init);
 static void subsChars(char *string, int length, char fromChar, char toChar);
 static char chooseNullSubsChar(char hist[256]);
-static int insert(textBuffer *buf, int pos, char *text);
+static int insert(textBuffer *buf, int pos, const char *text);
 static void delete(textBuffer *buf, int start, int end);
 static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd, int *replaceLen, int *endPos);
-static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
+static void insertCol(textBuffer *buf, int column, int startPos, const char *insText,
 	int *nDeleted, int *nInserted, int *endPos);
 static void overlayRect(textBuffer *buf, int startPos, int rectStart,
     	int rectEnd, char *insText, int *nDeleted, int *nInserted, int *endPos);
-static void insertColInLine(char *line, char *insLine, int column, int insWidth,
+static void insertColInLine(const char *line, const char *insLine, int column, int insWidth,
 	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
 	int *endOffset);
-static void deleteRectFromLine(char *line, int rectStart, int rectEnd,
+static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
 	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
 	int *endOffset);
-static void overlayRectInLine(char *line, char *insLine, int rectStart,
+static void overlayRectInLine(const char *line, const char *insLine, int rectStart,
     	int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr,
     	int *outLen, int *endOffset);
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
@@ -73,29 +73,29 @@ static int getSelectionPos(selection *sel, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
 static char *getSelectionText(textBuffer *buf, selection *sel);
 static void removeSelected(textBuffer *buf, selection *sel);
-static void replaceSelected(textBuffer *buf, selection *sel, char *text);
+static void replaceSelected(textBuffer *buf, selection *sel, const char *text);
 static void addPadding(char *string, int startIndent, int toIndent,
 	int tabDist, int useTabs, char nullSubsChar, int *charsAdded);
 static int searchForward(textBuffer *buf, int startPos, char searchChar,
 	int *foundPos);
 static int searchBackward(textBuffer *buf, int startPos, char searchChar,
 	int *foundPos);
-static char *copyLine(char *text, int *lineLen);
-static int countLines(char *string);
-static int textWidth(char *text, int tabDist, char nullSubsChar);
+static char *copyLine(const char *text, int *lineLen);
+static int countLines(const char *string);
+static int textWidth(const char *text, int tabDist, char nullSubsChar);
 static void findRectSelBoundariesForCopy(textBuffer *buf, int lineStartPos,
 	int rectStart, int rectEnd, int *selStart, int *selEnd);
-static char *realignTabs(char *text, int origIndent, int newIndent,
+static char *realignTabs(const char *text, int origIndent, int newIndent,
 	int tabDist, int useTabs, char nullSubsChar, int *newLength);
-static char *expandTabs(char *text, int startIndent, int tabDist,
+static char *expandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen);
-static char *unexpandTabs(char *text, int startIndent, int tabDist,
+static char *unexpandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 
 #ifdef __MVS__
-static char *ControlCodeTable[64] = {
+static const char *ControlCodeTable[64] = {
      "nul", "soh", "stx", "etx", "sel", "ht", "rnl", "del",
      "ge", "sps", "rpt", "vt", "ff", "cr", "so", "si",
      "dle", "dc1", "dc2", "dc3", "res", "nl", "bs", "poc",
@@ -105,7 +105,7 @@ static char *ControlCodeTable[64] = {
      "x30", "x31", "syn", "ir", "pp", "trn", "nbs", "eot",
      "sbs", "it", "rff", "cu3", "dc4", "nak", "x3e", "sub"};
 #else
-static char *ControlCodeTable[32] = {
+static const char *ControlCodeTable[32] = {
      "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
      "bs", "ht", "nl", "vt", "np", "cr", "so", "si",
      "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
@@ -187,7 +187,7 @@ char *BufGetAll(textBuffer *buf)
 /*
 ** Replace the entire contents of the text buffer
 */
-void BufSetAll(textBuffer *buf, char *text)
+void BufSetAll(textBuffer *buf, const char *text)
 {
     int length, deletedLength;
     char *deletedText;
@@ -274,7 +274,7 @@ char BufGetCharacter(textBuffer *buf, int pos)
 /*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
-void BufInsert(textBuffer *buf, int pos, char *text)
+void BufInsert(textBuffer *buf, int pos, const char *text)
 {
     int nInserted;
     
@@ -292,7 +292,7 @@ void BufInsert(textBuffer *buf, int pos, char *text)
 ** Delete the characters between "start" and "end", and insert the
 ** null-terminated string "text" in their place in in "buf"
 */
-void BufReplace(textBuffer *buf, int start, int end, char *text)
+void BufReplace(textBuffer *buf, int start, int end, const char *text)
 {
     char *deletedText;
     int nInserted;
@@ -370,7 +370,7 @@ void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
 ** number of characters inserted and deleted in the operation (beginning
 ** at startPos) are returned in these arguments
 */
-void BufInsertCol(textBuffer *buf, int column, int startPos, char *text,
+void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     	int *charsInserted, int *charsDeleted)
 {
     int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
@@ -428,9 +428,10 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
 ** rectangle, add extra lines to make room for it.
 */
 void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
-	int rectEnd, char *text)
+	int rectEnd, const char *text)
 {
-    char *deletedText, *insText, *insPtr;
+    char *deletedText, *insPtr;
+    char *insText=NULL;
     int i, nInsertedLines, nDeletedLines, insLen, hint;
     int insertDeleted, insertInserted, deleteInserted;
     int linesPadded = 0;
@@ -460,24 +461,28 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     	linesPadded = nInsertedLines-nDeletedLines;
     	for (i=0; i<linesPadded; i++)
     	    insert(buf, end, "\n");
-	insText = text;
+	/* insText = text; */
     } else /* nDeletedLines == nInsertedLines */
-	insText = text;
+	/* insText = text; */
     
     /* Save a copy of the text which will be modified for the modify CBs */
     deletedText = BufGetRange(buf, start, end);
     	  
     /* Delete then insert */
     deleteRect(buf, start, end, rectStart, rectEnd, &deleteInserted, &hint);
-    insertCol(buf, rectStart, start, insText, &insertDeleted, &insertInserted,
-    	    &buf->cursorPosHint);
+    if (insText)
+    	insertCol(buf, rectStart, start, insText, &insertDeleted, &insertInserted,
+    		    &buf->cursorPosHint);
+    else
+    	insertCol(buf, rectStart, start, text, &insertDeleted, &insertInserted,
+    		    &buf->cursorPosHint);
     
     /* Figure out how many chars were inserted and call modify callbacks */
     if (insertDeleted != deleteInserted + linesPadded)
     	fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
     callModifyCBs(buf, start, end-start, insertInserted, 0, deletedText);
     XtFree(deletedText);
-    if (nInsertedLines < nDeletedLines)
+    if (insText)
     	XtFree(insText);
 }
 
@@ -1179,11 +1184,11 @@ void BufUnsubstituteNullChars(char *string, textBuffer *buf)
 ** with a 1).  If init is true, initialize the histogram before acumulating.
 ** if not, add the new data to an existing histogram.
 */
-static void histogramCharacters(char *string, int length, char hist[256],
+static void histogramCharacters(const char *string, int length, char hist[256],
 	int init)
 {
     int i;
-    char *c;
+    const char *c;
 
     if (init)
 	for (i=0; i<256; i++)
@@ -1228,7 +1233,7 @@ static char chooseNullSubsChar(char hist[256])
 ** on to call redisplay).  pos must be contiguous with the existing text in
 ** the buffer (i.e. not past the end).
 */
-static int insert(textBuffer *buf, int pos, char *text)
+static int insert(textBuffer *buf, int pos, const char *text)
 {
     int length = strlen(text);
 
@@ -1284,12 +1289,13 @@ static void delete(textBuffer *buf, int start, int end)
 ** position of the lower left edge of the inserted column (as a hint for
 ** routines which need to set a cursor position).
 */
-static void insertCol(textBuffer *buf, int column, int startPos, char *insText,
+static void insertCol(textBuffer *buf, int column, int startPos, const char *insText,
 	int *nDeleted, int *nInserted, int *endPos)
 {
     int nLines, start, end, insWidth, lineStart, lineEnd;
     int expReplLen, expInsLen, len, endOffset;
-    char *outStr, *outPtr, *line, *replText, *expText, *insLine, *insPtr;
+    char *outStr, *outPtr, *line, *replText, *expText, *insLine;
+    const char *insPtr;
 
     if (column < 0)
     	column = 0;
@@ -1494,11 +1500,12 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-static void insertColInLine(char *line, char *insLine, int column, int insWidth,
+static void insertColInLine(const char *line, const char *insLine, int column, int insWidth,
 	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
 	int *endOffset)
 {
-    char *c, *linePtr, *outPtr, *retabbedStr;
+    char *c, *outPtr, *retabbedStr;
+    const char *linePtr;
     int indent, toIndent, len, postColIndent;
         
     /* copy the line up to "column" */ 
@@ -1584,12 +1591,13 @@ static void insertColInLine(char *line, char *insLine, int column, int insWidth,
 ** the beginning of the string to the point where the characters were
 ** deleted (as a hint for routines which need to position the cursor).
 */
-static void deleteRectFromLine(char *line, int rectStart, int rectEnd,
+static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
 	int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen,
 	int *endOffset)
 {
     int indent, preRectIndent, postRectIndent, len;
-    char *c, *outPtr;
+    const char *c;
+    char *outPtr;
     char *retabbedStr;
     
     /* copy the line up to rectStart */
@@ -1644,11 +1652,12 @@ static void deleteRectFromLine(char *line, int rectStart, int rectEnd,
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-static void overlayRectInLine(char *line, char *insLine, int rectStart,
+static void overlayRectInLine(const char *line, const char *insLine, int rectStart,
     	int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr,
     	int *outLen, int *endOffset)
 {
-    char *c, *linePtr, *outPtr, *retabbedStr;
+    char *c, *outPtr, *retabbedStr;
+    const char *linePtr;
     int inIndent, outIndent, len, postRectIndent;
         
     /* copy the line up to "rectStart" */ 
@@ -1801,7 +1810,7 @@ static void removeSelected(textBuffer *buf, selection *sel)
         BufRemove(buf, start, end);
 }
 
-static void replaceSelected(textBuffer *buf, selection *sel, char *text)
+static void replaceSelected(textBuffer *buf, selection *sel, const char *text)
 {
     int start, end, isRect, rectStart, rectEnd;
     selection oldSelection = *sel;
@@ -2087,10 +2096,11 @@ static int searchBackward(textBuffer *buf, int startPos, char searchChar,
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-static char *copyLine(char *text, int *lineLen)
+static char *copyLine(const char *text, int *lineLen)
 {
     int len = 0;
-    char *c, *outStr;
+    const char *c;
+    char *outStr;
     
     for (c=text; *c!='\0' && *c!='\n'; c++)
     	len++;
@@ -2104,9 +2114,9 @@ static char *copyLine(char *text, int *lineLen)
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
-static int countLines(char *string)
+static int countLines(const char *string)
 {
-    char *c;
+    const char *c;
     int lineCount = 0;
     
     for (c=string; *c!='\0'; c++)
@@ -2117,10 +2127,10 @@ static int countLines(char *string)
 /*
 ** Measure the width in displayed characters of string "text"
 */
-static int textWidth(char *text, int tabDist, char nullSubsChar)
+static int textWidth(const char *text, int tabDist, char nullSubsChar)
 {
     int width = 0, maxWidth = 0;
-    char *c;
+    const char *c;
     
     for (c=text; *c!='\0'; c++) {
     	if (*c == '\n') {
@@ -2194,7 +2204,7 @@ static void findRectSelBoundariesForCopy(textBuffer *buf, int lineStartPos,
 ** "origIndent" to starting at "newIndent".  Returns an allocated string
 ** which must be freed by the caller with XtFree.
 */
-static char *realignTabs(char *text, int origIndent, int newIndent,
+static char *realignTabs(const char *text, int origIndent, int newIndent,
 	int tabDist, int useTabs, char nullSubsChar, int *newLength)
 {
     char *expStr, *outStr;
@@ -2226,10 +2236,11 @@ static char *realignTabs(char *text, int origIndent, int newIndent,
 ** "startIndent" if nonzero, indicates that the text is a rectangular selection
 ** beginning at column "startIndent"
 */
-static char *expandTabs(char *text, int startIndent, int tabDist,
+static char *expandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen)
 {
-    char *outStr, *outPtr, *c;
+    char *outStr, *outPtr;
+    const char *c;
     int indent, len, outLen = 0;
 
     /* rehearse the expansion to figure out length for output string */
@@ -2275,10 +2286,11 @@ static char *expandTabs(char *text, int startIndent, int tabDist,
 ** when 3 or more spaces can be converted into a single tab, this avoids
 ** converting double spaces after a period withing a block of text.
 */
-static char *unexpandTabs(char *text, int startIndent, int tabDist,
+static char *unexpandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen)
 {
-    char *outStr, *outPtr, *c, expandedChar[MAX_EXP_CHAR_LEN];
+    char *outStr, *outPtr, expandedChar[MAX_EXP_CHAR_LEN];
+    const char *c;
     int indent, len;
     
     outStr = XtMalloc(strlen(text)+1);

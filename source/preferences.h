@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.7 2001/04/03 22:59:38 edg Exp $ */
+/* $Id: preferences.h,v 1.8 2001/04/06 09:49:56 amai Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -10,7 +10,7 @@
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
 void SaveNEditPrefs(Widget parent, int quietly);
-void ImportPrefFile(char *filename, int convertOld);
+void ImportPrefFile(const char *filename, int convertOld);
 void MarkPrefsChanged(void);
 int CheckPrefsChangesSaved(Widget dialogParent);
 void SetPrefWrap(int state);
@@ -102,19 +102,19 @@ int ReadNumericField(char **inPtr, int *value);
 char *ReadSymbolicField(char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, char *fieldName, int silent);
 int ReadQuotedString(char **inPtr, char **errMsg, char **string);
-char *MakeQuotedString(char *string);
-char *EscapeSensitiveChars(char *string);
+char *MakeQuotedString(const char *string);
+char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(char **inPtr, char **errMsg);
-int ParseError(Widget toDialog, char *stringStart, char *stoppedAt,
-	char *errorIn, char *message);
-char *CopyAllocatedString(char *string);
-int AllocatedStringsDiffer(char *s1, char *s2);
+int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
+	const char *errorIn, const char *message);
+char *CopyAllocatedString(const char *string);
+int AllocatedStringsDiffer(const char *s1, const char *s2);
 void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults);
-int FindLanguageMode(char *languageName);
+int FindLanguageMode(const char *languageName);
 void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults);
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 	void *cbArg);
-void SetLangModeMenu(Widget optMenu, char *modeName);
+void SetLangModeMenu(Widget optMenu, const char *modeName);
 Widget CreateLanguageModeSubMenu(WindowInfo *window, Widget parent, char *name,
     	char *label, char mnemonic);
 int GetPrefFindReplaceUsesSelection(void);

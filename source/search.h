@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.8 2001/04/03 22:59:38 edg Exp $ */
+/* $Id: search.h,v 1.9 2001/04/06 09:49:56 amai Exp $ */
 
 
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
@@ -26,9 +26,9 @@ int ReplaceInSelection(WindowInfo *window, char *searchString,
 	char *replaceString, int searchType);
 int SearchWindow(WindowInfo *window, int direction, char *searchString,
 	int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extent);
-int SearchString(char *string, char *searchString, int direction,
+int SearchString(const char *string, const char *searchString, int direction,
        int searchType, int wrap, int beginPos, int *startPos, int *endPos,
-       int *searchExtent, char *delimiters);
+       int *searchExtent, const char *delimiters);
 char *ReplaceAllInString(char *inString, char *searchString,
 	char *replaceString, int searchType, int *copyStart,
 	int *copyEnd, int *replacementLength, char *delimiters);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.6 2001/04/02 20:52:09 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.7 2001/04/06 09:49:56 amai Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -463,7 +463,7 @@ static int             init_ansi_classes  (void);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-regexp * CompileRE (char *exp, char **errorText, int defaultFlags) {
+regexp * CompileRE (const char *exp, char **errorText, int defaultFlags) {
 
    register                regexp *comp_regex = NULL;
    register unsigned char *scan;
@@ -2460,12 +2460,12 @@ static unsigned char * makeDelimiterTable (unsigned char *, unsigned char *);
 int ExecRE (
    regexp *prog,
    regexp *cross_regex_backref,
-   char   *string,
-   char   *end,
+   const char   *string,
+   const char   *end,
    int     reverse,
    char    prev_char,
    char    succ_char,
-   char   *delimiters) {
+   const char   *delimiters) {
 
    register unsigned char  *str;
             unsigned char **s_ptr;
