@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.84 2003/06/04 15:34:30 slobasso Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.85 2003/08/08 16:20:56 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -656,6 +656,7 @@ void CloseWindow(WindowInfo *window)
         window->ignoreModify = TRUE;
         BufSetAll(window->buffer, "");
         window->ignoreModify = FALSE;
+        window->nMarks = 0;
         window->filenameSet = FALSE;
         window->fileMissing = TRUE;
         window->fileChanged = FALSE;
@@ -1733,7 +1734,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     int selected = window->buffer->primary.selected;
     
     /* update the table of bookmarks */
-    UpdateMarkTable(window, pos, nInserted, nDeleted);
+    if (!window->ignoreModify) {
+        UpdateMarkTable(window, pos, nInserted, nDeleted);
+    }
     
     /* Check and dim/undim selection related menu items */
     if ((window->wasSelected && !selected) ||
