@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.46 2002/11/22 18:18:36 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.47 2002/12/11 18:24:49 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -640,7 +640,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
     
     /* Manage the dialog */
     XtManageChild(dialogChild);
-
+    
     /* Only set the x/y position if the centering option is enabled.
        Avoid getting the coordinates if not so, to save a few round-trips
        to the server. */
@@ -667,8 +667,15 @@ void ManageDialogCenteredOnPointer(Widget dialogChild)
 	if (y < 0) y = 0;
 	if (y > maxY) y = maxY;
 
-       /* Set desired window position in the DialogShell */
-       XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
+        /* Some window managers (Sawfish) don't appear to respond
+           to the geometry set call in synchronous mode.  This causes
+           the window to delay XmNwmTimeout (default 5 seconds) before
+           posting, and it is very annoying.  See "man VendorShell" for
+           more info. */
+        XtVaSetValues(shell, XmNuseAsyncGeometry, True, NULL);
+ 
+        /* Set desired window position in the DialogShell */
+        XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
     }
     
     /* Map the widget */
