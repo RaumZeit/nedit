@@ -1,4 +1,4 @@
-# $Id: Makefile.os2,v 1.3 2001/08/08 18:29:17 amai Exp $
+# $Id: Makefile.os2,v 1.4 2001/08/09 18:46:54 amai Exp $
 #
 # Makefile for NEdit with XFree86 OS/2
 #
@@ -32,8 +32,8 @@ CC=gcc
 AR=ar
 
 # For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
-#DEFINES = -DREPLACE_SCOPE -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES -DNO_FCHMOD
-DEFINES =                  -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES -DNO_FCHMOD
+# -DREPLACE_SCOPE selects an alternative layout for replace dialog 
+DEFINES =                  -DUSE_DIRENT -DUSE_LPR_PRINT_CMD -DEDITRES
 CFLAGS=-Zmt -O5 -mpentium -g -Wall -Wno-unused -W -I$(X11ROOT)/XFree86/include $(DEFINES)
 ARFLAGS=-urs
 LIBS= -Zmtd -Zexe -s -Zbsd-signals -L$(X11ROOT)/XFree86/lib -lXm -lXext -lXt -lXmu -lSM -lICE -lX11
@@ -43,13 +43,13 @@ ifeq ($(BUILD),1)
 include Makefile.common
 endif
 
-# Have a second way to build NEdit, nc with OMF objects.
+# An alternative method to build NEdit, nc with OMF objects.
 # Advantage is using link386 with executable compression, etc.
 OBJS2=$(OBJS:.o=.obj)
 
 CFLAGS2=$(CFLAGS) -Zomf
 LIBS2= -Zmtd -s -Zomf -Zlinker /PM:VIO -Zlinker /E:2 -Zsysv-signals \
-       -L$(X11ROOT)/XFree86/lib -lXm -lXpm -lXext -lXt -lXmu -lSM -lICE -lX11
+       -L$(X11ROOT)/XFree86/lib -lXm -lXext -lXt -lXmu -lSM -lICE -lX11
 
 nedit.exe: $(OBJS2) ..\util\libNUtil.lib
 	$(CC) -o $@ $^ $(LIBS2)
