@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.19 2002/01/05 16:45:25 amai Exp $ */
+/* $Id: nedit.h,v 1.20 2002/01/08 14:33:11 amai Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -180,7 +180,10 @@ typedef struct _WindowInfo {
     Widget	undoItem;
     Widget	redoItem;
     Widget	cutItem;
+    Widget	delItem;
     Widget	copyItem;
+    Widget	lowerItem;
+    Widget	upperItem;
     Widget      findSelItem;
     Widget      findAgainItem;
     Widget	replaceFindAgainItem;

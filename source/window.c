@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.39 2002/01/05 16:45:25 amai Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.40 2002/01/08 14:33:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * window.c -- Nirvana Editor window creation/deletion			       *
@@ -1539,6 +1539,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
     	XtSetSensitive(window->copyItem, selected);
 	XtSetSensitive(window->findSelItem, selected);
 	XtSetSensitive(window->gotoSelItem, selected);
+	XtSetSensitive(window->delItem, selected);
+	XtSetSensitive(window->lowerItem, selected);
+	XtSetSensitive(window->upperItem, selected);
         XtSetSensitive(window->findDefItem, (TagsFileList != NULL)&&window->wasSelected);
 #ifndef VMS
     	XtSetSensitive(window->filterItem, selected);

@@ -1,3 +1,42 @@
+2002-01-07 10:15  amai
+
+	* source/tags.c (1.29): Jump to tags only referenced by line
+	number.  Fix by M. Schwarzenberg.
+
+2002-01-05 16:52  amai
+
+	* source/search.c (1.42): Only set *again menu Items on the first
+	search ever (not on each)
+
+2002-01-05 16:45  amai
+
+	* source/: Makefile.dependencies (1.15), menu.c (1.47), nedit.h
+	(1.19), search.c (1.41), search.h (1.15), window.c (1.39): Toggle
+	Menu Item sensitivity, including those from SF Bug [ #486072 ]
+	Selection commands sensitivity incorrect
+
+2002-01-05 02:19  edel
+
+	* source/: help_data.h (1.3), help_topic.h (1.2): Regenerated
+	help_topic.h and help_data.h for change in help.ext
+
+2002-01-05 02:09  edel
+
+	* makefiles/Makefile.solaris (1.7): Reverting to 1.5 (I
+	accidentally committed my private mods, sorry).
+
+2002-01-05 01:48  edel
+
+	* doc/help.etx (1.3), doc/setext (1.3), makefiles/Makefile.solaris
+	(1.6), source/help.c (1.72), source/preferences.c (1.43),
+	source/preferences.h (1.17): Help updates from Steve.  Remove
+	unused title font resources, add back some missing help text.
+
+2002-01-04 16:39  amai
+
+	* ChangeLog (1.18), source/textDisp.c (1.13): Fix ("wrong")
+	compiler (gcc) warning about two uninitialized variables
+
 2001-12-31 14:34  amai
 
 	* source/nc.c (1.18): Fix a problem with calling nedit from nc on

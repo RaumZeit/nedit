@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.47 2002/01/05 16:45:25 amai Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.48 2002/01/08 14:33:11 amai Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -631,8 +631,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "paste_clipboard", SHORT);
     createMenuItem(menuPane, "pasteColumn", "Paste Column", 's', pasteColCB,
     	    window, SHORT);
-    createMenuItem(menuPane, "delete", "Delete", 'D', doActionCB, "delete_selection",
+    window->delItem=createMenuItem(menuPane, "delete", "Delete", 'D', doActionCB, "delete_selection",
     	    SHORT);
+    XtSetSensitive(window->delItem, window->wasSelected);
     createMenuItem(menuPane, "selectAll", "Select All", 'A', doActionCB,
     	    "select_all", SHORT);
     createMenuSeparator(menuPane, "sep2", SHORT);
@@ -642,10 +643,12 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(menuPane, "shiftRight", "Shift Right", 'g',
     	    shiftRightCB, window, SHORT);
     createFakeMenuItem(menuPane, "shiftRightShift", shiftRightCB, window);
-    createMenuItem(menuPane, "lowerCase", "Lower-case", 'w',
+    window->lowerItem=createMenuItem(menuPane, "lowerCase", "Lower-case", 'w',
     	    doActionCB, "lowercase", SHORT);
-    createMenuItem(menuPane, "upperCase", "Upper-case", 'e',
+    XtSetSensitive(window->lowerItem, window->wasSelected);
+    window->upperItem=createMenuItem(menuPane, "upperCase", "Upper-case", 'e',
     	    doActionCB, "uppercase", SHORT);
+    XtSetSensitive(window->upperItem, window->wasSelected);
     createMenuItem(menuPane, "fillParagraph", "Fill Paragraph", 'F',
     	    doActionCB, "fill_paragraph", SHORT);
     createMenuSeparator(menuPane, "sep3", FULL);
