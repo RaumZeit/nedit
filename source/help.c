@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.97 2004/06/30 11:56:02 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.98 2004/07/08 13:07:47 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -716,10 +716,14 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNorientation, XmVERTICAL,
             XmNrepeatDelay, 10,
             NULL);
+    /* Make sure the fixed size help font is loaded, such that we can base
+       our text widget size calculation on it. */
+    loadFontsAndColors(sw, 'A');
     HelpTextPanes[topic] = XtVaCreateManagedWidget("helpText",
             textWidgetClass, sw,
+            textNfont, HelpStyleInfo[0].font, /* MUST correspond to 'A' above */
             textNrows, 30,
-            textNcolumns, 75,
+            textNcolumns, 65,
             textNbacklightCharTypes, NULL,
             textNhScrollBar, hScrollBar,
             textNvScrollBar, vScrollBar,
