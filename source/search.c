@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.16 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.17 2001/03/17 06:44:38 arnef Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -252,20 +252,19 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
 {
     XEvent nextEvent;
     char *primary_selection = 0;
+    SelectionInfo *selectionInfo = XtNew(SelectionInfo);
 
     if (GetPrefFindReplaceUsesSelection()) {
-        SelectionInfo selectionInfo;
-
-        selectionInfo.done = 0;
-        selectionInfo.window = window;
-        selectionInfo.selection = 0;
+        selectionInfo->done = 0;
+        selectionInfo->window = window;
+        selectionInfo->selection = 0;
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-                            (XtSelectionCallbackProc)getSelectionCB, &selectionInfo, time);
-        while (selectionInfo.done == 0) {
+                            (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
+        while (selectionInfo->done == 0) {
             XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
             XtDispatchEvent(&nextEvent);
         }
-        primary_selection = selectionInfo.selection;
+        primary_selection = selectionInfo->selection;
     }
     if (primary_selection == 0) {
         primary_selection = XtNewString("");
@@ -275,6 +274,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
     XmTextSetString(textField, primary_selection);
 
     XtFree(primary_selection);
+    XtFree((char*)selectionInfo);
 }    
 
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
@@ -649,6 +649,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace\n& Find")); argcnt++;
+    XtSetArg(args[argcnt], XmNmnemonic, 'n'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
@@ -2121,12 +2122,12 @@ int SearchAndSelect(WindowInfo *window, int direction, char *searchString,
 void SearchForSelected(WindowInfo *window, int direction, int searchType,
     int searchWrap, Time time)
 {
-   SearchSelectedCallData callData;
-   callData.direction = direction;
-   callData.searchType = searchType;
-   callData.searchWrap = searchWrap;
+   SearchSelectedCallData *callData = XtNew(SearchSelectedCallData);
+   callData->direction = direction;
+   callData->searchType = searchType;
+   callData->searchWrap = searchWrap;
    XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-    	    (XtSelectionCallbackProc)selectedSearchCB, &callData, time);
+    	    (XtSelectionCallbackProc)selectedSearchCB, callData, time);
 }
 
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
@@ -2144,6 +2145,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
    	    	    "Selection not appropriate for searching", "OK");
     	else
     	    XBell(TheDisplay, 0);
+        XtFree(callData);
 	return;
     }
     if (*length > SEARCHMAX) {
@@ -2152,11 +2154,13 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     	else
     	    XBell(TheDisplay, 0);
 	XtFree(value);
+        XtFree(callData);
 	return;
     }
     if (*length == 0) {
     	XBell(TheDisplay, 0);
 	XtFree(value);
+        XtFree(callData);
 	return;
     }
     /* should be of type text??? */
@@ -2164,6 +2168,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     	fprintf(stderr, "NEdit: can't handle non 8-bit text\n");
     	XBell(TheDisplay, 0);
 	XtFree(value);
+        XtFree(callData);
 	return;
     }
     /* make the selection the current search string */
@@ -2180,6 +2185,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     /* search for it in the window */
     SearchAndSelect(window, callDataItems->direction, searchString,
         searchType, callDataItems->searchWrap);
+    XtFree(callData);
 }
 
 /*
