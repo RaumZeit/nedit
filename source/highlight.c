@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.16 2001/08/14 08:37:16 jlous Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.17 2001/08/16 17:24:51 amai Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -149,9 +149,9 @@ static Pixel allocColor(Widget w, const char *colorName);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 static char getPrevChar(textBuffer *buf, int pos);
-static regexp *compileREAndWarn(Widget parent, char *re);
-static int parentStyleOf(char *parentStyles, int style);
-static int isParentStyle(char *parentStyles, int style1, int style2);
+static regexp *compileREAndWarn(Widget parent, const char *re);
+static int parentStyleOf(const char *parentStyles, int style);
+static int isParentStyle(const char *parentStyles, int style1, int style2);
 static int findSafeParseRestartPos(textBuffer *buf,
     	windowHighlightData *highlightData, int *pos);
 static int backwardOneContext(textBuffer *buf, reparseContext *context,
@@ -161,7 +161,7 @@ static int forwardOneContext(textBuffer *buf, reparseContext *context,
 static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
     	char *styleString);
 static int indexOfNamedPattern(highlightPattern *patList, int nPats,
-    	char *patName);
+    	const char *patName);
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats,
     	int index);
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
@@ -575,8 +575,16 @@ any existing style", "Dismiss", patternSrc[i].style, patternSrc[i].name);
        shows this setting only on top patterns which is much less confusing) */
     for (i=0; i<nPatterns; i++) {
     	if (patternSrc[i].subPatternOf != NULL) {
-    	    if (patternSrc[findTopLevelParentIndex(patternSrc, nPatterns, i)].
-    	    	    flags & DEFER_PARSING)
+	    int parentindex;
+	    
+	    parentindex=findTopLevelParentIndex(patternSrc, nPatterns, i);
+	    if (parentindex==-1) {
+	       DialogF(DF_WARN, window->shell, 1,
+   		   "Pattern \"%s\" does not have valid parent",
+		   "Dismiss", patternSrc[i].name);
+	       return NULL;
+	    }
+    	    if (patternSrc[parentindex].flags & DEFER_PARSING)
     	    	patternSrc[i].flags |= DEFER_PARSING;
     	    else
     	    	patternSrc[i].flags &= ~DEFER_PARSING;
@@ -1628,7 +1636,7 @@ static char getPrevChar(textBuffer *buf, int pos)
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-static regexp *compileREAndWarn(Widget parent, char *re)
+static regexp *compileREAndWarn(Widget parent, const char *re)
 {
     regexp *compiledRE;
     char *compileMsg;
@@ -1643,12 +1651,12 @@ static regexp *compileREAndWarn(Widget parent, char *re)
     return compiledRE;
 }
 
-static int parentStyleOf(char *parentStyles, int style)
+static int parentStyleOf(const char *parentStyles, int style)
 {
     return parentStyles[style-'A'];
 }
 
-static int isParentStyle(char *parentStyles, int style1, int style2)
+static int isParentStyle(const char *parentStyles, int style1, int style2)
 {
     int p;
     
@@ -1852,7 +1860,7 @@ static int min(int i1, int i2)
 }
 
 static int indexOfNamedPattern(highlightPattern *patList, int nPats,
-    	char *patName)
+    	const char *patName)
 {
     int i;
     
@@ -1870,9 +1878,12 @@ static int findTopLevelParentIndex(highlightPattern *patList, int nPats,
     int topIndex;
     
     topIndex = index;
-    while (patList[topIndex].subPatternOf != NULL)
+    while (patList[topIndex].subPatternOf != NULL) {
     	topIndex = indexOfNamedPattern(patList, nPats,
     	    	patList[topIndex].subPatternOf);
+	if (index==topIndex)
+	   return -1; /* amai: circular dependency ?! */
+    }
     return topIndex;
 }
 
