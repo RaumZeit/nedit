@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.34 2002/09/02 23:18:56 n8gray Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.35 2002/09/04 05:58:52 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -683,7 +683,7 @@ void TextDSetInsertPosition(textDisp *textD, int newPos)
     /* draw it at its new position */
     textD->cursorPos = newPos;
     textD->cursorOn = True;
-    TextDRedisplayRange(textD, textD->cursorPos, textD->cursorPos + 1);
+    TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos + 1);
 }
 
 void TextDBlankCursor(textDisp *textD)
@@ -1213,9 +1213,6 @@ int TextDMoveUp(textDisp *textD, int absolute)
     /* if a preferred column wasn't aleady established, establish it */
     textD->cursorPreferredCol = column;
     
-    /* Redraw any visible calltip */
-    TextDRedrawCalltip(textD, 0);
-    
     return True;
 }
 int TextDMoveDown(textDisp *textD, int absolute)
@@ -1245,8 +1242,6 @@ int TextDMoveDown(textDisp *textD, int absolute)
     TextDSetInsertPosition(textD, newPos);
     textD->cursorPreferredCol = column;
     
-    /* Redraw any visible calltip */
-    TextDRedrawCalltip(textD, 0);
     return True;
 }
 
@@ -1640,7 +1635,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     int i, x, y, startX, charIndex, lineStartPos, lineLen, fontHeight;
     int stdCharWidth, charWidth, startIndex, charStyle, style;
     int charLen, outStartIndex, outIndex, cursorX = 0, hasCursor = False;
-    int dispIndexOffset, cursorPos = textD->cursorPos;
+    int dispIndexOffset, cursorPos = textD->cursorPos, y_orig;
     char expandedChar[MAX_EXP_CHAR_LEN], outStr[MAX_DISP_LINE_LEN];
     char *lineStr, *outPtr;
     
@@ -1776,6 +1771,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
        this line.  Also check for the cases which are not caught as the
        line is scanned above: when the cursor appears at the very end
        of the redisplayed section. */
+    y_orig = textD->cursorY;
     if (textD->cursorOn) {
 	if (hasCursor)
     	    drawCursor(textD, cursorX, y);
@@ -1787,8 +1783,12 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     		if (wrapUsesCharacter(textD, cursorPos))
     	    	    drawCursor(textD, x - 1, y);
     	    }
-    	}
+    	} 
     }
+    
+    /* If the y position of the cursor has changed, redraw the calltip */
+    if (hasCursor && (y_orig != textD->cursorY || y_orig != y))
+        TextDRedrawCalltip(textD, 0);
     
     if (lineStr != NULL)
     	XtFree(lineStr);
@@ -2517,12 +2517,12 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
 	TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
     }
     
-    /* Refresh line number display if its up and we've scrolled vertically */
-    if (lineDelta != 0)
+    /* Refresh line number/calltip display if its up and we've scrolled 
+        vertically */
+    if (lineDelta != 0) {
 	redrawLineNumbers(textD, False);
-    
-    /* Redraw the calltip */
-    TextDRedrawCalltip(textD, 0);
+        TextDRedrawCalltip(textD, 0);
+    }
 
     HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, NULL);
 }
@@ -3480,15 +3480,14 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     if( textD->calltipAnchored ) {
         /* Put it at the anchor position */
         if (!TextDPositionToXY(textD, textD->calltipPos, &int_x, &int_y))
-            /* This XY position is offscreen.  Bail out. (maybe we should kill
-                the tip in this case?) */
             return;
-        int_y += lineHeight>>1;
     } else {
-        /* Put it next to the cursor */
-        int_x = textD->cursorX;
-        int_y = textD->cursorY + lineHeight;
+        /* Put it on a line near the cursor, preserving its original x pos. */
+        if (!TextDPositionToXY(textD, textD->cursorPos, &int_x, &int_y))
+            return;
+        int_x = textD->calltipPos;
     }
+    int_y += lineHeight/2;
     XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
     XtVaSetValues( textD->calltipShell, 
             XmNx, abs_x + txtBorderWidth, 
@@ -3594,7 +3593,6 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
     XmStringFree( str );
     
     /* Figure out where to put the tip */
-    textD->calltipPos = pos;
     textD->calltipAnchored = anchored;
     if (anchored) {
         /* Put it at the specified position */
@@ -3602,12 +3600,17 @@ int TextDShowCalltip(textDisp *textD, char *text, Boolean anchored,
             XBell(TheDisplay, 0);
             return 0;
         }
-        int_y += lineHeight>>1; /* Above call gives us xy of middle of line */
+        textD->calltipPos = pos;
     } else {
         /* Put it next to the cursor */
-        int_x = textD->cursorX;
-        int_y = textD->cursorY + lineHeight;
+        if (!TextDPositionToXY(textD, textD->cursorPos, &int_x, &int_y)) {
+            XBell(TheDisplay, 0);
+            return 0;
+        }
+        /* Store the x-offset for use when redrawing */
+        textD->calltipPos = int_x;
     }
+    int_y += lineHeight/2; /* TextDPositionToXY gives xy of middle of line */
     XtTranslateCoords(textD->w, int_x, int_y, &abs_x, &abs_y);
     XtVaSetValues( textD->calltipShell, 
             XmNx, abs_x + txtBorderWidth, 

@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.13 2002/08/13 22:12:20 n8gray Exp $ */
+/* $Id: textDisp.h,v 1.14 2002/09/04 05:58:52 n8gray Exp $ */
 
 #ifndef NEDIT_TEXTDISP_H_INCLUDED
 #define NEDIT_TEXTDISP_H_INCLUDED
@@ -32,7 +32,11 @@ typedef struct _textDisp {
     int top, left, width, height, lineNumLeft, lineNumWidth;
     int cursorPos;
     int cursorOn;
-    int cursorX, cursorY;		/* X, Y pos. of cursor for blanking */
+    int cursorX, cursorY;		/* X, Y pos. of last drawn cursor 
+                                            Note: these are used for *drawing*
+                                            and are not generally reliable
+                                            for finding the insert position's
+                                            x/y coordinates! */
     int cursorToHint;			/* Tells the buffer modified callback
     					   where to move the cursor, to reduce
     					   the number of redraw calls */
