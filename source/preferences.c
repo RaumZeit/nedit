@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.35 2001/10/21 15:13:07 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.36 2001/10/30 21:47:56 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -886,6 +886,10 @@ XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 {
     int requiresConversion;
+    int major;              /* The integral part of version number */
+    int minor;              /* fractional part of version number */
+    int fileVer = 0;        /* Both combined into an integer */
+    int nparsed;
     
     /* Load preferences */
     RestorePreferences(prefDB, appDB, APP_NAME,
@@ -900,10 +904,21 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 		"    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot1();
     }
+
+    if (PrefData.prefFileRead) {
+        if (PrefData.fileVersion[0] == '\0') {
+            fileVer = 0;    /* Pre-5.1 */
+        }
+        else {
+            nparsed = sscanf(PrefData.fileVersion, "%d.%d", &major, &minor);
+            if (nparsed == 2) {
+                /* Use OSF-style numbering scheme */
+                fileVer = major * 1000 + minor;
+            }
+        }
+    }
     
-    if (PrefData.prefFileRead &&
-        (PrefData.fileVersion[0] == '\0' ||
-        atof(PrefData.fileVersion) < 5.2)) {
+    if (PrefData.prefFileRead && fileVer < 5002) {
         fprintf(stderr, "NEdit: Converting .nedit file from pre-5.2 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
 	updatePatternsTo5dot2();
