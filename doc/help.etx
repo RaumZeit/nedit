@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.71 2004/07/21 11:32:04 yooden Exp $
+.. $Id: help.etx,v 1.72 2004/07/24 17:42:01 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -5055,6 +5055,8 @@ Version
   The regular expression matching routines used in NEdit are adapted (with
   permission) from original code written by Henry Spencer at the
   University of Toronto.
+
+  The Microline widgets are inherited from the Mozilla project.
 
   Syntax highlighting patterns and smart indent macros were contributed by:
   Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk,

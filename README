@@ -1,6 +1,6 @@
                     NEdit Version 5.5RC1, July 2004
 
-$Id: README,v 1.38 2004/07/21 11:32:04 yooden Exp $
+$Id: README,v 1.39 2004/07/24 17:41:59 yooden Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -52,6 +52,8 @@ Andrew Hood, Nathaniel Gray, and TK Soh.
 The regular expression matching routines used in NEdit are adapted (with
 permission) from original code written by Henry Spencer at the University of
 Toronto.
+
+The Microline widgets are inherited from the Mozilla project.
 
 Syntax highlighting patterns and smart indent macros were contributed
 by: Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk,
