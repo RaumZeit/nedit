@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.110 2004/02/08 01:46:23 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.111 2004/02/08 02:49:13 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4282,12 +4282,35 @@ static void hideTooltip(Widget tab)
     	XtPopdown(tooltip);
 }
 
+static void closeTabProc(XtPointer clientData, XtIntervalId *id)
+{
+    CloseFileAndWindow((WindowInfo*)clientData, PROMPT_SBC_DIALOG_RESPONSE);
+}
+
 /*
 ** callback to close-tab button.
 */
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
 {
-    CloseFileAndWindow(GetTopDocument(mainWin), PROMPT_SBC_DIALOG_RESPONSE);
+    /* FIXME: XtRemoveActionHook() related coredump
+    
+       An unknown bug seems to be associated with the XtRemoveActionHook()
+       call in FinishLearn(), which resulted in coredump if a tab was
+       closed, in the middle of keystrokes learning, by clicking on the 
+       close-tab button.
+       
+       As evident to our accusation, the coredump may be surpressed by 
+       simply commenting out the XtRemoveActionHook() call. The bug was
+       consistent on both Motif and Lesstif on various platforms.
+
+       Closing the tab through either the "Close" menu or its accel key, 
+       however, was without any trouble.
+       
+       While its actual mechanism is not well understood, we somehow 
+       managed to workaround the bug by delaying the action of closing
+       the tab. For now. */
+    XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0,
+    	    closeTabProc, GetTopDocument(mainWin));
 }
 
 /*
