@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.98 2004/07/08 13:07:47 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.99 2004/07/15 21:17:12 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -268,16 +268,17 @@ static const char *getBuildInfo(void)
         locale = setlocale(LC_MESSAGES, "");
 
         sprintf(bldInfoString, bldFormat,
-             NEditVersion,
-             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-             linkdate, linktime,
-             XmVERSION, XmREVISION, XmUPDATE_LEVEL,
-             XmVERSION_STRING,
-             xmUseVersion/1000, xmUseVersion%1000,
-             _XmVersionString,
-             ServerVendor(TheDisplay), VendorRelease(TheDisplay),
-             visualStr,
-             locale ? locale : "None");
+            NEditVersion,
+            COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
+            linkdate, linktime,
+            XmVERSION, XmREVISION, XmUPDATE_LEVEL,
+            XmVERSION_STRING,
+            xmUseVersion/1000, xmUseVersion%1000,
+            _XmVersionString,
+            (NULL == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
+            (NULL == TheDisplay ? 0 : VendorRelease(TheDisplay)),
+            visualStr,
+            locale ? locale : "None");
 
         atexit(freeBuildInfo);
     }

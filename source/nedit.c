@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.76 2004/07/15 18:30:43 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.77 2004/07/15 21:17:12 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -430,6 +430,15 @@ int main(int argc, char **argv)
 	    NULL, 0, &argc, argv);
     unmaskArgvKeywords(argc, argv, protectedKeywords);
     if (!TheDisplay) {
+        /* Respond to -V or -version even if there is no display */
+        for (i = 1; i < argc && strcmp(argv[i], "--"); i++)
+        {
+            if (0 == strcmp(argv[i], "-V") || 0 == strcmp(argv[i], "-version"))
+            {
+                PrintVersion();
+                exit(EXIT_SUCCESS);
+            }
+        }
 	XtWarning ("NEdit: Can't open display\n");
 	exit(EXIT_FAILURE);
     }
