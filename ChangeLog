@@ -1,10 +1,19 @@
-2003-05-14 12:08  n8gray
+2003-05-15 07:33  edg
 
-	* source/parse.y (1.26):
-	Comments don't eat backslash-escaped newlines, so this is legal:
-	t_print("Hello " # This is a common greeting \
-	        "world"  # This is the recipient of the greeting \
-	        "\n")    # This is a newline character
+	* source/parse_noyacc.c (1.7): Copied the recent modifications of
+	parse.y.
+
+2003-05-14 19:12  n8gray
+
+	* ChangeLog (1.31): Isn't there a way to generate or update this
+	automatically with CVS?
+
+2003-05-14 19:08  n8gray
+
+	* source/parse.y (1.26): Comments don't eat backslash-escaped
+	newlines, so this is legal:    t_print("Hello " # This is a common
+	greeting \	      "world"  # This is the recipient of the
+	greeting \	      "\n")    # This is a newline character
 
 2003-05-04 23:54  yooden
 
