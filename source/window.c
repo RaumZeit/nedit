@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.59 2002/08/08 21:00:19 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.60 2002/08/09 13:11:03 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -325,7 +325,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNshadowThickness, STAT_SHADOW_THICKNESS,
             XmNmarginWidth, STAT_SHADOW_THICKNESS,
             XmNmarginHeight, STAT_SHADOW_THICKNESS,
-            //XmNautoUnmanage, False,
+            /* XmNautoUnmanage, False, */
             NULL);
     if(window->showISearchLine || window->showStats)
         XtManageChild(statsAreaForm);
