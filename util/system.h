@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.4 2001/08/02 23:45:44 tringali Exp $ */
+/* $Id: system.h,v 1.5 2001/08/04 20:23:54 tringali Exp $ */
 /*******************************************************************************
 *									       *
 * system.h -- Compile time configuration               			       *
@@ -95,7 +95,8 @@
 #   define COMPILE_OS "Unknown"
 #endif
 
-/* Wanted: definitions for IBM xlc, HP aCC/ANSI C, SGI cc */
+/* Some of the info below derived from this excellent reference: 
+   http://www.fortran-2000.com/ArnaudRecipes/Version.html */
 
 #if defined(__GNUC__)
 #   define COMPILE_COMPILER "GNU C"
@@ -111,6 +112,18 @@
 #   define COMPILE_COMPILER "LCC"
 #elif defined (_MSC_VER)
 #   define COMPILE_COMPILER "Microsoft C"
+#elif defined (__BORLANDC__)
+#   define COMPILE_COMPILER "Borland C"
+#elif defined (__sgi) && defined (_COMPILER_VERSION)
+#   define COMPILE_COMPILER "SGI MipsPro"
+#elif defined (__xlC__) || defined (__IBMC__)
+#   define COMPILE_COMPILER "IBM xlC"
+#elif defined (__HP_aCC)
+#   define COMPILE_COMPILER "HP aCC"
+#elif defined (__KCC)
+#   define COMPILE_COMPILER "KAI C++"
+#elif defined (__MWERKS__)
+#   define COMPILE_COMPILER "Metrowerks CodeWarrior"
 #else
 #   define COMPILE_COMPILER "Unknown"
 #endif
