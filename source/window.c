@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.133 2004/03/25 17:37:32 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.134 2004/03/31 12:31:13 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -132,6 +132,20 @@ static unsigned char close_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00,
    0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
+/* bitmap data for the isearch-find button */
+#define isrcFind_width 11
+#define isrcFind_height 11
+static unsigned char isrcFind_bits[] = {
+   0xe0, 0x01, 0x10, 0x02, 0xc8, 0x04, 0x08, 0x04, 0x08, 0x04, 0x00, 0x04,
+   0x18, 0x02, 0xdc, 0x01, 0x0e, 0x00, 0x07, 0x00, 0x03, 0x00};
+
+/* bitmap data for the isearch-clear button */
+#define isrcClear_width 11
+#define isrcClear_height 11
+static char isrcClear_bits[] = {
+   0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x84, 0x01, 0xc4, 0x00, 0x64, 0x00,
+   0xc4, 0x00, 0x84, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00};
+
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void hideTooltip(Widget tab);
@@ -140,7 +154,6 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
 static Widget addTab(Widget folder, WindowInfo *window, const char *string);
 static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
-static void setTabCloseButtonImage(Widget button);
 static Widget manageToolBars(Widget toolBarsForm);
 static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
@@ -192,7 +205,7 @@ static int DoneWithMoveDocumentDialog;
 WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
     Widget winShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
-    Widget iSearchLabel, closeTabBtn, tabForm, form;
+    Widget closeTabBtn, tabForm, form;
     WindowInfo *window;
     Pixel bgpix, fgpix;
     Arg al[20];
@@ -211,6 +224,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XmFontList fontList;
     int fontWidth, tabWidth, state;
     XFontStruct *fs;
+
+    static Pixmap isrcFind = 0;
+    static Pixmap isrcClear = 0;
+    static Pixmap closeTabPixmap = 0;
 
     if (firstTime) 
     {
@@ -415,25 +432,37 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
     if(window->showISearchLine)
         XtManageChild(window->iSearchForm);
-    iSearchLabel = XtVaCreateManagedWidget("iSearchLabel",
-            xmLabelWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("Find:"),
-            XmNmarginHeight, 0,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNleftOffset, 5,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNtopOffset, 1, /* see openmotif note above, for aligment 
-                                with toggle buttons below */
-            XmNbottomAttachment, XmATTACH_FORM, NULL);
-    XmStringFree(s1);
 
-    /* Disable keyboard traversal of the toggle buttons.  We were doing
-       this previously by forcing the keyboard focus back to the text
-       widget whenever a toggle changed.  That causes an ugly focus flash
+    /* Disable keyboard traversal of the find, clear and toggle buttons.  We
+       were doing this previously by forcing the keyboard focus back to the
+       text widget whenever a toggle changed.  That causes an ugly focus flash
        on screen.  It's better just not to go there in the first place. 
        Plus, if the user really wants traversal, it's an X resource so it
        can be enabled without too much pain and suffering. */
     
+    if (isrcFind == 0) {
+        isrcFind = XCreateBitmapFromData(TheDisplay,
+                RootWindowOfScreen(XtScreen(window->iSearchForm)),
+                (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
+    }
+    window->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton",
+            xmPushButtonWidgetClass, window->iSearchForm,
+            XmNlabelString, s1=XmStringCreateSimple("Find"),
+            XmNlabelType, XmPIXMAP,
+            XmNlabelPixmap, isrcFind,
+            XmNtraversalOn, False,
+            XmNmarginHeight, 1,
+            XmNmarginWidth, 1,
+            XmNleftAttachment, XmATTACH_FORM,
+            /* XmNleftOffset, 3, */
+            XmNleftOffset, 0,
+            XmNtopAttachment, XmATTACH_FORM,
+            XmNtopOffset, 1,
+            XmNbottomAttachment, XmATTACH_FORM,
+            XmNbottomOffset, 1,
+            NULL);
+    XmStringFree(s1);
+
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
             XmNlabelString, s1=XmStringCreateSimple("Case"),
@@ -478,15 +507,38 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             NULL);
     XmStringFree(s1);
     
+    if (isrcClear == 0) {
+        isrcClear = XCreateBitmapFromData(TheDisplay,
+                RootWindowOfScreen(XtScreen(window->iSearchForm)),
+                (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
+    }
+    window->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton",
+            xmPushButtonWidgetClass, window->iSearchForm,
+            XmNlabelString, s1=XmStringCreateSimple("<x"),
+            XmNlabelType, XmPIXMAP,
+            XmNlabelPixmap, isrcClear,
+            XmNtraversalOn, False,
+            XmNmarginHeight, 1,
+            XmNmarginWidth, 1,
+            XmNrightAttachment, XmATTACH_WIDGET,
+            XmNrightWidget, window->iSearchRevToggle,
+            XmNrightOffset, 2,
+            XmNtopAttachment, XmATTACH_FORM,
+            XmNtopOffset, 1,
+            XmNbottomAttachment, XmATTACH_FORM,
+            XmNbottomOffset, 1,
+            NULL);
+    XmStringFree(s1);
+
     window->iSearchText = XtVaCreateManagedWidget("iSearchText",
             xmTextWidgetClass, window->iSearchForm,
             XmNmarginHeight, 1,
             XmNnavigationType, XmEXCLUSIVE_TAB_GROUP,
             XmNleftAttachment, XmATTACH_WIDGET,
-            XmNleftWidget, iSearchLabel,
+            XmNleftWidget, window->iSearchFindButton,
             XmNrightAttachment, XmATTACH_WIDGET,
-            XmNrightWidget, window->iSearchRevToggle,
-            XmNrightOffset, 5,
+            XmNrightWidget, window->iSearchClearButton,
+            /* XmNrightOffset, 5, */
             XmNtopAttachment, XmATTACH_FORM,
             XmNtopOffset, 0, /* see openmotif note above */
             XmNbottomAttachment, XmATTACH_FORM,
@@ -507,12 +559,18 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    XmNshadowThickness, 0, NULL);
 
     /* button to close top buffer */
+    if (closeTabPixmap == 0) {
+        closeTabPixmap = XCreateBitmapFromData(TheDisplay,
+                RootWindowOfScreen(XtScreen(tabForm)), (char *)close_bits,
+                close_width, close_height);
+    }
     closeTabBtn = XtVaCreateManagedWidget("closeTabBtn",
       	    xmPushButtonWidgetClass, tabForm,
 	    XmNmarginHeight, 0,
 	    XmNmarginWidth, 0,
     	    XmNhighlightThickness, 0,
 	    XmNlabelType, XmPIXMAP,
+	    XmNlabelPixmap, closeTabPixmap,
     	    XmNshadowThickness, 1,
             XmNtraversalOn, False,
             XmNrightAttachment, XmATTACH_FORM,
@@ -520,10 +578,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNbottomAttachment, XmATTACH_FORM,	    
             XmNbottomOffset, 3,
 	    NULL);
-
     XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, 
 	    mainWin);
-    setTabCloseButtonImage(closeTabBtn);
     
     window->tabBar = XtVaCreateManagedWidget("tabBar", 
        	    xmlFolderWidgetClass, tabForm,
@@ -2839,29 +2895,6 @@ void AddSmallIcon(Widget shell)
     }
     XtVaSetValues(shell, XmNiconPixmap, iconPixmap,
             XmNiconMask, maskPixmap, NULL);
-}
-
-static void setTabCloseButtonImage(Widget button)
-{
-    static Pixmap pixmap = 0;
-
-    if (pixmap == 0) {
-    	Pixel fg, bg;
-	int depth;
-	
-	/* create pixmap per the color depth setting. This fixes a
-	   BadMatch (X_CopyArea) error due to mismatching of color
-	   depth between the bitmap (depth of 1) and the screen,
-	   specifically on when linked to LessTif (0.93.x) on
-	   ASPLinux 7.1 */
-    	XtVaGetValues (button, XmNforeground, &fg, XmNbackground, &bg,
-	    	XmNdepth, &depth, NULL);
-	pixmap = XCreatePixmapFromBitmapData(TheDisplay,
-                RootWindowOfScreen(XtScreen(button)), (char *)close_bits,
-                close_width, close_height, fg, bg, depth);
-    }
-    
-    XtVaSetValues(button, XmNlabelPixmap, pixmap, NULL);
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.66 2004/02/21 05:45:45 tksoh Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.67 2004/03/31 12:31:13 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -41,6 +41,7 @@ static const char CVSID[] = "$Id: search.c,v 1.66 2004/02/21 05:45:45 tksoh Exp 
 #include "preferences.h"
 #include "file.h"
 #include "highlight.h"
+#include "selection.h"
 #ifdef REPLACE_SCOPE
 #include "textDisp.h"
 #include "textP.h"
@@ -179,6 +180,10 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
 	char *searchString, int *searchType);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
 	Atom *type, char *value, int *length, int *format);
+static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
+        Cardinal *nArg);
+static void iSearchTextClearCB(Widget w, WindowInfo *window,
+	XmAnyCallbackStruct *callData);
 static void iSearchTextActivateCB(Widget w, WindowInfo *window,
 	XmAnyCallbackStruct *callData);
 static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
@@ -2984,12 +2989,28 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction,
 */
 void SetISearchTextCallbacks(WindowInfo *window)
 {
-    static XtTranslations table = NULL;
-    static char *translations = "Shift<KeyPress>Return: activate()\n";
+    static XtTranslations tableText = NULL;
+    static char *translationsText = "Shift<KeyPress>Return: activate()\n";
     
-    if (table == NULL)
-    	table = XtParseTranslationTable(translations);
-    XtOverrideTranslations(window->iSearchText, table);
+    static XtTranslations tableClear = NULL;
+    static char *translationsClear =
+        "<Btn2Down>:Arm()\n<Btn2Up>: isearch_clear_and_paste() Disarm()\n";
+
+    static XtActionsRec actions[] = {
+        { "isearch_clear_and_paste", iSearchTextClearAndPasteAP }
+    };
+
+    if (tableText == NULL)
+    	tableText = XtParseTranslationTable(translationsText);
+    XtOverrideTranslations(window->iSearchText, tableText);
+    
+    if (tableClear == NULL) {
+        /* make sure actions are loaded */
+        XtAppAddActions(XtWidgetToApplicationContext(window->iSearchText),
+            actions, XtNumber(actions));
+        tableClear = XtParseTranslationTable(translationsClear);
+    }
+    XtOverrideTranslations(window->iSearchClearButton, tableClear);
     
     XtAddCallback(window->iSearchText, XmNactivateCallback, 
       (XtCallbackProc)iSearchTextActivateCB, window);
@@ -3013,6 +3034,68 @@ void SetISearchTextCallbacks(WindowInfo *window)
 	    (XtCallbackProc)iSearchTextValueChangedCB, window);
     XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback,
 	    (XtCallbackProc)iSearchTextValueChangedCB, window);
+
+    /* find button: just like pressing return */
+    XtAddCallback(window->iSearchFindButton, XmNactivateCallback,
+	    (XtCallbackProc)iSearchTextActivateCB, window);
+    /* clear button: empty the search text widget */
+    XtAddCallback(window->iSearchClearButton, XmNactivateCallback,
+	    (XtCallbackProc)iSearchTextClearCB, window);
+}
+
+/*
+** Remove callbacks before resetting the incremental search text to avoid any
+** cursor movement and/or clearing of selections.
+*/
+static void iSearchTextSetString(Widget w, WindowInfo *window,
+	char *str)
+{
+    /* remove callbacks which would be activated by emptying the text */
+    XtRemoveAllCallbacks(window->iSearchText, XmNvalueChangedCallback);
+    XtRemoveAllCallbacks(window->iSearchText, XmNactivateCallback);
+    /* empty the text */
+    XmTextSetString(window->iSearchText, str ? str : "");
+    /* put back the callbacks */
+    XtAddCallback(window->iSearchText, XmNactivateCallback, 
+      (XtCallbackProc)iSearchTextActivateCB, window);
+    XtAddCallback(window->iSearchText, XmNvalueChangedCallback, 
+      (XtCallbackProc)iSearchTextValueChangedCB, window);
+}
+
+/*
+** Action routine for Mouse Button 2 on the iSearchClearButton: resets the
+** string then calls the activate callback for the text directly.
+*/
+static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
+        Cardinal *nArg)
+{
+    WindowInfo *window;
+    char *selText;
+    XmAnyCallbackStruct cbdata;
+
+    memset(&cbdata, 0, sizeof (cbdata));
+    cbdata.event = event;
+
+    window = WidgetToWindow(w);
+
+    selText = GetAnySelection(window);
+    iSearchTextSetString(w, window, selText);
+    if (selText) {
+        XmTextSetInsertionPosition(window->iSearchText, strlen(selText));
+        XtFree(selText);
+    }
+    iSearchTextActivateCB(w, window, &cbdata);
+}
+
+/*
+** User pressed the clear incremental search bar button. Remove callbacks
+** before resetting the text to avoid any cursor movement and/or clearing
+** of selections.
+*/
+static void iSearchTextClearCB(Widget w, WindowInfo *window,
+	XmAnyCallbackStruct *callData)
+{
+    iSearchTextSetString(w, window, NULL);
 }
 
 /*

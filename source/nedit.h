@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.51 2004/03/11 12:42:47 edg Exp $ */
+/* $Id: nedit.h,v 1.52 2004/03/31 12:31:13 tksoh Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -246,7 +246,9 @@ typedef struct _WindowInfo {
     Widget      statsLineForm;
     Widget      statsLineColNo;         /* Line/Column information display */
     Widget  	iSearchForm;	    	/* incremental search line widgets */
+    Widget  	iSearchFindButton;
     Widget  	iSearchText;
+    Widget  	iSearchClearButton;
     Widget  	iSearchRegexToggle;
     Widget  	iSearchCaseToggle;
     Widget  	iSearchRevToggle;
