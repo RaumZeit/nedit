@@ -1,6 +1,628 @@
-2002-07-26 14:10  n8gray
-        
-        * Merged in calltips patch.
+2002-10-29 15:49  edg
+
+	* source/server.c (1.20): Fix for crash when sending a macro
+	command to the server through nc, while another command is still
+	running. New commands for a window are now rejected when it is
+	already running a macro (beeps).
+
+2002-10-26 00:06  yooden
+
+	* util/: utils.c (1.18), utils.h (1.10): Fixes wrong declaration
+	and documentation, adds missing Copyright line.
+
+2002-10-16 17:28  n8gray
+
+	* source/: preferences.c (1.72), preferences.h (1.29), window.c
+	(1.72): Don't switch to PLAIN mode before closing a window just to
+	force unloading of calltips files -- it's slow!
+	
+	Also fixed a potentially erroneous error message in
+	reapplyLanguageMode.
+
+2002-10-15 11:00  ajhood
+
+	* doc/help.etx (1.34), doc/nedit.doc (1.32), doc/nedit.html (1.26),
+	source/help_data.h (1.30), source/help_topic.h (1.24),
+	source/highlight.c (1.35), source/highlight.h (1.8),
+	source/highlightData.c (1.36), source/highlightData.h (1.10),
+	source/interpret.c (1.31), source/interpret.h (1.11),
+	source/macro.c (1.54), source/preferences.c (1.71),
+	source/preferences.h (1.28), source/textDisp.c (1.40),
+	source/textDisp.h (1.17): Tony's backlight/highlight and SF bug
+	619234 fixes
+
+2002-10-14 18:41  n8gray
+
+	* source/: text.c (1.36), textBuf.c (1.25), textBuf.h (1.12),
+	textDisp.c (1.39), textSel.c (1.11): Committing patch for
+	keyboard-based rectangular selection.
+
+2002-10-13 15:53  yooden
+
+	* doc/help.etx (1.33), doc/nedit.doc (1.31), doc/nedit.html (1.25),
+	source/help_data.h (1.29), source/help_topic.h (1.23): Another tiny
+	doc patch. (Thanks Yury)
+
+2002-10-12 13:33  yooden
+
+	* doc/help.etx (1.32), doc/nedit.doc (1.30), doc/nedit.html (1.24),
+	source/help_data.h (1.28), source/help_topic.h (1.22): Fixes small
+	documentation bug.
+
+2002-10-10 22:04  slobasso
+
+	* source/macro.c (1.53): fix comment typo
+
+2002-10-07 19:39  arnef
+
+	* source/nc.c (1.28): Fix for bug 619231 -  nc hangs after
+	crash/kill Generate a property change event to break a deadlock.
+
+2002-10-07 16:19  edg
+
+	* source/search.c (1.51): Fix for crash bug when search string is
+	too long in search and replace dialogs (triggered when
+	nedit.findReplaceUsesSelection was True and a long selection was
+	made), reported through the discuss list.
+
+2002-10-04 23:21  slobasso
+
+	* source/: macro.c (1.52), tags.c (1.47): remove compiler warnings
+
+2002-10-01 23:45  n8gray
+
+	* doc/help.etx (1.31), doc/nedit.doc (1.29), doc/nedit.html (1.23),
+	source/help_data.h (1.27), source/help_topic.h (1.21): Added
+	documentation for column argument to goto_line_number and the goto
+	line dialog.
+
+2002-09-27 12:19  ajhood
+
+	* source/preferences.c (1.70): set default value for
+	nedit.backlightCharTypes
+
+2002-09-26 12:37  ajhood
+
+	* doc/NEdit.ad (1.3), doc/README.FAQ (1.3), doc/faq-txt-pass2.xsl
+	(1.3), doc/faq-txt.awk (1.3), doc/faq-txt.dtd (1.3),
+	doc/faq-txt.xsl (1.3), doc/faq.dtd (1.3), doc/faq.txt (1.3),
+	doc/faq.xml (1.4), doc/faq.xsl (1.3), doc/help.etx (1.30),
+	doc/nedit.doc (1.28), doc/nedit.html (1.22), doc/setext (1.9),
+	doc/setext-info.txt (1.3), makefiles/Makefile.depend (1.3),
+	source/Makefile.common (1.13), source/help.c (1.85),
+	source/help_data.h (1.26), source/help_topic.h (1.20),
+	source/highlight.c (1.34), source/highlight.h (1.7),
+	source/highlightData.c (1.35), source/highlightData.h (1.9),
+	source/macro.c (1.51), source/menu.c (1.65), source/nedit.h (1.31),
+	source/parse.y (1.22), source/preferences.c (1.69),
+	source/preferences.h (1.27), source/smartIndent.c (1.18),
+	source/tags.c (1.46), source/text.c (1.35), source/text.h (1.10),
+	source/textBuf.c (1.24), source/textBuf.h (1.11), source/textDisp.c
+	(1.38), source/textDisp.h (1.16), source/textP.h (1.6),
+	source/window.c (1.71), source/window.h (1.11),
+	source/windowTitle.c (1.9), util/fileUtils.c (1.27), util/misc.c
+	(1.45), util/printUtils.c (1.20): backlight/rangeset patch from
+	Josef Maier and Tony Balinski, ported to CVS by Andy Hood.
+
+2002-09-26 12:04  ajhood
+
+	* Makefile (1.8): auto-rebuild help.doc, help.html and help_*.h If
+	someone can explain how CVS didn't accept the previous commit tell
+	me.
+
+2002-09-26 11:45  ajhood
+
+	* source/: rangeset.c (1.1), rangeset.h (1.1), rangeset_fn.h (1.1):
+	New files for backlight/rangeset.
+
+2002-09-26 10:24  ajhood
+
+	* doc/Makefile (1.3): auto-rebuild help.doc, help.html and help_*.h
+	if any of the prerequisites change
+
+2002-09-26 10:22  ajhood
+
+	* README (1.30): Add comments on -DHAVE__XMVERSIONSTRING compile
+	option.
+
+2002-09-26 10:01  ajhood
+
+	* makefiles/: Makefile.aix (1.6), Makefile.bsdi (1.4),
+	Makefile.ccur (1.4), Makefile.convex (1.4), Makefile.cygwin (1.5),
+	Makefile.dcosx (1.4), Makefile.dec (1.5), Makefile.freebsd (1.4),
+	Makefile.generic (1.9), Makefile.hpux (1.4), Makefile.linux (1.9),
+	Makefile.lynx (1.5), Makefile.m88k.svr4 (1.4), Makefile.macosx
+	(1.3), Makefile.netbsd (1.4), Makefile.openbsd (1.2), Makefile.os2
+	(1.13), Makefile.osf (1.5), Makefile.qnx (1.2), Makefile.reliant
+	(1.4), Makefile.sco (1.4), Makefile.sgi (1.4), Makefile.solaris
+	(1.8), Makefile.sunos (1.4), Makefile.superux (1.4), Makefile.uhc
+	(1.4), Makefile.ultrix (1.4), Makefile.unicos (1.6),
+	Makefile.unixware (1.5): Add comments on -DHAVE__XMVERSIONSTRING
+	compile option.
+
+2002-09-25 10:56  edg
+
+	* doc/help.etx (1.29), source/file.c (1.54), source/help_data.h
+	(1.25), source/help_topic.h (1.19), source/menu.c (1.64),
+	source/nedit.h (1.30), source/preferences.c (1.68),
+	source/preferences.h (1.26), source/textBuf.c (1.23),
+	source/textBuf.h (1.10), source/window.c (1.70): Committed SF patch
+	#602426: Check for real changes of ext. mod files.  The additional
+	check is on by default, and a mode message appears if comparison
+	takes more than 1 second.
+
+2002-09-23 12:06  edg
+
+	* source/userCmds.c (1.29), util/misc.c (1.44), util/misc.h (1.16):
+	Fix for SF #612558: Macro shortcuts still NumLock sensitive.  Lock
+	and NumLock are now ignored when entering an accelerator.
+
+2002-09-23 11:16  edg
+
+	* util/getfiles.c (1.22): Fix for SF bug #613092: Open file
+	browsing works incorrect.  Keystroke history is now reset after
+	each list refresh.
+
+2002-09-18 20:17  arnef
+
+	* source/search.c (1.50): Fixing error in initial commit of 'nc
+	-wait' patch.  Removing a XtDispatchEvent() that shouldn't have
+	been there.
+
+2002-09-17 09:01  edg
+
+	* source/server_common.c (1.2): Fix for SF bug #610438: Committing
+	patch 403647 causes link fail.	Replaced XGetAtomNames() by a loop
+	using XGetAtomName().
+
+2002-09-13 08:28  edg
+
+	* source/preferences.c (1.67): Fix for SF bug #608693: coredump
+	with -tabs option.  The tab distance is now clipped within its
+	valid range.
+
+2002-09-11 18:59  arnef
+
+	* source/Makefile.common (1.12), source/Makefile.dependencies
+	(1.19), source/file.c (1.53), source/macro.c (1.50), source/nc.c
+	(1.27), source/nedit.h (1.29), source/preferences.c (1.66),
+	source/search.c (1.49), source/selection.c (1.22), source/server.c
+	(1.19), source/server.h (1.5), source/server_common.c (1.1),
+	source/server_common.h (1.1), source/window.c (1.69),
+	util/Makefile.dependencies (1.6): Committing the 'nc -wait' patch
+	(SF #403647).
+
+2002-09-10 12:17  ajhood
+
+	* doc/nedit.doc (1.27), doc/nedit.html (1.21), source/help_data.h
+	(1.24), source/help_topic.h (1.18): I too can forget to do commit
+	the generated files.
+
+2002-09-10 12:10  ajhood
+
+	* doc/help.etx (1.28), source/help.c (1.84): Adds visual info to
+	version [eg Visual: Id 0x23 TrueColor 24 bit (Default)] Allows use
+	of _XmVersionString. Add -DHAVE__XMVERSIONSTRING compile option,
+	and if it doesn't link, you don't have it. (This may be exported by
+	Motif but there is no header to tell you if it is there or not.)
+
+2002-09-06 19:21  n8gray
+
+	* source/calltips.c (1.2): Changing calltip label widget name from
+	"calltipW" back to "calltip" so that resources work as advertised.
+
+2002-09-06 19:13  n8gray
+
+	* doc/help.etx (1.27), doc/nedit.doc (1.26), doc/nedit.html (1.20),
+	source/Makefile.common (1.11), source/Makefile.dependencies (1.18),
+	source/calltips.c (1.1), source/calltips.h (1.1),
+	source/help_data.h (1.23), source/help_topic.h (1.17),
+	source/macro.c (1.49), source/tags.c (1.45), source/tags.h (1.13),
+	source/text.c (1.34), source/textDisp.c (1.37), source/textDisp.h
+	(1.15): New features:	  Positioning of calltips can be controlled
+	more precisely using optional	  arguments to calltip().  These
+	include "center", "right", "above", and     "strict".  Non-strict,
+	non-anchored calltips will always show up *somewhere*	  on-screen
+	even if the cursor is not on-screen.
+	
+	Modifications:	   Refactored calltip UI code into calltips.c/.h. 
+	Updated help files,	makefiles, and dependencies.  Cleaned up
+	tags.c/.h somewhat.
+
+2002-09-05 23:17  slobasso
+
+	* source/: interpret.c (1.30), parse.y (1.21), parse_noyacc.c
+	(1.4): made the following work when arrayaExpression is anything
+	that returns an array as the result: for (x in arrayaExpression) {
+	}
+
+2002-09-05 23:15  slobasso
+
+	* source/nedit.c (1.36): fixed Cardinal vs int compare warning.
+
+2002-09-05 17:48  tringali
+
+	* doc/help.etx (1.26), source/nedit.c (1.35), util/misc.c (1.43),
+	util/misc.h (1.15): Acquire default colors and fonts from the
+	environment if using the default visual.
+
+2002-09-04 08:40  n8gray
+
+	* source/: tags.c (1.44), textDisp.c (1.36): Minor cleanup of
+	tags.c (it could use a lot more).
+	
+	Also improved calltips so that they try not to go off the edges of
+	the screen.  Thanks to TK, from whom I stole much code.  Since he
+	stole his tooltip code from me, the circle is complete.  :^)
+
+2002-09-04 05:58  n8gray
+
+	* source/: textDisp.c (1.35), textDisp.h (1.14): Calltips should
+	finally update on any vertical cursor movement!  Plus, non-
+	anchored calltips maintain their X positions on redrawing.  Also, I
+	found out that textD->cursorX/cursorY are *not* a reliable way to
+	get the X/Y positions of the insertion point, so other potential
+	calltips bugs might be fixed.
+	
+	This is one of those nice commits where I've removed almost as many
+	lines as I've added.  :^)
+
+2002-09-03 01:10  n8gray
+
+	* source/: file.c (1.52), nedit.h (1.28), window.c (1.68): This
+	should fix the worst of the problems in file.c.  There are still
+	potential problems if you lose read permission on a file as you're
+	editing it, but I wanted to commit what's done so far.
+
+2002-09-02 23:18  n8gray
+
+	* source/textDisp.c (1.34): Fixing problem where scroll-wheel-down
+	on empty files caused erroneous scrolling.  It was a problem with
+	mixing Cardinal (unsigned) and signed values.  I took the approach
+	of casting cursorVPadding to int before using it, since it's nice
+	to have Xt reject negative values automatically.
+
+2002-09-02 08:55  edg
+
+	* source/textDisp.c (1.33): Fix for crash bug reported through
+	develop@: regex bug using ^.* BufCopyFromBuf() could be called with
+	invalid paramaters in continous wrapping mode.
+
+2002-08-31 15:14  yooden
+
+	* doc/help.etx (1.25), doc/nedit.doc (1.25), doc/nedit.html (1.19),
+	doc/setext (1.8), doc/setext-info.txt (1.2), source/help_data.h
+	(1.22): Another help update, some setext documentation and a minor
+	setext change.
+
+2002-08-31 08:48  yooden
+
+	* source/: help_data.h (1.21), help_topic.h (1.16): Corrected Help,
+	second batch.
+
+2002-08-31 08:46  yooden
+
+	* doc/: help.etx (1.24), nedit.doc (1.24), nedit.html (1.18):
+	Slight correction in help.etx.
+
+2002-08-31 07:24  n8gray
+
+	* doc/help.etx (1.23), doc/nedit.doc (1.23), doc/nedit.html (1.17),
+	source/help_data.h (1.20), source/help_topic.h (1.15),
+	source/text.c (1.33), source/text.h (1.9), source/textDisp.c
+	(1.32), source/textP.h (1.5): Committing the edge-phobic cursor
+	patch, with documentation and without tab-space mixing.  (The new
+	resource is nedit*text.cursorVPadding by the way.)
+
+2002-08-31 00:52  slobasso
+
+	* source/: interpret.c (1.29), interpret.h (1.10), parse.y (1.20):
+	Lots of array code cleanup including fixes for the following
+	formats: x[9][8] = 6 delete x[4][2][] ++x[4] x[3]-- x[4][5] += 7
+	... and many more.  Also fixed some cases in which array aliasing
+	could occur. Arrays are supposed to have VALUE semantics.
+
+2002-08-28 14:14  tringali
+
+	* source/preferences.c (1.65): Revive upgrade message to 5.4 file
+	format
+
+2002-08-27 08:05  edg
+
+	* source/textDisp.c (1.31): Fixes for SF #600175: Coredump when
+	dismissing resized window Array bounds read & write fixes in
+	calcLineStarts() when number of visible lines becomes zero (only
+	possible in help windows).  Avoid scrollbar slider size < 1 warning
+	(which was harmless but annoying).
+
+2002-08-27 05:39  n8gray
+
+	* source/: file.c (1.51), undo.c (1.14), undo.h (1.6): Committing
+	the file deletion notification patch.  I used a specialized message
+	for ENOACCES but used strerror output along with a suggested cause
+	(deletion or relocation by another program) in the other cases,
+	since there are several possible causes of stat() failure.
+	
+	I'm committing the patch despite the minor controversy over the
+	message text because it's better to have some message than none at
+	all.
+	
+	There is still much bogosity in file.c, including another place
+	where stat() failure causes no warning.
+
+2002-08-23 07:52  n8gray
+
+	* source/textBuf.c (1.22): Fixed a miscalculation in
+	overlayRectInLine that could cause extra letters to be deleted
+	during rectangular drags over tabs.  See SF bug #557225 "rect. 
+	selection drag buglet" for a description of the problem.
+
+2002-08-23 00:52  slobasso
+
+	* source/interpret.c (1.28): Fixed bug that didn't allow built in
+	array variables to be iterated with a for loop.
+
+2002-08-22 23:52  slobasso
+
+	* source/window.c (1.67): Remove unused variables.
+
+2002-08-22 18:43  slobasso
+
+	* source/userCmds.c (1.28): Fix size calculation and escape
+	characters in menu item names.
+
+2002-08-22 08:40  n8gray
+
+	* source/undo.c (1.13): Fixed SF bug #578551 "Scrolling to
+	searched/altered selection" by adding MakeSelectionVisible() calls
+	to Undo and Redo.
+
+2002-08-22 08:10  n8gray
+
+	* source/window.c (1.66): Nuking trailing whitespace from my last
+	commit.
+
+2002-08-22 08:05  n8gray
+
+	* source/window.c (1.65): MakeSelectionVisible in window.c was not
+	paying attention to wrapped lines.  To see the problem in an older
+	version:
+	
+	1.  Open a large file and scroll to the center somewhere 2.  Enable
+	continuous wrapping and resize window so lots of lines wrap 3. 
+	Select a word and make a mark with Alt+M,a 4.  Page Up or Down for
+	several screens 5.  Go to the mark with Alt+G,a
+	
+	If there are enough wrapped lines between your position and the
+	mark then the selection and the cursor will be completely
+	offscreen.
+	
+	Also restructured the function so that horizontal scrolling is not
+	bypassed prematurely.
+
+2002-08-21 13:21  tringali
+
+	* source/help.c (1.83): Remove duplicate widgets caused by a bum
+	merge.
+
+2002-08-21 07:19  n8gray
+
+	* source/file.c (1.50): Fixed bug where clicking on the WM's close
+	button in an unsaved and untitled buffer, answering yes to the
+	"Save before closing" dialog, then aborting the Save-As dialog led
+	to the window being closed and the changes being lost.	The
+	function CloseFileAndWindow wasn't returning FALSE when the Save-As
+	failed.
+
+2002-08-19 21:41  tringali
+
+	* source/preferences.c (1.64): Remove "alpha" versioning - it
+	wasn't forwards compatabile, and there were no auto-upgrades done
+	despite the message printed.
+
+2002-08-19 07:22  n8gray
+
+	* source/textDisp.c (1.30): Calltips are now redrawn on TextDMoveUp
+	and TextDMoveDown.  This should help those who end up with cursors
+	behind calltips when entering multi-line function calls.
+
+2002-08-17 14:28  yooden
+
+	* source/window.c (1.64): Removed unused variables.
+
+2002-08-16 14:43  tringali
+
+	* source/file.c (1.49): Fix hang caused by posting the "reload"
+	dialog box on a hidden window (during multi-file replace
+	validation).
+
+2002-08-15 19:03  n8gray
+
+	* source/: file.c (1.48), window.c (1.63): Fixed the flickering
+	stats line problem (SF bugs 595106, 594838).  Also fixed "save-as
+	doesn't update the stats line" bug.
+
+2002-08-14 19:20  n8gray
+
+	* source/textDisp.c (1.29): Fixed off-by-one error in
+	expandAllTabs.	Also added check for NULL on its return value in
+	TextDShowCalltip.
+
+2002-08-14 08:42  n8gray
+
+	* source/textDisp.c (1.28): Removed debugging cruft from
+	TextDShowCalltip.
+
+2002-08-13 22:12  n8gray
+
+	* doc/help.etx (1.22), doc/nedit.doc (1.22), doc/nedit.html (1.16),
+	source/help_data.h (1.19), source/help_topic.h (1.14),
+	source/text.c (1.32), source/textDisp.c (1.27), source/textDisp.h
+	(1.13): Added "absolute" argument to line-oriented action routines,
+	and "wrap" argument to delete_to_start_of_line.
+
+2002-08-12 21:21  tringali
+
+	* source/tags.c (1.43), source/window.c (1.62), source/window.h
+	(1.10), util/misc.c (1.42), util/misc.h (1.14): Post watch cursor
+	keep screen drawn while loading large tags files.
+
+2002-08-12 15:37  tringali
+
+	* source/window.c (1.61): Reimplement I-search button focus
+	management, so it doesn't have an ugly flash
+
+2002-08-10 23:59  tringali
+
+	* source/undo.c (1.12): Added preference for disbling selection
+	modification during Undo.
+
+2002-08-10 23:58  tringali
+
+	* source/text.c (1.31): - Fix bad hardware tab of 4 spaces.  Please
+	set hardware tabs to 8 for NEdit! - Explicitly remove modifiers on
+	some virtual bindings to account for system   that map different
+	modified keys to different bindings (e.g., Ctrl-PgUp =	
+	osfPageLeft, PgUp = osfPageUp) - Use unions in favor of casts in
+	XEvents.
+
+2002-08-10 23:54  tringali
+
+	* source/highlightData.c (1.34): Use non-capturing parenthesis in C
+	and C++ patterns where appropriate.
+
+2002-08-10 23:53  tringali
+
+	* source/preferences.h (1.25): Added preference to disable
+	modifying selection on Undo.
+
+2002-08-10 23:52  tringali
+
+	* source/preferences.c (1.63): Added preference to disable changing
+	the selection to match Undo.
+
+2002-08-10 23:51  tringali
+
+	* source/server.c (1.18): Use union for XEvents instead of casts.
+
+2002-08-10 23:48  tringali
+
+	* source/: interpret.c (1.27), interpret.h (1.9), macro.c (1.48):
+	Use unions in place of nonportable casts to avoid warnings
+
+2002-08-10 23:45  tringali
+
+	* source/help_data.h (1.18): Regenerated from help.etx update (fix
+	X resource names)
+
+2002-08-10 23:43  tringali
+
+	* source/help.c (1.82): More detail for Motif version, and change
+	button labels on help browser to be more like WinHelp
+
+2002-08-09 20:48  tringali
+
+	* util/system.h (1.12): Support for Lynx, MacOS; better x86
+	reporting
+
+2002-08-09 14:08  tringali
+
+	* doc/: help.etx (1.21), nedit.doc (1.21), nedit.html (1.15): Fix
+	typo in last commit (replace * with @*)
+
+2002-08-09 13:52  tringali
+
+	* doc/: help.etx (1.20), nedit.doc (1.20), nedit.html (1.14):
+	Update incorrect X resources (nedit*text.foo) and upgrade version.
+
+2002-08-09 13:11  tringali
+
+	* source/window.c (1.60): Convert // style comment to /* */, so it
+	compiles again. NEdit is C89, not C++ or C99!
+
+2002-08-08 21:00  n8gray
+
+	* doc/help.etx (1.19), doc/nedit.doc (1.19), doc/nedit.html (1.13),
+	source/help_data.h (1.17), source/help_topic.h (1.13),
+	source/nedit.h (1.27), source/window.c (1.59): Fixing the
+	"ever-growing stats line" bug seen under lesstif.  Also, the stats
+	area code is generally much nicer now, IMHO.
+
+2002-08-02 08:36  n8gray
+
+	* doc/help.etx (1.18), doc/nedit.doc (1.18), doc/nedit.html (1.12),
+	source/help_data.h (1.16), source/help_topic.h (1.12), source/nc.c
+	(1.26): nc.autoStart now defaults to True.  I've had to explain
+	that warning message one too many times...
+	
+	If anybody finds this offensive, it's easy to revert.  ;^)
+
+2002-08-01 00:53  n8gray
+
+	* doc/help.etx (1.17), doc/nedit.doc (1.17), doc/nedit.html (1.11),
+	source/help_data.h (1.15), source/help_topic.h (1.11),
+	source/macro.c (1.47): Added optional "copy" argument to
+	replace_in_string to make it return a copy of the input string if
+	no replacements were done.
+
+2002-07-31 23:34  slobasso
+
+	* source/interpret.c (1.26): made comment more clear
+
+2002-07-31 20:08  edg
+
+	* source/highlight.c (1.33): Fix for yesterday's "fix" (which
+	wasn't entirely waterproof).
+
+2002-07-30 13:54  edg
+
+	* source/highlight.c (1.32): Fix for pattern related crash reported
+	by Joor: I've overlooked a special case in the recent speed
+	improvements.
+
+2002-07-29 08:05  n8gray
+
+	* doc/help.etx (1.16), doc/nedit.doc (1.16), doc/nedit.html (1.10),
+	source/help_data.h (1.14), source/help_topic.h (1.10): Minor change
+	to the documentation for nedit.typingHidesPointer X resource.  By
+	the way, the X resources section of the documentation doesn't seem
+	to be in any order whatsoever.	Maybe it should be sorted or
+	grouped into functional groups.
+
+2002-07-29 03:51  n8gray
+
+	* source/macro.c (1.46): Applying TK's autoflushing t_print patch
+	(SF #552760).  I'm not adding a call to isatty, but if anybody
+	cares enough about the issue they're welcome to do it.	I just want
+	to make sure the patch isn't forgotten.
+
+2002-07-28 19:25  edg
+
+	* source/preferences.c (1.62): Introduced alpha preference file
+	version numbering (5.4a1, 5.4a2, ...) for development versions.
+
+2002-07-27 08:55  yooden
+
+	* source/: highlightData.c (1.33), macro.c (1.45), preferences.c
+	(1.61), preferences.h (1.24), smartIndent.c (1.17), userCmds.c
+	(1.27): Removed obsolete function CopyAllocatedString()
+
+2002-07-26 22:19  n8gray
+
+	* source/window.c (1.58): Fixed flickering under-shadow on stats
+	line.  (Thanks to TK Soh for the fix.) Also fixed horrible
+	tab-space mixing.
+
+2002-07-26 21:39  n8gray
+
+	* ChangeLog (1.26), doc/help.etx (1.15), doc/nedit.doc (1.15),
+	doc/nedit.html (1.9), source/file.c (1.47), source/help_data.h
+	(1.13), source/help_topic.h (1.9), source/macro.c (1.44),
+	source/menu.c (1.63), source/nedit.c (1.34), source/nedit.h (1.26),
+	source/preferences.c (1.60), source/tags.c (1.42), source/tags.h
+	(1.12), source/text.c (1.30), source/textDisp.c (1.26),
+	source/textDisp.h (1.12), source/window.c (1.57): This is the big
+	one.  NEdit is now calltips-enabled!  :-)
 
 2002-04-22 15:22  amai
 
