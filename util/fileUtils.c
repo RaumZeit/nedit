@@ -36,7 +36,9 @@
 #include <stat.h>
 #else
 #include <sys/types.h>
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>

@@ -996,7 +996,8 @@ static void warnHandlerCB(String message)
     	return;
     if (strstr(message, "Attempt to remove non-existant passive grab"))
     	return;
-    fprintf(stderr, message);
+    fputs(message, stderr);
+    fputc('\n', stderr);
 }
 
 /*

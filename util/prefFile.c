@@ -29,7 +29,9 @@
 #ifdef VMS
 #include "VMSparam.h"
 #else
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif
 #include <Xm/Xm.h>
 #include "prefFile.h"

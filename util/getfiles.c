@@ -57,10 +57,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <sys/stat.h>
+#ifdef __MVS__
+#include <errno.h>
+#else
 #include <sys/errno.h>
+#endif
 #include <X11/keysym.h>
 #include <Xm/Xm.h>
 #include <Xm/PushBG.h>
@@ -1019,7 +1025,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     	
     /* Accumulate the current keystroke, just beep if there are too many */
     if (nKeystrokes >= MAX_LIST_KEYSTROKES)
-    	XBell(XtDisplay(w), 100);
+    	XBell(XtDisplay(w), 0);
     else
 #ifdef VMS
     	keystrokes[nKeystrokes++] = toupper(c);

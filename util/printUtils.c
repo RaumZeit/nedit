@@ -50,7 +50,9 @@
 #else
 #include <sys/dir.h>
 #endif /* USE_DIRENT */
+#ifndef __MVS__
 #include <sys/param.h>
+#endif
 #endif /*VMS*/
 #include <sys/stat.h>
 #include <X11/StringDefs.h>
