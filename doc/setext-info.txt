@@ -260,6 +260,9 @@ Typotags Available
     V
     * This is the first bullet.
     * This is the second bullet.
+  
+  Remember that you have to insert empty lines immediately before
+  and after the bullet list.
 
 3>Untouch-tt, Notouch-tt, Passthru-tt, Escape-tt (quoting text)
 

@@ -60,12 +60,12 @@ Help sections of interest to new users are listed under the "Basic Operation"
 heading in the top-level Help menu:
 <P>
 <UL>
-<LI> <A HREF="#Selecting_Text">Selecting Text</A>
-<LI> <A HREF="#Finding_and_Replacing_Text">Finding and Replacing Text</A>
-<LI> <A HREF="#Cut_and_Paste">Cut and Paste</A>
-<LI> <A HREF="#Using_the_Mouse">Using the Mouse</A>
-<LI> <A HREF="#Keyboard_Shortcuts">Keyboard Shortcuts</A>
-<LI> <A HREF="#Shifting_and_Filling">Shifting and Filling</A>
+    <<B><font color=red>--&#62; li>Selecting Text &#60;-- NO HREF!!</font></B></li>
+    <<B><font color=red>--&#62; li>Finding and Replacing Text &#60;-- NO HREF!!</font></B></li>
+    <<B><font color=red>--&#62; li>Cut and Paste &#60;-- NO HREF!!</font></B></li>
+    <<B><font color=red>--&#62; li>Using the Mouse &#60;-- NO HREF!!</font></B></li>
+    <<B><font color=red>--&#62; li>Keyboard Shortcuts &#60;-- NO HREF!!</font></B></li>
+    <<B><font color=red>--&#62; li>Shifting and Filling &#60;-- NO HREF!!</font></B></li>
 </UL>
 <P>
 Programmers should also read the introductory section under the "Features for
@@ -1749,70 +1749,70 @@ An excellent book on the care and feeding of regular expressions is
 The following are regular expression examples which will match:
 <P>
 <UL>
-<LI> An entire line.
+    <li>An entire line.</li>
 </UL>
 <PRE>
         ^.*$
  
 </PRE>
 <UL>
-<LI> Blank lines.
+    <li>Blank lines.</li>
 </UL>
 <PRE>
         ^$
  
 </PRE>
 <UL>
-<LI> Whitespace on a line.
+    <li>Whitespace on a line.</li>
 </UL>
 <PRE>
         \s+
  
 </PRE>
 <UL>
-<LI> Whitespace across lines.
+    <li>Whitespace across lines.</li>
 </UL>
 <PRE>
         (?n\s+)
  
 </PRE>
 <UL>
-<LI> Whitespace that spans at least two lines. Note minimal matching `*?' quantifier.
+    <li>Whitespace that spans at least two lines. Note minimal matching `*?' quantifier.</li>
 </UL>
 <PRE>
         (?n\s*?\n\s*)
  
 </PRE>
 <UL>
-<LI> IP address (not robust).
+    <li>IP address (not robust).</li>
 </UL>
 <PRE>
         (?:\d{1,3}(?:\.\d{1,3}){3})
  
 </PRE>
 <UL>
-<LI> Two character US Postal state abbreviations (includes territories).
+    <li>Two character US Postal state abbreviations (includes territories).</li>
 </UL>
 <PRE>
         [ACDF-IK-PR-W][A-Z]
  
 </PRE>
 <UL>
-<LI> Web addresses.
+    <li>Web addresses.</li>
 </UL>
 <PRE>
         (?:http://)?www\.\S+
  
 </PRE>
 <UL>
-<LI> Case insensitive double words across line breaks.
+    <li>Case insensitive double words across line breaks.</li>
 </UL>
 <PRE>
         (?i(?n&#60;(\S+)\s+\1&#62;))
  
 </PRE>
 <UL>
-<LI> Upper case words with possible punctuation.
+    <li>Upper case words with possible punctuation.</li>
 </UL>
 <PRE>
         &#60;[A-Z][^a-z\s]*&#62;
@@ -1918,11 +1918,13 @@ menus can be found in the section, Help -&#62; Customizing -&#62; Preferences.
 The autoload macro file is a file of macro commands and definitions which
 NEdit will automatically execute when it is first started.  Its location is
 dependent on your environment:
+<P>
 <UL>
-<LI> The default place for the file is '$HOME/.nedit/autoload.nm',
-<LI> if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/autoload.nm',
-<LI> if you are using old-style run control files (i.e. $HOME/.nedit is a regular file) it is located in $HOME/.neditmacro'.
+    <li>The default place for the file is '$HOME/.nedit/autoload.nm',</li>
+    <li>if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/autoload.nm',</li>
+    <li>if you are using old-style run control files (i.e. $HOME/.nedit is a regular file) it is located in '$HOME/.neditmacro'.</li>
 </UL>
+<P>
 (For VMS, the file is in '$NEDIT_HOME/autoload.nm' if $NEDIT_HOME is set, in
 'SYS$LOGIN:.neditmacro' otherwise.)
 <P>
@@ -4051,11 +4053,13 @@ Using Save Defaults after moving the contents of your preference file to your
 .Xdefaults file will re-create the preference file, interfering with the
 options that you have moved.
 The location of NEdit's preferences file depends on your environment:
+<P>
 <UL>
-<LI> The default place for the file is '$HOME/.nedit/nedit.rc',
-<LI> if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/nedit.rc',
-<LI> you may also use old-style run control files; in this case, the preferences are stored in $HOME/.nedit.
+    <li>The default place for the file is '$HOME/.nedit/nedit.rc',</li>
+    <li>if the variable $NEDIT_HOME is set in your environment it is located at '$NEDIT_HOME/nedit.rc',</li>
+    <li>you may also use old-style run control files; in this case, the preferences are stored in $HOME/.nedit.</li>
 </UL>
+<P>
 (For VMS, the file is in '$NEDIT_HOME/nedit.rc' if $NEDIT_HOME is set, in
 'SYS$LOGIN:.nedit' otherwise.)
 <P>

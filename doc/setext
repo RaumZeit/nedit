@@ -1147,7 +1147,40 @@ sub text_bold_tt      { s/$bold_tt/$1$2/g }
 
 #-------------------------------------------------------------------------------
 
-sub text_bullet_tt    { s/$bullet_tt/    * $1/ }
+sub text_bullet_tt
+{
+    #   don't do anything if this is no bulleted line.
+    if (/$bullet_tt/)
+    {
+        #   remove lead-in from paragraph and put the rest in an array
+        my $paragraph = $_;
+        $paragraph =~ s/$bullet_tt/$1/;
+        @words = split ' ', $paragraph;
+        $paragraph = "";
+        
+        #   start with text mode bullet character
+        my $line = '    * ';
+        foreach $word (@words)
+        {
+            if (length($line) + length($word) + 1 <= $right_margin)
+            {
+                #   put every word in a line if there's still room
+                $line = "$line$word ";
+            } else
+            {
+                #   append line to paragraph if full and start a new line
+                $paragraph = "$paragraph$line\n";
+                $line = "      $word ";
+            }
+        }
+        #   get last line
+        $paragraph = "$paragraph$line";
+
+        #   remove trailing white space
+        $paragraph =~ s/\s$//;
+        $_ = $paragraph;
+    }
+}
 
 #-------------------------------------------------------------------------------
 
@@ -1331,7 +1364,7 @@ sub html_bold_tt
 
 sub html_bullet_tt
 {
-    s/$bullet_tt/${lt}LI${gt} $1/;
+    s/$bullet_tt(.*)/    ${lt}li${gt}$1$2${lt}\/li${gt}/;
 }
 
 #-------------------------------------------------------------------------------
