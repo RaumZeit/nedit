@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.79 2003/03/07 01:50:25 n8gray Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.80 2003/03/07 19:46:49 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -71,6 +71,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.79 2003/03/07 01:50:25 n8gra
 #include <Xm/List.h>
 #include <Xm/SeparatoG.h>
 #include <Xm/LabelG.h>
+#include <Xm/Label.h>
 #include <Xm/PushBG.h>
 #include <Xm/PushB.h>
 #include <Xm/ToggleBG.h>
@@ -5377,20 +5378,11 @@ static Status checkColorStatus(colorDialog *cd, Widget colorFieldW)
 }
 
 /* Show or hide errorLabelW depending on whether or not colorFieldW 
-    contains a valid color name.  This is currently done by changing the
-    color of the label's text.  It would be better IMHO to do it with 
-    Xt{Map,Unmap}Widget but I can't get that to work. */
+    contains a valid color name. */
 static void showColorStatus(colorDialog *cd, Widget colorFieldW, 
         Widget errorLabelW)
 {
-    Pixel fgPix;
-    if (checkColorStatus(cd, colorFieldW))
-        /* The color is valid -- hide the error label*/
-        XtVaGetValues(errorLabelW, XmNbackground, &fgPix, NULL);
-    else
-        /* The color's not valid */
-        XtVaGetValues(XtParent(errorLabelW), XmNforeground, &fgPix, NULL);
-    XtVaSetValues(errorLabelW, XmNforeground, fgPix, NULL);
+    XtSetMappedWhenManaged( errorLabelW, !checkColorStatus(cd, colorFieldW) );
 }
 
 /* Update the colors in the window or in the preferences */
@@ -5523,7 +5515,7 @@ Widget addColorGroup( Widget parent, const char *name, char mnemonic,
     /* The error label widget */
     strcpy(&(longerName[nameLen]), "ErrLbl");
     *errW = XtVaCreateManagedWidget(longerName,
-          xmLabelGadgetClass, parent,
+          xmLabelWidgetClass, parent,
           XmNlabelString, s1=XmStringCreateSimple("(Invalid!)"),
           XmNalignment, XmALIGNMENT_END,
           XmNtopAttachment, XmATTACH_WIDGET,
