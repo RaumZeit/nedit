@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.41 2003/03/24 16:20:07 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.42 2003/03/24 23:56:56 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -696,10 +696,10 @@ static void patchResourcesForVisual(void)
 ** versions of Linux distros (e.g., RedHat 8) set the default language to
 ** to have "UTF-8" at the end, so users were seeing these crashes.
 */
-
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
 {
-    char newlocale[1024];
+#define MAX_ENV_LENGTH 1024
+    char newlocale[MAX_ENV_LENGTH];
     const char *lang = getenv("LANG");
     strcpy(newlocale, xnl);
 
@@ -707,7 +707,8 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
     if (xnl && *xnl == '\0' && lang)
     {
         char *utf_start = 0;
-        strcpy(newlocale, lang);
+        strncpy(newlocale, lang, MAX_ENV_LENGTH - 1);
+        newlocale[MAX_ENV_LENGTH - 1] = '\0';
 
         if ((utf_start = strstr(newlocale, ".utf8")) || 
             (utf_start = strstr(newlocale, ".UTF-8")))
