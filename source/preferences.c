@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.89 2003/05/09 17:43:46 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.90 2003/05/22 21:56:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -637,11 +637,11 @@ static PrefDescripRec PrefDescrip[] = {
         Lex:.lex:::::::\n\
         Makefile:MAKEFILE:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
-        NEdit Macro:.NM .NEDITMACRO:::::::\n\
+        NEdit Macro:.NM .NEDITMACRO AUTOLOAD.NM:::::::\n\
         Pascal:.PAS .P .INT:::::::\n\
         Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
         PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
-        Python:.PY:\"^#!.*python\":Auto:None::::\n\
+        Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
         Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
         SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
         SQL:.sql:::::::\n\
@@ -666,11 +666,11 @@ static PrefDescripRec PrefDescrip[] = {
         Lex:.lex:::::::\n\
         Makefile:Makefile makefile .gmk:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
-        NEdit Macro:.nm .neditmacro:::::::\n\
+        NEdit Macro:.nm .neditmacro autoload.nm:::::::\n\
         Pascal:.pas .p .int:::::::\n\
         Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
         PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
-        Python:.py:\"^#!.*python\":Auto:None::::\n\
+        Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
         Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
         SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
         SQL:.sql:::::::\n\
@@ -1074,6 +1074,7 @@ static int lmDialogEmpty(void);
 static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
 static void updatePatternsTo5dot3(void);
+static void updatePatternsTo5dot4(void);
 static void updateShellCmdsTo5dot3(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
@@ -1147,10 +1148,11 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
         fprintf(stderr, "NEdit: Converting .nedit file to 5.4 version.\n"
                 "    To keep, use Preferences -> Save Defaults\n");
     }
-    /* XXX: When 5.4 is released maybe we should move this into the above
-        if stmt.  It's here now for developers who have been using CVS
-        versions and want their colors migrated. */
+    /* XXX: When 5.4 is released we should move the following lines into 
+       the above if stmt.  It's here now for developers who have been using CVS
+       versions and want their colors and patterns migrated. */
     migrateColorResources(prefDB, appDB);
+    updatePatternsTo5dot4();
    
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
@@ -5114,6 +5116,48 @@ static void updatePatternsTo5dot3(void)
     if (regexFind(TempStringPrefs.language, psLm5dot2))
 	regexReplace(&TempStringPrefs.language, psLm5dot2, psLm5dot3);
 #endif 
+}
+
+static void updatePatternsTo5dot4(void)
+{
+#ifdef VMS
+    const char *pyLm5dot3 =
+        "Python:\\.PY:\"\\^#!\\.\\*python\":Auto:None:::\n";
+    const char *nmLm5dot3 =
+        "NEdit Macro:\\.NM \\.NEDITMACRO::::::\n";
+    const char *xrLm5dot3 =
+        "X Resources:\\.XRESOURCES \\.XDEFAULTS \\.NEDIT:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\":::::\n";
+	
+    const char *pyLm5dot4 = 
+        "Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
+    const char *nmLm5dot4 =
+        "NEdit Macro:.NM .NEDITMACRO AUTOLOAD.NM:::::::\n";
+    const char *xrLm5dot4 =
+        "X Resources:.XRESOURCES .XDEFAULTS .NEDIT NEDIT.RC:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
+#else
+    const char *pyLm5dot3 =
+        "Python:\\.py:\"\\^#!\\.\\*python\":Auto:None:::\n";
+    const char *nmLm5dot3 =
+        "NEdit Macro:\\.nm \\.neditmacro::::::\n";
+    const char *xrLm5dot3 =
+        "X Resources:\\.Xresources \\.Xdefaults \\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\":::::\n";
+	
+    const char *pyLm5dot4 = 
+        "Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
+    const char *nmLm5dot4 =
+        "NEdit Macro:.nm .neditmacro autoload.nm:::::::\n";
+    const char *xrLm5dot4 =
+        "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
+#endif
+        
+    /* Upgrade modified language modes, only if the user hasn't
+       altered the default 5.3 definitions. */
+    if (regexFind(TempStringPrefs.language, pyLm5dot3))
+	regexReplace(&TempStringPrefs.language, pyLm5dot3, pyLm5dot4);
+    if (regexFind(TempStringPrefs.language, nmLm5dot3))
+	regexReplace(&TempStringPrefs.language, nmLm5dot3, nmLm5dot4);
+    if (regexFind(TempStringPrefs.language, xrLm5dot3))
+	regexReplace(&TempStringPrefs.language, xrLm5dot3, xrLm5dot4);
 }
 
 /* 
