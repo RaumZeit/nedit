@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.47 2002/10/04 23:21:31 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.48 2003/01/14 22:36:57 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -928,6 +928,13 @@ void FindDefinition(WindowInfo *window, Time time, const char *arg)
 */
 void FindDefCalltip(WindowInfo *window, Time time, const char *arg)
 {
+    /* Reset calltip parameters to reasonable defaults */
+    globAnchored = False;
+    globPos = -1;
+    globHAlign = TIP_LEFT;
+    globVAlign = TIP_BELOW;
+    globAlignMode = TIP_SLOPPY;
+
     findDefinitionHelper(window, time, arg, TIP);
 }
 
@@ -1656,8 +1663,9 @@ static void rcs_free(const char *rcs_str)
     }
 }
 
-/* ****************************************************************** */
-/* Functions for loading Calltips files */
+/********************************************************************
+ *           Functions for loading Calltips files                   *
+ ********************************************************************/
 
 enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE, 
                      TF_ALIAS, TF_ERROR, TF_ERROR_EOF };
@@ -1667,6 +1675,16 @@ static int searchLine(char *line, const char *regex) {
     int dummy1, dummy2;
     return SearchString(line, regex, SEARCH_FORWARD, SEARCH_REGEX,
                              False, 0, &dummy1, &dummy2, NULL, NULL, NULL);
+}
+
+/* Check if a line has non-ws characters */
+static Boolean lineEmpty(const char *line) {
+    while (*line && *line != '\n') {
+        if (*line != ' ' && *line != '\t')
+            return False;
+        ++line;
+    }
+    return True;
 }
 
 /* Remove trailing whitespace from a line */
@@ -1683,16 +1701,17 @@ static void rstrip( char *dst, const char *src ) {
             strcpy(dst, src);
 }
 
-/* Get the next block from a tips file.  A block is a \n\n+ delimited set of
-   lines in a calltips file.  All of the parameters except <fp> are return
-   values, and most have different roles depending on the type of block
-   that is found.  
-        header:     Depends on the block type
-        body:       Depends on the block type.  Used to return a new 
-                    dynamically allocated string.
-        blkLine:    Returns the line number of the first line of the block
-                    after the "* xxxx *" line. 
-        currLine:   Used to keep track of the current line in the file.
+/* 
+** Get the next block from a tips file.  A block is a \n\n+ delimited set of
+** lines in a calltips file.  All of the parameters except <fp> are return
+** values, and most have different roles depending on the type of block
+** that is found.  
+**      header:     Depends on the block type
+**      body:       Depends on the block type.  Used to return a new 
+**                  dynamically allocated string.
+**      blkLine:    Returns the line number of the first line of the block
+**                  after the "* xxxx *" line. 
+**      currLine:   Used to keep track of the current line in the file.
 */
 static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, 
         int *currLine) 
@@ -1712,7 +1731,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         /* Skip blank lines */
         while((status=fgets(line, MAXLINE, fp))) {
             ++(*currLine);
-            if(searchLine( line, "\\S" )) 
+            if(!lineEmpty( line )) 
                 break;
         }
 
@@ -1727,7 +1746,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         /* Skip the comment (non-blank lines) */
         while((status=fgets(line, MAXLINE, fp))) {
             ++(*currLine);
-            if(!searchLine( line, "\\S" )) 
+            if(lineEmpty( line )) 
                 break;
         }
         
@@ -1748,7 +1767,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         /* Figure out how long the block is */
         while((status=fgets(line, MAXLINE, fp))) {
             ++(*currLine);
-            if(!searchLine( line, "\\S" )) 
+            if(lineEmpty( line )) 
                 break;
         }
         incLen = ftell(fp) - incPos;
@@ -1794,7 +1813,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         ++(*currLine);
         if (!status) 
             return TF_ERROR_EOF;
-        if (!searchLine(line, "\\S")) {
+        if (lineEmpty( line )) {
             fprintf( stderr, "nedit: Warning: empty '* language *' block in calltips file.\n" );
             return TF_ERROR;
         }
@@ -1809,7 +1828,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         ++(*currLine);
         if (!status) 
             return TF_ERROR_EOF;
-        if (!searchLine(line, "\\S")) {
+        if (lineEmpty( line )) {
             fprintf( stderr, "nedit: Warning: empty '* version *' block in calltips file.\n" );
             return TF_ERROR;
         }
@@ -1828,7 +1847,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         ++(*currLine);
         if (!status) 
             return TF_ERROR_EOF;
-        if (!searchLine(line, "\\S")) {
+        if (lineEmpty( line )) {
             fprintf( stderr, "nedit: Warning: empty calltip block:\n"
                      "   \"%s\"\n", header);
             return TF_ERROR;
@@ -1843,7 +1862,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
     dummy1 = *currLine;
     while(fgets(line, MAXLINE, fp)) {
         ++(*currLine);
-        if (!searchLine( line, "\\S" )) 
+        if (lineEmpty( line )) 
             break;
     }
     
@@ -1863,9 +1882,9 @@ typedef struct _alias {
 } tf_alias;
 
 /*
- * Allocate a new alias, copying dest and stealing sources.  This may
- * seem strange but that's the way it's called 
- */
+** Allocate a new alias, copying dest and stealing sources.  This may
+** seem strange but that's the way it's called 
+*/
 static tf_alias *new_alias(const char *dest, char *sources) {
     tf_alias *alias;
     /* Allocate the alias */
@@ -1894,11 +1913,12 @@ static void free_alias_list(tf_alias *alias) {
     }
 }
 
-/* Load a calltips file and insert all of the entries into the global tips
-   database.  Each tip is essentially stored as its filename and the line
-   at which it appears--the exact same way ctags indexes source-code.  That's
-   why calltips and tags share so much code.
-   */
+/*
+** Load a calltips file and insert all of the entries into the global tips
+** database.  Each tip is essentially stored as its filename and the line
+** at which it appears--the exact same way ctags indexes source-code.  That's
+** why calltips and tags share so much code.
+*/
 static int loadTipsFile(const char *tipsFile, int index, int recLevel)
 {
     FILE *fp = NULL;
