@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.17 2001/08/28 11:29:21 amai Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.18 2001/10/15 17:24:37 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Text Editing Widget						       *
@@ -3460,9 +3460,9 @@ static void selectLine(Widget w)
     int insertPos = TextDGetInsertPosition(textD);
     int endPos, startPos;
    
-    endPos = TextDEndOfLine(textD, insertPos, False);
-    startPos = TextDStartOfLine(textD, insertPos);
-    BufSelect(textD->buffer, startPos, min(endPos+1, textD->buffer->length));
+    endPos = BufEndOfLine(textD->buffer, insertPos);
+    startPos = BufStartOfLine(textD->buffer, insertPos);
+    BufSelect(textD->buffer, startPos, min(endPos + 1, textD->buffer->length));
     TextDSetInsertPosition(textD, endPos);
 }
 
