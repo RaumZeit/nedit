@@ -111,8 +111,8 @@ static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data);
 static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data);
 static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data);
 static void setQueueLabelText(void);
-static int fileInDir(char *filename,char *dirpath,unsigned short mode_flags);
-static int fileInPath(char *filename,unsigned short mode_flags);
+static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags);
+static int fileInPath(const char *filename, unsigned short mode_flags);
 static int flprPresent(void);
 static void getLprQueueDefault(char *defqueue);
 static void getLpQueueDefault(char *defqueue);
@@ -770,7 +770,7 @@ static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data
 ** Is the filename file in the directory dirpath
 ** and does it have at least some of the mode_flags enabled ?
 */
-static int fileInDir(char *filename, char *dirpath, unsigned short mode_flags)
+static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags)
 {
     DIR           *dfile;
 #ifdef USE_DIRENT
@@ -802,7 +802,7 @@ static int fileInDir(char *filename, char *dirpath, unsigned short mode_flags)
 ** Is the filename file in the environment path directories 
 ** and does it have at least some of the mode_flags enabled ?
 */
-static int fileInPath(char *filename,unsigned short mode_flags)
+static int fileInPath(const char *filename, unsigned short mode_flags)
 {
     char path[MAXPATHLEN];
     char *pathstring,*lastchar;
@@ -845,7 +845,7 @@ static int flprPresent(void)
     return fileInPath("flpr",0111);
 }
 
-static int foundTag(char *tagfilename,char *tagname,char *result)
+static int foundTag(const char *tagfilename, const char *tagname, char *result)
 {
     FILE *tfile;
     char tagformat[512],line[512];
@@ -867,7 +867,7 @@ static int foundTag(char *tagfilename,char *tagname,char *result)
     return False;
 }
 
-static int foundEnv(char *EnvVarName,char *result)
+static int foundEnv(const char *EnvVarName, char *result)
 {
     char *dqstr;
 

@@ -115,7 +115,7 @@ static void lockCB(Widget w, XtPointer callData, XEvent *event,
 static int findAndActivateAccel(Widget w, unsigned int keyCode,
 	unsigned int modifiers, XEvent *event);
 static void removeWhiteSpace(char *string);
-static int stripCaseCmp(char *str1, char *str2);
+static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
 static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
 	*txtVerStr);
@@ -983,6 +983,7 @@ int GetFloatText(Widget text, double *value)
     XtFree(strValue);
     return retVal;
 }
+
 int GetIntText(Widget text, int *value)
 {
     char *strValue, *endPtr;
@@ -1000,6 +1001,7 @@ int GetIntText(Widget text, int *value)
     XtFree(strValue);
     return retVal;
 }
+
 int GetFloatTextWarn(Widget text, double *value, char *fieldName, int warnBlank)
 {
     int result;
@@ -1019,6 +1021,7 @@ int GetFloatTextWarn(Widget text, double *value, char *fieldName, int warnBlank)
     XtFree(valueStr);
     return result;
 }
+
 int GetIntTextWarn(Widget text, int *value, char *fieldName, int warnBlank)
 {
     int result;
@@ -1352,9 +1355,9 @@ static void removeWhiteSpace(char *string)
 ** Compares two strings and return TRUE if the two strings
 ** are the same, ignoring whitespace and case differences.
 */
-static int stripCaseCmp(char *str1, char *str2)
+static int stripCaseCmp(const char *str1, const char *str2)
 {
-    char *c1, *c2;
+    const char *c1, *c2;
     
     for (c1=str1, c2=str2; *c1!='\0' && *c2!='\0'; c1++, c2++) {
 	while (*c1 == ' ' || *c1 == '\t')

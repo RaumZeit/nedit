@@ -25,6 +25,7 @@
 *									       *
 *******************************************************************************/
 #include <stdio.h>
+#include <stdarg.h>
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
@@ -32,9 +33,9 @@
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
-#include <stdarg.h>
 #include "misc.h"
 #include "DialogF.h"
+
 #define NUM_DIALOGS_SUPPORTED 6
 #define NUM_BUTTONS_SUPPORTED 3		/* except prompt dialog */
 #define NUM_BUTTONS_MAXPROMPT 4

@@ -42,10 +42,10 @@ char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
 char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f",
 	"No", "no", "NO", "n", "N", "off", "Off", "OFF"};
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, char *appName,
-	char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
-static int stringToPref(char *string, PrefDescripRec *rsrcDescrip);
-static char *removeWhiteSpace(char *string);
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName,
+	const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
+static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
+static char *removeWhiteSpace(const char *string);
 
 /*
 ** Preferences File
@@ -179,8 +179,8 @@ void OverlayPreferences(XrmDatabase prefDB, char *appName, char *appClass,
     readPrefs(NULL, prefDB, appName, appClass, rsrcDescrip, nRsrc, True);
 }
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, char *appName,
-	char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay)
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName,
+	const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay)
 {
     char rsrcName[256], rsrcClass[256], *valueString, *type;
     XrmValue rsrcValue;
@@ -285,7 +285,7 @@ int SavePreferences(Display *display, char *fileName, char *fileHeader,
     return True;
 }
 
-static int stringToPref(char *string, PrefDescripRec *rsrcDescrip)
+static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
 {
     int i;
     char *cleanStr, *endPtr, **enumStrings;
@@ -353,7 +353,7 @@ static int stringToPref(char *string, PrefDescripRec *rsrcDescrip)
 ** Remove the white space (blanks and tabs) from a string and return
 ** the result in a newly allocated string as the function value
 */
-static char *removeWhiteSpace(char *string)
+static char *removeWhiteSpace(const char *string)
 {
     char *outPtr, *outString;
     
