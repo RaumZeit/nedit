@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.17 2001/04/09 22:12:24 amai Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.18 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -104,7 +104,7 @@ static unsigned char watch_mask_bits[] = {
    0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f
 };
 
-static void addMnemonicGrabs(Widget addTo, Widget w);
+static void addMnemonicGrabs(Widget addTo, Widget w, int unmodified);
 static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
 static void findAndActivateMnemonic(Widget w, unsigned int keycode);
 static void addAccelGrabs(Widget topWidget, Widget w);
@@ -663,11 +663,11 @@ void RaiseWindow(Display *display, Window w)
 ** the XmNuserData resource of the label to the widget to get the focus
 ** when the mnemonic is typed.
 */
-void AddDialogMnemonicHandler(Widget dialog)
+void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo)
 {
     XtAddEventHandler(dialog, KeyPressMask, False,
     	    (XtEventHandler)mnemonicCB, (XtPointer)0);
-    addMnemonicGrabs(dialog, dialog);
+    addMnemonicGrabs(dialog, dialog, unmodifiedToo);
 }
 
 /*
@@ -1391,12 +1391,25 @@ static void warnHandlerCB(String message)
 }
 
 /*
+** Grab a key regardless of caps-lock and other silly latching keys.
+**
+*/
+
+static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask)
+    {
+    XtGrabKey(dialog, keyCode, mask, True, GrabModeAsync, GrabModeAsync);
+    XtGrabKey(dialog, keyCode, mask|LockMask, True, GrabModeAsync, GrabModeAsync);
+    XtGrabKey(dialog, keyCode, mask|Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+    XtGrabKey(dialog, keyCode, mask|LockMask|Mod3Mask, True, GrabModeAsync, GrabModeAsync);
+    }
+
+/*
 ** Part of dialog mnemonic processing.  Search the widget tree under w
 ** for widgets with mnemonics.  When found, add a passive grab to the
 ** dialog widget for the mnemonic character, thus directing mnemonic
 ** events to the dialog widget.
 */
-static void addMnemonicGrabs(Widget dialog, Widget w)
+static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo)
 {
     char mneString[2];
     WidgetList children;
@@ -1416,7 +1429,7 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
 		    &numChildren, NULL);
 	    for (i=0; i<numChildren; i++)
-    		addMnemonicGrabs(dialog, children[i]);
+    		addMnemonicGrabs(dialog, children[i], unmodifiedToo);
     	}
     } else {
 	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
@@ -1424,14 +1437,9 @@ static void addMnemonicGrabs(Widget dialog, Widget w)
 	    mneString[0] = mnemonic; mneString[1] = '\0';
 	    keyCode = XKeysymToKeycode(XtDisplay(dialog),
 	    	    XStringToKeysym(mneString));
-	    XtGrabKey(dialog, keyCode, Mod1Mask, True,
-		    GrabModeAsync, GrabModeAsync);
-	    XtGrabKey(dialog, keyCode, Mod1Mask | LockMask, True,
-		    GrabModeAsync, GrabModeAsync);
-	    XtGrabKey(dialog, keyCode, Mod1Mask | Mod3Mask, True,
-		    GrabModeAsync, GrabModeAsync);
-	    XtGrabKey(dialog, keyCode, Mod1Mask | LockMask | Mod3Mask, True,
-		    GrabModeAsync, GrabModeAsync);
+            reallyGrabAKey(dialog, keyCode, Mod1Mask);
+            if (unmodifiedToo)
+                reallyGrabAKey(dialog, keyCode, 0);
 	}
     }
 }

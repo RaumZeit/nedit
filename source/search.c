@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.26 2001/04/13 15:02:28 slobasso Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.27 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1070,7 +1070,7 @@ static void createReplaceDlog(Widget parent, WindowInfo *window)
     XtManageChild(cancelBtn);
 
     XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     window->replaceDlog = form;
     window->replaceText = findText;
@@ -1291,7 +1291,7 @@ static void createFindDlog(Widget parent, WindowInfo *window)
     XmStringFree(st1);
     XtManageChild(cancelBtn);
     XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     window->findDlog = form;
     window->findText = findText;
@@ -1513,7 +1513,7 @@ static void createReplaceMultiFileDlog(Widget parent, WindowInfo *window)
     
     /* Cancel/Mnemonic stuff. */
     XtVaSetValues(form, XmNcancelButton, cancelBtn, NULL);
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     window->replaceMultiFileDlog = form;
     window->replaceMultiFileList = list;

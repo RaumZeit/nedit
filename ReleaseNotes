@@ -1,6 +1,6 @@
           Release Notes for NEdit Version 5.2 Beta, February 2001
 
-$Id: ReleaseNotes,v 1.4 2001/02/26 23:38:02 edg Exp $
+$Id: ReleaseNotes,v 1.5 2001/04/13 17:50:50 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -18,16 +18,29 @@ New Features in 5.2
  release.  They may or may not be delivered in the next official release.  As
  of this time, these features may be incomplete and have bugs.  Please report
  bugs to http://sourceforge.net/bugs/?group_id=11005, or send mail to
- develop@nedit.org
+ develop@nedit.org.
 
  - Support for high- and true-color systems.  NEdit now will automatically
    select the best visual from your X server.  This reduces the chance of
    running out of colors.
  
+ - New features in the Find and Replace dialogs:
+ 
+   o Replacement across multiple windows in a session.
+   o Case senstivity may be set independently of regular expressions.
+   o Add "Replace and Find" command, which saves keystrokes when doing
+     a large-scale search replace.
+
  - ClearCase version-extended pathnames.
 
- - Replacement across multiple windows.
+ - Many new macro subroutines.
 
+ - Array support in macros.
+
+ - Range highlighting of matching delimiters.
+
+ - Undo and Redo highlights the text that has changed, when visible.
+ 
 
 Bug Fixes in 5.2
 
@@ -35,12 +48,21 @@ Bug Fixes in 5.2
  
  - Ignore the Caps-Lock key when invoking accelerators.
  
- - Fix problems when running NEdit on 64bit platforms like alpha
+ - Fix problems when running NEdit on 64-bit platforms like Alpha
  
  - NEdit failed to open files if some directories above were not "readable"
 
  - Fix potential crashes if some system calls fail
  
+ - When no colors are left, attempt to reuse a closest-matching color.  This
+   allows NEdit's syntax highlighting to better coexist with Netscape, which
+   unfortuntely takes all available colors.
+
+ - "Overtype" mode is now bound to the Insert key, to be consistent with
+   Motif text fields.
+
+ - Accelerators now available in confirmation dialogs.
+
   
 New Features in 5.1
 

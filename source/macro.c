@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.20 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.21 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -1118,7 +1118,7 @@ void RepeatDialog(WindowInfo *window)
     RemapDeleteKey(rd->repeatText);
 
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
 
     /* Set initial focus */
 #if XmVersion >= 1002

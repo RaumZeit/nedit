@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.6 2001/03/13 16:48:23 slobasso Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.7 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * fontsel.c -- Nirvana Font Selector			       *
@@ -457,7 +457,7 @@ char 	*FontSel(Widget parent, int showPropFonts, char *currFont)
 
 	/*	Handle dialog mnemonics  */
 
-	AddDialogMnemonicHandler(form);
+	AddDialogMnemonicHandler(form, FALSE);
 
 	/*	Realize Widgets  */
 

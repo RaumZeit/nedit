@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.23 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.24 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1802,7 +1802,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     XtSetSensitive(EmTabLabel, emulate);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
 
     /* Set the widget to get focus */
 #if XmVersion >= 1002
@@ -1971,7 +1971,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
     XtSetSensitive(WrapTextLabel, margin!=0);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
 
     /* put up dialog and wait for user to press ok or cancel */
     WrapDialogForWindow = forWindow;
@@ -2399,7 +2399,7 @@ characters of file to determine type from content)"),
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
 
     /* Realize all of the widgets in the new dialog */
     RealizeWithoutForcingPosition(LMDialog.shell);
@@ -3164,7 +3164,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     }
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* put up dialog */
     ManageDialogCenteredOnPointer(form);

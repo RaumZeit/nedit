@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.12 2001/04/06 09:49:55 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.13 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1213,7 +1213,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
     	    prompt[strspn(prompt, "lFD")], XmNuserData,
     	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), NULL);
-    AddDialogMnemonicHandler(fileSB);
+    AddDialogMnemonicHandler(fileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
     retVal = HandleCustomNewFileSB(fileSB, fullname,

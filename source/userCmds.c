@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.10 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.11 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -571,7 +571,7 @@ Select \"New\" to add a new command to the menu."),
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* realize all of the widgets in the new window */
     RealizeWithoutForcingPosition(ucd->dlogShell);
@@ -874,7 +874,7 @@ Select \"New\" to add a new command to the menu."),
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Make widgets for top level shell and paste-replay buttons available
        to other functions */
@@ -1522,7 +1522,7 @@ static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     userCmdDialog *ucd = (userCmdDialog *)clientData;
 
-    AddDialogMnemonicHandler(XtParent(ucd->accTextW));
+    AddDialogMnemonicHandler(XtParent(ucd->accTextW), FALSE);
 }
 
 static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event)

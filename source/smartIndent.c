@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.8 2001/03/05 15:00:13 slobasso Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.9 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1148,7 +1148,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Fill in the dialog information for the selected language mode */
     setSmartIndentDialogData(findIndentSpec(lmName));
@@ -1539,7 +1539,7 @@ void EditCommonSmartIndentMacro(void)
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Realize all of the widgets in the new dialog */
     RealizeWithoutForcingPosition(CommonDialog.shell);

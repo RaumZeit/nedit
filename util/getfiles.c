@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.10 2001/02/26 23:38:03 edg Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.11 2001/04/13 17:50:50 tringali Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -290,7 +290,7 @@ int GetExistingFilename (Widget parent, char *promptString, char *filename)
     XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
     	    XmNmnemonic, promptString[strspn(promptString, "lD")], XmNuserData,
     	    XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), NULL);
-    AddDialogMnemonicHandler(existFileSB);
+    AddDialogMnemonicHandler(existFileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB,
                     XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB,
@@ -478,7 +478,7 @@ int GetNewFilename (Widget parent, char *promptString, char *filename)
     	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
     	    promptString[strspn(promptString, "lFD")], XmNuserData,
     	    XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), NULL);
-    AddDialogMnemonicHandler(newFileSB);
+    AddDialogMnemonicHandler(newFileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT));
     return HandleCustomNewFileSB(newFileSB, filename, NULL);

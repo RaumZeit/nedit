@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.31 2001/04/12 22:02:16 edg Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.32 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -4679,7 +4679,7 @@ static Widget createHelpPanel(Widget parent, int topic)
     HandleXSelections(HelpTextPanes[topic]);
     
     /* Process dialog mnemonic keys */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Set the default button */
     XtVaSetValues(form, XmNdefaultButton, dismissBtn, NULL);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.12 2001/04/06 09:49:56 amai Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.13 2001/04/13 17:50:50 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1633,7 +1633,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	setStyleByName(initialStyle);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Realize all of the widgets in the new dialog */
     RealizeWithoutForcingPosition(HSDialog.shell);
@@ -2448,7 +2448,7 @@ for syntax highlighting\nAdd language modes under Preferenses->Language Modes",
     XtVaSetValues(form, XmNcancelButton, dismissBtn, NULL);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
-    AddDialogMnemonicHandler(form);
+    AddDialogMnemonicHandler(form, FALSE);
     
     /* Fill in the dialog information for the selected language mode */
     SetIntText(HighlightDialog.lineContextW, patSet==NULL ? 1 :

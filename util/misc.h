@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.6 2001/04/09 22:12:24 amai Exp $ */
+/* $Id: misc.h,v 1.7 2001/04/13 17:50:50 tringali Exp $ */
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
 #define TEXT_NOT_NUMBER 2
@@ -16,7 +16,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild);
 void SetPointerCenteredDialogs(int state);
 void RaiseShellWindow(Widget shell);
 void RaiseWindow(Display *display, Window w);
-void AddDialogMnemonicHandler(Widget dialog);
+void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo);
 void RemoveDialogMnemonicHandler(Widget dialog);
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
 void UpdateAccelLockPatch(Widget topWidget, Widget newButton);
