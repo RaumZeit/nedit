@@ -1,0 +1,3001 @@
+                                 NEDIT 5.0                      March 11, 1998
+
+NEdit is a GUI (Graphical User Interface) style text editor for programs and
+plain-text files.  Users of Macintosh and MS Windows based text editors will
+find NEdit a familiar and comfortable environment.  NEdit provides all of the
+standard menu, dialog, editing, and mouse support, as well as all of the
+standard shortcuts to which the users of modern GUI based environments are
+accustomed.  For users of older style Unix editors, welcome to the world of
+mouse-based editing!
+
+NEdit is free, available in source and binary form for Silicon Graphics, HP,
+DEC, IBM, Sun, and Linux systems, as well as for VAX and Alpha VMS. Executables
+for non-supported systems are also available.  Porting to other Motif platforms
+has generally been easy.
+
+
+INSTALLING NEDIT
+
+NEdit is a single stand-alone executable file which can be installed by simply
+copying the appropriate executable "nedit" for your system.  Both sources
+and executables are available via anonymous ftp to ftp.fnal.gov in the
+/pub/nedit directory.  The optional "nc" (NEdit Client) program is also
+available for users who want to run nedit in client/server mode.
+
+
+GETTING STARTED
+
+If you are new to X windows, you may need some help setting up your X
+environment or using X across a network.  If you have used other Motif
+programs before, you can probably use NEdit without much instruction.
+
+Start NEdit by typing nedit.  You can specify a file or several files to edit
+on the command line, but you can also open them from inside of NEdit.  If you
+don't specify a file name to edit, NEdit will open a window titled "Untitled".
+You can create a new file by typing into this window and choosing Save or
+Save As... from the File menu.  There is no "main window" in NEdit, all
+editor windows are equivalent, and NEdit remains running as long as at least
+one window is open.
+
+Most editor commands are available from the pulldown menus (File, Edit, Search,
+etc.).  If you make a mistake, any editing operation can be undone by
+selecting Undo from the Edit menu.  Online help is also available through the
+Help menu on the right-hand side of the menu bar.
+
+To open an existing file once nedit is running, choose Open... from the File
+menu.   Select the file that you want to open in the pop-up dialog that
+appears, and click on OK.  You may have any number of files open at the same
+time.  Each file will appear in its own editor window.  Using Open..., rather
+than re-typing the nedit command and running additional copies of NEdit, is
+both more memory-efficient, and allows NEdit to better manage your files.
+
+As you become more familiar with NEdit, you can use the control and function
+keys shown on the right side of the pull-down menus, as a substitute for
+selecting items with the mouse.
+
+Dialogs are also streamlined so you can enter information quickly and without
+using the mouse.  Keyboard focus is automatically directed to the first field
+in a dialog when the dialog pops up.  To move the keyboard focus around a
+dialog, use the tab and arrow keys.  One of the buttons in a dialog is usually
+drawn with a thick, indented, outline.  This button can be activated by
+pressing return or enter.  For example, to replace the string "thing" with
+"things" type:
+
+    <ctrl-r>thing<tab>things<return>
+
+To open a file named "whole_earth.c", type:
+
+    <ctrl-o>who<return>
+
+(how much of the filename you need to type depends on the other files in the
+directory).  See the section titled KEYBOARD SHORTCUTS for more information.
+
+
+SELECTING TEXT
+
+NEdit has two general types of selections, primary (highlighted text), and
+secondary (underlined text). Selections can cover either a simple range of text
+between two points in the file, or they can cover a rectangular area of the
+file.  Rectangular selections are only useful with non-proportional (fixed
+spacing) fonts.
+
+To select text for copying, deleting, or replacing, press the left mouse button
+with the pointer at one end of the text you want to select, and drag it to the
+other end.  The text will become highlighted.  To select a whole word, double
+click (click twice quickly in succession).  Double clicking and then dragging
+the mouse will select a number of words.  Similarly, you can select a whole line
+or a number of lines by triple clicking or triple clicking and dragging. 
+Quadruple clicking selects the whole file.  After releasing the mouse button,
+you can still adjust a selection by holding down the shift key and dragging on
+either end of the selection.  To delete the selected text, press delete or
+backspace.  To replace it, begin typing.
+
+To select a rectangle or column of text, hold the Ctrl key while dragging the
+mouse.  Rectangular selections can be used in any context that normal selections
+can be used, including cutting and pasting, filling, shifting, dragging, and
+searching.  Operations on rectangular selections automatically fill in tabs and
+spaces to maintain alignment of text within and to the right of the selection. 
+Note that the interpretation of rectangular selections by Fill Paragraph is
+slightly different from that of other commands, the section titled "Shifting and
+Filling" has details.
+
+The middle mouse button can be used to make an additional selection (called the
+secondary selection).  As soon as the button is released, the contents of this
+selection will be copied to the insert position of the window where the mouse
+was last clicked (the destination window).  This position is marked by a caret
+shaped cursor when the mouse is outside of the destination window.  If there is
+a (primary) selection, adjacent to the cursor in the window, the new text will
+replace the selected text.  Holding the shift key while making the secondary
+selection will move the text, deleting it at the site of the secondary
+selection, rather than copying it.
+
+Selected text can also be dragged to a new location in the file using the middle
+mouse button.  Holding the shift key while dragging the text will copy the
+selected text, leaving the original text in place.  Holding the control key will
+drag the text in overlay mode.
+
+Normally, dragging moves text by removing it from the selected position at the
+start of the drag, and inserting it at a new position relative to to the mouse. 
+Dragging a block of text over existing characters, displaces the characters to
+the end of the selection.  In overlay mode, characters which are occluded by
+blocks of text being dragged are simply removed.  When dragging non-rectangular
+selections, overlay mode also converts the selection to rectangular form,
+allowing it to be dragged outside of the bounds of the existing text.
+
+The section "Using the Mouse" sumarizes the mouse commands for making primary
+and secondary selections.  Primary selections can also be made via keyboard
+commands, see "Keyboard Shortcuts".
+
+
+CUTTING and PASTING
+
+The easiest way to copy and move text around in your file or between windows, is
+to use the clipboard, an imaginary area that temporarily stores text and data. 
+The Cut command removes the selected text (see SELECTING TEXT) from your file
+and places it in the clipboard.  Once text is in the clipboard, the Paste
+command will copy it to the insert position in the current window.  For example,
+to move some text from one place to another, select it by dragging the mouse
+over it, choose Cut to remove it, click the pointer to move the insert point
+where you want the text inserted, then choose Paste to insert it.  Copy copies
+text to the clipboard without deleting it from your file.  You can also use the
+clipboard to transfer text to and from other Motif programs and X programs which
+make proper use of the clipboard.
+
+There are many other methods for copying and moving text within NEdit windows
+and between NEdit and other programs.  The most common such method is clicking
+the middle mouse button to copy the primary selection (to the clicked
+position).  Copying the selection by clicking the middle mouse button in many
+cases is the only way to transfer data to and from many X programs.  Holding
+the Shift key while clicking the middle mouse button moves the text, deleting
+it from its original position, rather than copying it.  Other methods for
+transferring text include secondary selections, primary selection dragging,
+keyboard-based selection copying, and drag and drop.  These are described in
+detail in the sections: Selecting Text, Using the Mouse, and Keyboard
+Shortcuts.
+
+
+FINDING AND REPLACING TEXT
+
+The Search menu contains a number of commands for finding and replacing text.
+
+The Find... and Replace... commands present dialogs for entering text for
+searching and replacing.  These dialogs also allow you to choose whether you
+want the search to be sensitive to upper and lower case, or whether to use the
+standard Unix pattern matching characters (regular expressions).  Searches
+begin at the current text insertion position.
+
+Find Again and Replace Again repeat the last find or replace command without
+prompting for search strings.  To selectively replace text, use the two
+commands in combination: Find Again, then Replace Again if the highlighted
+string should be replaced, or Find Again again to go to the next string.
+
+Find Selection searches for the text contained in the current primary
+selection (see SELECTING TEXT).  The selected text does not have to be in the
+current editor window, it may even be in another program.  For example, if the
+word dog appears somewhere in a window on your screen, and you want to find it
+in the file you are editing, select the word dog by dragging the mouse across
+it, switch to your NEdit window and choose Find Selection from the Search
+menu.
+
+Searching Backwards
+
+Holding down the shift key while choosing any of the search or replace
+commands from the menu (or using the keyboard shortcut), will search in the
+reverse direction.  Users who have set the search direction using the buttons
+in the search dialog, may find it a bit confusing that Find Again and Replace
+Again don't continue in the same direction as the original search (for
+experienced users, consistency of the direction implied by the shift key is
+more important).
+
+Selective Replacement
+
+To replace only some occurrences of a string within a file, choose Replace...
+from the Search menu, enter the string to search for and the string to
+substitute, and finish by pressing the Find button.  When the first occurrence
+is highlighted, use either Replace Again (^T) to replace it, or Find Again
+(^G) to move to the next occurrence without replacing it, and continue in such
+a manner through all occurrences of interest.
+
+To replace all occurrences of a string within some range of text, select the
+range (see SELECTING TEXT), choose Replace... from the Search menu, type the
+string to search for and the string to substitute, and press the "R. in
+Selection" button in the dialog.  Note that selecting text in the Replace...
+dialog will unselect the text in the window.
+
+Regular Expressions
+
+egular expressions are available in the Find... and Replace... dialogs as a way
+to match inexact sequences of characters.  Regular expression substitution can
+also be used to program automatic editing operations.  For example, the
+following are search and replace strings to find occurrences of the subroutine
+get_x, reverse the first and second parameters, add a third parameter of NULL,
+and change the name to new_get_x":
+
+	Search string:  get_x\(([^ ,]*), ([^\)]*)\)
+	Replace string: new_get_x(\2, \1, NULL)
+
+To use regular expressions, click on the Regular Expression button in the
+Find... or Replace... dialogs before doing a search or replacement.
+
+Regular Expression Syntax
+
+The components of a regular expression are: branches, pieces, atoms, and
+ranges. A regular expression consists of zero or more branches, separated by
+`|'.  It matches anything that matches one of the branches.
+
+A branch is zero or more pieces, concatenated.  It matches a match for the
+first, followed by a match for the second, etc.
+
+A piece is an atom possibly followed by `*', `+', or `?'.  An atom followed by
+`*' matches a sequence of 0 or more matches of the atom.  An atom followed by
+`+' matches a sequence of 1 or more matches of the atom.  An atom followed by
+`?' matches a match of the atom, or the null string.
+
+An atom is a regular expression in parentheses (matching a match for the
+regular expression), a range (see below), `.' (matching any single character),
+`^' (matching the null string at the beginning of a line string), `$' (matching
+the null string at the end of a line), `<' or `>' (matching the null string at
+a word boundary), a `\' followed by a single character (matching that
+character), or a single character with no other significance (matching that
+character).  \t, \n, \b, \r, and \f represent the characters tab newline,
+backspace, carriage return, and form feed.
+
+A range is a sequence of characters enclosed in `[]'.  It normally matches any
+single character from the sequence.  If the sequence begins with `^', it
+matches any single character not from the rest of the sequence.  If two
+characters in the sequence are separated by `-', this is shorthand for the full
+list of ASCII characters between them (e.g. `[0-9]' matches any decimal digit).
+ To include a literal `]' in the sequence, make it the first character
+ (following a possible `^').  To include a literal `-', make it the first or
+ last character.  A backslash `\' followed by a single character includes that
+ character, however backslashes are not necessary for most special characters,
+ since inside a range, only the `]', `-', and '\' characters are treated
+ specially.
+
+Substitution
+
+Wherever the substitution string contains the character `&', NEdit will
+substitute the the entire string that was matched in the Find operation.  Up to
+nine sub-expressions of the match string can also be inserted into the
+replacement string, using `\' followed by a digit. \1 through \9 represent the
+strings that matched parenthesized expressions within the regular expression,
+numbered left-to-right in order of their opening parentheses.  Preceding & or
+\1-9 with \U, \u, \L, or \l adjusts the case of the inserted text.  \u and \l
+change only the first character, while \U and \L change the entire string to
+upper or lower case.  \t, \n, \b, \r, and \f represent the characters tab
+newline, backspace, carriage return, and form feed in a substitution string
+represent the tab and newline characters as they do in match strings.
+
+Ambiguity
+
+If a regular expression could match two different parts of the text, it will
+match the one which begins earliest.  If both begin in the same place but match
+different lengths, or match the same length in different ways, life gets
+messier, as follows.
+
+In general, the possibilities in a list of branches are considered in
+left-to-right order, the possibilities for `*', `+', and `?' are considered
+longest-first, nested constructs are considered from the outermost in, and
+concatenated constructs are considered leftmost-first.  The match that will be
+chosen is the one that uses the earliest possibility in the first choice that
+has to be made.  If there is more than one choice, the next will be made in the
+same manner (earliest possibility) subject to the decision on the first choice.
+ And so forth.
+
+For example, `(ab|a)b*c' could match `abc' in one of two ways.  The first
+choice is between `ab' and `a'; since `ab' is earlier, and does lead to a
+successful overall match, it is chosen.  Since the `b' is already spoken for,
+the `b*' must match its last possibility-the empty string-since it must respect
+the earlier choice.
+
+In the particular case where no `|'s are present and there is only one `*',
+`+', or `?', the net effect is that the longest possible match will be chosen. 
+So `ab*', presented with `xabbbby', will match `abbbb'.  Note that if `ab*' is
+tried against `xabyabbbz', it will match `ab' just after `x', due to the
+begins-earliest rule.  (In effect, the decision on where to start the match is
+the first choice to be made, hence subsequent choices must respect it even if
+this leads them to less-preferred alternatives.)
+
+
+USING THE MOUSE
+
+NEdit is one of the most mouse interactive text editors around, but you don't
+need to know all of the details below to be productive.  You can get by with
+just the left mouse button, clicking to move the cursor, and dragging to make a
+selection.
+
+This section will make more sense if you also read the sections, SELECTING,
+and CUTTING, and PASTING, which explain the terminology of selections, i.e.
+what is meant by primary, secondary, rectangular, etc.
+
+The general meaning of mouse buttons and modifier keys is as follows:
+
+    Buttons
+
+      Button 1 (left)    Cursor position and primary selection
+
+      Button 2 (middle)  Secondary selections, and dragging and
+                	 copying primary selection
+  
+      Button 3 (right)   Quick-access programmable menu and pan
+                         scrolling
+
+    Modifier keys
+
+      Shift   On primary selections, (left mouse button):
+        	 Extends selection to the mouse pointer
+              On secondary and copy operations, (middle):
+        	 Toggles between move and copy
+
+      Ctrl    Makes selection rectangular or insertion
+              columnar
+
+      Alt*    (on release) Exchange primary and secondary
+              selections.
+
+
+Left Mouse Button
+
+    The left mouse button is used to position the cursor and to make primary
+    selections.
+
+      Click 	    	Moves the cursor
+
+      Double Click	Selects a whole word
+
+      Triple Click	Selects a whole line
+
+      Quadruple Click	Selects the whole file
+
+      Shift Click	Adjusts (extends or shrinks) the selection,
+      	    	    	or if there is no existing selection, begins a
+      	    	    	new selection between the cursor and the mouse.
+
+      Ctrl+Shift+Click	Adjusts (extends or shrinks) the selection
+      	 	    	rectangularly.
+
+      Drag		Selects text between where the mouse was pressed
+      	    	    	and where it was released.
+
+      Ctrl+Drag     	Selects rectangle between where the mouse was
+      	    	    	pressed and where it was released.
+
+
+Right Mouse Button
+
+    The right mouse button posts a programmable menu for frequently used
+    commands.
+
+      Click/Drag	Pops up the background menu (programmed from
+ 			Preferences -> Default Settings -> Customize
+ 			Menus -> Window Background).
+
+      Ctrl+Drag 	Pan scrolling.  Scrolls the window both
+ 			vertically and horizontally, as if you had
+ 			grabbed it with your mouse.
+
+
+Middle Mouse Button
+
+   The middle mouse button is for making secondary selections, and copying
+   and dragging the primary selection
+
+      Click	   Copies the primary selection to the clicked position.
+
+      Shift+Click  Moves the primary selection to the clicked position,
+ 		   deleting it from its original position.
+
+      Drag	   1) Outside of the primary selection:
+ 		         Begins a secondary selection.
+ 		   2) Inside of the primary selection:
+ 		         Moves the entire selection by dragging.
+
+      Ctrl+Drag    1) Outside of the primary selection:
+ 		         Begins a rectangular secondary selection.
+ 		   2) Inside of the primary selection:
+ 		         Drags the selection in overlay mode (see below).
+
+When the mouse button is released after creating a secondary selection:
+
+   No Modifiers  If there is a primary selection, replaces it with the
+   		 secondary selection.  Otherwise, inserts the secondary
+   		 selection at the cursor position.
+ 
+   Shift	 Move the secondary selection, deleting it from its
+   		 original position.  If there is a primary selection,
+   		 the move will replace the primary selection with the
+   		 secondary selection. Otherwise, moves the secondary
+   		 selection to to the cursor position.
+
+   Alt* 	 Exchange the primary and secondary selections.
+
+
+While moving the primary selection by dragging with the middle mouse button:
+
+   Shift   Leaves a copy of the original selection in place rather than
+   	   removing it or blanking the area.
+ 
+   Ctrl    Changes from insert mode to overlay mode (see below).
+
+   Escape  Cancels drag in progress.
+
+Overlay Mode: Normally, dragging moves text by removing it from the selected
+position at the start of the drag, and inserting it at a new position relative
+to to the mouse.  When you drag a block of text over existing characters, the
+existing characters are displaced to the end of the selection.  In overlay
+mode, characters which are occluded by blocks of text being dragged are simply
+removed.  When dragging non-rectangular selections, overlay mode also converts
+the selection to rectangular form, allowing it to be dragged outside of the
+bounds of the existing text. 
+
+* The Alt key may be labeled Meta or Compose-Character on some keyboards.  Some
+window managers, including default configurations of mwm, bind combinations of
+the Alt key and mouse buttons to window manager operations.  In NEdit, Alt is
+only used on button release, so regardless of the window manager bindings for
+Alt-modified mouse buttons, you can still do the corresponding NEdit operation
+by using the Alt key AFTER the initial mouse press, so that Alt is held while
+you release the mouse button.  If you find this difficult or annoying, you can
+re-configure most window managers to skip this binding, or you can re-configure
+NEdit to use a different key combination.
+
+
+KEYBOARD SHORTCUTS
+
+Most of the keyboard shortcuts in NEdit are shown on the right hand sides of
+the pull-down menus.  However, there are more which are not as obvious.  These
+include; dialog button shortcuts; menu and dialog mnemonics; labeled keyboard
+keys, such as the arrows, page-up, page-down, and home; and optional Shift
+modifiers on accelerator keys, like [Shift]Ctrl+F.
+
+Menu Accelerators
+
+Pressing the key combinations shown on the right of the menu items is a
+shortcut for selecting the menu item with the mouse.  Some items have the shift
+key enclosed in brackets, such as [Shift]Ctrl+F.  This indicates that the shift
+key is optional.  In search commands, including the shift key reverses the
+direction of the search.  In Shift commands, it makes the command shift the
+selected text by a whole tab stop rather than by single characters.
+
+Menu Mnemonics
+
+Pressing the Alt key in combination with one of the underlined characters in
+the menu bar pulls down that menu.  Once the menu is pulled down, typing the
+underlined characters in a menu item (without the Alt key) activates that
+item.  With a menu pulled down, you can also use the arrow keys to select menu
+items, and the space or enter keys to activate them.
+
+Keyboard Shortcuts within Dialogs
+
+One button in a dialog is usually marked with a thick indented outline. 
+Pressing the Return or Enter key activates this button.
+
+All dialogs have either a Cancel or Dismiss button.  This button can be
+activated by pressing the Escape (or Esc) key.
+
+Pressing the tab key moves the keyboard focus to the next item in a dialog. 
+Within an associated group of buttons, the arrow keys move the focus among the
+buttons.  Shift+Tab moves backward through the items.
+
+Most items in dialogs have an underline under one character in their name. 
+Pressing the Alt key along with this character, activates a button as if you
+had pressed it with the mouse, or moves the keyboard focus to the associated
+text field or list.
+
+You can select items from a list by using the arrow keys to move the selection
+and space to select.
+
+In file selection dialogs, you can type the beginning characters of the file
+name or directory in the list to select files
+
+Labeled Function Keys 
+
+The labeled function keys on standard workstation and PC keyboards, like the
+arrows, and page-up and page-down, are active in NEdit, though not shown in the
+pull-down menus. 
+
+Holding down the control key while pressing a named key extends the scope of
+the action that it performs.  For example, Home normally moves the insert
+cursor the beginning of a line.  Ctrl+Home moves it to the beginning of the
+file. Backspace deletes one character, Ctrl+Backspace deletes one word. 
+
+Holding down the shift key while pressing a named key begins or extends a
+selection.  Combining the shift and control keys combines their actions.  For
+example, to select a word without using the mouse, position the cursor at the
+beginning of the word and press Ctrl+Shift+RightArrow.  The Alt key modifies
+selection commands to make the selection rectangular. 
+
+Under X and Motif, there are several levels of translation between keyboard
+keys and the actions they perform in a program.  The "KEY BINDING", and "X
+RESOURCES" sections below have more information on this subject.  Because of
+all of this configurability, and since keyboards and standards for the meaning
+of some keys vary from machine to machine, the mappings may be changed from the
+defaults listed below.
+
+Modifier Keys (in general)
+
+  Ctrl	 Extends the scope of the action that the key would otherwise
+ 	 perform.  For example, Home normally moves the insert cursor the
+ 	 beginning of a line. Ctrl+Home moves it to the beginning of the
+ 	 file.  Backspace deletes one character, Ctrl+ Backspace deletes
+ 	 one word.
+
+  Shift  Extends the selection to the cursor position. If there's no
+ 	 selection, begins one between the old and new cursor positions.
+ 
+  Alt	 When modifying a selection, makes the selection rectangular.
+
+(For the effects of modifier keys on mouse button presses, see the section
+titled "Using the Mouse")
+
+All Keyboards
+
+  Escape	Cancels operation in progress: menu selection, drag,
+  		selection, etc.  Also equivalent to cancel button in
+  		dialogs.
+
+  Backspace	Delete the character before the cursor
+
+  Ctrl+BS	Delete the word before the cursor
+
+  Arrows
+
+    Left	Move the cursor to the left one character
+
+    Ctrl+Left   Move the cursor backward one word (Word delimiters
+    		are settable, see CUSTOMIZATION)
+
+    Right	Move the cursor to the right one character
+
+    Ctrl+Right  Move the cursor forward one word
+
+    Up  	Move the cursor up one line
+
+    Ctrl+Up	Move the cursor up one paragraph.  (Paragraphs are
+    	    	delimited by blank lines.)
+
+    Down	Move the cursor down one line.
+
+    Ctrl+Down	Move the cursor down one paragraph.
+
+  Ctrl+Return	Return with automatic indent, regardless of the setting
+    	    	of Auto Indent.
+
+  Shift+Return	Return without automatic indent, regardless of the
+  		setting of Auto Indent.
+
+  Ctrl+Tab	Insert an ascii tab character, without processing
+  		emulated tabs.
+
+  Alt+Ctrl+<c>	Insert the control-code equivalent of a key <c>
+
+  Ctrl+/	Select everything (same as Select All menu item or ^A)
+
+  Ctrl+\	Unselect
+
+  Ctrl+U	Delete to start of line
+
+PC Standard Keyboard
+
+  Ctrl+Insert	Copy the primary selection to the clipboard (same as
+ 		Copy menu item or ^C) for compatibility with Motif
+ 		standard key binding
+ 
+  Shift+Ctrl+
+  Insert	Copy the primary selection to the cursor location.
+
+  Delete	Delete the character before the cursor. (Can be
+ 		configured to delete the character after the cursor,
+ 		see CUSTOMIZATION, and X RESOURCES)
+ 
+
+  Ctrl+Delete	Delete to end of line.
+
+  Shift+Delete	Cut, remove the currently selected text and place it
+ 		in the clipboard. (same as Cut menu item or ^X) for
+ 		compatibility with Motif standard key binding.
+ 
+  Shift+Ctrl+
+  Delete	Cut the primary selection to the cursor location.
+
+  Home		Move the cursor to the beginning of the line.
+
+  Ctrl+Home	Move the cursor to the beginning of the file.
+
+  End		Move the cursor to the end of the line.
+
+  Ctrl+End	Move the cursor to the end of the file.
+
+  PageUp	Scroll and move the cursor up by one page.
+
+  Ctrl+PageUp   Scroll and move the cursor left by one page.
+  
+  PageDown	Scroll and move the cursor down by one page.
+
+  Ctrl+PageDown Scroll and move the cursor right by one page.
+
+  F10		Make the menu bar active for keyboard input (Arrow
+  		Keys, Return, Escape, and the Space Bar)
+ 
+
+Specialty Keyboards 
+
+On machines with different styles of keyboards, generally, text editing actions
+are properly matched to the labeled keys, such as Remove, Next-screen, etc.. 
+If you prefer different key bindings, see the heading titled "Binding Keys to
+Actions" in the X RESOURCES section below.
+
+
+TEXT FILLING
+
+Text filling using the Fill Paragraph command in the Edit menu is one of the
+most important concepts in NEdit.  And it will be well worth your while to
+understand how to use it properly.
+
+In plain text files, unlike word-processor files, there is no way to tell which
+lines are continuations of other lines, and which lines are meant to be
+separate, because there is no distinction in meaning between newline characters
+which separate lines in a paragraph, and ones which separate paragraphs from
+other text.  This makes it impossible for a text editor like NEdit to tell
+parts of the text which belong together as a paragraph from carefully arranged
+individual lines.
+
+In continuous wrap mode, lines automatically wrap and unwrap themselves to
+line up properly at the right margin.  In this mode, you simply omit the
+newlines within paragraphs and let NEdit make the line breaks as needed. 
+Unfortunately, continuous wrap mode is not appropriate in the majority of
+situations, because files with extremely long lines are not common under Unix
+and may not be compatible with all tools, and because you can't achieve
+effects like indented sections, columns, or program comments, and still take
+advantage of the automatic wrapping.
+
+Without continuous wrapping, paragraph filling is not entirely automatic. 
+Auto-Newline wrapping keeps paragraphs lined up as you type, but once entered,
+NEdit can no longer distinguish newlines which join wrapped text, and newlines
+which must be preserved.  Therefore, editing in the middle of a paragraph will
+often leave the right margin messy and uneven.
+
+Since NEdit can't act automatically to keep your text lined up, you need to
+tell it explicitly where to operate, and that is what Fill Paragraph is for. 
+It arranges lines to fill the space between two margins, wrapping the lines
+neatly at word boundaries.  Normally, the left margin for filling is inferred
+from the text being filled.  The first line of each paragraph is considered
+special, and its left indentation is maintained separately from the remaining
+lines (for leading indents, bullet points, numbered paragraphs, etc.). 
+Otherwise, the left margin is determined by the furthest left non-whitespace
+character.  The right margin is either the Wrap Margin, set in the preferences
+menu (by default, the right edge of the window), or can also be chosen on the
+fly by using a rectangular selection (see below).
+
+There are three ways to use Fill Paragraph.  The simplest is, while you are
+typing text, and there is no selection, simply select Fill Paragraph (or type
+Ctrl+J), and NEdit will arrange the text in the paragraph adjacent to the
+cursor.  A paragraph, in this case, means an area of text delimited by blank
+lines.
+
+The second way to use Fill Paragraph is with a selection.  If you select a
+range of text and then chose Fill Paragraph, all of the text in the selection
+will be filled.  Again, continuous text between blank lines is interpreted as
+paragraphs and filled individually, respecting leading indents and blank lines.
+
+The third, and most versitile, way to use Fill Paragraph is with a rectangular
+selection.  Fill Paragraph treats rectangular selections differently from other
+commands.  Instead of simply filling the text inside the rectangular selection,
+NEdit interprets the right edge of the selection as the requested wrap margin. 
+Text to the left of the selection is not disturbed (the usual interpretation of
+a rectangular selection), but text to the right of the selection is included in
+the operation and is pulled in to the selected region.  This method enables you
+to fill text to an arbitrary right margin, without going back and forth to the
+wrap-margin dialog, as well as to exclude text to the left of the selection
+such as comment bars or other text columns.
+
+SHIFT LEFT, SHIFT RIGHT
+
+While shifting blocks of text is most important for programmers (See FEATURES
+FOR PROGRAMMING), it is also useful for other tasks, such as creating indented
+paragraphs. 
+
+To shift a block of text one tab stop to the right, select the text, then
+choose Shift Right from the Edit menu.  Note that the accelerator keys for
+these menu items are Ctrl+9 and Ctrl+0, which correspond to the right and left
+parenthesis on most keyboards.  Remember them as adjusting the text in the
+direction pointed to by the parenthesis character.  Holding the Shift key while
+selecting either Shift Left or Shift Right will shift the text by one character.
+
+It is also possible to shift blocks of text by selecting the text
+rectangularly, and dragging it left or right (and up or down as well).  Using
+a rectangular selection also causes tabs within the selection to be
+recalculated and substituted, such that the non-whitespace characters remain
+stationary with respect to the selection.
+
+
+FEATURES FOR PROGRAMMERS
+
+Though general in appearance, NEdit has many features intended specifically
+for programmers.  Programming-related topics are listed here, and in the next
+four sections: TABS AND TAB EMULATION, AUTOMATIC INDENT, SYNTAX HIGHLIGHTING,
+and FINDING SUBROUTINE AND DATA DECLARATIONS (CTAGS).
+
+Language Modes
+
+When nedit initially reads a file, it attempts to determine whether the file is
+in one of the computer languages that it knows about.  Knowing what language a
+file is written in allows NEdit to assign highlight patterns and smart indent
+macros, and to set language specific preferences like word delimiters, tab
+emulation, and auto-indent.  Language mode can be recognized from both the file
+name and from the first 200 characters of content.  Language mode recognition
+and language-specific preferences are configured in: Preferences -> Default
+Settings -> Language Modes....
+
+You can set the language mode manually for a window, by selecting it from the
+menu: Preferences -> Language Modes.
+
+Line Numbers
+
+To find a particular line in a source file by line number, choose Goto Line
+#... from the Search menu.  You can also directly select the line number text
+in the compiler message in the terminal emulator window (xterm, decterm,
+winterm, etc.) where you ran the compiler, and choose Goto Selected from the
+Search menu.
+
+To find out the line number of a particular line in your file, turn on
+Statistics Line in the Preferences menu and position the insertion point
+anywhere on the line.  The statistics line continuously updates the line number
+of the line containing the cursor.
+
+Matching Parentheses
+
+To help you inspect nested parentheses, brackets, braces, quotes, and other
+characters, NEdit has both an automatic parenthesis matching mode, and a Find
+Matching command.  Automatic parenthesis matching is activated when you type,
+or move the insertion cursor after a parenthesis, bracket, or brace.  It
+momentarily highlights the matching character if that character is visible in
+the window.  To find a matching character anywhere in the file, select it or
+position the cursor after it, and choose Find Matching from the Search menu. 
+If the character matches itself, such as a quote or slash, select the first
+character of the pair.  NEdit will match {, (, [, <, ", ', `, /, and \.
+
+Opening Included Files
+
+The Open Selected command in the File menu understands the C preprocessor's
+#include syntax, so selecting an #include line and invoking Open Selected will
+generally find the file referred to, unless doing so depends on the settings of
+compiler switches or other information not available to NEdit.
+
+Interface to Programming Tools
+
+Integrated software development environments such as SGI's CaseVision and
+Centerline Software's Code Center, can be interfaced directly with NEdit via
+the client server interface.  These tools allow you to click directly on
+compiler and runtime error messages and request NEdit to open files, and select
+lines of interest.  The easiest method is usually to use the tool's interface
+for character-based editors like vi, to invoke nc, but programatic interfaces
+can also be derived using the source code for nc.
+
+There are also some simple compile/review, grep, ctree, and ctags browsers
+available in the NEdit contrib directory on ftp.fnal.gov.
+
+
+TABS AND TAB EMULATION
+
+Tabs are important for programming in languages which use indentation to show
+nesting, as short-hand for producing white-space for leading indents.  As a
+programmer, you have to decide how to use indentation, and how or whether tab
+characters map to your indentation scheme.
+
+Ideally, tab characters map directly to the amount of indent that you use to
+distinguish nesting levels in your code.  Unfortunately, the Unix standard for
+interpretation of tab characters is eight characters (probably dating back to
+mechanical capabilities of the original teletype), which is usually too coarse
+for a single indent.
+
+Most text editors, NEdit included, allow you to change the interpretation of
+the tab character, and many programmers take advantage of this, and set their
+tabs to 3 or 4 characters to match their programming style.  In NEdit you set
+the hardware tab distance in Preferences -> Tabs... for the current window, or
+Preferences -> Default Settings -> Tabs... (general), or Preferences -> Default
+Settings -> Language Modes... (language-specific) to change the defaults for
+future windows.
+
+Changing the meaning of the tab character makes programming much easier while
+you're in the editor, but can cause you headaches outside of the editor,
+because there is no way to pass along the tab setting as part of a plain-text
+file.  All of the other tools which display, print, and otherwise process your
+source code have to be made aware of how the tabs are set, and must be able to
+handle the change.  Non-standard tabs can also confuse other programmers, or
+make editing your code difficult for them if their text editors don't support
+changes in tab distance.
+
+Emulated Tabs
+
+An alternative to changing the interpretation of the tab character is tab
+emulation.  In the Tabs... dialog(s), turning on Emulated Tabs causes the Tab
+key to insert the correct number of spaces and/or tabs to bring the cursor the
+next emulated tab stop, as if tabs were set at the emulated tab distance rather
+than the hardware tab distance.  Backspacing immediately after entering an
+emulated tab will delete the fictitious tab as a unit, but as soon as you move
+the cursor away from the spot, NEdit will forget that the collection of spaces
+and tabs is a tab, and will treat it as separate characters.  To enter a real
+tab character with "Emulate Tabs" turned on, use Ctrl+Tab.
+
+It is also possible to tell NEdit not to insert ANY tab characters at all in
+the course of processing emulated tabs, and in shifting and rectangular
+insertion/deletion operations, for programmers who worry about the
+misinterpretation of tab characters on other systems.
+
+
+AUTOMATIC INDENT
+
+Programmers who use structured languages usually require some form of automatic
+indent, so that they don't have to continually re-type the sequences of tabs
+and/or spaces needed to maintain lengthy running indents.  Version 5.0 of NEdit
+is the first release of NEdit to offer "smart" indent, at least experimentally,
+in addition to the traditional automatic indent which simply lines up the
+cursor position with the previous line.
+
+Smart Indent
+
+Smart Indent in this release must still be considered somewhat experimental. 
+Smart indent macros are only available by default for C and C++, and while
+these can easily be configured for different default indentation distances,
+they may not conform to everyone's exact C programming style.  Smart indent is
+programmed in terms of macros in the NEdit macro language which can be entered
+in: Preferences -> Default Settings -> Indent -> Program Smart Indent.  Hooks
+are provided for intervening at the point that a newline is entered, either via
+the user pressing the Enter key, or through auto-wrapping; and for arbitrary
+type-in to act on specific characters typed.
+
+To type a newline character without invoking smart-indent when operating in
+smart-indent mode, hold the Ctrl key while pressing the Return or Enter key.
+
+Auto-Indent
+
+With Indent set to Auto (the default), NEdit keeps a running indent.  When you
+press the Return or Enter key, spaces and tabs are inserted to line up the
+insert point under the start of the previous line.  Ctrl+Return in auto-indent
+mode acts like a normal return, With auto-indent turned off, Ctrl+Return does
+indentation.
+
+Block Indentation Adjustment
+
+The Shift Left and Shift Right commands as well as rectangular dragging can be
+used to adjust the indentation for several lines at once.  To shift a block of
+text one character to the right, select the text, then choose Shift Right from
+the Edit menu.  Note that the accelerator keys for these menu items are Ctrl+9
+and Ctrl+0, which correspond to  the right and left parenthesis on most
+keyboards.  Remember them as adjusting the text in the direction pointed to by
+the parenthesis character.  Holding the Shift key while selecting either Shift
+Left or Shift Right will shift the text by one tab stop (or by one emulated tab
+stop if tab emulation is turned on).  The help section: "SHIFT LEFT, SHIFT
+RIGHT" above has details.
+
+
+SYNTAX HIGHLIGHTING
+
+Syntax Highlighting means using colors and fonts to help distinguish language
+elements in programming languages and other types of structured files. 
+Programmers use syntax highlighting to understand code faster and better, and
+to spot many kinds of syntax errors more quickly.
+
+To use syntax highlighting in NEdit, select Highlight Syntax in the Preferences
+menu.  If NEdit recognizes the computer language that you are using, and
+highlighting rules (patterns) are available for that language, it will
+highlight your text, and maintain the highlighting, automatically, as you type.
+
+If NEdit doesn't correctly recognize the type of the file you are editing, you
+can manually select a language mode from Language Modes in the Preferences
+menu.  You can also program the method that NEdit uses to recognize language
+modes in Preferences -> Default Settings -> Language Modes....
+
+If no highlighting patterns are available for the language that you want to
+use, you can create new patterns relatively quickly.  The section below titled
+"WRITING SYNTAX HIGHLIGHTING PATTERNS", has details.
+
+If you are satisfied with what NEdit is highlighting, but would like it to use
+different colors or fonts, you can change these by selecting Preferences ->
+Default Settings -> Syntax Highlighting -> Text Drawing Styles.  Highlighting
+patterns are connected with font and color information through a common set of
+styles so that colorings defined for one language will be similar across
+others, and patterns within the same language which are meant to appear
+identical can be changed in the same place.  To understand which styles are
+used to highlight the language you are interested in, you may need to look at
+"Patterns for Highlighting" section, as well.
+
+Syntax highlighting is CPU intensive, and under some circumstances can affect
+NEdit's responsiveness.  If you have a particularly slow system, or work with
+very large files, you may not want to use it all of the time.  Syntax
+highlighting introduces two kinds of delays.  The first is an initial parsing
+delay, proportional to the size of the file.  This delay is also incurred when
+pasting large sections of text, filtering text through shell commands, and
+other circumstances involving changes to large amounts of text.  The second
+kind of delay happens when text which has not previously been visible is
+scrolled in to view.  Depending on your system, and the highlight patterns you
+are using, this may or may not be noticeable.  A typing delay is also possible,
+but unlikely if you are only using the built-in patterns.
+
+
+FINDING SUBROUTINE AND DATA DECLARATIONS (CTAGS)
+
+NEdit can process tags files generated using the Unix ctags command.  Ctags
+creates index files correlating names of functions and declarations with their
+locations in C, Fortran, or Pascal source code files. (See the ctags manual
+page for more information).  Ctags produces a file called "tags" which can be
+loaded by NEdit.  Once loaded, the information in the tags file enables NEdit
+to go directly to the declaration of a highlighted function or data structure
+name with a single command.  To load a tags file, select "Load Tags File" from
+the File menu and choose a tags file to load, or specify the name of the tags
+file on the NEdit command line:
+
+    nedit -tags tags
+
+NEdit can also be set to load a tags file automatically when it starts up.
+Setting the X resource nedit.tagFile to the name of a tag file tells NEdit to
+look for that file at startup time (see X RESOURCES).  The file name can be
+either a complete path name, in which case NEdit will always load the same tags
+file, or a file name without a path or with a relative path, in which case
+NEdit will load it starting from the current directory.  The second option
+allows you to have different tags files for different projects, each
+automatically loaded depending on the directory you're in when you start
+NEdit.  Setting the name to "tags" is an obvious choice since this is the name
+that ctags uses.
+
+To find the definition of a function or data structure once a tags file is
+loaded, select the name anywhere it appears in your program (see SELECTING,
+CUTTING, and PASTING) and choose "Find Definition" from the Search menu.
+
+
+SHELL COMMANDS AND FILTERS
+
+The Shell menu (Unix versions only) allows you to execute Unix shell commands
+from within NEdit.  You can add items to the menu to extend NEdit's command set
+or to incorporate custom automatic editing features using shell commands or
+editing languages like awk and sed.  To add items to the menu, select
+Preferences -> Default Settings Customize Menus -> Shell Menu.  NEdit comes
+pre-configured with a few useful Unix commands like spell and sort, but we
+encourage you to add your own custom extensions.
+
+Filter Selection... prompts you for a Unix command to use to process the
+currently selected text.  The output from this command replaces the contents of
+the selection.
+
+Execute Command... prompts you for a Unix command and replaces the current
+selection with the output of the command.  If there is no selection, it
+deposits the output at the current insertion point.
+
+Execute Command Line uses the position of the cursor in the window to indicate
+a line to execute as a shell command line.  The cursor may be positioned
+anywhere on the line.  This command allows you to use an NEdit window as an
+editable command window for saving output and saving commands for re-execution.
+
+The X resource called nedit.shell (See X RESOURCES) determines which Unix
+shell is used to execute commands.  The default value for this resource is
+/bin/csh.
+
+
+LEARN/REPLAY
+
+Selecting Learn Keystrokes from the Macro menu puts NEdit in learn mode.  In
+learn mode, keystrokes and menu commands are recorded, to be played back later,
+using the Replay Keystrokes command, or pasted into a macro in the Macro
+Commands dialog of the Default Settings menu in Preferences.
+
+Note that only keyboard and menu commands are recorded, not mouse clicks or
+mouse movements since these have no absolute point of reference, such as cursor
+or selection position.  When you do a mouse-based operation in learn mode,
+NEdit will beep (repeatedly) to remind you that the operation was not recorded.
+
+Learn mode is also the quickest and easiest method for writing macros.  The
+dialog for creating macro commands contains a button labeled "Paste Learn /
+Replay Macro", which will deposit the last sequence learned into the body of
+the macro.
+
+
+REPEATING ACTIONS AND LEARN/REPLAY SEQUENCES
+
+You can repeat the last (keyboard-based) command, or learn/replay sequence with
+the Repeat... command in the Macro menu.  To repeat an action, first do the
+action (i.e. insert a character, do a search, move the cursor), then select
+Repeat..., decide how or how many times you want it repeated, and click OK. 
+For example, to move down 30 lines through a file, you could type: <Down Arrow>
+Ctrl+, 29 <Return>.  To repeat a learn/replay sequence, first learn it, then
+select Repeat..., click on Learn/Replay and how you want it repeated, then
+click OK.
+
+If the commands you are repeating advance the cursor through the file, you can
+also repeat them within a range of characters, or from the current cursor
+position to the end of the file.  To iterate over a range of characters, use
+the primary selection (drag the left mouse button over the text) to mark the
+range you want to operate on, and select "In Selection" in the Repeat dialog.
+
+When using In "Selection" or "To End" with a learned sequence, try to do cursor
+movement as the last step in the sequence, since testing of the cursor position
+is only done at the end of the sequence execution.  If you do cursor movement
+first, for example searching for a particular word then doing a modification,
+the position of the cursor won't be checked until the sequence has potentially
+gone far beyond the end of your desired range.
+
+It's easy for a repeated command to get out of hand, and you can easily
+generate an infinite loop by using range iteration on a command which doesn't
+progress.  To cancel a repeating command in progress, type Ctrl+. (period), or
+select Cancel Macro from the Macro menu.
+
+
+MACRO LANGUAGE
+
+Macros can be called from Macro menu commands, window background menu commands,
+within the smart-indent framework, and from the .neditmacro file.  Macro menu
+and window background menu commands are defined under Preferences -> Default
+Settings -> Customize Menus.  See the section below titled, "PREFERENCES," for
+more information on creating items in these menus.  The .neditmacro file is a
+file of macro commands and definitions which you can create in your home
+directory, and which NEdit will automatically load when it is first started.
+
+NEdit's macro language is a simple interpreter with integer arithmetic, dynamic
+strings, and C-style looping constructs (very similar to the procedural portion
+of the Unix awk program).  From the macro language, you can call the same
+action routines which are bound to keyboard keys and menu items, as well
+additional subroutines for accessing and manipulating editor data, which are
+specific to the macro language (these are listed in the sections titled Macro
+Subroutines, and Actions).
+
+Syntax
+
+An NEdit macro language program consists of a list of statements, each
+terminated by a newline.  Groups of statements which are executed together
+conditionally, such as the body of a loop, are surrounded by curly braces "{}".
+
+Blank lines and comments are also allowed.  Comments begin with a "#" and end
+with a newline, and can appear either on a line by themselves, or at the end of
+a statement.
+
+Statements which are too long to fit on a single line may be split across
+several lines, by placing a backslash "\" character at the end of each line to
+be continued.
+
+Data Types
+
+The NEdit macro language recognizes only two data types, dynamic character
+strings, and integer values.  In general strings and integers can be used
+interchangeably.  If a string represents an integer value, it can be used as an
+integer.  Integers can be compared and concatenated with strings.
+
+Integer Constants:
+Integers are non-fractional numbers in the range of -2147483647 to 2147483647. 
+Integer constants must be in decimal.  For example:
+
+  a = -1
+  b = 1000
+
+Character String Constants:
+Character string constants are enclosed in double quotes.  For example:
+
+   a = "a string"
+   dialog("Hi there!", "Dismiss")
+
+Strings may also include C-language style escape sequences:
+
+   \\ Backslash      \t Tab		  \f Form feed
+   \" Double quote   \b Backspace	  \a Alert
+   \n Newline	     \r Carriage return   \v Vertical tab
+
+For example, to send output to the terminal from which nedit was started, a
+newline character is neccessary because, like printf, t_print requires explicit
+newlines, and also buffers its output on a per-line basis:
+
+   t_print("a = " a "\n")
+
+Variables
+
+Variable names must begin either with a letter (local variables), or a $
+(global variables).  Beyond the first character, variables may also contain
+numbers and underscores `_'.  Variables are called in to existence just by
+setting them (no explicit declarations are necessary).
+
+Local variables are limited in scope to the subroutine (or menu item
+definition) in which they appear.  Global variables are accessible from all
+routines, and their values persist beyond the call which created them, until
+reset.
+
+Built-in Variables:
+NEdit has a number of permanently defined variables, which are used to access
+global editor information and information about the the window in which the
+macro is executing.  These are listed along with the built in functions in the
+section titled Macro Subroutines.
+
+Functions and Subroutines
+
+The syntax of a function or subroutine call is:
+
+   function_name(arg1, arg2, ...)
+
+where arg1, arg2, etc. represent up to 9 argument values which are passed to
+the routine being called.  A function or subroutine call can be on a line by
+itself, as above, or if it returns a value, can be invoked within a character
+or numeric expression:
+
+   a = fn1(b, c) + fn2(d)
+   dialog("fn3 says: " fn3())
+
+Arguments are passed by value.  This means that you can not return values via
+the argument list, only through the function value or indirectly through
+agreed-upon global variables.
+
+Built-in Functions:
+NEdit has a wide range of built in functions which can be called from the macro
+language.  These routines are divided into two classes, macro-language
+functions, and editor action routines.  Editor action routines are more
+flexible, in that they may be called either from the macro language, or bound
+directly to keys via translation tables.  They are also limited, however, in
+that they can not return values.  Macro language routines can return values,
+but can not be bound to keys in translation tables.
+
+Nearly all of the built-in subroutines operate on an implied window, which is
+initially the window from which the macro was started.  To manipulate the
+contents of other windows, use the focus_window subroutine to change the focus
+to the ones you wish to modify.  focus_window can also be used to iterate over
+all of the currently open windows, using the special keyword names, "last" and
+"next".
+
+For backwards compatibility, hyphenated action routine names are allowed, and
+most of the existing action routines names which contain underscores have an
+equivalent version containing hyphens ('-') instead of underscores.  Use of
+these names is discouraged.  The macro parser resolves the ambiguity between
+'-' as the subtraction/negation operator, and - as part of an action routine
+name by assuming subtraction unless the symbol specifically matches an action
+routine name.
+
+User Defined Functions:
+Users can define their own macro subroutines, using the define keyword:
+
+   define subroutine_name {
+      < body of subroutine >
+   }
+
+Macro definitions can not appear within other definitions, or within macro menu
+item definitions (usually they are found in the .neditmacro file).
+
+The arguments with which a user-defined subroutine or function was invoked, are
+presented as $1, $2, ... , $9.  The number of arguments can be read from
+$n_args.
+
+Operators and Expressions
+
+Operators have the same meaning and precedence that they do in C, except for ^,
+which raises a number to a power (y^x means y to the x power), rather than
+bitwise exclusive OR.  The table below lists operators in decreasing order of
+precedence.
+
+   Operators		    Associativity
+   ()
+   ^			    right to left
+   - ! ++ --		    (unary)
+   * / %		    left to right
+   + -  		    left to right
+   > >= < <= == !=	    left to right
+   &			    left to right
+   |			    left to right
+   &&			    left to right
+   ||			    left to right
+   (concatenation)	    left to right
+   = += -= *= /= %=, &= |=  right to left
+
+The order in which operands are evaluated in an expression is undefined, except
+for && and ||, which like C, evaluate operands left to right, but stop when
+further evaluation would no longer change the result.
+
+Numerical Operators:
+The numeric operators supported by the NEdit macro language are listed below:
+
+   + addition
+   - subtraction or negation
+   * multiplication
+   / division
+   % modulo
+   ^ power
+   & bitwise and
+   | bitwise or
+
+Increment (++) and decrement (--) operators can also be appended or prepended
+to variables within an expression.  Prepended increment/decrement operators act
+before the variable is evaulated.  Appended increment/decrement operators act
+after the variable is evaluated.
+
+Logical and Comparison Operators:
+Logical operations produce a result of 0 (for false) or 1 (for true).  In a
+logical operation, any non-zero value is recognized to mean true.  The logical
+and comparison operators allowed in the NEdit macro language are listed below:
+
+   && logical and
+   || logical or
+   !  not
+   >  greater
+   <  less
+   >= greater or equal
+   <= less or equal
+   == equal (integers and/or strings)
+   != not equal (integers and/or strings)
+
+Character String Operators:
+The "operator" for concatenating two strings is the absence of an operator. 
+Adjoining character strings with no operator in between means concatenation:
+
+   d = a b "string" c
+   t_print("the value of a is: " a)
+
+Comparison between character strings is done with the == and != operators, (as
+with integers).  There are a number of useful built-in routines for working
+with character strings, which are listed in the section called Macro
+Subroutines.
+
+Looping and Conditionals
+
+NEdit supports looping constructs: for and while, and conditional statements:
+if and else, with essentially the same syntax as C:
+
+   for (<init>, ...; <condition>; <increment>, ...) <body>
+
+   while (<condition>) <body>
+
+   if (<condition>) <body>
+
+   if (<condition>) <body> else <body>
+
+<body>, as in C, can be a single statement, or a list of statements enclosed in
+curly braces ({}).  <condition> is an expression which must evaluate to true
+for the statements in <body> to be executed.  for loops may also contain
+initialization statements, <init>, executed once at the beginning of the loop,
+and increment/decrement statements (or any arbitrary statement), which are
+executed at the end of the loop, before the condition is evaluated again.
+
+Examples:
+
+  for (i=0; i<100; i++)
+     j = i * 2
+
+  for (i=0, j=20; i<20; i++, j--) {
+     k = i * j
+     t_print(i, j, k)
+  }
+
+  while (k > 0)
+  {
+     k = k - 1
+     t_print(k)
+  }
+
+  for (;;) {
+     if (i-- < 1)
+         break
+  }
+
+Loops may contain break and continue statements.  A break statement causes an
+exit from the innermost loop, a continue statement transfers control to the end
+of the loop.
+
+
+BUILT IN VARIABLES
+
+   $cursor -- Position of the cursor in the current window.
+
+   $column -- Column number of the cursor position in the current window.
+
+   $em_tab_dist -- If tab emulation is turned on in the Tabs... dialog of the
+      Preferences menu, value is the distance between emulated tab stops.  If
+      tab emulation is turned off, value is -1.
+      
+   $file_name -- Name of the file being edited in the current window, stripped
+      of directory component.
+
+   $file_path -- Directory component of file being edited in the current
+      window.
+
+   $language_mode -- Name of language mode set in the current window.
+
+   $line -- Line number of the cursor position in the current window.
+
+   $modified -- True if the file in the current window has been modified and
+      the modifications have not yet been saved.
+
+   $selection_start, $selection_end -- Beginning and ending positions of the
+      primary selection in the current window, or -1 if there is no text
+      selected in the current window.
+
+   $selection_left, $selection_right -- Left and right character offsets of
+      the rectangular (primary) selection in the current window, or -1 if
+      there is no selection or it is not rectangular.
+
+   $tab_dist -- The distance between tab stops for a hardware tab character,
+      as set in the Tabs... dialog of the Preferences menu.
+
+   $text_length -- The length of the text in the current window.
+
+   $use_tabs -- Whether the user is allowing the NEdit to insert tab
+      characters to maintain spacing in tab emulation and rectangular dragging
+      operations. (The setting of the "Use tab characters in padding and
+      emulated tabs" button in the Tabs... dialog of the Preferences menu.)
+
+   $wrap_margin -- The right margin in the current window for text wrapping
+      and filling.
+
+
+BUILT-IN SUBROUTINES
+
+   append_file(string, filename) -- Appends a string to a named file.  Returns
+      1 on successful write, or 0 if unsuccessful.
+
+   beep() -- Ring the bell
+
+   clipboard_to_string() -- Returns the contents of the clipboard as a macro
+      string.  Returns empty string on error.
+
+   dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
+      querying and presenting information to the user.  First argument is a
+      string to show in the message area of the dialog.  Up to nine additional
+      optional arguments represent labels for buttons to appear along the
+      bottom of the dialog.  Returns the number of the button pressed (the
+      first button is number 1), or 0 if the user closed the dialog via the
+      window close box.
+
+   focus_window(window_name) -- Sets the window on which subsequent macro
+      commands operate.  window_name can be either a fully qualified file name,
+      or one of "last" for the last window created, or "next" for the next
+      window in the chain from the currently focused window (the first window
+      being the one returned from calling focus_window("last").  Returns the
+      name of the newly-focused window, or an empty string if the requested
+      window was not found.
+
+   get_character(position) -- Returns the single character at the position
+      indicated by the first argument to the routine from the current window.
+
+   get_range(start, end) -- Returns the text between a starting and ending
+      position from the current window.
+
+   get_selection() -- Returns a string containing the text currently selected
+      by the primary selection either from the current window (no keyword), or
+      from anywhere on the screen (keyword "any").
+
+   length(string) -- Returns the length of a string
+
+   max(n1, n2, ...) -- Returns the maximum value of all of its arguments
+
+   min(n1, n2, ...) -- Returns the minimum value of all of its arguments
+
+   read_file(filename) -- Reads the contents of a text file into a string.  On
+      success, returns 1 in $read_status, and the contents of the file as a
+      string in the subroutine return value.  On failure, returns the empty
+      string "" and an 0 $read_status.
+
+   replace_in_string(string, search_for, replace_with, [type]) -- Replaces all
+      occurrences of a search string in a string with a replacement string. 
+      Arguments are 1: string to search in, 2: string to search for, 3:
+      replacement string.  Argument 4 is an optional search type, one of
+      "literal", "case" or "regex".  The default search type is "literal". 
+      Returns a new string with all of the replacements done, or an empty
+      string ("") if no occurrences were found.
+
+   replace_range(start, end, string) -- Replaces all of the text in the current
+      window between two positions.
+
+   replace_selection(string) -- Replaces the primary-selection selected text in
+      the current window.
+
+   replace_substring(string, start, end, replace_with) -- Replacing a substring
+      between two positions in a string within another string.
+
+   search(search_for, start, [search_type, wrap, direction]) -- Searches
+      silently in a window without dialogs, beeps, or changes to the
+      selection.  Arguments are: 1: string to search for, 2: starting position.
+      Optional arguments may include the strings: "wrap" to make the search
+      wrap around the beginning or end of the string, "backward" or "forward"
+      to change the search direction ("forward" is the default), "literal",
+      "case" or "regex" to change the search type (default is "literal").
+      Returns the starting position of the match, or -1 if nothing matched.
+      also returns the ending position of the match in search_end
+
+   search_string(string, search_for, start, [search_type, direction]) --
+      Built-in macro subroutine for searching a string.  Arguments are 1:
+      string to search in, 2: string to search for, 3: starting position.
+      Optional arguments may include the strings: "wrap" to make the search
+      wrap around the beginning or end of the string, "backward" or "forward"
+      to change the search direction ("forward" is the default), "literal",
+      "case" or "regex" to change the search type (default is "literal").
+      Returns the starting position of the match, or -1 if nothing matched.
+      Also returns the ending position of the match in $search_end
+
+   select(start, end) -- Selects (with the primary selection) text in the
+      current buffer between a starting and ending position.
+
+   select_rectangle(start, end, left, right) -- Selects a rectangular area of
+      text between a starting and ending position, and confined horizontally to
+      characters displayed between positions "left", and "right".
+
+   set_cursor_pos(pos) -- Set the cursor position for the current window.
+
+   shell_command(command, input_string) -- executes a shell command, feeding it
+      input from input_string.  On completion, output from the command is
+      returned as the function value, and the command's exit status is returned
+      in the global variable $shell_cmd_status.
+
+   string_dialog(message, btn_1_label, btn_2_label, ...) -- Pop up a dialog for
+      prompting the user to enter information.  The first argument is a string
+      to show in the message area of the dialog.  Up to nine additional
+      optional arguments represent labels for buttons to appear along the
+      bottom of the dialog.  Returns the string entered by the user as the
+      function value, and number of the button pressed (the first button is
+      number 1), in $string_dialog_button.  If the user closes the dialog via
+      the window close box, the function returns the empty string, and
+      $string_dialog_button returns 0.
+
+   string_to_clipboard(string) -- Copy the contents of a macro string to the
+      clipboard.
+
+   substring(string, start, end) -- Returns the portion of a string between a
+      starting and ending position.
+
+   t_print(string1, string2, ...) -- Writes strings to the terminal (stdout)
+      from which NEdit was started.
+
+   tolower(string) -- Return an all lower-case version of string.
+
+   toupper(string) -- Return an all upper-case version of string.
+
+   write_file(string, filename) -- Writes a string (parameter 1) to a file
+      named in parameter 2.  Returns 1 on successful write, or 0 if
+      unsuccessful.
+
+
+ACTION ROUTINES
+
+All of the editing capabilities of NEdit are represented as a special type of
+subroutine, called an action routine, which can be invoked from both macros and
+translation table entries (see KEY BINDING below).
+
+
+Actions Representing Menu Commands:
+
+    File Menu		      Search Menu
+    ---------------------     -----------------------
+    new()		      find()
+    open()		      find_dialog()
+    open_dialog()	      find_again()
+    open_selected()	      find_selection()
+    close()		      replace()
+    save()		      replace_dialog()
+    save_as()		      replace_all()
+    save_as_dialog()	      replace_in_selection()
+    revert_to_saved()	      replace_again()
+    include_file()	      goto_line_number()
+    include_file_dialog ()    goto_line_number_dialog()
+    load_tags_file()	      goto_selected()
+    load_tags_file_dialog()   mark()
+    load_macro_file()         mark_dialog()
+    load_macro_file_dialog()  goto_mark()
+    print()		      goto_mark_dialog()
+    print_selection()	      match()
+    exit()	     	      find_definition()
+    			      split_window()
+    			      close_pane()
+    Edit Menu		      
+    ---------------------     Shell Menu
+    undo()		      -----------------------
+    redo()		      filter_selection_dialog()
+    delete()		      filter_selection()
+    select_all()	      execute_command()
+    shift_left()	      execute_command_dialog()
+    shift_left_by_tab()       execute_command_line()
+    shift_right()	      shell_menu_command()
+    shift_right_by_tab()      
+    uppercase() 	      Macro Menu
+    lowercase() 	      -----------------------
+    fill_paragraph()	      macro_menu_command()
+    control_code_dialog()     repeat_macro()
+    			      repeat_dialog()
+
+The actions representing menu commands are named the same as the menu item with
+punctuation removed, all lower case, and underscores replacing spaces.  Without
+the _dialog suffix, commands which normally prompt the user for information,
+instead take the information from the routine's arguments (see below).  To
+present a dialog and ask the user for input, rather than supplying it in via
+arguments, use the actions with the _dialog suffix.
+
+Menu Action Routine Arguments:
+
+Arguments are text strings enclosed in quotes.  Below are the menu action
+routines which take arguments.  Optional arguments are inclosed in [].
+
+  open(filename)
+
+  save_as(filename)
+
+  include(filename)
+
+  load_tags_file(filename)
+
+  find_dialog([search_direction])
+
+  find(search_string [, search-direction], [search-type])
+
+  find_again([search-direction])
+
+  find_selection([search-direction])
+
+  replace_dialog([search-direction])
+
+  replace(search-string, replace-string,
+	  [, search-direction] [, search-type])
+
+  replace_in_selection(search-string, replace-string
+	  [, search-type])
+
+  replace_again([search-direction])
+
+  goto_line_number([line-number])
+
+  mark(mark-letter)
+
+  goto_mark(mark-letter)
+
+  filter_selection(shell-command)
+
+  execute_command(shell-command)
+
+  shell_menu_command(shell-menu-item-name)
+
+  macro_menu_command(macro-menu-item-name)
+
+Some notes on argument types above:
+
+  filename	    Path names are interpreted relative
+ 		    to the directory from which NEdit was
+ 		    started, wildcards and ~ are not
+ 		    expanded.
+ 		    
+  search-direction  Either "forward" or "backward"
+
+  search-type	    Either "literal", "case", or "regex"
+
+  mark-letter	    The mark command limits users to
+ 		    single letters.  Inside of macros,
+ 		    numeric marks are allowed, which won't
+ 		    interfere with marks set by the user.
+
+  (macro or shell)  Name of the command exactly as
+  -menu-item-name   specified in the Shell Menu or
+ 		    Macro Menu dialogs
+
+
+Keyboard-Only Actions
+
+   backward_character() -- Moves the cursor one character to the left.
+
+   backward_paragraph() -- Moves the cursor to the beginning of the paragraph,
+      or if the cursor is already at the beginning of a paragraph, moves the
+      cursor to the beginning of the previous paragraph.  Paragraphs are
+      defined as regions of text delimited by one or more blank lines.
+
+   backward_word() -- Moves the cursor to the beginning of a word, or, if the
+      cursor is already at the beginning of a word, moves the cursor to the
+      beginning of the previous word.  Word delimiters are user-settable, and
+      defined by the X resource wordDelimiters.
+
+   beginning_of_file() -- Moves the cursor to the beginning of the file.
+
+   beginning_of_line() -- Moves the cursor to the beginning of the line.
+
+   beginning_of_selection() -- Moves the cursor to the beginning of the
+      selection without disturbing the selection.
+
+   copy_clipboard() -- Copies the current selection to the clipboard.
+
+   copy_primary() -- Copies the primary selection to the cursor.
+
+   copy_to() -- If a secondary selection exists, copies the secondary selection
+      to the cursor.  If no secondary selection exists, copies the primary
+      selection to the pointer location.
+
+   copy_to_or_end_drag() -- Completes either a secondary selection operation,
+      or a primary drag.  If the user is dragging the mouse to adjust a
+      secondary selection, the selection is copied and either inserted at the
+      cursor location, or, if pending-delete is on and a primary selection
+      exists in the window, replaces the primary selection.  If the user is
+      dragging a block of text (primary selection), completes the drag
+      operation and leaves the text at it's current location.
+
+   cut_clipboard() -- Deletes the text in the primary selection and places it
+      in the clipboard.
+
+   cut_primary() -- Copies the primary selection to the cursor and deletes it
+      at its original location.
+
+   delete_selection() -- Deletes the contents of the primary selection.
+
+   delete_next_character() -- If a primary selection exists, deletes its
+      contents. Otherwise, deletes the character following the cursor.
+
+   delete_previous_character() -- If a primary selection exists, deletes its
+      contents.  Otherwise, deletes the character before the cursor.
+
+   delete_next_word() -- If a primary selection exists, deletes its contents.
+      Otherwise, deletes the word following the cursor.
+
+   delete_previous_word() -- If a primary selection exists, deletes its
+      contents. Otherwise, deletes the word before the cursor.
+
+   delete_to_start_of_line() -- If a primary selection exists, deletes its
+      contents. Otherwise, deletes the characters between the cursor and the
+      start of the line.
+
+   delete_to_end_of_line() -- If a primary selection exists, deletes its
+      contents. Otherwise, deletes the characters between the cursor and the
+      end of the line.
+
+   deselect_all() -- De-selects the primary selection.
+
+   end_of_file() -- Moves the cursor to the end of the file.
+
+   end_of_line() -- Moves the cursor to the end of the line.
+
+   end_of_selection() -- Moves the cursor to the end of the selection without
+      disturbing the selection.
+
+   exchange() -- Exchange the primary and secondary selections.
+
+   extend_adjust() -- Attached mouse-movement events to begin a selection
+      between the cursor and the mouse, or extend the primary selection to the
+      mouse position.
+
+   extend_end() -- Completes a primary drag-selection operation.
+
+   extend_start() -- Begins a selection between the cursor and the mouse.  A
+      drag-selection operation can be started with either extend_start or
+      grab_focus.
+
+   forward_character() -- Moves the cursor one character to the right.
+
+   forward_paragraph() -- Moves the cursor to the beginning of the next
+      paragraph. Paragraphs are defined as regions of text delimited by one or
+      more blank lines.
+
+   forward_word() -- Moves the cursor to the beginning of the next word.  Word
+      delimiters are user-settable, and defined by the X resource
+      wordDelimiters.
+
+   grab_focus() -- Moves the cursor to the mouse pointer location, and prepares
+      for a possible drag-selection operation (bound to extend_adjust), or
+      multi-click operation (a further grab_focus action).  If a second
+      invocation of grab focus follows immediately, it selects a whole word, or
+      a third, a whole line.
+
+   insert_string("string")  If pending delete is on and the cursor is inside
+      the selection, replaces the selection with "string".  Otherwise, inserts
+      "string" at the cursor location.
+
+   key_select("direction") Moves the cursor one character in "direction"
+      ("left", "right", "up", or "down") and extends the selection.  Same as
+      forward/backward-character("extend"), or process-up/down("extend"), for
+      compatibility with previous versions.
+
+   move-destination() -- Moves the cursor to the pointer location without
+      disturbing the selection.  (This is an unusual way of working.  We left
+      it in for compatibility with previous versions, but if you actually use
+      this capability, please send us some mail, otherwise it is likely to
+      disappear in the future.
+
+   move_to() -- If a secondary selection exists, deletes the contents of the
+      secondary selection and inserts it at the cursor, or if pending-delete is
+      on and there is a primary selection, replaces the primary selection.  If
+      no secondary selection exists, moves the primary selection to the pointer
+      location, deleting it from its original position.
+
+   move_to_or_end_drag() -- Completes either a secondary selection operation,
+      or a primary drag.  If the user is dragging the mouse to adjust a
+      secondary selection, the selection is deleted and either inserted at the
+      cursor location, or, if pending-delete is on and a primary selection
+      exists in the window, replaces the primary selection.  If the user is
+      dragging a block of text (primary selection), completes the drag
+      operation and deletes the text from it's current location.
+
+   newline() -- Inserts a newline character.  If Auto Indent is on, lines up
+      the indentation of the cursor with the current line.
+
+   newline_and_indent() -- Inserts a newline character and lines up the
+      indentation of the cursor with the current line, regardless of the
+      setting of Auto Indent.
+
+   newline_no_indent() -- Inserts a newline character, without automatic
+      indentation, regardless of the setting of Auto Indent.
+
+   next_page() -- Moves the cursor and scroll forward one page.
+
+   page_left() -- Move the cursor and scroll left one page.
+
+   page_right() -- Move the cursor and scroll right one page.
+
+   paste_clipboard() -- Insert the contents of the clipboard at the cursor, or
+      if pending delete is on, replace the primary selection with the contents
+      of the clipboard.
+
+   previous_page() -- Moves the cursor and scroll backward one page.
+
+   process_bdrag() -- Same as secondary_or_drag_start for compatibility with
+      previous versions.
+
+   process_cancel() -- Cancels the current extend_adjust, secondary_adjust, or
+      secondary_or_drag_adjust in progress.
+
+   process_down() -- Moves the cursor down one line.
+
+   process_return() -- Same as newline for compatibility with previous
+      versions.
+
+   process_shift_down() -- Same as process_down("extend") for compatibility
+      with previous versions.
+
+   process_shift_up() -- Same as process_up("extend") for compatibility with
+      previous versions.
+
+   process_tab() -- If tab emulation is turned on, inserts an emulated tab,
+      otherwise inserts a tab character.
+
+   process_up() -- Moves the cursor up one line.
+
+   scroll_down(nLines) Scroll the display down (towards the end of the file) by
+      nLines.
+
+   scroll_up(nLines) Scroll the display up (towards the beginning of the file)
+      by nLines.
+
+   scroll_to_line(lineNum) Scroll to position line number lineNum at the top of
+      the pane.  The first line of a file is line 1.
+
+   secondary_adjust() -- Attached mouse-movement events to extend the secondary
+      selection to the mouse position.
+
+   secondary_or_drag_adjust() -- Attached mouse-movement events to extend the
+      secondary selection, or reposition the primary text being dragged.  Takes
+      two optional arguments, "copy", and "overlay".  "copy" leaves a copy of
+      the dragged text at the site at which the drag began.  "overlay" does the
+      drag in overlay mode, meaning the dragged text is laid on top of the
+      existing text, obscuring and ultimately deleting it when the drag is
+      complete.
+
+   secondary_or_drag_start() -- To be attached to a mouse down event.  Begins
+      drag selecting a secondary selection, or dragging the contents of the
+      primary selection, depending on whether the mouse is pressed inside of an
+      existing primary selection.
+
+   secondary_start() -- To be attached to a mouse down event.  Begin drag
+      selecting a secondary selection.
+
+   select_all() -- Select the entire file.
+
+   self_insert() -- To be attached to a key-press event, inserts the character
+      equivalent of the key pressed.
+      
+Arguments to Keyboard Action Routines 
+
+In addition to the arguments listed in the call descriptions, any routine
+involving cursor movement can take the argument "extend", meaning, adjust the
+primary selection to the new cursor position.  Routines which take the "extend"
+argument as well as mouse dragging operations for both primary and secondary
+selections can take the optional keyword "rect", meaning, make the selection
+rectangular.
+	
+
+CUSTOMIZATION
+
+NEdit can be customized many different ways.  The most important user-settable
+options are presented in the Preferences menu, including all options that users
+might need to change during an editing session.  Options set in the Default
+Settings sub-menu of the Preferences menu can be preserved between sessions by
+selecting Save Defaults, which writes a file called .nedit in the user's home
+directory.  See the section titled PREFERENCES for more details.
+
+User defined commands can be added to NEdit's Shell, Macro, and window
+background menus.  Dialogs for creating items in these menus can be found under
+Customize Menus in the Default Settings sub menu of the Preferences menu.
+
+For users who depend on NEdit every day and want to tune every excruciating
+detail, there are also X resources for tuning a vast number of such details,
+down to the color of each individual button.  See the section "X Resources" for
+more information, as well as a list of selected resources.
+
+The most common reason customizing your X resources for NEdit, however, is key
+binding.  While limited key binding can be done through Preferences settings
+(Preferences -> Default Settings -> Customize Menus), you can really only add
+keys this way, and each key must have a corresponding menu item.  Any
+significant changes to key binding should be made via the Translations resource
+and menu accelerator resources.  The sections titled "Key Binding" and "X
+Resources" have more information.
+
+
+PREFERENCES
+
+The Preferences menu allows you to set options for both the current editing
+window, and default values for newly created windows and future NEdit
+sessions.  Options in the Preferences menu itself (not in the Default Settings
+sub-menu) take effect immediately and refer to the current window only. 
+Options in the Default Settings sub-menu have no effect on the current window,
+but instead provide initial settings for future windows created using the New
+or Open commands.  Preferences set in the Default Settings sub-menu can also be
+saved in a file that is automatically read by NEdit at startup time, by
+selecting Save Defaults.
+
+Preferences Menu
+
+   Default Settings -- Menu of initial settings for future windows.
+      Generally the same as the options in the main part of the menu, but
+      apply as defaults for future windows created during this NEdit
+      session.  These settings can be saved using the Save Defaults command
+      below, to be loaded automatically each time NEdit is started.
+
+   Save Defaults -- Save the default options as set under Default Settings
+      for future NEdit sessions.
+
+   Statistics Line -- Show the full file name, line number, and length of the
+      file being edited.
+
+   Language Mode -- Tells NEdit what language (if any) to assume, for
+      selecting language-specific features such as highlight patterns and
+      smart indent macros, and setting language specific preferences like
+      word delimiters, tab emulation, and auto-indent.  See FEATURES FOR
+      PROGRAMMING for more information.
+
+   Auto Indent -- Setting Auto Indent "on" maintains a running indent
+      (pressing the return key will line up the cursor with the indent level
+      of the previous line).  If smart indent macros are available for the
+      current language mode, smart indent can be selected and NEdit will
+      attempt to guess proper language indentation for each new line.  See
+      AUTOMATIC INDENT for more information.
+
+   Wrap -- Choose between two styles of automatic wrapping or none.  Auto
+      Newline wrap, wraps text at word boundaries when the cursor reaches the
+      right margin, by replacing the space or tab at the last word boundary
+      with a newline character.  Continuous Wrap wraps long lines which
+      extend past the right margin. Continuous Wrap mode is typically used to
+      produce files where newlines are ommitted within paragraphs, to make
+      text filling automatic (a kind of poor-man's word processor).  Text of
+      this style is common on Macs and PCs but is not necessarily supported
+      very well under Unix (except in programs which deal with e-mail, for
+      which it is often the format of choice).
+
+      Wrap Margin -- Set margin for Auto Newline Wrap, Continuous Wrap, and
+	 Fill Paragraph.  Lines may, be wrapped at the right margin of the
+	 window, or the margin can be set at a specific column.
+
+   Tabs -- Set the tab distance (number of characters between tab stops) for
+      tab characters, and control tab emulation and use of tab characters in
+      padding and emulated tabs.
+
+   Text Font... -- Change the font(s) used to display text (fonts for menus
+      and dialogs must be set using X resources for the text area of the
+      window). See below for more information.
+
+   Highlight Syntax -- If NEdit recognizes the language being edited, and
+      highlighting patterns are available for that language, use fonts and
+      colors to enhance viewing of the file.  See "SYNTAX HIGHLIGHTING" for
+      more information.
+
+   Make Backup Copy -- On Save, write a backup copy of the file as it existed
+      before the Save command with the extension .bck (Unix only).
+
+   Incremental Backup -- Periodically make a backup copy of the file being
+      edited under the name ~filename on Unix or _filename on VMS (see CRASH
+      RECOVERY).
+
+   Show Matching (..) -- Momentarily highlight matching parenthesis,
+      brackets, and braces when one of these characters is typed, or when the
+      insertion cursor is positioned after it.
+
+   Overtype -- In overtype mode, new characters entered replace the
+      characters in front of the insertion cursor, rather than being inserted
+      before them.
+
+   Read Only -- Lock the file against accidental modification.  This
+      temporarily prevents the file from being modified in this NEdit
+      session. Note that this is diferent from setting the file protection.
+
+Preferences -> Default Settings Menu
+
+Options in the Preferences -> Default Settings menu have the same meaning as
+those in the top-level Preferences menu, except that they apply to future NEdit
+windows and future NEdit sessions if saved with the Save Defaults command. 
+Additional options which appear in this menu are:
+
+   Language Modes -- Define language recognition information (for
+      determining language mode from file name or content) and set language
+      specific preferences.
+
+   Customize Menus -- Add/remove items from the Shell, Macro, and window
+      background menus (see below).
+
+   Searching -- Options for controlling the behavior of Find and Replace
+      commands:
+
+   	 Verbose - Presents search results in dialog form, asks before
+   	    wrapping a search back around the beginning (or end) of the
+   	    file.
+
+   	 Keep Dialogs Up - Don't pop down Replace and Find boxes after
+   	    searching.
+
+   	 Default Search Style - Initial setting for search type in Find and
+   	    Replace dialogs.
+ 
+   Syntax Highlighting -- Program and configure enhanced text display for
+      new or supported languages (See SYNTAX HIGHLIGHTING and WRITING SYNTAX
+      HIGHLIGHTING PATTERNS).
+ 
+   Initial Window Size -- Default size for new windows.
+
+Changing Font(s)
+
+The font used to display text in NEdit is set under Preferences -> Text Font
+(for the current window), or Preferences -> Default Settings Text Font (for
+future windows).  These dialogs also allow you to set fonts for syntax
+highlighting.  If you don't intend to use syntax highlighting, you can ignore
+most of the dialog, and just set the field labeled Primary Font.
+
+Unless you are absolutely certain about the types of files that you will be
+editing with NEdit, you should choose a fixed-spacing font.  Many, if not most,
+plain-text files are written expecting to be viewed with fixed character
+spacing, and will look wrong with proportional spacing.  NEdit's filling,
+wrapping, and rectangular operations will also work strangely if you choose a
+proportional font.
+
+Note that in the font browser (the dialog brought up by the Browse... button),
+the subset of fonts which are shown is narrowed depending on the
+characteristics already selected.  It is therefore important to know that you
+can unselect characteristics from the lists by clicking on the selected items a
+second time.
+
+Fonts for syntax highlighting should ideally match the primary font in both
+height and spacing.  A mismatch in spacing will result in similar distortions
+as choosing a proportional font: column alignment will sometimes look wrong,
+and rectangular operations, wrapping, and filling will behave strangely.  A
+mismatch in height will cause windows to re-size themselves slightly when
+syntax highlighting is turned on or off, and increase the inter- line spacing
+of the text.  Unfortunately, on some systems it is hard to find sets of fonts
+which match exactly in height.
+
+Customizing Menus
+
+You can add or change items in the Shell, Macro, and window background menus
+under Preferences -> Default Settings -> Customize Menus.  When you choose one
+of these, you will see a dialog with a list of the current user-configurable
+items from the menu on the left.  To change an existing item, select it from
+the list, and its properties will appear in the remaining fields of the dialog,
+where you may change them.  Selecting the item "New" from the list allows you
+to enter new items in the menu.
+
+Hopefully most of the characteristics are self explanatory, but here are a few
+things to note:
+
+Accelerator keys are keyboard shortcuts which appear on the right hand side of
+the menus, and allow you avoid pulling down the menu and activate the command
+with a single keystroke.  Enter accelerators by typing the keys exactly as you
+would to activate the command.
+
+Mnemonics are a single letter which should be part of the menu item name, which
+allow users to traverse and activate menu items by typing keys when the menu is
+pulled down.
+
+In the Shell Command field of the Shell Commands dialog, the % character
+expands to the name (including directory path) of the file in the window.  To
+include a % character in the command, use %%.
+
+The Menu Entry field can contain special characters for constructing
+hierarchical sub-menus, and for making items which appear only in certain
+language modes.  The right angle bracket character ">" creates a sub-menu.  The
+name of the item itself should be the last element of the path formed from
+successive sub-menu names joined with ">".  Menu panes are called in to
+existence simply by naming them as part of a Menu Entry name.  To put several
+items in the same sub-menu, repeat the same hierarchical sequence for each. 
+For example, in the Macro Commands dialog, two items with menu entries: a>b>c
+and a>b>d would create a single sub menu under the macro menu called "a", which
+would contain a single sub-menu, b, holding the actual items, c and d:
+
+    +---++---++---+
+    |a >||b >||c  |
+    +---++---+|d  |
+    	      +---+
+
+To qualify a menu entry with a language mode, simply add an at-sign "@" at the
+end of the menu command, followed (no space) by a language mode name.  To make
+a menu item which appears in several language modes, append additional @s and
+language mode names.  For example, an item with the menu entry:
+
+  Make C Prototypes@C@C++
+
+would appear only in C and C++ language modes, and:
+
+  Make Class Template@C++
+
+would appear only in C++ mode.  Menu items with no qualification appear in all
+language modes.
+
+Sharing Customizations with Other NEdit Users
+
+If you have written macro or shell menu commands, highlight patterns, or smart-
+indent macros that you want to share with other NEdit users, you can make a
+file which they can load into their nedit environment.
+
+To load such a file, start nedit with the command:
+
+   nedit -import <file>
+
+In the new nedit session, verify that the imported patterns or macros do what
+you want, then select Preferences -> Save Defaults.  Saving incorporates the
+changes into your own .nedit file, so the next time you run nedit, you will not
+have to import the distribution file.
+
+Loading a customization file is automated, but creating one is not.  To produce
+a file to be imported by other users, you must make a copy of your own .nedit
+file, and edit it, by hand, to remove everything but the few items of interest
+to the recipient.  Leave only the individual resource(s), and within those
+resources, only the particular macro, pattern, style, etc, that you wish to
+exchange.  For example, to share a highlighting pattern set, you would include
+the patterns, any new styles you added, and language mode information only if
+the patterns are intended to support a new language rather than updating an
+existing one. For example:
+
+   nedit.highlightPatterns:\
+	My Language:1:0{\n\
+		Comment:"#":"$"::Comment::\n\
+		Loop Header:"^[ \\t]*loop:":::Loop::\n\
+	}
+   nedit.languageModes: My Language:.my::::::
+   nedit.styles: Loop:blue:Bold
+
+Resources are in the format of X resource files, but the format of text within
+multiple-item resources like highlight patterns, language modes, macros,
+styles, etc., are private to NEdit.  Each resource is a string which ends at
+the first newline character not escaped with \, so you must be careful about
+how you treat ends of lines.  While you can generally just cut and paste
+indented sections, if something which was originally in the middle of a
+resource string is now at the end, you must remove the \ line continuation
+character(s) so it will not join the next line into the resource.  Conversely,
+if something which was originally at the end of a resource is now in the
+middle, you'll have to add continuation character(s) to make sure that the
+resource string is properly continued from beginning to end, and possibly
+newline character(s) (\n) to make sure that it is properly separated from the
+next item.
+
+
+X RESOURCES
+        
+NEdit has additional options to those provided in the Preferences menu which
+are set using X resources.  Like most other X programs, NEdit can be customized
+to vastly unnecessary proportions, from initial window positions down to the
+font and shadow colors of each individual button (A complete discussion of how
+to do this is left to books on the X Windows System).  Key binding (see KEY
+BINDING) is one of the most useful of these resource settable options.
+
+X resources are usually specified in a file called .Xdefaults or .Xresources in
+your home directory (on VMS this is sys$login:decw$xdefaults.dat).  On some
+systems, this file is read and its information attached to the X server (your
+screen) when you start X.  On other systems, the .Xdefaults file is read each
+time you run an X program.  When X resource values are attached to the X
+server, changes to the resource file are not available to application programs
+until you either run the xrdb program with the appropriate file as input, or
+re-start the X server.
+
+The .nedit File
+
+The .nedit (saved preferences) file is in the same format as an X resource
+file, and its contents can be moved into your X resource file.  One reason for
+doing so would be to attach server specific preferences, such as a default font
+to a particular X server.  Another reason for moving preferences into the X
+resource file would be to keep preferences menu options and resource settable
+options together in one place. Though the files are the same format, additional
+resources should not be added to the .nedit file, they will not be read, and
+NEdit modifies this file by overwriting it completely.  Note also that the
+contents of the .nedit file take precedence over the values of X resources. 
+Using Save Defaults after moving the contents of your .nedit file to your
+.Xdefaults file will re-create the .nedit file, interfering with the options
+that you have moved.
+
+Selected X Resource Names
+
+The following are selected NEdit resource names and default values for NEdit
+options not settable via the Preferences menu (for preference resource names,
+see your .nedit file):
+
+    nedit.tagFile: (not defined) -- The name of a file of the type produced
+        by the Unix ctags command which NEdit will load at startup time
+        (see FINDING SUBROUTINE AND DATA DECLARATIONS above).  The tag file
+	provides a database from which NEdit can automatically open files
+	containing the definition of a particular subroutine or data type.
+
+    nedit.shell: /bin/csh -- (Unix systems only) The Unix shell (command
+        interpreter) to use for executing commands from the Shell menu
+
+    nedit.wordDelimiters: .,/\\`'!@#%^&*()-=+{}[]":;<>? -- The characters,
+        in addition to blanks and tabs, which mark the boundaries between
+        words for the move-by-word (Ctrl+Arrow) and select-word (double
+        click) commands.
+
+    nedit.remapDeleteKey: True -- Setting this resource to False restores
+        the original Motif binding of the delete key to forward-delete.
+        This binding causes problems when X servers with one delete/
+        backspace configuration are connected with X clients of the other.
+        Users with a backspace key in the backspace/delete position and who
+        use only machines with that style of keyboard can set this resource
+        to False to get back the forward-delete function of the delete key.
+
+    nedit.bgMenuButton: ~Shift~Ctrl~Meta~Alt<Btn3Down> -- Specification for
+	mouse button / key combination to post the background menu (in the
+	form of an X translation table event specification).  The event
+	specification should be as specific as possible, since it will
+	override less specific translation table entries.
+
+    nedit.maxPrevOpenFiles: 30 -- Number of files listed in the Open
+	Previous sub-menu of the File menu. Setting this to zero disables
+	the Open Previous menu item and maintenance of the .neditdb file.
+
+    nedit.stdOpenDialog: False -- Setting this resource to True restores the
+        standard Motif style of Open dialog.  NEdit file open dialogs are
+        missing a text field at the bottom of the dialog, where the file
+        name can be entered as a string.  The field is removed in NEdit to
+        encourage users to type file names in the list, a non-standard, but
+        much faster method for finding files.
+
+    nedit.printCommand: (system specific) -- Command used by the print dialog
+        to print a file, i.e. lp, lpr, etc..
+
+    nedit.printCopiesOption: (system specific) -- Option name used to
+        specify multiple copies to the print command.  If the option should
+        be separated from its argument by a space, leave a trailing space.
+        If blank, no "Number of Copies" item will appear in the print dialog.
+
+    nedit.printQueueOption: (system specific) -- Option name used to specify
+        a print queue to the print command.  If the option should be
+        separated from its argument by a space, leave a trailing space. If
+        blank, no "Queue" item will appear in the print dialog.
+
+    nedit.printNameOption: (system specific) -- Option name used to specify a
+        job name to the print command.  If the option should be separated
+        from its argument by a space, leave a trailing space. If blank, no
+        job or file name will be attached to the print job or banner page.
+
+    nedit.printHostOption: (system specific) -- Option name used to specify a
+        host name to the print command.  If the option should be separated
+        from its argument by a space, leave a trailing space. If blank, no
+        "Host" item will appear in the print dialog.
+
+    nedit.printDefaultQueue: (system specific) -- The name of the default
+        print queue.  Used only to display in the print dialog, and has no
+        effect on printing.
+
+    nedit.printDefaultHost: (system specific) -- The node name of the
+        default print host.  Used only to display in the print dialog, and
+        has no effect on printing.
+
+    nedit.multiClickTime: (system specific) -- Maximum time in milliseconds
+        allowed between mouse clicks within double and triple click actions.
+
+    nedit*scrollBarPlacement: BOTTOM_LEFT -- How scroll bars are placed in
+        NEdit windows, as well as various lists and text fields in the
+        program.  Other choices are: BOTTOM_RIGHT, TOP_LEFT, or TOP_RIGHT.
+
+    nedit*text.autoWrapPastedText: False -- When Auto- Newline Wrap is turned
+	on, apply automatic wrapping (which normally only applies to typed
+	text) to pasted text as well.
+
+    nedit*text.heavyCursor: False -- For monitors with poor resolution or
+        users who have difficulty seeing the cursor, makes the cursor in the
+        text editing area of the window heavier and darker.
+
+    nedit*text.foreground: black -- Foreground color of the text editing area
+        of the NEdit window.
+
+    nedit*text.background: white -- Background color of the text editing area
+        of the NEdit window.
+
+    nedit*text.selectForeground: black -- Foreground (text) color for
+    	selections in the text editing area of the NEdit window. 
+
+    nedit*text.selectBackground: gray80 -- Color for selections in the text
+    	editing area of the NEdit window.
+
+    nedit*text.highlightForeground: white -- Foreground (text) color for
+    	highlights (parenthesis flashing) in the text editing area of the
+    	NEdit window.
+
+    nedit*text.highlightBackground: red -- Color for highlights (parenthesis
+    	flashing) in the text editing area of the NEdit window.
+
+    nedit*text.cursorForeground: black -- Color for text cursor in the text
+    	editing area of the NEdit window.
+
+    nedit*text.blinkRate: 600 -- Blink rate of the text insertion cursor in
+        milliseconds.  Set to zero to stop blinking.
+
+    nedit*text.Translations: -- Modifies key bindings (see below).
+
+    nedit*foreground: black -- Default foreground color for menus, dialogs,
+	scroll bars, etc..
+
+    nedit*background: gray70 -- Default background color for menus, dialogs,
+	scroll bars, etc..
+
+    nedit*fontList: helvetica-bold-14 -- Default font for menus, dialogs,
+	scroll bars, etc..
+
+    nc.autoStart: False -- Whether the nc program should automatically start
+        an NEdit server (without prompting the user) if an appropriate server
+        is not found.
+
+    nc.serverCommand: nedit -server -- Command used by the nc program to
+        start an NEdit server.
+
+Selected NEdit Widget Names
+
+You can change colors, fonts, and other characteristics, of the widgets named
+below, by appending .background, .foreground, .fontList, etc., to these names:
+
+    nedit*statsLine -- Statistics line
+
+    nedit*menuBar -- Top-of-window menu-bar
+
+    nedit*textHorScrollBar -- Horizontal scroll bar
+
+    nedit*textVertScrollBar -- Vertical scroll bar
+
+    nedit*helpText -- Help window text
+
+    
+KEY BINDING
+
+There are several ways to change key bindings in NEdit.  The easiest way to add
+a new key binding in NEdit is to define a macro in Preferences -> Default
+Settings -> Customize Menus -> Macro Menu.  However, if you want to change
+existing bindings or add a significant number of new key bindings you will need
+to do so via X resources.
+
+Before reading this section, you must understand how to set X resources (see
+the section titled "X RESOURCES" above).  Since setting X resources is tricky,
+it is also helpful when working on key-binding, to set some easier-to-verify
+resource at the same time, as a simple check that the NEdit program is actually
+seeing your changes.  The appres program is also very helpful in checking that
+the resource settings that you make, actually reach the program for which they
+are intended in the correct form.
+
+Key Binding in General
+
+Keyboard commands are associated with editor action routines through two
+separate mechanisms in NEdit.  Commands which appear in pull-down menus have
+individual resources designating a keyboard equivalent to the menu command,
+called an accelerator key.  Commands which do not have an associated menu item
+are bound to keys via the X toolkit translation mechanism.  The methods for
+changing these two kinds of bindings are quite different.
+
+Key Binding Via Translations
+
+The most general way to bind actions to keys in NEdit is to use the translation
+table associated with the text widget.  To add a binding to Alt+Y to insert the
+string "Hi!", for example, add lines similar to the following to your X
+resource file:
+
+  NEdit*text.Translations: #override \n\
+    Alt<Key>y: insert_string("Hi!") \n
+
+The section "ACTION ROUTINES" above lists the actions available to be bound.
+
+Translation tables map key and mouse presses, window operations, and other
+kinds of events, to actions.  The syntax for translation tables is simplified
+here, and you.  may need to refer to a book on the X window system for more
+detailed information.
+
+Note that accelerator resources (discussed below) override translations, and
+that most Ctrl+letter and Alt+letter combinations are already bound to an
+accelerator key.  To use one of these combinations from a translation table,
+therefore, you must first un-bind the original menu accelerator.
+
+A resource for changing a translation table consists of a keyword; #override,
+#augment, or #replace; followed by lines (separated by newline characters)
+pairing events with actions.  Events begin with modifiers, like Ctrl, Shift, or
+Alt, followed by the event type in <>.  BtnDown, Btn1Down, Btn2Down, Btn1Up,
+Key, KeyUp are valid event types.  For key presses, the event type is followed
+by the name of the key.  You can specify a combination of events, such as a
+sequence of key presses, by separating them with commas.  The other half of the
+event/action pair is a set of actions.  These are separated from the event
+specification by a colon and from each other by spaces.  Actions are names
+followed by parentheses, optionally containing one or more parameters separated
+by comas.
+
+Changing Menu Accelerator Keys
+
+The menu shortcut keys shown at the right of NEdit menu items can also be
+changed via X resources.  Each menu item has two resources associated with it,
+accelerator, the event to trigger the menu item; and acceleratorText, the
+string shown in the menu.  The form of the accelerator resource is the same as
+events for translation table entries discussed above, though multiple keys and
+other subtleties are not allowed.  The resource name for a menu is the title in
+lower case, followed by "Menu", the resource name of menu item is the name in
+lower case, run together, with words separated by caps, and all punctuation
+removed.  For example, to change Cut to Ctrl+X, you would add the following to
+your .Xdefaults file:
+
+    nedit*editMenu.cut.accelerator: Ctrl<Key>x
+    nedit*editMenu.cut.acceleratorText: Ctrl+X
+
+Accelerator keys with optional shift key modifiers, like Find..., have an
+additional accelerator resource with Shift appended to the name.  For example:
+
+    nedit*searchMenu.find.acceleratorText: [Shift]Alt+F
+    nedit*searchMenu.find.accelerator: Alt<Key>f
+    nedit*searchMenu.findShift.accelerator: Shift Alt<Key>f
+
+
+WRITING SYNTAX HIGHLIGHTING PATTERNS
+
+Patterns are the mechanism by which syntax highlighting (see SYNTAX
+HIGHLIGHTING above) is programmed in NEdit, that is, how it decides what to
+highlight in a given language.  To create syntax highlighting patterns for a
+new language, or to modify existing patterns, select "Patterns for
+Highlighting" from "Syntax Highlighting" sub-section of the "Default Settings"
+sub-menu of the "Preferences" menu.
+
+First, a word of caution.  As with regular expression matching in general, it
+is quite possible to write patterns which are so inefficient that they
+essentially lock up the editor as they recursively re-examine the entire
+contents of the file thousands of times.  With the multiplicity of patterns,
+the possibility of a lock-up is significantly increased in syntax
+highlighting.  When working on highlighting patterns, be sure to save your work
+frequently.
+
+NEdit's syntax highlighting is unusual in that it works in real-time (as you
+type), and yet is completely programmable using standard regular expression
+notation.  Other syntax highlighting editors usually fall either into the
+category of fully programmable but unable to keep up in real-time, or real-time
+but limited programmability.  The additional burden that NEdit places on
+pattern writers in order to achieve this speed/flexibility mix, is to force
+them to state self-imposed limitations on the amount of context that patterns
+may examine when re-parsing after a change.  While the "Pattern Context
+Requirements" heading is near the end of this section, it is not optional, and
+must be understood before making any any serious effort at pattern writing.
+
+In its simplest form, a highlight pattern consists of a regular expression to
+match, along with a style representing the font an color for displaying any
+text which matches that expression.  To bold the word, "highlight", wherever it
+appears the text, the regular expression simply would be the word "highlight". 
+The style (selected from the menu under the heading of "Highlight Style")
+determines how the text will be drawn.  To bold the text, either select an
+existing style, such as "Keyword", which bolds text, or create a new style and
+select it under Highlight Style.
+
+The full range of regular expression capabilities can be applied in such a
+pattern, with the single caveat that the expression must conclusively match or
+not match, within the pre-defined context distance (as discussed below under
+Pattern Context Requirements).
+
+To match longer ranges of text, particularly any constructs which exceed the
+requested context, you must use a pattern which highlights text between a
+starting and ending regular expression match.  To do so, select "Highlight text
+between starting and ending REs" under "Matching", and enter both a starting
+and ending regular expression.  For example, to highlight everything between
+double quotes, you would enter a double quote character in both the starting
+and ending regular expression fields.  Patterns with both a beginning and
+ending expression span all characters between the two expressions, including
+newlines.
+
+Again, the limitation for automatic parsing to operate properly is that both
+expressions must match within the context distance stated for the pattern set.
+
+With the ability to span large distances, comes the responsibility to recover
+when things go wrong.  Remember that syntax highlighting is called upon to
+parse incorrect or incomplete syntax as often as correct syntax.  To stop a
+pattern short of matching its end expression, you can specify an error
+expression, which stops the pattern from gobbling up more than it should.  For
+example, if the text between double quotes shouldn't contain newlines, the
+error expression might be "$".  As with both starting and ending expressions,
+error expressions must also match within the requested context distance.
+
+Coloring Sub-Expressions
+
+It is also possible to color areas of text within a regular expression match. 
+A pattern of this type associates a style with sub-expressions references of
+the parent pattern (as used in regular expression substitution patterns, see
+the section titled: REGULAR EXPRESSIONS).  Sub-expressions of both the starting
+and ending patterns may be colored.  For example, if the parent pattern has a
+starting expression "\<", and end expression "\>", (for highlighting all of the
+text contained within angle brackets), a sub-pattern using "\0" in both the
+starting and ending expression fields could color the brackets differently from
+the intervening text.  A quick shortcut to typing in pattern names in the
+Parent Pattern field is to use the middle mouse button to drag them from the
+Patterns list.
+
+Hierarchical Patterns
+
+A hierarchical sub-pattern, is identical to a top level pattern, but is invoked
+only between the beginning and ending expression matches of its parent
+pattern.  Like the sub-expression coloring patterns discussed above, it is
+associated with a parent pattern using the Parent Pattern field in the pattern
+specification.  Pattern names can be dragged from the pattern list with the
+middle mouse button to the Parent Pattern field.
+
+After the start expression of the parent pattern matches, the syntax
+highlighting parser searches for either the parent's end pattern or a matching
+sub-pattern.  When a sub-pattern matches, control is not returned to the parent
+pattern until the entire sub-pattern has been parsed, regardless of whether the
+parent's end pattern appears in the text matched by the sub-pattern.
+
+The most common use for this capability is for coloring sub-structure of
+language constructs (smaller patterns embedded in larger patterns). 
+Hierarchical patterns can also simplify parsing by having sub-patterns "hide"
+special syntax from parent patterns, such as special escape sequences or
+internal comments.
+
+There is no depth limit in nesting hierarchical sub-patterns, but beyond the
+third level of nesting, automatic re-parsing will sometimes have to re-parse
+more than the requested context distance to guaranty a correct parse (which can
+slow down the maximum rate at which the user can type if large sections of text
+are matched only by deeply nested patterns).
+
+While this is obviously not a complete hierarchical language parser it is still
+useful in many text coloring situations.  As a pattern writer, your goal is not
+to completely cover the language syntax, but to generate colorings that are
+useful to the programmer.  Simpler patterns are usually more efficient and also
+more robust when applied to incorrect code.
+
+Deferred (Pass-2) Parsing
+
+NEdit does pattern matching for syntax highlighting in two passes.  The first
+pass is applied to the entire file when syntax highlighting is first turned on,
+and to new ranges of text when they are initially read or pasted in.  The
+second pass is applied only as needed when text is exposed (scrolled in to
+view).
+
+If you have a particularly complex set of patterns, and parsing is beginning to
+add a noticeable delay to opening files or operations which change large
+regions of text, you can defer some of that parsing from startup time, to when
+it is actually needed for viewing the text.  Deferred parsing can only be used
+with single expression patterns, or begin/end patterns which match entirely
+within the requested context distance.  To defer the parsing of a pattern to
+when the text is exposed, click on the Pass-2 pattern type button in the
+highlight patterns dialog.
+
+Sometimes a pattern can't be deferred, not because of context requirements, but
+because it must run concurrently with pass-1 (non-deferred) patterns.  If they
+didn't run concurrently, a pass-1 pattern might incorrectly match some of the
+characters which would normally be hidden inside of a sequence matched by the
+deferred pattern.  For example, C has character constants enclosed in single
+quotes.  These typically do not cross line boundaries, meaning they can be
+parsed entirely within the context distance of the C pattern set and should be
+good candidates for deferred parsing.  However, they can't be deferred because
+they can contain sequences of characters which can trigger pass-one patterns.
+Specifically, the sequence, '\"', contains a double quote character, which
+would be matched by the string pattern and interpreted as introducing a string.
+
+Pattern Context Requirements
+
+The context requirements of a pattern set state how much additional text around
+any change must be examined to guaranty that the patterns will match what they
+are intended to match.  Context requirements are a promise by NEdit to the
+pattern writer, that the regular expressions in his/her patterns will be
+matched against at least <line context> lines and <character context>
+characters, around any modified text.  Combining line and character
+requirements guaranty that both will be met.
+
+Automatic re-parsing happens on EVERY KEYSTROKE, so the amount of context which
+must be examined is very critical to typing efficiency.  The more complicated
+your patterns, the more critical the context becomes.  To cover all of the
+keywords in a typical language, without affecting the maximum rate at which
+users can enter text, you may be limited to just a few lines and/or a few
+hundred characters of context.
+
+The default context distance is 1 line, with no minimum character requirement. 
+There are several benefits to sticking with this default.  One is simply that
+it is easy to understand and to comply with.  Regular expression notation is
+designed around single line matching.  To span lines in a regular expression,
+you must explicitly mention the newline character "\n", and matches which are
+restricted to a single line are virtually immune to lock-ups.  Also, if you can
+code your patterns to work within a single line of context, without an
+additional character-range context requirement, the parser can take advantage
+the fact that patterns don't cross line boundaries, and nearly double its
+efficiency over a one-line and 1-character context requirement.  (In a single
+line context, you are allowed to match newlines, but only as the first and/or
+last character.)
+
+
+WRITING SMART INDENT MACROS
+
+Smart indent macros can be written for any language, but are usually more
+difficult to write than highlighting patterns.  A good place to start, of
+course, is to look at the existing macros for C and C++.
+
+Smart indent macros for a language mode consist of standard NEdit macro
+language code attached to any or all of the following three activation
+conditions: 1) When smart indent is first turned on for a text window
+containing code of the language, 2) When a newline is typed and smart indent
+is expected, 3) after any character is typed.  To attach macro code to any of
+these code "hooks", enter it in the appropriate section in the Preferences ->
+Default Settings -> Auto Indent -> Program Smart Indent dialog.
+
+Typically most of the code should go in the initialization section, because
+that is the appropriate place for subroutine definitions, and smart indent
+macros are complicated enough that you are not likely to want to write them as
+one monolithic run of code.  You may also put code in the Common/Shared
+Initialization section (accessible through the button in the upper left corner
+of the dialog).  Unfortunately, since the C/C++ macros also reside in the
+common/shared section, when you add code there, you run some risk of missing
+out on future upgrades to these macros, because your changes will override the
+built-in defaults.
+
+The newline macro is invoked after the user types a newline, but before the
+newline is entered in the buffer.  It takes a single argument ($1) which is the
+position at which the newline will be inserted.  It must return the number of
+characters of indentation the line should have, or -1.  A return value of -1
+means to do a standard auto-indent.  You must supply a newline macro, but the
+code: "return -1" (auto-indent), or "return 0" (no indent) is sufficient.
+
+The type-in macro takes two arguments.  $1 is the insert position, and $2 is
+the character just inserted, and does not return a value.  You can do just
+about anything here, but keep in mind that this macro is executed for every
+keystroke typed, so if you try to get too fancy, you may degrade performance.
+
+
+THE NEDIT COMMAND LINE
+
+nedit [-read] [-create] [-line n | +n] [-server] [-do command] [-tags file]
+    [-tabs n] [-wrap] [-nowrap] [-autowrap] [-autoindent] [-noautoindent]
+    [-autosave] [-noautosave] [-rows n] [-columns n] [-font font]
+    [-geometry geometry] [-display [host]:server[.screen]
+    [-xrm resourcestring] [-svrname name] [file...]
+
+    -read -- Open the file Read Only regardless of the actual file
+    	protection.
+
+    -create -- Don't warn about file creation when a file doesn't exist.
+
+    -line n (or +n) -- Go to line number n
+
+    -server -- Designate this session as an NEdit server, for processing
+        commands from the nc program.  nc can be used to interface NEdit
+        to code development environments, mailers, etc., or just as a
+        quick way to open files from the shell command line without
+        starting a new NEdit session.
+
+    -do command -- Execute an NEdit macro or action on each file following
+        the -do argument on the command line.  -do is particularly useful
+        from the nc program, where nc -do can remotely execute commands in
+        an nedit -server session.
+
+    -tags file -- Load a file of directions for finding definitions of
+        program subroutines and data objects.  The file must be of the
+        format generated by the Unix ctags command.
+
+    -tabs n -- Set tab stops every n characters.
+
+    -wrap, -nowrap -- Wrap long lines at the right edge of the window
+	rather than continuing them past it.  (Continuous Wrap mode)
+	
+    -autowrap, -noautowrap -- Wrap long lines when the cursor reaches
+	the right edge of the window by inserting newlines at word
+	boundaries.  (Auto Newline Wrap mode)
+
+    -autoindent, noautoindent -- Maintain a running indent.
+
+    -autosave, -noautosave -- Maintain a backup copy of the file being
+        edited under the name ~filename  (on Unix) or _filename (on VMS).
+ 
+    -rows n -- Default height in characters for an editing window.
+
+    -columns n -- Default width in characters for an editing window.
+
+    -font font (or -fn font) -- Font for text being edited (Font for
+        menus and dialogs can be set with -xrm "*fontList:font").
+ 
+    -display [host]:server[.screen] -- The name of the X server to use.
+        host specifies the machine, server specifies the display server
+        number, and screen specifies the screen number.  host or screen
+        can be omitted and default to the local machine, and screen 0.
+
+    -geometry geometry (or -g geometry) -- The initial size and/or
+        location of editor windows.  The argument has the form:
+
+           [<width>x<height>][+|-][<xoffset>[+|-]<yoffset>]
+
+        where <width> and <height> are the desired width and height of
+        the window, and <xoffset> and <yoffset> are the distance from
+        the edge of the screen to the window, + for top or left, - for
+        bottom or right.
+
+    -background color (or -bg color) -- Background color. (background
+        color for text can be set separately with:
+        -xrm "nedit*text.background: color").
+
+    -foreground color (or -fg color) -- Foreground color. (foreground
+        color for text can be set separately with:
+         -xrm "nedit*text.foreground: color").
+
+    -xrm resourcestring -- Set the value of an X resource to override a
+        default value (see CUSTOMIZIATION).
+
+    -svrname name -- When starting nedit in server mode, name the
+	server, such that it responds to requests only when nc is given
+	a correspoding -svrname argument.  By naming servers, you can
+	run several simultaneously, and direct files and commands
+	specifically to any one.
+
+
+SERVER MODE AND NC
+
+NEdit can be operated on its own, or as a two-part client/server application. 
+Client/server mode is useful for integrating NEdit with software development
+environments, mailers, and other programs; or just as a quick way to open files
+from the shell command line without starting a new NEdit session.
+
+To run NEdit in server mode, type:
+
+nedit -server
+
+NEdit can also be started in server mode via the nc program when no servers are
+available.
+
+The nc (for NEdit Client) program, which is distributed along with nedit, sends
+commands to an nedit server to open files, select lines, or execute editor
+actions.  It accepts a limited set of the nedit command line options: -read,
+-create, -line (or +n), -do, and a list of file names.  Listing a file on the
+nc command line means, open it if it is not already open and bring the window
+to the front.  -read and -create affect only newly opened files, but -line and
+-do can also be used on files which are already open (See  NEDIT COMMAND LINE
+for more information).
+
+In typical Unix style, arguments affect the files which follow them on the
+command line, for example:
+
+    incorrect:   nc file.c -line 25
+    correct:     nc -line 25 file.c
+
+-read, -create, and -line affect all of the files which follow them on the
+command line.  The -do macro is executed only once, on the next file on the
+line.  -do without a file following it on the command line, executes the macro
+on the first available window (presumably when you give a -do command without a
+corresponding file or window, you intend it to do something independent of the
+window in which it happens execute).
+
+nc also accepts one command line option of its own, -noask (or -ask), which
+instructs it whether to automatically start a server if one is not available. 
+This is also settable via the X resource, nc.autoStart (See X RESOURCES above).
+
+Sometimes it is useful to have more than one NEdit server running, for example
+to keep mail and programming work separate, or more importantly for working
+with tools like ClearCase which provide different views of the file system from
+different shells.  The option, -svrname, to both nedit and nc, allow you to
+start, and communicate with, separate named servers.  A named server responds
+only to requests with the corresponding -svrname argument.
+
+Communication between nc and nedit is through the X display.  So as long as X
+windows is set up and working properly, nc will will work properly as well.  nc
+uses the DISPLAY environment variable, the machine name and your user name to
+find the appropriate server, meaning, if you have several machines sharing a
+common file system, nc will not be able to find a server that is running on a
+machine with a different host name, even though it may be perfectly appropriate
+for editing a given file.
+
+The command which nc uses to start an nedit server is settable via the X
+resource nc.serverCommand, by default, "nedit -server".
+
+
+CRASH RECOVERY
+
+If a system crash, network failure, X server crash, or program error should
+happen while you are editing a file, you can easily recover most of your work.
+NEdit maintains a backup file which it updates periodically (every 8 editing
+operations or 30 characters typed under Unix, or 80 characters under VMS).
+This file is has the same name as the file that you are editing, but with the
+character "~" (tilde) on Unix or "_" (underscore) on VMS prefixed to the name.
+To recover a file after a crash, simply rename the file to remove the tilde 
+or underscore character, replacing the older version of the file.  Because 
+several of the Unix shells consider the tilde to be a special character, you 
+may have to prefix the character with a "\" (backslash) when you move or 
+delete an NEdit backup file.
+
+Example, to recover the file called "help.c" type the command:
+
+    mv \~help.c help.c
+    
+On VMS, type:
+    
+    RENAME _HELP.C HELP.C
+
+
+SOLUTIONS TO COMMON PROBLEMS
+
+P: No files are shown in the "Files" list in the Open... dialog.
+S: When you use the "Filter" field, include the file specification or a
+   complete directory specification, including the trailing "/" on Unix.  (See
+   Help in the Open... dialog).
+
+P: Keyboard shortcuts for menu items don't work.
+S: Be sure the Caps Lock and Num Lock keys are both unlocked.  In Motif
+   programs, these keys prevent the menu accelerators from working.
+
+P: Find Again and Replace Again don't continue in the same direction as the
+   original Find or Replace.
+S: Find Again and Replace Again don't use the direction of the original search. 
+   The Shift key controls the direction: Ctrl+G means forward, Shift+Ctrl+G
+   means backward.
+
+P: Preferences specified in the Preferences menu don't seem to get saved when I
+   select Save Defaults.
+S: NEdit has two kinds of preferences: 1) per-window preferences, in the
+   Preferences menu, and 2) default settings for preferences in newly created
+   windows, in the Default Settings sub-menu of the Preferences menu.  Per-
+   window preferences are not saved by Save Defaults, only Default Settings.
+
+P: Columns and indentation don't line up.
+S: NEdit is using a proportional width font.  Set the font to a fixed style
+   (see PREFERENCES).
+
+P: NEdit performs poorly on very large files.
+S: Turn off Incremental Backup.  With Incremental Backup on, NEdit periodically
+   writes a full copy of the file to disk.
+
+P: Commands added to the Shell Commands menu (Unix only) don't output anything
+   until they are finished executing.
+S: If the command output is directed to a dialog, or the input is from a
+   selection, output is collected together and held until the command
+   completes.  De-select both of the options and the output will be shown
+   incrementally as the command executes.
+
+P: Dialogs don't automatically get keyboard focus when they pop up.
+S: Most X Window managers allow you to choose between two categories of
+   keyboard focus models: pointer focus, and explicit focus.  Pointer focus
+   means that as you move the mouse around the screen, the window under the
+   mouse automatically gets the keyboard focus.  NEdit users who use this focus
+   model should set "Popups Under Pointer" in the Default Settings sub menu of
+   the preferences menu in NEdit.  Users with the explicit focus model, in some
+   cases, may have problems with certain dialogs, such as Find and Replace.  In
+   MWM this is caused by the mwm resource startupKeyFocus being set to False
+   (generally a bad choice for explicit focus users).  NCDwm users should use
+   the focus model "click" instead of "explicit", again, unless you have set it
+   that way to correct specific problems, this is the appropriate setting for
+   most explicit focus users.
+
+P: The Delete key doesn't forward-delete.
+S: See the X Resources section on nedit.remapDeleteKey.
+
+P: NEdit crashes when I try to paste text in to a text field in a dialog (like
+   Find or Replace) on my SunOS system.
+S: On many SunOS systems, you have to set up an nls directory before various
+   inter-client communication features of Motif will function properly.  There
+   are instructions in README.sun in /pub/nedit/v4_0_1 on ftp.fnal.gov, as well
+   as a tar file containg a complete nls directory: ftp://ftp.fnal.gov/pub/
+   nedit/v4_0_2/individual/README.sun.  This contains directions for setting up
+   an nls directory, which is required by Motif for handling copy and paste to
+   Motif text fields. 
+
+
+KNOWN BUGS
+
+Below is the list of known bugs which affect NEdit.  The bugs your copy of
+NEdit will exhibit depend on which system you are running and with which Motif
+libraries it was built.  Note that there are now Motif 1.2 and/or 2.0 libraries
+available on ALL supported platforms, and as you can see below there are far
+fewer bugs in Motif 1.2, so it is in your best interest to upgrade your system.
+
+All Versions
+
+BUG: Operations between rectangular selections on overlapping lines do nothing.
+WORKAROUND: None.  These operations are very complicated and you probably
+     wouldn't get what you expected anyhow.
+
+BUG: Cut and Paste menu items fail, or possibly crash, for very large
+     (multi-megabyte) selections.
+WORKAROUND: Use selection copy (middle mouse button click) for transferring
+     larger quantities of data.  Cut and Paste save the copied text in server
+     memory, which is usually limited.
+
+Motif 1.1 Versions
+
+BUG: The shortcut method for entering control characters (Alt+Ctrl+char) is not
+     available.
+WORKAROUND: Use the Ins. Control Char command.
+
+BUG: Pop-up dialogs "jump" (appear briefly in a different location) when they
+     are first invoked.
+WORKAROUND: Turn off "Popups Under Pointer" if this gives you a headache.
+
+VMS Versions
+
+BUGS: 1. Abbreviation of command line qualifiers is not allowed.
+      2. Error messages for mistakes on the command line don't make sense.
+WORKAROUND: NEdit does not parse its command line with the standard DCL command
+      parser, instead, it superficially converts the command line to a
+      Unix-style command line before processing it.  Because information is
+      lost, NEdit may not always be able to distinguish between items that are
+      supposed to be qualifiers and those which are supposed to be files and
+      arguments to the qualifiers.  However, correct VMS command lines are
+      always processed correctly, and only certain types of errors will appear
+      to give strange results.
+
+BUG: Protection settings for new versions of files produced by NEdit over
+     DECNET connections may revert to defaults.
+WORKAROUND: Check and reset protections when accessing files via DECNET.
+
+IBM Versions built with Motif 1.1
+
+BUG: The Command to set the font for the current window is not available.
+WORKAROUND: Use the Default Settings sub-menu to set the default font and then
+     create a new window.
+
+BUG: NEdit can occasionally crash on window closing.
+WORKAROUND: Save files frequently, see Crash Recovery.
+
+
+MAILING LIST
+
+There are now two separate mailing lists for NEdit users.  nedit_discuss, as
+the name implies, is for open discussion among NEdit users.  nedit_announces
+intended to be a very low volume mailing list for announcement of new versions,
+new executables, and significant contributed software.
+
+To subscribe to nedit_discuss, send a message containing the following line in
+the body of the message (not the subject) to mailserv@fnal.gov:
+
+    subscribe nedit_discuss
+
+To subscribe to nedit_announce, send a separate message to mailserv@fnal.gov
+containing the line:
+
+    subscribe nedit_announce
+
+To unsubscribe, send:
+
+    unsubscribe nedit_discuss (or nedit_announce)
+
+After subscribing, you will receive copies of all of the email submitted to the
+list.  You may submit mail to the discussion list by sending it to:
+
+    nedit_discuss@fnal.gov
+
+Users are allowed to post to nedit_announce as well (just make sure that the
+content is appropriate).
+
+
+DISTRIBUTION POLICY
+
+FermiTools Software Legal Information - November 1, 1996
+
+COPYRIGHT STATUS:  Fermi National Accelerator Laboratory (FNAL) documents are
+sponsored by the U.S. Department of Energy under Contract No.
+DE-AC02-76CH03000.  Therefore, the U.S. Government retains a non-exclusive,
+royalty-free license to publish or reproduce these documents or software for
+U.S. Government purposes.  All documents and software available from this
+server are protected under the U.S. and Foreign Copyright Laws, and FNAL
+reserves all rights.
+
+Terms and Conditions
+
+When a User distributes or otherwise obtains a software package included in
+the Fermilab Software Tools Program, the user agrees to abide by the Terms and
+Conditions of the Program below:
+
+   o Any redistribution of the software shall be accompanied by this
+     INFORMATION/LICENSE AGREEMENT and the product's ORIGIN STATEMENT (below).
+
+   o The User shall acknowledge the origin of the software as set forth 
+     below:
+
+        "This work was performed at Fermi National Accelerator Laboratory, 
+         operated by Universities Research Association, Inc., under contract 
+         DE-AC02-76CH03000 with the U.S. Department of Energy."
+
+   o The user is asked to feed back problems, benefits, and/or suggestions 
+     about the software to the Fermilab Software Providers and/or FermiTools 
+     management.
+
+   o Any distribution of the software available from this server shall be  at
+     no charge.  To obtain a license to commercialize any of the software
+     programs available from Fermilab including this software, contact FNAL's
+     Office of Research and Technology Applications, P.O. Box 500, MS-200,
+     Batavia, IL 60510-0500.
+
+Indemnification by User of Third Party Claims and Disclosure of Liability
+
+The User, his/her directors, officers, employees, and agents hereby release
+and waive all claims against Universities Research Association, Inc. (URA)
+operator of Fermi National Accelerator Laboratory, its trustees, overseers,
+directors, officers, employees, agents, subcontractors, successors and
+assigns, for any and all liability and damages arising from the reproduction,
+use or other disposition of the software.  The User shall indemnify URA and
+the U.S. Government for all damages, costs or expenses, including attorney's
+fees, arising from the utilization of the software, including, but not limited
+to, the making, using, selling or exporting of products, processes or services
+derived from the Software.  The User agrees to indemnify, hold harmless and
+defend URA, its trustees, overseers, directors, officers, employees, agents,
+subcontractors, successors and assigns, against any and all liability, damage,
+loss, cost, charge, claim, demand, fee or expense of every nature and kind
+which may at any time hereafter, be sustained by URA by reason of claims of
+third parties arising out of alleged acts or omissions of the User in the
+reproduction, use or other disposition of the Software.  
+
+The User agrees that URA, its trustees, overseers, directors, officers,
+employees, agents, subcontractors, successors and assigns shall not be liable
+under any claim, charge, or demand, whether in contract, tort, criminal law,
+or otherwise, for any and all loss, cost, charge, claim, demand, fee, expense,
+or damage of every nature and kind arising out of, connected with, resulting
+from or sustained as a result of the use of the software programs available
+from this server.  In no event shall URA be liable for special, direct,
+indirect or consequential damages, losses, costs, charges, claims, demands,
+fees or expenses of any nature or kind.
+
+Disclaimer of Warranties
+
+The software is provided on an "as is" basis only.  URA makes no
+representations, express or implied.  URA makes no representations or
+warranties of merchantability or fitness for any particular purpose, or
+assumes any legal liability or responsibility for the accuracy, completeness,
+or usefulness of any information, apparatus, product or process disclosed, or
+represents that the Software will not infringe any privately held patent,
+copyright, or trademark.  The entire risk as to the results and the
+performance of this software is assumed by the User.
+
+Disclaimer of Endorsement
+
+Reference herein to any specific commercial products, process, or service by
+tradename, trademark, manufacturer or otherwise, does not constitute or imply
+its endorsement, recommendation, or favoring by the United States Government,
+U.S. Department of Energy or URA.  The views and opinions of individuals
+expressed herein do not necessarily state or reflect those of the United
+States Government, U.S. Department of Energy or URA and shall not be used for
+advertising or product endorsement purposes.
+
+Liabilities of the Government
+
+This software is provided by URA, independent from its Prime Contract with the
+U.S. Department of Energy.  URA is acting independently from the Government
+and in its own private capacity and is not acting on behalf of the U.S.
+Government, nor as its contractor nor its agent.  Correspondingly, it is
+understood and agreed that the U.S. Government has no connection to this
+software and in no manner whatsoever shall be liable for nor assume any
+responsibility or obligation for any claim, cost, or damages arising out of or
+resulting from the use of the software available from this server.
+
+ORIGIN STATEMENT
+
+Authors
+
+Mark Edel, Joy Kyriakopulos, Arnulfo Zepeda-Navratil, Suresh Ravoor, Donna Reid,
+Jeff Kallenbach
+
+Fermi National Accelerator Laboratory
+MS 234
+P.O.Box 500
+Batavia, IL 60510
+
+EMAIL: edel@fnal.gov
+
+Acknowledgements:
+
+Syntax highlighting patterns were contributed by: Simon T. MacDonald,  Maurice
+Leysens, Matt Majka, Alfred Smeenk, Alain Fargues, Christopher Conrad, Scott
+Markinson, Konrad Bernloehr, Ivan Herman, Patrice Venant, Christian Denat,
+Philippe Couton, Max Vohlken, and Markus Schwarzenberg.
+
+Regular expression code by Henry Spencer
+
+Nedit incorporates an altered version of Henry Spencer's regcomp and regexec
+code adapted for NEdit. Original copyright notice:
+
+Copyright (c) 1986 by University of Toronto. Written by Henry Spencer.  Not
+derived from licensed software.
+
+Permission is granted to anyone to use this software for any purpose on any
+computer system, and to redistribute it freely, subject to the following
+restrictions:
+
+1. The author is not responsible for the consequences of use of this software,
+no matter how awful, even if they arise from defects in it.
+
+2. The origin of this software must not be misrepresented, either by explicit
+claim or by omission.
+
+3. Altered versions must be plainly marked as such, and must not be
+misrepresented as being the original software.
+
+End of INFORMATION/LICENSE AGREEMENT FOR NEDIT.
+
+Send questions and comments to: nedit_support@fnal.gov.

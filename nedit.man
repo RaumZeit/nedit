@@ -1,0 +1,32 @@
+.\" SCCS ID: nedit.man 1.2 9/27/94
+.TH NEDIT 1F "PU0135" FERMILAB
+.SH NAME
+NEdit \- Motif GUI style text editor
+.SH SYNOPSYS
+.B nedit
+[\-read] [\-create] [\-line\ n\ |\ +n] [\-server]
+[\-do\ command] [\-tags\ file] [\-tabs\ n] [\-wrap]
+[\-nowrap] [\-autoindent] [\-noautoindent] [\-autosave]
+[\-noautosave] [\-rows\ n] [\-columns\ n] [\-font\ font]
+[\-geometry\ geometry] [\-display\ [host]:server[.screen]
+[\-xrm\ resourcestring] [\-svrname\ name] [file...]
+.SH DESCRIPTION
+NEdit is an GUI style editor for plain text files.  It provides mouse based
+editing and a streamlined editing style, based on popular Macintosh and MS
+Windows editors, for users of X workstations and
+X terminals.  
+.PP
+NEdit requires an X-based workstation or X-Terminal.  If you
+have used telnet or rlogin to access the host Unix system, set
+the Unix environment variable for your display:
+.PP
+.B % setenv DISPLAY devicename:0
+.PP
+Supported environments: DEC/ULTRIX, DEC/OSF, DEC/VMS, SGI/IRIX,
+Sun/SunOS, Sun/Solaris, HP/HPUX, Linux, and IBM/AIX.
+.PP
+For more information see NEdit's on-line help, or nedit.doc in the
+NEdit distribution kit.  Fermilab users can obtain NEdit
+documentation (PU0135) from the Computing Division Library.
+.SH SEE ALSO
+nc, X, mwm, vi, emacs

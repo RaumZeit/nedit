@@ -1,0 +1,10 @@
+CC=cc
+AR=ar
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+# For systems older than IRIX 6.0, add -DUSE_MOTIF_GLOB to CFLAGS
+CFLAGS=-O -DSGI
+ARFLAGS=-urs
+BIGGER_STRINGS= -Wf,-XNl10000
+LIBS= -lm -lXm -lXt -lX11 -lPW
+
+include Makefile.common

@@ -1,0 +1,25 @@
+.\" SCCS ID: nedit.man 1.2 9/27/94
+.TH NC 1F "PU0135" FERMILAB
+.SH NAME
+NC \- Client program for NEdit text editor
+.SH SYNOPSYS
+.B nc
+[\-read] [\-create] [\-line n\ |\ +n] [\-do\ command] [\-[no]ask]
+[\-svrname\ name] [file...]
+.SH DESCRIPTION
+nc is the client interface to the NEdit text editor.  To use nc, 
+first run NEdit in server mode:
+.PP
+.EX
+    nedit -server
+.EE
+.PP
+Client/server mode is useful for integrating NEdit with software development
+environments, mailers, and other programs; or just as a quick way to open files
+from the shell command line without starting a new NEdit session.
+.PP
+For more information see NEdit's on-line help, or nedit.doc in the
+NEdit distribution kit.  Fermilab users can obtain NEdit
+documentation (PU0135) from the Computing Division Library.
+.SH SEE ALSO
+NEdit, X, mwm, vi, emacs

@@ -1,0 +1,8 @@
+CC=/usr/lang/acc
+AR=/usr/5bin/ar
+# For editres, add -DEDITRES to CFLAGS and -lXmu to LIBS
+CFLAGS=-O -DSUNOS -DUSE_LPR_PRINT_CMD -DUSE_MOTIF_GLOB
+ARFLAGS=-urs
+LIBS= -lm -Bstatic -lXm -lXt -lX11
+
+include Makefile.common

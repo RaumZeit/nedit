@@ -1,0 +1,538 @@
+                     NEdit Version 5.0.2, March 11, 1998
+	     
+
+PRODUCT DESCRIPTION
+
+NEdit is a standard GUI (Graphical User Interface) style text editor for
+programs and plain-text files.  Users of Macintosh and MS Windows based text
+editors should find NEdit a familiar and comfortable environment.  NEdit
+provides all of the standard menu, dialog, editing, and mouse support, as
+well as all of the standard shortcuts to which the users of modern GUI based
+environments are accustomed.  For users of older style Unix editors, welcome
+to the world of mouse-based editing!
+
+Please be sure to check the platform specific README files, i.e. README.sun
+and README.ibm, for additional information about your particular system.
+
+----------------------------------------------------------------------------
+
+                             TERMS AND CONDITIONS
+                             ====================
+
+This software has been made freely available with a request for
+collaborative input subject to standard Fermitools Terms and Conditions
+given in full below.
+
+----------------------------------------------------------------------------
+
+AUTHORS
+
+    Mark Edel, Joy Kyriakopulos, Arnulfo Zepeda-Navratil, Suresh Ravoor, Donna
+    Reid, Jeff Kallenbach
+
+    Fermi National Accelerator Laboratory - Mail Station 234
+    P.O Box 500
+    Batavia, IL 60510
+    Internet: nedit_support@fnal.fnal.gov
+
+Fermilab Standard Government Sponsorship Notice
+
+    This work was performed at Fermi National Accelerator Laboratory,
+    which is operated by Universities Research Association, Inc., under
+    contract DE-AC02-76CHO3000 with the U.S. Department of Energy.
+
+
+ACKNOWLEDGEMENTS
+
+    Syntax highlighting patterns were contributed by: Simon T. MacDonald, 
+    Maurice Leysens, Matt Majka, Alfred Smeenk, Alain Fargues, Christopher
+    Conrad, Scott Markinson, Konrad Bernloehr, Ivan Herman, Patrice Venant,
+    Christian Denat, Philippe Couton, Max Vohlken, and Markus Schwarzenberg.
+
+    Regular expression code by Henry Spencer
+    
+    Nedit incorporates an altered version of Henry Spencer's regcomp and
+    regexec code adapted for NEdit.  Original copyright notice:
+
+	Copyright (c) 1986 by University of Toronto. Written by Henry
+	Spencer.  Not derived from licensed software.
+
+	Permission is granted to anyone to use this software for any purpose
+	on any computer system, and to redistribute it freely, subject to the
+	following restrictions:
+
+	1. The author is not responsible for the consequences of use of this
+	software, no matter how awful, even if they arise from defects in it.
+
+	2. The origin of this software must not be misrepresented, either by
+	explicit claim or by omission.
+
+	3. Altered versions must be plainly marked as such, and must not be
+	misrepresented as being the original software.
+
+
+VERSION 5.0.2
+
+5.0.2 is a bug fix release with very little new functionality (double-click
+selection of ranges of delimiters, $line, $column and $modified macro
+variables, smart-indent for Python).  The full list of changes and fixes can be
+found in the ReleaseNotes file in the distribution directory. 
+
+Version 5.0 was significant upgrade to NEdit, completing the macro language and
+adding, syntax highlighting, smart-indent, continuous wrap mode, language
+sensitive preferences, and many other new features.
+
+Please note that syntax highlighting patterns are mostly user-contributed, and
+that syntax highlighting is relatively new to NEdit.  If you don't like the way
+your particular language is being highlighted, the patterns are quite easy to
+change.  We would like to make the default patterns as robust and correct as
+possible, so if you see something wrong, please don't just grumble quietly to
+yourself, send mail to nedit_support@fnal.gov.
+
+As of this writing, there are no known bugs in this software, except for the
+few noted in the Problems/Bugs section of the on-line help, or the FAQ file
+and the ReleaseNotes file in the distribution directory.  Please report any
+problems, even if you think they are trivial.
+    
+
+BUILDING NEDIT
+
+Pre-built executables are available for most major Unix and VMS systems, so
+check ftp.fnal.gov in the /pub/nedit directory, and the contributed software
+directory, /pub/nedit/<current-version>/contrib, first.
+
+The two directories called source and util contain the sources for NEdit.  Util
+should be built first, followed by source.  The makefile in this directory can
+be used to build both in sequence if your system is one of the supported
+machines and no modifications are necessary to the makefiles.  To build NEdit
+from this directory, issue the command: "make <machine-type>_nedit"; where
+<machine-type> is one of the supported machine types: sgi, ultrix, sunos,
+solaris, hp, dec, or ibm.  For example, to build the Silicon Graphics version,
+type:
+
+	make sgi_nedit
+
+If everything works properly, this will produce an executable called nedit in
+the directory called source.
+
+
+The Source Directories
+
+Since executables are already available for the supported systems, you are
+probably not just rebuilding an existing configuration, and need to know more
+about how the directories are organized.
+
+The util directory builds a library file called libNUtil.a, which is later
+linked with the code in the source directory to create the nedit executable.
+
+The makefiles in both source directories consist of two parts, a machine
+dependent part and a machine independent part.  The machine dependent makefiles
+contain machine specific header information and invoke a common machine
+independent part called Makefile.common.  To compile the files in either of
+these directories, issue the command: "make -f Makefile.<machine-type>"; where
+<machine type> is one of the supported machine types.  For example, on a
+Silicon Graphics machine, you would type:
+
+	make -f Makefile.sgi
+
+To add a new machine type or configuration, copy one of the existing machine
+dependent makefiles and give it the name of the new system, for example:
+Makefile.sony.  Then, make any required changes in the new makefile.
+
+ 
+Building NEdit on VMS Systems
+
+Command files are provided for compiling and linking files in the source
+and util directories.  comutil.com compiles the files in the util directory
+and produces two library files, vmsutils.olb and libutil.olb.  comnedit.com
+compiles and links the files in the source directory to produce the nedit.exe
+executable.
+
+
+A Note about Lesstif
+
+NEdit is not quite yet "Freed by Lesstif" (Lesstif is free version of Motif).
+If you want to build NEdit from sources, and you want it to be as reliable as
+the pre-built, statically-linked, executables you get from ftp.fnal.gov, you
+still need a Motif library.  Motif comes free with most commercial Unix
+systems, but for freeware systems like Linux and FreeBSD, you must purchase it
+separately.  Lesstif is, however, rapidly nearing completion, so by the time
+you read it, this warning may no longer be true!
+
+
+INSTALLATION
+
+NEdit consists of a single, stand-alone executable file which does not require
+any special installation.  To install NEdit on Unix systems, simply put the
+nedit executable in your path.  On VMS systems, nedit must be defined as a
+foreign command so that it can process command line arguments.  For example,
+if nedit.exe were in the directory mydir on the disk called mydev, adding the
+following line to your login.com file would define the nedit command:
+
+	$ ned*it :== $mydev:[mydir]nedit.exe
+
+To use NEdit in client/server mode, you also need the nedit client program, nc,
+which, again, needs no special installation, except in the VMS case, as above.
+
+
+RUNNING NEDIT
+
+If you are accessing a host Unix system from a remote workstation or X terminal,
+you need to set the Unix environment variable for your display:
+
+	% setenv DISPLAY devicename:0
+	
+where devicename is the network node name of the workstation or X terminal
+where you are typing.  On VMS systems, the equivalent command is:
+
+	$ set display/create/node=devicename
+
+To run NEdit, simply type "nedit", optionally followed by the name of a file or
+files to edit.  On-line help is available from the pulldown menu on the far
+right of the menu bar.  For more information on the syntax of the nedit command
+line, look under the heading of "NEdit Command Line."
+
+
+PLATFORM SPECIFIC ISSUES
+
+HP-UX Systems
+
+If you have an older system, and experience problems, such as random crashing,
+installing the patches:
+
+    PHSS_5907
+    PHSS_5908
+
+or their newer counterpart:
+
+   PHSS_6439
+   PHSS_6440
+
+is strongly suggested.  These fix a number of serious problems in HPs X and
+Motif libraries.  If you still have problems, despite having installed these
+patches, please send mail to nedit_support@fnal.gov.
+
+If you are using HPVUE and have trouble setting colors, for example part
+of the menu bar stubornly remains at whatever HPVUE's default is, try setting:
+
+   nedit*useColorObj: False
+
+IBM AIX Systems
+
+Due to an optimizer bug in IBM's C compiler, the file, textDisp.c, must be
+compiled without optimization on AIX systems.
+
+IBM's Motif 1.2 library fixes a number of serious bugs in the earlier libraries
+(the Motif 1.1 version has the menu items for setting the font in the current
+window disabled, and can occasionally crash on window closing).
+
+Linux Systems
+
+Some Linux distributions are missing the /usr/X11R6/lib/X11/XKeysymDB file,
+which is necessary for running Motif programs.  When XKeysymDB is missing,
+NEdit will spew screenfulls of messages about translation table syntax errors,
+and many keys won't work.  You can obtain a copy of the XKeysymDB file from
+the contrib sub-directory of the NEdit distribution directory.  
+
+The default key bindings for arrow keys in fvwm interfere with some of the
+arrow key bindings in NEdit, particularly, Ctrl+Arrow and Alt+Arrow.  You
+may want to re-bind them either in NEdit (see Customizing -> Key Binding
+in the Help menu) or in fvwm in your .fvwmrc file.
+
+Please read the note about Lesstif above.  NEdit is not yet certified with
+Lesstif.  As of the current Lesstif release (0.82), you will experience quite
+a bit of crashing.
+
+SGI Systems
+
+Beginning with IRIX 6.3, SGI is distributing a customized version of NEdit
+along with their operating system releases.  Their installation uses an
+app-defaults file (/usr/lib/X11/app-defaults/NEdit) which overrides the
+default settings in any new nedit version that you install, and may result in
+missing accelerator keys or cosmetic appearance glitches.  If you are
+re-installing NEdit for the entire system, just remove the existing app-
+defaults file.  If you want to run a newer copy individually, get a copy of
+the app-defaults file for this version the contrib sub-directory of the
+distribution directory for this version on ftp.fnal.gov (/pub/nedit/<version>/
+contrib/nedit.app-defaults), and install it in your home directory or set
+XAPPLRESDIR or XUSERFILESEARCHPATH to point to a directory and install it
+there.  In all cases, the file should be named simply NEdit.
+
+No additional installation or resource settings are necessary on IRIX systems
+before 6.3
+
+Solaris (SunOS 5.3 and beyond) Systems
+
+The nedit_solaris executable may require the environment variable OPENWINHOME
+to be set to the directory where Open Windows is installed.  If this is not set
+properly, NEdit will spew screenfulls of messages about translation table
+syntax errors.
+
+Solaris 2.4 -- Add -DDONT_HAVE_GLOB to the CFLAGS line in Makefile.solaris.
+
+Solaris 2.5 -- Solaris 2.5 systems were shipped with a bad shared Motif
+library, in which the file selection dialog (Open, Save, Save As, Include,
+etc.) shows long path names in the file list, but no horizontal scroll bar,
+and no way to read the actual file names.  Depending on your system, the
+patch is one of ID# 103461-07, # 102226-19, or # 103186-21.  It affects all
+Motif based programs which use the library.  If you can't patch your system,
+you might want to just try the nedit_sunos executable (from ftp.fnal.gov
+/pub/nedit), which is statically linked with a good Motif.  You can also set
+the X resource: nedit.stdOpenDialog to True, which at least gives you a text
+field where you can enter file names by hand.
+
+Solaris 2.6 -- If you're experiencing performance problems (windows come up
+slowly), the patch for Sun's shared Motif library is ID# 105284-04.  Installing
+the patch alone will improve nedit's performance dramatically.  The patch also
+enables a resource, *XmMenuReduceGrabs. Setting this to True will eliminate the
+delay completely.
+
+SunOS 4.x Systems
+
+On some SunOS systems, NEdit will also complain about translation table syntax
+errors.  This happens when Motif can't access the keysym database, usually
+located in the file /usr/lib/X11/XKeysymDB.  If this file exists on your
+system, but NEdit fails to locate it properly, you can set the environment
+variable XKEYSYMDB to point to the file.  If you can't find the file, or if
+some of the errors persist despite setting XKEYSYMDB, there is a XKeysymDB
+which you can use to update or replace your /usr/lib/X11/XKeysymDB file
+available in the contrib sub-directory of the NEdit distribution directory.
+If you don't want to change your existing XKeysymDB file, make a local copy
+and set XKEYSYMDB to point to it.
+
+If you find that some of the labeled keys on your keyboard are not properly
+bound to the corresponding action in NEdit, try the following:
+
+  1) Get a copy of motifbind.sun (for Sun standard keyboards), or
+     motifbind.sun_at (for Sun PC style keyboards) from the NEdit contrib
+     directory on ftp.fnal.gov:/pub/nedit/v4_0_1/contrib.
+  2) Copy it to a file called .motifbind in your home directory.
+  3) Shutdown and restart your X server.
+
+
+COMPATIBILITY WITH PREVIOUS VERSIONS
+
+Existing .nedit Files
+
+NEdit 5.0.2 is backward-compatible with .nedit files from older versions
+(unless you wrote a .nedit file from the 5.0 beta-test version, or the
+experimental syntax highlighting version, as discussed below).  However, if you
+are upgrading from a pre-5.0 version, you should check your font settings, and
+consider upgrading the original default macro menu entries as discussed below.
+
+If you have been using a font other than the default for the text portion of
+your NEdit windows, be sure to check the Preferences -> Default Settings ->
+Text Font dialog, and select highlighting fonts which match your primary font
+in size.  Matching in height is desirable, but not essential, and sometimes
+impossible to achive on some systems.  When fonts don't match in height,
+turning on syntax highlighting will cause the window size to change slightly. 
+NEdit can handle unmatched font sizes (width), but leaving them unmatched means
+sometimes columns and indentation don't line up (as with proportional fonts).
+
+Most macros written for previous versions will function properly under 5.0's
+new macro language.  The most common problems with old macros is lack of a
+terminating newline on the last line of the macro, and the addition of "<" and
+">" to the regular expression syntax.  These characters must now be escaped
+with \ (backslash).
+
+The default macros written from 4.0 versions all work under 5.0, with the
+exception of "Unquote Mail Reply", which will fail because it uses the ">"
+character in a regular expression, which now must be escaped with "\".  If you
+wrote a .nedit file from 4.0, you will have the old version of the macro, which
+needs to be updated.
+
+The 5.0 defaults for macro menu entries also contain some worthwhile new
+commands, and improvements to existing macros.  To see what these new macros
+look like, you can temporarily re-name your existing .nedit file and run NEdit
+without one.
+
+There are several ways to integrate macros from the new version into an
+old .nedit file.  If you have not added new macros of your own, simply remove
+the line beginning "nedit.macroCommands" and all of the indented lines which
+follow it from your existing .nedit file, and NEdit will re-generate the Macro
+menu from its stored defaults.
+
+If you have added macros of your own:
+
+   1) Temporarily re-name your existing .nedit file
+   2) Generate a new .nedit file by choosing Save Defaults from the
+      Preferences menu.
+   3) Copy and paste the new macros from the newly generated .nedit
+      file into the "nedit.macroCommands" resource in your old .nedit file.
+
+Beta 5.0 .nedit Files
+
+If you wrote a .nedit file from the beta-test version of 5.0, you will be
+missing one or two highlight styles used by default highlight patterns for
+Perl, Verilog, and NEdit Macro, and you will get an error on the FORTRAN
+highlight patterns, because the name has changed to "Fortran".  If you want to
+preserve your existing .nedit file, you can edit it by hand to change the two
+occurences of "FORTRAN" to "Fortran", and either remove the section beginning
+"nedit.styles", or if you have made changes to styles that you want to
+preserve, re-name your .nedit file, write a new one, and integrate the
+new styles into your existing file.
+
+Experimental Syntax Highlighting Version .nedit Files
+
+If you wrote a .nedit file using the experimental syntax highlighting version
+(color_nedit.tar), the syntax of the languageModes resource has changed, and is
+not readable with 5.0.  If you want to preserve the .nedit file, you will have
+to edit it by hand to remove the line beginning "nedit.languageModes", and all
+of the indented lines that follow.  If you made significant changes to language
+mode information which you don't want to re-enter via the Language Modes
+dialog, you can edit each line of the resource by hand to conform to the new
+spec by adding colons to the end).
+
+
+FURTHER INFORMATION
+
+More information is available in the file nedit.doc in this kit, from NEdit's
+on-line help system, and from the enclosed FAQ file.  There is also a web page
+for NEdit at: http://www-pat.fnal.gov/nirvana/nedit.html, or find out more
+about Fermilab: http://www.fnal.gov, or information on other publicly available
+Fermilab software: http://www.fnal.gov/fermitools.  For discussion with other
+NEdit users, or to receive notification of new releases and news about news,
+you can subscribe to one or both of the official nedit mailing lists.  You'll
+find information on subscribing in the NEdit on-line help under Mailing Lists.  
+
+
+SUPPORT
+
+Help with the installation or use of NEdit is available by sending mail to
+
+                        nedit_support@fnal.fnal.gov
+
+which is auto-forwarded to the group in charge of NEdit support at Fermilab.
+
+This software is furnished by Fermilab on an "as is" basis as a service 
+to the wider community with the goal of stimulating collaborative use and 
+further development.
+
+Provision of the software implies no commitment of support by Fermilab.
+
+The Fermilab Computing Division is open to discussing other levels of 
+support for use of the software with responsible and committed users and 
+collaborators.
+
+Use of the software in experiments at Fermilab will be assured of a level 
+of support as agreed to through the standard Memorandum Of Understanding 
+process.
+
+Users may send mail to the mail address given above, with the expectation 
+that it will be read and noted.
+
+Fermitools Special Products
+
+Because of the special support needed for a few selected products Fermilab 
+is only able to support the software under special agreement.  The support 
+offered will be discussed and negotiated on an individual basis and may be 
+different for different users.  To initiate discussions send mail to the 
+mail address given above.
+
+
+----------------------------------------------------------------------------
+
+                         TERMS AND CONDITIONS IN FULL
+                         ============================
+
+----------------------------------------------------------------------------
+    Fermitools Software Legal Information - October 16, 1997
+----------------------------------------------------------------------------
+
+COPYRIGHT STATUS:  Fermi National Accelerator Laboratory (FNAL) documents are
+sponsored by the U.S. Department of Energy under Contract No.
+DE-AC02-76CH03000.  Therefore, the U.S. Government retains a non-exclusive,
+royalty-free license to publish or reproduce these documents or software for
+U.S. Government purposes.  All documents and software available from this
+server are protected under the U.S. and Foreign Copyright Laws, and FNAL
+reserves all rights.
+
+Terms and Conditions
+--------------------
+When a User distributes or otherwise obtains a software package included in
+the Fermilab Software Tools Program, the user agrees to abide by the Terms and
+Conditions of the Program below:
+
+o   Any redistribution of the software shall be accompanied by this
+    INFORMATION/LICENSE file and the product's ORIGIN file.
+
+o   The User shall acknowledge the origin of the software as set forth 
+    below:
+
+        "This work was performed at Fermi National Accelerator Laboratory, 
+        operated by Universities Research Association, Inc., under contract 
+        DE-AC02-76CH03000 with the U.S. Department of Energy."
+
+o   The user is asked to feed back problems, benefits, and/or suggestions 
+    about the software to the Fermilab Software Providers and/or Fermitools 
+    management.
+
+o   Any distribution of the software available from this server shall be at
+    no charge, except for nominal media and distribution costs.  To obtain a
+    license to commercialize any of the software programs available from this
+    server, contact FNAL's Office of Research and Technology Applications,
+    P.O. Box 500, MS-200, Batavia, IL 60510-0500.
+
+
+Indemnification by User of Third Party Claims and Disclaimer of Liability
+-------------------------------------------------------------------------
+The User, his/her directors, officers, employees, and agents hereby release
+and waive all claims against Universities Research Association, Inc. (URA)
+operator of Fermi National Accelerator Laboratory, its trustees, overseers,
+directors, officers, employees, agents, subcontractors, successors and
+assigns, for any and all liability and damages arising from the reproduction,
+use or other disposition of the software.  The User shall indemnify URA and
+the U.S. Government for all damages, costs or expenses, including attorney's
+fees, arising from the utilization of the software, including, but not limited
+to, the making, using, selling or exporting of products, processes or services
+derived from the Software.  The User agrees to indemnify, hold harmless and
+defend URA, its trustees, overseers, directors, officers, employees, agents,
+subcontractors, successors and assigns, against any and all liability, damage,
+loss, cost, charge, claim, demand, fee or expense of every nature and kind
+which may at any time hereafter, be sustained by URA by reason of claims of
+third parties arising out of alleged acts or omissions of the User in the
+reproduction, use or other disposition of the Software.  
+
+The User agrees that URA, its trustees, overseers, directors, officers,
+employees, agents, subcontractors, successors and assigns shall not be liable
+under any claim, charge, or demand, whether in contract, tort, criminal law,
+or otherwise, for any and all loss, cost, charge, claim, demand, fee, expense,
+or damage of every nature and kind arising out of, connected with, resulting
+from or sustained as a result of the use of the software programs available
+from this server.  In no event shall URA be liable for special, direct,
+indirect or consequential damages, losses, costs, charges, claims, demands,
+fees or expenses of any nature or kind.
+
+Disclaimer of Warranties
+------------------------
+The software is provided on an "as is" basis only.  URA makes no
+representations, express or implied.  URA MAKES NO REPRESENTATIONS OR
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE, or
+assumes any legal liability or responsibility for the accuracy, completeness,
+or usefulness of any information, apparatus, product or process disclosed, or
+represents that the Software will not infringe any privately held patent,
+copyright, or trademark.  The entire risk as to the results and the
+performance of this software is assumed by the User.
+
+Disclaimer of Endorsement
+-------------------------
+Reference herein to any specific commercial products, process, or service by
+tradename, trademark, manufacturer or otherwise, does not constitute or imply
+its endorsement, recommendation, or favoring by the United States Government,
+U.S. Department of Energy or URA.  The views and opinions of individuals
+expressed herein do not necessarily state or reflect those of the United
+States Government, U.S. Department of Energy or URA and shall not be used for
+advertising or product endorsement purposes.
+
+Liabilities of the Government
+-----------------------------
+This software is provided by URA, independent from its Prime Contract with the
+U.S. Department of Energy.  URA is acting independently from the Government
+and in its own private capacity and is not acting on behalf of the U.S.
+Government, nor as its contractor nor its agent.  Correspondingly, it is
+understood and agreed that the U.S. Government has no connection to this
+software and in no manner whatsoever shall be liable for nor assume any
+responsibility or obligation for any claim, cost, or damages arising out of or
+resulting from the use of the software available from this server.
+
+

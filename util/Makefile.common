@@ -1,0 +1,16 @@
+# SCCS ID: Makefile.common 1.18 9/20/93
+#
+# Platform independent part of make procedure for Nirvana utilities directory, 
+# included by machine specific makefiles.
+#
+
+OBJS = DialogF.o getfiles.o printUtils.o misc.o fileUtils.o \
+	prefFile.o fontsel.o managedList.o
+
+all: libNUtil.a
+
+libNUtil.a: $(OBJS)
+	$(AR) $(ARFLAGS) libNUtil.a $(OBJS)
+
+printUtils.o: printUtils.c
+	$(CC) -c $(CFLAGS) $(PRINTFLAGS) printUtils.c
