@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.18 2001/06/05 08:01:10 amai Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.19 2001/06/22 14:32:35 amai Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -334,6 +334,10 @@ static int doOpen(WindowInfo *window, char *name, char *path, int flags)
 	DialogF(DF_ERR, window->shell, 1, "Error opening %s", "Dismiss", name);
 	return FALSE;
     }
+    if (S_ISDIR(statbuf.st_mode))  {
+	DialogF(DF_ERR, window->shell, 1, "Can't open directory %s", "Dismiss", name);
+	return FALSE;
+    }
     fileLen = statbuf.st_size;
     window->fileMode = statbuf.st_mode;
     window->lastModTime = statbuf.st_mtime;
@@ -442,7 +446,11 @@ int IncludeFile(WindowInfo *window, const char *name)
     
     /* Get the length of the file */
     if (fstat(fileno(fp), &statbuf) != 0) {
-	DialogF(DF_ERR, window->shell, 1, "Error openinig %s", "Dismiss", name);
+	DialogF(DF_ERR, window->shell, 1, "Error opening %s", "Dismiss", name);
+	return FALSE;
+    }
+    if (S_ISDIR(statbuf.st_mode))  {
+	DialogF(DF_ERR, window->shell, 1, "Can't open directory %s", "Dismiss", name);
 	return FALSE;
     }
     fileLen = statbuf.st_size;
