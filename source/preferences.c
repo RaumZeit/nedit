@@ -33,7 +33,6 @@
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include <errno.h>
 #include <string.h>
 #include <stdio.h>
 #include <Xm/Xm.h>
