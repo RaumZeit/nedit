@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.58 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.59 2002/07/15 14:11:17 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -3792,7 +3792,7 @@ static int matchLanguageMode(WindowInfo *window)
     	if (LanguageModes[i]->recognitionExpr != NULL) {
     	    if (SearchString(first200, LanguageModes[i]->recognitionExpr,
     	    	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos,
-    	    	    &endPos, NULL, NULL))
+    	    	    &endPos, NULL, NULL, NULL))
             {
 		XtFree(first200);
     	    	return i;
@@ -4696,7 +4696,7 @@ static void spliceString(char **intoString, const char *insertString, const char
     
     if (atExpr != NULL && SearchString(*intoString, atExpr,
 	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos,
-	    NULL, NULL)) {
+	    NULL, NULL, NULL)) {
 	strncpy(newString, *intoString, beginPos);
     	strncpy(&newString[beginPos], insertString, insertLen);
 	newString[beginPos+insertLen] = '\n';
@@ -4720,7 +4720,7 @@ static int regexFind(const char *inString, const char *expr)
 {
     int beginPos, endPos;
     return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
-	    0, &beginPos, &endPos, NULL, NULL);
+	    0, &beginPos, &endPos, NULL, NULL, NULL);
 }
 
 /*
@@ -4737,7 +4737,7 @@ static int regexReplace(char **inString, const char *expr, const char *replaceWi
     int inLen = strlen(*inString);
     
     if (!SearchString(*inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
-	    0, &beginPos, &endPos, NULL, NULL))
+	    0, &beginPos, &endPos, NULL, NULL, NULL))
 	return FALSE;
     newLen = inLen + replaceLen - (endPos-beginPos);
     newString = XtMalloc(newLen + 1);

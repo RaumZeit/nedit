@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.80 2002/07/11 21:18:09 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.81 2002/07/15 14:11:17 edg Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -1008,7 +1008,7 @@ static void searchHelpText(Widget parent, int parentTopic,
         helpText = stitch(parent, HelpText[topic], NULL);
 	if (SearchString(helpText, searchFor, SEARCH_FORWARD,
 		SEARCH_LITERAL, False, topic == startTopic ? startPos : 0,
-		&beginMatch, &endMatch, NULL, GetPrefDelimiters())) {
+		&beginMatch, &endMatch, NULL, NULL, GetPrefDelimiters())) {
 	    found = True;
 	    XtFree(helpText);
     	    break;

@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.8 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: regularExp.h,v 1.9 2002/07/15 14:11:18 edg Exp $ */
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
@@ -17,7 +17,10 @@
 typedef struct regexp {
    char *startp [NSUBEXP];  /* Captured text starting locations. */
    char *endp   [NSUBEXP];  /* Captured text ending locations. */
-   char *extentp;           /* Points to the maximum extent of text scanned by
+   char *extentpBW;         /* Points to the maximum extent of text scanned by
+                               ExecRE in front of the string to achieve a match
+                               (needed because of positive look-behind.) */
+   char *extentpFW;         /* Points to the maximum extent of text scanned by
                                ExecRE to achieve a match (needed because of
                                positive look-ahead.) */
    char  match_start;       /* Internal use only. */

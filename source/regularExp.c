@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.16 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.17 2002/07/15 14:11:18 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2573,7 +2573,8 @@ static unsigned char  *Look_Behind_To;      /* Position till were look behind
                                                can safely check back         */
 static unsigned char **Start_Ptr_Ptr;       /* Pointer to `startp' array.    */
 static unsigned char **End_Ptr_Ptr;         /* Ditto for `endp'.             */
-static unsigned char  *Extent_Ptr;
+static unsigned char  *Extent_Ptr_FW;       /* Forward extent pointer        */
+static unsigned char  *Extent_Ptr_BW;       /* Backward extent pointer       */
 static unsigned char  *Back_Ref_Start [10]; /* Back_Ref_Start [0] and        */
 static unsigned char  *Back_Ref_End   [10]; /* Back_Ref_End [0] are not      */
                                             /* used. This simplifies         */
@@ -2909,7 +2910,8 @@ static int attempt (regexp *prog, unsigned char *string) {
 
    /* Overhead due to capturing parentheses. */
 
-   Extent_Ptr = NULL;
+   Extent_Ptr_BW = string;
+   Extent_Ptr_FW = NULL;
 
    for (i = Total_Paren + 1; i > 0; i--) {
       *s_ptr++ = NULL;
@@ -2918,8 +2920,9 @@ static int attempt (regexp *prog, unsigned char *string) {
 
    if (match ((unsigned char *) (prog->program + REGEX_START_OFFSET))) {
       prog->startp [0] = (char *) string;
-      prog->endp   [0] = (char *) Reg_Input;  /* <-- One char AFTER  */
-      prog->extentp    = (char *) Extent_Ptr; /*     matched string! */
+      prog->endp   [0] = (char *) Reg_Input;     /* <-- One char AFTER  */
+      prog->extentpBW  = (char *) Extent_Ptr_BW; /*     matched string! */
+      prog->extentpFW  = (char *) Extent_Ptr_FW;
 
       return (1);
    } else {
@@ -3262,8 +3265,8 @@ static int match (unsigned char *prog) {
             break;
 
          case END:
-            if (Extent_Ptr == NULL || (Reg_Input - Extent_Ptr) > 0) {
-               Extent_Ptr = Reg_Input;
+            if (Extent_Ptr_FW == NULL || (Reg_Input - Extent_Ptr_FW) > 0) {
+               Extent_Ptr_FW = Reg_Input;
             }
 
             return (1);  /* Success! */
@@ -3355,8 +3358,8 @@ static int match (unsigned char *prog) {
                      may need more text than it matches to accomplish a
                      re-match. */
 
-                  if (Extent_Ptr == NULL || (Reg_Input - Extent_Ptr) > 0) {
-                     Extent_Ptr = Reg_Input;
+                  if (Extent_Ptr_FW == NULL || (Reg_Input - Extent_Ptr_FW) > 0) {
+                     Extent_Ptr_FW = Reg_Input;
                   }
 
                   Reg_Input = save; /* Backtrack to look-ahead start. */
@@ -3424,6 +3427,20 @@ static int match (unsigned char *prog) {
                   if (answer && Reg_Input == save) {
                      /* It matched, exactly far enough */
                      found = 1;
+                     
+                     /* Remember the last (most to the left) character position
+                        that we consume in the input for a successful match.
+                        This is info that may be needed should an attempt be
+                        made to match the exact same text at the exact same
+                        place. Since look-behind backtracks, a regex with a
+                        leading look-behind may need more text than it matches
+                        to accomplish a re-match. */
+
+                     if (Extent_Ptr_BW == NULL || 
+                         (Extent_Ptr_BW - (save - offset)) > 0) {
+                        Extent_Ptr_BW = save - offset;
+                     }
+
                      break;
                   }
                }

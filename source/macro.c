@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.42 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.43 2002/07/15 14:11:17 edg Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -2272,7 +2272,7 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Do the search */
     found = SearchString(string, searchStr, direction, type, wrap, beginPos,
-	    &foundStart, &foundEnd, NULL, GetWindowDelimiters(window));
+	    &foundStart, &foundEnd, NULL, NULL, GetWindowDelimiters(window));
     
     /* Return the results */
     ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -3249,7 +3249,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         strcpy(allocIndexStr, indexStr);
         found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType,
             False, beginPos, &foundStart, &foundEnd,
-	        NULL, GetWindowDelimiters(window));
+	        NULL, NULL, GetWindowDelimiters(window));
         elementEnd = found ? foundStart : strLength;
         elementLen = elementEnd - beginPos;
         element.tag = STRING_TAG;

@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.16 2002/07/11 21:18:10 slobasso Exp $ */
+/* $Id: search.h,v 1.17 2002/07/15 14:11:18 edg Exp $ */
 
 #ifndef NEDIT_SEARCH_H_INCLUDED
 #define NEDIT_SEARCH_H_INCLUDED
@@ -34,10 +34,11 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 int ReplaceInSelection(WindowInfo *window, const char *searchString,
 	const char *replaceString, int searchType);
 int SearchWindow(WindowInfo *window, int direction, const char *searchString,
-	int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extent);
+	int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, 
+	int *extentBW, int* extentFW);
 int SearchString(const char *string, const char *searchString, int direction,
        int searchType, int wrap, int beginPos, int *startPos, int *endPos,
-       int *searchExtent, const char *delimiters);
+       int *searchExtentBW, int*searchExtentFW, const char *delimiters);
 char *ReplaceAllInString(char *inString, const char *searchString,
 	const char *replaceString, int searchType, int *copyStart,
 	int *copyEnd, int *replacementLength, const char *delimiters);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.40 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.41 2002/07/15 14:11:18 edg Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -825,7 +825,7 @@ static int fakeRegExSearch(WindowInfo *window, const char *searchString,
     *outPtr=0; /* Terminate searchSubs */
     
     found = SearchString(fileString, searchSubs, dir, SEARCH_REGEX, 
-      	    False, searchStartPos, startPos, endPos, NULL, NULL);
+      	    False, searchStartPos, startPos, endPos, NULL, NULL, NULL);
     
     if(!found && !ctagsMode) {
       	/* position of the target definition could have been drifted before
@@ -834,7 +834,7 @@ static int fakeRegExSearch(WindowInfo *window, const char *searchString,
         */
 	found = SearchString(fileString, searchSubs, SEARCH_BACKWARD, 
 	      	SEARCH_REGEX, False, searchStartPos, startPos, endPos, NULL, 
-	      	NULL);
+	      	NULL, NULL);
     }
 
     /* free the text buffer copy returned from XmTextGetString */
