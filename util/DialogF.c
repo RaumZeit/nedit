@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.27 2003/04/24 11:47:23 edg Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.28 2003/07/18 15:14:16 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * DialogF -- modal dialog printf routine                                       *
@@ -217,6 +217,8 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	if (!strcmp(but_lbl, "Cancel") || !strcmp(but_lbl, "Dismiss"))
 	    cancel_index = but_index;
     }
+    if (n == 1)
+       cancel_index = 0;
 
     /* Get & translate msg string. NOTE: the use of vsprintf is inherently
        dangerous because there is no way to control the length of the written

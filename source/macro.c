@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.71 2003/06/05 22:01:52 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.72 2003/07/18 15:14:16 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -76,6 +76,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.71 2003/06/05 22:01:52 n8gray Exp 
 #endif /*VMS*/
 
 #include <X11/Intrinsic.h>
+#include <X11/keysym.h>
 #include <Xm/Xm.h>
 #include <Xm/CutPaste.h>
 #include <Xm/Form.h>
@@ -215,12 +216,20 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
+#ifdef LESSTIF_VERSION
+static void dialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont);
+#endif /* LESSTIF_VERSION */
 static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg);
 static void stringDialogBtnCB(Widget w, XtPointer clientData,
     	XtPointer callData);
 static void stringDialogCloseCB(Widget w, XtPointer clientData,
     	XtPointer callData);
+#ifdef LESSTIF_VERSION
+static void stringDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont);
+#endif /* LESSTIF_VERSION */
 static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs,
        DataValue *result, char **errMsg);
 static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -2759,6 +2768,16 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
     	XmStringFree(s1);
     }
+
+#ifdef LESSTIF_VERSION
+    /* Workaround for Lesstif (e.g. v2.1 r0.93.18) that doesn't handle
+       the escape key for closing the dialog (probably because the
+       cancel button is not managed). */
+    XtAddEventHandler(dialog, KeyPressMask, False, dialogEscCB, 
+            (XtPointer)window);
+    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog), XK_Escape), 0,
+	    True, GrabModeAsync, GrabModeAsync);
+#endif /* LESSTIF_VERSION */
     
     /* Put up the dialog */
     ManageDialogCenteredOnPointer(dialog);
@@ -2818,6 +2837,19 @@ static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
 }
+
+#ifdef LESSTIF_VERSION
+static void dialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont)
+{
+    if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
+    	return;
+    if (clientData != NULL) {
+        dialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    }
+    *cont = False;
+}
+#endif /* LESSTIF_VERSION */
 
 static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
@@ -2896,6 +2928,16 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     	XmStringFree(s1);
     }
     
+#ifdef LESSTIF_VERSION
+    /* Workaround for Lesstif (e.g. v2.1 r0.93.18) that doesn't handle
+       the escape key for closing the dialog (probably because the
+       cancel button is not managed). */
+    XtAddEventHandler(dialog, KeyPressMask, False, stringDialogEscCB, 
+            (XtPointer)window);
+    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog), XK_Escape), 0,
+	    True, GrabModeAsync, GrabModeAsync);
+#endif /* LESSTIF_VERSION */
+
     /* Put up the dialog */
     ManageDialogCenteredOnPointer(dialog);
     
@@ -2979,6 +3021,19 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
 }
+
+#ifdef LESSTIF_VERSION
+static void stringDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
+    	Boolean *cont)
+{
+    if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
+    	return;
+    if (clientData != NULL) {
+        stringDialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    }
+    *cont = False;
+}
+#endif /* LESSTIF_VERSION */
 
 /*
 ** A subroutine to put up a calltip
