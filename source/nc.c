@@ -409,9 +409,11 @@ static char *parseCommandLine(int argc, char **argv)
 	    	outPtr = newCommandString + oldLength;
 	    	ParseFilename(nameList[j], name, path);
     		strcat(path, name);
-    		sprintf(outPtr, "%d %d %d %d %d %d %d %d\n%s\n%s\n%s\n%s\n%n",
-			lineNum, read, create, iconic, strlen(path),
-			strlen(toDoCommand), strlen(langMode), strlen(geometry),
+                /* See below for casts */
+    		sprintf(outPtr, "%d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
+			lineNum, read, create, iconic, (long) strlen(path),
+			(long) strlen(toDoCommand), (long) strlen(langMode), 
+                        (long) strlen(geometry),
 			path, toDoCommand, langMode, geometry, &charsWritten);
 		outPtr += charsWritten;
 		free(nameList[j]);
@@ -423,10 +425,15 @@ static char *parseCommandLine(int argc, char **argv)
     	    strcat(path, name);
     	    /* SunOS 4 acc or acc and/or its runtime library has a bug
     	       such that %n fails (segv) if it follows a string in a
-    	       printf or sprintf.  The silly code below avoids this */
-    	    sprintf(outPtr, "%d %d %d %d %d %d %d %d\n%n", lineNum, read,
-		    create, iconic, strlen(path), strlen(toDoCommand),
-		    strlen(langMode), strlen(geometry), &charsWritten);
+    	       printf or sprintf.  The silly code below avoids this.
+               
+               The "long" cast on strlen() is necessary because size_t
+               is 64 bit on Alphas, and 32-bit on most others.  There is
+               no printf format specifier for "size_t", thanx, ANSI. */
+
+    	    sprintf(outPtr, "%d %d %d %d %ld %ld %ld %ld\n%n", lineNum, read,
+		    create, iconic, (long) strlen(path), (long) strlen(toDoCommand),
+		    (long) strlen(langMode), (long) strlen(geometry), &charsWritten);
     	    outPtr += charsWritten;
     	    strcpy(outPtr, path);
     	    outPtr += strlen(path);
@@ -450,7 +457,7 @@ static char *parseCommandLine(int argc, char **argv)
     
     /* If ther's an un-written -do command, write it with an empty file name */
     if (toDoCommand[0] != '\0') {
-	sprintf(outPtr, "0 0 0 0 0 %d 0 0\n\n%n", strlen(toDoCommand),
+	sprintf(outPtr, "0 0 0 0 0 %d 0 0\n\n%n", (int) strlen(toDoCommand),
 		&charsWritten);
 	outPtr += charsWritten;
 	strcpy(outPtr, toDoCommand);
