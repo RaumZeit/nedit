@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.52 2003/12/05 00:05:54 slobasso Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.53 2003/12/09 12:57:20 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -301,7 +301,7 @@ static char *fallbackResources[] = {
     "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
     "*windowsMenu.closePane.acceleratorText: Ctrl+1",
     "*helpMenu.mnemonic: H",
-    "nedit.helpForm.sw.helpText*translations: #override\
+    "nedit.help.helpForm.sw.helpText*translations: #override\
 <Key>Tab:help-focus-buttons()\\n\
 <Key>Return:help-button-action(\"dismiss\")\\n\
 <KeyPress>osfCancel:help-button-action(\"dismiss\")\\n\
