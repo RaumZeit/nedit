@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.9 2001/04/06 13:09:54 amai Exp $ */
+/* $Id: preferences.h,v 1.10 2001/05/17 11:42:27 arnef Exp $ */
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -29,6 +29,8 @@ void SetPrefISearchLine(int state);
 int GetPrefISearchLine(void);
 void SetPrefLineNums(int state);
 int GetPrefLineNums(void);
+void SetPrefShowPathInWindowsMenu(int state);
+int GetPrefShowPathInWindowsMenu(void);
 void SetPrefWarnFileMods(int state);
 int GetPrefWarnFileMods(void);
 void SetPrefWarnExit(int state);

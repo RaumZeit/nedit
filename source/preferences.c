@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.25 2001/04/14 09:51:30 amai Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.26 2001/05/17 11:42:27 arnef Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -188,6 +188,7 @@ static struct prefData {
     int statsLine;		/* whether to show the statistics line */
     int iSearchLine;	    	/* whether to show the incremental search line*/
     int lineNums;   	    	/* whether to show line numbers */
+    int pathInWindowsMenu;   	/* whether to show path in windows menu */
     int warnFileMods;	    	/* " warn user if files externally modified */
     int warnExit;	    	/* whether to warn on exit */
     int searchMethod;		/* initial search method as a text string */
@@ -657,6 +658,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.iSearchLine, NULL, True},
     {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False",
     	&PrefData.lineNums, NULL, True},
+    {"pathInWindowsMenu", "PathInWindowsMenu", PREF_BOOLEAN, "True",
+    	&PrefData.pathInWindowsMenu, NULL, True},
     {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True",
     	&PrefData.warnFileMods, NULL, True},
     {"warnExit", "WarnExit", PREF_BOOLEAN, "True",
@@ -1182,6 +1185,16 @@ void SetPrefLineNums(int state)
 int GetPrefLineNums(void)
 {
     return PrefData.lineNums;
+}
+
+void SetPrefShowPathInWindowsMenu(int state)
+{
+    setIntPref(&PrefData.pathInWindowsMenu, state);
+}
+
+int GetPrefShowPathInWindowsMenu(void)
+{
+    return PrefData.pathInWindowsMenu;
 }
 
 void SetPrefWarnFileMods(int state)

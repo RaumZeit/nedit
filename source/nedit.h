@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.15 2001/05/04 18:33:24 arnef Exp $ */
+/* $Id: nedit.h,v 1.16 2001/05/17 11:42:27 arnef Exp $ */
 /*******************************************************************************
 *									       *
 * nedit.h -- Nirvana Editor common include file				       *
@@ -232,6 +232,7 @@ typedef struct _WindowInfo {
     Widget	statsLineDefItem;
     Widget	iSearchLineDefItem;
     Widget	lineNumsDefItem;
+    Widget	pathInWindowsMenuDefItem;
     Widget  	modWarnDefItem;
     Widget  	exitWarnDefItem;
     Widget	searchLiteralDefItem;
@@ -315,6 +316,7 @@ typedef struct _WindowInfo {
     Boolean	showStats;		/* is stats line supposed to be shown */
     Boolean 	showISearchLine;    	/* is incr. search line to be shown */
     Boolean 	showLineNumbers;    	/* is the line number display shown */
+    Boolean 	showPathInWindowsMenu; 	/* is the path shown in windows menu */
     Boolean	highlightSyntax;	/* is syntax highlighting turned on? */
     Boolean	modeMessageDisplayed;	/* special stats line banner for learn
     					   and shell command executing modes */

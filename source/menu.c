@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.31 2001/05/05 18:01:53 arnef Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.32 2001/05/17 11:42:27 arnef Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -124,6 +124,7 @@ static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void statsLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void iSearchLineDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingOffDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void showMatchingDelimitDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -331,7 +332,7 @@ static Widget createMenuRadioToggle(Widget parent, char *name, char *label,
 	int mode);
 static Widget createMenuSeparator(Widget parent, char *name, int mode);
 static void invalidatePrevOpenMenus(void);
-static void updateWindowMenu(WindowInfo *window);
+static void updateWindowMenu(const WindowInfo *window);
 static void updatePrevOpenMenu(WindowInfo *window);
 static void updateTagsFileMenu(WindowInfo *window);
 static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
@@ -798,6 +799,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    macroDefCB, window, FULL);
     createMenuItem(subSubPane, "windowBackgroundMenu",
 	    "Window Background Menu...", 'W', bgMenuDefCB, window, FULL);
+    window->pathInWindowsMenuDefItem = createMenuToggle(subSubPane, "pathInWindowsMenu",
+    	    "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(),
+    	    SHORT);
 
     /* Search sub menu */
     subSubPane = createMenu(subPane, "searching", "Searching",
@@ -1878,6 +1882,17 @@ static void lineNumsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     SetPrefLineNums(state);
     for (win=WindowList; win!=NULL; win=win->next)
     	XmToggleButtonSetState(win->lineNumsDefItem, state, False);
+}
+
+static void pathInWindowsMenuDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefShowPathInWindowsMenu(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->pathInWindowsMenuDefItem, state, False);
 }
 
 static void searchLiteralCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -3844,19 +3859,34 @@ void AddToPrevOpenMenu(const char *filename)
     WriteNEditDB();
 }
 
+static char* getWindowsMenuEntry(const WindowInfo* thisWindow, const WindowInfo* window)
+{
+    static char fullTitle[MAXPATHLEN * 2 + 3+ 1];
+    const char *title;
+
+    XtVaGetValues(window->shell, XmNiconName, &title, NULL);
+#ifdef SGI_CUSTOM
+    title = title + SGI_WINDOW_TITLE_LEN;
+#endif
+    strcpy(fullTitle, title);
+    if (thisWindow->showPathInWindowsMenu && window->filenameSet)
+    {
+       strcat(fullTitle, " - ");
+       strcat(fullTitle, window->path);
+    }
+    
+    return(fullTitle);
+}             
+
 /*
 ** Update the Window menu of a single window to reflect the current state of
 ** all NEdit windows as determined by the global WindowList.
 */
-static void updateWindowMenu(WindowInfo *window)
+static void updateWindowMenu(const WindowInfo *window)
 {
     WindowInfo *w;
-    char *title;
-    Widget btn;
     WidgetList items;
     Cardinal nItems;
-    XtPointer userData;
-    XmString st1;
     int i, n, nWindows, windowIndex;
     WindowInfo **windows;
     
@@ -3880,6 +3910,7 @@ static void updateWindowMenu(WindowInfo *window)
     	    XmNnumChildren, &nItems, NULL);
     windowIndex = 0;
     for (n=0; n<nItems; n++) {
+        XtPointer userData;
     	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
     	if (userData == TEMPORARY_MENU_ITEM) {
 	    if (windowIndex >= nWindows) {
@@ -3887,11 +3918,8 @@ static void updateWindowMenu(WindowInfo *window)
     		XtUnmanageChild(items[n]);
     		XtDestroyWidget(items[n]);	    	
 	    } else {
-		XtVaGetValues(windows[windowIndex]->shell, XmNiconName,
-			&title, NULL);
-#ifdef SGI_CUSTOM
-                title = title + SGI_WINDOW_TITLE_LEN;
-#endif
+                XmString st1;
+                char* title = getWindowsMenuEntry(window, windows[windowIndex]);
 		XtVaSetValues(items[n], XmNlabelString,
     	    		st1=XmStringCreateSimple(title), NULL);
 		XtRemoveAllCallbacks(items[n], XmNactivateCallback);
@@ -3905,11 +3933,9 @@ static void updateWindowMenu(WindowInfo *window)
     
     /* Add new items for the titles of the remaining windows to the menu */
     for (; windowIndex<nWindows; windowIndex++) {
-    	XtVaGetValues(windows[windowIndex]->shell, XmNiconName, &title, NULL);
-#ifdef SGI_CUSTOM
-        title = title + SGI_WINDOW_TITLE_LEN;
-#endif
-    	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
+        XmString st1;
+        char* title = getWindowsMenuEntry(window, windows[windowIndex]);
+        Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
     		window->windowMenuPane, 
     		XmNlabelString, st1=XmStringCreateSimple(title),
 		XmNmarginHeight, 0,
@@ -4334,12 +4360,25 @@ static int strCaseCmp(const char *str1, const char *str2)
 }
 
 /*
-** Comparison function for sorting windows by title for the window menu
+** Comparison function for sorting windows by title for the window menu.
+** Windows are sorted by Untitled and then alphabetically by filename and
+** then alphabetically by path.
 */
 static int compareWindowNames(const void *windowA, const void *windowB)
 {
-      return strcmp((*((WindowInfo**)windowA))->filename,
-      	    (*((WindowInfo**)windowB))->filename);
+    int rc;
+    const WindowInfo *a = *((WindowInfo**)windowA);
+    const WindowInfo *b = *((WindowInfo**)windowB);
+    /* Untitled first */
+    rc = a->filenameSet ==  b->filenameSet ? 0 : 
+	 a->filenameSet && !b->filenameSet ? 1 : -1;
+    if (rc != 0)
+	 return rc;
+    rc = strcmp(a->filename, b->filename);
+    if (rc != 0)
+	 return rc;
+    rc = strcmp(a->path, b->path);
+    return rc;
 }
 
 /*
