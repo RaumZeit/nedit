@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.33 2002/09/02 08:55:57 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.34 2002/09/02 23:18:56 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -633,16 +633,16 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
 void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset)
 {
     int sliderSize, sliderMax;
+    int vPadding = (int)(TEXT_OF_TEXTD(textD).cursorVPadding);
     
     /* Limit the requested scroll position to allowable values */
     if (topLineNum < 1)
         topLineNum = 1;
-    else if (topLineNum > textD->topLineNum &&
-             topLineNum > textD->nBufferLines + 2 - textD->nVisibleLines +
-                          TEXT_OF_TEXTD(textD).cursorVPadding)
+    else if ((topLineNum > textD->topLineNum) &&
+             (topLineNum > (textD->nBufferLines + 2 - textD->nVisibleLines +
+                          vPadding)))
         topLineNum = max(textD->topLineNum,
-                textD->nBufferLines + 2 - textD->nVisibleLines +
-                TEXT_OF_TEXTD(textD).cursorVPadding);
+                textD->nBufferLines + 2 - textD->nVisibleLines + vPadding);
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
             XmNsliderSize, &sliderSize, NULL);
     if (horizOffset < 0)
@@ -1051,7 +1051,7 @@ void TextDMakeInsertPosVisible(textDisp *textD)
     int hOffset, topLine, x, y;
     int cursorPos = textD->cursorPos;
     int linesFromTop = 0, do_padding = 1; 
-    Cardinal cursorVPadding = TEXT_OF_TEXTD(textD).cursorVPadding;
+    int cursorVPadding = (int)TEXT_OF_TEXTD(textD).cursorVPadding;
     
     hOffset = textD->horizOffset;
     topLine = textD->topLineNum;
