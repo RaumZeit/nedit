@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.24 2003/04/08 08:54:40 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.25 2003/04/17 09:03:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -719,6 +719,11 @@ void BeginSmartIndent(WindowInfo *window, int warn)
         }
         return;
     }
+    
+    /* Make sure that the initial macro file is loaded before we execute 
+       any of the smart-indent macros. Smart-indent macros may reference
+       routines defined in that file. */
+    ReadMacroInitFile(window);   
     
     /* Compile and run the common and language-specific initialization macros
        (Note that when these return, the immediate commands in the file have not

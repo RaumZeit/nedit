@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.63 2003/04/07 22:51:40 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.64 2003/04/17 09:03:37 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -762,12 +762,14 @@ void Replay(WindowInfo *window)
 void ReadMacroInitFile(WindowInfo *window)
 {
     const char* autoloadName = GetRCFileName(AUTOLOAD_NM);
+    static int initFileLoaded = False;
 
     /*  GetRCFileName() might return NULL if an error occurs during
         creation of the preference file directory. */
-    if (autoloadName != NULL)
+    if (autoloadName != NULL && !initFileLoaded)
     {
         ReadMacroFile(window, autoloadName, False);
+        initFileLoaded = True;
     }
 }
 
