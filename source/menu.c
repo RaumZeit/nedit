@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.30 2001/04/18 17:02:25 slobasso Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.31 2001/05/05 18:01:53 arnef Exp $";
 /*******************************************************************************
 *									       *
 * menu.c -- Nirvana Editor menus					       *
@@ -1808,7 +1808,7 @@ static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
     for (win=WindowList; win!=NULL; win=win->next) {
-	window->prevOpenMenuValid = False;
+	win->prevOpenMenuValid = False;
     	XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
     }
 }
