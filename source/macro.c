@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.93 2004/11/09 19:37:02 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.94 2005/01/06 06:23:45 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1830,22 +1830,32 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
         w = WindowList;
     } else if (!strcmp(string, "next")) {
         w = window->next;
-    } else if (strlen(string) > MAXPATHLEN) {
+    } else if (strlen(string) >= MAXPATHLEN) {
         *errMsg = "Pathname too long in focus_window()";
         return False;
     } else {
-        strncpy(normalizedString, string, MAXPATHLEN);
-        normalizedString[MAXPATHLEN-1] = '\0';
-        if (1 == NormalizePathname(normalizedString)) {
-            /*  Something is broken with the input pathname. */
-            *errMsg = "Error normalizing path in focus_window()";
-            return False;
-        }
+        /* just use the plain name as supplied */
 	for (w=WindowList; w != NULL; w = w->next) {
 	    sprintf(fullname, "%s%s", w->path, w->filename);
-	    if (!strcmp(normalizedString, fullname))
+	    if (!strcmp(string, fullname)) {
 		break;
+	    }
 	}
+        /* didn't work? try normalizing the string passed in */
+        if (w == NULL) {
+            strncpy(normalizedString, string, MAXPATHLEN);
+            normalizedString[MAXPATHLEN-1] = '\0';
+            if (1 == NormalizePathname(normalizedString)) {
+                /*  Something is broken with the input pathname. */
+                *errMsg = "Pathname too long in focus_window()";
+                return False;
+            }
+            for (w=WindowList; w != NULL; w = w->next) {
+                sprintf(fullname, "%s%s", w->path, w->filename);
+                if (!strcmp(normalizedString, fullname))
+                    break;
+            }
+        }
     }
     
     /* If no matching window was found, return empty string and do nothing */
