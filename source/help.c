@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.25 2001/03/13 16:48:22 slobasso Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.26 2001/03/27 23:00:04 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * help.c -- Nirvana Editor help display					       *
@@ -3300,7 +3300,7 @@ string_compare(string1, string2 [, consider-case]) -- Compare two \
 strings and return 0 if they are equal, -1 if string1 is less than \
 string2 or 1 if string1 is greater than string2. The default is to \
 do a case sensitive comparison. Optionally a \"nocase\" argument \
-can be supplied to force the comparison to ingore case differences. \
+can be supplied to force the comparison to ingore case differences.\n\
 \n\
 string_to_clipboard(string) -- Copy the contents of a macro string \
 to the clipboard.\n\
