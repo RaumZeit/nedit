@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.89 2003/12/25 06:55:08 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.90 2003/12/26 10:14:25 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3234,6 +3234,17 @@ WindowInfo *CreateBuffer(WindowInfo *shellWindow, const char *name,
     window->textArea = text;
     window->lastFocus = text;
     
+    /* Set the initial colors from the globals. */
+    SetColors(window,
+              GetPrefColorName(TEXT_FG_COLOR  ),
+              GetPrefColorName(TEXT_BG_COLOR  ),
+              GetPrefColorName(SELECT_FG_COLOR),
+              GetPrefColorName(SELECT_BG_COLOR),
+              GetPrefColorName(HILITE_FG_COLOR),
+              GetPrefColorName(HILITE_BG_COLOR),
+              GetPrefColorName(LINENO_FG_COLOR),
+              GetPrefColorName(CURSOR_FG_COLOR));
+
     /* map the new buffer pane but keep it hidden */
     XLowerWindow(TheDisplay, XtWindow(pane));
     XtMapWidget(pane);
