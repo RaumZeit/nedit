@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.94 2003/05/25 15:55:36 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.95 2003/05/27 15:55:45 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5121,13 +5121,18 @@ static void updatePatternsTo5dot4(void)
     const char *xrLm5dot4 =
         "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
 #endif
-        
+
     /* Upgrade modified language modes, only if the user hasn't
        altered the default 5.3 definitions. */
     if (regexFind(TempStringPrefs.language, pyLm5dot3))
 	regexReplace(&TempStringPrefs.language, pyLm5dot3, pyLm5dot4);
     if (regexFind(TempStringPrefs.language, xrLm5dot3))
 	regexReplace(&TempStringPrefs.language, xrLm5dot3, xrLm5dot4);
+    
+    /* Add new styles */
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Identifier2:"))
+	spliceString(&TempStringPrefs.styles, "Identifier2:SteelBlue:Plain",
+		"^[ \t]*Subroutine:");
 }
 
 /* 
