@@ -155,6 +155,7 @@ static struct prefData {
     int saveOldVersion;		/* whether to preserve a copy of last version */
     int searchDlogs;		/* whether to show explanatory search dialogs */
     int keepSearchDlogs;	/* whether to retain find and replace dialogs */
+    int searchWraps;	/* whether to attempt search again if reach bof or eof */
     int statsLine;		/* whether to show the statistics line */
     int iSearchLine;	    	/* whether to show the incremental search line*/
     int lineNums;   	    	/* whether to show line numbers */
@@ -600,6 +601,8 @@ static PrefDescripRec PrefDescrip[] = {
     	&PrefData.searchDlogs, NULL, True},
     {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False",
     	&PrefData.keepSearchDlogs, NULL, True},
+    {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True",
+    	&PrefData.searchWraps, NULL, True},
 #if XmVersion < 1002 /* Flashing is annoying in 1.1 versions */
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "False",
     	&PrefData.repositionDialogs, NULL, True},
@@ -1061,6 +1064,16 @@ void SetPrefKeepSearchDlogs(int state)
 int GetPrefKeepSearchDlogs(void)
 {
     return PrefData.keepSearchDlogs;
+}
+
+void SetPrefSearchWraps(int state)
+{
+    setIntPref(&PrefData.searchWraps, state);
+}
+
+int GetPrefSearchWraps(void)
+{
+    return PrefData.searchWraps;
 }
 
 void SetPrefStatsLine(int state)

@@ -140,6 +140,7 @@ static void bgMenuDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void searchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void keepSearchDlogsDefCB(Widget w, WindowInfo *window,
 	caddr_t callData);
+static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void reposDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void modWarnDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -319,6 +320,8 @@ static void updateWindowMenu(WindowInfo *window);
 static void updatePrevOpenMenu(WindowInfo *window);
 static void updateTagsFileMenu(WindowInfo *window);
 static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
+static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
+static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -722,6 +725,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->searchDlogsDefItem = createMenuToggle(subSubPane, "verbose",
     	    "Verbose", 'V', searchDlogsDefCB, window,
     	    GetPrefSearchDlogs(), SHORT);
+    window->searchWrapsDefItem = createMenuToggle(subSubPane, "wrapAround",
+    	    "Wrap Around", 'W', searchWrapsDefCB, window,
+    	    GetPrefSearchWraps(), SHORT);
     window->keepSearchDlogsDefItem = createMenuToggle(subSubPane,
     	    "keepDialogsUp", "Keep Dialogs Up", 'K',
     	    keepSearchDlogsDefCB, window, GetPrefKeepSearchDlogs(), SHORT);
@@ -1530,6 +1536,17 @@ static void keepSearchDlogsDefCB(Widget w, WindowInfo *window, caddr_t callData)
     	XmToggleButtonSetState(win->keepSearchDlogsDefItem, state, False);
 }
 
+static void searchWrapsDefCB(Widget w, WindowInfo *window, caddr_t callData)
+{
+    WindowInfo *win;
+    int state = XmToggleButtonGetState(w);
+
+    /* Set the preference and make the other windows' menus agree */
+    SetPrefSearchWraps(state);
+    for (win=WindowList; win!=NULL; win=win->next)
+    	XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
+}
+
 static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     WindowInfo *win;
@@ -2275,7 +2292,8 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args,
 
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
-    DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs));
+    DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs),
+        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs));
 }
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2285,18 +2303,20 @@ static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     }
     SearchAndSelect(WidgetToWindow(w), searchDirection(1, args, nArgs), args[0],
-    	    searchType(1, args, nArgs));    
+    	    searchType(1, args, nArgs), searchWrap(1, args, nArgs));
 }
 
 static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
-    SearchAndSelectSame(WidgetToWindow(w), searchDirection(0, args, nArgs));
+    SearchAndSelectSame(WidgetToWindow(w), searchDirection(0, args, nArgs),
+	 	searchWrap(0, args, nArgs));
 }
 
 static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     SearchForSelected(WidgetToWindow(w), searchDirection(0, args, nArgs),
-    	    event->xbutton.time);
+    	    searchType(0, args, nArgs), searchWrap(0, args, nArgs),
+            event->xbutton.time);
 }
 
 static void startIncrFindAP(Widget w, XEvent *event, String *args,
@@ -2317,7 +2337,7 @@ static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	    continued = TRUE;
     SearchAndSelectIncremental(WidgetToWindow(w),
 	    searchDirection(1, args, nArgs), args[0],
-	    searchType(1, args, nArgs), continued); 
+	    searchType(1, args, nArgs), searchWrap(1, args, nArgs), continued); 
 }
 
 static void replaceDialogAP(Widget w, XEvent *event, String *args,
@@ -2327,7 +2347,8 @@ static void replaceDialogAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    DoReplaceDlog(window, searchDirection(0, args, nArgs));
+    DoReplaceDlog(window, searchDirection(0, args, nArgs),
+        searchType(0, args, nArgs), searchKeepDialogs(0, args, nArgs));
 }
 
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -2342,7 +2363,7 @@ static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	return;
     }
     SearchAndReplace(window, searchDirection(2, args, nArgs),
-    	    args[0], args[1], searchType(2, args, nArgs));
+    	    args[0], args[1], searchType(2, args, nArgs), searchWrap(2, args, nArgs));
 }
 
 static void replaceAllAP(Widget w, XEvent *event, String *args,
@@ -2383,7 +2404,7 @@ static void replaceSameAP(Widget w, XEvent *event, String *args,
     
     if (CheckReadOnly(window))
     	return;
-    ReplaceSame(window, searchDirection(0, args, nArgs));
+    ReplaceSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -3335,6 +3356,44 @@ static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs)
     	    return SEARCH_BACKWARD;
     }
     return SEARCH_FORWARD;
+}
+
+/*
+** Scans action argument list for arguments "keep" or "nokeep" to
+** determine whether to keep dialogs up for search and replace.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs)
+{
+    int i;
+    
+    for (i=ignoreArgs; i<*nArgs; i++) {
+    	if (!strCaseCmp(args[i], "keep"))
+    	    return TRUE;
+    	if (!strCaseCmp(args[i], "nokeep"))
+    	    return FALSE;
+    }
+    return GetPrefKeepSearchDlogs();
+}
+
+/*
+** Scans action argument list for arguments "wrap" or "nowrap" to
+** determine search direction for search and replace actions.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs)
+{
+    int i;
+    
+    for (i=ignoreArgs; i<*nArgs; i++) {
+    	if (!strCaseCmp(args[i], "wrap"))
+    	    return(TRUE);
+    	if (!strCaseCmp(args[i], "nowrap"))
+    	    return(FALSE);
+    }
+    return GetPrefSearchWraps();
 }
 
 /*

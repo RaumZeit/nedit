@@ -1282,6 +1282,9 @@ this menu are:\n\
 	        form, asks before wrapping a search back\n\
 		around the beginning (or end) of the file.\n\
 \n\
+	    Wrap Around - Search and Replace operations wrap\n\
+	        around the beginning (or end) of the file.\n\
+\n\
 	    Keep Dialogs Up - Don't pop down Replace and\n\
 	        Find boxes after searching.\n\
 \n\
@@ -3255,23 +3258,28 @@ routines which take arguments.  Optional arguments are enclosed in [].\n\
 \n\
   unload_tags_file(filename)\n\
 \n\
-  find_dialog([search_direction])\n\
+  find_dialog([search_direction] [, search-type]\n\
+	  [, keep-dialog])\n\
 \n\
-  find(search_string [, search-direction], [search-type])\n\
+  find(search_string [, search-direction] [, search-type]\n\
+	  [, search-wrap])\n\
 \n\
-  find_again([search-direction])\n\
+  find_again([search-direction] [, search-wrap])\n\
 \n\
-  find_selection([search-direction])\n\
+  find_selection([search-direction] [, search-wrap]\n\
+	  [, non-regex-search-type])\n\
 \n\
-  replace_dialog([search-direction])\n\
+  replace_dialog([search-direction] [, search-type]\n\
+	  [, keep-dialog])\n\
 \n\
   replace(search-string, replace-string,\n\
-	  [, search-direction] [, search-type])\n\
+	  [, search-direction] [, search-type]\n\
+	  [, search-wrap])\n\
 \n\
   replace_in_selection(search-string, replace-string\n\
 	  [, search-type])\n\
 \n\
-  replace_again([search-direction])\n\
+  replace_again([search-direction] [, search-wrap])\n\
 \n\
   goto_line_number([line-number])\n\
 \n\
@@ -3299,6 +3307,12 @@ Some notes on argument types above:\n\
   search-direction  Either \"forward\" or \"backward\"\n\
 \n\
   search-type	    Either \"literal\", \"case\", or \"regex\"\n\
+\n\
+  non-regex-search-type	    Either \"literal\" or \"case\"\n\
+\n\
+  search-wrap	    Either \"wrap\" or \"nowrap\"\n\
+\n\
+  keep-dialog	    Either \"keep\" or \"nokeep\"\n\
 \n\
   mark-letter	    The mark command limits users to\n\
  		    single letters.  Inside of macros,\n\

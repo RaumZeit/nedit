@@ -20,6 +20,8 @@ void SetPrefSearchDlogs(int state);
 int GetPrefSearchDlogs(void);
 void SetPrefKeepSearchDlogs(int state);
 int GetPrefKeepSearchDlogs(void);
+void SetPrefSearchWraps(int state);
+int GetPrefSearchWraps(void);
 void SetPrefStatsLine(int state);
 int GetPrefStatsLine(void);
 void SetPrefISearchLine(int state);

@@ -180,6 +180,7 @@ typedef struct _WindowInfo {
     Widget	highlightDefItem;
     Widget	searchDlogsDefItem;
     Widget	keepSearchDlogsDefItem;
+    Widget	searchWrapsDefItem;
     Widget	sortOpenPrevDefItem;
     Widget	allTagsDefItem;
     Widget	smartTagsDefItem;
