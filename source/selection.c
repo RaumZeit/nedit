@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.21 2002/07/11 21:18:10 slobasso Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.22 2002/09/11 18:59:49 arnef Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -35,6 +35,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.21 2002/07/11 21:18:10 slobass
 #include "file.h"
 #include "window.h"
 #include "menu.h"
+#include "server.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 
@@ -179,7 +180,7 @@ char *GetAnySelection(WindowInfo *window)
     while (selText == waitingMarker) {
 	XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), 
 		&nextEvent);
-	XtDispatchEvent(&nextEvent);
+	ServerDispatchEvent(&nextEvent);
     }
     return selText;
 }

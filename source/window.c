@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.68 2002/09/03 01:10:08 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.69 2002/09/11 18:59:49 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -43,6 +43,7 @@ static const char CVSID[] = "$Id: window.c,v 1.68 2002/09/03 01:10:08 n8gray Exp
 #include "undo.h"
 #include "preferences.h"
 #include "selection.h"
+#include "server.h"
 #include "shell.h"
 #include "macro.h"
 #include "highlight.h"
@@ -223,6 +224,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->windowMenuValid = FALSE;
     window->prevOpenMenuValid = FALSE;
     window->flashTimeoutID = 0;
+    window->fileClosedAtom = None;
     window->wasSelected = FALSE;
     strcpy(window->fontName, GetPrefFontName());
     strcpy(window->italicFontName, GetPrefItalicFontName());
@@ -613,6 +615,9 @@ void CloseWindow(WindowInfo *window)
        there can be more than one dialog. */
     RemoveFromMultiReplaceDialog(window);
     
+    /* Destroy the file closed property for this file */
+    DeleteFileClosedProperty(window);
+
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
     if (keepWindow || (WindowList == window && window->next == NULL)) {

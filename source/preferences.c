@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.65 2002/08/28 14:14:18 tringali Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.66 2002/09/11 18:59:49 arnef Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -43,6 +43,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.65 2002/08/28 14:14:18 tring
 #include "regularExp.h"
 #include "smartIndent.h"
 #include "windowTitle.h"
+#include "server.h"
 #include "tags.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"
@@ -1952,7 +1953,11 @@ void RowColumnPrefDialog(Widget parent)
     DoneWithSizeDialog = False;
     ManageDialogCenteredOnPointer(selBox);
     while (!DoneWithSizeDialog)
-        XtAppProcessEvent (XtWidgetToApplicationContext(parent), XtIMAll);
+    {
+       	XEvent event;
+       	XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
+       	ServerDispatchEvent(&event);
+    }
     
     XtDestroyWidget(selBox);
 }
@@ -2094,7 +2099,11 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     DoneWithTabsDialog = False;
     ManageDialogCenteredOnPointer(selBox);
     while (!DoneWithTabsDialog)
-        XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
+    {
+       	XEvent event;
+       	XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
+       	ServerDispatchEvent(&event);
+    }
     
     XtDestroyWidget(selBox);
 }
@@ -2258,7 +2267,11 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
     DoneWithWrapDialog = False;
     ManageDialogCenteredOnPointer(selBox);
     while (!DoneWithWrapDialog)
-        XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
+    {
+       	XEvent event;
+       	XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
+       	ServerDispatchEvent(&event);
+    }
     
     XtDestroyWidget(selBox);
 }

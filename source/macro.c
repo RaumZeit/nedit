@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.49 2002/09/06 19:13:07 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.50 2002/09/11 18:59:48 arnef Exp $";
 /*******************************************************************************
 *									       *
 * macro.c -- Macro file processing, learn/replay, and built-in macro	       *
@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.49 2002/09/06 19:13:07 n8gray Exp 
 #include "interpret.h"
 #include "parse.h"
 #include "search.h"
+#include "server.h"
 #include "shell.h"
 #include "smartIndent.h"
 #include "userCmds.h"
@@ -796,7 +797,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 		    while (runWindow->macroCmdData != NULL) {
 			XtAppNextEvent(XtWidgetToApplicationContext(
 				runWindow->shell),  &nextEvent);
-			XtDispatchEvent(&nextEvent);
+                        ServerDispatchEvent(&nextEvent);
 		    }
 		} else
     		    RunMacroAsSubrCall(prog);

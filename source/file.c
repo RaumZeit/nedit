@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.52 2002/09/03 01:10:07 n8gray Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.53 2002/09/11 18:59:48 arnef Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -38,6 +38,7 @@ static const char CVSID[] = "$Id: file.c,v 1.52 2002/09/03 01:10:07 n8gray Exp $
 #include "undo.h"
 #include "menu.h"
 #include "tags.h"
+#include "server.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
@@ -701,6 +702,9 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
 	    	return FALSE;
     }
     
+    /* Destroy the file closed property for the original file */
+    DeleteFileClosedProperty(window);
+
     /* Change the name of the file and save it under the new name */
     RemoveBackupFile(window);
     strcpy(window->filename, filename);

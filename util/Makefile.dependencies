@@ -1,12 +1,12 @@
-# $Header: /home/bertw/cvsroot/nedit/nedit/util/Makefile.dependencies,v 1.5 2001/11/18 19:02:58 arnef Exp $
-DialogF.o: DialogF.c misc.h DialogF.h
-clearcase.o: clearcase.c utils.h clearcase.h
-fileUtils.o: fileUtils.c fileUtils.h ../util/utils.h
-fontsel.o: fontsel.c DialogF.h misc.h fontsel.h
-getfiles.o: getfiles.c fileUtils.h misc.h getfiles.h
-managedList.o: managedList.c misc.h managedList.h
-misc.o: misc.c DialogF.h misc.h
-prefFile.o: prefFile.c prefFile.h ../util/utils.h
-printUtils.o: printUtils.c DialogF.h misc.h prefFile.h printUtils.h
+# $Header: /home/bertw/cvsroot/nedit/nedit/util/Makefile.dependencies,v 1.6 2002/09/11 18:59:49 arnef Exp $
+DialogF.o: DialogF.c DialogF.h misc.h
+clearcase.o: clearcase.c clearcase.h
+fileUtils.o: fileUtils.c fileUtils.h utils.h
+fontsel.o: fontsel.c fontsel.h misc.h DialogF.h
+getfiles.o: getfiles.c getfiles.h fileUtils.h misc.h
+managedList.o: managedList.c managedList.h misc.h
+misc.o: misc.c misc.h DialogF.h
+prefFile.o: prefFile.c prefFile.h utils.h
+printUtils.o: printUtils.c printUtils.h DialogF.h misc.h prefFile.h
 utils.o: utils.c utils.h
 vmsUtils.o: vmsUtils.c

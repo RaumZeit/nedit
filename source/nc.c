@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.26 2002/08/02 08:36:10 n8gray Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.27 2002/09/11 18:59:48 arnef Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -30,6 +30,7 @@ static const char CVSID[] = "$Id: nc.c,v 1.26 2002/08/02 08:36:10 n8gray Exp $";
 #include "../config.h"
 #endif
 
+#include "server_common.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "../util/prefFile.h"
@@ -70,13 +71,39 @@ static const char CVSID[] = "$Id: nc.c,v 1.26 2002/08/02 08:36:10 n8gray Exp $";
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
 
-static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id);
+#define PROPERTY_CHANGE_TIMEOUT (10 * 1000) /* milliseconds */
+#define SERVER_START_TIMEOUT    (30 * 1000) /* milliseconds */
+#define REQUEST_TIMEOUT         (10 * 1000) /* milliseconds */
+#define FILE_OPEN_TIMEOUT       (30 * 1000) /* milliseconds */
+
+typedef struct
+{
+   char* org;
+   char* string;
+} CommandLine;
+
+static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id);
 static int startServer(const char *message, const char *commandLine);
+static CommandLine processCommandLine(int argc, char** argv);
 static char *parseCommandLine(int argc, char **argv);
 static void nextArg(int argc, char **argv, int *argIndex);
 static void printNcVersion(void);
+static Boolean findExistingServer(XtAppContext context,
+                                  Window rootWindow,
+                                  Atom serverExistsAtom);
+static void startNewServer(XtAppContext context,
+                           Window rootWindow,
+                           char* commandLine,
+                           Atom serverExistsAtom);
+static void waitUntilRequestProcessed(XtAppContext context,
+                                      Window rootWindow,
+                                      char* commandString,
+                                      Atom serverRequestAtom);
+static void waitUntilFilesOpenedOrClosed(XtAppContext context,
+                                         Window rootWindow,
+                                         Atom serverExistsAtom);
 
-static Display *TheDisplay;
+Display *TheDisplay;
 
 static const char cmdLineHelp[] =
 #ifdef VMS
@@ -84,7 +111,7 @@ static const char cmdLineHelp[] =
 #else
 "Usage:  nc [-read] [-create] [-line n | +n] [-do command] [-ask] [-noask]\n\
            [-svrname name] [-svrcmd command] [-lm languagemode]\n\
-           [-geometry geometry] [-iconic] [-V|-version] [--] [file...]\n";
+           [-geometry geometry] [-iconic] [-wait] [-V|-version] [--] [file...]\n";
 #endif /*VMS*/
 
 /* Structure to hold X Resource values */
@@ -92,6 +119,7 @@ static struct {
     int autoStart;
     char serverCmd[2*MAXPATHLEN]; /* holds executable name + flags */
     char serverName[MAXPATHLEN];
+    int waitForClose;
 } Preferences;
 
 /* Application resources */
@@ -102,6 +130,8 @@ static PrefDescripRec PrefDescrip[] = {
       Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},
     {"serverName", "serverName", PREF_STRING, "", Preferences.serverName,
       (void *)sizeof(Preferences.serverName), False},
+    {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False",
+      &Preferences.waitForClose, NULL, False},
 };
 
 /* Resource related command line options */
@@ -110,25 +140,74 @@ static XrmOptionDescRec OpTable[] = {
     {"-noask", ".autoStart", XrmoptionNoArg, (caddr_t)"True"},
     {"-svrname", ".serverName", XrmoptionSepArg, (caddr_t)NULL},
     {"-svrcmd", ".serverCommand", XrmoptionSepArg, (caddr_t)NULL},
+    {"-wait", ".waitForClose", XrmoptionNoArg, (caddr_t)"True"},
 };
 
+/* Struct to hold info about files being opened and edited. */
+typedef struct _FileListEntry {
+    Atom                  waitForFileOpenAtom;
+    Atom                  waitForFileClosedAtom;
+    struct _FileListEntry *next;
+} FileListEntry;
+
+typedef struct {
+    int            waitForOpenCount;
+    int            waitForCloseCount;
+    FileListEntry* fileList;
+} FileListHead;
+static FileListHead fileListHead;
+
+static void setPropertyValue(Atom atom) {
+    XChangeProperty(TheDisplay,
+	            RootWindow(TheDisplay, DefaultScreen(TheDisplay)),
+	            atom, XA_STRING,
+	            8, PropModeReplace,
+	            (unsigned char *)"True", 4);
+}
+
+/* Create the properties for path and initialize its status structure. */
+static void addToFileList(const char *path, int waitForClose)
+{
+    Atom atom = CreateServerFileOpenAtom(Preferences.serverName, path);
+    FileListEntry *item;
+
+    /* see if the atom already exists in the list */
+    for (item = fileListHead.fileList; item; item = item->next) {
+        if (item->waitForFileOpenAtom == atom) {
+           break;
+        }
+    }
+
+    /* Add the atom to the head of the file list if it wasn't found. */
+    if (item == 0) {
+        item = malloc(sizeof(item[0]));
+        fileListHead.waitForOpenCount++;
+        item->waitForFileOpenAtom = atom;
+        setPropertyValue(item->waitForFileOpenAtom);
+
+        if (waitForClose == True) {
+            fileListHead.waitForCloseCount++;
+            item->waitForFileClosedAtom =
+                      CreateServerFileClosedAtom(Preferences.serverName,
+                                                 path,
+                                                 False);
+            setPropertyValue(item->waitForFileClosedAtom);
+        } else {
+            item->waitForFileClosedAtom = None;
+        }
+        item->next            = fileListHead.fileList;
+        fileListHead.fileList = item;
+    }
+}
 
 int main(int argc, char **argv)
 {
     XtAppContext context;
     Window rootWindow;
-    int i, length = 0, getFmt;
-    char *commandString, *commandLine, *outPtr, *c;
-    unsigned char *propValue;
-    Atom dummyAtom;
-    unsigned long dummyULong, nItems;
-    XEvent event;
-    XPropertyEvent *e = (XPropertyEvent *)&event;
+    CommandLine commandLine;
     Atom serverExistsAtom, serverRequestAtom;
-    const char *userName, *hostName;
-    char propName[24+MAXNODENAMELEN+MAXUSERNAMELEN+MAXPATHLEN];
-    char serverName[MAXPATHLEN+2];
     XrmDatabase prefDB;
+    Boolean serverExists;
 
     /* Initialize toolkit and get an application context */
     XtToolkitInitialize();
@@ -148,49 +227,6 @@ int main(int argc, char **argv)
     prefDB = CreatePreferencesDatabase(".nc", APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
     
-    /* Reconstruct the command line in string commandLine in case we have to
-       start a server (nc command line args parallel nedit's).  Include
-       -svrname if nc wants a named server, so nedit will match. Special
-       characters are protected from the shell by escaping EVERYTHING with \ */
-    for (i=1; i<argc; i++) {
-    	length += 1 + strlen(argv[i])*4 + 2;
-    }
-    commandLine = XtMalloc(length+1 + 9 + MAXPATHLEN);
-    outPtr = commandLine;
-#if defined(VMS) || defined(__EMX__)
-    /* Non-Unix shells don't want/need esc */
-    for (i=1; i<argc; i++) {
-    	for (c=argv[i]; *c!='\0'; c++) {
-            *outPtr++ = *c;
-    	}
-    	*outPtr++ = ' ';
-    }
-    *outPtr = '\0';
-#else
-    for (i=1; i<argc; i++) {
-    	*outPtr++ = '\'';
-    	for (c=argv[i]; *c!='\0'; c++) {
-            if (*c == '\'') {
-                *outPtr++ = '\'';
-                *outPtr++ = '\\';
-            }
-            *outPtr++ = *c;
-            if (*c == '\'') {
-                *outPtr++ = '\'';
-            }
-    	}
-        *outPtr++ = '\'';
-    	*outPtr++ = ' ';
-    }
-    *outPtr = '\0';
-#endif /* VMS */
-
-    /* Convert command line arguments into a command string for the server */
-    commandString = parseCommandLine(argc, argv);
-    if (commandString == NULL) {
-        fprintf(stderr, "nc: Invalid commandline argument\n");
-	exit(EXIT_FAILURE);
-    }
     /* Open the display and find the root window */
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
     	    0, &argc, argv);
@@ -217,68 +253,48 @@ int main(int argc, char **argv)
     }
 #endif /* VMS */
     
-    /* Add back the server name resource from the command line or resource
-       database to the command line for starting the server.  If -svrcmd
-       appeared on the original command line, it was removed by
-       CreatePreferencesDatabase before the command line was recorded
-       in commandLine */
-    if (Preferences.serverName[0] != '\0') {
-    	sprintf(outPtr, "-svrname %s", Preferences.serverName);
-    	outPtr += 9+strlen(Preferences.serverName);
-    }
-    *outPtr = '\0';
+    commandLine = processCommandLine(argc, argv);
         
-    /* Create server property atoms.  Atom names are generated by
-       concatenating NEDIT_SERVER_REQUEST_, and NEDIT_SERVER_EXITS_
-       with hostname,  user name and optional server name */
-    userName = GetUserName();
-    hostName = GetNameOfHost();
-    if (Preferences.serverName[0] != '\0') {
-    	serverName[0] = '_';
-    	strcpy(&serverName[1], Preferences.serverName);
-    } else
-    	serverName[0] = '\0';
-    sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s%s", hostName, userName,
-    	    serverName);
-    serverExistsAtom = XInternAtom(TheDisplay, propName, False);
-    sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s%s", hostName, userName,
-    	    serverName);
-    serverRequestAtom = XInternAtom(TheDisplay, propName, False);
-    
-    /* See if there might be a server (not a guaranty), by translating the
-       root window property NEDIT_SERVER_EXISTS_<user>_<host> */
-    if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0,
-    	    INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems,
-    	    &dummyULong, &propValue) != Success || nItems == 0) {
-	int success;
+    /* Monitor the properties on the root window. 
+    ** Also adding a bunch of other event types to make sure
+    ** we get other events so we can detect the timeout. */
+    XSelectInput(TheDisplay, rootWindow,
+                 PropertyChangeMask | 
+                 KeyPressMask |
+                 KeyReleaseMask |
+                 EnterWindowMask |
+                 LeaveWindowMask |
+                 PointerMotionMask |
+                 ButtonMotionMask |
+                 ExposureMask |
+                 VisibilityChangeMask |
+                 FocusChangeMask);
+	
+    /* Create the server property atoms on the current DISPLAY. */
+    CreateServerPropertyAtoms(Preferences.serverName,
+                              &serverExistsAtom,
+                              &serverRequestAtom);
 
-	success=startServer("No servers available, start one (yes)? ", commandLine);
-	return success;
-    }
-    XFree(propValue);
+    serverExists = findExistingServer(context,
+                                      rootWindow,
+                                      serverExistsAtom);
 
-    /* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
-       window to activate the server */
-    XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8,
-    	    PropModeReplace, (unsigned char *)commandString,
-    	    strlen(commandString));
-    
-    /* Set up a timeout proc in case the server is dead.  The standard
-       selection timeout is probably a good guess at how long to wait
-       for this style of inter-client communication as well */
-    XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context),
-    	    deadServerTimerProc, commandLine);
-    	    
-    /* Wait for the property to be deleted to know the request was processed */
-    XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
-    while (TRUE) {
-        XtAppNextEvent(context, &event);
-        if (e->window == rootWindow && e->atom == serverRequestAtom &&
-        	    e->state == PropertyDelete)
-            break;
-    	XtDispatchEvent(&event);
+    if (serverExists == False) {
+        startNewServer(context, rootWindow, commandLine.org, serverExistsAtom);
     }
-    XtFree(commandString);
+
+    waitUntilRequestProcessed(context,
+                              rootWindow,
+                              commandLine.string,
+                              serverRequestAtom);
+
+    waitUntilFilesOpenedOrClosed(context,
+                                 rootWindow,
+                                 serverExistsAtom);
+
+    XtCloseDisplay(TheDisplay);
+    XtFree(commandLine.org);
+    XtFree(commandLine.string);
     return 0;
 }
 
@@ -286,16 +302,142 @@ int main(int argc, char **argv)
 /*
 ** Xt timer procedure for timeouts on NEdit server requests
 */
-static void deadServerTimerProc(XtPointer clientData, XtIntervalId *id)
-{   
-    int success;
-    
-    success=startServer("No servers responding, start one (yes)? ",
-            (char *)clientData);
-    if (success==0) {
-       exit(EXIT_SUCCESS);
+static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id)
+{
+    /* Flag that the timeout has occurred. */
+    *timeOutReturn = True;
+}
+
+
+
+static Boolean findExistingServer(XtAppContext context,
+                                  Window rootWindow,
+                                  Atom serverExistsAtom)
+{
+    Boolean serverExists = True;
+    unsigned char *propValue;
+    int getFmt;
+    Atom dummyAtom;
+    unsigned long dummyULong, nItems;
+
+    /* See if there might be a server (not a guaranty), by translating the
+       root window property NEDIT_SERVER_EXISTS_<user>_<host> */
+    if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0,
+    	    INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems,
+    	    &dummyULong, &propValue) != Success || nItems == 0) {
+        serverExists = False;
     } else {
-       exit(EXIT_FAILURE);
+        Boolean timeOut = False;
+        XtIntervalId timerId;
+
+        XFree(propValue);
+
+        /* Remove the server exists property to make sure the server is
+        ** running. If it is running it will get recreated.
+        */
+        XDeleteProperty(TheDisplay, rootWindow, serverExistsAtom);
+        XSync(TheDisplay, False);
+        timerId = XtAppAddTimeOut(context,
+                                  PROPERTY_CHANGE_TIMEOUT,
+                                  (XtTimerCallbackProc)timeOutProc,
+                                  &timeOut);
+        while (!timeOut) {
+            /* NOTE: XtAppNextEvent() does call the timeout routine but
+            ** doesn't return unless there are more events. See
+            ** XSelectInput above. */
+            XEvent event;
+            const XPropertyEvent *e = (const XPropertyEvent *)&event;
+            XtAppNextEvent(context, &event);
+
+            /* We will get a PropertyNewValue when the server recreates
+            ** the server exists atom. */
+            if (e->type == PropertyNotify &&
+                e->window == rootWindow &&
+                e->atom == serverExistsAtom) {
+                if (e->state == PropertyNewValue) {
+                    break;
+                }
+            }
+            XtDispatchEvent(&event);
+        }
+
+        /* Start a new server if the timeout expired. The server exists
+        ** property was not recreated. */
+        if (timeOut) {
+            serverExists = False;
+        } else {
+            XtRemoveTimeOut(timerId);
+        }
+    }
+    
+    return(serverExists);
+} 
+
+
+
+
+static void startNewServer(XtAppContext context,
+                           Window rootWindow,
+                           char* commandLine,
+                           Atom serverExistsAtom)
+{
+    Boolean timeOut = False;
+    char *outPtr;
+    XtIntervalId timerId;
+
+    /* Reconstruct the -svrname part of the command line if necessary*/
+    outPtr = commandLine;
+    if (Preferences.serverName[0] != '\0') {
+        sprintf(outPtr, "-svrname %s", Preferences.serverName);
+    }
+    else  {
+        strcpy(outPtr, "");
+    }
+    if (startServer("No servers available, start one? (y|n)[y]: ", commandLine) != 0) {
+        XtCloseDisplay(TheDisplay);
+        exit(EXIT_FAILURE);
+    }
+
+    /* Set up a timeout proc in case the server is dead.  The standard
+       selection timeout is probably a good guess at how long to wait
+       for this style of inter-client communication as well */
+    timerId = XtAppAddTimeOut(context,
+                              SERVER_START_TIMEOUT,
+                              (XtTimerCallbackProc)timeOutProc,
+                              &timeOut);
+
+    /* Wait for the server to start */
+    while (!timeOut) {
+        XEvent event;
+        const XPropertyEvent *e = (const XPropertyEvent *)&event;
+        /* NOTE: XtAppNextEvent() does call the timeout routine but
+        ** doesn't return unless there are more events. See
+        ** XSelectInput above. */
+        XtAppNextEvent(context, &event);
+
+        /* We will get a PropertyNewValue when the server updates
+        ** the server exists atom. If the property is deleted the
+        ** the server must have died. */
+        if (e->type == PropertyNotify &&
+            e->window == rootWindow &&
+            e->atom == serverExistsAtom) {
+            if (e->state == PropertyNewValue) {
+                break;
+            } else if (e->state == PropertyDelete) {
+                fprintf(stderr, "%s: The server failed to start.\n", APP_NAME);
+                XtCloseDisplay(TheDisplay);
+                exit(EXIT_FAILURE);
+            }
+        }
+        XtDispatchEvent(&event);
+    }
+    /* Exit if the timeout expired. */
+    if (timeOut) {
+        fprintf(stderr, "%s: The server failed to start.\n", APP_NAME);
+        XtCloseDisplay(TheDisplay);
+        exit(EXIT_FAILURE);
+    } else {
+        XtRemoveTimeOut(timerId);
     }
 }
 
@@ -384,6 +526,73 @@ static int startServer(const char *message, const char *commandLineArgs)
        return (-1);
 #endif /* !VMS */
 }
+
+/* Reconstruct the command line in string commandLine in case we have to
+ * start a server (nc command line args parallel nedit's).  Include
+ * -svrname if nc wants a named server, so nedit will match. Special
+ * characters are protected from the shell by escaping EVERYTHING with \
+ */
+static CommandLine processCommandLine(int argc, char** argv)
+{
+    CommandLine commandLine;
+    char *c, *outPtr;
+    int i;
+    int length = 0;
+   
+    for (i=1; i<argc; i++) {
+    	length += 1 + strlen(argv[i])*4 + 2;
+    }
+    commandLine.org = XtMalloc(length+1 + 9 + MAXPATHLEN);
+    outPtr = commandLine.org;
+#if defined(VMS) || defined(__EMX__)
+    /* Non-Unix shells don't want/need esc */
+    for (i=1; i<argc; i++) {
+    	for (c=argv[i]; *c!='\0'; c++) {
+            *outPtr++ = *c;
+    	}
+    	*outPtr++ = ' ';
+    }
+    *outPtr = '\0';
+#else
+    for (i=1; i<argc; i++) {
+    	*outPtr++ = '\'';
+    	for (c=argv[i]; *c!='\0'; c++) {
+            if (*c == '\'') {
+                *outPtr++ = '\'';
+                *outPtr++ = '\\';
+            }
+            *outPtr++ = *c;
+            if (*c == '\'') {
+                *outPtr++ = '\'';
+            }
+    	}
+        *outPtr++ = '\'';
+    	*outPtr++ = ' ';
+    }
+    *outPtr = '\0';
+#endif /* VMS */
+
+    /* Convert command line arguments into a command string for the server */
+    commandLine.string = parseCommandLine(argc, argv);
+    if (commandLine.string == NULL) {
+        fprintf(stderr, "nc: Invalid commandline argument\n");
+	exit(EXIT_FAILURE);
+    }
+    
+    /* Add back the server name resource from the command line or resource
+       database to the command line for starting the server.  If -svrcmd
+       appeared on the original command line, it was removed by
+       CreatePreferencesDatabase before the command line was recorded
+       in commandLine.org */
+    if (Preferences.serverName[0] != '\0') {
+    	sprintf(outPtr, "-svrname %s", Preferences.serverName);
+    	outPtr += 9+strlen(Preferences.serverName);
+    }
+    *outPtr = '\0';
+    
+    return(commandLine);
+} 
+
 
 /*
 ** Converts command line into a command string suitable for passing to
@@ -486,6 +695,9 @@ static char *parseCommandLine(int argc, char **argv)
 			path, toDoCommand, langMode, geometry, &charsWritten);
 		outPtr += charsWritten;
 		free(nameList[j]);
+
+                /* Create the file open atoms for the paths supplied */
+                addToFileList(path, Preferences.waitForClose);
 	    }
 	    if (nameList != NULL)
 	    	free(nameList);
@@ -520,6 +732,9 @@ static char *parseCommandLine(int argc, char **argv)
     	    outPtr += strlen(geometry);
     	    *outPtr++ = '\n';
 	    toDoCommand = "";
+
+            /* Create the file open atoms for the paths supplied */
+            addToFileList(path, Preferences.waitForClose);
 #endif /* VMS */
     	}
     }
@@ -543,6 +758,120 @@ static char *parseCommandLine(int argc, char **argv)
     return commandString;
 }
 
+
+static void waitUntilRequestProcessed(XtAppContext context,
+                                      Window rootWindow,
+                                      char* commandString,
+                                      Atom serverRequestAtom)
+{
+    XtIntervalId timerId;
+    Boolean timeOut = False;
+
+    /* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
+       window to activate the server */
+    XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8,
+    	    PropModeReplace, (unsigned char *)commandString,
+    	    strlen(commandString));
+    
+    /* Set up a timeout proc in case the server is dead.  The standard
+       selection timeout is probably a good guess at how long to wait
+       for this style of inter-client communication as well */
+    timerId = XtAppAddTimeOut(context,
+                              REQUEST_TIMEOUT,
+                              (XtTimerCallbackProc)timeOutProc,
+                              &timeOut);
+    	    
+    /* Wait for the property to be deleted to know the request was processed */
+    while (!timeOut) {
+        XEvent event;
+        const XPropertyEvent *e = (const XPropertyEvent *)&event;
+
+        XtAppNextEvent(context, &event);
+        if (e->window == rootWindow && 
+            e->atom == serverRequestAtom &&
+            e->state == PropertyDelete)
+            break;
+        XtDispatchEvent(&event);
+    }
+
+    /* Exit if the timeout expired. */
+    if (timeOut) {
+        fprintf(stderr, "%s: The server did not respond to the request.\n", APP_NAME);
+        XtCloseDisplay(TheDisplay);
+        exit(EXIT_FAILURE);
+    } else {
+        XtRemoveTimeOut(timerId);
+    }
+} 
+
+static void waitUntilFilesOpenedOrClosed(XtAppContext context,
+                                         Window rootWindow,
+                                         Atom serverExistsAtom)
+{
+    XtIntervalId timerId;
+    Boolean timeOut = False;
+
+    /* Set up a timeout proc so we don't wait forever if the server is dead.
+       The standard selection timeout is probably a good guess at how
+       long to wait for this style of inter-client communication as
+       well */
+    timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, 
+                (XtTimerCallbackProc)timeOutProc, &timeOut);
+
+    /* Wait for all of the windows to be opened by server,
+     * and closed if -wait was supplied */
+    while (fileListHead.fileList) {
+        XEvent event;
+        const XPropertyEvent *e = (const XPropertyEvent *)&event;
+
+        XtAppNextEvent(context, &event);
+
+        /* Update the fileList and check if all files have been closed. */
+        if (e->type == PropertyNotify && e->window == rootWindow) {
+            FileListEntry *item;
+
+            if (e->state == PropertyDelete) {
+                for (item = fileListHead.fileList; item; item = item->next) {
+                    if (e->atom == item->waitForFileOpenAtom) {
+                        /* The 'waitForFileOpen' property is deleted when the file is opened */
+                        fileListHead.waitForOpenCount--;
+                        item->waitForFileOpenAtom = None;
+
+                        /* Reset the timer while we wait for all files to be opened. */
+                        XtRemoveTimeOut(timerId);
+                        timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, 
+                                    (XtTimerCallbackProc)timeOutProc, &timeOut);
+                    } else if (e->atom == item->waitForFileClosedAtom) {
+                        /* When file is opened in -wait mode the property
+                         * is deleted when the file is closed.
+                         */
+                        fileListHead.waitForCloseCount--;
+                        item->waitForFileClosedAtom = None;
+                    }
+                }
+                
+                if (fileListHead.waitForOpenCount == 0 && !timeOut) {
+                    XtRemoveTimeOut(timerId);
+                }
+
+                if (fileListHead.waitForOpenCount == 0 &&
+                    fileListHead.waitForCloseCount == 0) {
+                    break;
+                }
+            }
+        }
+
+        /* We are finished if we are only waiting for files to open and
+        ** the file open timeout has expired. */
+        if (!Preferences.waitForClose && timeOut) {
+           break;
+        }
+
+        XtDispatchEvent(&event);
+    }
+} 
+
+
 static void nextArg(int argc, char **argv, int *argIndex)
 {
     if (*argIndex + 1 >= argc) {
@@ -561,7 +890,7 @@ static void nextArg(int argc, char **argv, int *argIndex)
 static void printNcVersion(void ) {
    static const char *const ncHelpText = \
    "nc (NEdit) Version 5.3 version\n\
-   (February 2002)\n\n\
+   (July 2002)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
      

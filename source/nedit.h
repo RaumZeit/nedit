@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.28 2002/09/03 01:10:07 n8gray Exp $ */
+/* $Id: nedit.h,v 1.29 2002/09/11 18:59:48 arnef Exp $ */
 
 #ifndef NEDIT_NEDIT_H_INCLUDED
 #define NEDIT_NEDIT_H_INCLUDED
@@ -364,6 +364,7 @@ typedef struct _WindowInfo {
     	    	    	    	    	   info. about it, otherwise, NULL */
     void    	*macroCmdData;  	/* same for macro commands */
     void    	*smartIndentData;   	/* compiled macros for smart indent */
+    Atom	fileClosedAtom;         /* Atom used to tell nc that the file is closed */
     int    	languageMode;	    	/* identifies language mode currently
     	    	    	    	    	   selected in the window */
     Boolean	multiFileReplSelected;	/* selected during last multi-window 
