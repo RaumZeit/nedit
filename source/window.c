@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.93 2003/12/31 01:22:06 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.94 2003/12/31 02:25:32 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3909,7 +3909,6 @@ static void cloneBuffer(WindowInfo *window, WindowInfo *orgWin)
     window->italicFontStruct = orgWin->italicFontStruct;
     window->boldFontStruct = orgWin->boldFontStruct;
     window->boldItalicFontStruct = orgWin->boldItalicFontStruct;
-    window->nMarks = orgWin->nMarks;
     window->markTimeoutID = orgWin->markTimeoutID;
     window->highlightData = orgWin->highlightData;
     window->shellCmdData = orgWin->shellCmdData;
@@ -3931,6 +3930,11 @@ static void cloneBuffer(WindowInfo *window, WindowInfo *orgWin)
     /* copy undo & redo list */
     window->undo = cloneUndoItems(orgWin->undo);
     window->redo = cloneUndoItems(orgWin->redo);
+
+    /* copy bookmarks */
+    window->nMarks = orgWin->nMarks;
+    memcpy(&window->markTable, &orgWin->markTable, 
+            sizeof(Bookmark)*window->nMarks);
 
     /* kick start the auto-indent engine */
     window->indentStyle = NO_AUTO_INDENT;
