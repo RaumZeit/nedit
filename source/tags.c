@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.35 2002/04/26 16:04:11 slobasso Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.36 2002/04/26 16:06:44 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * tags.c -- Nirvana editor tag file handling        	    	    	       *
@@ -108,6 +108,7 @@ static int addTag(const char *name, const char *file, const char *search,
 static int delTag(const char *name, const char *file, const char *search,
                   int posInf,  int index);
 static tag *getTag(const char *name);
+static void findDef(WindowInfo *window, const char *value);
 static void findAllDialogAP(WindowInfo *window, Widget dialogParent, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, const char *name,
