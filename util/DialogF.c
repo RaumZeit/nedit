@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.10 2001/04/13 17:50:50 tringali Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.11 2001/04/13 22:58:10 slobasso Exp $";
 /*******************************************************************************
 *									       *
 * DialogF -- modal dialog printf routine				       *
@@ -28,6 +28,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.10 2001/04/13 17:50:50 tringali 
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <limits.h>
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
