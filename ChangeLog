@@ -1,7 +1,508 @@
+2004-05-03 11:59  edg
+
+	* source/window.c (1.156): Bug fix: File->Close in the original
+	window was disabled after calling calling the detach_document()
+	macro subroutine.
+
+2004-05-03 09:26  edg
+
+	* util/check_lin_tif.c (1.8): Classified OM 2.2.3 (the real one,
+	not the 2.2.2 version claiming to be 2.2.3) as being UNTESTED iso.
+	KNOWN BAD. If no show-stoppers are found, we can classify it as a
+	supported version.
+
+2004-05-03 08:54  edg
+
+	* Xlt/BubbleButton.c (1.4): Fixed inconsistent linkage declaration
+	for _XmExportLabelString.
+
+2004-05-03 08:53  edg
+
+	* util/misc.c (1.63): Disabled the sticky radiobutton workaround
+	for OM 2.2.3 and above. The bug appears to be fixed in 2.2.3.
+
+2004-04-30 15:27  edg
+
+	* source/interpret.c (1.38): Added some comments to the new string
+	allocation routines.
+
+2004-04-30 14:35  edg
+
+	* source/: interpret.c (1.37), interpret.h (1.15), macro.c (1.85),
+	smartIndent.c (1.33): Speed boost for macro string searching: keep
+	string length together with the string to avoid excessive amount of
+	strlen() calls in some cases.
+
+2004-04-30 11:53  edg
+
+	* source/window.c (1.155): Bug fix: closing a tab via a macro
+	called from another tab resulted in a crash or an endless loop in
+	GetTopDocument().
+
+2004-04-30 04:06  tksoh
+
+	* source/: nedit.c (1.73), window.c (1.154): Some GUI changes on
+	statsAreaForm: removed the separator below the tab-bar; removed
+	some hardcoded visual resources on tab and tab-bar; statsline's
+	text widget to inherit colors from it's immediate parent form, to
+	ease customization.
+
+2004-04-29 02:34  tksoh
+
+	* source/: menu.c (1.103), nedit.c (1.72), text.c (1.46): Removed
+	tab navigation items from the Window menu, and handle them with
+	text widget's translation table.
+
+2004-04-28 01:54  tksoh
+
+	* doc/help.etx (1.64), source/help_data.h (1.59),
+	source/help_topic.h (1.51), source/menu.c (1.102), source/nedit.c
+	(1.71), source/nedit.h (1.55), source/window.c (1.153),
+	source/window.h (1.23): Renamed "Split Window" to "Split Pane", and
+	split_window() is now split_pane().
+
+2004-04-27 01:35  tksoh
+
+	* source/: file.c (1.81), menu.c (1.101), nedit.h (1.54),
+	preferences.c (1.119), window.c (1.152): Second (and hopefully
+	final) phase of Buffers-to-Documents conversion; Also added brief
+	description to struct WindowInfo on tabbed mode.
+
+2004-04-26 03:01  tksoh
+
+	* source/window.c (1.151): Fix for SF bug #941888: Window shrinks
+	when switching between tabs on some window managers such as
+	metacity.
+
+2004-04-24 04:53  tksoh
+
+	* source/window.c (1.150): Preserve document opening chain
+	(WindowList) when documents are detached or moved, so that macro
+	functions such focus_window("last") will traverse the documents
+	correctly.
+
+2004-04-24 03:48  tksoh
+
+	* source/window.c (1.149): Honor pref setting of "Hide Tab Bar When
+	Only One Document is Open"; covering SF bug #939712: unexpected tab
+	bar on startup.
+
+2004-04-24 03:12  tksoh
+
+	* source/window.c (1.148): Fixed coredump when closing top
+	document.
+
+2004-04-23 16:35  tringali
+
+	* source/window.c (1.147): Fix for bug 940844 - flashing isearch
+	bar on startup
+
+2004-04-23 00:43  tksoh
+
+	* source/window.c (1.146): Fixed bold-face on label of inactive
+	tabs.
+
+2004-04-19 15:46  tringali
+
+	* source/: window.c (1.145), nedit.c (1.70): - Changed accelerators
+	for next/prev window to Ctrl+Pg Up (for Mozilla compat.) -
+	Bold-face the active tab for visibility, implemented with fontlist
+	tags.
+
+2004-04-17 10:32  tksoh
+
+	* source/: nedit.c (1.69), window.c (1.144), window.h (1.22): Fixed
+	WM session management (WM_SAVE_YOURSELF) support for tabbed mode.
+
+2004-04-17 03:51  n8gray
+
+	* doc/help.etx (1.63), source/help_data.h (1.58),
+	source/help_topic.h (1.50): Updated documentation for the
+	auto-scroll feature.  The resource for setting the number of lines
+	of padding has changed to nedit.autoScrollVPadding.
+
+2004-04-16 08:15  edg
+
+	* source/calltips.c (1.6): Fix for SF bug #925951: nedit 5.4
+	crashes when dragging a calltip.  It appears to be a bug in SUN's
+	Motif. Dragging is now disabled.
+
+2004-04-15 22:32  n8gray
+
+	* source/: menu.c (1.100), nedit.h (1.53), preferences.c (1.118),
+	preferences.h (1.41), window.c (1.143), window.h (1.21): Committing
+	the auto-scroll patch.	For now 4 seems like a reasonable default.
+
+2004-04-14 20:33  n8gray
+
+	* source/: help_data.h (1.57), help_topic.h (1.49), window.c
+	(1.142): Applied TK's patch for putting the * on the correct side
+	of the tab's filename based on text alignment (with a minor
+	change).  I still don't understand why it didn't work for me
+	before, but what the heck.
+	
+	Also it looks like I regenerated the help files.  No changes there
+	other than the dates at the top.
+
+2004-04-14 15:12  edg
+
+	* source/window.c (1.141): Warning fix (Andrew Stanaski).
+
+2004-04-14 09:44  edg
+
+	* source/: nedit.c (1.68), server.c (1.28): Additional fixes for
+	potential crashes due to -do macro commands closing windows.
+
+2004-04-14 05:45  tksoh
+
+	* source/: nedit.c (1.67), server.c (1.27): Fixed coredump when
+	running -do closed() or detach_document() with nc or nedit, or when
+	files fail to open.
+	
+	Also corrected the behavior on VMS so that -do will only apply onto
+	the first file globbed from the wildcard specified.
+
+2004-04-14 00:49  n8gray
+
+	* source/: nedit.c (1.66), window.c (1.140): Changed so that
+	alignment of the filenames in tabs isn't hardwired.  I edit lots of
+	files that have the same prefix, e.g. mmc_ext_XXX.ml, and if too
+	many tabs get opened then I end up with 25 identical tabs.  This is
+	much less of a problem if the text is right-aligned, since the .ml
+	suffixes take up less space.
+	
+	You can try this out by setting the resource "*tab.alignment:
+	XmALIGNMENT_END".
+	
+	One improvement would be to also put the "*" that indicates a file
+	is modified on the right if the titles are right-aligned.  I tried
+	to implement that but for some reason couldn't read the setting of
+	the alignment resource successfully.
+
+2004-04-14 00:14  n8gray
+
+	* source/window.c (1.139): Fixed the code to get the next tab on
+	tab close/detach so that the correct tab is chosen when tabs are
+	sorted.
+
+2004-04-01 12:48  tksoh
+
+	* source/window.c (1.138): Re-enabled window auto-resizing on
+	(un)display of line numbers for multi-tab windows. Disabling
+	auto-resize on font change alone would be enough to fix the
+	growing-window bug.
+
+2004-04-01 10:29  tksoh
+
+	* source/window.c (1.137): Fixed BadMatch error when linking to
+	various releases of Lesstif version 1.2 (no problem with v2.x), if
+	we use XCreateBitmapFromData() to created bitmaps for buttons.
+
+2004-04-01 02:50  tksoh
+
+	* source/textDisp.c (1.56): Fixed BadWindow error when opening help
+	window, introduced by the recent window auto-resize patch.
+
+2004-04-01 01:38  tksoh
+
+	* source/window.c (1.136): Fixed bug where the detached document
+	would get an incorrect number of rows, when the document contain
+	highlighting fonts with sizes differ from the primary font. For now
+	there'd be some flickers due to the resizing of the detached window
+	by syntax highlighting, etc - something that we are to address
+	later - but the rows will at least be correct.
+
+2004-03-31 15:02  tksoh
+
+	* source/: highlight.c (1.46), textDisp.c (1.55), window.c (1.135):
+	Disabled window auto-resizing, triggered by font change or
+	(un)display of line numbers, for multi-tab windows.
+
+2004-03-31 12:31  tksoh
+
+	* source/: nedit.h (1.52), search.c (1.67), window.c (1.134):
+	Applied SF patch #891884: Add Find and Clear buttons to i-search
+
+2004-03-29 14:42  tksoh
+
+	* source/userCmds.c (1.45): Fixed coredump when invoking BG menu on
+	lower split-panes.
+
+2004-03-28 12:15  yooden
+
+	* .cvsignore (1.3), doc/.cvsignore (1.5), source/.cvsignore (1.5),
+	util/.cvsignore (1.4): Moves *.bck to global ignore file.
+
+2004-03-25 17:37  tksoh
+
+	* source/: menu.c (1.99), window.c (1.133): Removed unused
+	functions.
+
+2004-03-25 07:12  n8gray
+
+	* .cvsignore (1.2), doc/.cvsignore (1.4), doc/help.etx (1.62),
+	source/.cvsignore (1.4), source/help_data.h (1.56),
+	source/help_topic.h (1.48), source/textDrag.c (1.9),
+	util/.cvsignore (1.3): Updated the help files to document action
+	routines for all menu items.  Also added *.bck to .cvsignore files.
+
+2004-03-25 04:27  tksoh
+
+	* source/: file.c (1.80), file.h (1.13), macro.c (1.84), menu.c
+	(1.98), nedit.c (1.65), preferences.c (1.117), selection.c (1.28),
+	server.c (1.26), tags.c (1.56), window.c (1.132), window.h (1.20):
+	Speed up opening of multiple files, by opening the files in
+	background and deferring the syntax highlighting (SH) process. SH
+	may be triggered later when a document is raised, or accessed by
+	macro functions.
+
+2004-03-21 14:25  tksoh
+
+	* source/: Makefile.common (1.17), window.c (1.131): Bugfix for
+	persistent tooltip of tabs, when dragged with middle button.
+
+2004-03-19 15:17  tringali
+
+	* util/system.h (1.14): Fix bogus IA64 defintion; detect Intel when
+	masquerading as gcc; guess when compiling HP C.
+
+2004-03-19 09:53  tksoh
+
+	* source/window.c (1.130): Make next/prev document actions
+	independent of tab sorting policy.
+
+2004-03-11 12:42  edg
+
+	* source/: nedit.h (1.51), userCmds.c (1.44): Bug fixes for user
+	menu cache (Uwe Lehnert).
+
+2004-03-06 22:44  n8gray
+
+	* source/: menu.c (1.97), nedit.h (1.50), preferences.c (1.116):
+	Added "Sort Tabs Alphabetically" menu item.
+
+2004-03-06 02:24  n8gray
+
+	* source/window.c (1.129): Fixed SortTabBar -- it wasn't updating
+	the "next" pointers, which broke the next/previous tab actions.
+
+2004-03-05 08:10  tksoh
+
+	* source/: menu.c (1.96), menu.h (1.11), userCmds.c (1.43),
+	window.c (1.128): Hide the BG tearoffs when switching doc, and
+	restore them when switched back later.
+
+2004-03-04 09:44  tksoh
+
+	* source/: menu.c (1.95), menu.h (1.10), nedit.h (1.49),
+	preferences.c (1.115), userCmds.c (1.42), userCmds.h (1.6),
+	window.c (1.127): Applied SF patch #891126: user menu cache.
+
+2004-03-04 00:49  tksoh
+
+	* source/: file.c (1.79), preferences.c (1.114), preferences.h
+	(1.40), window.c (1.126), window.h (1.19): If 'nedit.sortTab' is
+	True, sort the tabs on the tab bar by filenames alphabetically.
+	Sorting is disabled by default.
+
+2004-03-03 13:28  edg
+
+	* source/textBuf.c (1.31): Bug fix in BufCountDispChars: don't
+	count terminating \0 of text buffer.
+
+2004-03-03 07:06  tksoh
+
+	* source/: menu.c (1.94), window.h (1.18): Cleaned up residue of
+	"Attach Tab".
+
+2004-03-02 12:47  tksoh
+
+	* source/undo.c (1.16): Removed flickers on text area that occured
+	when undoing/redoing with selection and
+	'nedit.undoModifiesSelection' set to false.
+
+2004-03-02 08:15  tksoh
+
+	* source/: menu.c (1.93), nedit.h (1.48), window.c (1.125),
+	window.h (1.17): Changed Menu "Attach Tab..." to "Move Tab To...".
+	The corresponding AP attach_document_dialog() is changed to
+	move_document_dialog() too; Also revised preference menus under
+	"Tabbed Editing".
+
+2004-02-27 00:53  tksoh
+
+	* source/window.c (1.124): Bugfix for shrunken upper split panes
+	when documents are detached or attached.
+
+2004-02-26 09:54  edg
+
+	* source/window.c (1.123): Clone tab distance & emulation settings
+	when cloning a document.
+
+2004-02-25 02:47  tksoh
+
+	* source/: menu.c (1.92), window.c (1.122): Made line number
+	display a shell-level item, like the i-search and stats lines. Also
+	fixed few associated bugs.
+
+2004-02-23 02:51  n8gray
+
+	* source/textBuf.c (1.30): Eliminated unnecessary #include.
+
+2004-02-21 14:25  yooden
+
+	* doc/help.etx (1.61), source/help_data.h (1.55),
+	source/help_topic.h (1.47): Fiyes typos in help, adds args[] doc
+	(Tony Balinski), changes mailing list information (Joor Loohuis).
+
+2004-02-21 05:45  tksoh
+
+	* source/: file.c (1.78), macro.c (1.83), menu.c (1.91),
+	preferences.c (1.113), search.c (1.66), shell.c (1.30),
+	smartIndent.c (1.32), tags.c (1.55), undo.c (1.15), userCmds.c
+	(1.41), window.c (1.121), window.h (1.16): Update button state or
+	sensitivity of the main menus only if the document being worked on
+	is on top. This prevent the macro operation from updating the menu
+	buttons incorrectly, when acting on documents currently not on top.
+
+2004-02-20 09:27  tksoh
+
+	* source/menu.c (1.90): Corrected mnemonic of 'Last Viewed Tab'
+	menu.
+
+2004-02-19 06:33  tksoh
+
+	* source/nedit.c (1.64): Added missing -group option in nedit
+	command line help message.
+
+2004-02-19 06:23  tksoh
+
+	* doc/help.etx (1.60), source/help_data.h (1.54),
+	source/help_topic.h (1.46), source/nc.c (1.39), source/nedit.c
+	(1.63): Added option -group to nc and nedit, to allow opening of
+	group of files as tabs in a new window.
+
+2004-02-17 01:01  tksoh
+
+	* source/window.c (1.120): Fixed coredump when loading tag files,
+	caused by dangling pointer of mode messages.
+
+2004-02-16 01:02  tksoh
+
+	* doc/help.etx (1.59), source/file.c (1.77), source/file.h (1.12),
+	source/help_data.h (1.53), source/help_topic.h (1.45),
+	source/macro.c (1.82), source/menu.c (1.89), source/nc.c (1.38),
+	source/nedit.c (1.62), source/nedit.h (1.47), source/preferences.c
+	(1.112), source/preferences.h (1.39), source/search.c (1.65),
+	source/selection.c (1.27), source/server.c (1.25), source/tags.c
+	(1.54), source/window.c (1.119): Applied SF patch #893177: modeless
+	tabbed windows.
+
+2004-02-14 02:22  tksoh
+
+	* source/window.c (1.118): Bugfix: top BG menu tearoffs were not
+	closed before switching 	tabbed document.
+
+2004-02-13 12:32  tksoh
+
+	* source/window.c (1.117): Close all BG menu tearoffs before
+	switching tabbed document.  BG menu is local to each document, so
+	should not stay up when its parent doc isn't.
+
+2004-02-13 07:53  tksoh
+
+	* source/window.c (1.116): Bugfix: banner not cleared after loading
+	tag files, etc.
+
+2004-02-10 22:29  yooden
+
+	* Microline/XmL/Folder.c (1.3), source/file.c (1.76),
+	source/window.c (1.115): Removes some warnings.
+
+2004-02-10 14:25  tringali
+
+	* source/nedit.c (1.61): Fix reversed tab accelerators in LessTif
+
+2004-02-10 02:00  tringali
+
+	* source/nedit.c (1.60): Fix for tab accelerators in LessTif; avoid
+	trapping Alt+Shift+arrow too.
+
+2004-02-09 11:02  edg
+
+	* source/window.c (1.114): Added missing shell/macroMenuValid
+	initializations.
+
+2004-02-09 09:45  tksoh
+
+	* source/: rangeset.c (1.10), rangeset.h (1.5), window.c (1.113):
+	Bugfix for: 1) coredump when detaching/attaching document
+	containing    destroyed rangeset; 2) after being detached/attached,
+	colors of subsequently	  added rangesets were not refreshed
+	immediately.
+
+2004-02-09 04:16  tksoh
+
+	* source/window.c (1.112): Applied workaround for partially
+	(bottom) obscured text area of new tabs on OM-2.1.30, and perhaps
+	other Motifs also?
+
+2004-02-08 02:49  tksoh
+
+	* source/window.c (1.111): Applied workaround for coredump when
+	closing tabs in the middle of keystrokes learning, by clicking on
+	the close-tab button. See comment of closeTabCB() for detail.
+
+2004-02-08 01:46  tksoh
+
+	* source/window.c (1.110): Bugfix: stats or i-search line might
+	come up concealed on new windows, if the tab bar was set to be
+	always displayed.
+
+2004-02-07 15:44  tringali
+
+	* source/: menu.c (1.88), menu.h (1.9), nedit.h (1.46), window.c
+	(1.109): Tab context menu via TK Soh, from SF patch 891679
+
+2004-02-07 02:20  tringali
+
+	* source/nedit.c (1.59): - Visual for inactive tabs: use a lighter
+	grey foreground.  Ideally we'd make the   active tab boldface, but
+	that requires mucking about with fonts.  - Non-emacs accelerators
+	for tab navigation: Alt-Left,Alt-Right,Alt-Home
+
+2004-02-05 07:29  tksoh
+
+	* source/window.c (1.108): Bugfix for missing BG menus in second
+	and subsequent tabbed docs.
+
+2004-02-04 08:44  tksoh
+
+	* source/: file.c (1.75), menu.c (1.87), nedit.h (1.45), window.c
+	(1.107), window.h (1.15): Create tabbed document in background, to
+	avoid unnecessary updates on the user menus. This reduces the
+	flickers on the tearoffs of the user menus. It also speeds up the
+	process of opening multiple files, particularly those of the same
+	language modes.
+
+2004-02-03 14:26  edg
+
+	* source/preferences.c (1.111): Fix for SF bug #887581: /*
+	Uncomment */ macro problem.
+
+2004-02-03 08:25  edg
+
+	* ChangeLog (1.36): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
 2004-02-03 08:18  edg
 
 	* source/macro.c (1.81): Fix for SF bug #889444: rangeset_add(rs1,
 	rs2) fails if rs1, rs2 is empty.
+
+2004-02-03 07:27  tksoh
+
+	* source/preferences.c (1.110): Bugfix: nedit.tabbedMode was not
+	saved to nedit.rc file.
 
 2004-02-03 07:27  tksoh
 
