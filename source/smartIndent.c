@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.23 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.24 2003/04/08 08:54:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1307,7 +1307,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (checkSmartIndentDialogData())
-    DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
+        DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
                 "Macros compiled without error", "Dismiss");
 }
 	

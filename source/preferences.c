@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.86 2003/04/07 22:51:40 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.87 2003/04/08 08:54:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2495,12 +2495,12 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 	if (stat != TEXT_READ_OK)
     	    return;
 
-    if (margin <= 0 || margin >= 1000)
-    {
-        DialogF(DF_WARN, WrapText, 1, "Wrap Margin", "Wrap margin out of range",
-                "Dismiss");
-        return;
-    }
+       if (margin <= 0 || margin >= 1000)
+       {
+           DialogF(DF_WARN, WrapText, 1, "Wrap Margin", 
+                   "Wrap margin out of range", "Dismiss");
+           return;
+       }
 
     }
 

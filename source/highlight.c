@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.40 2003/04/07 22:51:39 yooden Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.41 2003/04/08 08:54:40 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -884,13 +884,13 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     for (i=0; i<nPatterns; i++) {
         compiledPats[i].colorOnly = patternSrc[i].flags & COLOR_ONLY;
         compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
-    if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0)
-    {
-        DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern",
-                "Color-only pattern \"%s\" may not have subpatterns", "Dismiss",
-                patternSrc[i].name);
-        return NULL;
-    }
+        if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0)
+        {
+            DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern",
+                    "Color-only pattern \"%s\" may not have subpatterns", 
+                    "Dismiss", patternSrc[i].name);
+            return NULL;
+        }
         nSubExprs = 0;
         if (patternSrc[i].startRE != NULL) {
             ptr = patternSrc[i].startRE;

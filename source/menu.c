@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.71 2003/04/07 22:51:40 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.72 2003/04/08 08:54:40 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2588,7 +2588,7 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
     if (!AddTagsFile(args[0], TAG))
     {
-        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reding File",
+        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File",
                 "Error reading ctags file:\n'%s'\ntags not loaded", "Dismiss",
                 args[0]);
     }
@@ -2627,7 +2627,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
     if (!AddTagsFile(args[0], TIP))
     {
-        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reding File",
+        DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File",
                 "Error reading tips file:\n'%s'\ntips not loaded", "Dismiss",
                 args[0]);
     }
