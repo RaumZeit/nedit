@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.49 2003/04/07 22:51:41 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.50 2003/05/05 16:25:56 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1115,14 +1115,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
     char temp[32+2*MAXPATHLEN+MAXLINE];
     const char *fileToSearch, *searchString, *tagPath;
     char **dupTagsList;
-    int startPos, i, pathMatch=0,samePath=0,
-            langMode, nMatches=0;
-    tagFile *FileList;
-    
-    if (searchMode == TIP)
-        FileList = TipsFileList;
-    else /* TAG or TIP_FROM_TAG */
-        FileList = TagsFileList;
+    int startPos, i, pathMatch=0, samePath=0, langMode, nMatches=0;
 
     /* verify that the string is reasonable as a tag */
     if (*string == '\0' || strlen(string) > MAX_TAG_LEN) {
@@ -1727,7 +1720,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
     const char *language_regex = "^\\s*\\* language \\*\\s*$";
     const char *alias_regex    = "^\\s*\\* alias \\*\\s*$";
     char line[MAXLINE], *status;
-    int dummy1, found = 0;
+    int dummy1;
     int code;
     
     /* Skip blank lines and comments */
@@ -1862,7 +1855,6 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
     }
     
     /* Skip the rest of the block */
-    found = 1;
     dummy1 = *currLine;
     while(fgets(line, MAXLINE, fp)) {
         ++(*currLine);

@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.12 2002/12/12 17:25:52 slobasso Exp $ */
+/* $Id: interpret.h,v 1.13 2003/05/05 16:25:55 edg Exp $ */
 
 #ifndef NEDIT_INTERPRET_H_INCLUDED
 #define NEDIT_INTERPRET_H_INCLUDED
@@ -105,7 +105,7 @@ Symbol *InstallIteratorSymbol();
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(const char *name);
-Symbol *InstallSymbol(const char *name, int type, DataValue value);
+Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value);
 Program *FinishCreatingProgram(void);
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 void StartLoopAddrList(void);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.50 2003/05/02 18:18:47 edg Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.51 2003/05/05 16:25:56 edg Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -3216,7 +3216,7 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
     int nVisLines = textD->nVisibleLines;
     int *lineStarts = textD->lineStarts;
     int countFrom, lineStart;
-    int visLineNum = 0, nLines = 0, i;
+    int nLines = 0, i;
     /*
     ** Determine where to begin searching: either the previous newline, or
     ** if possible, limit to the start of the (original) previous displayed
@@ -3228,7 +3228,6 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
     		break;
     	if (i > 0) {
     	    countFrom = lineStarts[i-1];
-    	    visLineNum = i-1;
     	} else
     	    countFrom = BufStartOfLine(buf, pos);
     } else

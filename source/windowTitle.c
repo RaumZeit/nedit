@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.9 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.10 2003/05/05 16:25:56 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -1113,6 +1113,7 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     XtAddCallback(etDialog.dirW, XmNvalueChangedCallback, toggleDirectoryCB, NULL);
     XmStringFree(s1);
     
+    XtVaGetValues(etDialog.fileW, XmNheight, &radioHeight, NULL);
     etDialog.mdirW = XtVaCreateManagedWidget("componentLab", 
     	    xmLabelGadgetClass, selectBox,
 	    XmNheight, radioHeight,
@@ -1356,7 +1357,6 @@ static void createEditTitleDialog(Widget parent, WindowInfo *window)
     	    XmNmnemonic, 'i', NULL);
     XtAddCallback(etDialog.oDirW, XmNvalueChangedCallback, formatChangedCB, NULL);
     XmStringFree(s1);
-    XtVaGetValues(etDialog.fileW, XmNheight, &radioHeight, NULL);
 
     /* Button box */
     buttonForm = XtVaCreateManagedWidget("buttonForm", xmFormWidgetClass,

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.32 2002/12/12 17:25:49 slobasso Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.33 2003/05/05 16:25:55 edg Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -698,7 +698,7 @@ Symbol *LookupSymbol(const char *name)
 /*
 ** install symbol name in symbol table
 */
-Symbol *InstallSymbol(const char *name, int type, DataValue value)
+Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value)
 {
     Symbol *s;
 

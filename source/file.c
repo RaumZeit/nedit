@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.64 2003/05/04 13:20:47 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.65 2003/05/05 16:25:55 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -837,7 +837,7 @@ static int doSave(WindowInfo *window)
     /* add a terminating newline if the file doesn't already have one for
     Unix utilities which get confused otherwise */
     if (BufGetCharacter(window->buffer, window->buffer->length - 1) != '\n'
-            && fileLen != 0
+            && window->buffer->length != 0
             && GetPrefAppendLF())
     {
         BufInsert(window->buffer, window->buffer->length, "\n");

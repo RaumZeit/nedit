@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.67 2003/05/04 23:54:11 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.68 2003/05/05 16:25:56 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1479,7 +1479,10 @@ static char *actionToString(Widget w, char *actionName, XEvent *event,
 {
     char chars[20], *charList[1], *outStr, *outPtr;
     KeySym keysym;
-    int i, nChars, nParams, length, nameLength, status;
+    int i, nChars, nParams, length, nameLength;
+#ifndef NO_XMIM
+    int status;
+#endif
     
     if (isIgnoredAction(actionName) || isRedundantAction(actionName) ||
 	    isMouseAction(actionName))
@@ -4782,7 +4785,6 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     char colorValue[20];
     int r, g, b;
-    Pixel pixel;
 
     /* Validate number of arguments */
     if (nArgs != 1) {
@@ -4847,7 +4849,7 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     /* Prepare array element for color value */
-    pixel = HighlightColorValueOfCode(window, styleCode, &r, &g, &b);
+    HighlightColorValueOfCode(window, styleCode, &r, &g, &b);
     sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
     DV.val.str = AllocStringCpy(colorValue);
     M_STR_ALLOC_ASSERT(DV);
@@ -4863,7 +4865,7 @@ static int getStyleMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     /* Prepare array element for background color value */
-    pixel = GetHighlightBGColorOfCode(window, styleCode,&r,&g,&b);
+    GetHighlightBGColorOfCode(window, styleCode,&r,&g,&b);
     sprintf(colorValue, "#%02x%02x%02x", r/256, g/256, b/256);
     DV.val.str = AllocStringCpy(colorValue);
     M_STR_ALLOC_ASSERT(DV);
