@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.46 2002/09/26 12:37:40 ajhood Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.47 2002/10/04 23:21:31 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1300,7 +1300,7 @@ static int moveAheadNLines( char *str, int *pos, int n ) {
 static void showMatchingCalltip( Widget parent, int i )
 {
     int startPos=0, fileLen, readLen, tipLen;
-    unsigned endPos=0;
+    int endPos=0;
     char *fileString;
     FILE *fp;
     struct stat statbuf;
