@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.58 2004/10/01 08:13:54 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.59 2004/10/02 11:31:40 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -772,11 +772,15 @@ static void redisplayCursor(textDisp* textD)
     {
         return;
     }
-    
+
     if (!posToVisibleLineNum(textD, pos, &cursorLine))
     {
-        /*  This can only be reached if redisplayCursor is miscalled.  */
-        fprintf(stderr, "nedit: Unreachable code has been reached!\n");
+        /*  At first sight, this can only be reached when redisplayCursor()
+            is miscalled or when the catch above didn't work. There is at
+            least one situation though which makes the catch helpless: If
+            your caret is in the last line, column 1 and you move it down,
+            textD->cursorPos will be changed *before* this function is
+            called, the automatic scroll will be done after. */
         return;
     }
        
@@ -1274,7 +1278,7 @@ void TextDMakeInsertPosVisible(textDisp *textD)
                     cursorPos, True);
     }
     if (topLine < 1) {
-        fprintf(stderr, "internal consistency check tl1 failed\n");
+        fprintf(stderr, "nedit: internal consistency check tl1 failed\n");
         topLine = 1;
     }
     
@@ -1789,12 +1793,14 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     int i;
     
     if (pos < textD->firstChar)
-    	return False;
+    {
+        return False;
+    }
     if (pos > textD->lastChar) {
     	if (emptyLinesVisible(textD)) {
     	    if (textD->lastChar < textD->buffer->length) {
     		if (!posToVisibleLineNum(textD, textD->lastChar, lineNum)) {
-    		    fprintf(stderr, "Consistency check ptvl failed\n");
+    		    fprintf(stderr, "nedit: Consistency check ptvl failed\n");
     		    return False;
     		}
     		return ++(*lineNum) <= textD->nVisibleLines-1;
@@ -1812,6 +1818,7 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     	    return True;
     	}
     }
+
     return False; /* probably never be reached */
 }
 
@@ -1869,7 +1876,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
        potential infinite loop if x does not advance */
     stdCharWidth = textD->fontStruct->max_bounds.width;
     if (stdCharWidth <= 0) {
-    	fprintf(stderr, "Internal Error, bad font measurement\n");
+    	fprintf(stderr, "nedit: Internal Error, bad font measurement\n");
     	XtFree(lineStr);
     	return;
     }

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.118 2004/10/01 08:13:54 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.119 2004/10/02 11:31:39 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4089,7 +4089,6 @@ static void setShowWrapMarginAP(Widget w, XEvent *event, String *args,
 {
     WindowInfo *window = WidgetToWindow(w);
     int showWrapMargin = 0;
-    int i;
     
     if (*nArgs > 0) {
         if (sscanf(args[0], "%d", &showWrapMargin) == 1) {
