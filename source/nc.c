@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.27 2002/09/11 18:59:48 arnef Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.28 2002/10/07 19:39:45 arnef Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -104,6 +104,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context,
                                          Atom serverExistsAtom);
 
 Display *TheDisplay;
+static Atom currentWaitForAtom;
 
 static const char cmdLineHelp[] =
 #ifdef VMS
@@ -255,20 +256,8 @@ int main(int argc, char **argv)
     
     commandLine = processCommandLine(argc, argv);
         
-    /* Monitor the properties on the root window. 
-    ** Also adding a bunch of other event types to make sure
-    ** we get other events so we can detect the timeout. */
-    XSelectInput(TheDisplay, rootWindow,
-                 PropertyChangeMask | 
-                 KeyPressMask |
-                 KeyReleaseMask |
-                 EnterWindowMask |
-                 LeaveWindowMask |
-                 PointerMotionMask |
-                 ButtonMotionMask |
-                 ExposureMask |
-                 VisibilityChangeMask |
-                 FocusChangeMask);
+    /* Monitor the properties on the root window */
+    XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
 	
     /* Create the server property atoms on the current DISPLAY. */
     CreateServerPropertyAtoms(Preferences.serverName,
@@ -304,6 +293,15 @@ int main(int argc, char **argv)
 */
 static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id)
 {
+   /* NOTE: XtAppNextEvent() does call this routine but
+   ** doesn't return unless there are more events.
+   ** Hence, we generate this (synthetic) event to break the deadlock
+   */
+    Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+    XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8,
+    	    PropModeReplace, (unsigned char *)"",
+    	    strlen(""));
+
     /* Flag that the timeout has occurred. */
     *timeOutReturn = True;
 }
@@ -341,10 +339,11 @@ static Boolean findExistingServer(XtAppContext context,
                                   PROPERTY_CHANGE_TIMEOUT,
                                   (XtTimerCallbackProc)timeOutProc,
                                   &timeOut);
+        currentWaitForAtom = serverExistsAtom;
+
         while (!timeOut) {
             /* NOTE: XtAppNextEvent() does call the timeout routine but
-            ** doesn't return unless there are more events. See
-            ** XSelectInput above. */
+            ** doesn't return unless there are more events. */
             XEvent event;
             const XPropertyEvent *e = (const XPropertyEvent *)&event;
             XtAppNextEvent(context, &event);
@@ -411,8 +410,7 @@ static void startNewServer(XtAppContext context,
         XEvent event;
         const XPropertyEvent *e = (const XPropertyEvent *)&event;
         /* NOTE: XtAppNextEvent() does call the timeout routine but
-        ** doesn't return unless there are more events. See
-        ** XSelectInput above. */
+        ** doesn't return unless there are more events. */
         XtAppNextEvent(context, &event);
 
         /* We will get a PropertyNewValue when the server updates
@@ -780,7 +778,8 @@ static void waitUntilRequestProcessed(XtAppContext context,
                               REQUEST_TIMEOUT,
                               (XtTimerCallbackProc)timeOutProc,
                               &timeOut);
-    	    
+    currentWaitForAtom = serverRequestAtom;
+
     /* Wait for the property to be deleted to know the request was processed */
     while (!timeOut) {
         XEvent event;
