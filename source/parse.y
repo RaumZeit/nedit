@@ -1,3 +1,4 @@
+/* $Id: parse.y,v 1.14 2001/07/11 08:04:20 amai Exp $ */
 %{
 #include <stdio.h>
 #include <ctype.h>
@@ -26,7 +27,7 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.13 2001/03/09 22:21:07 slobasso Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.14 2001/07/11 08:04:20 amai Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -258,7 +259,7 @@ blank:	  /* nothing */
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *ParseMacro(char *expr, char **msg, char **stoppedAt)
+Program *ParseMacro(const char *expr, char **msg, char **stoppedAt)
 {
     Program *prog;
     
