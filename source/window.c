@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.166 2004/07/28 18:02:04 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.167 2004/08/09 16:48:10 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -185,10 +185,6 @@ static void getGeometryString(WindowInfo *window, char *geomString);
 static void patchRowCol(Widget w);
 static void patchedRemoveChild(Widget child);
 #endif
-static unsigned char* sanitizeVirtualKeyBindings();
-static int sortAlphabetical(const void* k1, const void* k2);
-static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
-static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 static void refreshMenuBar(WindowInfo *window);
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
@@ -216,19 +212,11 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     char newGeometry[MAX_GEOM_STRING_LEN];
     unsigned int rows, cols;
     int x = 0, y = 0, bitmask, showTabBar, state;
-    static int firstTime = True;
-    unsigned char* invalidBindings = NULL;
 
     static Pixmap isrcFind = 0;
     static Pixmap isrcClear = 0;
     static Pixmap closeTabPixmap = 0;
 
-    if (firstTime) 
-    {
-        invalidBindings = sanitizeVirtualKeyBindings();
-        firstTime = False;
-    }
-    
     /* Allocate some memory for the new window data structure */
     window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     
@@ -769,8 +757,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     /* Set the minimum pane height for the initial text pane */
     UpdateMinPaneHeights(window);
-    
-    restoreInsaneVirtualKeyBindings(invalidBindings);
     
     /* create dialogs shared by all documents in a window */
     CreateFindDlog(window->shell, window);
@@ -3019,161 +3005,6 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
               textNbacklightCharTypes, window->backlightCharTypes, 0);
     if (is_applied != do_apply)
       SetToggleButtonState(window, window->backlightCharsItem, do_apply, False);
-}
-
-static int sortAlphabetical(const void* k1, const void* k2)
-{
-    const char* key1 = *(const char**)k1;
-    const char* key2 = *(const char**)k2;
-    return strcmp(key1, key2);
-}
-
-/*
- * Checks whether a given virtual key binding string is invalid. 
- * A binding is considered invalid if there are duplicate key entries.
- */
-static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
-{
-    int maxCount = 1, i, count;
-    const char  *pos = (const char*)bindings;
-    char *copy;
-    char *pos2, *pos3;
-    char **keys;
-
-    /* First count the number of bindings; bindings are separated by \n
-       strings. The number of bindings equals the number of \n + 1.
-       Beware of leading and trailing \n; the number is actually an
-       upper bound on the number of entries. */
-    while ((pos = strstr(pos, "\n"))) 
-    { 
-        ++pos; 
-        ++maxCount;
-    }
-    
-    if (maxCount == 1) 
-        return False; /* One binding is always ok */
-    
-    keys = (char**)malloc(maxCount*sizeof(char*));
-    copy = XtNewString((const char*)bindings);
-    i = 0;
-    pos2 = copy;
-    
-    count = 0;
-    while (i<maxCount && pos2 && *pos2)
-    {
-        while (isspace((int) *pos2) || *pos2 == '\n') ++pos2;
-        
-        if (*pos2 == '!') /* Ignore comment lines */
-        {
-            pos2 = strstr(pos2, "\n");
-            continue; /* Go to the next line */
-        }
-
-        if (*pos2)
-        {
-            keys[i++] = pos2;
-            ++count;
-            pos3 = strstr(pos2, ":");
-            if (pos3) 
-            {
-                *pos3++ = 0; /* Cut the string and jump to the next entry */
-                pos2 = pos3;
-            }
-            pos2 = strstr(pos2, "\n");
-        }
-    }
-    
-    if (count <= 1)
-    {
-       free(keys);
-       XtFree(copy);
-       return False; /* No conflict */
-    }
-    
-    /* Sort the keys and look for duplicates */
-    qsort((void*)keys, count, sizeof(const char*), sortAlphabetical);
-    for (i=1; i<count; ++i)
-    {
-        if (!strcmp(keys[i-1], keys[i]))
-        {
-            /* Duplicate detected */
-            free(keys);
-            XtFree(copy);
-            return True;
-        }
-    }
-    free(keys);
-    XtFree(copy);
-    return False;
-}
-
-/*
- * Optionally sanitizes the Motif default virtual key bindings. 
- * Some applications install invalid bindings (attached to the root window),
- * which cause certain keys to malfunction in NEdit.
- * Through an X-resource, users can choose whether they want
- *   - to always keep the existing bindings
- *   - to override the bindings only if they are invalid
- *   - to always override the existing bindings.
- */
-
-static Atom virtKeyAtom;
-
-static unsigned char* sanitizeVirtualKeyBindings()
-{
-    int overrideBindings = GetPrefOverrideVirtKeyBindings();
-    Window rootWindow;
-    const char *virtKeyPropName = "_MOTIF_DEFAULT_BINDINGS";
-    Atom dummyAtom;
-    int getFmt;
-    unsigned long dummyULong, nItems;
-    unsigned char *insaneVirtKeyBindings = NULL;
-    
-    if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER) return NULL;
-    
-    virtKeyAtom =  XInternAtom(TheDisplay, virtKeyPropName, False);
-    rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-
-    /* Remove the property, if it exists; we'll restore it later again */
-    if (XGetWindowProperty(TheDisplay, rootWindow, virtKeyAtom, 0, INT_MAX, 
-                           True, XA_STRING, &dummyAtom, &getFmt, &nItems, 
-                           &dummyULong, &insaneVirtKeyBindings) != Success 
-        || nItems == 0) 
-    {
-        return NULL; /* No binding yet; nothing to do */
-    }
-    
-    if (overrideBindings == VIRT_KEY_OVERRIDE_AUTO)
-    {   
-        if (!virtKeyBindingsAreInvalid(insaneVirtKeyBindings))
-        {
-            /* Restore the property immediately; it seems valid */
-            XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
-                            PropModeReplace, insaneVirtKeyBindings, 
-                            strlen((const char*)insaneVirtKeyBindings));
-            XFree((char*)insaneVirtKeyBindings);
-            return NULL; /* Prevent restoration */
-        }
-    }
-    return insaneVirtKeyBindings;
-}
-
-/*
- * NEdit should not mess with the bindings installed by other apps, so we
- * just restore whatever was installed, if necessary
- */
-static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings)
-{
-   if (insaneVirtKeyBindings)
-   {
-      Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-      /* Restore the root window atom, such that we don't affect 
-         other apps. */
-      XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8,
-                      PropModeReplace, insaneVirtKeyBindings, 
-                      strlen((const char*)insaneVirtKeyBindings));
-      XFree((char*)insaneVirtKeyBindings);
-   }
 }
 
 /*
