@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.21 2002/06/26 23:39:21 slobasso Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.22 2002/09/23 11:16:32 edg Exp $";
 /******************************************************************************
 *                                                                             *
 * Getfiles.c -- File Interface Routines                                       *
@@ -989,6 +989,7 @@ static void makeListTypeable(Widget listW)
 ** Action procedure for processing characters typed in a list, finds the
 ** first item matching the characters typed so far.
 */
+static int nKeystrokes = 0; /* Global key stroke history counter */
 static void listCharEH(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch)
 {
@@ -998,7 +999,6 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     KeySym kSym;
     char name[MAXPATHLEN], path[MAXPATHLEN];
     static char keystrokes[MAX_LIST_KEYSTROKES];
-    static int nKeystrokes = 0;
     static Time lastKeyTime = 0;
     
     /* Get the ascii character code represented by the event */
@@ -1094,6 +1094,8 @@ static void replacementDirSearchProc(Widget w, XtPointer searchData)
     
     /* Call the original search procedure to do the actual search */
     (*OrigDirSearchProc)(w, searchData);
+    /* Refreshing a list clears the keystroke history, even if no update. */
+    nKeystrokes = 0;
     XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
     if (!updated)
     	return;
@@ -1108,6 +1110,8 @@ static void replacementFileSearchProc(Widget w, XtPointer searchData)
     
     /* Call the original search procedure to do the actual search */
     (*OrigFileSearchProc)(w, searchData);
+    /* Refreshing a list clears the keystroke history, even if no update. */
+    nKeystrokes = 0;
     XtVaGetValues(w, XmNlistUpdated, &updated, NULL);
     if (!updated)
     	return;
