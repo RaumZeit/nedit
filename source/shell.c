@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.39 2005/05/27 16:49:04 edg Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.40 2005/05/27 16:50:27 edg Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -480,7 +480,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
 	int inputLen, int flags, Widget textW, int replaceLeft,
 	int replaceRight, int fromMacro)
 {
-    int stdinFD, stdoutFD, stderrFD = NULL;
+    int stdinFD, stdoutFD, stderrFD = 0;
     XtAppContext context = XtWidgetToApplicationContext(window->shell);
     shellCmdInfo *cmdData;
     pid_t childPid;
