@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.26 2004/11/26 18:25:51 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.27 2005/05/27 16:58:43 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -4062,6 +4062,8 @@ void SubstituteRE (
 
       if (paren_no < 0) { /* Ordinary character. */
          if (((char *) dst - (char *) dest) >= (max - 1)) {
+            reg_error("replacing expression in `SubstituteRE\' too long; "
+                      "truncating");
             break;
          } else {
             *dst++ = c;
@@ -4072,6 +4074,8 @@ void SubstituteRE (
          len = prog->endp [paren_no] - prog->startp [paren_no];
 
          if (((char *) dst + len - (char *) dest) >= max-1) {
+            reg_error("replacing expression in `SubstituteRE\' too long; "
+                      "truncating");
             len = max - ((char *) dst - (char *) dest) - 1;
          }
 
