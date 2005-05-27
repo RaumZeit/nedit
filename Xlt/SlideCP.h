@@ -1,6 +1,6 @@
 /**
  *
- * $Id: SlideCP.h,v 1.1 2003/12/23 08:34:36 tksoh Exp $
+ * $Id: SlideCP.h,v 1.2 2005/05/27 16:49:04 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -29,7 +29,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/ObjectP.h>
 #include <Xm/XmP.h>
-#include <SlideC.h>
+#include "SlideC.h"
 
 
 #ifdef __cplusplus

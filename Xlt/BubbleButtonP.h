@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButtonP.h,v 1.2 2003/12/25 06:55:07 tksoh Exp $
+ * $Id: BubbleButtonP.h,v 1.3 2005/05/27 16:49:04 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -25,7 +25,7 @@
 #ifndef _BUBBLEBUTTONP_H
 #define _BUBBLEBUTTONP_H
 
-#include <BubbleButton.h>
+#include "BubbleButton.h"
 #include <Xm/PushBP.h>
 
 typedef struct {

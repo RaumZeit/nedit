@@ -50,8 +50,8 @@
 #ifndef XmLTreeH
 #define XmLTreeH
 
-#include <XmL/XmL.h>
-#include <XmL/Grid.h>
+#include "XmL.h"
+#include "Grid.h"
 
 #ifdef XmL_CPP
 extern "C" {

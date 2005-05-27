@@ -50,7 +50,7 @@
 #ifndef XmLGridH
 #define XmLGridH
 
-#include <XmL/XmL.h>
+#include "XmL.h"
 #include <stdio.h>
 
 #ifdef XmL_CPP

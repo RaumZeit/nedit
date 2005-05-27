@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.6 2004/07/13 11:35:41 edg Exp $
+ * $Id: BubbleButton.c,v 1.7 2005/05/27 16:49:04 edg Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -41,8 +41,8 @@
 #include <Xm/MenuShell.h>
 #include <Xm/Display.h>
 
-#include <BubbleButtonP.h>
-#include <SlideC.h>
+#include "BubbleButtonP.h"
+#include "SlideC.h"
 
 #include "../util/misc.h"
 
@@ -50,7 +50,7 @@
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.6 2004/07/13 11:35:41 edg Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.7 2005/05/27 16:49:04 edg Exp $";
 
 /*
    Widget methods, forward declarations

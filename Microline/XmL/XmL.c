@@ -46,7 +46,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include <XmL/XmL.h>
+#include "XmL.h"
 #include <Xm/XmP.h>
 #include <Xm/LabelP.h>
 #include <Xm/DrawnBP.h>

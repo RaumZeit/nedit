@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.127 2005/02/16 07:18:47 n8gray Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.128 2005/05/27 16:49:04 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4089,8 +4089,10 @@ static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args,
     
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->saveOldVersion, "set_make_backup_copy");
 
+#ifndef VMS
     if (IsTopDocument(window))
     	XmToggleButtonSetState(window->saveLastItem, newState, False);
+#endif
     window->saveOldVersion = newState;
 }
 

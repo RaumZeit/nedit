@@ -50,7 +50,7 @@
 #ifndef XmLFolderH
 #define XmLFolderH
 
-#include <XmL/XmL.h>
+#include "XmL.h"
 
 #ifdef XmL_CPP
 extern "C" {

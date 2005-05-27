@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.93 2004/12/23 22:25:45 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.94 2005/05/27 16:49:04 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -58,6 +58,7 @@ static const char CVSID[] = "$Id: file.c,v 1.93 2004/12/23 22:25:45 edg Exp $";
 #include <types.h>
 #include <stat.h>
 #include <unixio.h>
+#include <unistd.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1266,7 +1267,9 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
     	return TRUE;
     if (resp == 2) {
     	window->saveOldVersion = FALSE;
+#ifndef VMS
     	SetToggleButtonState(window, window->saveLastItem, FALSE, FALSE);
+#endif
     }
     return FALSE;
 }

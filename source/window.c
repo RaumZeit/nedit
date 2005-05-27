@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.183 2004/12/24 13:05:15 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.184 2005/05/27 16:49:04 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3641,7 +3641,9 @@ void RefreshMenuToggleStates(WindowInfo *window)
     XmToggleButtonSetState(window->highlightItem, window->highlightSyntax, False);
     XtSetSensitive(window->highlightItem, window->languageMode != PLAIN_LANGUAGE_MODE);
     XmToggleButtonSetState(window->backlightCharsItem, window->backlightChars, False);
+#ifndef VMS
     XmToggleButtonSetState(window->saveLastItem, window->saveOldVersion, False);
+#endif
     XmToggleButtonSetState(window->autoSaveItem, window->autoSave, False);
     XmToggleButtonSetState(window->overtypeModeItem, window->overstrike, False);
     XmToggleButtonSetState(window->matchSyntaxBasedItem, window->matchSyntaxBased, False);

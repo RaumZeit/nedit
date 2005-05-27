@@ -1,6 +1,6 @@
                     NEdit Version 5.5, October 2004
 
-$Id: README,v 1.47 2004/09/30 20:52:02 n8gray Exp $
+$Id: README,v 1.48 2005/05/27 16:49:00 edg Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -147,12 +147,9 @@ help.
  
 Building NEdit on VMS Systems
 
-Command files are provided for compiling and linking files in the source
-and util directories.  comutil.com compiles the files in the util directory
-and produces two library files, vmsutils.olb and libutil.olb.  comnedit.com
-compiles and links the files in the source directory to produce the nedit.exe
-executable.
-
+A command file is provided for compiling and linking files from all
+source directories. To build on OpenVMS change directory into 
+[.makefiles] and run 'buildvms.com'.
 
 Additional Settings
 
