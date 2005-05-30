@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Mar 3, 2005 (Do NOT edit!)
+                 Generated on May 30, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -2186,7 +2186,7 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01B$auto_indent\01A\n",
 "\01IContains the current preference for auto indent. ",
-"Can be  \"off\", \"on\" or \"auto\". ",
+"Can be  \"off\", \"on\", or \"smart\". ",
 "\n\n",
 "\01A\01B$calltip_ID\01A\n",
 "\01IEquals the ID of the currently displayed calltip, or 0 if no calltip is ",
@@ -5649,4 +5649,4 @@ Href H_R [] =
     { NULL,       5794, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of Mar  3, 2005\n";
+static const char * NEditVersion = "NEdit release of May 30, 2005\n";

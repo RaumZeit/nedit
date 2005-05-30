@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.89 2005/03/03 14:49:37 edg Exp $
+.. $Id: help.etx,v 1.90 2005/05/30 07:44:21 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2349,7 +2349,7 @@ Macro Subroutines
 
 **$auto_indent**
   Contains the current preference for auto indent. 
-  Can be  "off", "on" or "auto".
+  Can be  "off", "on", or "smart".
 
 **$calltip_ID**
   Equals the ID of the currently displayed calltip, or 0 if no calltip is
