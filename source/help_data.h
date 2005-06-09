@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on May 30, 2005 (Do NOT edit!)
+                 Generated on Jun 9, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -216,7 +216,7 @@ static char * htxt_select [] = {
 "key will drag the text in overlay mode. ",
 "\n\n",
 "Normally, dragging moves text by removing it from the selected position at ",
-"the start of the drag, and inserting it at a new position relative to to the ",
+"the start of the drag, and inserting it at a new position relative to the ",
 "mouse. Dragging a block of text over existing characters, displaces the ",
 "characters to the end of the selection. In overlay mode, characters which are ",
 "occluded by blocks of text being dragged are simply removed. When dragging ",
@@ -437,7 +437,7 @@ static char * htxt_mouse [] = {
 "                  will replace the primary selection\n",
 "                  with the secondary selection.\n",
 "                  Otherwise, moves the secondary\n",
-"                  selection to to the cursor position.\n",
+"                  selection to the cursor position.\n",
 "\01I\n",
 "\01A    Alt*          Exchange the primary and secondary\n",
 "                  selections.\n",
@@ -455,7 +455,7 @@ static char * htxt_mouse [] = {
 "\01I\n",
 "Overlay Mode: Normally, dragging moves text by removing it from the selected ",
 "position at the start of the drag, and inserting it at a new position ",
-"relative to to the mouse. When you drag a block of text over existing ",
+"relative to the mouse. When you drag a block of text over existing ",
 "characters, the existing characters are displaced to the end of the ",
 "selection.  In overlay mode, characters which are occluded by blocks of text ",
 "being dragged are simply removed.  When dragging non-rectangular selections, ",
@@ -1465,7 +1465,7 @@ static char * htxt_parenConstructs [] = {
 "Positive look-behind constructs are of the form `(?<=<regex>)' and implement ",
 "a zero width assertion of the enclosed regular expression in front of the ",
 "current matching position.  It is similar to a positive look-ahead assertion, ",
-"except for the fact the the match is attempted on the text preceding the ",
+"except for the fact that the match is attempted on the text preceding the ",
 "current position, possibly even in front of the start of the matching range ",
 "of the entire regular expression. ",
 "\n\n",
@@ -1875,7 +1875,7 @@ static char * htxt_macro_lang [] = {
 "\01SBuilt-in Variables\01I",
 "\n\n",
 "NEdit has a number of permanently defined variables, which are used to access ",
-"global editor information and information about the the window in which the ",
+"global editor information and information about the window in which the ",
 "macro is executing.  These are listed along with the built in functions in ",
 "the section titled \"\01QMacro Subroutines\01I\". ",
 "\n\n",
@@ -3050,7 +3050,7 @@ static char * htxt_actions [] = {
 "\n\n",
 "\01A\01Bset_tab_dist( tab-distance )\01A\n",
 "\01ISet the size of hardware tab spacing. Tab-distance must ",
-"must be a value greater than 0 and no greater than 20. ",
+"be a value greater than 0 and no greater than 20. ",
 "\n\n",
 "\01A\01Bset_use_tabs( [0 | 1] )\01A\n",
 "\01ISet whether tabs are used for the current window. ",
@@ -4310,7 +4310,7 @@ static char * htxt_patterns [] = {
 "to force them to state self-imposed limitations on the amount of context that ",
 "patterns may examine when re-parsing after a change.  While the \"Pattern ",
 "Context Requirements\" heading is near the end of this section, it is not ",
-"optional, and must be understood before making any any serious effort at ",
+"optional, and must be understood before making any serious effort at ",
 "pattern writing. ",
 "\n\n",
 "In its simplest form, a highlight pattern consists of a regular expression to ",
@@ -5649,4 +5649,4 @@ Href H_R [] =
     { NULL,       5794, HELP_BASICSYNTAX,         "Alternation", "alternation" }
 };
 
-static const char * NEditVersion = "NEdit release of May 30, 2005\n";
+static const char * NEditVersion = "NEdit release of Jun  9, 2005\n";

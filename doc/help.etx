@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.90 2005/05/30 07:44:21 edg Exp $
+.. $Id: help.etx,v 1.91 2005/06/09 16:44:09 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -215,7 +215,7 @@ Selecting Text
   key will drag the text in overlay mode.
 
   Normally, dragging moves text by removing it from the selected position at
-  the start of the drag, and inserting it at a new position relative to to the
+  the start of the drag, and inserting it at a new position relative to the
   mouse. Dragging a block of text over existing characters, displaces the
   characters to the end of the selection. In overlay mode, characters which are
   occluded by blocks of text being dragged are simply removed. When dragging
@@ -444,7 +444,7 @@ Using the Mouse
                   will replace the primary selection
                   with the secondary selection.
                   Otherwise, moves the secondary
-                  selection to to the cursor position.
+                  selection to the cursor position.
 
     Alt*          Exchange the primary and secondary
                   selections.
@@ -463,7 +463,7 @@ Using the Mouse
 
   Overlay Mode: Normally, dragging moves text by removing it from the selected
   position at the start of the drag, and inserting it at a new position
-  relative to to the mouse. When you drag a block of text over existing
+  relative to the mouse. When you drag a block of text over existing
   characters, the existing characters are displaced to the end of the
   selection.  In overlay mode, characters which are occluded by blocks of text
   being dragged are simply removed.  When dragging non-rectangular selections,
@@ -1614,7 +1614,7 @@ Parenthetical Constructs
   Positive look-behind constructs are of the form `(?<=<regex>)' and implement
   a zero width assertion of the enclosed regular expression in front of the
   current matching position.  It is similar to a positive look-ahead assertion,
-  except for the fact the the match is attempted on the text preceding the
+  except for the fact that the match is attempted on the text preceding the
   current position, possibly even in front of the start of the matching range
   of the entire regular expression.
   
@@ -2035,7 +2035,7 @@ Macro Language
 4>Built-in Variables
 
   NEdit has a number of permanently defined variables, which are used to access
-  global editor information and information about the the window in which the
+  global editor information and information about the window in which the
   macro is executing.  These are listed along with the built in functions in
   the section titled "Macro_Subroutines_".
 
@@ -3235,7 +3235,7 @@ Action Routines
 
 **set_tab_dist( tab-distance )**
   Set the size of hardware tab spacing. Tab-distance must 
-  must be a value greater than 0 and no greater than 20.
+  be a value greater than 0 and no greater than 20.
 
 **set_use_tabs( [0 | 1] )**
   Set whether tabs are used for the current window. 
@@ -4509,7 +4509,7 @@ Highlighting Patterns
   to force them to state self-imposed limitations on the amount of context that
   patterns may examine when re-parsing after a change.  While the "Pattern
   Context Requirements" heading is near the end of this section, it is not
-  optional, and must be understood before making any any serious effort at
+  optional, and must be understood before making any serious effort at
   pattern writing.
 
   In its simplest form, a highlight pattern consists of a regular expression to
