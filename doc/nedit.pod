@@ -1,4 +1,4 @@
-# $Id: nedit.pod,v 1.8 2005/03/03 14:49:37 edg Exp $
+# $Id: nedit.pod,v 1.9 2005/06/20 10:54:45 edg Exp $
 =pod
 
 =head1 NAME
@@ -153,9 +153,9 @@ designates this session as an NEdit server, as though B<-server> were specified.
 =item  B<-import> I<file> 
 
 Loads an additional preferences file on top of the existing defaults saved in
-your I<.nedit> file.  To incorporate macros, language modes, and highlight
+your I<nedit.rc> file.  To incorporate macros, language modes, and highlight
 patterns and styles written by other users, run nedit with B<-import>
-I<<file>>, then re-save your I<.nedit> file with
+I<<file>>, then re-save your I<nedit.rc> file with
 Preferences->Save Defaults.
 
 =item  B<-tabbed>
@@ -248,10 +248,11 @@ you load it and edit it of course).
                                        
 
 Note that NEdit still supports the older names for these files,
-which were used by version 5.3 and below. These legacy file names
+which were used by version 5.3 and below. These file names
 are `$HOME/.nedit', `$HOME/.neditdb' and `$HOME/.neditmacro',
-respectively. This legacy naming scheme will be used if NEdit
-detects that `$HOME/.nedit' is a regular file.
+respectively. The old naming scheme will be used if NEdit
+detects that `$HOME/.nedit' is a regular file and NEDIT_HOME 
+isn't set.
 
 See also the entry for NEDIT_HOME under ENVIRONMENT, above.
 
