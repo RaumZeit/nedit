@@ -2,7 +2,7 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jun 20, 2005 (Do NOT edit!)
+                 Generated on Jun 22, 2005 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
 * Copyright (c) 1999-2005 Mark Edel                                            *
@@ -3441,16 +3441,14 @@ static char * htxt_preferences [] = {
 "\01ITells NEdit what language (if any) to assume, for selecting language-specific ",
 "features such as highlight patterns and smart indent macros, and setting ",
 "language specific preferences like word delimiters, tab emulation, and ",
-"auto-indent.  See Features for Programming -> \01QProgramming with NEdit\01I for ",
-"more information. ",
+"auto-indent.  See \01QProgramming with NEdit\01I for more information. ",
 "\n\n",
 "\01A\01BAuto Indent\01A\n",
 "\01ISetting Auto Indent \"on\" maintains a running indent (pressing the Return key ",
 "will line up the cursor with the indent level of the previous line).  If ",
 "smart indent macros are available for the current language mode, smart indent ",
 "can be selected and NEdit will attempt to guess proper language indentation ",
-"for each new line.  See Help -> Features for Programming -> Automatic Indent ",
-"for more information. ",
+"for each new line, cf. \01QAuto/Smart Indent\01I. ",
 "\n\n",
 "\01A\01BWrap\01A\n",
 "\01IChoose between two styles of automatic wrapping or none.  Auto Newline wrap, ",
@@ -3481,8 +3479,7 @@ static char * htxt_preferences [] = {
 "\01A\01BHighlight Syntax\01A\n",
 "\01IIf NEdit recognizes the language being edited, and highlighting patterns are ",
 "available for that language, use fonts and colors to enhance viewing of the ",
-"file.  (See Help -> Features for Programming -> Syntax Highlighting for more ",
-"information. ",
+"file.  (See \01QSyntax Highlighting\01I for more information.) ",
 "\n\n",
 "\01A\01BMake Backup Copy\01A\n",
 "\01IOn Save, write a backup copy of the file as it existed before the Save ",
@@ -3525,10 +3522,9 @@ static char * htxt_preferences [] = {
 "\n\n",
 "\01A\01BTag Collisions\01A\n",
 "\01IHow to react to multiple tags for the same name.  Tags are described in the ",
-"section: Features for Programmers -> Finding Declarations (ctags).  In Show ",
-"All mode, all matching tags are displayed in a dialog.  In Smart mode, if one ",
-"of the matching tags is in the current window, that tag is chosen, without ",
-"displaying the dialog. ",
+"section: \01QFinding Declarations (ctags)\01I.  In Show All mode, all matching tags ",
+"are displayed in a dialog.  In Smart mode, if one of the matching tags is in ",
+"the current window, that tag is chosen, without displaying the dialog. ",
 "\n\n",
 "\01A\01BColors...\01A\n",
 "\01IChange the colors used to display text.  The \"Matching (..)\" fields change the ",
@@ -3538,7 +3534,7 @@ static char * htxt_preferences [] = {
 "highlighting is disabled.  When syntax highlighting is enabled, text (even ",
 "text that appears plain) will always be colored according to its highlighting ",
 "style. (For information on changing syntax highlighting styles and matching ",
-"patterns use see  Help -> Features for Programming -> \01QSyntax Highlighting\01I.) ",
+"patterns use see \01QSyntax Highlighting\01I.) ",
 "\n\n",
 "\01A\01BCustomize Menus\01A\n",
 "\01IAdd/remove items from the Shell, Macro, and window background menus (see ",
@@ -3580,8 +3576,8 @@ static char * htxt_preferences [] = {
 "and to \"In Selection\" otherwise. ",
 "\n\n",
 "\01A\01BSyntax Highlighting\01A\n",
-"\01IProgram and configure enhanced text display for new or supported languages ",
-"(See Features for Programming -> \01QSyntax Highlighting\01I). ",
+"\01IProgram and configure enhanced text display for new or supported languages. ",
+"(See \01QSyntax Highlighting\01I.) ",
 "\n\n",
 "\01A\01BTabbed Editing\01A\n",
 "\01IOptions for controlling the tabbed interface: ",
@@ -3603,8 +3599,8 @@ static char * htxt_preferences [] = {
 "\01KSort Tabs Alphabetically\01I ",
 "\n\n",
 "\01A\01BShow Tooltips\01A\n",
-"\01IShow file name and path in a tooltip when moving the mouse pointer over a tab ",
-"(See Basic Operations -> \01QTabbed Editing\01I). ",
+"\01IShow file name and path in a tooltip when moving the mouse pointer over a tab. ",
+"(See \01QTabbed Editing\01I.) ",
 "\n\n",
 "\01A\01BTerminate with Line Break on Save\01A\n",
 "\01ISome UNIX tools expect that files end with a line feed. If this option is ",
@@ -3801,7 +3797,7 @@ static char * htxt_preferences [] = {
 "\n\n",
 "Loading a customization file is automated, but creating one is not.  To ",
 "produce a file to be imported by other users, you must make a copy of your own ",
-"preferences file file, and edit it, by hand, to remove everything but the ",
+"preferences file, and edit it, by hand, to remove everything but the ",
 "few items of interest to the recipient.  Leave only the individual ",
 "resource(s), and within those resources, only the particular macro, pattern, ",
 "style, etc, that you wish to exchange. ",
@@ -5651,7 +5647,7 @@ Href H_R [] =
 {
     { &H_R[ 1],     54, HELP_TAGS,                "ctag support", "ctags" },
     { &H_R[ 2],   5794, HELP_BASICSYNTAX,         "Alternation", "alternation" },
-    { NULL,      14871, HELP_PREFERENCES,         "Autoload Files", "automatically" }
+    { NULL,      14640, HELP_PREFERENCES,         "Autoload Files", "automatically" }
 };
 
-static const char * NEditVersion = "NEdit release of Jun 20, 2005\n";
+static const char * NEditVersion = "NEdit release of Jun 22, 2005\n";

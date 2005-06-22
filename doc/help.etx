@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.92 2005/06/20 10:54:45 edg Exp $
+.. $Id: help.etx,v 1.93 2005/06/22 07:34:34 edg Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3631,16 +3631,14 @@ Preferences
   Tells NEdit what language (if any) to assume, for selecting language-specific
   features such as highlight patterns and smart indent macros, and setting
   language specific preferences like word delimiters, tab emulation, and
-  auto-indent.  See Features for Programming -> Programming_with_NEdit_ for
-  more information.
+  auto-indent.  See Programming_with_NEdit_ for more information.
 
 **Auto Indent**
   Setting Auto Indent "on" maintains a running indent (pressing the Return key
   will line up the cursor with the indent level of the previous line).  If
   smart indent macros are available for the current language mode, smart indent
   can be selected and NEdit will attempt to guess proper language indentation
-  for each new line.  See Help -> Features for Programming -> Automatic Indent
-  for more information.
+  for each new line, cf. Auto/Smart_Indent_.
 
 **Wrap**
   Choose between two styles of automatic wrapping or none.  Auto Newline wrap,
@@ -3671,8 +3669,7 @@ Preferences
 **Highlight Syntax**
   If NEdit recognizes the language being edited, and highlighting patterns are
   available for that language, use fonts and colors to enhance viewing of the
-  file.  (See Help -> Features for Programming -> Syntax Highlighting for more
-  information.
+  file.  (See Syntax_Highlighting_ for more information.)
 
 **Make Backup Copy**
   On Save, write a backup copy of the file as it existed before the Save
@@ -3715,10 +3712,9 @@ Preferences
 
 **Tag Collisions**
   How to react to multiple tags for the same name.  Tags are described in the
-  section: Features for Programmers -> Finding Declarations (ctags).  In Show
-  All mode, all matching tags are displayed in a dialog.  In Smart mode, if one
-  of the matching tags is in the current window, that tag is chosen, without
-  displaying the dialog.
+  section: Finding_Declarations_(ctags)_.  In Show All mode, all matching tags
+  are displayed in a dialog.  In Smart mode, if one of the matching tags is in
+  the current window, that tag is chosen, without displaying the dialog.
 
 **Colors...**
   Change the colors used to display text.  The "Matching (..)" fields change the
@@ -3728,7 +3724,7 @@ Preferences
   highlighting is disabled.  When syntax highlighting is enabled, text (even
   text that appears plain) will always be colored according to its highlighting
   style. (For information on changing syntax highlighting styles and matching
-  patterns use see  Help -> Features for Programming -> Syntax_Highlighting_.)
+  patterns use see Syntax_Highlighting_.)
 
 **Customize Menus**
   Add/remove items from the Shell, Macro, and window background menus (see
@@ -3770,8 +3766,8 @@ Preferences
   and to "In Selection" otherwise.
 
 **Syntax Highlighting**
-  Program and configure enhanced text display for new or supported languages
-  (See Features for Programming -> Syntax_Highlighting_).
+  Program and configure enhanced text display for new or supported languages.
+  (See Syntax_Highlighting_.)
 
 **Tabbed Editing**
   Options for controlling the tabbed interface:
@@ -3793,8 +3789,8 @@ Preferences
   ~Sort Tabs Alphabetically~
 
 **Show Tooltips**
-  Show file name and path in a tooltip when moving the mouse pointer over a tab
-  (See Basic Operations -> Tabbed_Editing_).
+  Show file name and path in a tooltip when moving the mouse pointer over a tab.
+  (See Tabbed_Editing_.)
 
 **Terminate with Line Break on Save**
   Some UNIX tools expect that files end with a line feed. If this option is
@@ -3993,7 +3989,7 @@ Preferences
 
   Loading a customization file is automated, but creating one is not.  To
   produce a file to be imported by other users, you must make a copy of your own
-  preferences file file, and edit it, by hand, to remove everything but the
+  preferences file, and edit it, by hand, to remove everything but the
   few items of interest to the recipient.  Leave only the individual
   resource(s), and within those resources, only the particular macro, pattern,
   style, etc, that you wish to exchange.
