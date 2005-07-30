@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.32 2004/10/14 21:55:53 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.33 2005/07/30 18:05:21 edg Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -306,9 +306,6 @@ static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop)
 static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
 {
    WindowInfo *window;
-   
-   if (currentDesktop == -1) /* No desktop information available */
-      return WindowList; 
    
    if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
        /* A new window is requested, unless we find an untitled unmodified
