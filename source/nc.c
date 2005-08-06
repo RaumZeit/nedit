@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.46 2005/03/03 14:49:37 edg Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.47 2005/08/06 04:31:25 tksoh Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -503,7 +503,7 @@ static int startServer(const char *message, const char *commandLineArgs)
     
     /* prompt user whether to start server */
     if (!Preferences.autoStart) {
-	puts(message);
+	printf(message);
 	do {
     	    c = getc(stdin);
 	} while (c == ' ' || c == '\t');
