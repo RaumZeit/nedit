@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.184 2005/05/27 16:49:04 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.185 2005/08/06 04:56:29 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -2560,7 +2560,7 @@ static int requestLineNumCols(textDisp *textD)
     int reqCols;
     
     reqCols = textD->nBufferLines<1 ? 1 : 
-              log10((double)textD->nBufferLines)+1;
+              log10((double)textD->nBufferLines +1)+1;
 	      
     if (reqCols < MIN_LINE_NUM_COLS)
         reqCols = MIN_LINE_NUM_COLS;
