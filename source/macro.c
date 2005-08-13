@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.98 2005/02/11 02:42:18 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.99 2005/08/13 19:29:08 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2222,16 +2222,18 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
     result->tag = NO_TAG;
-    stat = XmClipboardStartCopy(TheDisplay, XtWindow(window->textArea),
+    stat = SpinClipboardStartCopy(TheDisplay, XtWindow(window->textArea),
     	  s=XmStringCreateSimple("NEdit"), XtLastTimestampProcessed(TheDisplay),
 	  window->textArea, NULL, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess)
     	return True;
-    if (XmClipboardCopy(TheDisplay, XtWindow(window->textArea), itemID, "STRING",
-    	    string, strlen(string), 0, NULL) != ClipboardSuccess)
+    if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea), itemID, "STRING",
+    	    string, strlen(string), 0, NULL) != ClipboardSuccess) {
+        SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea), itemID);      
     	return True;
-    XmClipboardEndCopy(TheDisplay, XtWindow(window->textArea), itemID);
+    }
+    SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea), itemID);
     return True;
 }
 
@@ -2246,11 +2248,16 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
     	return wrongNArgsErr(errMsg);
     
     /* Ask if there's a string in the clipboard, and get its length */
-    if (XmClipboardInquireLength(TheDisplay, XtWindow(window->shell), "STRING",
+    if (SpinClipboardInquireLength(TheDisplay, XtWindow(window->shell), "STRING",
     	    &length) != ClipboardSuccess) {
     	result->tag = STRING_TAG;
     	result->val.str.rep = PERM_ALLOC_STR("");
     	result->val.str.len = 0;
+        /*
+         * Possibly, the clipboard can remain in a locked state after
+         * a failure, so we try to remove the lock, just to be sure.
+         */
+        SpinClipboardUnlock(TheDisplay, XtWindow(window->shell));
 	return True;
     }
 
@@ -2259,9 +2266,15 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
     AllocNString(&result->val.str, (int)length + 1);
 
     /* Copy the clipboard contents to the string */
-    if (XmClipboardRetrieve(TheDisplay, XtWindow(window->shell), "STRING",
-    	    result->val.str.rep, length, &retLength, &id) != ClipboardSuccess)
+    if (SpinClipboardRetrieve(TheDisplay, XtWindow(window->shell), "STRING",
+    	    result->val.str.rep, length, &retLength, &id) != ClipboardSuccess) {
     	retLength = 0;
+        /*
+         * Possibly, the clipboard can remain in a locked state after
+         * a failure, so we try to remove the lock, just to be sure.
+         */
+        SpinClipboardUnlock(TheDisplay, XtWindow(window->shell));
+    }
     result->val.str.rep[retLength] = '\0';
     result->val.str.len = retLength;
 

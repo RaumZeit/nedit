@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.14 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.15 2005/08/13 19:29:08 edg Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -36,6 +36,7 @@ static const char CVSID[] = "$Id: textSel.c,v 1.14 2004/07/21 11:32:05 yooden Ex
 #include "text.h"
 #include "textDisp.h"
 #include "textBuf.h"
+#include "../util/misc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -167,7 +168,7 @@ void CopyToClipboard(Widget w, Time time)
     BufUnsubstituteNullChars(text, ((TextWidget)w)->text.textD->buffer);
     
     /* Shut up LessTif */
-    if (XmClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
+    if (SpinClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
         XtFree(text);
         return;
     }
@@ -175,24 +176,28 @@ void CopyToClipboard(Widget w, Time time)
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
     s = XmStringCreateSimple("NEdit");
-    stat = XmClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
+    stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
     	    time, w, NULL, &itemID);
     XmStringFree(s);
-    if (stat != ClipboardSuccess)
+    if (stat != ClipboardSuccess) {
+        SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
+    }
 
     /* Note that we were previously passing length + 1 here, but I suspect
        that this was inconsistent with the somewhat ambiguous policy of
        including a terminating null but not mentioning it in the length */
 
-    if (XmClipboardCopy(XtDisplay(w), XtWindow(w), itemID, "STRING",
+    if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, "STRING",
     	    text, length, 0, NULL) != ClipboardSuccess) {
     	XtFree(text);
+        SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
+        SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
     }
     XtFree(text);
-    XmClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
-    XmClipboardUnlock(XtDisplay(w), XtWindow(w), False);
+    SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
+    SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 }
 
 /*
@@ -291,13 +296,24 @@ void InsertClipboard(Widget w, int isColumnar)
        size of the data that be transferred via the clipboard, and are
        generally slower and buggier, they do preserve the clipboard across
        widget destruction and even program termination. */
-    if (XmClipboardInquireLength(XtDisplay(w), XtWindow(w), "STRING", &length)
-    	    != ClipboardSuccess || length == 0)
+    if (SpinClipboardInquireLength(XtDisplay(w), XtWindow(w), "STRING", &length)
+    	    != ClipboardSuccess || length == 0) {
+        /*
+         * Possibly, the clipboard can remain in a locked state after
+         * a failure, so we try to remove the lock, just to be sure.
+         */
+        SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
+    }
     string = XtMalloc(length+1);
-    if (XmClipboardRetrieve(XtDisplay(w), XtWindow(w), "STRING", string,
+    if (SpinClipboardRetrieve(XtDisplay(w), XtWindow(w), "STRING", string,
     	    length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
     	XtFree(string);
+        /*
+         * Possibly, the clipboard can remain in a locked state after
+         * a failure, so we try to remove the lock, just to be sure.
+         */
+        SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
     }
     string[retLength] = '\0';

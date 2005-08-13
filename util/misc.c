@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.75 2005/02/12 12:04:30 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.76 2005/08/13 19:29:08 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -43,6 +43,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.75 2005/02/12 12:04:30 edg Exp $";
 
 #ifdef __unix__
 #include <sys/time.h>
+#include <sys/select.h>
 #endif
 
 #ifdef VMS
@@ -152,6 +153,8 @@ static void pageDownAP(Widget w, XEvent *event, String *args,
 static void pageUpAP(Widget w, XEvent *event, String *args, 
 	Cardinal *nArgs);
 static long queryDesktop(Display *display, Window window, Atom deskTopAtom);
+static void warning(const char* mesg);
+static void microsleep(long usecs);
 
 /*
 ** Set up closeCB to be called when the user selects close from the
@@ -2297,4 +2300,187 @@ long QueryDesktop(Display *display, Widget shell)
         return queryDesktop(display, XtWindow(shell), wmDesktopAtom);
 
     return -1;  /* No desktop information */
+}
+
+
+/*
+** Clipboard wrapper functions that call the Motif clipboard functions 
+** a number of times before giving up. The interfaces are similar to the
+** native Motif functions.
+*/
+
+#define SPINCOUNT  10   /* Try at most 10 times */
+#define USLEEPTIME 1000 /* 1 ms between retries */
+
+/*
+** Warning reporting
+*/
+static void warning(const char* mesg)
+{
+  fprintf(stderr, "NEdit warning:\n%s\n", mesg);
+}
+
+/*
+** Sleep routine
+*/
+static void microsleep(long usecs)
+{
+  static struct timeval timeoutVal;
+  timeoutVal.tv_sec = usecs/1000000;
+  timeoutVal.tv_usec = usecs - timeoutVal.tv_sec*1000000;
+  select(0, NULL, NULL, NULL, &timeoutVal);
+}
+
+/*
+** XmClipboardStartCopy spinlock wrapper.
+*/
+int SpinClipboardStartCopy(Display *display, Window window,
+        XmString clip_label, Time timestamp, Widget widget,
+        XmCutPasteProc callback, long *item_id)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardStartCopy(display, window, clip_label, timestamp,
+                                   widget, callback, item_id);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardStartCopy() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardCopy spinlock wrapper.
+*/
+int SpinClipboardCopy(Display *display, Window window, long item_id,
+        char *format_name, XtPointer buffer, unsigned long length,
+        long private_id, long *data_id)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardCopy(display, window, item_id, format_name,
+                              buffer, length, private_id, data_id);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        if (res == XmClipboardFail) {
+            warning("XmClipboardCopy() failed: XmClipboardStartCopy not "
+                    "called or too many formats.");
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardCopy() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardEndCopy spinlock wrapper.
+*/
+int SpinClipboardEndCopy(Display *display, Window window, long item_id)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardEndCopy(display, window, item_id);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        if (res == XmClipboardFail) {
+            warning("XmClipboardEndCopy() failed: XmClipboardStartCopy not "
+                    "called.");
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardEndCopy() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardInquireLength spinlock wrapper.
+*/
+int SpinClipboardInquireLength(Display *display, Window window,
+        char *format_name, unsigned long *length)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardInquireLength(display, window, format_name, length);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        if (res == XmClipboardNoData) {
+            warning("XmClipboardInquireLength() failed: no data.");
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardInquireLength() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardRetrieve spinlock wrapper.
+*/
+int SpinClipboardRetrieve(Display *display, Window window, char *format_name,
+        XtPointer buffer, unsigned long length, unsigned long *num_bytes,
+        long *private_id)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardRetrieve(display, window, format_name, buffer,
+                                  length, num_bytes, private_id);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        if (res == XmClipboardTruncate) {
+            warning("XmClipboardRetrieve() failed: buffer too small.");
+            return res;
+        }
+        if (res == XmClipboardNoData) {
+            warning("XmClipboardRetrieve() failed: no data.");
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardRetrieve() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardLock spinlock wrapper.
+*/
+int SpinClipboardLock(Display *display, Window window)
+{
+    int i, res;
+    for (i=0; i<SPINCOUNT; ++i) {
+        res = XmClipboardLock(display, window);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardLock() failed: clipboard locked.");
+    return res;
+}
+
+/*
+** XmClipboardUnlock spinlock wrapper.
+*/
+int SpinClipboardUnlock(Display *display, Window window)
+{
+    int i, res;
+    /* Spinning doesn't make much sense in this case, I think. */
+    for (i=0; i<SPINCOUNT; ++i) {
+        /* Remove ALL locks (we don't use nested locking in NEdit) */
+        res = XmClipboardUnlock(display, window, True);
+        if (res == XmClipboardSuccess) {
+            return res;
+        }
+        microsleep(USLEEPTIME);
+    }
+    warning("XmClipboardUnlock() failed: clipboard not locked or locked "
+            "by another application.");
+    return res;
 }

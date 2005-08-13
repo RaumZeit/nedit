@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.27 2004/12/23 22:25:47 edg Exp $ */
+/* $Id: misc.h,v 1.28 2005/08/13 19:29:08 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -30,6 +30,7 @@
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
+#include <Xm/CutPaste.h>
 
 #define TEXT_READ_OK 0
 #define TEXT_IS_BLANK 1
@@ -126,5 +127,19 @@ void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify);
 void CloseAllPopupsFor(Widget shell);
 long QueryCurrentDesktop(Display *display, Window rootWindow);
 long QueryDesktop(Display *display, Widget shell);
+int SpinClipboardStartCopy(Display *display, Window window,
+        XmString clip_label, Time timestamp, Widget widget,
+        XmCutPasteProc callback, long *item_id);
+int SpinClipboardCopy(Display *display, Window window, long item_id,
+        char *format_name, XtPointer buffer, unsigned long length,
+        long private_id, long *data_id);
+int SpinClipboardEndCopy(Display *display, Window window, long item_id);
+int SpinClipboardInquireLength(Display *display, Window window,
+        char *format_name, unsigned long *length);
+int SpinClipboardRetrieve(Display *display, Window window, char *format_name,
+        XtPointer buffer, unsigned long length, unsigned long *num_bytes,
+        long *private_id);
+int SpinClipboardLock(Display *display, Window window);
+int SpinClipboardUnlock(Display *display, Window window);
 
 #endif /* NEDIT_MISC_H_INCLUDED */
