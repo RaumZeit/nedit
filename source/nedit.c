@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.91 2005/03/03 14:49:37 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.92 2005/09/23 14:08:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -1016,10 +1016,15 @@ static void patchResourcesForKDEbug(void)
 ** dialog box.  So we lop off UTF-8 if it's there and continue.  Newer 
 ** versions of Linux distros (e.g., RedHat 8) set the default language to
 ** to have "UTF-8" at the end, so users were seeing these crashes.
+**
+** LessTif and OpenMotif 2.2.3 dont appear to have this problem.
 */
+
+#define XmFullVersion (XmVersion * 100 + XmUPDATE_LEVEL)
+
 static void patchLocaleForMotif()
 {
-#ifndef LESSTIF_VERSION
+#if !(defined(LESSTIF_VERSION) || XmFullVersion >= 200203)
     const char *ctype;
     char ctypebuf[1024];
     char *utf_start;
