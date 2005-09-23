@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.76 2005/08/13 19:29:08 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.77 2005/09/23 14:18:53 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2436,10 +2436,6 @@ int SpinClipboardRetrieve(Display *display, Window window, char *format_name,
         }
         if (res == XmClipboardTruncate) {
             warning("XmClipboardRetrieve() failed: buffer too small.");
-            return res;
-        }
-        if (res == XmClipboardNoData) {
-            warning("XmClipboardRetrieve() failed: no data.");
             return res;
         }
         microsleep(USLEEPTIME);
