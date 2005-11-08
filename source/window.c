@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.185 2005/08/06 04:56:29 tksoh Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.186 2005/11/08 22:22:22 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -245,6 +245,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->nWritableWindows = 0;
     window->fileChanged = FALSE;
     window->fileMode = 0;
+    window->fileUid = 0;
+    window->fileGid = 0;
     window->filenameSet = FALSE;
     window->fileFormat = UNIX_FILE_FORMAT;
     window->lastModTime = 0;
@@ -957,6 +959,8 @@ void CloseWindow(WindowInfo *window)
         UniqueUntitledName(name);
         CLEAR_ALL_LOCKS(window->lockReasons);
         window->fileMode = 0;
+        window->fileUid = 0;
+        window->fileGid = 0;
         strcpy(window->filename, name);
         strcpy(window->path, "");
         window->ignoreModify = TRUE;
@@ -3202,6 +3206,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->fileChanged = FALSE;
     window->fileMissing = True;
     window->fileMode = 0;
+    window->fileUid = 0;
+    window->fileGid = 0;
     window->filenameSet = FALSE;
     window->fileFormat = UNIX_FILE_FORMAT;
     window->lastModTime = 0;

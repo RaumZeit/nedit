@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.94 2005/05/27 16:49:04 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.95 2005/11/08 22:22:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -494,6 +494,8 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         "broken" state, and thus RevertToSaved will abandon the window if
         window->fileMissing is FALSE and doOpen fails. */    
     window->fileMode = statbuf.st_mode;
+    window->fileUid = statbuf.st_uid;
+    window->fileGid = statbuf.st_gid;
     window->lastModTime = statbuf.st_mtime;
     window->fileMissing = FALSE;
     /* Detect and convert DOS and Macintosh format files */
@@ -862,6 +864,8 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     strcpy(window->path, pathname);
     window->filenameSet = TRUE;
     window->fileMode = 0;
+    window->fileUid = 0;
+    window->fileGid = 0;
     CLEAR_ALL_LOCKS(window->lockReasons);
     retVal = doSave(window);
     UpdateWindowTitle(window);
@@ -1641,8 +1645,12 @@ void CheckForChangesToFile(WindowInfo *window)
     
     /* Check that the file's read-only status is still correct (but
        only if the file can still be opened successfully in read mode) */
-    if (window->fileMode != statbuf.st_mode) {
+    if (window->fileMode != statbuf.st_mode ||
+        window->fileUid != statbuf.st_uid ||
+        window->fileGid != statbuf.st_gid) {
         window->fileMode = statbuf.st_mode;
+        window->fileUid = statbuf.st_uid;
+        window->fileGid = statbuf.st_gid;
         if ((fp = fopen(fullname, "r")) != NULL) {
             int readOnly;
             fclose(fp);

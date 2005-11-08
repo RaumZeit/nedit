@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.63 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: nedit.h,v 1.64 2005/11/08 22:22:22 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -29,6 +29,7 @@
 #define NEDIT_NEDIT_H_INCLUDED
 
 #include "textBuf.h"
+#include <sys/types.h>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
@@ -447,6 +448,8 @@ typedef struct _WindowInfo {
     char	filename[MAXPATHLEN];	/* name component of file being edited*/
     char	path[MAXPATHLEN];	/* path component of file being edited*/
     unsigned	fileMode;		/* permissions of file being edited */
+    uid_t	fileUid; 		/* last recorded user id of the file */
+    gid_t	fileGid;		/* last recorded group id of the file */
     int     	fileFormat; 	    	/* whether to save the file straight
     	    	    	    	    	   (Unix format), or convert it to
 					   MS DOS style with \r\n line breaks */
