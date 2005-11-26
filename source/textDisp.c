@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.61 2004/10/18 19:27:24 arnef Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.62 2005/11/26 00:17:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -708,7 +708,7 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
     /* If the starting and ending lines are the same, redisplay the single
        line between "start" and "end" */
     if (startLine == lastLine) {
-    	redisplayLine(textD, startLine, 0, INT_MAX, startIndex, endIndex);
+        redisplayLine(textD, startLine, 0, INT_MAX, startIndex, endIndex + 1);
     	return;
     }
     
@@ -720,7 +720,7 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
 	redisplayLine(textD, i, 0, INT_MAX, 0, INT_MAX);
 
     /* Redisplay the last line to "end" */
-    redisplayLine(textD, lastLine, 0, INT_MAX, 0, endIndex);
+    redisplayLine(textD, lastLine, 0, INT_MAX, 0, endIndex + 1);
 }
 
 /*
