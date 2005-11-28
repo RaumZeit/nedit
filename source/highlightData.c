@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.71 2005/02/24 18:23:27 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.72 2005/11/28 22:43:58 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -222,7 +222,7 @@ static char *DefaultPatternSets[] = {
 	Based Numeric Literals:\"<(?:\\d+(?:_\\d+)*)#(?:[\\da-fA-F]+(?:_[\\da-fA-F]+)*)(?:\\.[\\da-fA-F]+(?:_[\\da-fA-F]+)*)?#(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?(?!\\Y)\":::Numeric Const::\n\
 	Numeric Literals:\"<(?:\\d+(?:_\\d+)*)(?:\\.\\d+(?:_\\d+)*)?(?iE[+\\-]?(?:\\d+(?:_\\d+)*))?>\":::Numeric Const::\n\
 	Pragma:\"(?n(?ipragma)\\s+\\l[\\l\\d]*(?:_\\l[\\l\\d]*)*\\s*\\([^)]*\\)\\s*;)\":::Preprocessor::\n\
-	Withs Use:\"(?#Make \\s work across newlines)(?n(?iwith|use)(?#Leading W/S)\\s+(?#First package name)(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]+)*)(?#Additional package names [optional])(?:\\s*,\\s*(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]+)*))*(?#Trailing W/S)\\s*;)+\":::Preprocessor::\n\
+	Withs Use:\"(?#Make \\s work across newlines)(?n(?iwith|use)(?#Leading W/S)\\s+(?#First package name)(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]*)*)(?#Additional package names [optional])(?:\\s*,\\s*(?:\\l[\\l\\d]*(?:(_|\\.\\l)[\\l\\d]+)*))*(?#Trailing W/S)\\s*;)+\":::Preprocessor::\n\
 	Predefined Types:\"(?i(?=[bcdfilps]))<(?iboolean|character|count|duration|float|integer|long_float|long_integer|priority|short_float|short_integer|string)>\":::Storage Type::D\n\
 	Predefined Subtypes:\"(?i(?=[fnp]))<(?ifield|natural|number_base|positive|priority)>\":::Storage Type::D\n\
 	Reserved Words:\"(?i(?=[a-gil-pr-uwx]))<(?iabort|abs|accept|access|and|array|at|begin|body|case|constant|declare|delay|delta|digits|do|else|elsif|end|entry|exception|exit|for|function|generic|goto|if|in|is|limited|loop|mod|new|not|null|of|or|others|out|package|pragma|private|procedure|raise|range|record|rem|renames|return|reverse|select|separate|subtype|task|terminate|then|type|use|when|while|with|xor)>\":::Keyword::D\n\

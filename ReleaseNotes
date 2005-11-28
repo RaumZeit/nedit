@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.32 2005/11/28 21:35:57 yooden Exp $
+$Id: ReleaseNotes,v 1.33 2005/11/28 22:43:58 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -25,6 +25,8 @@ Bugs fixed in $NEXT_VERSION
 
   - Duplicate display bugs SF#464967 and SF#1041077 are fixed.
 
+  - A typo in Ada's syntax highlighting patterns is fixed (SF bug #858874).
+  
 
 New features in 5.5 
 
