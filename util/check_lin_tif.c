@@ -76,17 +76,19 @@ int main(int argc, const char *argv[])
             "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
 
 #ifdef BUILD_BROKEN_NEDIT
-        char buf[2];
-        fprintf(stderr,
-            "\n========================== WARNING ===========================\n"
-            "You have chosen to build NEdit with a known-bad version of Motif,\n"
-            "risking instability and probable data loss.  You are very brave!\n"
-            "Please do not report bugs to the NEdit developers unless you can\n"
-            "reproduce them with a known-good NEdit binary downloaded from:\n"
-            "\thttp://www.nedit.org\n"
-            "\nHIT ENTER TO CONTINUE\n");
-        fgets(buf, 2, stdin);
-        return EXIT_SUCCESS;
+        {
+            char buf[2];
+            fprintf(stderr,
+                "\n========================== WARNING ===========================\n"
+                "You have chosen to build NEdit with a known-bad version of Motif,\n"
+                "risking instability and probable data loss.  You are very brave!\n"
+                "Please do not report bugs to the NEdit developers unless you can\n"
+                "reproduce them with a known-good NEdit binary downloaded from:\n"
+                "\thttp://www.nedit.org\n"
+                "\nHIT ENTER TO CONTINUE\n");
+            fgets(buf, 2, stdin);
+            return EXIT_SUCCESS;
+        }
 #else
         showGoodVersions();
         
@@ -114,15 +116,17 @@ int main(int argc, const char *argv[])
             "is better.\n");
 
 #ifdef BUILD_UNTESTED_NEDIT
-        char buf[2];
-        fprintf(stderr,
-            "\n========================== WARNING ===========================\n"
-            "You have chosen to build NEdit with an untested version of Motif.\n"
-            "Please report your success or failure with this version to:\n"
-            "\tdevelop@nedit.org\n"
-            "\nHIT ENTER TO CONTINUE\n");
-        fgets(buf, 2, stdin);
-        return EXIT_SUCCESS;
+        {
+            char buf[2];
+            fprintf(stderr,
+                "\n========================== WARNING ===========================\n"
+                "You have chosen to build NEdit with an untested version of Motif.\n"
+                "Please report your success or failure with this version to:\n"
+                "\tdevelop@nedit.org\n"
+                "\nHIT ENTER TO CONTINUE\n");
+            fgets(buf, 2, stdin);
+            return EXIT_SUCCESS;
+        }
 #else
         showGoodVersions();
 
