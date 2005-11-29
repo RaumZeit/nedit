@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.37 2004/12/23 22:25:46 edg Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.38 2005/11/29 20:37:40 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -242,7 +242,8 @@ define matlabNewlineMacro\n\
    else {\n\
       return indentLevel\n\
    }\n\
-}", "return matlabNewlineMacro($1)\n", NULL}
+}\n\
+", "return matlabNewlineMacro($1)\n", NULL}
 };
 
 static char DefaultCommonMacros[] = "#\n\
