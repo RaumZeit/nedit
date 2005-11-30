@@ -1,6 +1,6 @@
 /**
  *
- * $Id: SlideC.c,v 1.3 2005/05/27 16:49:04 edg Exp $
+ * $Id: SlideC.c,v 1.4 2005/11/30 17:48:04 tringali Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -54,7 +54,7 @@ static void targetDestroy(Widget target, Widget w);
    Widget default resources
  */
 
-#define Offset(field) XtOffsetOf(XltSlideContextRec, slide.field)
+#define Offset(field) XmPartOffset(XltSlideContext, field)
 static XtResource resources[] =
 {
     {
@@ -103,6 +103,9 @@ static XtResource resources[] =
 /*
    Widget class record
  */
+
+XmOffsetPtr XltSlideContext_offsets;
+
 XltSlideContextClassRec xltSlideContextClassRec = {
 	/* Object Class Part */
 	{
@@ -150,6 +153,9 @@ WidgetClass xltSlideContextWidgetClass = (WidgetClass)&xltSlideContextClassRec;
 static void 
 class_initialize(void)
 {
+    XmeResolvePartOffsets(xltSlideContextWidgetClass,
+            &XltSlideContext_offsets,
+            NULL);
 }
 
 static void 
