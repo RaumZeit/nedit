@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.99 2005/08/13 19:29:08 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.100 2005/11/30 17:52:27 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -1628,7 +1628,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = window->macroCmdData;
     XmString xmCancel;
-    char *cCancel;
+    char *cCancel = "\0";
     char message[MAX_TIMEOUT_MSG_LEN];
     
     cmdData->bannerIsUp = True;
@@ -1636,11 +1636,14 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     /* Extract accelerator text from menu PushButtons */
     XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
 
-    /* Translate Motif string to char* */
-    cCancel = GetXmStringText(xmCancel);
+    if (!XmStringEmpty(xmCancel))
+        {
+        /* Translate Motif string to char* */
+        cCancel = GetXmStringText(xmCancel);
 
-    /* Free Motif String */
-    XmStringFree(xmCancel);
+        /* Free Motif String */
+        XmStringFree(xmCancel);
+        }
 
     /* Create message */
     if (cCancel[0] == '\0') {
