@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButton.c,v 1.8 2005/11/30 17:48:04 tringali Exp $
+ * $Id: BubbleButton.c,v 1.9 2005/12/01 14:31:43 tringali Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -50,7 +50,7 @@
 #include <dmalloc.h>
 #endif
 
-static const char rcsid[] = "$Id: BubbleButton.c,v 1.8 2005/11/30 17:48:04 tringali Exp $";
+static const char rcsid[] = "$Id: BubbleButton.c,v 1.9 2005/12/01 14:31:43 tringali Exp $";
 
 /*
    Widget methods, forward declarations
@@ -71,7 +71,7 @@ static void _XmExportLabelString(Widget w, int offset, XtArgVal *value);
    Widget default resources
  */
 
-#define Offset(field) XmPartOffset(XltBubbleButton, field)
+#define Offset(field) XtOffsetOf(XltBubbleButtonRec, bubble_button.field)
 static XtResource resources[] =
 {
 	{
@@ -129,8 +129,6 @@ static XmSyntheticResource syn_resources[] =
 /*
    Widget class record
  */
-
-XmOffsetPtr XltBubbleButton_offsets;
 
 static void EnterWindow(Widget w, XEvent *event, String *params, Cardinal *num_params);
 static void LeaveWindow(Widget w, XEvent *event, String *params, Cardinal *num_params);
@@ -223,10 +221,6 @@ static void
 class_initialize(void)
 {
     xrwsBubbleButtonClassRec.bubble_button_class.leave_time = 0;
-
-    XmeResolvePartOffsets(xrwsBubbleButtonWidgetClass,
-            &XltBubbleButton_offsets,
-            NULL);
 }
 
 static void

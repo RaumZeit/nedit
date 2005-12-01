@@ -1,6 +1,6 @@
 /**
  *
- * $Id: SlideCP.h,v 1.3 2005/11/30 17:48:04 tringali Exp $
+ * $Id: SlideCP.h,v 1.4 2005/12/01 14:31:43 tringali Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -73,21 +73,15 @@ typedef struct _XltSlideContextRec {
 	XltSlideContextPart slide;
 } XltSlideContextRec;
 
-#define XltSlideContextField(w,f,t) XmField(w, XltSlideContext_offsets, XltSlideContext, f, t)
-
-#define XltSlideContextIndex (XmObjectIndex + 1)
-
-extern XmOffsetPtr XltSlideContext_offsets;
-
-#define Slide_Id(w) XltSlideContextField(w, id, XtIntervalId)
-#define Slide_Widget(w) XltSlideContextField(w, slide_widget, Widget)
-#define Slide_Interval(w) XltSlideContextField(w, interval, unsigned long)
-#define Slide_DestWidth(w) XltSlideContextField(w, dest_width, Dimension)
-#define Slide_DestHeight(w) XltSlideContextField(w, dest_height, Dimension)
-#define Slide_DestX(w) XltSlideContextField(w, dest_x, Position)
-#define Slide_DestY(w) XltSlideContextField(w, dest_y, Position)
-#define Slide_FinishCallback(w) XltSlideContextField(w, slideFinishCallback, XtCallbackList)
-#define Slide_MotionCallback(w) XltSlideContextField(w, slideMotionCallback, XtCallbackList)
+#define Slide_Id(w) (((XltSlideContextWidget)w)->slide.id)
+#define Slide_Widget(w) (((XltSlideContextWidget)w)->slide.slide_widget)
+#define Slide_Interval(w) (((XltSlideContextWidget)w)->slide.interval)
+#define Slide_DestWidth(w) (((XltSlideContextWidget)w)->slide.dest_width)
+#define Slide_DestHeight(w) (((XltSlideContextWidget)w)->slide.dest_height)
+#define Slide_DestX(w) (((XltSlideContextWidget)w)->slide.dest_x)
+#define Slide_DestY(w) (((XltSlideContextWidget)w)->slide.dest_y)
+#define Slide_FinishCallback(w) (((XltSlideContextWidget)w)->slide.slideFinishCallback)
+#define Slide_MotionCallback(w) (((XltSlideContextWidget)w)->slide.slideMotionCallback)
 
 #ifdef __cplusplus
 }

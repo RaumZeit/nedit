@@ -1,6 +1,6 @@
 /**
  *
- * $Id: BubbleButtonP.h,v 1.4 2005/11/30 17:48:04 tringali Exp $
+ * $Id: BubbleButtonP.h,v 1.5 2005/12/01 14:31:43 tringali Exp $
  *
  * Copyright (C) 1996 Free Software Foundation, Inc.
  * Copyright © 1999-2001 by the LessTif developers.
@@ -44,25 +44,19 @@ typedef struct {
 	Boolean autoParkBubble;
 } XltBubbleButtonPart;
 
-#define XltBubbleButtonField(w,f,t) XmField(w, XltBubbleButton_offsets, XltBubbleButton, f, t)
-
-#define XltBubbleButtonIndex (XmPushButtonIndex + 1)
-
-extern XmOffsetPtr XltBubbleButton_offsets;
-
-#define BubbleButton_Timer(w) XltBubbleButtonField(w, Timer, XtIntervalId)
-#define BubbleButton_Delay(w) XltBubbleButtonField(w, Delay, int)
-#define BubbleButton_Label(w) XltBubbleButtonField(w, BubbleLabel, Widget)
-#define BubbleButton_BubbleString(w) XltBubbleButtonField(w, BubbleString, XmString)
-#define BubbleButton_ShowBubble(w) XltBubbleButtonField(w, show_bubble, Boolean)
-#define BubbleButton_MouseOverString(w) XltBubbleButtonField(w, MouseOverString, XmString)
-#define BubbleButton_MouseOverPixmap(w) XltBubbleButtonField(w, MouseOverPixmap, Pixmap)
-#define BubbleButton_DurationTimer(w) XltBubbleButtonField(w, DurationTimer, XtIntervalId)
-#define BubbleButton_Duration(w) XltBubbleButtonField(w, Duration, int)
-#define BubbleButton_Swapped(w) XltBubbleButtonField(w, Swapped, Boolean)
-#define BubbleButton_Slider(w) XltBubbleButtonField(w, slider, Widget)
-#define BubbleButton_SlidingBubble(w) XltBubbleButtonField(w, slidingBubble, Boolean)
-#define BubbleButton_AutoParkBubble(w) XltBubbleButtonField(w, autoParkBubble, Boolean)
+#define BubbleButton_Timer(w) (((XltBubbleButtonWidget)w)->bubble_button.Timer)
+#define BubbleButton_Delay(w) (((XltBubbleButtonWidget)w)->bubble_button.Delay)
+#define BubbleButton_Label(w) (((XltBubbleButtonWidget)w)->bubble_button.BubbleLabel)
+#define BubbleButton_BubbleString(w) (((XltBubbleButtonWidget)w)->bubble_button.BubbleString)
+#define BubbleButton_ShowBubble(w) (((XltBubbleButtonWidget)w)->bubble_button.show_bubble)
+#define BubbleButton_MouseOverString(w) (((XltBubbleButtonWidget)w)->bubble_button.MouseOverString)
+#define BubbleButton_MouseOverPixmap(w) (((XltBubbleButtonWidget)w)->bubble_button.MouseOverPixmap)
+#define BubbleButton_DurationTimer(w) (((XltBubbleButtonWidget)w)->bubble_button.DurationTimer)
+#define BubbleButton_Duration(w) (((XltBubbleButtonWidget)w)->bubble_button.Duration)
+#define BubbleButton_Swapped(w) (((XltBubbleButtonWidget)w)->bubble_button.Swapped)
+#define BubbleButton_Slider(w) (((XltBubbleButtonWidget)w)->bubble_button.slider)
+#define BubbleButton_SlidingBubble(w) (((XltBubbleButtonWidget)w)->bubble_button.slidingBubble)
+#define BubbleButton_AutoParkBubble(w) (((XltBubbleButtonWidget)w)->bubble_button.autoParkBubble)
 
 #define BubbleButtonClass_LeaveTime(w) (((XltBubbleButtonWidgetClass)XtClass(w))->bubble_button_class.leave_time)
 
