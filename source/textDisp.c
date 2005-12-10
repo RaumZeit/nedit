@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.62 2005/11/26 00:17:05 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.63 2005/12/10 23:21:47 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -690,16 +690,23 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
     	    lastLine = textD->nVisibleLines - 1;
     	}
     }
-    	
+
     /* Get the starting and ending positions within the lines */
-    startIndex = textD->lineStarts[startLine] == -1 ? 0 :
-    	    start - textD->lineStarts[startLine];
+    startIndex = (textD->lineStarts[startLine] == -1)
+            ? 0
+            : start - textD->lineStarts[startLine];
     if (end >= textD->lastChar)
-    	endIndex = INT_MAX;
-    else if (textD->lineStarts[lastLine] == -1)
-    	endIndex = 0;
-    else
-    	endIndex = end - textD->lineStarts[lastLine];
+    {
+        endIndex = INT_MAX;
+    } else if (textD->lineStarts[lastLine] == -1)
+    {
+        endIndex = 0;
+    } else
+    {
+        /*  Add one so that the caret is properly displayed at the end of a
+            range. Else it would be correctly drawn only on the first blink. */
+        endIndex = end - textD->lineStarts[lastLine] + 1;
+    }
     
     /* Reset the clipping rectangles for the drawing GCs which are shared
        using XtAllocateGC, and may have changed since the last use */
@@ -708,7 +715,7 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
     /* If the starting and ending lines are the same, redisplay the single
        line between "start" and "end" */
     if (startLine == lastLine) {
-        redisplayLine(textD, startLine, 0, INT_MAX, startIndex, endIndex + 1);
+        redisplayLine(textD, startLine, 0, INT_MAX, startIndex, endIndex);
     	return;
     }
     
@@ -720,7 +727,7 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
 	redisplayLine(textD, i, 0, INT_MAX, 0, INT_MAX);
 
     /* Redisplay the last line to "end" */
-    redisplayLine(textD, lastLine, 0, INT_MAX, 0, endIndex + 1);
+    redisplayLine(textD, lastLine, 0, INT_MAX, 0, endIndex);
 }
 
 /*
