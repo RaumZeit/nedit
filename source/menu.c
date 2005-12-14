@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.128 2005/05/27 16:49:04 edg Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.129 2005/12/14 23:08:29 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -64,7 +64,9 @@ static const char CVSID[] = "$Id: menu.c,v 1.128 2005/05/27 16:49:04 edg Exp $";
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -72,6 +74,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.128 2005/05/27 16:49:04 edg Exp $";
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
 #include <X11/X.h>
 #include <Xm/Xm.h>
 #include <Xm/CascadeB.h>
@@ -582,7 +585,7 @@ static XtActionsRec Actions[] = {
 
 /* List of previously opened files for File menu */
 static int NPrevOpen = 0;
-static char **PrevOpen;
+static char** PrevOpen = NULL;
 
 #ifdef SGI_CUSTOM
 /* Window to receive items to be toggled on and off in short menus mode */
@@ -663,7 +666,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    SHORT);
     window->openSelItem=createMenuItem(menuPane, "openSelected", "Open Selected", 'd',
     	    doActionCB, "open_selected", FULL);
-    if (GetPrefMaxPrevOpenFiles() != 0) {
+    if (GetPrefMaxPrevOpenFiles() > 0) {
 	window->prevOpenMenuPane = createMenu(menuPane, "openPrevious",
     		"Open Previous", 'v', &window->prevOpenMenuItem, SHORT);
 	XtSetSensitive(window->prevOpenMenuItem, NPrevOpen != 0);
@@ -4490,11 +4493,20 @@ void AddToPrevOpenMenu(const char *filename)
     int i;
     char *nameCopy;
     WindowInfo *w;
-    
+
     /* If the Open Previous command is disabled, just return */
-    if (GetPrefMaxPrevOpenFiles() == 0)
+    if (GetPrefMaxPrevOpenFiles() < 1) {
     	return;
-    
+    }
+
+    /*  Refresh list of previously opened files to avoid Big Race Condition,
+        where two sessions overwrite each other's changes in NEdit's
+        history file.
+        Of course there is still Little Race Condition, which occurs if a
+        Session A reads the list, then Session B reads the list and writes
+        it before Session A gets a chance to write.  */
+    ReadNEditDB();
+
     /* If the name is already in the list, move it to the start */
     for (i=0; i<NPrevOpen; i++) {
     	if (!strcmp(filename, PrevOpen[i])) {
@@ -4508,8 +4520,10 @@ void AddToPrevOpenMenu(const char *filename)
     }
     
     /* If the list is already full, make room */
-    if (NPrevOpen == GetPrefMaxPrevOpenFiles())
-    	XtFree(PrevOpen[--NPrevOpen]);
+    if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
+        /*  This is only safe if GetPrefMaxPrevOpenFiles() > 0.  */
+        XtFree(PrevOpen[--NPrevOpen]);
+    }
     
     /* Add it to the list */
     nameCopy = XtMalloc(strlen(filename) + 1);
@@ -4522,12 +4536,13 @@ void AddToPrevOpenMenu(const char *filename)
     invalidatePrevOpenMenus();
 
     /* Undim the menu in all windows if it was previously empty */
-    if (NPrevOpen == 1)
+    if (NPrevOpen > 0) {
     	for (w=WindowList; w!=NULL; w=w->next) {
     	    if (!IsTopDocument(w))
 		continue;
     	    XtSetSensitive(w->prevOpenMenuItem, True);
 	}
+    }
     
     /* Write the menu contents to disk to restore in later sessions */
     WriteNEditDB();
@@ -4657,6 +4672,9 @@ static void updatePrevOpenMenu(WindowInfo *window)
     int n, index;
     XmString st1;
     char **prevOpenSorted;
+
+    /*  Read history file to get entries written by other sessions.  */
+    ReadNEditDB();
                 
     /* Sort the previously opened file list if requested */
     prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char*));
@@ -4838,7 +4856,7 @@ void WriteNEditDB(void)
     }
 
     /* If the Open Previous command is disabled, just return */
-    if (GetPrefMaxPrevOpenFiles() == 0) {
+    if (GetPrefMaxPrevOpenFiles() < 1) {
         return;
     }
 
@@ -4881,29 +4899,39 @@ void WriteNEditDB(void)
 }
 
 /*
-** Read dynamic database of file names for "Open Previous".  Eventually,
-** this may hold window positions, and possibly file marks, in which case,
-** it should be moved to a different module, but for now it's just a list
-** of previously opened files.  This routine should only be called once,
-** at startup time, before any windows are open.
+**  Read database of file names for 'Open Previous' submenu.
+**
+**  Eventually, this may hold window positions, and possibly file marks (in
+**  which case it should be moved to a different module) but for now it's
+**  just a list of previously opened files.
+**
+**  This list is read once at startup and potentially refreshed before a
+**  new entry is about to be written to the file or before the menu is
+**  displayed. If the file is modified since the last read (or not read
+**  before), it is read in, otherwise nothing is done.
 */
 void ReadNEditDB(void)
 {
     const char *fullName = GetRCFileName(NEDIT_HISTORY);
     char line[MAXPATHLEN + 2];
     char *nameCopy;
+    struct stat attribute;
     FILE *fp;
     size_t lineLen;
+    static time_t lastNeditdbModTime = 0;
 
-    /* If the Open Previous command is disabled, just return */
-    if (GetPrefMaxPrevOpenFiles() == 0) {
+    /*  If the Open Previous command is disabled or the user set the
+        resource to an (invalid) negative value, just return.  */
+    if (GetPrefMaxPrevOpenFiles() < 1) {
         return;
     }
 
     /* Initialize the files list and allocate a (permanent) block memory
        of the size prescribed by the maxPrevOpenFiles resource */
-    PrevOpen = (char **)XtMalloc(sizeof(char *) * GetPrefMaxPrevOpenFiles());
-    NPrevOpen = 0;
+    if (!PrevOpen) {
+        PrevOpen = (char**) XtMalloc(sizeof(char*) * GetPrefMaxPrevOpenFiles());
+        NPrevOpen = 0;
+    }
 
     /* Don't move this check ahead of the previous statements. PrevOpen
        must be initialized at all times. */
@@ -4914,9 +4942,23 @@ void ReadNEditDB(void)
         return;
     }
 
+    /*  Do nothing if database has not changed since last read.  */
+    if ((0 == stat(fullName, &attribute))
+            && lastNeditdbModTime >= attribute.st_mtime) {
+        return;
+    }
+      
+    /*  Memorize modtime to compare to next time.  */
+    lastNeditdbModTime = attribute.st_mtime;
+
     /* open the file */
     if ((fp = fopen(fullName, "r")) == NULL) {
         return;
+    }
+
+    /*  Clear previous list.  */
+    while (0 != NPrevOpen) {
+        XtFree(PrevOpen[--NPrevOpen]);
     }
 
     /* read lines of the file, lines beginning with # are considered to be
