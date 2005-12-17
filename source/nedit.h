@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.64 2005/11/08 22:22:22 edg Exp $ */
+/* $Id: nedit.h,v 1.65 2005/12/17 19:23:32 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -506,7 +506,6 @@ typedef struct _WindowInfo {
     					   and shell command executing modes */
     Boolean	ignoreModify;		/* ignore modifications to text area */
     Boolean	windowMenuValid;	/* is window menu up to date? */
-    Boolean	prevOpenMenuValid;	/* Prev. Opened Files menu up to date?*/
     int		rHistIndex, fHistIndex;	/* history placeholders for */
     int     	iSearchHistIndex;	/*   find and replace dialogs */
     int     	iSearchStartPos;    	/* start pos. of current incr. search */

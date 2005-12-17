@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.129 2005/12/14 23:08:29 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.130 2005/12/17 19:23:32 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -2183,7 +2183,6 @@ static void sortOpenPrevDefCB(Widget w, WindowInfo *window, caddr_t callData)
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
     for (win=WindowList; win!=NULL; win=win->next) {
-	win->prevOpenMenuValid = False;
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
     }
@@ -2682,10 +2681,7 @@ static void prevOpenMenuCB(Widget w, WindowInfo *window, caddr_t callData)
 {
     window = WidgetToWindow(MENU_WIDGET(w));
 
-    if (!window->prevOpenMenuValid) {
-    	updatePrevOpenMenu(window);
-    	window->prevOpenMenuValid = True;
-    }
+    updatePrevOpenMenu(window);
 }
 
 static void unloadTagsFileMenuCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -4479,8 +4475,6 @@ static void invalidatePrevOpenMenus(void)
     for (w=WindowList; w!=NULL; w=w->next) {
     	if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane)))
     	    updatePrevOpenMenu(w);
-    	else
-    	    w->prevOpenMenuValid = False;
     }
 }
 

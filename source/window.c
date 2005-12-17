@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.186 2005/11/08 22:22:22 edg Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.187 2005/12/17 19:23:32 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -284,7 +284,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->modeMessage = NULL;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
-    window->prevOpenMenuValid = FALSE;
     window->flashTimeoutID = 0;
     window->fileClosedAtom = None;
     window->wasSelected = FALSE;
@@ -3241,7 +3240,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->modeMessage = NULL;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
-    window->prevOpenMenuValid = FALSE;
     window->flashTimeoutID = 0;
     window->wasSelected = FALSE;
     strcpy(window->fontName, GetPrefFontName());
@@ -4236,7 +4234,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->modeMessageDisplayed = orgWin->modeMessageDisplayed;
     window->ignoreModify = orgWin->ignoreModify;
     window->windowMenuValid = orgWin->windowMenuValid;
-    window->prevOpenMenuValid = orgWin->prevOpenMenuValid;
     window->flashTimeoutID = orgWin->flashTimeoutID;
     window->wasSelected = orgWin->wasSelected;
     strcpy(window->fontName, orgWin->fontName);
