@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.130 2005/12/17 19:23:32 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.131 2005/12/18 03:46:46 tksoh Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4942,13 +4942,13 @@ void ReadNEditDB(void)
         return;
     }
       
-    /*  Memorize modtime to compare to next time.  */
-    lastNeditdbModTime = attribute.st_mtime;
-
     /* open the file */
     if ((fp = fopen(fullName, "r")) == NULL) {
         return;
     }
+
+    /*  Memorize modtime to compare to next time.  */
+    lastNeditdbModTime = attribute.st_mtime;
 
     /*  Clear previous list.  */
     while (0 != NPrevOpen) {
