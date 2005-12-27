@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.93 2005/06/22 07:34:34 edg Exp $
+.. $Id: help.etx,v 1.94 2005/12/27 20:55:57 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2507,22 +2507,27 @@ Macro Subroutines
 
 **calltip( "text_or_key" [, pos [, mode or position_modifier, ...]] )**
   Pops up a calltip. <pos> is an optional position in the buffer where the tip
-  will be displayed.  Passing -1 for <pos> is equivalent to not specifying a 
+  will be displayed. Passing -1 for <pos> is equivalent to not specifying a
   position, and it guarantees that the tip will appear on-screen somewhere even
-  if the cursor is not.  The upper-left corner of the calltip will appear below
-  where the cursor would appear if it were at this position.  <mode> is one of
-  "tipText" (default), "tipKey", or "tagKey". "tipText" displays the text as-is,
-  "tagKey" uses it as the key to look up a tag, then converts the tag to a
-  calltip, and "tipKey" uses it as the key to look up a calltip, then falls back
-  to "tagKey" behavior if that fails.  You'll usually use "tipKey" or "tipText".
+  if the cursor is not. The upper-left corner of the calltip will appear below
+  where the cursor would appear if it were at this position.
+
+  <mode> is one of "tipText" (default), "tipKey", or "tagKey". "tipText"
+  displays the text as-is, "tagKey" uses it as the key to look up a tag, then
+  converts the tag to a calltip, and "tipKey" uses it as the key to look up a
+  calltip, then falls back to "tagKey" behavior if that fails. You'll usually
+  use "tipKey" or "tipText".
+
   Finally, you can modify the placement of the calltip relative to the cursor
   position (or <pos>) with one or more of these optional position modifiers:
-  "center" aligns the center of the calltip with the position.  "right" aligns
-  the right edge of the calltip with the position.  ("center" and "right" may 
-  not both be used.)  "above" places the calltip above the position.  "strict"
-  does not allow the calltip to move from its position in order to avoid going 
-  off-screen or obscuring the cursor.  Returns the ID of the calltip if it was 
-  found and/or displayed correctly, 0 otherwise.
+  "center" aligns the center of the calltip with the position. "right" aligns
+  the right edge of the calltip with the position. ("center" and "right" may
+  not both be used.) "above" places the calltip above the position. "strict"
+  does not allow the calltip to move from its position in order to avoid going
+  off-screen or obscuring the cursor.
+
+  Returns the ID of the calltip if it was found and/or displayed correctly,
+  0 otherwise.
 
 **clipboard_to_string()**  
   Returns the contents of the clipboard as a macro string. Returns empty
