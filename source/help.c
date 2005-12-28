@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.104 2005/02/12 01:53:19 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.105 2005/12/28 22:19:49 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -242,7 +242,7 @@ static const char *getBuildInfo(void)
                                         "StaticColor", "PseudoColor",
                                         "TrueColor",   "DirectColor"};
 
-    static const char *const stabilities[] = {"", "(Known Bad) ", "(Untested) "};
+    static const char *const stabilities[] = {"", "(Untested) ", "(Known Bad) "};
 
     if (bldInfoString == NULL)
     {
