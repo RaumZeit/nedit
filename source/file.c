@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.95 2005/11/08 22:22:22 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.96 2006/01/02 22:18:45 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1201,18 +1201,11 @@ static int writeBckVersion(WindowInfo *window)
     fileLen = statbuf.st_size;
 
     /* open the file exclusive and with restrictive permissions. */
-#ifdef VMS
-    if ((outFP = fopen(bckname, "w", "rfm = stmlf")) == NULL) {
-#else
     if ((fd = open(bckname, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
         || (outFP = fdopen(fd, "wb")) == NULL) {
-#endif /* VMS */
     	fclose(inFP);
         return bckError(window, "Error open backup file", bckname);
     }
-#ifdef VMS
-    chmod(bckname, S_IRUSR | S_IWUSR);    
-#endif
     
     /* Allocate space for the whole contents of the file */
     fileString = (char *)malloc(fileLen);
