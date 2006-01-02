@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.40 2005/05/27 16:50:27 edg Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.41 2006/01/02 22:35:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -1033,9 +1033,9 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	       perror("chdir to directory of current file failed");
      
 	/* execute the command using the shell specified by preferences */
-	execl(GetPrefShell(), GetPrefShell(), "-c", command, (char *)0);
+	execlp(GetPrefShell(), GetPrefShell(), "-c", command, NULL);
 
-	/* if we reach here, execl failed */
+	/* if we reach here, execlp failed */
 	fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
 	exit(EXIT_FAILURE);
     }

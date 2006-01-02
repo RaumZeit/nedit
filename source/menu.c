@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.132 2006/01/02 22:07:20 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.133 2006/01/02 22:35:04 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -142,6 +142,7 @@ static void noWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void newlineWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void contWrapDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void wrapMarginDefCB(Widget w, WindowInfo *window, caddr_t callData);
+static void shellSelDefCB(Widget widget, WindowInfo* window, caddr_t callData);
 static void openInTabDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarDefCB(Widget w, WindowInfo *window, caddr_t callData);
 static void tabBarHideDefCB(Widget w, WindowInfo *window, caddr_t callData);
@@ -862,6 +863,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->smartTagsDefItem = createMenuRadioToggle(subSubPane, "smart",
 	    "Smart", 'S', smartTagsDefCB, window, GetPrefSmartTags(), FULL);
 
+    createMenuItem(subPane, "shellSel", "Select Shell...", 's', shellSelDefCB,
+            window, SHORT);
     createMenuItem(subPane, "tabDistance", "Tab Stops...", 'T', tabsDefCB, window,
     	    SHORT);
     createMenuItem(subPane, "textFont", "Text Fonts...", 'F', fontDefCB, window,
@@ -1941,6 +1944,13 @@ static void showAllTagsDefCB(Widget w, XtPointer client_data, XtPointer callData
 	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
 	XmToggleButtonSetState(win->allTagsDefItem, True, False);
     }
+}
+
+static void shellSelDefCB(Widget widget, WindowInfo* window, caddr_t callData)
+{
+    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(widget))->lastFocus,
+            ((XmAnyCallbackStruct*) callData)->event);
+    SelectShellDialog(WidgetToWindow(MENU_WIDGET(widget))->shell, NULL);
 }
 
 static void tabsDefCB(Widget w, WindowInfo *window, caddr_t callData)

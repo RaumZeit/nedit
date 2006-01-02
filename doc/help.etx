@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.94 2005/12/27 20:55:57 yooden Exp $
+.. $Id: help.etx,v 1.95 2006/01/02 22:35:04 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3721,6 +3721,10 @@ Preferences
   are displayed in a dialog.  In Smart mode, if one of the matching tags is in
   the current window, that tag is chosen, without displaying the dialog.
 
+**Select Shell...**
+  Set the shell used to run programs from the shell_command() macro function
+  and from the Shell menu. This defaults to the user's login shell.
+
 **Colors...**
   Change the colors used to display text.  The "Matching (..)" fields change the
   colors that matching parens, brackets and braces are flashed when the "Show
@@ -4068,11 +4072,6 @@ X Resources
   these tag value paths whenever a file is opened. All accessible tag files
   will be loaded at this time. When this resource value is False, relative path
   tag specifications will only be evaluated at NEdit startup time.
-
-**nedit.shell**: /bin/csh 
-  
-  (Unix systems only) The Unix shell (command interpreter) to use for executing
-  commands from the Shell menu
 
 **nedit.wordDelimiters**: .,/\\`'!@@#%^&*()-=+{}[]":;<>?
 

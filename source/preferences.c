@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.136 2005/02/23 03:00:52 ajbj Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.137 2006/01/02 22:35:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -55,10 +55,13 @@ static const char CVSID[] = "$Id: preferences.c,v 1.136 2005/02/23 03:00:52 ajbj
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 
+#include <ctype.h>
+#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -104,6 +107,11 @@ static const char CVSID[] = "$Id: preferences.c,v 1.136 2005/02/23 03:00:52 ajbj
 
 /* maximum number of file extensions allowed in a language mode */
 #define MAX_FILE_EXTENSIONS 20
+
+/*  Maximum shell name length. 512 should be enough. If somebody disagrees
+    I would suggest to replace the static string with an XtMalloc()ed buffer
+    of size strlen(pw_shell), as this is one digit anyway most of the time. */
+#define MAX_SH_LEN 512
 
 /* Return values for checkFontStatus */
 enum fontStatus {GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING};
@@ -295,7 +303,7 @@ static struct prefData {
     int maxPrevOpenFiles;   	/* limit to size of Open Previous menu */
     int typingHidesPointer;     /* hide mouse pointer when typing */
     char delimiters[MAX_WORD_DELIMITERS]; /* punctuation characters */
-    char shell[MAXPATHLEN];	/* shell to use for executing commands */
+    char shell[MAXPATHLEN + 1]; /* shell to use for executing commands */
     char geometry[MAX_GEOM_STRING_LEN];	/* per-application geometry string,
     	    	    	    	    	   only for the clueless */
     char serverName[MAXPATHLEN];/* server name for multiple servers per disp. */
@@ -327,6 +335,7 @@ static struct {
     char *styles;
     char *smartIndent;
     char *smartIndentCommon;
+    char *shell;
 } TempStringPrefs;
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
@@ -925,14 +934,8 @@ static PrefDescripRec PrefDescrip[] = {
     {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1",
         PrefData.tooltipBgColor,
         (void *)sizeof(PrefData.tooltipBgColor), False},
-                
-    {"shell", "Shell", PREF_STRING,
-#if defined(__MVS__) || defined(__EMX__)
-    	"/bin/sh",
-#else
-        "/bin/csh",
-#endif
-    	PrefData.shell, (void *)sizeof(PrefData.shell), False},
+    {"shell", "Shell", PREF_ALLOC_STRING, "Default", &TempStringPrefs.shell,
+        (void*) sizeof(PrefData.shell), True},
     {"geometry", "Geometry", PREF_STRING, "",
     	PrefData.geometry, (void *)sizeof(PrefData.geometry), False},
     {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False",
@@ -1027,6 +1030,9 @@ static int DoneWithWrapDialog;
 static WindowInfo *WrapDialogForWindow;
 static Widget WrapText, WrapTextLabel, WrapWindowToggle;
 
+/*  Module-global variables for shell selection dialog  */
+static int DoneWithShellSelDialog = False;
+
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
@@ -1040,8 +1046,11 @@ static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData);
+static void shellSelOKCB(Widget widget, XtPointer clientData,
+        XtPointer callData);
+static void shellSelCancelCB(Widget widgget, XtPointer clientData,
+        XtPointer callData);
 static void reapplyLanguageMode(WindowInfo *window, int mode,int forceDefaults);
-
 
 static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     	XtPointer callData);
@@ -1128,6 +1137,8 @@ static void spliceString(char **intoString, const char *insertString, const char
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
 	const char *replaceWith);
+static const char* getDefaultShell(void);
+
 
 #ifdef SGI_CUSTOM
 static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault);
@@ -1283,7 +1294,18 @@ static void translatePrefFormats(int convertOld, int fileVer)
     	    PrefData.italicFontString);
     PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay,
     	    PrefData.boldItalicFontString);
-    
+
+    /*  If no shell is given, insert a default shell.  */
+    if (0 == strcmp(TempStringPrefs.shell, "Default")) {
+        strncpy(PrefData.shell, getDefaultShell(), MAXPATHLEN);
+        PrefData.shell[MAXPATHLEN] = '\0';
+        XtFree(TempStringPrefs.shell);
+    } else {
+        strncpy(PrefData.shell, TempStringPrefs.shell, MAXPATHLEN);
+        PrefData.shell[MAXPATHLEN] = '\0';
+        XtFree(TempStringPrefs.shell);
+    }
+
     /* For compatability with older (4.0.3 and before) versions, the autoWrap
        and autoIndent resources can accept values of True and False.  Translate
        them into acceptable wrap and indent styles */
@@ -2691,6 +2713,89 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
     
     XtSetSensitive(WrapTextLabel, !wrapAtWindow);
     XtSetSensitive(WrapText, !wrapAtWindow);
+}
+
+/*
+**  Create and show a dialog for selecting the shell
+*/
+void SelectShellDialog(Widget parent, WindowInfo* forWindow)
+{
+    Widget shellSelDialog;
+    Arg shellSelDialogArgs[2];
+    XmString label;
+
+    /*  Set up the dialog.  */
+    XtSetArg(shellSelDialogArgs[0],
+            XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+    XtSetArg(shellSelDialogArgs[1], XmNautoUnmanage, False);
+    shellSelDialog = CreatePromptDialog(parent, "shellSelDialog",
+            shellSelDialogArgs, 2);
+
+    /*  Fix dialog to our liking.  */
+    XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Select Shell", NULL);
+    XtAddCallback(shellSelDialog, XmNokCallback, (XtCallbackProc) shellSelOKCB,
+            shellSelDialog);
+    XtAddCallback(shellSelDialog, XmNcancelCallback,
+            (XtCallbackProc) shellSelCancelCB, NULL);
+    XtUnmanageChild(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_HELP_BUTTON));
+    label = XmStringCreateLocalized("Enter shell path:");
+    XtVaSetValues(shellSelDialog, XmNselectionLabelString, label, NULL);
+    XmStringFree(label);
+
+    /*  Set dialog's text to the current setting.  */
+    XmTextSetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT),
+            GetPrefShell());
+
+    DoneWithShellSelDialog = False;
+
+    /*  Show dialog and wait until the user made her choice.  */
+    ManageDialogCenteredOnPointer(shellSelDialog);
+    while (!DoneWithShellSelDialog) {
+        XEvent event;
+        XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
+        ServerDispatchEvent(&event);
+    }
+
+    XtDestroyWidget(shellSelDialog);
+}
+
+static void shellSelOKCB(Widget widget, XtPointer clientData,
+        XtPointer callData)
+{
+    Widget shellSelDialog = (Widget) clientData;
+    String shellName = XtMalloc(MAX_SH_LEN);
+    struct stat attribute;
+    unsigned dlgResult;
+
+    /*  Leave with a warning if the dialog is not up.  */
+    if (!XtIsRealized(shellSelDialog)) {
+        fprintf(stderr, "nedit: Callback shellSelOKCB() illegally called.\n");
+        return;
+    }
+
+    /*  Get the string that the user entered and make sure it's ok.  */
+    shellName = XmTextGetString(XmSelectionBoxGetChild(shellSelDialog,
+            XmDIALOG_TEXT));
+
+    if (-1 == stat(shellName, &attribute)) {
+        dlgResult = DialogF(DF_WARN, shellSelDialog, 2, "Select Shell",
+                "The selected shell is not available.\nDo you want to use it anyway?",
+                "OK", "Cancel");
+        if (1 != dlgResult) {
+            return;
+        }
+    }
+
+    SetPrefShell(shellName);
+    XtFree(shellName);
+
+    DoneWithShellSelDialog = True;
+}
+
+static void shellSelCancelCB(Widget widgget, XtPointer clientData,
+        XtPointer callData)
+{
+    DoneWithShellSelDialog = True;
 }
 
 /*
@@ -6031,4 +6136,35 @@ void ChooseColors(WindowInfo *window)
     
     /* put up dialog */
     ManageDialogCenteredOnPointer(form);
+}
+
+/*
+**  This function passes up a pointer to the static name of the login shell.
+**  In case of errors, the fallback of "sh" will be returned.
+*/
+static const char* getDefaultShell(void)
+{
+    struct passwd* passwdEntry = NULL;
+    static char shellBuffer[MAX_SH_LEN + 1] = "sh";
+
+    passwdEntry = getpwuid(getuid());
+
+    if (NULL == passwdEntry)
+    {
+        /*  Something bad happened! Do something, quick!  */
+        perror("nedit: Failed to get passwd entry (falling back to sh)");
+        return "sh";
+    }
+
+    /*  *passwdEntry may be overwritten  */
+    /*  TODO: To make this and other function calling getpwuid() more robust,
+        passwdEntry should be kept in a central position (Core->sysinfo?).
+        That way, local code would always get a current copy of passwdEntry,
+        but should still be kept lean.  The obvious alternative of a central
+        facility within NEdit to access passwdEntry would increase coupling
+        and would have to cover a lot of assumptions.  */
+    strncpy(shellBuffer, passwdEntry->pw_shell, MAX_SH_LEN);
+    shellBuffer[MAX_SH_LEN] = '\0';
+
+    return shellBuffer;
 }

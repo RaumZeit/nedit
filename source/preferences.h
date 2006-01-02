@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.48 2004/12/23 22:25:45 edg Exp $ */
+/* $Id: preferences.h,v 1.49 2006/01/02 22:35:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -168,6 +168,7 @@ int GetPrefTypingHidesPointer(void);
 void SetPrefShortMenus(int state);
 int GetPrefShortMenus(void);
 #endif
+void SelectShellDialog(Widget parent, WindowInfo* forWindow);
 void EditLanguageModes(void);
 void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window);
