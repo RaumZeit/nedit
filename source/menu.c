@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.131 2005/12/18 03:46:46 tksoh Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.132 2006/01/02 22:07:20 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4936,9 +4936,22 @@ void ReadNEditDB(void)
         return;
     }
 
-    /*  Do nothing if database has not changed since last read.  */
-    if ((0 == stat(fullName, &attribute))
-            && lastNeditdbModTime >= attribute.st_mtime) {
+    /*  Stat history file to see whether someone touched it after this
+        session last changed it.  */
+    if (0 == stat(fullName, &attribute)) {
+        if (lastNeditdbModTime >= attribute.st_mtime) {
+            /*  Do nothing, history file is unchanged.  */
+            return;
+        } else {
+            /*  Memorize modtime to compare to next time.  */
+            lastNeditdbModTime = attribute.st_mtime;
+        }
+    } else {
+        /*  stat() failed, probably for non-exiting history database.  */
+        if (ENOENT != errno)
+        {
+            perror("nedit: Error reading history database");
+        }
         return;
     }
       
@@ -4946,9 +4959,6 @@ void ReadNEditDB(void)
     if ((fp = fopen(fullName, "r")) == NULL) {
         return;
     }
-
-    /*  Memorize modtime to compare to next time.  */
-    lastNeditdbModTime = attribute.st_mtime;
 
     /*  Clear previous list.  */
     while (0 != NPrevOpen) {
