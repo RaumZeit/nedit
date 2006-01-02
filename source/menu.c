@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.133 2006/01/02 22:35:04 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.134 2006/01/02 23:10:21 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -59,10 +59,11 @@ static const char CVSID[] = "$Id: menu.c,v 1.133 2006/01/02 22:35:04 yooden Exp 
 #include "../util/utils.h"
 #include "../Xlt/BubbleButton.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
