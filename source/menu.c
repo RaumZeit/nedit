@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.134 2006/01/02 23:10:21 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.135 2006/01/14 10:26:15 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -885,9 +885,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createMenuItem(subSubPane, "windowBackgroundMenu",
 	    "Window Background Menu...", 'W', bgMenuDefCB, window, FULL);
     createMenuSeparator(subSubPane, "sep1", SHORT);
+    window->sortOpenPrevDefItem = createMenuToggle(subSubPane, "sortOpenPrevMenu",
+            "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window,
+            GetPrefSortOpenPrevMenu(), FULL);
     window->pathInWindowsMenuDefItem = createMenuToggle(subSubPane, "pathInWindowsMenu",
     	    "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(),
     	    SHORT);
+
     createMenuItem(subPane, "custimizeTitle", "Customize Window Title...", 'd',
     	    customizeTitleDefCB, window, FULL);
 
@@ -1019,9 +1023,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
             "Terminate with Line Break on Save", 'v', appendLFCB, NULL,
             GetPrefAppendLF(), FULL);
 
-    window->sortOpenPrevDefItem = createMenuToggle(subPane, "sortOpenPrevMenu",
-    	    "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window,
-    	    GetPrefSortOpenPrevMenu(), FULL);
     window->reposDlogsDefItem = createMenuToggle(subPane, "popupsUnderPointer",
     	    "Popups Under Pointer", 'P', reposDlogsDefCB, window,
     	    GetPrefRepositionDialogs(), FULL);
