@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.96 2006/01/02 22:18:45 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.97 2006/01/14 11:42:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -48,24 +48,24 @@ static const char CVSID[] = "$Id: file.c,v 1.96 2006/01/02 22:18:45 yooden Exp $
 #include "../util/printUtils.h"
 #include "../util/utils.h"
 
-#include <stdio.h>
 #include <errno.h>
 #include <limits.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #ifdef VMS
 #include "../util/VMSparam.h"
 #include <types.h>
 #include <stat.h>
 #include <unixio.h>
-#include <unistd.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#include <unistd.h>
 #include <fcntl.h>
 #endif /*VMS*/
 
