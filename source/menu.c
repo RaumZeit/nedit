@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.135 2006/01/14 10:26:15 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.136 2006/02/02 20:24:34 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -864,7 +864,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->smartTagsDefItem = createMenuRadioToggle(subSubPane, "smart",
 	    "Smart", 'S', smartTagsDefCB, window, GetPrefSmartTags(), FULL);
 
-    createMenuItem(subPane, "shellSel", "Select Shell...", 's', shellSelDefCB,
+    createMenuItem(subPane, "shellSel", "Command Shell...", 's', shellSelDefCB,
             window, SHORT);
     createMenuItem(subPane, "tabDistance", "Tab Stops...", 'T', tabsDefCB, window,
     	    SHORT);

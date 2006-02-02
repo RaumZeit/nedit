@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.137 2006/01/02 22:35:04 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.138 2006/02/02 20:24:34 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -107,11 +107,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.137 2006/01/02 22:35:04 yood
 
 /* maximum number of file extensions allowed in a language mode */
 #define MAX_FILE_EXTENSIONS 20
-
-/*  Maximum shell name length. 512 should be enough. If somebody disagrees
-    I would suggest to replace the static string with an XtMalloc()ed buffer
-    of size strlen(pw_shell), as this is one digit anyway most of the time. */
-#define MAX_SH_LEN 512
 
 /* Return values for checkFontStatus */
 enum fontStatus {GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING};
@@ -934,7 +929,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1",
         PrefData.tooltipBgColor,
         (void *)sizeof(PrefData.tooltipBgColor), False},
-    {"shell", "Shell", PREF_ALLOC_STRING, "Default", &TempStringPrefs.shell,
+    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell,
         (void*) sizeof(PrefData.shell), True},
     {"geometry", "Geometry", PREF_STRING, "",
     	PrefData.geometry, (void *)sizeof(PrefData.geometry), False},
@@ -1229,6 +1224,9 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
 ** translated into something meaningful.  This routine does the translation,
 ** and, in most cases, frees the original string, which is no longer useful.
 **
+** In addition this function covers settings that, while simple, require
+** additional steps before they can be published.
+**
 ** The argument convertOld attempts a conversion from pre 5.1 format .nedit
 ** files (which means patterns and macros may contain regular expressions
 ** which are of the older syntax where braces were not quoted, and \0 was a
@@ -1295,15 +1293,15 @@ static void translatePrefFormats(int convertOld, int fileVer)
     PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay,
     	    PrefData.boldItalicFontString);
 
-    /*  If no shell is given, insert a default shell.  */
-    if (0 == strcmp(TempStringPrefs.shell, "Default")) {
+    /*
+    **  The default set for the comand shell in PrefDescrip ("DEFAULT") is
+    **  only a place-holder, the actual default is the user's login shell
+    **  (or whatever is implemented in getDefaultShell()). We put the login
+    **  shell's name in PrefData here.
+    */
+    if (0 == strcmp(PrefData.shell, "DEFAULT")) {
         strncpy(PrefData.shell, getDefaultShell(), MAXPATHLEN);
         PrefData.shell[MAXPATHLEN] = '\0';
-        XtFree(TempStringPrefs.shell);
-    } else {
-        strncpy(PrefData.shell, TempStringPrefs.shell, MAXPATHLEN);
-        PrefData.shell[MAXPATHLEN] = '\0';
-        XtFree(TempStringPrefs.shell);
     }
 
     /* For compatability with older (4.0.3 and before) versions, the autoWrap
@@ -1346,7 +1344,11 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 "FROM FILE: %s", "OK", "Cancel",
                 prefFileName, ImportedFile) == 2)
         return;
-    }    
+    }
+
+    /*  Write the more dynamic settings into TempStringPrefs.
+        These locations are set in PrefDescrip, so this is where
+        SavePreferences() will look for them.  */
 #ifndef VMS
     TempStringPrefs.shellCmds = WriteShellCmdsString();
 #endif /* VMS */
@@ -1358,6 +1360,7 @@ void SaveNEditPrefs(Widget parent, int quietly)
     TempStringPrefs.smartIndent = WriteSmartIndentString();
     TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
     strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
+
     if (!SavePreferences(XtDisplay(parent), prefFileName, HeaderText,
             PrefDescrip, XtNumber(PrefDescrip)))
     {
@@ -1999,7 +2002,7 @@ void SetPrefShell(const char *shell)
     setStringPref(PrefData.shell, shell);
 }
 
-char *GetPrefShell(void)
+const char* GetPrefShell(void)
 {
     return PrefData.shell;
 }
@@ -2732,7 +2735,7 @@ void SelectShellDialog(Widget parent, WindowInfo* forWindow)
             shellSelDialogArgs, 2);
 
     /*  Fix dialog to our liking.  */
-    XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Select Shell", NULL);
+    XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Command Shell", NULL);
     XtAddCallback(shellSelDialog, XmNokCallback, (XtCallbackProc) shellSelOKCB,
             shellSelDialog);
     XtAddCallback(shellSelDialog, XmNcancelCallback,
@@ -2744,7 +2747,7 @@ void SelectShellDialog(Widget parent, WindowInfo* forWindow)
 
     /*  Set dialog's text to the current setting.  */
     XmTextSetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT),
-            GetPrefShell());
+            (char*) GetPrefShell());
 
     DoneWithShellSelDialog = False;
 
@@ -2763,7 +2766,7 @@ static void shellSelOKCB(Widget widget, XtPointer clientData,
         XtPointer callData)
 {
     Widget shellSelDialog = (Widget) clientData;
-    String shellName = XtMalloc(MAX_SH_LEN);
+    String shellName = XtMalloc(MAXPATHLEN);
     struct stat attribute;
     unsigned dlgResult;
 
@@ -2778,7 +2781,7 @@ static void shellSelOKCB(Widget widget, XtPointer clientData,
             XmDIALOG_TEXT));
 
     if (-1 == stat(shellName, &attribute)) {
-        dlgResult = DialogF(DF_WARN, shellSelDialog, 2, "Select Shell",
+        dlgResult = DialogF(DF_WARN, shellSelDialog, 2, "Command Shell",
                 "The selected shell is not available.\nDo you want to use it anyway?",
                 "OK", "Cancel");
         if (1 != dlgResult) {
@@ -6139,20 +6142,21 @@ void ChooseColors(WindowInfo *window)
 }
 
 /*
-**  This function passes up a pointer to the static name of the login shell.
+**  This function passes up a pointer to the static name of the default
+**  shell, currently defined as the user's login shell.
 **  In case of errors, the fallback of "sh" will be returned.
 */
 static const char* getDefaultShell(void)
 {
     struct passwd* passwdEntry = NULL;
-    static char shellBuffer[MAX_SH_LEN + 1] = "sh";
+    static char shellBuffer[MAXPATHLEN + 1] = "sh";
 
-    passwdEntry = getpwuid(getuid());
+    passwdEntry = getpwuid(getuid());   /*  getuid() never fails.  */
 
     if (NULL == passwdEntry)
     {
         /*  Something bad happened! Do something, quick!  */
-        perror("nedit: Failed to get passwd entry (falling back to sh)");
+        perror("nedit: Failed to get passwd entry (falling back to 'sh')");
         return "sh";
     }
 
@@ -6160,11 +6164,11 @@ static const char* getDefaultShell(void)
     /*  TODO: To make this and other function calling getpwuid() more robust,
         passwdEntry should be kept in a central position (Core->sysinfo?).
         That way, local code would always get a current copy of passwdEntry,
-        but should still be kept lean.  The obvious alternative of a central
+        but could still be kept lean.  The obvious alternative of a central
         facility within NEdit to access passwdEntry would increase coupling
         and would have to cover a lot of assumptions.  */
-    strncpy(shellBuffer, passwdEntry->pw_shell, MAX_SH_LEN);
-    shellBuffer[MAX_SH_LEN] = '\0';
+    strncpy(shellBuffer, passwdEntry->pw_shell, MAXPATHLEN);
+    shellBuffer[MAXPATHLEN] = '\0';
 
     return shellBuffer;
 }

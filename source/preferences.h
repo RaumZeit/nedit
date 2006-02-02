@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.49 2006/01/02 22:35:04 yooden Exp $ */
+/* $Id: preferences.h,v 1.50 2006/02/02 20:24:35 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -149,7 +149,7 @@ char *GetPrefHelpLinkColor(void);
 char *GetPrefColorName(int colorIndex);
 void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefShell(const char *shell);
-char *GetPrefShell(void);
+const char* GetPrefShell(void);
 void SetPrefGeometry(const char *geometry);
 char *GetPrefGeometry(void);
 char *GetPrefServerName(void);

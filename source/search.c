@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.76 2004/12/23 22:25:46 edg Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.77 2006/02/02 20:24:35 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4733,7 +4733,6 @@ static void saveSearchHistory(const char *searchString,
 ** for search strings, given the number of saveSearchHistory cycles back from
 ** the current time.
 */
-
 static int historyIndex(int nCycles)
 {
     int index;
