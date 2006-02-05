@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.23 2004/10/18 19:27:26 arnef Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.24 2006/02/05 16:31:25 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -63,26 +63,24 @@ static void buildFilePath(char* fullPath, const char* dir, const char* file);
 static Boolean isDir(const char* file);
 static Boolean isRegFile(const char* file);
 
-extern const char
-*GetCurrentDir(void)
 /* return non-NULL value for the current working directory.
    If system call fails, provide a fallback value */
+const char* GetCurrentDir(void)
 {
-  static char curdir[MAXPATHLEN];
+    static char curdir[MAXPATHLEN];
 
-  if (!getcwd(curdir, MAXPATHLEN)) {
-     perror("nedit: getcwd() fails");
-     strcpy(curdir, ".");
-  }
-  return (curdir);
+    if (!getcwd(curdir, MAXPATHLEN)) {
+        perror("nedit: getcwd() fails");
+        strcpy(curdir, ".");
+    }
+    return (curdir);
 }
 
 
-extern const char
-*GetHomeDir(void)
 /* return a non-NULL value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
+const char* GetHomeDir(void)
 {
     const char *ptr;
     static char homedir[MAXPATHLEN]="";
@@ -227,24 +225,24 @@ char
     return buf;
 }
 
-extern int Max(int i1, int i2)
+int Max(int i1, int i2)
 {
     return i1 >= i2 ? i1 : i2;
 }
 
-extern int Min(int i1, int i2)
+int Min(int i1, int i2)
 {
     return i1 <= i2 ? i1 : i2;
 }
 
-extern int Min3(int i1, int i2, int i3)
+int Min3(int i1, int i2, int i3)
 {
     if (i1 <= i2 && i1 <= i3)
     	return i1;
     return i2 <= i3 ? i2 : i3;
 }
 
-extern int Max3(int i1, int i2, int i3)
+int Max3(int i1, int i2, int i3)
 {
     if (i1 >= i2 && i1 >= i3)
     	return i1;

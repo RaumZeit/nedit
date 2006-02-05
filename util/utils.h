@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.13 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: utils.h,v 1.14 2006/02/05 16:31:25 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * utils.h -- Nirvana Editor Utilities Header File                              *
@@ -36,15 +36,15 @@
 #include <sys/param.h>
 #endif /*VMS*/
 
-extern const char *GetCurrentDir(void);
-extern const char *GetHomeDir(void);
-extern char *PrependHome(const char *filename, char *buf, int buflen);
+const char *GetCurrentDir(void);
+const char *GetHomeDir(void);
+char *PrependHome(const char *filename, char *buf, int buflen);
 const char *GetUserName(void);
 const char *GetNameOfHost(void);
-extern int Max(int i1, int i2);
-extern int Min(int i1, int i2);
-extern int Min3(int i1, int i2, int i3);
-extern int Max3(int i1, int i2, int i3);
+int Max(int i1, int i2);
+int Min(int i1, int i2);
+int Min3(int i1, int i2, int i3);
+int Max3(int i1, int i2, int i3);
 const char* GetRCFileName(int type);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
