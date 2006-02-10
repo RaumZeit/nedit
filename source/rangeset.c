@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.13 2005/01/29 01:57:12 ajbj Exp $ */
+/* $Id: rangeset.c,v 1.14 2006/02/10 22:10:21 ajbj Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -296,7 +296,7 @@ int RangesetChangeModifyResponse(Rangeset *rangeset, char *name)
 
 static int at_or_before(int *table, int base, int len, int val)
 {
-    int lo, mid=0, hi;
+    int lo, mid, hi;
 
     if (base >= len)
 	return len;		/* not sure what this means! */
@@ -322,7 +322,7 @@ static int at_or_before(int *table, int base, int len, int val)
 
 static int weighted_at_or_before(int *table, int base, int len, int val)
 {
-    int lo, mid=0, hi;
+    int lo, mid, hi;
     int min, max;
 
     if (base >= len)
@@ -343,7 +343,7 @@ static int weighted_at_or_before(int *table, int base, int len, int val)
 
     while (lo <= hi) {
         /* Beware of integer overflow when multiplying large numbers! */
-        mid = lo + (int)((hi - lo) * (double)(max - val) / (max - min));
+        mid = lo + (int)((hi - lo) * (double)(val - min) / (max - min));
 	/* we won't worry about min == max - values should be unique */
 
 	if (val == table[mid])
