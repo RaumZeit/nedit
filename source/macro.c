@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.100 2005/11/30 17:52:27 tringali Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.101 2006/02/11 10:37:28 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -835,7 +835,10 @@ static int readCheckMacroString(Widget dialogParent, char *string,
     Program *prog;
     Symbol *sym;
     DataValue subrPtr;
-    
+    Stack* progStack = (Stack*) XtMalloc(sizeof(Stack));
+    progStack->top = NULL;
+    progStack->size = 0;
+
     inPtr = string;
     while (*inPtr != '\0') {
     	
@@ -893,25 +896,49 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 	} else {
 	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
 	    if (prog == NULL) {
-	    	if (errPos != NULL) *errPos = stoppedAt;
+                if (errPos != NULL) {
+                    *errPos = stoppedAt;
+                }
+
     	    	return ParseError(dialogParent, string, stoppedAt,
 	    	    	errIn, errMsg);
 	    }
+
 	    if (runWindow != NULL) {
-    	    	XEvent nextEvent;	 
+                XEvent nextEvent;
 		if (runWindow->macroCmdData == NULL) {
 	            runMacro(runWindow, prog);
 		    while (runWindow->macroCmdData != NULL) {
 			XtAppNextEvent(XtWidgetToApplicationContext(
 				runWindow->shell),  &nextEvent);
                         ServerDispatchEvent(&nextEvent);
-		    }
-		} else
-    		    RunMacroAsSubrCall(prog);
+                    }
+                } else {
+                    /*  If we come here this means that the string was parsed
+                        from within another macro via load_macro_file(). In
+                        this case, plain code segments outside of define
+                        blocks are rolled into one Program each and put on
+                        the stack. At the end, the stack is unrolled, so the
+                        plain Programs would be executed in the wrong order.
+
+                        So we don't hand the Programs over to the interpreter
+                        just yet (via RunMacroAsSubrCall()), but put it on a
+                        stack of our own, reversing order once again.   */
+                    Push(progStack, (void*) prog);
+                }
 	    }
 	    inPtr = stoppedAt;
     	}
     }
+
+    /*  Unroll reversal stack for macros loaded from macros.  */
+    while (NULL != (prog = (Program*) Pop(progStack))) {
+        RunMacroAsSubrCall(prog);
+    }
+
+    /*  This stack is empty, so just free it without checking the members.  */
+    XtFree((char*) progStack);
+
     return True;
 }
 
