@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.32 2004/10/07 22:34:12 yooden Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.33 2006/03/17 14:20:34 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -487,10 +487,6 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
     createErrorDialog(newFileSB);
     XtAddCallback(newFileSB, XmNhelpCallback, (XtCallbackProc)newHelpCB, 
     	    (char *)help);
-    if (defaultName != NULL) {
-	Widget nameField = XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT);
-	XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
-    }
 #if XmVersion >= 1002
 #ifndef SGI_CUSTOM
     XtVaSetValues(newFileSB, XmNinitialFocus, 
@@ -530,6 +526,15 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
     sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST));
     sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST));
 #endif /* SGI_CUSTOM */
+
+    /* Delay the setting of the default name till after the replacement of 
+       the search procedures. Otherwise the field is cleared again by certain
+       *tif implementations */
+    if (defaultName != NULL) {
+	Widget nameField = XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT);
+	XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
+    }
+
     while (!done_with_dialog)
         XtAppProcessEvent (XtWidgetToApplicationContext(newFileSB), XtIMAll);
 
