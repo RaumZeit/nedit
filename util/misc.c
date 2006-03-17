@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.81 2005/11/25 19:58:33 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.82 2006/03/17 10:05:39 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -2484,7 +2484,14 @@ int SpinClipboardUnlock(Display *display, Window window)
         }
         microsleep(USLEEPTIME);
     }
+    /*
+     * This warning doesn't make much sense in practice. It's usually
+     * triggered when we try to unlock the clipboard after a failed clipboard
+     * operation, in an attempt to work around possible *tif clipboard locking
+     * bugs. In these cases, failure _is_ the expected outcome and the warning
+     * is bogus. Therefore, the warning is disabled.
     warning("XmClipboardUnlock() failed: clipboard not locked or locked "
             "by another application.");
+     */
     return res;
 }
