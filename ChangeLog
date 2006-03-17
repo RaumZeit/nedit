@@ -1,3 +1,470 @@
+2006-02-11 10:37  yooden
+
+	* ReleaseNotes (1.35), source/macro.c (1.101), util/utils.c (1.25),
+	  util/utils.h (1.15): Fix for SF#622291
+
+	  If a macro file is loaded with load_macro_file() (ie. from
+	  another macro) and code segments alternate with function
+	  definitions, the code segments were executed in reverse order.
+	  This is fixed by adding a stack to store and reverse the plain
+	  code segments.
+
+2006-02-10 22:10  ajbj
+
+	* source/rangeset.c (1.14): Fixed broken "optimisation" - noticed
+	  by TK Soh
+
+2006-02-05 18:29  yooden
+
+	* makefiles/Makefile.solaris (1.11): Fix for SF#860249
+
+	  Some reports indicate that setting NO_XMIM is the more useful
+	  option on Solaris.
+
+2006-02-05 16:31  yooden
+
+	* util/: utils.c (1.24), utils.h (1.14): This removes some bogus
+	  'extern' declarations from util/utils.[ch].
+
+2006-02-02 20:24  yooden
+
+	* source/: menu.c (1.136), preferences.c (1.138), preferences.h
+	  (1.50), search.c (1.77): Fix for SF#1406894
+
+	  I removed the shell setting from TempStringPrefs. While
+	  PrefData.shell is touched in translatePrefFormats() (putting in
+	  the default shell), there is no need to use the more complicated
+	  storage.
+
+	  Also included are some related small changes: - The menu entry
+	  'Select Shell' is renamed to 'Command Shell'.  - I removed the
+	  arbitray restriction found in MAX_SH_LEN and replaced all
+	  references with MAXPATHLEN.
+
+2006-01-14 11:42  yooden
+
+	* source/file.c (1.97): Reorders the #include directives, as
+	  pointed out by Martin Zinser.
+
+2006-01-14 10:26  yooden
+
+	* source/menu.c (1.135): This moves the "Sort Open Prev. Menu"
+	  entry into the "Customize Menus" submenu, as suggested by Dimitar
+	  Zhekov on discuss@.
+
+2006-01-02 23:10  yooden
+
+	* source/menu.c (1.134): Doh. For some reason it worked without
+	  #include before.
+
+2006-01-02 22:35  yooden
+
+	* ReleaseNotes (1.34), doc/help.etx (1.95), source/menu.c (1.133),
+	  source/preferences.c (1.137), source/preferences.h (1.49),
+	  source/shell.c (1.41): Fix for SF#403738 and SF#880607
+
+	  This cleans up the shell problems by - bringing the shell setting
+	  into NEdit's normal settings, removing it from   the X server's
+	  setting.  - Changing the default shell to the user's login shell,
+	  falling back on sh.
+
+	  I also smuggled in a change to ReleaseNotes about SF#557032 I
+	  forgot then.
+
+2006-01-02 22:18  yooden
+
+	* source/file.c (1.96): Removes redundand #ifdefs within eponymous
+	  #ifndefs.
+
+2006-01-02 22:07  yooden
+
+	* source/menu.c (1.132): Cleanup for the recent changes on the
+	  history database handling. This pulls together the file check on
+	  the existing file on disk.
+
+2005-12-28 22:19  tringali
+
+	* source/help.c (1.105): Fix incorrect reporting of bad vs.
+	  unknown.
+
+2005-12-27 20:55  yooden
+
+	* doc/help.etx (1.94): This cuts a long paragraph in the help into
+	  multiple smaller paragraphs.
+
+2005-12-18 03:46  tksoh
+
+	* source/menu.c (1.131): Fix premature setting of mtime tracking
+	  variable on nedit.history file.
+
+2005-12-17 19:23  yooden
+
+	* source/: menu.c (1.130), nedit.h (1.65), window.c (1.187): Fix
+	  for SF#1381893
+
+	  As TK pointed out in the original bug report (SF#557032),
+	  internal state is not adequate to keep the file history
+	  consistent if more than one session is running. Once you accept
+	  that external state must be checked you don't need to keep
+	  internal state at all.
+
+	  So this patch removes the prevOpenMenuValid flag from WindowInfo
+	  and the rest of the code. Validity of the menu is determined
+	  using only the directory entry of the history file.
+
+2005-12-14 23:08  yooden
+
+	* source/menu.c (1.129): Fix for SF#557032, based on TK's fix
+	  attached there.
+
+	  NEdit's file history is now read not only once at startup, but
+	  also every time a file the history is written and before the menu
+	  is refreshed. This catches files written by other instances of
+	  NEdit.
+
+2005-12-10 23:21  yooden
+
+	* source/textDisp.c (1.63): Fix for SF#1368576
+
+	  The fix for SF#464967 increased the area processed by
+	  redisplayLine() by one to let it know that the cursor should be
+	  redrawn. This was done by increasing the endIndex given to
+	  redisplayLine() by one. Sadly, endIndex is INT_MAX in some cases,
+	  which prevented redisplays completely in certain cases. This fix
+	  moves the incrementation to a saner place.
+
+	  Neither the bugs fixed with SF#464967 nor any of the examples
+	  given in SF#1368576's description are visible. Again, I notice no
+	  drawbacks.
+
+2005-12-01 14:31  tringali
+
+	* Xlt/: BubbleButton.c (1.9), BubbleButtonP.h (1.5), SlideC.c
+	  (1.5), SlideCP.h (1.4): Revert out partoffset stuff - it's Motif
+	  2 only.  Need to rewrite so it's conditional
+
+2005-11-30 17:52  tringali
+
+	* source/macro.c (1.100): Avoid crash if cancel accelerator is
+	  unset.
+
+2005-11-30 17:48  tringali
+
+	* Xlt/: BubbleButton.c (1.8), BubbleButtonP.h (1.4), SlideC.c
+	  (1.4), SlideCP.h (1.3): Patch from ICS to do proper subclassing -
+	  this will make it more immune to binary incompatible changes in
+	  OpenMotif.
+
+2005-11-29 20:37  n8gray
+
+	* source/smartIndent.c (1.38): Fix for bug #1369091.  Matlab
+	  autoindent init macro should end with a newline.
+
+2005-11-28 22:43  yooden
+
+	* ReleaseNotes (1.33), source/highlightData.c (1.72): Fix for
+	  SF#858874
+
+	  There was a tiny typo in Ada's syntax highlighting pattern.
+
+2005-11-28 21:51  yooden
+
+	* util/check_lin_tif.c (1.13): Removes a warning from GCC:
+	  warning: ISO C89 forbids mixed declarations and code
+
+	  This is simply done by wrapping blocks around the declarations.
+
+2005-11-28 21:35  yooden
+
+	* ReleaseNotes (1.32): Adds comment about fix to SF#464967 and
+	  SF#1041077 to ReleaseNotes.
+
+2005-11-26 00:17  yooden
+
+	* source/textDisp.c (1.62): Fix for SF#464967.
+
+	  The area redisplayed from within TextDRedisplayRange() is
+	  appended by one character. This is necessary to let the logic in
+	  redisplayLine() know that the caret should be redrawn (hasCursor
+	  = true) which in turn triggers the redraw by calling drawCursor()
+	  later in the function.
+
+	  Both representations of the bug described in the bug report plus
+	  two more for multi-line redraws are fixed. I noticed no
+	  drawbacks.
+
+2005-11-25 19:58  yooden
+
+	* util/misc.c (1.81):
+	  MaCke sure we get no compile errors.VS: Committing in .
+
+2005-11-20 06:48  n8gray
+
+	* util/misc.c (1.80): Make sure we get the prototype for select on
+	  OS X systems.
+
+2005-11-18 10:40  edg
+
+	* util/misc.c (1.79): Removed another unnecessary warning:
+	  XmClipboardInquireLength() can legally fail when the clipboard is
+	  empty.
+
+2005-11-08 22:22  edg
+
+	* source/: file.c (1.95), nedit.h (1.64), window.c (1.186): Fix for
+	  SF bug #1345424: externally changed file status not recognised.
+	  The file's uid and gid are now recorded too to detect any
+	  changes.
+
+2005-09-23 14:23  edg
+
+	* util/misc.c (1.78): Partially reverted my previous checkin: the
+	  empty clipboard check should not have been removed; only the
+	  warning.
+
+2005-09-23 14:18  edg
+
+	* util/misc.c (1.77): Removed an unnecessary warning:
+	  XmClipboardRetrieve can legally fail when the clipboard is empty.
+
+2005-09-23 14:08  tringali
+
+	* source/nedit.c (1.92): Disable UTF8 stomping where it's not a
+	  problem (OM2.2.3+)
+
+2005-08-13 19:29  edg
+
+	* source/macro.c (1.99), source/textSel.c (1.15), util/misc.c
+	  (1.76), util/misc.h (1.28): Added clipboard spinlocks to make
+	  clipboard manipulations more robust, especially in the presence
+	  of other applications accessing the clipboard.
+
+2005-08-06 04:56  tksoh
+
+	* source/window.c (1.185): Fixed bug where line number panel didn't
+	  adjust to fully display the last line number (10000) when newline
+	  was added, with 9999 lines in the tab before addition.
+
+2005-08-06 04:31  tksoh
+
+	* source/nc.c (1.47): Fixed nc's prompt on -ask.
+
+2005-07-30 18:05  edg
+
+	* source/server.c (1.33): Presumable fix for SF bug #1078786:
+	  "-untabbed" option of nc sometimes ignored.  The option now works
+	  as intended with (older) window managers that are not _NET_WM
+	  compliant.
+
+2005-06-22 07:34  edg
+
+	* doc/help.etx (1.93), source/help_data.h (1.85),
+	  source/help_topic.h (1.74): More documentation updates by Joerg
+	  Fischer.
+
+2005-06-20 10:54  edg
+
+	* doc/help.etx (1.92), doc/nedit.pod (1.9), source/help_data.h
+	  (1.84), source/help_topic.h (1.73): More documentation updates by
+	  Joerg Fisher.
+
+2005-06-09 16:44  edg
+
+	* doc/help.etx (1.91), source/help_data.h (1.83),
+	  source/help_topic.h (1.72): Typo fixes (Joerg Fischer).
+
+2005-05-30 07:44  edg
+
+	* doc/help.etx (1.90), source/help_data.h (1.82),
+	  source/help_topic.h (1.71): Typo fix (Joerg Fischer).
+
+2005-05-27 16:58  edg
+
+	* source/regularExp.c (1.27): Fix for SF bug #1204893: regular
+	  expressen cuts replaced textparts.  A warning is now written to
+	  stderr when truncation occurs. (Ideally, all errors and warnings
+	  should be signaled via dialogs, but that requires architectural
+	  changes).
+
+2005-05-27 16:50  edg
+
+	* source/shell.c (1.40): Minor fix.
+
+2005-05-27 16:49  edg
+
+	* README (1.48), Microline/XmL/Folder.h (1.3), Microline/XmL/Grid.h
+	  (1.3), Microline/XmL/Progress.h (1.3), Microline/XmL/Tree.h
+	  (1.3), Microline/XmL/XmL.c (1.3), Xlt/BubbleButton.c (1.7),
+	  Xlt/BubbleButtonP.h (1.3), Xlt/SlideC.c (1.3), Xlt/SlideCP.h
+	  (1.2), makefiles/buildvms.com (1.1), source/comnedit.com (1.10),
+	  source/file.c (1.94), source/lnknedit.com (1.8), source/menu.c
+	  (1.128), source/shell.c (1.39), source/window.c (1.184),
+	  util/comutil.com (1.5): VMS porting fixes contributed by Michael
+	  Smith.
+
+2005-04-15 14:16  edg
+
+	* source/shell.c (1.38): Fix for SF bug#1183759: HP compiler
+	  uninitialized variable.  The variable isn't actually used when it
+	  isn't initialized.
+
+2005-03-23 12:34  edg
+
+	* Microline/Makefile (1.3), Microline/Makefile.in (1.3),
+	  Xlt/Makefile (1.1): Fix for SF bug #1066152: Microline Widget
+	  Library does not Compile Added a working makefile for the
+	  Microline and Xlt subdirectories.
+
+2005-03-06 15:38  tringali
+
+	* util/motif.c (1.4): Bug 1087192: avoid LessTif 0.93.95b
+
+2005-03-03 14:49  edg
+
+	* doc/help.etx (1.89), doc/nc.pod (1.7), doc/nedit.pod (1.8),
+	  source/help_data.h (1.81), source/help_topic.h (1.70),
+	  source/nc.c (1.46), source/nedit.c (1.91): Added -h/-help command
+	  line options and clarified warn-on-exit.
+
+2005-02-24 18:23  edg
+
+	* source/highlightData.c (1.71): Extended C, C++, Yacc, and Lex
+	  patterns to recognize strings inside preprocessor lines to avoid
+	  erroneous matching of comment pattern on strings.
+
+2005-02-23 03:00  ajbj
+
+	* source/preferences.c (1.136): Changed default line wrap mode to
+	  continuous (SF bug 1124850, rfe 1087257).
+
+2005-02-18 11:10  edg
+
+	* doc/help.etx (1.88), source/help_data.h (1.80),
+	  source/help_topic.h (1.69): Minor clarification in regex help.
+
+2005-02-16 07:18  n8gray
+
+	* source/menu.c (1.127): Makes unloadTipsAP refresh any existing
+	  tear-offs.
+
+2005-02-16 05:09  ajbj
+
+	* doc/help.etx (1.87), source/help_data.h (1.79),
+	  source/help_topic.h (1.68): Added help information on the new
+	  macro string escape sequences.
+
+2005-02-16 03:44  ajbj
+
+	* source/: parse.y (1.28), parse_noyacc.c (1.9): Adds Patch 970487:
+	  \xXX and \0ooo style escaped characters to macro strings.
+	  Nothing in the help about this (yet).
+
+2005-02-15 09:13  edg
+
+	* source/menu.c (1.126): Fix for SF bug #1122813: Tab-related crash
+	  on posting unload calltips file menu.
+
+2005-02-15 03:44  tringali
+
+	* util/: motif.c (1.3), motif.h (1.2): Added Motif exception to
+	  license
+
+2005-02-15 01:10  n8gray
+
+	* source/: menu.c (1.125), preferences.c (1.135), tags.c (1.64),
+	  tags.h (1.16): Calltips files are now reference-counted.  This
+	  should address bug #1025123 - Error loading default calltips
+	  file.
+
+	  Fixing this uncovered another bug, however, that I haven't been
+	  able to fix.	I'll file a bug on it later.
+
+	  Also, can somebody look at menu.c, compare unloadTagsAP with
+	  unloadTipsAP, and address my comment on the latter?
+
+2005-02-14 23:45  yooden
+
+	* util/motif.c (1.2): Removes warning.
+
+2005-02-14 22:18  yooden
+
+	* source/nedit.c (1.90), util/prefFile.c (1.26): This sets the
+	  maximum tab width to 150. This prevents some resizing of the
+	  tabs, making the UI less jumpy. It is also what most users
+	  probably expect from the tabs, since most apps work with tabs of
+	  limited size.
+
+	  This also slightly changes some error messages.
+
+2005-02-14 14:40  tringali
+
+	* util/: motif.c (1.1), motif.h (1.1): Minor cleanup of Motif
+	  checker to keep #ifdef's all in one place (part 2)
+
+2005-02-12 12:04  edg
+
+	* util/misc.c (1.75): Fix for	SF bug #1030467: "Enabling
+	  Composite Extension in Xorg 6.8 breaks Nedit", presumably also
+	  for	SF bug #1048304: "Very slow resizing of Nedit window on
+	  Xorg 6.8", and possibly also for   SF bug #1070918: "new tab ->
+	  Segmentation fault", and   SF bug #1030192: "X_PolyFillRectange
+	  error with X 6.8 and xcompmgr"
+
+2005-02-12 01:53  tringali
+
+	* source/help.c (1.104), source/nedit.c (1.89),
+	  util/Makefile.common (1.9), util/check_lin_tif.c (1.12): Minor
+	  cleanup of Motif checker to keep #ifdef's all in one place.
+
+2005-02-11 02:42  ajbj
+
+	* doc/help.etx (1.86), source/help_data.h (1.78),
+	  source/help_topic.h (1.67), source/macro.c (1.98): Integrated
+	  patch 1003088 allowing substring to drop the end position
+	  argument.  It also uses negative positions as measurements from
+	  the end of the string.
+
+2005-02-11 01:46  ajbj
+
+	* doc/help.etx (1.85), source/help_data.h (1.77),
+	  source/help_topic.h (1.66), source/macro.c (1.97): Integrated
+	  patch 991602, removing limits on the number of buttons in
+	  dialogs.
+
+2005-02-10 03:35  ajbj
+
+	* source/macro.c (1.96): Buffer length fixes to rangeset functions
+	  I forgot when changing rangeset.c.
+
+2005-02-06 12:31  yooden
+
+	* doc/help.etx (1.84): Changes documentation for the
+	  replace_range() macro function. This function moves the cursor
+	  when it is in the replaced range. In these cases, the cursor has
+	  no clear best position, so a documentation is all we can do.
+
+2005-02-02 09:15  edg
+
+	* source/textDrag.c (1.11): Added dummy initializations to suppress
+	  bogus compiler warnings.
+
+2005-02-02 09:08  edg
+
+	* source/nedit.c (1.88): Minor leak fix.
+
+2005-02-02 09:07  edg
+
+	* source/macro.c (1.95): Fix for the critical split() macro bug
+	  reported by Joerg Fischer: using a zero-width assertion pattern
+	  as the split pattern (regex mode) resulted in a seemingly endless
+	  loop (ended by a crash). Zero-width assertion patterns now work
+	  as expected.	Eg: split("abcdef", "(?=c)", "regex") -> "ab",
+	  "cdef".
+
+2005-01-31 14:39  edg
+
+	* ChangeLog (1.42): Regenerated (cvs2cl.pl -b -r -t --accum --gmt).
+
 2005-01-31 14:34  edg
 
 	* source/: preferences.c (1.134), userCmds.c (1.53), userCmds.h
