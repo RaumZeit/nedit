@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jun 22, 2005 (Do NOT edit!)
+                 Generated on Apr 10, 2006 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2005 Mark Edel                                            *
+* Copyright (c) 1999-2006 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -2337,22 +2337,27 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01Bcalltip( \"text_or_key\" [, pos [, mode or position_modifier, ...]] )\01A\n",
 "\01IPops up a calltip. <pos> is an optional position in the buffer where the tip ",
-"will be displayed.  Passing -1 for <pos> is equivalent to not specifying a ",
+"will be displayed. Passing -1 for <pos> is equivalent to not specifying a ",
 "position, and it guarantees that the tip will appear on-screen somewhere even ",
-"if the cursor is not.  The upper-left corner of the calltip will appear below ",
-"where the cursor would appear if it were at this position.  <mode> is one of ",
-"\"tipText\" (default), \"tipKey\", or \"tagKey\". \"tipText\" displays the text as-is, ",
-"\"tagKey\" uses it as the key to look up a tag, then converts the tag to a ",
-"calltip, and \"tipKey\" uses it as the key to look up a calltip, then falls back ",
-"to \"tagKey\" behavior if that fails.  You'll usually use \"tipKey\" or \"tipText\". ",
+"if the cursor is not. The upper-left corner of the calltip will appear below ",
+"where the cursor would appear if it were at this position. ",
+"\n\n",
+"<mode> is one of \"tipText\" (default), \"tipKey\", or \"tagKey\". \"tipText\" ",
+"displays the text as-is, \"tagKey\" uses it as the key to look up a tag, then ",
+"converts the tag to a calltip, and \"tipKey\" uses it as the key to look up a ",
+"calltip, then falls back to \"tagKey\" behavior if that fails. You'll usually ",
+"use \"tipKey\" or \"tipText\". ",
+"\n\n",
 "Finally, you can modify the placement of the calltip relative to the cursor ",
 "position (or <pos>) with one or more of these optional position modifiers: ",
-"\"center\" aligns the center of the calltip with the position.  \"right\" aligns ",
-"the right edge of the calltip with the position.  (\"center\" and \"right\" may ",
-"not both be used.)  \"above\" places the calltip above the position.  \"strict\" ",
+"\"center\" aligns the center of the calltip with the position. \"right\" aligns ",
+"the right edge of the calltip with the position. (\"center\" and \"right\" may ",
+"not both be used.) \"above\" places the calltip above the position. \"strict\" ",
 "does not allow the calltip to move from its position in order to avoid going ",
-"off-screen or obscuring the cursor.  Returns the ID of the calltip if it was ",
-"found and/or displayed correctly, 0 otherwise. ",
+"off-screen or obscuring the cursor. ",
+"\n\n",
+"Returns the ID of the calltip if it was found and/or displayed correctly, ",
+"0 otherwise. ",
 "\n\n",
 "\01A\01Bclipboard_to_string()\01A  \n",
 "\01IReturns the contents of the clipboard as a macro string. Returns empty ",
@@ -2365,6 +2370,14 @@ static char * htxt_macro_subrs [] = {
 "the bottom of the dialog. Returns the number of the button pressed (the ",
 "first button is number 1), or 0 if the user closed the dialog via the window ",
 "close box. ",
+"\n\n",
+"\01A\01Bexist_filename_dialog( title[, default_path[, filter]] )\01A\n",
+"\01IPresents a file selection dialog with the given title to the user that ",
+"prompts for an existing file.  A default path and a filter (e.g. \"*.c\") can be ",
+"optionally specified.  To specify a filter without a default path, specify \"\" ",
+"as the default path.  Returns \"\" if the user cancelled the dialog,  otherwise ",
+"returns the fully-qualified path, including the filename.  See also ",
+"\01Jnew_filename_dialog( ... )\01I. ",
 "\n\n",
 "\01A\01Bfocus_window( window_name )\01A  \n",
 "\01ISets the window on which subsequent macro commands operate. window_name can ",
@@ -2417,6 +2430,15 @@ static char * htxt_macro_subrs [] = {
 "\n\n",
 "\01A\01Bmin( n1, n2, ... )\01A\n",
 "\01IReturns the minimum value of all of its arguments ",
+"\n\n",
+"\01A\01Bnew_filename_dialog( title[, default_path[, default_filename]] )\01A\n",
+"\01IPresents a file selection dialog with the given title to the user that ",
+"prompts for a new or existing file.  A default path and filename can be ",
+"optionally specified.  To specify a default filename without a default path, ",
+"specify \"\" as the default path.  Returns \"\" if the user cancelled the dialog, ",
+"otherwise returns the fully-qualified path, including the filename.  Note that ",
+"the default_filename argument does not work on all Motif implementations. ",
+"See also \01Jexist_filename_dialog( ... )\01I. ",
 "\n\n",
 "\01A\01Bread_file( filename )\01A  \n",
 "\01IReads the contents of a text file into a string. On success, returns 1 in ",
@@ -3526,6 +3548,10 @@ static char * htxt_preferences [] = {
 "are displayed in a dialog.  In Smart mode, if one of the matching tags is in ",
 "the current window, that tag is chosen, without displaying the dialog. ",
 "\n\n",
+"\01A\01BSelect Shell...\01A\n",
+"\01ISet the shell used to run programs from the shell_command() macro function ",
+"and from the Shell menu. This defaults to the user's login shell. ",
+"\n\n",
 "\01A\01BColors...\01A\n",
 "\01IChange the colors used to display text.  The \"Matching (..)\" fields change the ",
 "colors that matching parens, brackets and braces are flashed when the \"Show ",
@@ -3870,11 +3896,6 @@ static char * htxt_resources [] = {
 "these tag value paths whenever a file is opened. All accessible tag files ",
 "will be loaded at this time. When this resource value is False, relative path ",
 "tag specifications will only be evaluated at NEdit startup time. ",
-"\n\n",
-"\01A\01Bnedit.shell\01A: /bin/csh \n",
-"\01I\n",
-"(Unix systems only) The Unix shell (command interpreter) to use for executing ",
-"commands from the Shell menu ",
 "\n\n",
 "\01A\01Bnedit.wordDelimiters\01A: .,/\\\\`'!@#%^&*()-=+{}[]\":;<>?\n",
 "\01I\n",
@@ -5647,7 +5668,7 @@ Href H_R [] =
 {
     { &H_R[ 1],     54, HELP_TAGS,                "ctag support", "ctags" },
     { &H_R[ 2],   5794, HELP_BASICSYNTAX,         "Alternation", "alternation" },
-    { NULL,      14640, HELP_PREFERENCES,         "Autoload Files", "automatically" }
+    { NULL,      14799, HELP_PREFERENCES,         "Autoload Files", "automatically" }
 };
 
-static const char * NEditVersion = "NEdit release of Jun 22, 2005\n";
+static const char * NEditVersion = "NEdit release of Aug 20, 2004\n";

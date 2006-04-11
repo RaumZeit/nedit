@@ -1,4 +1,4 @@
-/* $Id: getfiles.h,v 1.10 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: getfiles.h,v 1.11 2006/04/11 01:14:27 n8gray Exp $ */
 /*******************************************************************************
 *                                                                              *
 * getfiles.h -- Nirvana Editor File Handling Header File                       *
@@ -34,6 +34,8 @@
 #define GFN_CANCEL	2               /* Get Filename Cancel constant */
 
 int GetExistingFilename(Widget parent, char *promptString, char *filename);
+int GetNewFilename(Widget parent, char *promptString, char *filename, 
+        char *defaultName);
 int HandleCustomExistFileSB(Widget existFileSB, char *filename);
 int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName);
 char *GetFileDialogDefaultDirectory(void);

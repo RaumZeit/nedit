@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.33 2006/03/17 14:20:34 edg Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.34 2006/04/11 01:14:27 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -245,7 +245,47 @@ static Widget ErrorDialog;		/* Dialog widget for error msgs	   */
 static int ErrorDone;			/* Flag to mark dialog completed   */
 static void (*OrigDirSearchProc)();	/* Built in Motif directory search */
 static void (*OrigFileSearchProc)();	/* Built in Motif file search proc */
-		
+
+/* 
+ * Do the hard work of setting up a file selection dialog
+ */
+Widget getFilenameHelper(Widget parent, char *promptString, char *filename, 
+        int existing) 
+{
+    int       n;                      /* number of arguments               */
+    Arg	      args[MAX_ARGS];	      /* arg list	                   */
+    Widget    fileSB;	              /* widget file select box 	   */
+    XmString  titleString;	      /* compound string for dialog title  */
+
+    n = 0;
+    titleString = XmStringCreateSimple(promptString);
+    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
+    XtSetArg(args[n], XmNdialogTitle, titleString); n++;
+    fileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
+    XmStringFree(titleString);
+#ifndef SGI_CUSTOM
+    if (existing && RemoveRedundantTextField)
+        XtUnmanageChild(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT)); 
+    XtUnmanageChild(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL));
+
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_LABEL),
+            XmNmnemonic, 'l',
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL),
+            XmNmnemonic, 'D',
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL),
+            XmNmnemonic, promptString[strspn(promptString, "lD")],
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST),
+            NULL);
+    AddDialogMnemonicHandler(fileSB, FALSE);
+    RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
+    RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
+#endif
+    return fileSB;
+}
 
 /*  GetExistingFilename				  	                   */
 /*									   */
@@ -269,41 +309,24 @@ static void (*OrigFileSearchProc)();	/* Built in Motif file search proc */
 /*  Returns:	GFN_OK	      - file was selected and OK button pressed	   */
 /*		GFN_CANCEL    - Cancel button pressed and no returned file */
 /*									   */
-int GetExistingFilename (Widget parent, char *promptString, char *filename) 
+int GetExistingFilename(Widget parent, char *promptString, char *filename) 
 {
-    int       n;                      /* number of arguments               */
-    Arg	      args[MAX_ARGS];	      /* arg list	                   */
-    Widget    existFileSB;	      /* widget file select box 	   */
-    XmString  titleString;	      /* compound string for dialog title  */
-
-    n = 0;
-    titleString = XmStringCreateSimple(promptString);
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
-    XtSetArg(args[n], XmNdialogTitle, titleString); n++;
-    existFileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
-    XmStringFree(titleString);
-#ifndef SGI_CUSTOM
-    if (RemoveRedundantTextField)
-        XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT)); 
-    XtUnmanageChild(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_SELECTION_LABEL));
-
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_LABEL),
-            XmNmnemonic, 'l',
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT),
-            NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST_LABEL),
-            XmNmnemonic, 'D',
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST),
-            NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST_LABEL),
-            XmNmnemonic, promptString[strspn(promptString, "lD")],
-            XmNuserData, XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST),
-            NULL);
-    AddDialogMnemonicHandler(existFileSB, FALSE);
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_FILTER_TEXT));
-    RemapDeleteKey(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_TEXT));
-#endif
+    Widget existFileSB = getFilenameHelper(parent, promptString, filename, 
+            True);
     return HandleCustomExistFileSB(existFileSB, filename);
+}
+
+/* GetNewFilename
+ *
+ * Same as GetExistingFilename but pick a new file instead of an existing one.
+ * In this case the text area of the FSB is *not* unmanaged, so the user can
+ * enter a new filename.
+ */
+int GetNewFilename(Widget parent, char *promptString, char *filename,
+        char *defaultName)
+{
+    Widget fileSB = getFilenameHelper(parent, promptString, filename, False);
+    return HandleCustomNewFileSB(fileSB, filename, defaultName);
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.101 2006/02/11 10:37:28 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.102 2006/04/11 01:14:27 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -53,6 +53,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.101 2006/02/11 10:37:28 yooden Exp
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
+#include "../util/getfiles.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "rangeset.h"
@@ -397,6 +398,10 @@ static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg);
 static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg);
+static int newFilenameDialogMS(WindowInfo *window, DataValue *argList, 
+        int nArgs, DataValue *result, char **errMsg);
+static int existFilenameDialogMS(WindowInfo *window, DataValue *argList, 
+        int nArgs, DataValue *result, char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
 static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
@@ -415,7 +420,8 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         rangesetSetColorMS, rangesetSetNameMS, rangesetSetModeMS,
         rangesetGetByNameMS,
         getPatternByNameMS, getPatternAtPosMS,
-        getStyleByNameMS, getStyleAtPosMS
+        getStyleByNameMS, getStyleAtPosMS, newFilenameDialogMS, 
+        existFilenameDialogMS
     };
 #define N_MACRO_SUBRS (sizeof MacroSubrs/sizeof *MacroSubrs)
 static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
@@ -434,7 +440,8 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "rangeset_set_color", "rangeset_set_name", "rangeset_set_mode",
         "rangeset_get_by_name",
         "get_pattern_by_name", "get_pattern_at_pos",
-        "get_style_by_name", "get_style_at_pos"
+        "get_style_by_name", "get_style_at_pos", "new_filename_dialog",
+        "exist_filename_dialog"
     };
 static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
@@ -3340,6 +3347,163 @@ static int calltipIDMV(WindowInfo *window, DataValue *argList,
 {
     result->tag = INT_TAG;
     result->val.n = GetCalltipID(window, 0);
+    return True;
+}
+
+/* 
+ * new_filename_dialog(title[, path[, defaultName]])
+ * Presents a file selection dialog to the user prompting for a new file.
+ *
+ * <title> will be the title of the dialog
+ * <path> is the default path to use.  Default (or "") is the current file's
+ *      directory.
+ * <defaultName> is the default filename that is filled in automatically.
+ *
+ * Returns "" if the user cancelled the dialog, otherwise returns the path to
+ * the file that was selected
+ *
+ * Note that defaultName doesn't work on all *tifs.  :-(
+ */
+static int newFilenameDialogMS(WindowInfo *window, DataValue *argList, 
+        int nArgs, DataValue *result, char **errMsg)
+{
+    macroCmdInfo *cmdData;
+    char filename[PATH_MAX + 1];
+    char stringStorage[3][TYPE_INT_STR_SIZE(int)];
+    char *title, *path="", *defaultName="";
+    char *savedDefaultDir;
+    int gfn_result;
+    
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
+    window = MacroRunWindow();
+    cmdData = window->macroCmdData;
+    
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+        *errMsg = "%s can't be called from non-suspendable context";
+         return False;
+    }
+    
+    /* Get the arguments (use filename var for temp. storage) */
+    if (nArgs < 1) {
+        *errMsg = "%s subroutine called with no title.  Requires at least 1"
+                  " argument";
+        return False;
+    }
+    if (!readStringArg(argList[0], &title, stringStorage[0], errMsg)) {
+        return False;
+    }
+    if (nArgs > 1 && !readStringArg(argList[1], &path, stringStorage[1], 
+            errMsg)) {
+        return False;
+    }
+    if (nArgs > 2 && !readStringArg(argList[2], &defaultName, stringStorage[2], 
+            errMsg)) {
+        return False;
+    }
+    if (nArgs > 3) {
+        *errMsg = "%s called with too many arguments.  Expects 3 arguments.";
+        return False;
+    }
+    
+    /* Pop up the dialog, saving and restoring the default dir */
+    savedDefaultDir = GetFileDialogDefaultDirectory();
+    if (path[0] != '\0') {
+        SetFileDialogDefaultDirectory(path);
+    } else {
+        SetFileDialogDefaultDirectory(window->path);
+    }
+    gfn_result = GetNewFilename( window->shell, title, filename, defaultName );
+    SetFileDialogDefaultDirectory(savedDefaultDir);
+    result->tag = STRING_TAG;
+    if (gfn_result == GFN_OK) {
+        /* Got a string, copy it to the result */
+        if (!AllocNStringNCpy(&result->val.str, filename, PATH_MAX)) {
+            *errMsg = "failed to allocate return value: %s";
+            return False;
+        }
+    } else {
+        /* User cancelled.  Return "" */
+        result->val.str.rep = PERM_ALLOC_STR("");
+        result->val.str.len = 0;
+    }
+    return True;
+}
+
+/* 
+ * exist_filename_dialog(title[, path[, filter]])
+ */
+static int existFilenameDialogMS(WindowInfo *window, DataValue *argList, 
+        int nArgs, DataValue *result, char **errMsg)
+{
+    macroCmdInfo *cmdData;
+    char filename[PATH_MAX + 1];
+    char stringStorage[3][TYPE_INT_STR_SIZE(int)];
+    char *title, *path="", *filter="";
+    char *savedDefaultDir, *savedFilter;
+    int gfn_result;
+    
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
+    window = MacroRunWindow();
+    cmdData = window->macroCmdData;
+    
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+        *errMsg = "%s can't be called from non-suspendable context";
+         return False;
+    }
+    
+    /* Get the arguments (use filename var for temp. storage) */
+    if (nArgs < 1) {
+        *errMsg = "%s subroutine called with no title.  Requires at least 1"
+                  " argument";
+        return False;
+    }
+    if (!readStringArg(argList[0], &title, stringStorage[0], errMsg)) {
+        return False;
+    }
+    if (nArgs > 1 && !readStringArg(argList[1], &path, stringStorage[1], 
+            errMsg)) {
+        return False;
+    }
+    if (nArgs > 2 && !readStringArg(argList[2], &filter, stringStorage[2], 
+            errMsg)) {
+        return False;
+    }
+    if (nArgs > 3) {
+        *errMsg = "%s called with too many arguments.  Expects 3 arguments.";
+        return False;
+    }
+    
+    /* Pop up the dialog, saving and restoring the default dir/filter */
+    savedDefaultDir = GetFileDialogDefaultDirectory();
+    savedFilter = GetFileDialogDefaultPattern();
+    if (path[0] != '\0') {
+        SetFileDialogDefaultDirectory(path);
+    } else {
+        SetFileDialogDefaultDirectory(window->path);
+    }
+    if (filter[0] != '\0')
+        SetFileDialogDefaultPattern(filter);
+    gfn_result = GetExistingFilename( window->shell, title, filename );
+    SetFileDialogDefaultDirectory(savedDefaultDir);
+    SetFileDialogDefaultPattern(savedFilter);
+    result->tag = STRING_TAG;
+    if (gfn_result == GFN_OK) {
+        /* Got a string, copy it to the result */
+        if (!AllocNStringNCpy(&result->val.str, filename, PATH_MAX)) {
+            *errMsg = "failed to allocate return value: %s";
+            return False;
+        }
+    } else {
+        /* User cancelled.  Return "" */
+        result->val.str.rep = PERM_ALLOC_STR("");
+        result->val.str.len = 0;
+    }
     return True;
 }
 
