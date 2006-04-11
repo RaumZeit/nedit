@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.187 2005/12/17 19:23:32 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.188 2006/04/11 06:29:42 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -866,7 +866,7 @@ void SortTabBar(WindowInfo *window)
     WindowInfo *w;
     WindowInfo **windows;
     WidgetList tabList;
-    int i, nDoc;
+    int i, j, nDoc, tabCount;
 
     if (!GetPrefSortTabs())
     	return;
@@ -885,17 +885,20 @@ void SortTabBar(WindowInfo *window)
     qsort(windows, nDoc, sizeof(WindowInfo *), compareWindowNames);
 
     /* assign tabs to documents in sorted order */
-    XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, NULL);
-    for (i=0; i<nDoc; i++) {
-    	if (windows[i]->tab == tabList[i])
-	    continue;
-	    
-    	/* set tab as active */
-    	if (IsTopDocument(windows[i]))
+    XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList,
+                  XmNtabCount, &tabCount, NULL);
+
+    for (i=0, j=0; i<tabCount && j<nDoc; i++) {
+        if (tabList[i]->core.being_destroyed)
+            continue;
+
+        /* set tab as active */
+        if (IsTopDocument(windows[j]))
             XmLFolderSetActiveTab(window->tabBar, i, False);
-	    
-    	windows[i]->tab = tabList[i];
-    	RefreshTabState(windows[i]);
+
+        windows[j]->tab = tabList[i];
+        RefreshTabState(windows[j]);
+        j++;
     }
     
     XtFree((char *)windows);
