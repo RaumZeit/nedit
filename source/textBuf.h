@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.17 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: textBuf.h,v 1.18 2006/04/21 21:13:40 ajbj Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *
@@ -88,6 +88,7 @@ textBuffer *BufCreate(void);
 textBuffer *BufCreatePreallocated(int requestedSize);
 void BufFree(textBuffer *buf);
 char *BufGetAll(textBuffer *buf);
+char *BufAsString(textBuffer *buf);
 void BufSetAll(textBuffer *buf, const char *text);
 char *BufGetRange(textBuffer *buf, int start, int end);
 char BufGetCharacter(textBuffer *buf, int pos);

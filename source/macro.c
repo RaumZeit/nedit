@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.102 2006/04/11 01:14:27 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.103 2006/04/21 21:13:40 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2463,13 +2463,15 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs,
        the string argument */
     if (nArgs > 8)
     	return wrongNArgsErr(errMsg);
+
     newArgList[0].tag = STRING_TAG;
-    newArgList[0].val.str.rep = BufGetAll(window->buffer);
+    newArgList[0].val.str.rep = BufAsString(window->buffer);
     newArgList[0].val.str.len = window->buffer->length;
+
+    /* copy other arguments to the new argument list */
     memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
-    retVal = searchStringMS(window, newArgList, nArgs+1, result, errMsg);
-    XtFree(newArgList[0].val.str.rep);
-    return retVal;
+
+    return searchStringMS(window, newArgList, nArgs+1, result, errMsg);
 }
 
 /*

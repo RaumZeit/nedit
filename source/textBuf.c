@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.32 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.33 2006/04/21 21:13:40 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -145,7 +145,8 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     
     buf = (textBuffer *)XtMalloc(sizeof(textBuffer));
     buf->length = 0;
-    buf->buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE);
+    buf->buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
+    buf->buf[requestedSize + PREFERRED_GAP_SIZE] = '\0';
     buf->gapStart = 0;
     buf->gapEnd = PREFERRED_GAP_SIZE;
     buf->tabDist = 8;
@@ -212,6 +213,35 @@ char *BufGetAll(textBuffer *buf)
 }
 
 /*
+** Get the entire contents of a text buffer as a single string.  The gap is
+** moved so that the buffer data can be accessed as a single contiguous
+** character array.
+** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
+**    This function should really return const char *.
+** This function is intended ONLY to provide a searchable string without copying
+** into a temporary buffer.
+*/
+char *BufAsString(textBuffer *buf)
+{
+    char *text;
+    int bufLen = buf->length;
+    int leftLen = buf->gapStart;
+    int rightLen = bufLen - leftLen;
+
+    /* find where best to put the gap to minimise memory movement */
+    if (leftLen != 0 && rightLen != 0) {
+        leftLen = (leftLen < rightLen) ? 0 : bufLen;
+        moveGap(buf, leftLen);
+    }
+    /* get the start position of the actual data */
+    text = &buf->buf[(leftLen == 0) ? buf->gapEnd : 0];
+    /* make sure it's null-terminated */
+    text[bufLen] = 0;
+
+    return text;
+}
+
+/*
 ** Replace the entire contents of the text buffer
 */
 void BufSetAll(textBuffer *buf, const char *text)
@@ -228,7 +258,8 @@ void BufSetAll(textBuffer *buf, const char *text)
     XtFree(buf->buf);
     
     /* Start a new buffer with a gap of PREFERRED_GAP_SIZE in the center */
-    buf->buf = XtMalloc(length + PREFERRED_GAP_SIZE);
+    buf->buf = XtMalloc(length + PREFERRED_GAP_SIZE + 1);
+    buf->buf[length + PREFERRED_GAP_SIZE] = '\0';
     buf->length = length;
     buf->gapStart = length/2;
     buf->gapEnd = buf->gapStart + PREFERRED_GAP_SIZE;
@@ -2190,7 +2221,8 @@ static void reallocateBuf(textBuffer *buf, int newGapStart, int newGapLen)
     char *newBuf;
     int newGapEnd;
 
-    newBuf = XtMalloc(buf->length + newGapLen);
+    newBuf = XtMalloc(buf->length + newGapLen + 1);
+    newBuf[buf->length + PREFERRED_GAP_SIZE] = '\0';
     newGapEnd = newGapStart + newGapLen;
     if (newGapStart <= buf->gapStart) {
 	memcpy(newBuf, buf->buf, newGapStart);
