@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.103 2006/04/21 21:13:40 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.104 2006/05/31 16:39:23 n8gray Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -63,6 +63,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.103 2006/04/21 21:13:40 ajbj Exp $
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #include <types.h>
@@ -2457,7 +2458,6 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, char **errMsg)
 {
     DataValue newArgList[9];
-    int retVal;
     
     /* Use the search string routine, by adding the buffer contents as
        the string argument */
