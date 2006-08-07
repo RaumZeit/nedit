@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.27 2005/05/27 16:58:43 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.28 2006/08/07 15:41:03 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2776,7 +2776,7 @@ int ExecRE (
 
    if (Num_Braces > 0) {
       Brace =
-         (brace_counts *) malloc (sizeof (brace_counts) + (size_t) Num_Braces);
+         (brace_counts *) malloc (sizeof (brace_counts) * (size_t) Num_Braces);
 
       if (Brace == NULL) {
          reg_error ("out of memory in `ExecRE\'");

@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.36 2006/03/17 14:20:34 edg Exp $
+$Id: ReleaseNotes,v 1.37 2006/08/07 15:41:03 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -40,6 +40,9 @@ Bugs fixed in $NEXT_VERSION
 
   - The current file name is (again) displayed in the Save As dialog text
     field. (SF bug #1451337)
+    
+  - A crash caused by highlighting patterns with complex regular expressions 
+    has been fixed. (SF bug #1536002)
 
 
 New features in 5.5 
