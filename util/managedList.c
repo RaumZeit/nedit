@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.14 2004/07/21 11:32:07 yooden Exp $";
+static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *
@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: managedList.c,v 1.14 2004/07/21 11:32:07 yoode
 
 #include "managedList.h"
 #include "misc.h"
+#include "DialogF.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -76,6 +77,7 @@ static void updateListWidgetItem(managedListData *ml, int listPos);
 static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
 static int selectedListPosition(managedListData *ml);
 static void selectItem(Widget listW, int itemIndex, int updateDialog);
+static Widget shellOfWidget(Widget w);
 
 /*
 ** Create a user interface to help manage a list of arbitrary data records
@@ -401,6 +403,13 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData)
     if (listPos == 1)
     	return; /* can't copy "new" */
 
+    if ((*ml->nItems) == ml->maxItems) {
+        DialogF(DF_ERR, shellOfWidget(ml->listW), 1, "Limits exceeded",
+                        "Cannot copy item.\nToo many items in list.",
+                        "OK");
+        return;
+    }
+
     /* Bring the entry up to date (could result in operation being canceled) */
     item = (*ml->getDialogDataCB)(ml->itemList[listPos-2], False, &abort,
     	    ml->getDialogDataArg);
@@ -550,6 +559,12 @@ static int incorporateDialogData(managedListData *ml, int listPos, int explicit)
     /* If the item is "new" add a new entry to the list, otherwise,
        modify the entry with the text fields from the dialog */
     if (listPos == 1) {
+        if ((*ml->nItems) == ml->maxItems) {
+            DialogF(DF_ERR, shellOfWidget(ml->listW), 1, "Limits exceeded",
+                            "Cannot add new item.\nToo many items in list.",
+                            "OK");
+            return False;
+        }
 	ml->itemList[(*ml->nItems)++] = item;
 	updateDialogFromList(ml, *ml->nItems - 1);
     } else {
@@ -657,4 +672,13 @@ static void selectItem(Widget listW, int itemIndex, int updateDialog)
     	XmListSetPos(listW, selection);
     else if (selection >= topPos + nVisible)
     	XmListSetPos(listW, selection - nVisible + 1);
+}
+
+static Widget shellOfWidget(Widget w)
+{
+    while(1) {
+        if (!w) return 0;
+        if (XtIsSubclass(w, shellWidgetClass)) return w;
+        w = XtParent(w);
+    }      
 }

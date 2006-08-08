@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.37 2006/08/07 15:41:03 edg Exp $
+$Id: ReleaseNotes,v 1.38 2006/08/08 10:59:32 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -43,6 +43,9 @@ Bugs fixed in $NEXT_VERSION
     
   - A crash caused by highlighting patterns with complex regular expressions 
     has been fixed. (SF bug #1536002)
+    
+  - Crashes when the maximum number of patterns in a hightlighting pattern
+    set was exceeded, have been fixed. (SF bug #1536451)
 
 
 New features in 5.5 
