@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.17 2004/10/13 17:38:28 tringali Exp $ */
+/* $Id: system.h,v 1.18 2006/08/08 18:06:59 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * system.h -- Compile Time Configuration Header File                           *
@@ -64,6 +64,9 @@
 #elif defined(__sparc)
 #   define COMPILE_MACHINE "Sparc"
 
+#elif defined(__sparcv9)
+#   define COMPILE_MACHINE "Sparc64"
+
 #elif defined(__hppa)
 #   define COMPILE_MACHINE "PA-RISC"
 
@@ -106,7 +109,7 @@
 #elif defined(__i386) || defined(__i386__)
 #   define COMPILE_MACHINE "386"
 
-#elif defined(_M_IX86) || defined(_X86_)
+#elif defined(_M_IX86) || defined(_X86_) || defined (__x86__)
 #   define COMPILE_MACHINE "x86"
 
 #elif defined(__VAX)
@@ -191,10 +194,10 @@
 #   define COMPILE_COMPILER "Apogee"
 
 #elif defined (__SUNPRO_C)
-#   define COMPILE_COMPILER "Forte C"         /* aka Sun WorkShop Pro */
+#   define COMPILE_COMPILER "Sun Studio C"    /* aka Sun WorkShop, Sun ONE studio, Forte, Sun Studio, ARGH! */
 
 #elif defined (__SUNPRO_CC)
-#   define COMPILE_COMPILER "Forte C++"       /* aka Sun WorkShop Pro */
+#   define COMPILE_COMPILER "Sun Studio C++"  /* aka Sun WorkShop, Sun ONE studio, Forte, Sun Studio, ARGH! */
 
 #elif defined (__LCC__)
 #   define COMPILE_COMPILER "LCC"
