@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.73 2006/08/08 10:59:32 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.74 2006/08/09 08:50:07 edg Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1561,7 +1561,7 @@ static highlightPattern *readHighlightPatterns(char **inPtr, int withBraces,
 	    (*inPtr)++;
     	    break;
     	}
-    	if (pat - patternList > MAX_PATTERNS) {
+    	if (pat - patternList >= MAX_PATTERNS) {
     	    *errMsg = "max number of patterns exceeded\n";
     	    return NULL;
     	}
