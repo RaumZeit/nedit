@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.96 2006/04/11 01:14:26 n8gray Exp $
+.. $Id: help.etx,v 1.97 2006/08/12 13:40:17 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4363,6 +4363,10 @@ X Resources
 
   For example:
     32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+  
+.. DISABLED for 5.4
+..  The macro built-in function set_backlight_string() allows these strings to be
+..  set for a particular window.
 
 **nedit.focusOnRaise**: False
 
@@ -4371,11 +4375,20 @@ X Resources
   of the window manager to decide on which window gets the input focus.
   Therefore, NEdit's default behaviour is not to request the input focus
   explicitly.
-  
 
-.. DISABLED for 5.4
-..  The macro built-in function set_backlight_string() allows these strings to be
-..  set for a particular window.
+**nedit.forceOSConversion**: True
+
+  By default, NEdit converts texts in DOS or Mac format to an internal
+  format using simple newlines as line dividers. This is sometimes not
+  wanted by the user and can be prevented by setting this resource to
+  False.
+  
+  Note: Setting this to False would supress newlines in Mac files entirely,
+  leaving the control character <cr> where every line feed would be. Mac OS
+  X uses Unix files and is not affected.
+
+  Note: Setting this to False while the option 'Terminate with Line Break
+  on Save' is active could lead to file corruption.
 
 **nc.autoStart**: True 
 

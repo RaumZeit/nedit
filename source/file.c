@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.97 2006/01/14 11:42:16 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.98 2006/08/12 13:40:17 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -498,13 +498,15 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     window->fileGid = statbuf.st_gid;
     window->lastModTime = statbuf.st_mtime;
     window->fileMissing = FALSE;
+
     /* Detect and convert DOS and Macintosh format files */
-    window->fileFormat = FormatOfFile(fileString);
-    if (window->fileFormat == DOS_FILE_FORMAT) {
-	ConvertFromDosFileString(fileString, &readLen, NULL);
-    }
-    else if (window->fileFormat == MAC_FILE_FORMAT) {
-	ConvertFromMacFileString(fileString, readLen);
+    if (GetPrefForceOSConversion()) {
+        window->fileFormat = FormatOfFile(fileString);
+        if (window->fileFormat == DOS_FILE_FORMAT) {
+            ConvertFromDosFileString(fileString, &readLen, NULL);
+        } else if (window->fileFormat == MAC_FILE_FORMAT) {
+            ConvertFromMacFileString(fileString, readLen);
+        }
     }
     
     /* Display the file contents in the text widget */

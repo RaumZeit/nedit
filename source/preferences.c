@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.138 2006/02/02 20:24:34 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.139 2006/08/12 13:40:17 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -317,6 +317,7 @@ static struct prefData {
     char tooltipBgColor[MAX_COLOR_LEN];
     int  undoModifiesSelection;
     int  focusOnRaise;
+    Boolean forceOSConversion;
 } PrefData;
 
 /* Temporary storage for preferences strings which are discarded after being
@@ -969,8 +970,10 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
     {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN,
         "True", &PrefData.undoModifiesSelection, NULL, False},
-    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN,
-        "False", &PrefData.focusOnRaise, NULL, False}
+    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False",
+            &PrefData.focusOnRaise, NULL, False},
+    {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True",
+            &PrefData.forceOSConversion, NULL, False}
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -2065,24 +2068,19 @@ const char* GetPrefTitleFormat(void)
     return PrefData.titleFormat;
 }
 
-void SetPrefUndoModifiesSelection(Boolean value)
-{
-    setIntPref(&PrefData.undoModifiesSelection, value);
-}
-
 Boolean GetPrefUndoModifiesSelection(void)
 {
     return (Boolean)PrefData.undoModifiesSelection;
 }
 
-void SetPrefFocusOnRaise(Boolean value)
-{
-    setIntPref(&PrefData.focusOnRaise, value);
-}
-
 Boolean GetPrefFocusOnRaise(void)
 {
     return (Boolean)PrefData.focusOnRaise;
+}
+
+Boolean GetPrefForceOSConversion(void)
+{
+    return (Boolean) PrefData.forceOSConversion;
 }
 
 int GetPrefOverrideVirtKeyBindings(void)

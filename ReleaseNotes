@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.38 2006/08/08 10:59:32 edg Exp $
+$Id: ReleaseNotes,v 1.39 2006/08/12 13:40:17 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -46,6 +46,8 @@ Bugs fixed in $NEXT_VERSION
     
   - Crashes when the maximum number of patterns in a hightlighting pattern
     set was exceeded, have been fixed. (SF bug #1536451)
+
+  - Files are now optionally opened without format changes (SF bug #1003241).
 
 
 New features in 5.5 
