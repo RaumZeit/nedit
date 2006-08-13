@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.52 2006/08/13 18:02:28 yooden Exp $ */
+/* $Id: preferences.h,v 1.53 2006/08/13 18:41:54 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -217,6 +217,7 @@ void SetPrefOpenInTab(int state);
 int GetPrefOpenInTab(void);
 Boolean GetPrefUndoModifiesSelection(void);
 Boolean GetPrefFocusOnRaise(void);
+Boolean GetPrefHonorSymlinks(void);
 Boolean GetPrefForceOSConversion(void);
 void SetPrefFocusOnRaise(Boolean);
 int GetPrefOverrideVirtKeyBindings(void);

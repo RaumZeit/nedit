@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.66 2006/08/13 18:02:28 yooden Exp $ */
+/* $Id: nedit.h,v 1.67 2006/08/13 18:41:54 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -458,6 +458,8 @@ typedef struct _WindowInfo {
     	    	    	    	    	   (Unix format), or convert it to
 					   MS DOS style with \r\n line breaks */
     time_t    	lastModTime; 	    	/* time of last modification to file */
+    dev_t       device;                 /*  device where the file resides */
+    ino_t       inode;                  /*  file's inode  */
     UndoInfo	*undo;			/* info for undoing last operation */
     UndoInfo	*redo;			/* info for redoing last undone op */
     textBuffer	*buffer;		/* holds the text being edited */

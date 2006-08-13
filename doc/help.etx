@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.98 2006/08/13 18:02:28 yooden Exp $
+.. $Id: help.etx,v 1.99 2006/08/13 18:41:54 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4400,6 +4400,13 @@ X Resources
   (will silently conclude the operation).
 
   **WARNING**: Setting this to 'Ignore' will destroy data without warning!
+
+**nedit.honorSymlinks**: True
+
+  If set to True, NEdit will open a requested file on disk even if it is a
+  symlink pointing to a file already opened in another window. If set to false,
+  NEdit will try to detect these cases and just pop up the already opened
+  document.
 
 **nc.autoStart**: True 
 

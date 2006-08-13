@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.140 2006/08/13 18:02:28 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.141 2006/08/13 18:41:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -321,6 +321,7 @@ static struct prefData {
     char tooltipBgColor[MAX_COLOR_LEN];
     int  undoModifiesSelection;
     int  focusOnRaise;
+    Boolean honorSymlinks;
     int truncSubstitution;
     Boolean forceOSConversion;
 } PrefData;
@@ -980,7 +981,9 @@ static PrefDescripRec PrefDescrip[] = {
     {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True",
             &PrefData.forceOSConversion, NULL, False},
     {"truncSubstitution", "TruncSubstitution", PREF_ENUM, "Fail",
-            &PrefData.truncSubstitution, TruncSubstitutionModes, False}
+            &PrefData.truncSubstitution, TruncSubstitutionModes, False},
+    {"honorSymlinks", "HonorSymlinks", PREF_BOOLEAN, "True",
+            &PrefData.honorSymlinks, NULL, False}
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -2088,6 +2091,11 @@ Boolean GetPrefFocusOnRaise(void)
 Boolean GetPrefForceOSConversion(void)
 {
     return (Boolean) PrefData.forceOSConversion;
+}
+
+Boolean GetPrefHonorSymlinks(void)
+{
+    return PrefData.honorSymlinks;
 }
 
 int GetPrefOverrideVirtKeyBindings(void)

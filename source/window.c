@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.188 2006/04/11 06:29:42 n8gray Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.189 2006/08/13 18:41:54 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -67,6 +67,7 @@ static const char CVSID[] = "$Id: window.c,v 1.188 2006/04/11 06:29:42 n8gray Ex
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #ifdef VMS
 #include "../util/VMSparam.h"
 #else
@@ -1105,11 +1106,31 @@ void ShowWindowTabBar(WindowInfo *window)
 */
 WindowInfo *FindWindowWithFile(const char *name, const char *path)
 {
-    WindowInfo *w;
+    WindowInfo* window;
 
-    for (w=WindowList; w!=NULL; w=w->next) {
-        if (!strcmp(w->filename, name) && !strcmp(w->path, path)) {
-            return w;
+    if (!GetPrefHonorSymlinks())
+    {
+        char fullname[MAXPATHLEN + 1];
+        struct stat attribute;
+
+        strncpy(fullname, path, MAXPATHLEN);
+        strncat(fullname, name, MAXPATHLEN);
+        fullname[MAXPATHLEN] = '\0';
+
+        if (0 == stat(fullname, &attribute)) {
+            for (window = WindowList; window != NULL; window = window->next) {
+                if (attribute.st_dev == window->device
+                        && attribute.st_ino == window->inode) {
+                    return window;
+                }
+            }
+        }   /*  else:  Not an error condition, just a new file. Continue to check
+                whether the filename is already in use for an unsaved document.  */
+    }
+
+    for (window = WindowList; window != NULL; window = window->next) {
+        if (!strcmp(window->filename, name) && !strcmp(window->path, path)) {
+            return window;
         }
     }
     return NULL;

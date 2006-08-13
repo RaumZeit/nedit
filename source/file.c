@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.98 2006/08/12 13:40:17 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.99 2006/08/13 18:41:54 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -497,6 +497,8 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     window->fileUid = statbuf.st_uid;
     window->fileGid = statbuf.st_gid;
     window->lastModTime = statbuf.st_mtime;
+    window->device = statbuf.st_dev;
+    window->inode = statbuf.st_ino;
     window->fileMissing = FALSE;
 
     /* Detect and convert DOS and Macintosh format files */
@@ -1020,6 +1022,8 @@ static int doSave(WindowInfo *window)
     if (stat(fullname, &statbuf) == 0) {
 	window->lastModTime = statbuf.st_mtime;
         window->fileMissing = FALSE;
+        window->device = statbuf.st_dev;
+        window->inode = statbuf.st_ino;
     } else {
         /* This needs to produce an error message -- the file can't be 
             accessed! */
