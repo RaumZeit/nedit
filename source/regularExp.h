@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.13 2004/11/26 18:25:51 edg Exp $ */
+/* $Id: regularExp.h,v 1.14 2006/08/13 18:02:28 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * regularExp.h -- Nirvana Editor Regular Expression Package Header File        *
@@ -24,6 +24,8 @@
 * July 31, 2001                                                                *
 *                                                                              *
 *******************************************************************************/
+
+#include <X11/Intrinsic.h>
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
@@ -91,12 +93,8 @@ int ExecRE (
                                    set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
-
-void SubstituteRE (
-   regexp *prog,
-   const char   *source,
-   char   *dest,
-   int     max);
+Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
+        const int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of

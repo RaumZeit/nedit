@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.65 2005/12/17 19:23:32 yooden Exp $ */
+/* $Id: nedit.h,v 1.66 2006/08/13 18:02:28 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -56,7 +56,7 @@
 
 
 /* Tuning parameters */
-#define SEARCHMAX 511		/* Maximum length of search/replace strings */
+#define SEARCHMAX 5119          /* Maximum length of search/replace strings */
 #define MAX_SEARCH_HISTORY 100	/* Maximum length of search string history */
 #define MAX_PANES 6		/* Max # of ADDITIONAL text editing panes
 				   that can be added to a window */
@@ -102,6 +102,10 @@ enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
 enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
 enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
                        VIRT_KEY_OVERRIDE_ALWAYS };
+
+/*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
+    in preferences.c  */
+enum truncSubstitution {TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TRUNCSUBST_IGNORE};
 
 #define NO_FLASH_STRING		"off"
 #define FLASH_DELIMIT_STRING	"delimiter"

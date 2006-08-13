@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.77 2006/02/02 20:24:35 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.78 2006/08/13 18:02:28 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -216,9 +216,9 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 static int findMatchingChar(WindowInfo *window, char toMatch,
 	void *toMatchStyle, int charPos, int startLimit, int endLimit, 
 	int *matchPos);
-static void replaceUsingRE(const char *searchStr, const char *replaceStr,
-	const char *sourceStr, int beginPos, char *destStr, 
-        int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
+static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
+        const char* sourceStr, int beginPos, char* destStr, int maxDestLen,
+        int prevChar, const char* delimiters, int defaultFlags);
 static void saveSearchHistory(const char *searchString,
         const char *replaceString, int searchType, int isIncremental);
 static int historyIndex(int nCycles);
@@ -243,6 +243,8 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction,
       	int beginPos, int startPos); 
 static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, 
 	int initPos); 
+static Boolean prefOrUserCancelsSubst(const Widget parent,
+        const Display* display);
 
 typedef struct _charMatchTable {
     char c;
@@ -3710,18 +3712,78 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 }
 
 /*
+**  Uses the resource nedit.truncSubstitution to determine how to deal with
+**  regex failures. This function only knows about the resource (via the usual
+**  setting getter) and asks or warns the user depending on that.
+**
+**  One could argue that the dialoging should be determined by the setting
+**  'searchDlogs'. However, the incomplete substitution is not just a question
+**  of verbosity, but of data loss. The search is successful, only the
+**  replacement fails due to an internal limitation of NEdit.
+**
+**  The parameters 'parent' and 'display' are only used to put dialogs and
+**  beeps at the right place.
+**
+**  The result is either predetermined by the resource or the user's choice.
+*/
+static Boolean prefOrUserCancelsSubst(const Widget parent,
+        const Display* display)
+{
+    Boolean cancel = True;
+    unsigned confirmResult = 0;
+
+    switch (GetPrefTruncSubstitution()) {
+        case TRUNCSUBST_SILENT:
+            /*  silently fail the operation  */
+            cancel = True;
+            break;
+
+        case TRUNCSUBST_FAIL:
+            /*  fail the operation and pop up a dialog informing the user  */
+            XBell(display, 0);
+            DialogF(DF_INF, parent, 1, "Substitution Failed",
+                    "The result length of the substitution exceeded an internal limit.\n"
+                    "The substitution is canceled.",
+                    "OK");
+            cancel = True;
+            break;
+
+        case TRUNCSUBST_WARN:
+            /*  pop up dialog and ask for confirmation  */
+            XBell(display, 0);
+            confirmResult = DialogF(DF_WARN, parent, 2,
+                    "Substitution Failed",
+                    "The result length of the substitution exceeded an internal limit.\n"
+                    "Executing the substitution will result in loss of data.",
+                    "Lose Data", "Cancel");
+            cancel = (1 != confirmResult);
+            break;
+
+        case TRUNCSUBST_IGNORE:
+            /*  silently conclude the operation; THIS WILL DESTROY DATA.  */
+            cancel = False;
+            break;
+    }
+
+    return cancel;
+}
+
+/*
 ** Replace all occurences of "searchString" in "window" with "replaceString"
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
-int ReplaceInSelection(WindowInfo *window, const char *searchString,
-	const char *replaceString, int searchType)
+void ReplaceInSelection(const WindowInfo* window, const char* searchString,
+        const char* replaceString, const int searchType)
 {
     int selStart, selEnd, beginPos, startPos, endPos, realOffset, replaceLen;
-    int found, anyFound, isRect, rectStart, rectEnd, lineStart, cursorPos;
+    int found, isRect, rectStart, rectEnd, lineStart, cursorPos;
     int extentBW, extentFW;
     char *fileString;
     textBuffer *tempBuf;
+    Boolean substSuccess = False;
+    Boolean anyFound = False;
+    Boolean cancelSubst = True;
     
     /* save a copy of search and replace strings in the search history */
     saveSearchHistory(searchString, replaceString, searchType, FALSE);
@@ -3729,7 +3791,7 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
     /* find out where the selection is */
     if (!BufGetSelectionPos(window->buffer, &selStart, &selEnd, &isRect,
     	    &rectStart, &rectEnd))
-    	return FALSE;
+    	return;
 	
     /* get the selected text */
     if (isRect) {
@@ -3748,7 +3810,6 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
     /* search the string and do the replacements in the temporary buffer */
     replaceLen = strlen(replaceString);
     found = TRUE;
-    anyFound = FALSE;
     beginPos = 0;
     cursorPos = 0;
     realOffset = 0;
@@ -3758,6 +3819,8 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
                 &extentFW, GetWindowDelimiters(window));
 	if (!found)
 	    break;
+
+        anyFound = True;
 	/* if the selection is rectangular, verify that the found
 	   string is in the rectangle */
 	if (isRect) {
@@ -3782,42 +3845,78 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
 		continue;
 	    }
 	}
+
 	/* Make sure the match did not start past the end (regular expressions
 	   can consider the artificial end of the range as the end of a line,
 	   and match a fictional whole line beginning there) */
-	if (startPos == selEnd - selStart) {
+        if (startPos == (selEnd - selStart)) {
 	    found = False;
 	    break;
 	}
+
 	/* replace the string and compensate for length change */
 	if (isRegexType(searchType)) {
     	    char replaceResult[SEARCHMAX], *foundString;
 	    foundString = BufGetRange(tempBuf, extentBW+realOffset,
 		    extentFW+realOffset+1);
-    	    replaceUsingRE(searchString, replaceString, foundString,
-		    startPos-extentBW,
-		    replaceResult, SEARCHMAX, startPos+realOffset == 0 ? '\0' :
-		    BufGetCharacter(tempBuf, startPos+realOffset-1),
-		    GetWindowDelimiters(window), defaultRegexFlags(searchType));
+            substSuccess = replaceUsingRE(searchString, replaceString,
+                    foundString, startPos - extentBW, replaceResult, SEARCHMAX,
+                    0 == (startPos + realOffset)
+                        ? '\0'
+                        : BufGetCharacter(tempBuf, startPos + realOffset - 1),
+                    GetWindowDelimiters(window), defaultRegexFlags(searchType));
 	    XtFree(foundString);
+
+            if (!substSuccess) {
+                /*  The substitution failed. Primary reason for this would be
+                    a result string exceeding SEARCHMAX. */
+
+                cancelSubst = prefOrUserCancelsSubst(window->shell, TheDisplay);
+
+                if (cancelSubst) {
+                    /*  No point in trying other substitutions.  */
+                    break;
+                }
+            }
+
     	    BufReplace(tempBuf, startPos+realOffset, endPos+realOffset,
     		    replaceResult);
     	    replaceLen = strlen(replaceResult);
-	} else
+        } else {
     	    BufReplace(tempBuf, startPos+realOffset, endPos+realOffset,
     		    replaceString);
+        }
+
     	realOffset += replaceLen - (endPos - startPos);
     	/* start again after match unless match was empty, then endPos+1 */
     	beginPos = (startPos == endPos) ? endPos+1 : endPos;
     	cursorPos = endPos;
-	anyFound = TRUE;
 	if (fileString[endPos] == '\0')
 	    break;
     }
     XtFree(fileString);
-    
-    /* if nothing was found, tell user and return */
-    if (!anyFound) {
+
+    if (anyFound) {
+        if (substSuccess || !cancelSubst) {
+            /*  Either the substitution was successful (the common case) or the
+                user does not care and wants to have a faulty replacement.  */
+
+            /* replace the selected range in the real buffer */
+            fileString = BufGetAll(tempBuf);
+            BufReplace(window->buffer, selStart, selEnd, fileString);
+            XtFree(fileString);
+
+            /* set the insert point at the end of the last replacement */
+            TextSetCursorPos(window->lastFocus, selStart + cursorPos + realOffset);
+
+            /* leave non-rectangular selections selected (rect. ones after replacement
+               are less useful since left/right positions are randomly adjusted) */
+            if (!isRect) {
+                BufSelect(window->buffer, selStart, selEnd + realOffset);
+            }
+        }
+    } else {
+        /*  Nothing found, tell the user about it  */
     	if (GetPrefSearchDlogs()) {
     	    /* Avoid bug in Motif 1.1 by putting away search dialog
     	       before DialogF */
@@ -3831,25 +3930,10 @@ int ReplaceInSelection(WindowInfo *window, const char *searchString,
                 "String was not found", "OK");
     	} else
     	    XBell(TheDisplay, 0);
- 	BufFree(tempBuf);
- 	return FALSE;
     }
-    
-    /* replace the selected range in the real buffer */
-    fileString = BufGetAll(tempBuf);
-    BufFree(tempBuf);
-    BufReplace(window->buffer, selStart, selEnd, fileString);
-    XtFree(fileString);
-    
-    /* set the insert point at the end of the last replacement */
-    TextSetCursorPos(window->lastFocus, selStart + cursorPos + realOffset);
-    
-    /* leave non-rectangular selections selected (rect. ones after replacement
-       are less useful since left/right positions are randomly adjusted) */
-    if (!isRect)
-    	BufSelect(window->buffer, selStart, selEnd + realOffset);
 
-    return TRUE;
+    BufFree(tempBuf);
+    return;
 }
 
 /*
@@ -4636,18 +4720,22 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 ** code to continue using strings to represent the search and replace
 ** items.
 */  
-static void replaceUsingRE(const char *searchStr, const char *replaceStr, 
-	const char *sourceStr, int beginPos, char *destStr, 
-        int maxDestLen, int prevChar, const char *delimiters, int defaultFlags)
+static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
+        const char* sourceStr, const int beginPos, char* destStr,
+        const int maxDestLen, const int prevChar, const char* delimiters,
+        const int defaultFlags)
 {
     regexp *compiledRE;
     char *compileMsg;
+    Boolean substResult = False;
     
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
     ExecRE(compiledRE, NULL, sourceStr+beginPos, NULL, False, prevChar,
    	   '\0', delimiters, sourceStr, NULL);
-    SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
+    substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
     free((char *)compiledRE);
+
+    return substResult;
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.28 2006/08/07 15:41:03 edg Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.29 2006/08/13 18:02:28 yooden Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -84,11 +84,11 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.28 2006/08/07 15:41:03 edg Ex
 
 #include "regularExp.h"
 
+#include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <limits.h>
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
@@ -3980,15 +3980,16 @@ static unsigned char * next_ptr (unsigned char *ptr) {
    }
 }
 
-/*----------------------------------------------------------------------*
- * SubstituteRE - Perform substitutions after a `regexp' match.
- *----------------------------------------------------------------------*/
-
-void SubstituteRE (
-   regexp *prog,
-   const char   *source,
-   char   *dest,
-   int     max) {
+/*
+**  SubstituteRE - Perform substitutions after a `regexp' match.
+**
+**  This function cleanly shortens results of more than max length to max.
+**  To give the caller a chance to react to this the function returns False
+**  on any error. The substitution will still be executed.
+*/
+Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
+        const int max)
+{
 
    register unsigned char *src;
             unsigned char *src_alias;
@@ -3998,17 +3999,18 @@ void SubstituteRE (
    register          int   paren_no;
    register          int   len;
    register unsigned char  chgcase;
+   Boolean anyWarnings = False;
 
    if (prog == NULL || source == NULL || dest == NULL) {
       reg_error ("NULL parm to `SubstituteRE\'");
 
-      return;
+      return False;
    }
 
    if (U_CHAR_AT (prog->program) != MAGIC) {
       reg_error ("damaged regexp passed to `SubstituteRE\'");
 
-      return;
+      return False;
    }
 
    src = (unsigned char *) source;
@@ -4064,6 +4066,7 @@ void SubstituteRE (
          if (((char *) dst - (char *) dest) >= (max - 1)) {
             reg_error("replacing expression in `SubstituteRE\' too long; "
                       "truncating");
+            anyWarnings = True;
             break;
          } else {
             *dst++ = c;
@@ -4076,6 +4079,7 @@ void SubstituteRE (
          if (((char *) dst + len - (char *) dest) >= max-1) {
             reg_error("replacing expression in `SubstituteRE\' too long; "
                       "truncating");
+            anyWarnings = True;
             len = max - ((char *) dst - (char *) dest) - 1;
          }
 
@@ -4087,6 +4091,7 @@ void SubstituteRE (
 
          if (len != 0 && *(dst - 1) == '\0') {  /* strncpy hit NUL. */
             reg_error ("damaged match string in `SubstituteRE\'");
+            anyWarnings = True;
 
             return;
          }
@@ -4094,6 +4099,8 @@ void SubstituteRE (
    }
 
    *dst = '\0';
+
+   return !anyWarnings;
 }
 
 static void adjustcase (unsigned char *str, int len, unsigned char chgcase) {
@@ -4133,7 +4140,7 @@ static void reg_error (char *str) {
 
    fprintf (
       stderr,
-      "NEdit: Internal error processing regular expression (%s)\n",
+      "nedit: Internal error processing regular expression (%s)\n",
       str);
 }
 

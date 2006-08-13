@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.139 2006/08/12 13:40:17 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.140 2006/08/13 18:02:28 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -149,6 +149,10 @@ static char *VirtKeyOverrideModes[N_VIRTKEY_OVERRIDE_MODES+1] = { "Never",
          False and True should also be the last ones in the list. */
 static char *ShowMatchingTypes[] = {"Off", "Delimiter", "Range", 
 	"False", "True", NULL};
+
+/*  This array must be kept in parallel to the enum truncSubstitution
+    in nedit.h  */
+static char* TruncSubstitutionModes[] = {"Silent", "Fail", "Warn", "Ignore", NULL};
 
 /* suplement wrap and indent styles w/ a value meaning "use default" for
    the override fields in the language modes dialog */
@@ -317,6 +321,7 @@ static struct prefData {
     char tooltipBgColor[MAX_COLOR_LEN];
     int  undoModifiesSelection;
     int  focusOnRaise;
+    int truncSubstitution;
     Boolean forceOSConversion;
 } PrefData;
 
@@ -970,10 +975,12 @@ static PrefDescripRec PrefDescrip[] = {
 	PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
     {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN,
         "True", &PrefData.undoModifiesSelection, NULL, False},
-    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False",
-            &PrefData.focusOnRaise, NULL, False},
+    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN,
+            "False", &PrefData.focusOnRaise, NULL, False},
     {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True",
-            &PrefData.forceOSConversion, NULL, False}
+            &PrefData.forceOSConversion, NULL, False},
+    {"truncSubstitution", "TruncSubstitution", PREF_ENUM, "Fail",
+            &PrefData.truncSubstitution, TruncSubstitutionModes, False}
 };
 
 static XrmOptionDescRec OpTable[] = {
@@ -2086,6 +2093,11 @@ Boolean GetPrefForceOSConversion(void)
 int GetPrefOverrideVirtKeyBindings(void)
 {
     return PrefData.virtKeyOverride;
+}
+
+int GetPrefTruncSubstitution(void)
+{
+    return PrefData.truncSubstitution;
 }
 
 /*

@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.97 2006/08/12 13:40:17 yooden Exp $
+.. $Id: help.etx,v 1.98 2006/08/13 18:02:28 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4389,6 +4389,17 @@ X Resources
 
   Note: Setting this to False while the option 'Terminate with Line Break
   on Save' is active could lead to file corruption.
+
+**nedit.truncSubstitution**: Fail
+
+  NEdit has a fixed limit on substitution result string length. This
+  resource modifies the behaviour if this limit is exceeded. Possible
+  values are ~Silent~ (will silently fail the operation), ~Fail~ (will fail
+  the operation and pop up a dialog informing the user), ~Warn~ (pops up a
+  dialog warning the user, offering to cancel the operation) and ~Ignore~
+  (will silently conclude the operation).
+
+  **WARNING**: Setting this to 'Ignore' will destroy data without warning!
 
 **nc.autoStart**: True 
 

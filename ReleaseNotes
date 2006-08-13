@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.39 2006/08/12 13:40:17 yooden Exp $
+$Id: ReleaseNotes,v 1.40 2006/08/13 18:02:27 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -48,6 +48,10 @@ Bugs fixed in $NEXT_VERSION
     set was exceeded, have been fixed. (SF bug #1536451)
 
   - Files are now optionally opened without format changes (SF bug #1003241).
+
+  - Replace operation where the result exceeded a fixed length silently
+    clipped the result. The limit has been increased and the behaviour on
+    failure is now configurable. (SF bug #1015499)
 
 
 New features in 5.5 
