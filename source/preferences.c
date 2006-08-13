@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.141 2006/08/13 18:41:54 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.142 2006/08/13 21:47:44 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -664,10 +664,10 @@ static PrefDescripRec PrefDescrip[] = {
         C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         CSS:CSS::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
-        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
+        Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n\
         Fortran:.F .F77 .FOR:::::::\n\
         Java:.JAVA:::::::\n\
-        LaTeX:.TEX .STY .CLS .LTX .INS:::::::\n\
+        LaTeX:.TEX .STY .CLS .LTX .INS .CLO .FD:::::::\n\
         Lex:.lex:::::::\n\
         Makefile:MAKEFILE:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
@@ -684,7 +684,7 @@ static PrefDescripRec PrefDescrip[] = {
         VHDL:.VHD .VHDL .VDL:::::::\n\
         Verilog:.V:::::::\n\
         XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
-        X Resources:.XRESOURCES .XDEFAULTS .NEDIT:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
+        X Resources:.XRESOURCES .XDEFAULTS .NEDIT .PATS NEDIT.RC:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
         Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 #else
        "Ada:.ada .ad .ads .adb .a:::::::\n\
@@ -692,11 +692,11 @@ static PrefDescripRec PrefDescrip[] = {
         C++:.cc .hh .C .H .i .cxx .hxx .cpp .c++::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
-        Csh:.csh .cshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh\"::::::\n\
+        Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n\
         Fortran:.f .f77 .for:::::::\n\
         Java:.java:::::::\n\
         JavaScript:.js:::::::\n\
-        LaTeX:.tex .sty .cls .ltx .ins:::::::\n\
+        LaTeX:.tex .sty .cls .ltx .ins .clo .fd:::::::\n\
         Lex:.lex:::::::\n\
         Makefile:Makefile makefile .gmk:::None:8:8::\n\
         Matlab:.m .oct .sci:::::::\n\
@@ -713,7 +713,7 @@ static PrefDescripRec PrefDescrip[] = {
         VHDL:.vhd .vhdl .vdl:::::::\n\
         Verilog:.v:::::::\n\
         XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
-        X Resources:.Xresources .Xdefaults .nedit:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
+        X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
         Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 #endif
 	&TempStringPrefs.language, NULL, True},
@@ -2272,7 +2272,7 @@ char *LanguageModeName(int mode)
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is NULL).
 */
-char *GetWindowDelimiters(WindowInfo *window)
+char *GetWindowDelimiters(const WindowInfo *window)
 {
     if (window->languageMode == PLAIN_LANGUAGE_MODE)
     	return NULL;

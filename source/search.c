@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.78 2006/08/13 18:02:28 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.79 2006/08/13 21:47:45 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2158,7 +2158,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
 ** Unconditionally pops down the replace dialog and the
 ** replace-in-multiple-files dialog, if it exists.
 */
-static void unmanageReplaceDialogs(WindowInfo *window)
+static void unmanageReplaceDialogs(const WindowInfo *window)
 {
     /* If the replace dialog goes down, the multi-file replace dialog must
        go down too */
@@ -3740,7 +3740,7 @@ static Boolean prefOrUserCancelsSubst(const Widget parent,
 
         case TRUNCSUBST_FAIL:
             /*  fail the operation and pop up a dialog informing the user  */
-            XBell(display, 0);
+            XBell((Display*) display, 0);
             DialogF(DF_INF, parent, 1, "Substitution Failed",
                     "The result length of the substitution exceeded an internal limit.\n"
                     "The substitution is canceled.",
@@ -3750,7 +3750,7 @@ static Boolean prefOrUserCancelsSubst(const Widget parent,
 
         case TRUNCSUBST_WARN:
             /*  pop up dialog and ask for confirmation  */
-            XBell(display, 0);
+            XBell((Display*) display, 0);
             confirmResult = DialogF(DF_WARN, parent, 2,
                     "Substitution Failed",
                     "The result length of the substitution exceeded an internal limit.\n"

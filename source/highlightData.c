@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.74 2006/08/09 08:50:07 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.75 2006/08/13 21:47:44 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -526,8 +526,8 @@ static char *DefaultPatternSets[] = {
 	define Ends:\"^( *| [ \\t]*)<endef>\":::Keyword::D}",
     "Matlab:1:0{\n\
 	Comment:\"%\":\"$\"::Comment::\n\
-	Comment in Octave:\"#\":\"$\"::Plain::\n\
-	Keyword:\"<(break|clear|else|elseif|end|for|function|global|if|return|then|while)>\":::Keyword::\n\
+	Comment in Octave:\"#\":\"$\"::Comment::\n\
+	Keyword:\"<(break|clear|else|elseif|for|function|global|if|return|then|while|end(if|for|while|function))>\":::Keyword::\n\
 	Transpose:\"[\\w.]('+)\":::Plain::\n\
 	Paren transposed:\"\\)('+)\":::Keyword::\n\
 	Paren transp close:\"\\1\":\"\"::Plain:Paren transposed:C\n\
