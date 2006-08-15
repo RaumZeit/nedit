@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.142 2006/08/13 21:47:44 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.143 2006/08/15 18:36:16 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1005,19 +1005,20 @@ static XrmOptionDescRec OpTable[] = {
 
 static const char HeaderText[] = "\
 ! Preferences file for NEdit\n\
+! (User settings in X \"application defaults\" format)\n\
 !\n\
-! This file is overwritten by the \"Save Defaults...\" command in NEdit \n\
+! This file is overwritten by the \"Save Defaults...\" command in NEdit\n\
 ! and serves only the interactively settable options presented in the NEdit\n\
-! \"Preferences\" menu.  To modify other options, such as key bindings, use \n\
-! the .Xdefaults file in your home directory (or the X resource \n\
-! specification method appropriate to your system).  The contents of this \n\
+! \"Preferences\" menu.  To modify other options, such as key bindings, use\n\
+! the .Xdefaults file in your home directory (or the X resource\n\
+! specification method appropriate to your system).  The contents of this\n\
 ! file can be moved into an X resource file, but since resources in this file\n\
 ! override their corresponding X resources, either this file should be \n\
 ! deleted or individual resource lines in the file should be deleted for the\n\
 ! moved lines to take effect.\n";
 
 /* Module-global variable set when any preference changes (for asking the
-   user about re-saving on exit) */	
+   user about re-saving on exit) */
 static int PrefsHaveChanged = False;
 
 /* Module-global variable set when user uses -import to load additional
