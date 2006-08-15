@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.79 2006/08/13 21:47:45 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.80 2006/08/15 18:55:22 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -172,7 +172,7 @@ static void freeWritableWindowsCB(Widget w, WindowInfo* window,
 static void checkMultiReplaceListForDoomedW(WindowInfo* window, 
                                                      WindowInfo* doomedWindow);
 static void removeDoomedWindowFromList(WindowInfo* window, int index);
-static void unmanageReplaceDialogs(WindowInfo *window);
+static void unmanageReplaceDialogs(const WindowInfo *window);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void eraseFlash(WindowInfo *window);
 static int getReplaceDlogInfo(WindowInfo *window, int *direction,

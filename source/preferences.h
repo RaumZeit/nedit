@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.53 2006/08/13 18:41:54 yooden Exp $ */
+/* $Id: preferences.h,v 1.54 2006/08/15 18:55:22 ajbj Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -173,7 +173,7 @@ void EditLanguageModes(void);
 void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window);
 char *LanguageModeName(int mode);
-char *GetWindowDelimiters(WindowInfo *window);
+char *GetWindowDelimiters(const WindowInfo *window);
 int ReadNumericField(char **inPtr, int *value);
 char *ReadSymbolicField(char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
