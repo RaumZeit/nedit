@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.143 2006/08/15 18:36:16 ajbj Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.144 2006/08/15 21:16:01 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -659,31 +659,33 @@ static PrefDescripRec PrefDescrip[] = {
     {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
 #endif /*VMS*/
 #ifdef VMS
+/*  TODO: Some tests indicate that these have to be upper case, but what about
+    the PostScript pattern then? How does VMS handle caseness anyway?  */
        "Ada:.ADA .AD .ADS .ADB .A:::::::\n\
         Awk:.AWK:::::::\n\
         C++:.CC .HH .C .H .I .CXX .HXX .CPP::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         C:.C .H::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
         CSS:CSS::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
-        Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n\
+        Csh:.CSH .CSHRC .TCSHRC .LOGIN .LOGOUT:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n\
         Fortran:.F .F77 .FOR:::::::\n\
         Java:.JAVA:::::::\n\
         LaTeX:.TEX .STY .CLS .LTX .INS .CLO .FD:::::::\n\
-        Lex:.lex:::::::\n\
+        Lex:.LEX:::::::\n\
         Makefile:MAKEFILE:::None:8:8::\n\
-        Matlab:.m .oct .sci:::::::\n\
+        Matlab:.M .OCT .SCI:::::::\n\
         NEdit Macro:.NM .NEDITMACRO:::::::\n\
         Pascal:.PAS .P .INT:::::::\n\
         Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
         PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
         Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
-        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
-        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
-        SQL:.sql:::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n\
+        Regex:.REG .REGEX:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
+        SGML HTML:.SGML .SGM .HTML .HTM:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
+        SQL:.SQL:::::::\n\
+        Sh Ksh Bash:.SH .BASH .KSH .PROFILE .BASHRC .BASH_LOGOUT .BASH_LOGIN .BASH_PROFILE:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n\
         Tcl:.TCL::Smart:None::::\n\
         VHDL:.VHD .VHDL .VDL:::::::\n\
         Verilog:.V:::::::\n\
-        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
+        XML:.XML .XSL .DTD:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
         X Resources:.XRESOURCES .XDEFAULTS .NEDIT .PATS NEDIT.RC:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
         Yacc:.Y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 #else

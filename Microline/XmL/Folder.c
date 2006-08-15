@@ -461,9 +461,9 @@ Initialize(Widget req,
   dpy = XtDisplay((Widget)f);
   request = (XmLFolderWidget)req;
   
-  if (f->core.width <= 0) 
+  if (f->core.width == 0) 
     f->core.width = 100;
-  if (f->core.height <= 0) 
+  if (f->core.height == 0) 
     f->core.height = 100;
   
   f->folder.gc = 0;

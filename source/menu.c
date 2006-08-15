@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.136 2006/02/02 20:24:34 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.137 2006/08/15 21:16:01 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4836,7 +4836,7 @@ static int cmpStrPtr(const void *strA, const void *strB)
 }
 
 #ifdef VMS
-    static char neditDBBadFilenameChars[] = "\n\t*?(){}!@#%^&' ";
+    static char neditDBBadFilenameChars[] = "\n\t*?(){}!@#%&' ";
 #else
     static char neditDBBadFilenameChars[] = "\n";
 #endif

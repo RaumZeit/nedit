@@ -234,9 +234,9 @@ Initialize(Widget reqW,
 	XmLTreeWidget t;
  
 	t = (XmLTreeWidget)newW;
-	if (t->core.width <= 0) 
+	if ((int) t->core.width <= 0)
 		t->core.width = 100;
-	if (t->core.height <= 0) 
+	if (t->core.height <= (Dimension) 0)
 		t->core.height = 100;
 	t->tree.defaultPixmapsCreated = 0;
 	t->tree.linesData = 0;
