@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.80 2006/08/15 18:55:22 ajbj Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.81 2006/08/17 17:33:32 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3883,8 +3883,10 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     		    replaceResult);
     	    replaceLen = strlen(replaceResult);
         } else {
+            /* at this point plain substitutions (should) always work */
     	    BufReplace(tempBuf, startPos+realOffset, endPos+realOffset,
     		    replaceString);
+            substSuccess = True;
         }
 
     	realOffset += replaceLen - (endPos - startPos);
