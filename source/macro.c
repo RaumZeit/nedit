@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.104 2006/05/31 16:39:23 n8gray Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.105 2006/09/27 11:51:45 michaelsmith Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -65,6 +65,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.104 2006/05/31 16:39:23 n8gray Exp
 #include <errno.h>
 #include <limits.h>
 #ifdef VMS
+#include <limits.h>
 #include "../util/VMSparam.h"
 #include <types.h>
 #include <stat.h>

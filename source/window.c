@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.189 2006/08/13 18:41:54 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.190 2006/09/27 11:51:45 michaelsmith Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1108,6 +1108,9 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
 {
     WindowInfo* window;
 
+/* I don't think this algorithm will work on vms so I am
+   disabling it for now */
+#ifndef VMS
     if (!GetPrefHonorSymlinks())
     {
         char fullname[MAXPATHLEN + 1];
@@ -1127,6 +1130,7 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
         }   /*  else:  Not an error condition, just a new file. Continue to check
                 whether the filename is already in use for an unsaved document.  */
     }
+#endif
 
     for (window = WindowList; window != NULL; window = window->next) {
         if (!strcmp(window->filename, name) && !strcmp(window->path, path)) {
