@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.42 2006/09/30 16:12:57 yooden Exp $
+$Id: ReleaseNotes,v 1.43 2006/09/30 16:29:45 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -56,6 +56,10 @@ Bugs fixed in $NEXT_VERSION
   - NEdit can now optionally detect and avoid symlinks (SF bug #1027788).
 
   - A minor visual glitch has been fixed (SF bug #1055649).
+
+  - NEdit asks the user with a dialog if it detects that a document's file
+    is no longer accessible on disk. This dialog is changed to better match
+    expected usage pattern (SF bug #1066144).
 
 New features in 5.5 
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.99 2006/08/13 18:41:54 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.100 2006/09/30 16:29:46 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1604,38 +1604,74 @@ void CheckForChangesToFile(WindowInfo *window)
     strcat(fullname, window->filename);
     if (stat(fullname, &statbuf) != 0) {
         /* Return if we've already warned the user or we can't warn him now */
-        if (window->fileMissing || silent)
+        if (window->fileMissing || silent) {
             return;
+        }
+
         /* Can't stat the file -- maybe it's been deleted.
            The filename is now invalid */
         window->fileMissing = TRUE;
         window->lastModTime = 1;
+
         /* Warn the user, if they like to be warned (Maybe this should be its
-            own preference setting: GetPrefWarnFileDeleted() ) */
+            own preference setting: GetPrefWarnFileDeleted()) */
         if (GetPrefWarnFileMods()) {
+            char* title;
+            char* body;
+            char* errmsg;
+
             /* See note below about pop-up timing and XUngrabPointer */
             XUngrabPointer(XtDisplay(window->shell), timestamp);
-            if( errno == EACCES ) 
-                resp = 1 + DialogF(DF_ERR, window->shell, 2,
-                        "File not Accessible",
-                        "You no longer have access to file \"%s\".\n"
-                        "Another program may have changed the permissions one of\n"
-                        "its parent directories.\nSave as a new file?",
-                        "Save As...", "Cancel", window->filename);
-            else
-                resp = DialogF(DF_ERR, window->shell, 3, "File not found",
-                        "Error while checking the status of file \"%s\":\n"
-                        "    \"%s\"\n"
-                        "Another program may have deleted or moved it.\n"
-                        "Re-Save file or Save as a new file?", "Re-Save",
-                        "Save As...", "Cancel", window->filename,
-                        errorString());
-            if (resp == 1)
-                SaveWindow(window);
-            else if (resp == 2)
-                SaveWindowAs(window, NULL, 0);
+
+            /*  Set title, message body and button to match stat()'s error.  */
+            switch (errno) {
+                case ENOENT:
+                    /*  A component of the path file_name does not exist.  */
+                    title = "File not Found";
+                    body = "File '%s' (or directory in its path)\n"
+                            "no longer exists.\n"
+                            "Another program may have deleted or moved it.";
+                    resp = DialogF(DF_ERR, window->shell, 3, title, body,
+                            "Save", "Close", "Cancel", window->filename);
+                    break;
+                case EACCES:
+                    /*  Search permission denied for a path component. We add
+                        one to the response because Re-Save wouldn't really
+                        make sense here.  */
+                    title = "Permission Denied";
+                    body = "You not longer have access to file '%s'.\n"
+                            "Another program may have changed the permissions of\n"
+                            "one of its parent directories.";
+                    resp = 1 + DialogF(DF_ERR, window->shell, 2, title, body,
+                            "Close", "Cancel", window->filename);
+                    break;
+                default:
+                    /*  Everything else. This hints at an internal error (eg.
+                        ENOTDIR) or at some bad state at the host.  */
+                    title = "File not Accessible";
+                    body = "Error while checking the status of file '%s':\n"
+                            "    '%s'\n"
+                            "Please make sure that no data is lost before closing\n"
+                            "this window.";
+                    errmsg = errorString();
+                    resp = DialogF(DF_ERR, window->shell, 3, title, body,
+                            "Save", "Close", "Cancel", window->filename,
+                            errmsg);
+                    break;
+            }
+
+            switch (resp) {
+                case 1:
+                    SaveWindow(window);
+                    break;
+                case 2:
+                    CloseWindow(window);
+                    break;
+            }
         }
+
         /* A missing or (re-)saved file can't be read-only. */
+        /*  TODO: A document without a file can be locked though.  */
         SET_PERM_LOCKED(window->lockReasons, False);
         UpdateWindowTitle(window);
         UpdateWindowReadOnly(window);
