@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.29 2004/12/23 22:25:47 edg Exp $ */
+/* $Id: window.h,v 1.30 2006/09/30 16:12:57 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * window.h -- Nirvana Editor Window header file                                *
@@ -40,7 +40,6 @@ int NWindows(void);
 void UpdateWindowTitle(const WindowInfo *window);
 void UpdateWindowReadOnly(WindowInfo *window);
 void UpdateStatsLine(WindowInfo *window);
-void UpdateLineNumDisp(WindowInfo *window);
 void UpdateWMSizeHints(WindowInfo *window);
 void UpdateMinPaneHeights(WindowInfo *window);
 void UpdateNewOppositeMenu(WindowInfo *window, int openInTab);
