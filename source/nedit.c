@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.92 2005/09/23 14:08:12 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.93 2006/09/30 16:09:13 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -91,6 +91,7 @@ static int checkDoMacroArg(const char *macro);
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure);
 static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
+static void fixupBrokenXKeysymDB(void);
 static void patchResourcesForVisual(void);
 static void patchResourcesForKDEbug(void);
 static void patchLocaleForMotif(void);
@@ -463,6 +464,7 @@ int main(int argc, char **argv)
     }
     
     /* Must be done before creating widgets */
+    fixupBrokenXKeysymDB();
     patchResourcesForVisual();
     patchResourcesForKDEbug();
     
@@ -849,6 +851,20 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
     		argv[i][0] = '-';
 }
 
+
+/*
+** Some Linux distros ship with XKEYSYMDB set to a bogus filename which
+** breaks all Motif applications.  Ignore that, and let X fall back on the
+** default which is far more likely to work.
+*/
+static void fixupBrokenXKeysymDB(void)
+{
+    const char *keysym = getenv("XKEYSYMDB");
+    
+    if (keysym != NULL && access(keysym, F_OK) != 0)
+        putenv("XKEYSYMDB");
+}
+
 /*
 ** If we're not using the default visual, then some default resources in
 ** the database (colors) are not valid, because they are indexes into the
@@ -1022,7 +1038,7 @@ static void patchResourcesForKDEbug(void)
 
 #define XmFullVersion (XmVersion * 100 + XmUPDATE_LEVEL)
 
-static void patchLocaleForMotif()
+static void patchLocaleForMotif(void)
 {
 #if !(defined(LESSTIF_VERSION) || XmFullVersion >= 200203)
     const char *ctype;
