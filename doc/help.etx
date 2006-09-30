@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.101 2006/09/30 16:46:23 tringali Exp $
+.. $Id: help.etx,v 1.102 2006/09/30 17:18:17 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -3179,10 +3179,9 @@ Action Routines
 
     ~keep-dialog~    Either "keep" or "nokeep".
 
-    ~mark-letter~    The mark command limits users to single
-                   letters. Inside of macros, numeric marks are
-                   allowed, which won't interfere with marks set
-                   by the user.
+    ~mark-letter~   The mark command limits users to single letters. Inside
+                    of macros, single digits are allowed as marks. These
+                    won't interfere with marks set by the user.
 
     ~macro-menu-item-name~
                    Name of the command exactly as specified in
