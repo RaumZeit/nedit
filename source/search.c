@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.81 2006/08/17 17:33:32 ajbj Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.82 2006/09/30 16:36:35 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -938,7 +938,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("In Multiple Files")); argcnt++;
+    	     st1=MKSTRING("In Multiple Documents")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -1015,7 +1015,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Multiple Files...")); argcnt++;
+    	     st1=MKSTRING("Multiple Documents...")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -1420,7 +1420,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     form = CreateFormDialog(window->shell, "replaceMultiFileDialog", 
            			     args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
-    XtVaSetValues(XtParent(form), XmNtitle, "Replace All in Multiple Files", 
+    XtVaSetValues(XtParent(form), XmNtitle, "Replace All in Multiple Documents", 
 		  NULL);
     
     /* Label at top left. */

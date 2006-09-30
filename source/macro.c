@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.105 2006/09/27 11:51:45 michaelsmith Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.106 2006/09/30 16:36:35 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4550,7 +4550,6 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
 /*
 ** Range set macro variables and functions
 */
-
 static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -4653,7 +4652,6 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Built-in macro subroutine for forgetting a range set.
 */
-
 static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -4719,7 +4717,6 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
-
 static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -4778,7 +4775,6 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
     return True;
 }
     
-
 /*
 ** Built-in macro subroutine for adding to a range set. Arguments are $1: range
 ** set label (one integer), then either (a) $2: source range set label, 
@@ -4786,7 +4782,6 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 ** if any to specify range to add - must not be rectangular). Returns the 
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
-
 static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -4886,7 +4881,6 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an 
 ** undefined destination range, and that it returns no value.
 */
-
 static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -4966,7 +4960,6 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** label (one alphabetic character). Returns nothing. Fails if range set 
 ** undefined.
 */
-
 static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -5007,7 +5000,6 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** argument of a rangeset label.  Returns an array with the following keys:
 **    defined, count, color, mode.
 */
-
 static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -5074,7 +5066,6 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** ranges, otherwise select the individual range specified.  Returns 
 ** an array with the keys "start" and "end" and values  
 */
-
 static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg)
 {
@@ -5141,7 +5132,6 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** false (zero) if not in a range, range index (1-based) if in a range; 
 ** fails if parameters were bad.
 */
-
 static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
@@ -5196,7 +5186,6 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
 ** found/applied. If no color is applied, any current color is removed. Returns
 ** true if the rangeset is valid.
 */
-
 static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
@@ -5243,7 +5232,6 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
 ** Set the name of a range set's ranges. Returns
 ** true if the rangeset is valid.
 */
-
 static int rangesetSetNameMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {
@@ -5290,7 +5278,6 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList,
 ** Change a range's modification response. Returns true if the rangeset is
 ** valid and the response type name is valid.
 */
-
 static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
       int nArgs, DataValue *result, char **errMsg)
 {

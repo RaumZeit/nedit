@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.99 2006/08/13 18:41:54 yooden Exp $
+.. $Id: help.etx,v 1.100 2006/09/30 16:36:35 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -11,7 +11,7 @@
                |>ttlMk<|
                |>title<|
                |>ttlMk<|
-               
+
 |>version<|                                               |>Date<|
 .. ~ NEDITDOC
 
@@ -26,8 +26,8 @@
 Table of Contents
 -----------------
 
-    Getting_Started_                    
-                                        
+    Getting_Started_
+
     Basic Operation                     Macro/Shell Extensions
       Selecting_Text_                      Shell_Commands_and_Filters_
       Finding_and_Replacing_Text_          Learn/Replay_
@@ -36,7 +36,7 @@ Table of Contents
       Keyboard_Shortcuts_                  Highlighting_Information_
       Shifting_and_Filling_                Range_Sets_
       Tabbed_Editing_                      Action_Routines_
-      File_Format_                         
+      File_Format_
                                         Customizing
     Features for Programming              Customizing_NEdit_
       Programming_with_NEdit_              Preferences_
@@ -45,7 +45,7 @@ Table of Contents
       Syntax_Highlighting_                 Highlighting_Patterns_
       Finding_Declarations_(ctags)_        Smart_Indent_Macros_
       Calltips_
- 
+
     Regular Expressions                 NEdit_Command_Line_
       Basic_Regular_Expression_Syntax_   Client/Server_Mode_
       Metacharacters_                    Crash_Recovery_
@@ -76,16 +76,16 @@ Getting Started
 ..   License.
 
 .. .. This stuff will always be invisible, unless NEDITDOC is defined
-.. 
+..
 .. Installing NEdit
 .. ----------------
-.. 
+..
 ..   NEdit is a single stand-alone executable file which can be installed by simply
 ..   copying the appropriate executable "nedit" for your system.  Both sources and
 ..   executables are available from http://www.nedit.org.  The optional "nc" (NEdit
 ..   Client) program is also available for users who want to run nedit in
 ..   client/server mode.
-.. 
+..
 .. Getting Started
 .. ---------------
 .. ~ NEDITDOC
@@ -150,7 +150,7 @@ Getting Started
   using the mouse*.  To move the keyboard focus around a dialog, use the tab
   and arrow keys.  One of the buttons in a dialog is usually drawn with a
   thick, indented, outline.  This button can be activated by pressing Return or
-  Enter.  The Cancel or Dismiss button can be activated by pressing escape. 
+  Enter.  The Cancel or Dismiss button can be activated by pressing escape.
   For example, to replace the string "thing" with "things" type:
 
       <ctrl-r>thing<tab>things<return>
@@ -236,7 +236,7 @@ Finding and Replacing Text
   The Find... and Replace... commands present dialogs for entering text for
   searching and replacing.  These dialogs also allow you to choose whether you
   want the search to be sensitive to upper and lower case, or whether to use
-  the standard Unix pattern matching characters (regular expressions). 
+  the standard Unix pattern matching characters (regular expressions).
   Searches begin at the current text insertion position.
 
   Find Again and Replace Again repeat the last find or replace command without
@@ -261,7 +261,6 @@ Finding and Replacing Text
   without disturbing selections.  A middle click on the clear button copies the
   content of any existing selection into the search text widget and triggers a new
   search.
-  
 
 3>Searching Backwards
 
@@ -287,6 +286,17 @@ Finding and Replacing Text
   string to search for and the string to substitute, and press the "R. in
   Selection" button in the dialog.  Note that selecting text in the Replace...
   dialog will unselect the text in the window.
+
+3>Replacement in Multiple Documents
+
+  You can do the same replacement in more than one document at the same time.
+  To do that, enter the search and replacement string in the replacement dialog
+  as usual, then press the 'Multiple Documents...' button. NEdit will open
+  another dialog where you can pick any document in which the replacement should
+  take place. Then press 'Replace' in this dialog to do the replacement. All
+  attributes (Regular Expression, Case, etc.) are used as selected in the main
+  dialog.
+
    ----------------------------------------------------------------------
 
 Cut and Paste
@@ -300,7 +310,7 @@ Cut and Paste
   example, to move some text from one place to another, select it by dragging
   the mouse over it, choose Cut to remove it, click the pointer to move the
   insert point where you want the text inserted, then choose Paste to insert
-  it.  Copy copies text to the clipboard without deleting it from your file. 
+  it.  Copy copies text to the clipboard without deleting it from your file.
   You can also use the clipboard to transfer text to and from other Motif
   programs and X programs which make proper use of the clipboard.
 
@@ -308,12 +318,12 @@ Cut and Paste
   and between NEdit and other programs.  The most common such method is
   clicking the middle mouse button to copy the primary selection (to the
   clicked position).  Copying the selection by clicking the middle mouse button
-  in many cases is the only way to transfer data to and from many X programs. 
+  in many cases is the only way to transfer data to and from many X programs.
   Holding the Shift key while clicking the middle mouse button moves the text,
   deleting it from its original position, rather than copying it.  Other
   methods for transferring text include secondary selections, primary selection
   dragging, keyboard-based selection copying, and drag and drop.  These are
-  described in detail in the sections: "Selecting_Text_", "Using_the_Mouse_", 
+  described in detail in the sections: "Selecting_Text_", "Using_the_Mouse_",
   and "Keyboard_Shortcuts_".
    ----------------------------------------------------------------------
 
@@ -325,7 +335,7 @@ Using the Mouse
   will be well worth your while.
 
   If you don't have time to learn everything, you can get by adequately with
-  just the left mouse button:  Clicking the left button moves the cursor. 
+  just the left mouse button:  Clicking the left button moves the cursor.
   Dragging with the left button makes a selection.  Holding the shift key while
   clicking extends the existing selection, or begins a selection between the
   cursor and the mouse.  Double or triple clicking selects a whole word or a
@@ -470,12 +480,12 @@ Using the Mouse
   overlay mode also converts the selection to rectangular form, allowing it to
   be dragged outside of the bounds of the existing text.
 
-  Mouse buttons 4 and 5 are usually represented by a mouse wheel nowadays. 
+  Mouse buttons 4 and 5 are usually represented by a mouse wheel nowadays.
   They are used to scroll up or down in the text window.
 
-  * The Alt key may be labeled Meta or Compose-Character on some keyboards. 
+  * The Alt key may be labeled Meta or Compose-Character on some keyboards.
   Some window managers, including default configurations of mwm, bind
-  combinations of the Alt key and mouse buttons to window manager operations. 
+  combinations of the Alt key and mouse buttons to window manager operations.
   In NEdit, Alt is only used on button release, so regardless of the window
   manager bindings for Alt-modified mouse buttons, you can still do the
   corresponding NEdit operation by using the Alt key AFTER the initial mouse
@@ -516,17 +526,17 @@ Keyboard Shortcuts
 
 3>Keyboard Shortcuts within Dialogs
 
-  One button in a dialog is usually marked with a thick indented outline. 
+  One button in a dialog is usually marked with a thick indented outline.
   Pressing the Return or Enter key activates this button.
 
   All dialogs have either a Cancel or Dismiss button.  This button can be
   activated by pressing the Escape (or Esc) key.
 
-  Pressing the tab key moves the keyboard focus to the next item in a dialog. 
+  Pressing the tab key moves the keyboard focus to the next item in a dialog.
   Within an associated group of buttons, the arrow keys move the focus among the
   buttons.  Shift+Tab moves backward through the items.
 
-  Most items in dialogs have an underline under one character in their name. 
+  Most items in dialogs have an underline under one character in their name.
   Pressing the Alt key along with this character, activates a button as if you
   had pressed it with the mouse, or moves the keyboard focus to the associated
   text field or list.
@@ -557,7 +567,7 @@ Keyboard Shortcuts
 
   Under X and Motif, there are several levels of translation between keyboard
   keys and the actions they perform in a program.  The "Customizing_NEdit_", and
-  "X_Resources_" sections of the Help menu have more information on this subject. 
+  "X_Resources_" sections of the Help menu have more information on this subject.
   Because of all of this configurability, and since keyboards and standards for
   the meaning of some keys vary from machine to machine, the mappings may be
   changed from the defaults listed below.
@@ -682,7 +692,7 @@ Keyboard Shortcuts
     Ctrl+PageDown Switch to the next document.
 
 
-3>Specialty Keyboards  
+3>Specialty Keyboards
 
   On machines with different styles of keyboards, generally, text editing
   actions are properly matched to the labeled keys, such as Remove,
@@ -714,7 +724,7 @@ Shifting and Filling
   stationary with respect to the selection.
 
 
-3>Filling  
+3>Filling
 
   Text filling using the Fill Paragraph command in the Edit menu is one of the
   most important concepts in NEdit.  And it will be well worth your while to
@@ -737,19 +747,19 @@ Shifting and Filling
   tools, and because you can't achieve effects like indented sections, columns,
   or program comments, and still take advantage of the automatic wrapping.
 
-  Without continuous wrapping, paragraph filling is not entirely automatic. 
+  Without continuous wrapping, paragraph filling is not entirely automatic.
   Auto-Newline wrapping keeps paragraphs lined up as you type, but once
   entered, NEdit can no longer distinguish newlines which join wrapped text,
   and newlines which must be preserved.  Therefore, editing in the middle of a
   paragraph will often leave the right margin messy and uneven.
 
   Since NEdit can't act automatically to keep your text lined up, you need to
-  tell it explicitly where to operate, and that is what Fill Paragraph is for. 
+  tell it explicitly where to operate, and that is what Fill Paragraph is for.
   It arranges lines to fill the space between two margins, wrapping the lines
   neatly at word boundaries.  Normally, the left margin for filling is inferred
   from the text being filled.  The first line of each paragraph is considered
   special, and its left indentation is maintained separately from the remaining
-  lines (for leading indents, bullet points, numbered paragraphs, etc.). 
+  lines (for leading indents, bullet points, numbered paragraphs, etc.).
   Otherwise, the left margin is determined by the furthest left non-whitespace
   character.  The right margin is either the Wrap Margin, set in the
   preferences menu (by default, the right edge of the window), or can also be
@@ -785,9 +795,9 @@ Tabbed Editing
 
   NEdit is able to display files in distinct editor windows, or to display files
   under tabs in the same editor window.  The Options for controlling the tabbed
-  interface are found under Preferences -> Default Settings -> Tabbed Editing 
-  (cf. "Preferences_", also "NEdit_Command_Line_"). 
-  
+  interface are found under Preferences -> Default Settings -> Tabbed Editing
+  (cf. "Preferences_", also "NEdit_Command_Line_").
+
   Notice that you can re-group tabs at any time by detaching and attaching them,
   or moving them, to other windows. This can be done using the Windows menu, or
   using the context menu, which pops up when right clicking on a tab.
@@ -796,7 +806,7 @@ Tabbed Editing
   The default keybindings to switch tabs (which are Ctrl+PageUp/-Down and Alt+Home,
   see "Keyboard_Shortcuts_") can be changed using the actions previous_document(),
   next_document() and last_document().
-  
+
    ----------------------------------------------------------------------
 
 File Format
@@ -828,12 +838,12 @@ File Format
   system to system.  Both Windows and MacOS make frequent use of plain text
   files with no implicit right margin.  In these files, wrapping is determined
   by the tool which displays them.  Files of this style also exist on Unix
-  systems, despite the fact that they are not supported by all Unix utilities. 
+  systems, despite the fact that they are not supported by all Unix utilities.
   To display this kind of file properly in NEdit, you have to select the wrap
   style called Continuous.  Wrapping modes are discussed in the sections:
   Customizing -> Preferences, and Basic Operation -> Shifting and Filling.
 
-  The last and most minute of format differences is the terminating newline. 
+  The last and most minute of format differences is the terminating newline.
   Some Unix compilers and utilities require a final terminating newline on all
   files they read and fail in various ways on files which do not have it.  Vi
   and approximately half of Unix editors enforce the terminating newline on all
@@ -851,7 +861,7 @@ Programming with NEdit
   Though general in appearance, NEdit has many features intended specifically
   for programmers.  Major programming-related topics are listed in separate
   sections under the heading: "Features for Programming": Syntax_Highlighting_,
-  Tabs/Emulated_Tabs_, Finding_Declarations_(ctags)_, Calltips_, and 
+  Tabs/Emulated_Tabs_, Finding_Declarations_(ctags)_, Calltips_, and
   Auto/Smart_Indent_.  Minor topics related to programming are discussed below:
 
 3>Language Modes
@@ -874,15 +884,15 @@ Programming with NEdit
   characters to allow easy identification of those characters. This is
   particularly useful if you need to be able to distinguish between tabs
   and spaces in a file where the difference is important. The colors used
-  for backlighting are specified by a resource, "nedit*backlightCharTypes". 
+  for backlighting are specified by a resource, "nedit*backlightCharTypes".
   You can turn backlighting on and off through the
   Preferences -> Apply Backlighting menu entry.
 
   If you prefer to have backlighting turned on for all new windows, use
-  the Preferences -> Default Settings -> Apply Backlighting menu entry. 
-  This settings can be saved along with other preferences using 
+  the Preferences -> Default Settings -> Apply Backlighting menu entry.
+  This settings can be saved along with other preferences using
   Preferences -> Save Defaults.
-  
+
   **Important:** In future versions of NEdit, the backlighting feature will be
   extended and reworked such that it becomes easier to configure. The current
   way of controlling it through a resource is generally considered to be below
@@ -903,9 +913,9 @@ Programming with NEdit
   Statistics Line in the Preferences menu and position the insertion point
   anywhere on the line.  The statistics line continuously updates the line number
   of the line containing the cursor.
-  
+
   To go to a specific column on a given line, choose Goto Line #... from the
-  Search menu and enter a line number and a column number separated by a 
+  Search menu and enter a line number and a column number separated by a
   comma.  (e.g. Enter "100,12" for line 100 column 12.)  If you want to go to
   a column on the current line just leave out the line number.  (e.g. Enter
   ",45" to go the column 45 on the current line.)
@@ -919,17 +929,17 @@ Programming with NEdit
   momentarily highlights either the opposite character ('Delimiter') or the
   entire expression ('Range') when the opposite character is visible in the
   window. To find a matching character anywhere in the file, select it or
-  position the cursor after it, and choose Goto Matching from the Search menu. 
+  position the cursor after it, and choose Goto Matching from the Search menu.
   If the character matches itself, such as a quote or slash, select the first
   character of the pair.  NEdit will match {, (, [, <, ", ', `, /, and \.
   Holding the Shift key while typing the accelerator key (Shift+Ctrl+M, by
   default), will select all of the text between the matching characters.
-  
+
   When syntax highlighting is enabled, the matching routines can optionally
   make use of the syntax information for improved accuracy. In that case,
   a brace inside a highlighted string will not match a brace inside a comment,
   for instance.
-  
+
 3>Opening Included Files
 
   The Open Selected command in the File menu understands the C preprocessor's
@@ -1005,14 +1015,14 @@ Tabs/Emulated Tabs
 ..                             ** NOTE **
 ..
 .. The following Tabs Dialog and Customize Window Title Dialog sections
-.. should only appear in the online documentation, and not in any of 
+.. should only appear in the online documentation, and not in any of
 .. the other possible forms. The rationale is that they are not directly
 .. obtained from the Help menu, but are buried in preference dialogs.
 ..
 .. ? help~
 .. Tabs Dialog
 .. -----------
-.. 
+..
 ..   The Tabs dialog controls both the operation of the Tab key, and
 ..   the interpretation of tab characters within a file.
 ..   
@@ -1053,34 +1063,34 @@ Tabs/Emulated Tabs
 ..
 .. Customize Window Title Dialog
 .. -----------------------------
-.. 
-..   The Customize Window Title dialog allows you to customize 
-..   and test the way information will be displayed in each window's 
+..
+..   The Customize Window Title dialog allows you to customize
+..   and test the way information will be displayed in each window's
 ..   title field.
 ..   
 ..   **Definition of the title**
 ..   
-..   The upper half of the dialog can be used to select the various 
-..   components that should be displayed in the title. The layout can be 
-..   fine-tuned by editing the printf() like format string below the 
-..   component buttons: additional characters can be entered, or the 
+..   The upper half of the dialog can be used to select the various
+..   components that should be displayed in the title. The layout can be
+..   fine-tuned by editing the printf() like format string below the
+..   component buttons: additional characters can be entered, or the
 ..   order can be changed.
 ..   
 ..   The following sequences are interpreted in the format string:
 ..   
-..    %c    ClearCase view tag (only relevant when NEdit is 
+..    %c    ClearCase view tag (only relevant when NEdit is
 ..          used together with ClearCase)
-..    %[n]d directory, with one optional numeric digit n 
-..          specifying the maximum number of trailing directory 
-..          components to display. Skipped components are 
+..    %[n]d directory, with one optional numeric digit n
+..          specifying the maximum number of trailing directory
+..          components to display. Skipped components are
 ..          replaced by an ellipsis (...).
 ..    %f    file name, without the path name
 ..    %h    host name
 ..    %s    NEdit server name (server mode only)
 ..    %[*]S file status, either verbose (%S) or brief (%*S).
-..          In verbose mode the file status is spelled out: 
-..          read-only, locked, and modified. In brief mode, 
-..          abbreviations and an asterisk are used for the 
+..          In verbose mode the file status is spelled out:
+..          read-only, locked, and modified. In brief mode,
+..          abbreviations and an asterisk are used for the
 ..          respective states: RO, LO, *.
 ..    %u    user name
 ..   
@@ -1090,32 +1100,27 @@ Tabs/Emulated Tabs
 ..   
 ..     {%c} [%s] %f (%S) - %d
 ..   
-..   The resulting title will only contain elements with 
+..   The resulting title will only contain elements with
 ..   a value. Hence, the title is compressed as follows:
 ..   
-..    * Elements with no value are removed.		
-..      						
-..    * Empty parenthesis pairs i.e. (), [] or {}, or parenthesis
-..      pairs containing only space(s), are removed.
-..      						
+..    * Elements with no value are removed.
+..    * Empty parenthesis pairs i.e. (), [] or {}, or parenthesis pairs containing only space(s), are removed.
 ..    * Sequences of spaces are replaced with one space.
-..      						
-..    * Leading spaces and dashes are removed.  	
-..      						
-..    * Trailing spaces and dashes are removed. 	
-..   
-..   If the server name and the ClearCase view tag are identical, only 
+..    * Leading spaces and dashes are removed.
+..    * Trailing spaces and dashes are removed.
+..
+..   If the server name and the ClearCase view tag are identical, only
 ..   the first one specified in the format string will be displayed.
 ..   
 ..   **Previewing the settings**
 ..   
 ..   The lower part of the dialog can be used to test the selected title
-..   under various conditions. For some of the components that are selected 
-..   for display, various states can be enforced on the preview. 
+..   under various conditions. For some of the components that are selected
+..   for display, various states can be enforced on the preview.
 ..   
-..   For instance, components that are not always active (such the 
+..   For instance, components that are not always active (such the
 ..   NEdit server name) can be turned on or off in the preview.
-..   
+..
 .. ~ help
 
 Auto/Smart Indent
@@ -1123,7 +1128,7 @@ Auto/Smart Indent
 
   Programmers who use structured languages usually require some form of
   automatic indent, so that they don't have to continually re-type the
-  sequences of tabs and/or spaces needed to maintain lengthy running indents. 
+  sequences of tabs and/or spaces needed to maintain lengthy running indents.
   NEdit therefore offers "smart" indent, in addition to the traditional
   automatic indent which simply lines up the cursor position with the previous
   line.
@@ -1169,7 +1174,7 @@ Syntax Highlighting
 -------------------
 
   Syntax Highlighting means using colors and fonts to help distinguish language
-  elements in programming languages and other types of structured files. 
+  elements in programming languages and other types of structured files.
   Programmers use syntax highlighting to understand code faster and better, and
   to spot many kinds of syntax errors more quickly.
 
@@ -1191,7 +1196,7 @@ Syntax Highlighting
 
   If you are satisfied with what NEdit is highlighting, but would like it to
   use different colors or fonts, you can change these by selecting Preferences
-  -> Default Settings -> Syntax Highlighting -> Text Drawing Styles. 
+  -> Default Settings -> Syntax Highlighting -> Text Drawing Styles.
   Highlighting patterns are connected with font and color information through a
   common set of styles so that colorings defined for one language will be
   similar across others, and patterns within the same language which are meant
@@ -1231,7 +1236,7 @@ Finding Declarations (ctags)
 
       nedit -tags tags
 
-  NEdit can also be set to load a tags file automatically when it starts up. 
+  NEdit can also be set to load a tags file automatically when it starts up.
   Setting the X resource nedit.tagFile to the name of a tag file tells NEdit to
   look for that file at startup time (see "Customizing_NEdit_").  The file name
   can be either a complete path name, in which case NEdit will always load the
@@ -1249,40 +1254,40 @@ Finding Declarations (ctags)
   To unload a tags file, select "Un-load Tags File" from the File menu and
   choose from the list of tags files.  NEdit will keep track of tags file updates
   by checking the timestamp on the files, and automatically update the tags
-  cache. 
+  cache.
 
   To find the definition of a function or data structure once a tags file is
-  loaded, select the name anywhere it appears in your program (see 
+  loaded, select the name anywhere it appears in your program (see
   "Selecting_Text_") and choose "Find Definition" from the Search menu.
    ----------------------------------------------------------------------
 
 Calltips
 --------
-  
+
   Calltips are little yellow boxes that pop up to remind you what the arguments
   and return type of a function are.  More generally, they're a UI mechanism to
-  present a small amount of crucial information in a prominent location.  To 
+  present a small amount of crucial information in a prominent location.  To
   display a calltip, select some text and choose "Show Calltip" from the Search
   menu.  To kill a displayed calltip, hit Esc.
-  
+
   Calltips get their information from one of two places -- either a tags file (see
-  "Finding_Declarations_(ctags)_") or a calltips file.  First, any loaded calltips 
-  files are searched for a definition, and if nothing is found then the tags 
+  "Finding_Declarations_(ctags)_") or a calltips file.  First, any loaded calltips
+  files are searched for a definition, and if nothing is found then the tags
   database is searched.  If a tag is found that matches the highlighted text then
-  a calltip is displayed with the first few lines of the definition -- usually 
+  a calltip is displayed with the first few lines of the definition -- usually
   enough to show you what the arguments of a function are.
-  
+
   You can load a calltips file by using choosing "Load Calltips File" from the
-  File menu.  You can unload a calltips file by selecting it from the 
+  File menu.  You can unload a calltips file by selecting it from the
   "Unload Calltips File" submenu of the File menu.  You can also choose one or
-  more default calltips files to be loaded for each language mode using the 
+  more default calltips files to be loaded for each language mode using the
   "Default calltips file(s)" field of the Language Modes dialog.
-  
+
   The calltips file format is very simple.  calltips files are organized in blocks
   separated by blank lines.  The first line of the block is the key, which is the
   word that is matched when a calltip is requested.  The rest of the block is
-  displayed as the calltip.  
-  
+  displayed as the calltip.
+
   Almost any text at all can appear in a calltip key or a calltip.  There are no
   special characters that need to be escaped.  The only issues to note are that
   trailing whitespace is ignored, and you cannot have a blank line inside a
@@ -1290,9 +1295,9 @@ Calltips
   also avoid calltip keys that begin and end with '@*' characters, since those are
   used to mark special blocks.
 
-  There are five special block types--comment, include, language, alias, and 
-  version--which are distinguished by their first lines, "@* comment @*", 
-  "@* include @*", "@* language @*", "@* alias @*", and "@* version @*" respectively 
+  There are five special block types--comment, include, language, alias, and
+  version--which are distinguished by their first lines, "@* comment @*",
+  "@* include @*", "@* language @*", "@* alias @*", and "@* version @*" respectively
   (without quotes).
 
   Comment blocks are ignored when reading calltips files.
@@ -1302,7 +1307,7 @@ Calltips
   @* and ? can't be used. Include blocks allow you to make a calltips file for your
   project that includes, say, the calltips files for C, Motif, and Xt.
 
-  Language blocks specify which language mode the calltips should be used with. 
+  Language blocks specify which language mode the calltips should be used with.
   When a calltip is requested it won't match tips from languages other than the
   current language mode.  Language blocks only affect the tips listed after the
   block.
@@ -1314,10 +1319,10 @@ Calltips
   Version blocks are ignored for the time being.
 
   You can use calltips in your own macros using the calltip() and kill_calltip()
-  macro subroutines and the $calltip_ID macro variable.  See the 
+  macro subroutines and the $calltip_ID macro variable.  See the
   Macro_Subroutines_ section for details.
    ----------------------------------------------------------------------
-  
+
 Regular Expressions
 ===================
 
@@ -1330,7 +1335,7 @@ Basic Regular Expression Syntax
   a regular expression in a search dialog, simply click on the `Regular
   Expression' radio button in the dialog.
 
-  A regex is a specification of a pattern to be matched in the searched text. 
+  A regex is a specification of a pattern to be matched in the searched text.
   This pattern consists of a sequence of tokens, each being able to match a
   single character or a sequence of characters in the text, or assert that a
   specific position within the text has been reached (the latter is called an
@@ -1389,9 +1394,9 @@ Basic Regular Expression Syntax
      >    Right word boundary
      \B   Not a word boundary
 
-  Note that the \B token ensures that neither the left nor the right 
-  character are delimiters, or that both left and right characters are 
-  delimiters.  The left word anchor checks whether the previous character 
+  Note that the \B token ensures that neither the left nor the right
+  character are delimiters, or that both left and right characters are
+  delimiters.  The left word anchor checks whether the previous character
   is a delimiter and the next character is not.  The right word anchor
   works in a similar way.
 
@@ -1452,7 +1457,7 @@ Basic Regular Expression Syntax
 3>Alternation
 
   A series of alternative patterns to match can be specified by separating them
-  with vertical pipes, `|'.  An example of _alternation would be `a|be|sea'. 
+  with vertical pipes, `|'.  An example of _alternation would be `a|be|sea'.
   This will match `a', or `be', or `sea'. Each alternative can be an
   arbitrarily complex regular expression. The alternatives are attempted in
   the order specified.  An empty alternative can be specified if desired, e.g.
@@ -1474,7 +1479,7 @@ Metacharacters
 
 3>Escaping Metacharacters
 
-  In a regular expression (regex), most ordinary characters match themselves.  
+  In a regular expression (regex), most ordinary characters match themselves.
   For example, `ab%' would match anywhere `a' followed by `b' followed by `%'
   appeared in the text.  Other characters don't match themselves, but are
   metacharacters. For example, backslash is a special metacharacter which
@@ -1489,7 +1494,7 @@ Metacharacters
 
 3>Special Control Characters
 
-  There are some special characters that are  difficult or impossible to type. 
+  There are some special characters that are  difficult or impossible to type.
   Many of these characters can be constructed as a sort of metacharacter or
   sequence by preceding a literal character with a backslash. NEdit recognizes
   the following special character sequences:
@@ -1539,7 +1544,7 @@ Metacharacters
   `[0-9]', while \D is equivalent to `[^0-9]'.
 
   These escape sequences can also be used within a character class.  For
-  example, `[\l_]' is the same as `[a-zA-Z@_]', extended with possible locale 
+  example, `[\l_]' is the same as `[a-zA-Z@_]', extended with possible locale
   dependent letters. The escape sequences for special characters, and octal
   and hexadecimal escapes are also valid within a class.
 
@@ -1567,7 +1572,7 @@ Parenthetical Constructs
 
   Capturing Parentheses are of the form `(<regex>)' and can be used to group
   arbitrarily complex regular expressions.  Parentheses can be nested, but the
-  total number of parentheses, nested or otherwise, is limited to 50 pairs. 
+  total number of parentheses, nested or otherwise, is limited to 50 pairs.
   The text that is matched by the regular expression between a matched set of
   parentheses is captured and available for text substitutions and
   backreferences (see below.)  Capturing parentheses carry a fairly high
@@ -1577,7 +1582,7 @@ Parenthetical Constructs
 3>Non-Capturing Parentheses
 
   Non-Capturing Parentheses are of the form `(?:<regex>)' and facilitate
-  grouping only and do not incur the overhead of normal capturing parentheses. 
+  grouping only and do not incur the overhead of normal capturing parentheses.
   They should not be counted when determining numbers for capturing parentheses
   which are used with backreferences and substitutions.  Because of the limit
   on the number of capturing parentheses allowed in a regex, it is advisable to
@@ -1608,7 +1613,7 @@ Parenthetical Constructs
   general, and you want to exclude some special cases.  Simply precede the
   general expression with a negative look-ahead that covers the special cases
   that need to be filtered out.
-  
+
 3>Positive Look-Behind
 
   Positive look-behind constructs are of the form `(?<=<regex>)' and implement
@@ -1617,7 +1622,7 @@ Parenthetical Constructs
   except for the fact that the match is attempted on the text preceding the
   current position, possibly even in front of the start of the matching range
   of the entire regular expression.
-  
+
   A restriction on look-behind expressions is the fact that the expression
   must match a string of a bounded size.  In other words, `*', `+', and `{n,}'
   quantifiers are not allowed inside the look-behind expression. Moreover,
@@ -1625,17 +1630,17 @@ Parenthetical Constructs
   lower bound on the matching size.  The smaller the difference, the better the
   performance.  This is especially important for regular expressions used in
   highlight patterns.
-  
+
   Positive look-behind has similar applications as positive look-ahead.
-  
+
 3>Negative Look-Behind
 
   Negative look-behind takes the form `(?<!<regex>)' and is exactly the same as
   positive look-behind except that the enclosed regular expression must
   NOT match. The same restrictions apply.
-  
-  Note however, that performance is even more sensitive to the distance 
-  between the size boundaries: a negative look-behind must not match for 
+
+  Note however, that performance is even more sensitive to the distance
+  between the size boundaries: a negative look-behind must not match for
   **any** possible size, so the matching engine must check **every** size.
 
 3>Case Sensitivity
@@ -1780,10 +1785,13 @@ Advanced Topics
 
   An excellent book on the care and feeding of regular expressions is
 
-          Mastering Regular Expressions, 2nd Edition
+          Mastering Regular Expressions, 3rd Edition
           Jeffrey E. F. Friedl
-          2002, O'Reilly & Associates
-          ISBN 0-596-00289-0
+          August 2006, O'Reilly & Associates
+          ISBN 0-596-52812-4
+
+  The first end second editions of this book are still useful for basic
+  introduction to regexes and contain many useful tips and tricks.
    ----------------------------------------------------------------------
 
 Example Regular Expressions
@@ -1846,7 +1854,7 @@ Shell Commands and Filters
   deposits the output at the current insertion point. In the Shell Command
   field, the % character expands to the name (including directory path), and
   the # character expands to the current line number of the file in the window.
-  To include a % or # character in the command, use %% or ##, respectively.  
+  To include a % or # character in the command, use %% or ##, respectively.
 
   Execute Command Line uses the position of the cursor in the window to
   indicate a line to execute as a shell command line.  The cursor may be
@@ -2159,7 +2167,7 @@ Macro Language
 
 4>Character String Operators
 
-  The "operator" for concatenating two strings is the absence of an operator. 
+  The "operator" for concatenating two strings is the absence of an operator.
   Adjoining character strings with no operator in between means concatenation:
 
      d = a b "string" c
@@ -2167,12 +2175,12 @@ Macro Language
 
   Comparison between character strings is done with the == and != operators,
   (as with integers).  There are a number of useful built-in routines for
-  working with character strings, which are listed in the section called 
+  working with character strings, which are listed in the section called
   "Macro_Subroutines_".
 
 4>Arrays and Array Operators
 
-  Arrays may contain either strings, integers, or other arrays. Arrays are 
+  Arrays may contain either strings, integers, or other arrays. Arrays are
   associative, which means that they relate two pieces of information, the key
   and  the value. The key is always a string; if you use an integer it is
   converted to a string.
@@ -2201,39 +2209,39 @@ Macro Language
 
       dialog("array x has " x[] " elements", "OK")
 
-  Arrays can be combined with some operators. All the following operators only 
+  Arrays can be combined with some operators. All the following operators only
   compare the keys of the arrays.
 
       result = x + y   (Merge arrays)
-      
+
   The 'result' is a new array containing keys from both x and y. If
   duplicates are present values from y are used.
-          
+
       result = x - y   (Remove keys)
 
   The 'result' is a new array containing all keys from x that are not in y.
-          
+
       result = x & y   (Common keys)
-          
+
   The 'result' is a new array containing all keys which are in both x and y.
   The values from y are used.
-          
+
       result = x | y   (Unique keys)
-      
-  The 'result' is a new array containing keys which exist in either x or y, 
+
+  The 'result' is a new array containing keys which exist in either x or y,
   but not both.
 
-  When duplicate keys are encountered using the + and & operators, the values 
+  When duplicate keys are encountered using the + and & operators, the values
   from the array on the right side of the operators are used for the result.
   All  of the above operators are array only, meaning both the left and right
   sides of the operator must be arrays. The results are also arrays.
 
   Array keys can also contain multiple dimensions:
-  
+
       x[1, 1, 1] = "string"
 
   These are used in the expected way, e.g.:
-  
+
       for (i = 1; i < 3; i++)
       {
           for (j = 1; j < 3; j++)
@@ -2241,36 +2249,36 @@ Macro Language
               x[i, j] = k++
           }
       }
-      
+
   gives the following array:
-  
+
       x[1, 1] = 0
       x[1, 2] = 1
       x[2, 1] = 2
       x[2, 2] = 3
 
-  Internally all indices are part of one string, separated by the string 
+  Internally all indices are part of one string, separated by the string
   $sub_sep (ASCII 0x1c, 'FS'). The first key in the above example is in
   fact:
-  
+
       ["1" $sub_sep "1"]
 
-  If you need to extract one of the keys, you can use split(), using 
+  If you need to extract one of the keys, you can use split(), using
   $sub_sep as the separator.
 
-  You can also check for the existence of multi-dimensional array by 
+  You can also check for the existence of multi-dimensional array by
   looking for $sub_sep in the key.
 
   Last, you need $sub_sep if you want to use the 'in' keyword.
-  
+
       if ((1,2) in myArray)
       {..}
-      
+
   doesn't work, but
-  
+
       if (("1" $sub_sep "2") in myArray)
       {..}
-      
+
   does work.
 
 3>Looping and Conditionals
@@ -2314,9 +2322,9 @@ Macro Language
            break
     }
 
-  Loops may contain break and continue statements.  A break statement causes an
-  exit from the innermost loop, a continue statement transfers control to the
-  end of the loop.
+  Loops may contain break and continue statements.  A **break** statement
+  causes an exit from the innermost loop, a **continue** statement transfers
+  control to the end of the loop.
    ----------------------------------------------------------------------
 
 Macro Subroutines
@@ -2339,7 +2347,7 @@ Macro Subroutines
   Index of the current pane.
 
 **$auto_indent**
-  Contains the current preference for auto indent. 
+  Contains the current preference for auto indent.
   Can be  "off", "on", or "smart".
 
 **$calltip_ID**
@@ -2362,11 +2370,11 @@ Macro Subroutines
   emulation is turned off, value is -1.
 
 **$empty_array**
-  An array with no elements. This can be used to initialize 
+  An array with no elements. This can be used to initialize
   an array to an empty state.
 
 **$file_format**
-  Current newline format that the file will be saved with. Can 
+  Current newline format that the file will be saved with. Can
   be "unix", "dos" or "macintosh".
 
 **$file_name**
@@ -2395,7 +2403,7 @@ Macro Subroutines
   Contains 1 if incremental auto saving is on, otherwise 0.
 
 **$incremental_search_line**
-  Has a value of 1 if the preference is 
+  Has a value of 1 if the preference is
   selected to always show the incremental search line, otherwise 0.
 
 **$language_mode**
@@ -2408,17 +2416,17 @@ Macro Subroutines
   True if the file has been locked by the user.
 
 **$make_backup_copy**
-  Has a value of 1 if original file is kept in a 
+  Has a value of 1 if original file is kept in a
   backup file on save, otherwise 0.
 
 **$max_font_width**
-  The maximum font width of all the active styles. 
-  Syntax highlighting styles are only considered if syntax highlighting 
+  The maximum font width of all the active styles.
+  Syntax highlighting styles are only considered if syntax highlighting
   is turned on.
 
 **$min_font_width**
-  The minimum font width of all the active styles. 
-  Syntax highlighting styles are only considered if syntax highlighting 
+  The minimum font width of all the active styles.
+  Syntax highlighting styles are only considered if syntax highlighting
   is turned on.
 
 **$modified**
@@ -2438,12 +2446,12 @@ Macro Subroutines
 **$read_only**
   True if the file is read only.
 
-**$selection_start, $selection_end**   
+**$selection_start, $selection_end**
   Beginning and ending positions of the
   primary selection in the current window, or
   -1 if there is no text selected in the current window.
 
-**$selection_left, $selection_right**  
+**$selection_left, $selection_right**
   Left and right character offsets of the rectangular (primary) selection in
   the current window, or -1 if there is no selection or it is not rectangular.
 
@@ -2454,7 +2462,7 @@ Macro Subroutines
   Whether line numbers are shown next to the text.
 
 **$show_matching**
-  Contains the current preference for showing matching pairs, 
+  Contains the current preference for showing matching pairs,
   such as "[]" and "{}" pairs. Can be "off", "delimiter", or "range".
 
 **$match_syntax_based**
@@ -2472,7 +2480,7 @@ Macro Subroutines
   Tabs... dialog of the Preferences menu.
 
 **$text_length**
-  The length of the text in the current window.
+  The length of the text in the current document.
 
 **$top_line**
   The line number of the top line of the currently active pane.
@@ -2529,11 +2537,11 @@ Macro Subroutines
   Returns the ID of the calltip if it was found and/or displayed correctly,
   0 otherwise.
 
-**clipboard_to_string()**  
+**clipboard_to_string()**
   Returns the contents of the clipboard as a macro string. Returns empty
   string on error.
 
-**dialog( message, btn_1_label, btn_2_label, ... )**  
+**dialog( message, btn_1_label, btn_2_label, ... )**
   Pop up a dialog for querying and presenting information to the user. First
   argument is a string to show in the message area of the dialog.
   Additional optional arguments represent labels for buttons to appear along
@@ -2558,15 +2566,15 @@ Macro Subroutines
   focus_window("last"). Returns the name of the newly-focused window, or an
   empty string if the requested window was not found.
 
-**get_character( position )**  
+**get_character( position )**
   Returns the single character at the position
   indicated by the first argument to the routine from the current window.
 
-**get_range( start, end )**  
+**get_range( start, end )**
   Returns the text between a starting and ending position from the current
   window.
 
-**get_selection()**  
+**get_selection()**
   Returns a string containing the text currently selected by the primary
   selection either from the current window (no keyword), or from anywhere on
   the screen (keyword "any").
@@ -2582,7 +2590,7 @@ Macro Subroutines
 **length( string )**
   Returns the length of a string
 
-**list_dialog( message, text, btn_1_label, btn_2_label, ... )**  
+**list_dialog( message, text, btn_1_label, btn_2_label, ... )**
   Pop up a dialog for prompting the user to choose a line from the given text
   string. The first argument is a message string to be used as a title for the
   fixed text describing the list. The second string provides the list data:
@@ -2615,27 +2623,31 @@ Macro Subroutines
   $read_status, and the contents of the file as a string in the subroutine
   return value. On failure, returns the empty string "" and an 0 $read_status.
 
-**replace_in_string( string, search_for, replace_with [, type, "copy"] )**  
+**replace_in_string( string, search_for, replace_with [, type, "copy"] )**
   Replaces all occurrences of a search string in a string with a replacement
   string. Arguments are 1: string to search in, 2: string to search for, 3:
-  replacement string.  There are two optional arguments.  One is a search type, 
-  either "literal", "case", "word", "caseWord", "regex", or "regexNoCase".  
+  replacement string.  There are two optional arguments.  One is a search type,
+  either "literal", "case", "word", "caseWord", "regex", or "regexNoCase".
   The default search type is "literal".  If the optional "copy" argument is
   specified, a copy of the input string is returned when no replacements were
   performed.  By default an empty string ("") will be returned in this case.
   Returns a new string with all of the replacements done.
 
-**replace_range( start, end, string )**  
+**replace_range( start, end, string )**
   Replaces all the text between two positions in the current window. If the
   cursor position is between start and end it will be set to start.
 
-**replace_selection( string )**  
+**replace_selection( string )**
   Replaces the primary-selection selected text in the current window.
 
-**replace_substring( string, start, end, replace_with )**  
+**replace_substring( string, start, end, replace_with )**
   Replacing a substring between two positions in a string within another string.
 
-**search( search_for, start [, search_type, wrap, direction] )**  
+**revert_to_saved()**
+  Reloads the file, discarding all changes done to the document by the user
+  since the last save.
+
+**search( search_for, start [, search_type, wrap, direction] )**
   Searches silently in a window without dialogs, beeps, or changes to the
   selection. Arguments are: 1: string to search for, 2: starting position.
   Optional arguments may include the strings: "wrap" to make the search wrap
@@ -2645,8 +2657,7 @@ Macro Subroutines
   "literal"). Returns the starting position of the  match, or -1 if nothing
   matched. Also returns the ending position  of the match in $search_end.
 
-**search_string( string, search_for, start [, search_type, direction] )** 
-
+**search_string( string, search_for, start [, search_type, direction] )**
   Built-in macro subroutine for searching a string. Arguments are 1: string to
   search in, 2: string to search for, 3: starting position. Optional arguments
   may include the strings: "wrap" to make the search wrap around the beginning
@@ -2656,11 +2667,11 @@ Macro Subroutines
   the starting position of the match, or -1 if nothing matched. Also returns
   the ending position of the match in $search_end.
 
-**select( start, end )**  
+**select( start, end )**
   Selects (with the primary selection) text in the current buffer between a
   starting and ending position.
 
-**select_rectangle( start, end, left, right )**  
+**select_rectangle( start, end, left, right )**
   Selects a rectangular area of text between a starting and ending position,
   and confined horizontally to characters displayed between positions "left",
   and "right".
@@ -2677,17 +2688,17 @@ Macro Subroutines
 **set_cursor_pos( position )**
   Set the cursor position for the current window.
 
-**shell_command( command, input_string )**  
+**shell_command( command, input_string )**
   Executes a shell command, feeding it input from input_string. On completion,
   output from the command is returned as the function value, and the command's
   exit status is returned in the global variable $shell_cmd_status.
 
 **split(string, separation_string [, search_type])**
   Splits a string using the separator specified. Optionally the search_type
-  argument can specify how the separation_string is interpreted. The default 
+  argument can specify how the separation_string is interpreted. The default
   is "literal". The returned value is an array with keys beginning at 0.
 
-**string_dialog( message, btn_1_label, btn_2_label, ... )**  
+**string_dialog( message, btn_1_label, btn_2_label, ... )**
   Pops up a dialog prompting the user to enter information. The first argument
   is a string to show in the message area of the dialog. Additional
   optional arguments represent labels for buttons to appear along the bottom of
@@ -2700,13 +2711,13 @@ Macro Subroutines
 **string_compare(string1, string2 [, consider-case])**
   Compare two  strings and return 0 if they are equal, -1 if string1 is less
   than  string2 or 1 if string1 is greater than string2. The values for the
-  optional consider-case argument is either "case" or "nocase". The default 
+  optional consider-case argument is either "case" or "nocase". The default
   is to do a case sensitive comparison.
 
-**string_to_clipboard( string )**  
+**string_to_clipboard( string )**
   Copy the contents of a macro string to the clipboard.
 
-**substring( string, start [, end] )**  
+**substring( string, start [, end] )**
   Returns the portion of a string between a start and end position (with the
   position of the beginning of the string being 0).  If end is missing, the
   position of the end of the string is used. If either of the positions are
@@ -2715,7 +2726,7 @@ Macro Subroutines
   is repositioned to the nearest valid string position.  If the start position
   is beyond the end position, the empty string is returned.
 
-**t_print( string1, string2, ... )**  
+**t_print( string1, string2, ... )**
   Writes strings to the terminal (stdout) from which NEdit was started.
 
 **tolower( string )**
@@ -2728,7 +2739,7 @@ Macro Subroutines
   Returns 1 if the string can be converted to a number without error
   following the same rules that the implicit conversion would. Otherwise 0.
 
-**write_file( string, filename )**  
+**write_file( string, filename )**
   Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on
   successful write, or 0 if unsuccessful.
 
@@ -2745,44 +2756,54 @@ Macro Subroutines
 
    ----------------------------------------------------------------------
 
-Range Sets
+Rangesets
 ----------
 
-  A rangeset is a set of ranges. A range is a contiguous range of characters
-  defined by its start and end position in the document.  The user can
-  create rangesets, identified by arbitrary integers (chosen by the editor when
-  the rangesets are created), and each range within a rangeset is identified by
-  a numeric index, counting from 1, in the order of appearance in the text
-  buffer.  The ranges are adjusted when modifications are made to the text 
-  buffer: they shuffle around when characters are added or deleted.  However,
-  ranges within a set will coalesce if the characters between them are removed,
-  or a new range is added to the set which bridges or overlaps others.
-  
-  Using rangesets allows non-contiguous bits of the text to be identified as a
-  group.
+  Rangesets are a tool of the macro language to tag parts, or ranges, of the
+  text, which shall be viewed as a group. A range is merely a contiguous range
+  of characters between a start and an end position in the document, and a set
+  of ranges belonging together is called a rangeset. So, a rangeset is nothing
+  but an in general non-contiguous part of the text.
 
-  Rangesets can be assigned a background color: characters within a range of a
-  rangeset will have the background color of the rangeset. If more than one
-  rangeset includes a given character, its background color will be that of the
-  most recently created rangeset which has a color defined.
-  
-  Rangesets must be created using the rangeset_create() function, which 
-  will return an identifier for the newly-created rangeset.  This identifier
-  is then passed to the other rangeset functions to manipulate the rangeset.
-    
+  Rangesets can be assigned a background color to make them visible: characters
+  within all ranges of a rangeset will have the background color of the
+  rangeset. (If more than one rangeset includes a given character, its
+  background color will be that of the most recently created rangeset which has
+  a color defined.)
+
+  Applications of rangesets are for example:
+
+* Showing differences between two versions of a file. Then, one rangeset would be those parts of the current file that are not in the prior version.
+* Highlighting all occurrences of a particular pattern, e.g. showing all the strings 'foobar' in the file.
+* Highlighting spelling mistakes found by a spell-checker.
+
+  Rangesets are manipulated only through macro routines. Rangesets must be
+  created first using the rangeset_create() function, which will return an
+  identifier for the newly-created (empty) rangeset. This identifier is then
+  passed to the other rangeset functions to manipulate the rangeset. For
+  example, ranges are added to a rangeset with the rangeset_add() function.
+
+  Notice that the ranges inside a rangeset do not have a particular identity.
+  Only, they are given a (dynamically changing) numeric index, counting from 1,
+  in the order of appearance in the text buffer. The ranges are adjusted when
+  modifications are made to the text buffer: they shift around when characters
+  are added or deleted staying with the original strings of characters.
+  However, ranges within a set will coalesce if the characters between them are
+  removed, or a new range is added to  the set which bridges or overlaps
+  others. For more on this, see "How rangesets change with modifications".
+
   There is a limit to the number of rangesets which can exist at any time -
-  currently up to 63 in each document.  Care should be taken to destroy
-  any rangesets which are no longer needed, by using the rangeset_destroy()
+  currently up to 63 in each document. Care should be taken to destroy any
+  rangesets which are no longer needed, by using the rangeset_destroy()
   function, if this limit is attained.
 
   Rangesets can be named: this is useful for macros which need a fixed
-  identification for rangesets which are used for the same purpose in
-  different documents.  Although a new rangeset's number is arbitrary, its
-  name can be fixed.  This is done using the rangeset_set_name() function. 
-  Note that rangeset names within a particular document may not be unique.
-  For this reason, the rangeset_get_by_name() function returns an array of
-  identifiers, which will be empty if the name has not been associated with
-  a rangeset.
+  identification for rangesets which are used for the same purpose in different
+  documents. Although a new rangeset's number is arbitrary, its name can be
+  fixed.  This is done using the rangeset_set_name() function. Note that
+  rangeset names within a particular document may not be unique. For this
+  reason, the rangeset_get_by_name() function returns an array of identifiers,
+  which will be empty if the name has not been associated with a rangeset.
 
 4>How rangesets change with modifications
 
@@ -2804,8 +2825,8 @@ Range Sets
   Both these modes have the same behaviour.  New text added at the front of a
   range in a set is not added to the range; new text added within the range or
   at the end extends the range.  Replacement overlapping an extremity of the
-  set acts as if the new text were added first, then the old text deleted. 
-  This causes curtailment at the front of the range, extension at the end. 
+  set acts as if the new text were added first, then the old text deleted.
+  This causes curtailment at the front of the range, extension at the end.
   Replacement of the full text of the range removes the range from the set.
   The default behaviour for a newly created rangeset is **maintain**.
 
@@ -2843,7 +2864,7 @@ Range Sets
   can easily become very large, and may exceed the capacity of the running
   process.  Coloring relies on proper color names or specifications (such as
   the "#rrggbb" hexadecimal digit strings), and appropriate hardware support. If
-  an invalid color name is given, the default background color is used instead. 
+  an invalid color name is given, the default background color is used instead.
   Behaviours set using rangeset_set_mode() are subject to change in future
   versions.
 
@@ -2853,34 +2874,36 @@ Range Sets
   array of active rangeset identifiers, with integer keys starting at 0,
   in the order the rangesets were defined.
 
-
 3>Rangeset functions
 
 **rangeset_create()**
 **rangeset_create( n )**
   Creates one or more new rangesets. The first form creates a single range
-  set and returns its identifier; if there are no rangesets available it 
-  returns 0. The second form creates n new rangesets, and returns an array 
-  of the rangeset identifiers with keys beginning at 0. If the requested 
+  set and returns its identifier; if there are no rangesets available it
+  returns 0. The second form creates n new rangesets, and returns an array
+  of the rangeset identifiers with keys beginning at 0. If the requested
   number of rangesets is not available it returns an empty array.
-  
+
 **rangeset_destroy( r )**
 **rangeset_destroy( array )**
   Deletes all information about a rangeset or a number of rangesets. The
-  first form destroys the rangeset identified by r. The second form should 
+  first form destroys the rangeset identified by r. The second form should
   be passed an array of rangeset identifiers with keys beginning at 0 (i.e.
   the same form of array returned by rangeset_create(n); it destroys all the
   rangesets appearing in the array. If any of the rangesets do not exist,
   the function continues without errors. Does not return a value.
-  
-**rangeset_add( r, [start, end] )**
+
+**rangeset_add( r )**
+**rangeset_add( r, start, end )**
 **rangeset_add( r, r0 )**
   Adds to the rangeset r. The first form adds the range identified by the
-  current primary selection to the rangeset, unless start and end are defined,
-  in which case the range they define is added. Returns the index of the 
-  newly-added range within the rangeset. The second form adds all ranges in 
-  the rangeset r0 to the rangeset r, and returns 0.
-  
+  current primary selection to the rangeset, unless the selection is
+  rectangular. The second form adds the range defined by the start and end
+  positions given. The third form adds all ranges in the rangeset r0 to the
+  rangeset r, and returns 0.
+
+  Returns the index of the newly-added range within the rangeset.
+
 **rangeset_subtract( r, [start, end] )**
 **rangeset_subtract( r, r0 )**
   Removes from the rangeset r. The first form removes the range identified by
@@ -2907,12 +2930,12 @@ Range Sets
   modify-response mode of the rangeset).
 
 **rangeset_range( r, [index] )**
-  Returns details of a specific range in the rangeset r.  The range is 
+  Returns details of a specific range in the rangeset r.  The range is
   specified by index, which should be between 1 and n (inclusive), where
   n is the number of ranges in the rangeset.  The return value is an array
   containing the keys **start** (the start position of the range) and **end**
   (the end position of the range).  If index is not supplied, the region
-  returned is the span of the entire rangeset (the region starting at the 
+  returned is the span of the entire rangeset (the region starting at the
   start of the first range and ending at the end of the last).  If index
   is outside the correct range of values, the function returns an empty array.
 
@@ -2921,10 +2944,10 @@ Range Sets
   0 if pos is not contained in any of the ranges of r.  This can also be used
   as a simple true/false function which returns true if pos is contained in
   the rangeset.
-  
+
 **rangeset_set_color( r, color )**
   Attempts to apply the color as a background color to the ranges of r. If
-  color is at empty string, removes the coloring of r.  No check is made 
+  color is at empty string, removes the coloring of r.  No check is made
   regarding the validity of color: if the color is invalid (a bad name,
   or not supported by the hardware) this has unpredictable effects.
 
@@ -2936,7 +2959,6 @@ Range Sets
   buffer occur.  type can be one of the following: "maintain" (the default),
   "break", "include", "exclude", "ins_del" or "del_ins". (These modes are
   described above.)
-
 
 Highlighting Information
 ------------------------
@@ -2950,7 +2972,7 @@ Highlighting Information
   These macro functions permit macro writers to generate formatted output which
   allows NEdit highlighting to be reproduced. This is suitable for the
   generation of HTML or Postscript output, for example.
-  
+
   Note that if any of the functions is used while in Plain mode or while syntax
   highlighting is off, the behaviour is undefined.
 
@@ -3038,7 +3060,7 @@ Action Routines
     save()                    replace_dialog()
     save_as()                 replace_all()
     save_as_dialog()          replace_in_selection()
-    revert_to_saved()         replace_again()
+    revert_to_saved_dialog()  replace_again()
     include_file()            goto_line_number()
     include_file_dialog()     goto_line_number_dialog()
     load_macro_file()         goto_selected()
@@ -3050,7 +3072,7 @@ Action Routines
     load_tips_file_dialog()   select_to_matching()
     unload_tips_file()        find_definition()
     print()                   show_tip()
-    print_selection()         
+    print_selection()
     exit()                    Shell Menu
                               -------------------------
     Edit Menu                 filter_selection_dialog()
@@ -3059,13 +3081,13 @@ Action Routines
     redo()                    execute_command_dialog()
     delete()                  execute_command_line()
     select_all()              shell_menu_command()
-    shift_left()              
+    shift_left()
     shift_left_by_tab()       Macro Menu
     shift_right()             -------------------------
     shift_right_by_tab()      macro_menu_command()
     uppercase()               repeat_macro()
     lowercase()               repeat_dialog()
-    fill_paragraph()          
+    fill_paragraph()
     control_code_dialog()     Windows Menu
                               -------------------------
                               split_pane()
@@ -3079,7 +3101,7 @@ Action Routines
   are changed to lower case, and spaces are replaced with underscores.  To
   present a dialog to ask the user for input, use the actions with the
   `_dialog` suffix. Actions without the `_dialog` suffix take the information
-  from the routine's arguments (see below).  
+  from the routine's arguments (see below).
 
 3>Menu Action Routine Arguments
 
@@ -3089,55 +3111,55 @@ Action Routines
     **new**( ["tab" | "window" | "prefs" | "opposite"] )
 
     **close**( ["prompt" | "save" | "nosave"] )
-    
+
     **execute_command**( shell-command )
-    
+
     **filter_selection**( shell-command )
-    
-    **find**( search-string [, ~search-direction~] [, ~search-type~] 
+
+    **find**( search-string [, ~search-direction~] [, ~search-type~]
        [, ~search-wrap~] )
-    
+
     **find_again**( [~search-direction~] [, ~search-wrap~] )
-    
+
     **find_definition**( [tag-name] )
-    
-    **find_dialog**( [~search-direction~] [, ~search-type~] 
+
+    **find_dialog**( [~search-direction~] [, ~search-type~]
        [, ~keep-dialog~] )
-    
-    **find_selection**( [~search-direction~] [, ~search-wrap~] 
+
+    **find_selection**( [~search-direction~] [, ~search-wrap~]
        [, ~non-regex-search-type~] )
-    
+
     **goto_line_number**( [~line-number~] [, ~column-number~] )
-    
+
     **goto_mark**( ~mark-letter~ )
-    
+
     **include_file**( ~filename~ )
-    
+
     **load_tags_file**( ~filename~ )
-    
+
     **macro_menu_command**( ~macro-menu-item-name~ )
-    
+
     **mark**( ~mark-letter~ )
-    
+
     **open**( ~filename~ )
-    
-    **replace**( search-string, replace-string, 
+
+    **replace**( search-string, replace-string,
        [, ~search-direction~] [, ~search-type~] [, ~search-wrap~] )
-       
+
     **replace_again**( [~search-direction~] [, ~search-wrap~] )
-    
+
     **replace_all**( search-string, replace-string [, ~search-type~] )
 
     **replace_dialog**( [~search-direction~] [, ~search-type~]
        [, ~keep-dialog~] )
-    
-    **replace_in_selection**( search-string, 
+
+    **replace_in_selection**( search-string,
        replace-string [, ~search-type~] )
-       
+
     **save_as**( ~filename~ )
-    
+
     **shell_menu_command**( ~shell-menu-item-name~ )
-    
+
     **unload_tags_file**( ~filename~ )
 
     **----------- Some notes on argument types above -----------**
@@ -3145,41 +3167,41 @@ Action Routines
     ~Arguments to new()~
                    "tab":      Open a new tab
                    "window":   Open a new window
-                   "prefs":    Follow the user's tab/window 
+                   "prefs":    Follow the user's tab/window
                                preference
-                   "opposite": Opposite of user's tab/window 
+                   "opposite": Opposite of user's tab/window
                                preference
                    Default behaviour is "prefs".
 
     ~filename~       Path names are relative to the directory from
-                   which NEdit was started. Shell interpreted 
+                   which NEdit was started. Shell interpreted
                    wildcards and `~' are not expanded.
 
     ~keep-dialog~    Either "keep" or "nokeep".
 
-    ~mark-letter~    The mark command limits users to single 
+    ~mark-letter~    The mark command limits users to single
                    letters. Inside of macros, numeric marks are
                    allowed, which won't interfere with marks set
                    by the user.
 
     ~macro-menu-item-name~
-                   Name of the command exactly as specified in 
+                   Name of the command exactly as specified in
                    the Macro Menu dialogs.
-                    
-    ~non-regex-search-type~ 
-                   Either "literal", "case", "word", or 
+
+    ~non-regex-search-type~
+                   Either "literal", "case", "word", or
                    "caseWord".
 
     ~search-direction~
                    Either "forward" or "backward".
 
-    ~search-type~    Either "literal", "case", "word", 
+    ~search-type~    Either "literal", "case", "word",
                    "caseWord", "regex", or "regexNoCase".
 
     ~search-wrap~    Either "wrap" or "nowrap".
 
     ~shell-menu-item-name~
-                   Name of the command exactly as specified in 
+                   Name of the command exactly as specified in
                    the Shell Menu dialogs.
 
 3>Window Preferences Actions
@@ -3188,51 +3210,51 @@ Action Routines
   Set auto indent mode for the current window.
 
 **set_em_tab_dist( em-tab-distance )**
-  Set the emulated tab size. An em-tab-distance value of 
-  0 or -1 translates to no emulated tabs. Em-tab-distance must 
+  Set the emulated tab size. An em-tab-distance value of
+  0 or -1 translates to no emulated tabs. Em-tab-distance must
   be smaller than 1000.
 
 **set_fonts( font-name, italic-font-name, bold-font-name, bold-italic-font-name )**
   Set all the fonts used for the current window.
 
 **set_highlight_syntax( [0 | 1] )**
-  Set syntax highlighting mode for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Set syntax highlighting mode for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_incremental_backup( [0 | 1] )**
-  Set incremental backup mode for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Set incremental backup mode for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_incremental_search_line( [0 | 1] )**
-  Show or hide the incremental search line for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Show or hide the incremental search line for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_language_mode( language-mode )**
-  Set the language mode for the current window. If the language mode is 
+  Set the language mode for the current window. If the language mode is
   "" or unrecognized, it will be set to Plain.
 
 **set_locked( [0 | 1] )**
-  This only affects the locked status of a file, not it's read-only 
-  status. Permissions are NOT changed. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  This only affects the locked status of a file, not it's read-only
+  status. Permissions are NOT changed.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_make_backup_copy( [0 | 1] )**
-  Set whether backup copies are made during saves for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Set whether backup copies are made during saves for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_overtype_mode( [0 | 1] )**
-  Set overtype mode for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Set overtype mode for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_show_line_numbers( [0 | 1] )**
-  Show or hide line numbers for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Show or hide line numbers for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_show_matching( "off" | "delimiter" | "range" )**
@@ -3242,17 +3264,17 @@ Action Routines
   Set whether matching should be syntax based for the current window.
 
 **set_statistics_line( [0 | 1] )**
-  Show or hide the statistics line for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Show or hide the statistics line for the current window.
+  A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_tab_dist( tab-distance )**
-  Set the size of hardware tab spacing. Tab-distance must 
+  Set the size of hardware tab spacing. Tab-distance must
   be a value greater than 0 and no greater than 20.
 
 **set_use_tabs( [0 | 1] )**
-  Set whether tabs are used for the current window. 
-  A value of 0 turns it off and a value of 1 turns it on. 
+  Set whether tab characters are used for the current window. A value of 0
+  turns it off (using space characters instead) and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
 **set_wrap_margin( wrap-width )**
@@ -3292,7 +3314,7 @@ Action Routines
 **beginning_of_file( ["scrollbar"] )**
   Moves the cursor to the beginning of the file.
 
-**beginning_of_line( ["absolute"] )** 
+**beginning_of_line( ["absolute"] )**
   Moves the cursor to the beginning of the line. If
   "absolute" is given, always moves to the absolute beginning of line,
   regardless of the text wrapping mode.
@@ -3333,7 +3355,7 @@ Action Routines
   Deletes the contents of the primary selection.
 
 **delete_next_character( ["nobell"] )**
-  If a primary selection exists, deletes its contents. 
+  If a primary selection exists, deletes its contents.
   Otherwise, deletes the character following the cursor.
 
 **delete_previous_character( ["nobell"] )**
@@ -3341,21 +3363,21 @@ Action Routines
   contents.  Otherwise, deletes the character before the cursor.
 
 **delete_next_word( ["nobell"] )**
-  If a primary selection exists, deletes its contents. 
+  If a primary selection exists, deletes its contents.
   Otherwise, deletes the word following the cursor.
 
 **delete_previous_word( ["nobell"] )**
-  If a primary selection exists, deletes its contents. 
+  If a primary selection exists, deletes its contents.
   Otherwise, deletes the word before the cursor.
 
 **delete_to_start_of_line( ["nobell", "wrap"] )**
   If a primary selection exists, deletes its contents.  Otherwise, deletes the
   characters between the cursor and the start of the line. If "wrap" is
-  given, deletes to the previous wrap point or beginning of line, whichever 
+  given, deletes to the previous wrap point or beginning of line, whichever
   is closest.
 
 **delete_to_end_of_line( ["nobell", "absolute"] )**
-  If a primary selection exists, deletes its contents. 
+  If a primary selection exists, deletes its contents.
   Otherwise, deletes the characters between the cursor and the end of the line.
   If "absolute" is given, always deletes to the absolute end of line, regardless
   of the text wrapping mode.
@@ -3366,7 +3388,7 @@ Action Routines
 **end_of_file( ["scrollbar"] )**
   Moves the cursor to the end of the file.
 
-**end_of_line( ["absolute"] )** 
+**end_of_line( ["absolute"] )**
   Moves the cursor to the end of the line.  If
   "absolute" is given, always moves to the absolute end of line, regardless
   of the text wrapping mode.
@@ -3393,24 +3415,24 @@ Action Routines
 
 **focus_pane( [relative-pane] | [positive-index] | [negative-index] )**
   Move the focus to the requested pane.
-  Arguments can be specified in the form of a relative-pane 
-  ("first", "last", "next", "previous"), a positive-index 
+  Arguments can be specified in the form of a relative-pane
+  ("first", "last", "next", "previous"), a positive-index
   (numbers greater than 0, 1 is the same as "first") or a
   negative-index (numbers less than 0, -1 is the same as "last").
-  
+
 **forward_character()**
   Moves the cursor one character to the right.
 
 **forward_paragraph( ["nobell"] )**
-  Moves the cursor to the beginning of the next paragraph. 
+  Moves the cursor to the beginning of the next paragraph.
   Paragraphs are defined as regions of text delimited by one or more blank
   lines.
 
 **forward_word( ["tail"] ["nobell"] )**
   Moves the cursor to the beginning of the next word.  Word
   delimiters are user-settable, and defined by the X resource wordDelimiters.
-  If the "tail" argument is supplied the cursor will be moved to 
-  the end of the current word or the end of the next word, if the 
+  If the "tail" argument is supplied the cursor will be moved to
+  the end of the current word or the end of the next word, if the
   cursor is between words.
 
 **grab_focus()**
@@ -3499,7 +3521,7 @@ Action Routines
   secondary_or_drag_adjust in progress.
 
 **process_down( ["nobell", "absolute"] )**
-  Moves the cursor down one line.  If "absolute" is given, always moves to the 
+  Moves the cursor down one line.  If "absolute" is given, always moves to the
   next line in the text buffer, regardless of wrapping.
 
 **process_return()**
@@ -3516,21 +3538,21 @@ Action Routines
   otherwise inserts a tab character.
 
 **process_up( ["nobell", "absolute"] )**
-  Moves the cursor up one line.  If "absolute" is given, always moves to the 
+  Moves the cursor up one line.  If "absolute" is given, always moves to the
   previous line in the text buffer, regardless of wrapping.
 
 **raise_window([relative-window] | [positive-index] | [negative-index] [, "focus" | "nofocus"])**
   Raise the current focused window to the front if no argument is supplied.
-  Arguments can be specified in the form of a relative-window 
-  ("first", "last", "next", "previous"), a positive-index 
+  Arguments can be specified in the form of a relative-window
+  ("first", "last", "next", "previous"), a positive-index
   (numbers greater than 0, 1 is the same as "last") or a
-  negative-index (numbers less than 0, -1 is the same as "first"). 
-  
+  negative-index (numbers less than 0, -1 is the same as "first").
+
   Moreover, it can be specified whether or not the raised window should
   request the X input focus. By default, it depends on the setting of the
   nedit.focusOnRaise resource (see the section "X_Resources_") whether or not
   the input focus is requested.
-  
+
 **scroll_down( nUnits, ["lines" | "pages"] )**
   Scroll the display down (towards the end of the file) by a given
   number of units, units being lines or pages. Default units are lines.
@@ -3606,7 +3628,7 @@ Customizing NEdit
   The most common reason for customizing your X resources for NEdit, however, is
   key binding.  While limited key binding can be done through Preferences
   settings (Preferences -> Default Settings -> Customize Menus), you can really
-  only add keys this way, and each key must have a corresponding menu item. 
+  only add keys this way, and each key must have a corresponding menu item.
   Any significant changes to key binding should be made via the Translations
   resource and menu accelerator resources.  The sections titled "Key_Binding_"
   and "X_Resources_" have more information.
@@ -3622,7 +3644,7 @@ Preferences
   only.  Options in the Default Settings sub-menu provide initial settings for
   future windows created using the New or Open commands; options affecting all
   windows are also set here.
-  
+
   Preferences set in the Default Settings sub-menu are saved in a file that
   NEdit reads at startup time, cf. Autoload_Files_, by selecting Save Defaults.
 
@@ -3636,7 +3658,7 @@ Preferences
   is started.
 
 **Save Defaults**
-  Save the default options as set under Default Settings for future NEdit 
+  Save the default options as set under Default Settings for future NEdit
   sessions.
 
 **Statistics Line**
@@ -3707,7 +3729,7 @@ Preferences
   insertion cursor is positioned after it. Delimiter only highlights the
   matching delimiter, while Range highlights the whole range of text between
   the matching delimiters.
-  
+
   Optionally, the matching can make use of syntax information if syntax
   highlighting is enabled. Alternatively, the matching is purely character
   based. In general, syntax based matching results in fewer false matches.
@@ -3764,26 +3786,26 @@ Preferences
 **Searching**
   Options for controlling the behavior of Find and Replace commands:
 
-  ~Verbose~ - 
+  ~Verbose~ -
   Presents search results in dialog form, asks before wrapping a
-  search back around the beginning (or end) of the file 
+  search back around the beginning (or end) of the file
   (unless Beep On Search Wrap is turned on).
 
-  ~Wrap Around~ - 
+  ~Wrap Around~ -
   Search and Replace operations wrap around the beginning (or end) of the file.
 
-  ~Beep On Search Wrap~ - 
+  ~Beep On Search Wrap~ -
   Beep when Search and Replace operations wrap around the beginning (or end) of
   the file (only if Wrap Around is turned on).
 
-  ~Keep Dialogs Up~ - 
+  ~Keep Dialogs Up~ -
   Don't pop down Replace and Find boxes after searching.
 
-  ~Default Search Style~ - 
+  ~Default Search Style~ -
   Initial setting for search type in Find and Replace dialogs.
 
-  ~Default Replace Scope~ - 
-  [THIS OPTION IS ONLY PRESENT WHEN NEDIT WAS COMPILED WITH THE 
+  ~Default Replace Scope~ -
+  [THIS OPTION IS ONLY PRESENT WHEN NEDIT WAS COMPILED WITH THE
    -DREPLACE_SCOPE FLAG TO SELECT AN ALTERNATIVE REPLACE DIALOG LAYOUT.]
 
   Initial setting for the scope in the Replace/Find dialog, when a selection
@@ -3797,21 +3819,21 @@ Preferences
 
 **Tabbed Editing**
   Options for controlling the tabbed interface:
-  
-  ~Open File in New Tab~ - 
+
+  ~Open File in New Tab~ -
   Open files in new tabs, else open files in new windows.
-  
-  ~Show Tab Bar~ - 
+
+  ~Show Tab Bar~ -
   Show/Hide the tab bar.
-  
+
   ~Hide Tab Bar when only one Document is open~
-  
-  ~Next/Prev Tabs Across Windows~ - 
+
+  ~Next/Prev Tabs Across Windows~ -
   Suppose there are two windows with three tabs in the first window and two tabs in
   the second window.  Enabling this option, if you are on the third tab in the
   first window, hitting Ctrl+PageDown would switch to the first tab in the second
   window (instead of switching to the first tab in the first window).
-  
+
   ~Sort Tabs Alphabetically~
 
 **Show Tooltips**
@@ -3840,10 +3862,10 @@ Preferences
 
 **Warnings**
   Options for controlling the popping up of warning dialogs:
-  
+
   ~File Modified Externally~ -
   Pop up a warning dialog when files get changed external to NEdit.
-  
+
   ~Check Modified File Contents~ -
   If external file modification warnings are requested, also check the file
   contents iso. only the modification date.
@@ -3913,11 +3935,11 @@ Preferences
 
   The Menu Entry field can contain special characters for constructing
   hierarchical sub-menus, and for making items which appear only in certain
-  language modes.  The right angle bracket character ">" creates a sub-menu. 
+  language modes.  The right angle bracket character ">" creates a sub-menu.
   The name of the item itself should be the last element of the path formed
   from successive sub-menu names joined with ">".  Menu panes are called in to
   existence simply by naming them as part of a Menu Entry name.  To put several
-  items in the same sub-menu, repeat the same hierarchical sequence for each. 
+  items in the same sub-menu, repeat the same hierarchical sequence for each.
   For example, in the Macro Commands dialog, two items with menu entries: a>b>c
   and a>b>d would create a single sub menu under the macro menu called "a",
   which would contain a single sub-menu, b, holding the actual items, c and d:
@@ -3979,24 +4001,24 @@ Preferences
   `$HOME/.nedit', `$HOME/.neditmacro', and `$HOME/.neditdb', respectively. This
   old naming scheme will be used if NEdit detects that `$HOME/.nedit' is a
   regular file and NEDIT_HOME isn't set.
-  
-  (For VMS, the location of these files is '$NEDIT_HOME/' if NEDIT_HOME is set, 
+
+  (For VMS, the location of these files is '$NEDIT_HOME/' if NEDIT_HOME is set,
   and 'SYS$LOGIN:' otherwise.)
-  
+
   The contents of the preferences file can be moved into another X resource
   file (see X_Resources_).  One reason for doing so would be to attach server
-  specific preferences, such as a default font, to a particular X server. 
+  specific preferences, such as a default font, to a particular X server.
   Another reason for moving preferences into an X resource file would be to
   keep preferences menu options and X resource settable options together in
   one place.  Though the files are the same format, additional resources
   should not be added to the preferences file, since NEdit modifies that file
   by overwriting it completely.  Note also that the contents of the
-  preferences file takes precedence over the values in an X resource file. 
+  preferences file takes precedence over the values in an X resource file.
   Using Save Defaults after moving the contents of your preferences file to
   your .Xdefaults file will re-create the preferences file, interfering with
   the options that you have moved.
-  
-  
+
+
 
 3>Sharing Customizations with Other NEdit Users
 
@@ -4074,7 +4096,7 @@ X Resources
   options not settable via the Preferences menu (for preference resource names,
   see your NEdit preference file):
 
-**nedit.tagFile**: (not defined) 
+**nedit.tagFile**: (not defined)
 
   This can be the name of a file, or multiple files separated by a colon (:)
   character, of the type produced by Exuberant Ctags or the Unix ctags
@@ -4098,7 +4120,7 @@ X Resources
   setting in Preferences -> Default Settings -> Language Modes....
 
 **nedit.remapDeleteKey**: False
-  
+
   Setting this resource to True forcibly maps the delete key to backspace. This
   can be helpful on systems where the bindings have become tangled, and in
   environments which mix systems with PC style keyboards and systems with DEC
@@ -4108,23 +4130,23 @@ X Resources
   very hard to configure. If you've given up and are using a backspace key
   halfway off the keyboard because you can't figure out the bindings, set this
   to True.
-  
+
 **nedit.typingHidesPointer**: False
-  
+
   Setting this resource to True causes the mouse pointer to be hidden when you
-  type in the text area. As soon as the mouse pointer is moved, it will 
+  type in the text area. As soon as the mouse pointer is moved, it will
   reappear.  This is useful to stop the mouse pointer from obscuring text.
-  
+
 **nedit.overrideDefaultVirtualKeyBindings**: Auto
 
   Motif uses a virtual key binding mechanism that shares the bindings between
   different Motif applications. When a first Motif application is started, it
-  installs some default virtual key bindings and any other Motif application 
+  installs some default virtual key bindings and any other Motif application
   that runs afterwards, simply reuses them. Obviously, if the first
-  application installs an invalid set, all others applications may have 
+  application installs an invalid set, all others applications may have
   problems.
-  
-  In the past, NEdit has been the victim of invalid bindings installed by other 
+
+  In the past, NEdit has been the victim of invalid bindings installed by other
   applications several times. Through this resource, NEdit can be instructed
   to ignore the bindings installed by other applications, and use its own
   private bindings. By default, NEdit tries to detect invalid bindings
@@ -4133,7 +4155,7 @@ X Resources
   (Always).
 
 **nedit.stdOpenDialog**: False
-  
+
   Setting this resource to True restores the standard Motif style of Open
   dialog.  NEdit file open dialogs are missing a text field at the bottom of
   the dialog, where the file name can be entered as a string.  The field is
@@ -4141,54 +4163,54 @@ X Resources
   non-standard, but much faster method for finding files.
 
 **nedit.bgMenuButton**: @~Shift@~Ctrl@~Meta@~Alt<Btn3Down>
-  
+
   Specification for mouse button / key combination to post the background menu
   (in the form of an X translation table event specification).  The event
   specification should be as specific as possible, since it will override less
   specific translation table entries.
 
 **nedit.maxPrevOpenFiles**: 30
-  
+
   Number of files listed in the Open Previous sub-menu of the File menu.
   Setting this to zero disables the Open Previous menu item and maintenance of
   the NEdit file history file.
 
 **nedit.printCommand**: (system specific)
-  
+
   Command used by the print dialog to print a file, such as, lp, lpr, etc..
   The command must be capable of accepting input via stdin (standard input).
 
 **nedit.printCopiesOption**: (system specific)
-  
+
   Option name used to specify multiple copies to the print command.  If the
   option should be separated from its argument by a space, leave a trailing
   space. If blank, no "Number of Copies" item will appear in the print dialog.
 
 **nedit.printQueueOption**: (system specific)
-  
+
   Option name used to specify a print queue to the print command.  If the
   option should be separated from its argument by a space, leave a trailing
   space. If blank, no "Queue" item will appear in the print dialog.
 
 **nedit.printNameOption**: (system specific)
-  
+
   Option name used to specify a job name to the print command.  If the option
   should be separated from its argument by a space, leave a trailing space. If
   blank, no job or file name will be attached to the print job or banner page.
 
 **nedit.printHostOption**: (system specific)
-  
+
   Option name used to specify a host name to the print command.  If the option
   should be separated from its argument by a space, leave a trailing space. If
   blank, no "Host" item will appear in the print dialog.
 
 **nedit.printDefaultQueue**: (system specific)
-  
+
   The name of the default print queue.  Used only to display in the print
   dialog, and has no effect on printing.
 
 **nedit.printDefaultHost**: (system specific)
-  
+
   The node name of the default print host.  Used only to display in the print
   dialog, and has no effect on printing.
 
@@ -4238,7 +4260,7 @@ X Resources
   Expression" toggle.
 
 **nedit.multiClickTime**: (system specific)
-  
+
   Maximum time in milliseconds allowed between mouse clicks within double and
   triple click actions.
 
@@ -4249,32 +4271,32 @@ X Resources
   touched.
 
 **nedit@*scrollBarPlacement**: BOTTOM_RIGHT
-  
+
   How scroll bars are placed in NEdit windows, as well as various lists and
   text fields in the program. Other choices are: BOTTOM_LEFT, TOP_LEFT, or
   TOP_RIGHT.
 
 **nedit@*text.autoWrapPastedText**: False
-  
+
   When Auto Newline Wrap is turned on, apply automatic wrapping (which
   normally only applies to typed text) to pasted text as well.
 
 **nedit@*text.heavyCursor**: False
-  
+
   For monitors with poor resolution or users who have difficulty seeing the
   cursor, makes the cursor in the text editing area of the window heavier and
   darker.
 
 **nedit.autoScrollVPadding**: 4
-  
-  Number of lines to keep the cursor away from the top or bottom line of the 
+
+  Number of lines to keep the cursor away from the top or bottom line of the
   window when the "Auto-Scroll Near Window Top/Bottom" feature is enabled.
   Keyboard operations that would cause the cursor to get closer than
-  this distance cause the window to scroll up or down instead, except at the 
+  this distance cause the window to scroll up or down instead, except at the
   beginning of the file.  Mouse operations are not affected.
 
 **nedit@*text.blinkRate**: 500
-  
+
   Blink rate of the text insertion cursor in milliseconds.  Set to zero to stop
   blinking.
 
@@ -4283,11 +4305,11 @@ X Resources
   Modifies key bindings (see "Key_Binding_").
 
 **nedit@*foreground**: black
-  
+
   Default foreground color for menus, dialogs, scroll bars, etc..
 
 **nedit@*background**: #b3b3b3
-  
+
   Default background color for menus, dialogs, scroll bars, etc..
 
 **nedit@*calltipForeground**: black
@@ -4299,45 +4321,45 @@ X Resources
   Background color for calltips
 
 **nedit@*XmLFolder.inactiveForeground**: #666
-  
+
   Foreground color for inactive tabs.
 
 **nedit@*fontList**: helvetica medium 12 points
-  
+
   Default font for menus, dialogs, scroll bars, etc..
 
 **nedit.helpFont**: helvetica medium 12 points
 
   Font used for displaying online help.
-  
+
 **nedit.boldHelpFont**: helvetica bold 12 points
 
   Bold font for online help.
-  
+
 **nedit.italicHelpFont**: helvetica italic 12 points
 
   Italic font for online help.
-  
+
 **nedit.fixedHelpFont**: courier medium 12 points
 
   Fixed font for online help.
-  
+
 **nedit.boldFixedHelpFont**: courier bold 12 points
 
   Fixed bold for online help.
-  
+
 **nedit.italicFixedHelpFont**: courier italic 12 points
 
   Fixed italic font for online help.
-  
+
 **nedit.h1HelpFont**: helvetica bold 14 points
 
   Font for level-1 titles in help text.
-  
+
 **nedit.h2HelpFont**: helvetica bold italic 12 points
 
   Font for level-2 titles in help text.
-  
+
 **nedit.h3HelpFont**: courier bold 12 points
 
   Font for level-3 titles in help text.
@@ -4349,7 +4371,7 @@ X Resources
 **nedit.helpLinkColor**: #009900
 
   Color for hyperlinks in the help text
-  
+
 **nedit.backlightCharTypes**:  0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange
 
   **NOTE: backlighting is ~experimental~** (see "Programming_with_NEdit_").
@@ -4370,7 +4392,7 @@ X Resources
 
 **nedit.focusOnRaise**: False
 
-  This resource determines whether new text windows and text windows that are 
+  This resource determines whether new text windows and text windows that are
   raised, should also request the input focus.  Conventionally, it is the task
   of the window manager to decide on which window gets the input focus.
   Therefore, NEdit's default behaviour is not to request the input focus
@@ -4431,7 +4453,7 @@ X Resources
   Statistics line and incremental search bar.  To get consistent results across
   the entire stats line and the incremental search bar, use '*' rather than '.'
   to separate the resource name.  For example, to set the foreground color of
-  both components use:  
+  both components use:
     nedit*statsAreaForm*foreground
   instead of:
     nedit*statsAreaForm.foreground
@@ -4598,7 +4620,7 @@ Highlighting Patterns
   when things go wrong.  Remember that syntax highlighting is called upon to
   parse incorrect or incomplete syntax as often as correct syntax.  To stop a
   pattern short of matching its end expression, you can specify an error
-  expression, which stops the pattern from gobbling up more than it should. 
+  expression, which stops the pattern from gobbling up more than it should.
   For example, if the text between double quotes shouldn't contain newlines,
   the error expression might be "$".  As with both starting and ending
   expressions, error expressions must also match within the requested context
@@ -4609,7 +4631,7 @@ Highlighting Patterns
   It is also possible to color areas of text within a regular expression
   match.  A pattern of this type associates a style with sub-expressions
   references of the parent pattern (as used in regular expression substitution
-  patterns, see the NEdit Help menu item on Regular_Expressions_). 
+  patterns, see the NEdit Help menu item on Regular_Expressions_).
   Sub-expressions of both the starting and ending patterns may be colored.  For
   example, if the parent pattern has a starting expression "\<", and end
   expression "\>", (for highlighting all of the text contained within angle
@@ -4617,7 +4639,7 @@ Highlighting Patterns
   fields could color the brackets differently from the intervening text.  A
   quick shortcut to typing in pattern names in the Parent Pattern field is to
   use the middle mouse button to drag them from the Patterns list.
-  
+
   In some cases, there can be interference between coloring sub-patterns and
   hierarchical sub-patterns (discussed next). How this is resolved, is
   explained below.
@@ -4627,16 +4649,16 @@ Highlighting Patterns
   A hierarchical sub-pattern, is identical to a top level pattern, but is
   invoked only between the starting and ending expression matches of its
   parent pattern or, in case the parent pattern consists of a single
-  expression, inside the text area matching that expression.  Like the 
+  expression, inside the text area matching that expression.  Like the
   sub-expression coloring patterns discussed above, it is associated with a
   parent pattern using the Parent Pattern field in the pattern specification.
   Pattern names can be dragged from the pattern list with the middle mouse
   button to the Parent Pattern field.
-  
+
   The matching behaviour for sub-patterns is slightly different, depending on
   whether the parent pattern consists of a single expression or has both a
   starting and an ending expression.
-  
+
   In case the parent pattern consists of a single expression, and the syntax
   highlighting parser finds a match for that expression, sub-patterns are
   matched between the start and the end of the parent match.  Sub-patterns
@@ -4645,7 +4667,7 @@ Highlighting Patterns
   patterns, see below). Note that sub-patterns can ~peek~ beyond the
   parent's matching boundaries by means of look-ahead or look-behind
   expressions.
-  
+
   In case the parent pattern is a starting/ending style pattern, after the
   start expression of the parent pattern matches, the syntax highlighting
   parser searches for either the parent's end pattern or a matching
@@ -4659,7 +4681,7 @@ Highlighting Patterns
   contrast to the single-expression case.
 
   The most common use for this capability is for coloring sub-structure of
-  language constructs (smaller patterns embedded in larger patterns). 
+  language constructs (smaller patterns embedded in larger patterns).
   Hierarchical patterns can also simplify parsing by having sub-patterns "hide"
   special syntax from parent patterns, such as special escape sequences or
   internal comments.
@@ -4675,7 +4697,7 @@ Highlighting Patterns
   goal is not to completely cover the language syntax, but to generate
   colorings that are useful to the programmer.  Simpler patterns are usually
   more efficient and also more robust when applied to incorrect code.
-  
+
   Note that in case of a single-expression parent pattern, there is a
   potential for conflicts between coloring-only sub-patterns and hierarchical
   sub-patterns (which cannot happen for starting/ending type of patterns,
@@ -4818,8 +4840,8 @@ NEdit Command Line
   shell command line without starting a new NEdit session.
 
 **-do command**
-  Execute an NEdit macro or action on the file following the -do argument on 
-  the command line. -do is particularly useful from the nc program, where 
+  Execute an NEdit macro or action on the file following the -do argument on
+  the command line. -do is particularly useful from the nc program, where
   nc -do can remotely execute commands in an NEdit -server session.
 
 **-tags file**
@@ -4842,7 +4864,7 @@ NEdit Command Line
   Maintain a running indent.
 
 **-autosave, -noautosave**
-  Maintain a backup copy of the file being edited under the name '~filename'. 
+  Maintain a backup copy of the file being edited under the name '~filename'.
 
 **-rows n**
   Default height in characters for an editing window.
@@ -4873,7 +4895,7 @@ NEdit Command Line
 
 **-display [host]:server[.screen]**
   The name of the X server to use.  host specifies the machine, server
-  specifies the display server number, and screen specifies the screen number. 
+  specifies the display server number, and screen specifies the screen number.
   host or screen can be omitted and default to the local machine, and screen 0.
 
 **-background color (or -bg color)**
@@ -4895,7 +4917,7 @@ NEdit Command Line
 **-group**
   Open all subsequent files as tabs in a new window.
 
-**-xrm resourcestring** 
+**-xrm resourcestring**
   Set the value of an X resource to override a default
   value (see "Customizing_NEdit_").
 
@@ -4914,10 +4936,10 @@ NEdit Command Line
 
 **-version**
   Prints out the NEdit version information. The -V option is synonymous.
-  
+
 **-help**
   Prints out the NEdit command line help. The -h option is synonymous.
-  
+
 **--**
   Treats all subsequent arguments as file names, even if they start with a
   dash. This is so NEdit can access files that begin with the dash character.
@@ -4943,7 +4965,7 @@ NEdit Command Line
 **/line=n**
   Go to line #n
 
-**/server** 
+**/server**
   Designate this session as an NEdit server for processing commands from the nc
   program. The nc program can be used to interface NEdit to code development
   environments, mailers, etc., or just as a quick way to open files from the
@@ -4980,12 +5002,12 @@ NEdit Command Line
   Default height in characters for an editing window.
 
 **/font=font (or /fn=font)**
-  Font for text being edited (Font for menus and dialogs can be set with 
+  Font for text being edited (Font for menus and dialogs can be set with
   /xrm="*fontList:font").
 
 **/display [host]:server[.screen]**
   The name of the X server to use.  host specifies the machine, server
-  specifies the display server number, and screen specifies the screen number. 
+  specifies the display server number, and screen specifies the screen number.
   host or screen can be omitted and default to the local machine, and screen 0.
 
 **/geometry=geometry (or /g=geometry)**
@@ -5000,7 +5022,7 @@ NEdit Command Line
 
 **/background=color (or /bg=color)**
 
-  Background color. (background color for text can be set separately with 
+  Background color. (background color for text can be set separately with
   /xrm="nedit:textBgColor color" or using the Preferences ->
   Colors dialog).
 
@@ -5019,7 +5041,7 @@ NEdit Command Line
   Open all subsequent files as tabs in a new window.
 
 **/xrm=resourcestring**
-  Set the value of an X resource to override a default value 
+  Set the value of an X resource to override a default value
   (see Customizing NEdit).
 
 **/svrname=name**
@@ -5041,7 +5063,7 @@ NEdit Command Line
   is equivalent to:
 
     nedit /rows=20/wrap file1.c, file2.c",
-!!#endif /* VMS */    
+!!#endif /* VMS */
 .. ~ help
    ----------------------------------------------------------------------
 
@@ -5064,7 +5086,7 @@ Client/Server Mode
   The nc program, which is distributed along with NEdit, sends commands to
   an NEdit server to open files or execute editor actions. It can also be
   used on files that are already opened.
-  
+
   Listing a file on the nc command line means: Open it if it is not already
   open and bring the window to the front.
 
@@ -5080,7 +5102,7 @@ Client/Server Mode
        [**-V** | **-version**]
        [**-xrm** resourcestring] [**-display** [host]:server[.screen]]
        [**-**-] [file...]
-  
+
 **-read**
   Open the file read-only regardless of its actual permissions. There is no
   effect if the file is already open.
@@ -5094,37 +5116,27 @@ Client/Server Mode
 **-do** command
   Execute an NEdit macro or action on the file following the -do argument
   on the command line.
-  
+
   If you use this command without a filename, nc would randomly choose one
   window to focus and execute the macro in.
 
-**-ask**, **-noask**
-  Instructs nc to automatically start a server if one is not available.  This
-  overrides the X resource `nc.autoStart' (see X_Resources_).
+**-lm** languagemode
+  Initial language mode used.
 
 **-svrname** name
   Explicitly instructs nc which server to connect to, an instance of
   nedit(1) with a corresponding -svrname argument.  By naming servers, you
   can run several simultaneously, and direct files and commands
-  specifically to any one. 
+  specifically to any one.
 
 **-svrcmd** command
   The command which nc uses to start an NEdit server. It is also settable
   via the X resource `nc.serverCommand' (see X_Resources_). Defaults to
   "nedit -server".
 
-**-lm** languagemode
-  Initial language mode used.
-
-**-geometry** geometry, **-g** geometry
-  The initial size and/or location of editor windows. See
-  NEdit_Command_Line_ for details.
-
-**-icon**, **-iconic**
-  Initial window state.
-
-**-display** [<host>]:<server>[.<screen>]
-  The name of the X server to use. See NEdit_Command_Line_ for details.
+**-ask**, **-noask**
+  Instructs nc to automatically start a server if one is not available.  This
+  overrides the X resource `nc.autoStart' (see X_Resources_).
 
 **-timeout** seconds
   Basic time-out period used in communication with an NEdit server.  The
@@ -5132,6 +5144,13 @@ Client/Server Mode
 
   Under rare conditions (such as a slow connection), it may be necessary to
   increase the time-out period. In most cases, the default is fine.
+
+**-geometry** geometry, **-g** geometry
+  The initial size and/or location of editor windows. See
+  NEdit_Command_Line_ for details.
+
+**-icon**, **-iconic**
+  Initial window state.
 
 **-tabbed**
   Open all subsequent files in new tabs. Resets -group option.
@@ -5144,16 +5163,26 @@ Client/Server Mode
 
 **-wait**
   Instructs nc not to return to the shell until all files given are closed.
-  
+
   Normally, nc returns once the files given in its command line are opened
   by the server. When this option is given, nc returns only after the last
   file given in this call is closed.
-  
+
   Note that this option affects all files in the command line, not only the
   ones following this option.
-  
+
   Note that nc will wait for all files given in the command line, even if
   the files were already opened.
+
+**-version**, **-V**
+  Prints nc's version and build information.
+
+**-xrm** resourcestring
+  Contains the resourcestring passed to a newly started server. This option
+  has no effect if the server is already started.
+
+**-display** [<host>]:<server>[.<screen>]
+  The name of the X server to use. See NEdit_Command_Line_ for details.
 
 
 4>Command Line Arguments
@@ -5166,13 +5195,13 @@ Client/Server Mode
 
   -read, -create, and -line affect all of the files which follow them on the
   command line.
-  
+
   The -do macro is executed only once, on the next file on the line.  -do
   without a file following it on the command line, executes the macro on the
   first available window (presumably when you give a -do command without a
   corresponding file or window, you intend it to do something independent of
   the window in which it happens to execute).
-  
+
   The -wait option affects all files named in the command line.
 
 4>Multiple Servers
@@ -5574,7 +5603,7 @@ Mailing Lists
   share to answer other users questions as well.
 
     discuss@@nedit.org_
-    
+
   General discussion, questions and answers among NEdit users and developers.
 
     announce@@nedit.org_
@@ -5583,7 +5612,7 @@ Mailing Lists
 
     develop@@nedit.org_
 
-  Communication among and with NEdit developers.  
+  Communication among and with NEdit developers.
   Developers should also subscribe to the discuss list.
 
   To subscribe, send mail to one of the following addresses:
@@ -5611,7 +5640,7 @@ Problems/Defects
   **P: No files are shown in the "Files" list in the Open... dialog.**
 
   S: When you use the "Filter" field, include the file specification or a
-  complete directory specification, including the trailing "/" on Unix.  
+  complete directory specification, including the trailing "/" on Unix.
   (See Help in the Open... dialog).
 
   **P: Find Again and Replace Again don't continue in the same direction as the original Find or Replace.**
@@ -5624,7 +5653,7 @@ Problems/Defects
 
   S: NEdit has two kinds of preferences: 1) per-window preferences, in the
   Preferences menu, and 2) default settings for preferences in newly created
-  windows, in the Default Settings sub-menu of the Preferences menu. 
+  windows, in the Default Settings sub-menu of the Preferences menu.
   Per-window preferences are not saved by Save Defaults, only Default
   Settings.
 
@@ -5655,7 +5684,7 @@ Problems/Defects
   menu of the preferences menu in NEdit.  Users with the explicit focus
   model, in some cases, may have problems with certain dialogs, such as Find
   and Replace.  In MWM this is caused by the mwm resource startupKeyFocus
-  being set to False (generally a bad choice for explicit focus users). 
+  being set to False (generally a bad choice for explicit focus users).
   NCDwm users should use the focus model "click" instead of "explicit",
   again, unless you have set it that way to correct specific problems, this
   is the appropriate setting for most explicit focus users.
@@ -5673,12 +5702,12 @@ Problems/Defects
   **P: NEdit crashes when I try to paste text in to a text field in a dialog (like Find or Replace) on my SunOS system.**
 
   S: On many SunOS systems, you have to set up an nls directory before various
-  inter-client communication features of Motif will function properly. 
-  There are instructions in README.sun in /pub/v5_0_2/individual/README.sun on 
-  ftp.nedit.org, as well as a tar file containing a complete nls 
-  directory: ftp://ftp.nedit.org/pub/v5_0_2/nls.tar. 
+  inter-client communication features of Motif will function properly.
+  There are instructions in README.sun in /pub/v5_0_2/individual/README.sun on
+  ftp.nedit.org, as well as a tar file containing a complete nls
+  directory: ftp://ftp.nedit.org/pub/v5_0_2/nls.tar.
   README.sun contains directions for setting up an nls directory, which
-  is required by Motif for handling copy and paste to Motif text fields. 
+  is required by Motif for handling copy and paste to Motif text fields.
 
 3>Known Defects
 
@@ -5693,30 +5722,30 @@ Problems/Defects
 
 **DEFECT**
   Operations between rectangular selections on overlapping lines do nothing.
-  
+
 ~Work Around~
   None.  These operations are very complicated and rarely used.
 
 **DEFECT**
-  Cut and Paste menu items fail, or possibly crash, 
+  Cut and Paste menu items fail, or possibly crash,
   for very large (multi-megabyte) selections.
-  
+
 ~Work Around~
-  Use selection copy (middle mouse button click) 
-  for transferring larger quantities of data. 
-  Cut and Paste save the copied text in server 
+  Use selection copy (middle mouse button click)
+  for transferring larger quantities of data.
+  Cut and Paste save the copied text in server
   memory, which is usually limited.
 
 3>Reporting Defects
 
   Submit bugs through the web at:
-  
+
     http://sf.net/tracker/?func=add&group_id=11005&atid=111005
 
   Please include the first few lines from Help > Version, which identifies
   NEdit's version and other system attributes important for diagnosing your
   problem.
-  
+
   The NEdit developers subscribe to both discuss@@nedit.org and
   develop@@nedit.org, either of which may be used for reporting defects.  If
   you're not sure, or you think the report might be of interest to the general
@@ -5811,7 +5840,7 @@ Problems/Defects
 .. Menu:   Learn/Replay                     # learn
 .. Menu:   Macro Language                   # macro_lang
 .. Menu:   M_a_cro Subroutines              # macro_subrs
-.. Menu:   Range Sets                       # rangeset
+.. Menu:   Rangesets                        # rangeset
 .. Menu:   Highlighting Information         # hiliteInfo
 .. Menu:   Action Routines                  # actions
 
