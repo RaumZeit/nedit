@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.100 2006/09/30 16:36:35 yooden Exp $
+.. $Id: help.etx,v 1.101 2006/09/30 16:46:23 tringali Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -5271,19 +5271,28 @@ Version
 .. ======================================================================
 .. The policy for credit so far is this:
 ..
-.. You get "written by" credit if you have contributed significant
-.. code or effort to the project.
+.. You get "written by" credit if you have CVS commit privileges, and you
+.. participated in the current release.  
+..
+.. You will be "retired" once we realize you haven't been around for a
+.. while... please come back someday and be active again!
+..
+.. The order is alphabetical, not political or time-ordered.  The list
+.. of patch authors is too large to include here, and we probably won't
+.. get it right unless they are diligent about adding credits to the
+.. contributed files.
 ..
 .. You get a syntax/indent credit if your pattern is compiled into the
 .. binary.
 .. ======================================================================
 
-  NEdit was written by Mark Edel, Joy Kyriakopulos, Christopher Conrad,
-  Jim Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Tony Balinski, Max
-  Vohlken, Yunliang Yu, Donna Reid, Arne Førlie, Eddy De Greef, Steve
-  LoBasso, Alexander Mai, Scott Tringali, Thorsten Haude, Steve Haehn,
-  Andrew Hood, Nathaniel Gray, and TK Soh.
+  Active developers: Tony Balinski, Arne Førlie, Nathaniel Gray, Eddy De
+  Greef, Thorsten Haude, Andrew Hood, Scott Tringali, and TK Soh.
 
+  Retired developers: Mark Edel, Joy Kyriakopulos, Christopher Conrad, Jim
+  Clark, Arnulfo Zepeda-Navratil, Suresh Ravoor, Max Vohlken, Yunliang Yu,
+  Donna Reid, Steve Haehn, Steve LoBasso, and Alexander Mai.
+  
   The regular expression matching routines used in NEdit are adapted (with
   permission) from original code written by Henry Spencer at the
   University of Toronto.
