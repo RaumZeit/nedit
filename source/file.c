@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.100 2006/09/30 16:29:46 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.101 2006/09/30 16:54:44 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -866,7 +866,6 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     RemoveBackupFile(window);
     strcpy(window->filename, filename);
     strcpy(window->path, pathname);
-    window->filenameSet = TRUE;
     window->fileMode = 0;
     window->fileUid = 0;
     window->fileGid = 0;
@@ -879,8 +878,13 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     /* Add the name to the convenience menu of previously opened files */
     AddToPrevOpenMenu(fullname);
     
-    /* If name has changed, language mode may have changed as well */
-    DetermineLanguageMode(window, False);
+    /*  If name has changed, language mode may have changed as well, unless
+        it's an Untitled window for which the user already set a language
+        mode; it's probably the right one.  */
+    if (PLAIN_LANGUAGE_MODE == window->languageMode || window->filenameSet) {
+        DetermineLanguageMode(window, False);
+    }
+    window->filenameSet = True;
     
     /* Update the stats line with the new filename */
     UpdateStatsLine(window);
