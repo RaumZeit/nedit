@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.106 2006/09/30 16:36:35 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.107 2006/09/30 17:07:09 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -63,7 +63,6 @@ static const char CVSID[] = "$Id: macro.c,v 1.106 2006/09/30 16:36:35 yooden Exp
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <limits.h>
 #ifdef VMS
 #include <limits.h>
 #include "../util/VMSparam.h"
@@ -3371,7 +3370,7 @@ static int newFilenameDialogMS(WindowInfo *window, DataValue *argList,
         int nArgs, DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char filename[PATH_MAX + 1];
+    char filename[MAXPATHLEN + 1];
     char stringStorage[3][TYPE_INT_STR_SIZE(int)];
     char *title, *path="", *defaultName="";
     char *savedDefaultDir;
@@ -3423,7 +3422,7 @@ static int newFilenameDialogMS(WindowInfo *window, DataValue *argList,
     result->tag = STRING_TAG;
     if (gfn_result == GFN_OK) {
         /* Got a string, copy it to the result */
-        if (!AllocNStringNCpy(&result->val.str, filename, PATH_MAX)) {
+        if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
             *errMsg = "failed to allocate return value: %s";
             return False;
         }
@@ -3442,7 +3441,7 @@ static int existFilenameDialogMS(WindowInfo *window, DataValue *argList,
         int nArgs, DataValue *result, char **errMsg)
 {
     macroCmdInfo *cmdData;
-    char filename[PATH_MAX + 1];
+    char filename[MAXPATHLEN + 1];
     char stringStorage[3][TYPE_INT_STR_SIZE(int)];
     char *title, *path="", *filter="";
     char *savedDefaultDir, *savedFilter;
@@ -3498,7 +3497,7 @@ static int existFilenameDialogMS(WindowInfo *window, DataValue *argList,
     result->tag = STRING_TAG;
     if (gfn_result == GFN_OK) {
         /* Got a string, copy it to the result */
-        if (!AllocNStringNCpy(&result->val.str, filename, PATH_MAX)) {
+        if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
             *errMsg = "failed to allocate return value: %s";
             return False;
         }
