@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.93 2006/09/30 16:09:13 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.94 2006/09/30 17:26:42 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -54,33 +54,37 @@ static const char CVSID[] = "$Id: nedit.c,v 1.93 2006/09/30 16:09:13 tringali Ex
 #include "../util/getfiles.h"
 #include "../util/motif.h"
 
+#include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <limits.h>
+#include <unistd.h>
 
 #ifndef NO_XMIM
 #include <X11/Xlocale.h>
 #else
 #include <locale.h>
 #endif
+
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
+
 #if XmVersion >= 1002
 #include <Xm/RepType.h>
 #endif
+
 #ifdef VMS
 #include <rmsdef.h>
 #include "../util/VMSparam.h"
 #include "../util/VMSUtils.h"
 #else
+
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-
 
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
