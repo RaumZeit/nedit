@@ -89,6 +89,7 @@ const char *const knownBadLessTif[] = {
     "0.93.41",
     "0.93.44",
     "0.93.95b",   /* SF bug 1087192 */
+    "0.94.4",     /* Alt-H, ESC => crash */
     NULL
 };
 
