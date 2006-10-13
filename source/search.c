@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.82 2006/09/30 16:36:35 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.83 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3904,9 +3904,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
                 user does not care and wants to have a faulty replacement.  */
 
             /* replace the selected range in the real buffer */
-            fileString = BufGetAll(tempBuf);
-            BufReplace(window->buffer, selStart, selEnd, fileString);
-            XtFree(fileString);
+            BufReplace(window->buffer, selStart, selEnd, BufAsString(tempBuf));
 
             /* set the insert point at the end of the last replacement */
             TextSetCursorPos(window->lastFocus, selStart + cursorPos + realOffset);
@@ -3945,24 +3943,24 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
 int ReplaceAll(WindowInfo *window, const char *searchString,
         const char *replaceString, int searchType)
 {
-    char *fileString, *newFileString;
+    const char *fileString;
+    char *newFileString;
     int copyStart, copyEnd, replacementLen;
     
     /* reject empty string */
     if (*searchString == '\0')
     	return FALSE;
-    
+
     /* save a copy of search and replace strings in the search history */
     saveSearchHistory(searchString, replaceString, searchType, FALSE);
-	
-    /* get the entire text buffer from the text area widget */
-    fileString = BufGetAll(window->buffer);
-    
+
+    /* view the entire text buffer from the text area widget as a string */
+    fileString = BufAsString(window->buffer);
+
     newFileString = ReplaceAllInString(fileString, searchString, replaceString,
 	    searchType, &copyStart, &copyEnd, &replacementLen,
 	    GetWindowDelimiters(window));
-    XtFree(fileString);
-    
+
     if (newFileString == NULL) {
         if (window->multiFileBusy) {
             window->replaceFailed = TRUE; /* only needed during multi-file 
@@ -3997,7 +3995,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString,
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-char *ReplaceAllInString(char *inString, const char *searchString,
+char *ReplaceAllInString(const char *inString, const char *searchString,
 	const char *replaceString, int searchType, int *copyStart,
 	int *copyEnd, int *replacementLength, const char *delimiters)
 {
@@ -4121,16 +4119,16 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 	int searchType, int searchWrap, int beginPos, int *startPos, 
         int *endPos, int *extentBW, int *extentFW)
 {
-    char *fileString;
+    const char *fileString;
     int found, resp, fileEnd = window->buffer->length - 1, outsideBounds;
     
     /* reject empty string */
     if (*searchString == '\0')
     	return FALSE;
-	
+
     /* get the entire text buffer from the text area widget */
-    fileString = BufGetAll(window->buffer);
-    
+    fileString = BufAsString(window->buffer);
+
     /* If we're already outside the boundaries, we must consider wrapping
        immediately (Note: fileEnd+1 is a valid starting position. Consider
        searching for $ at the end of a file ending with \n.) */
@@ -4168,7 +4166,6 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 				"Continue search from\nbeginning of file?", 
                                 "Continue", "Cancel");
 			if (resp == 2) {
-			    XtFree(fileString);
 			    return False;
 			}
 		    }
@@ -4183,7 +4180,6 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 				"Continue search\nfrom end of file?", "Continue",
 				"Cancel");
 			if (resp == 2) {
-			    XtFree(fileString);
 			    return False;
 			}
 		    }
@@ -4216,9 +4212,6 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 	} else
 	    XBell(TheDisplay, 0);
     }
-    
-    /* Free the text buffer copy returned from BufGetAll */
-    XtFree(fileString);
 
     return found;
 }

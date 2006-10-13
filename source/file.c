@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.101 2006/09/30 16:54:44 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.102 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1622,7 +1622,6 @@ void CheckForChangesToFile(WindowInfo *window)
         if (GetPrefWarnFileMods()) {
             char* title;
             char* body;
-            char* errmsg;
 
             /* See note below about pop-up timing and XUngrabPointer */
             XUngrabPointer(XtDisplay(window->shell), timestamp);
@@ -1657,10 +1656,9 @@ void CheckForChangesToFile(WindowInfo *window)
                             "    '%s'\n"
                             "Please make sure that no data is lost before closing\n"
                             "this window.";
-                    errmsg = errorString();
                     resp = DialogF(DF_ERR, window->shell, 3, title, body,
                             "Save", "Close", "Cancel", window->filename,
-                            errmsg);
+                            errorString());
                     break;
             }
 

@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.14 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: highlight.h,v 1.15 2006/10/13 07:26:02 ajbj Exp $ */
 /*******************************************************************************
 *                                                                              *
 * highlight.h -- Nirvana Editor Syntax Highlighting Header File                *
@@ -62,7 +62,7 @@ typedef struct {
 } patternSet;
 
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
-    	int nRestyled, char *deletedText, void *cbArg);
+    	int nRestyled, const char *deletedText, void *cbArg);
 void StartHighlighting(WindowInfo *window, int warn);
 void StopHighlighting(WindowInfo *window);
 void AttachHighlightToWidget(Widget widget, WindowInfo *window);

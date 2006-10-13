@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.64 2005/02/15 01:10:16 n8gray Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.65 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1017,12 +1017,12 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
         const char *searchString, int *startPos, int *endPos)
 {
     int found, searchStartPos, dir, ctagsMode;
-    char *fileString, searchSubs[3*MAXLINE+3], *outPtr;
-    const char *inPtr;
+    char searchSubs[3*MAXLINE+3], *outPtr;
+    const char *fileString, *inPtr;
     
     if (in_buffer == NULL) {
         /* get the entire (sigh) text buffer from the text area widget */
-        fileString = BufGetAll(window->buffer);
+        fileString = BufAsString(window->buffer);
     } else {
         fileString = in_buffer;
     }
@@ -1043,8 +1043,6 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
         ctagsMode=1;
     } else {
         fprintf(stderr, "NEdit: Error parsing tag file search string");
-        if(in_buffer == NULL)
-            XtFree(fileString);
         return FALSE;
     }
 
@@ -1100,10 +1098,6 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
                 NULL, NULL);
     }
 
-    /* free the text buffer copy returned from XmTextGetString */
-    if(in_buffer == NULL)
-        XtFree(fileString);
-    
     /* return the result */
     if (found) {
         /* *startPos and *endPos are set in SearchString*/

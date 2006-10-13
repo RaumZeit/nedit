@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.18 2006/04/21 21:13:40 ajbj Exp $ */
+/* $Id: textBuf.h,v 1.19 2006/10/13 07:26:02 ajbj Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *
@@ -49,7 +49,7 @@ typedef struct {
 } selection;
 
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted,
-	int nRestyled, char *deletedText, void *cbArg);
+	int nRestyled, const char *deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
 typedef struct _textBuffer {
@@ -88,7 +88,7 @@ textBuffer *BufCreate(void);
 textBuffer *BufCreatePreallocated(int requestedSize);
 void BufFree(textBuffer *buf);
 char *BufGetAll(textBuffer *buf);
-char *BufAsString(textBuffer *buf);
+const char *BufAsString(textBuffer *buf);
 void BufSetAll(textBuffer *buf, const char *text);
 char *BufGetRange(textBuffer *buf, int start, int end);
 char BufGetCharacter(textBuffer *buf, int pos);

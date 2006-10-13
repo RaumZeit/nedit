@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.63 2005/12/10 23:21:47 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.64 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -135,7 +135,7 @@ static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
         int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted,
-        int nRestyled, char *deletedText, void *cbArg);
+        int nRestyled, const char *deletedText, void *cbArg);
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
         int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -147,7 +147,7 @@ static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
 static int max(int i1, int i2);
 static int min(int i1, int i2);
-static int countLines(char *string);
+static int countLines(const char *string);
 static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
 static void blankCursorProtrusions(textDisp *textD);
@@ -161,7 +161,7 @@ static void releaseGC(Widget w, GC gc);
 static void resetClipRectangles(textDisp *textD);
 static int visLineLength(textDisp *textD, int visLineNum);
 static void measureDeletedLines(textDisp *textD, int pos, int nDeleted);
-static void findWrapRange(textDisp *textD, char *deletedText, int pos,
+static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
         int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
         int *linesInserted, int *linesDeleted);
 static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
@@ -1501,7 +1501,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg)
 ** Callback attached to the text buffer to receive modification information
 */
 static void bufModifiedCB(int pos, int nInserted, int nDeleted,
-	int nRestyled, char *deletedText, void *cbArg)
+	int nRestyled, const char *deletedText, void *cbArg)
 {
     int linesInserted, linesDeleted, startDispPos, endDispPos;
     textDisp *textD = (textDisp *)cbArg;
@@ -2894,9 +2894,9 @@ static int min(int i1, int i2)
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
-static int countLines(char *string)
+static int countLines(const char *string)
 {
-    char *c;
+    const char *c;
     int lineCount = 0;
     
     if (string == NULL)
@@ -3098,7 +3098,7 @@ static int visLineLength(textDisp *textD, int visLineNum)
 ** both for delimiting where the line starts need to be recalculated, and
 ** for deciding what part of the text to redisplay.
 */
-static void findWrapRange(textDisp *textD, char *deletedText, int pos,
+static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
     	int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
     	int *linesInserted, int *linesDeleted)
 {

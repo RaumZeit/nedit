@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.107 2006/09/30 17:07:09 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.108 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -2464,8 +2464,10 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs > 8)
     	return wrongNArgsErr(errMsg);
 
+    /* we remove constness from BufAsString() result since we know
+       searchStringMS will not modify the result */
     newArgList[0].tag = STRING_TAG;
-    newArgList[0].val.str.rep = BufAsString(window->buffer);
+    newArgList[0].val.str.rep = (char *)BufAsString(window->buffer);
     newArgList[0].val.str.len = window->buffer->length;
 
     /* copy other arguments to the new argument list */

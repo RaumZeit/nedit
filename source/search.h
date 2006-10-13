@@ -1,4 +1,4 @@
-/* $Id: search.h,v 1.27 2006/08/13 18:02:28 yooden Exp $ */
+/* $Id: search.h,v 1.28 2006/10/13 07:26:02 ajbj Exp $ */
 /*******************************************************************************
 *                                                                              *
 * search.h -- Nirvana Editor Search Header File                                *
@@ -67,7 +67,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString,
 int SearchString(const char *string, const char *searchString, int direction,
        int searchType, int wrap, int beginPos, int *startPos, int *endPos,
        int *searchExtentBW, int*searchExtentFW, const char *delimiters);
-char *ReplaceAllInString(char *inString, const char *searchString,
+char *ReplaceAllInString(const char *inString, const char *searchString,
 	const char *replaceString, int searchType, int *copyStart,
 	int *copyEnd, int *replacementLength, const char *delimiters);
 void BeginISearch(WindowInfo *window, int direction);

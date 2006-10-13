@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.33 2006/04/21 21:13:40 ajbj Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.34 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -70,7 +70,7 @@ static void overlayRectInLine(const char *line, const char *insLine, int rectSta
     	int *outLen, int *endOffset);
 static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted);
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
-	int nInserted, int nRestyled, char *deletedText);
+	int nInserted, int nRestyled, const char *deletedText);
 static void redisplaySelection(textBuffer *buf, selection *oldSelection,
 	selection *newSelection);
 static void moveGap(textBuffer *buf, int pos);
@@ -217,11 +217,11 @@ char *BufGetAll(textBuffer *buf)
 ** moved so that the buffer data can be accessed as a single contiguous
 ** character array.
 ** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
-**    This function should really return const char *.
+** (we make an exception in BufSubstituteNullChars() however)
 ** This function is intended ONLY to provide a searchable string without copying
 ** into a temporary buffer.
 */
-char *BufAsString(textBuffer *buf)
+const char *BufAsString(textBuffer *buf)
 {
     char *text;
     int bufLen = buf->length;
@@ -650,7 +650,7 @@ int BufGetTabDistance(textBuffer *buf)
 */
 void BufSetTabDistance(textBuffer *buf, int tabDist)
 {
-    char *deletedText;
+    const char *deletedText;
     
     /* First call the pre-delete callbacks with the previous tab setting 
        still active. */
@@ -659,11 +659,9 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
     /* Change the tab setting */
     buf->tabDist = tabDist;
     
-    /* Force any display routines to redisplay everything (unfortunately,
-       this means copying the whole buffer contents to provide "deletedText" */
-    deletedText = BufGetAll(buf);
+    /* Force any display routines to redisplay everything */
+    deletedText = BufAsString(buf);
     callModifyCBs(buf, 0, buf->length, buf->length, 0, deletedText);
-    XtFree(deletedText);
 }
 
 void BufCheckDisplay(textBuffer *buf, int start, int end)
@@ -1344,19 +1342,18 @@ int BufSubstituteNullChars(char *string, int length, textBuffer *buf)
        string and the buffer, and change the buffer's null-substitution
        character.  If none can be found, give up and return False */
     if (histogram[(unsigned char)buf->nullSubsChar] != 0) {
-	char *bufString, newSubsChar;
-	bufString = BufGetAll(buf);
-	histogramCharacters(bufString, buf->length, histogram, False);
-	newSubsChar = chooseNullSubsChar(histogram);
-	if (newSubsChar == '\0') {
-	    XtFree(bufString);
-	    return False;
+        char *bufString, newSubsChar;
+        /* here we know we can modify the file buffer directly,
+           so we cast away constness */
+        bufString = (char *)BufAsString(buf);
+        histogramCharacters(bufString, buf->length, histogram, False);
+        newSubsChar = chooseNullSubsChar(histogram);
+        if (newSubsChar == '\0') {
+            return False;
         }
-	subsChars(bufString, buf->length, buf->nullSubsChar, newSubsChar);
-	delete(buf, 0, buf->length);
-	insert(buf, 0, bufString);
-	XtFree(bufString);
-	buf->nullSubsChar = newSubsChar;
+        /* bufString points to the buffer's data, so we substitute in situ */
+        subsChars(bufString, buf->length, buf->nullSubsChar, newSubsChar);
+        buf->nullSubsChar = newSubsChar;
     }
 
     /* If the string contains null characters, substitute them with the
@@ -2111,7 +2108,7 @@ static void addPadding(char *string, int startIndent, int toIndent,
 ** changed area(s) on the screen and any other listeners.
 */
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
-	int nInserted, int nRestyled, char *deletedText)
+	int nInserted, int nRestyled, const char *deletedText)
 {
     int i;
     

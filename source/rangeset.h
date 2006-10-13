@@ -1,4 +1,4 @@
-/* $Id: rangeset.h,v 1.6 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: rangeset.h,v 1.7 2006/10/13 07:26:02 ajbj Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.h	 -- Nirvana Editor rangest header			       *
@@ -68,7 +68,7 @@ Rangeset *RangesetFetch(RangesetTable *table, int label);
 unsigned char * RangesetGetList(RangesetTable *table);
 void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
 void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-	char *deletedText, void *cbArg);
+	const char *deletedText, void *cbArg);
 int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
 int RangesetAssignColorName(Rangeset *rangeset, char *color_name);
 int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok);

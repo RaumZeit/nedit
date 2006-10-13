@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.16 2004/07/21 11:32:05 yooden Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.17 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -169,9 +169,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     XtFree(text);
     
     /* Make the change in the real buffer */
-    text = BufGetAll(tempBuf);
-    BufReplace(buf, selStart, selEnd, text);
-    XtFree(text);
+    BufReplace(buf, selStart, selEnd, BufAsString(tempBuf));
     BufRectSelect(buf, selStart, selStart + tempBuf->length,
 	    rectStart+offset, rectEnd+offset);
     BufFree(tempBuf);

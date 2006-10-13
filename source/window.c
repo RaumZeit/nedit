@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.191 2006/09/30 16:12:57 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.192 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -171,7 +171,7 @@ static void removeFromWindowList(WindowInfo *window);
 static unsigned requestLineNumCols(const WindowInfo* window);
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-        char *deletedText, void *cbArg);
+        const char *deletedText, void *cbArg);
 static void movedCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
@@ -2312,7 +2312,7 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData)
 }
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-        char *deletedText, void *cbArg) 
+        const char *deletedText, void *cbArg) 
 {
     WindowInfo *window = (WindowInfo *)cbArg;
     int selected = window->buffer->primary.selected;
@@ -4234,7 +4234,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
 */
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 {
-    char *orgDocument;
+    const char *orgDocument;
     char *params[4];
     int emTabDist;
     
@@ -4244,12 +4244,11 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     ShowLineNumbers(window, orgWin->showLineNumbers);
 
     window->ignoreModify = True;
-    
+
     /* copy the text buffer */
-    orgDocument = BufGetAll(orgWin->buffer);
+    orgDocument = BufAsString(orgWin->buffer);
     BufSetAll(window->buffer, orgDocument);
-    XtFree(orgDocument);
-    
+
     /* copy the tab preferences (here!) */
     BufSetTabDistance(window->buffer, orgWin->buffer->tabDist);
     window->buffer->useTabs = orgWin->buffer->useTabs;

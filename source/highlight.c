@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.51 2004/11/26 18:25:51 edg Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.52 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -149,14 +149,14 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     	highlightDataRec *pass2Patterns, textBuffer *buf, textBuffer *styleBuf,
         reparseContext *contextRequirements, int beginParse, int endParse,
         const char *delimiters);
-static int parseString(highlightDataRec *pattern, char **string,
+static int parseString(highlightDataRec *pattern, const char **string,
     	char **styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo, const char* match_till);
 static void passTwoParseString(highlightDataRec *pattern, char *string,
     	char *styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo, const char* match_till);
-static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *prevChar);
+static void fillStyleString(const char **stringPtr, char **stylePtr,
+        const char *toPtr, char style, char *prevChar);
 static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
     	int startPos, int endPos, int firstPass2Style);
 static int lastModified(textBuffer *styleBuf);
@@ -172,8 +172,8 @@ static int backwardOneContext(textBuffer *buf, reparseContext *context,
     	int fromPos);
 static int forwardOneContext(textBuffer *buf, reparseContext *context,
     	int fromPos);
-static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
-    	char *styleString);
+static void recolorSubexpr(regexp *re, int subexpr, int style,
+        const char *string, char *styleString);
 static int indexOfNamedPattern(highlightPattern *patList, int nPats,
     	const char *patName);
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats,
@@ -204,7 +204,7 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode);
 ** character typed.
 */
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
-    	int nRestyled, char *deletedText, void *cbArg) 
+    	int nRestyled, const char *deletedText, void *cbArg) 
 {    
     WindowInfo *window = (WindowInfo *)cbArg;
     windowHighlightData 
@@ -258,7 +258,8 @@ void StartHighlighting(WindowInfo *window, int warn)
 {
     patternSet *patterns;
     windowHighlightData *highlightData;
-    char *stylePtr, *styleString, *stringPtr, *bufString;
+    char *stylePtr, *styleString;
+    const char  *stringPtr, *bufString;
     char prevChar = '\0';
     int i, oldFontHeight;
     
@@ -284,11 +285,10 @@ void StartHighlighting(WindowInfo *window, int warn)
     	for (i=0; i<window->buffer->length; i++)
     	    *stylePtr++ = UNFINISHED_STYLE;
     } else {
-	stringPtr = bufString = BufGetAll(window->buffer);
+	stringPtr = bufString = BufAsString(window->buffer);
 	parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr,
     		window->buffer->length, &prevChar, False,
     		GetWindowDelimiters(window), bufString, NULL);
-	XtFree(bufString);
     }
     *stylePtr = '\0';
     BufSetAll(highlightData->styleBuffer, styleString);
@@ -1308,7 +1308,8 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
 
     reparseContext *context = &highlightData->contextRequirements;
     highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
-    char *string, *styleString, *stringPtr, *stylePtr, c, prevChar;
+    char *string, *styleString, *stylePtr, c, prevChar;
+    const char *stringPtr;
     int firstPass2Style = (unsigned char)pass2Patterns[1].style;
     
     /* If there are no pass 2 patterns to process, do nothing (but this
@@ -1356,7 +1357,7 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
     /* Copy the buffer range into a string */
     /* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
     	    beginParse, endParse, beginSafety, endSafety); */
-    string = stringPtr = BufGetRange(buf, beginSafety, endSafety);
+    stringPtr = string = BufGetRange(buf, beginSafety, endSafety);
     styleString = stylePtr = BufGetRange(styleBuf, beginSafety, endSafety);
     
     /* Parse it with pass 2 patterns */
@@ -1483,7 +1484,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
         reparseContext *contextRequirements, int beginParse, int endParse,
         const char *delimiters)
 {
-    char *string, *styleString, *stringPtr, *stylePtr, *temp, prevChar;
+    char *string, *styleString, *stylePtr, *temp, prevChar;
+    const char *stringPtr;
     int endSafety, endPass2Safety, startPass2Safety, tempLen;
     int modStart, modEnd, beginSafety, beginStyle, p, style;
     int firstPass2Style = pass2Patterns == NULL ? INT_MAX :
@@ -1647,13 +1649,14 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-static int parseString(highlightDataRec *pattern, char **string,
+static int parseString(highlightDataRec *pattern, const char **string,
     	char **styleString, int length, char *prevChar, int anchored,
     	const char *delimiters, const char* lookBehindTo, 
     	const char* match_till)
 {
     int i, subExecuted, subIndex;
-    char *stringPtr, *stylePtr, *startingStringPtr, *savedStartPtr;
+    char *stylePtr;
+    const char *stringPtr, *savedStartPtr, *startingStringPtr;
     signed char *subExpr;
     char savedPrevChar;
     char succChar = match_till ? (*match_till) : '\0';
@@ -1838,8 +1841,8 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
         const char *match_till)
 {
     int inParseRegion = False;
-    char *stylePtr, *stringPtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
-    const 
+    char *stylePtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
+    const char *stringPtr;
     int firstPass2Style = (unsigned char)pattern[1].style;
     
     for (c = string, s = styleString; ; c++, s++) {
@@ -1875,8 +1878,8 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
 ** character, prevChar, which is fed to regular the expression matching
 ** routines for determining word and line boundaries at the start of the string.
 */
-static void fillStyleString(char **stringPtr, char **stylePtr, char *toPtr,
-    	char style, char *prevChar)
+static void fillStyleString(const char **stringPtr, char **stylePtr,
+    	const char *toPtr, char style, char *prevChar)
 {
     int i, len = toPtr-*stringPtr;
     
@@ -2357,10 +2360,11 @@ static int forwardOneContext(textBuffer *buf, reparseContext *context,
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-static void recolorSubexpr(regexp *re, int subexpr, int style, char *string,
-    	char *styleString)
+static void recolorSubexpr(regexp *re, int subexpr, int style,
+    	const char *string, char *styleString)
 {
-    char *stringPtr, *stylePtr;
+    const char *stringPtr;
+    char *stylePtr;
     	
     stringPtr = re->startp[subexpr];
     stylePtr = &styleString[stringPtr - string];

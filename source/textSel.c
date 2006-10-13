@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.15 2005/08/13 19:29:08 edg Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.16 2006/10/13 07:26:02 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -84,7 +84,7 @@ typedef struct {
 } selectNotifyInfo;
 
 static void modifiedCB(int pos, int nInserted, int nDeleted,
-	int nRestyled, char *deletedText, void *cbArg);
+	int nRestyled, const char *deletedText, void *cbArg);
 static void sendSecondary(Widget w, Time time, Atom sel, int action,
 	char *actionText, int actionTextLen);
 static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
@@ -378,7 +378,7 @@ void TakeMotifDestination(Widget w, Time time)
 ** result, since later callbacks will see the second modifications first).
 */
 static void modifiedCB(int pos, int nInserted, int nDeleted,
-	int nRestyled, char *deletedText, void *cbArg)
+	int nRestyled, const char *deletedText, void *cbArg)
 {
     TextWidget w = (TextWidget)cbArg;
     Time time = XtLastTimestampProcessed(XtDisplay((Widget)w));
