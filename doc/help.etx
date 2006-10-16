@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.102 2006/09/30 17:18:17 yooden Exp $
+.. $Id: help.etx,v 1.103 2006/10/16 13:45:17 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4911,7 +4911,12 @@ NEdit Command Line
   Open all subsequent files in new tabs. Resets -group option.
 
 **-untabbed**
-  Open all subsequent files in new windows. Resets -group option.
+  Open all subsequent files in new windows. Resets -group option. Note
+  that this only works on subsequent files in this command and does not put
+  NEdit in tab-less mode; for that you can use the command
+    nedit -xrm "nedit.openInTab: False" -xrm "nedit.tabBarHideOne: True"
+  This will affect your default settings for the session, and will be saved
+  if Preferences->Save Defaults... is used, which may not be desired.
 
 **-group**
   Open all subsequent files as tabs in a new window.
