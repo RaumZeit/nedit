@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.75 2006/08/13 21:47:44 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.76 2006/10/16 14:26:52 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -3478,8 +3478,9 @@ static int updatePatternSet(void)
 {
     patternSet *patSet;
     WindowInfo *window;
-    int psn;
-    	
+    int psn, oldNum = -1;
+    
+
     /* Make sure the patterns are valid and compile */
     if (!checkHighlightDialogData())
     	return False;
@@ -3499,24 +3500,58 @@ static int updatePatternSet(void)
        existing pattern set and replace it */
     if (psn == NPatternSets) {
     	PatternSets[NPatternSets++] = patSet;
+        oldNum = 0;
     } else {
+        oldNum = PatternSets[psn]->nPatterns;
 	freePatternSet(PatternSets[psn]);
 	PatternSets[psn] = patSet;
     }
-    
+
     /* Find windows that are currently using this pattern set and
        re-do the highlighting */
-    for (window=WindowList; window!=NULL; window=window->next) {
-    	if (window->highlightSyntax &&
-    		window->languageMode != PLAIN_LANGUAGE_MODE) {
-    	    if (!strcmp(LanguageModeName(window->languageMode),
-    	    	    patSet->languageMode)) {
-    	    	StopHighlighting(window);
-    	    	StartHighlighting(window, True);
-    	    }
-    	}
+    for (window = WindowList; window != NULL; window = window->next) {
+        if (patSet->nPatterns > 0) {
+            if (window->languageMode != PLAIN_LANGUAGE_MODE
+                    && 0 == strcmp(LanguageModeName(window->languageMode),
+                        patSet->languageMode)) {
+                /*  The user worked on the current document's language mode, so
+                    we have to make some changes immediately. For inactive
+                    modes, the changes will be activated on activation.  */
+                if (oldNum == 0) {
+                    /*  Highlighting (including menu entry) was deactivated in
+                        this function or in preferences.c::reapplyLanguageMode()
+                        if the old set had no patterns, so reactivate menu entry. */
+                    if (IsTopDocument(window)) {
+                        XtSetSensitive(window->highlightItem, True);
+                    }
+
+                    /*  Reactivate highlighting if it's default  */
+                    window->highlightSyntax = GetPrefHighlightSyntax();
+                }
+
+                if (window->highlightSyntax) {
+                    StopHighlighting(window);
+                    if (IsTopDocument(window)) {
+                        XtSetSensitive(window->highlightItem, True);
+                        SetToggleButtonState(window, window->highlightItem,
+                                True, False);
+                    }
+                    StartHighlighting(window, True);
+                }
+            }
+        } else {
+            /*  No pattern in pattern set. This will probably not happen much,
+                but you never know.  */
+            StopHighlighting(window);
+            window->highlightSyntax = False;
+
+            if (IsTopDocument(window)) {
+                XtSetSensitive(window->highlightItem, False);
+                SetToggleButtonState(window, window->highlightItem, False, False);
+            }
+        }
     }
-    
+
     /* Note that preferences have been changed */
     MarkPrefsChanged();
 

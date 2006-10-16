@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.54 2006/08/15 18:55:22 ajbj Exp $ */
+/* $Id: preferences.h,v 1.55 2006/10/16 14:26:52 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -111,8 +111,8 @@ void SetPrefShowMatching(int state);
 int GetPrefShowMatching(void);
 void SetPrefMatchSyntaxBased(int state);
 int GetPrefMatchSyntaxBased(void);
-void SetPrefHighlightSyntax(int state);
-int GetPrefHighlightSyntax(void);
+void SetPrefHighlightSyntax(Boolean state);
+Boolean GetPrefHighlightSyntax(void);
 void SetPrefBacklightChars(int state);
 int GetPrefBacklightChars(void);
 void SetPrefBacklightCharTypes(char *types);
@@ -192,8 +192,8 @@ void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults);
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 	void *cbArg);
 void SetLangModeMenu(Widget optMenu, const char *modeName);
-Widget CreateLanguageModeSubMenu(WindowInfo *window, Widget parent, char *name,
-    	char *label, char mnemonic);
+void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
+        const char* name, const char* label, const char mnemonic);
 void SetPrefFindReplaceUsesSelection(int state);
 int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.144 2006/08/15 21:16:01 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.145 2006/10/16 14:26:52 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1805,12 +1805,12 @@ int GetPrefMatchSyntaxBased(void)
     return PrefData.matchSyntaxBased;
 }
 
-void SetPrefHighlightSyntax(int state)
+void SetPrefHighlightSyntax(Boolean state)
 {
     setIntPref(&PrefData.highlightSyntax, state);
 }
 
-int GetPrefHighlightSyntax(void)
+Boolean GetPrefHighlightSyntax(void)
 {
     return PrefData.highlightSyntax;
 }
@@ -5032,18 +5032,20 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
 /*
 ** Create a submenu for chosing language mode for the current window.
 */
-Widget CreateLanguageModeSubMenu(WindowInfo *window, Widget parent, char *name,
-    	char *label, char mnemonic)
+void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
+        const char* name, const char* label, const char mnemonic)
 {
-    XmString s1=XmStringCreateSimple(label);
+    XmString s1 = XmStringCreateSimple(label);
 
     window->langModeCascade = XtVaCreateManagedWidget(name,
-    	    xmCascadeButtonGadgetClass, parent, XmNlabelString,
-    	    s1, XmNmnemonic, mnemonic,
-    	    XmNsubMenuId, NULL, NULL);
+            xmCascadeButtonGadgetClass, parent,
+            XmNlabelString, s1,
+            XmNmnemonic, mnemonic,
+            XmNsubMenuId, NULL,
+            NULL);
     XmStringFree(s1);
+
     updateLanguageModeSubmenu(window);
-    return window->langModeCascade;
 }
 
 /*
