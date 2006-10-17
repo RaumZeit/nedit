@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.47 2006/10/17 10:10:59 yooden Exp $
+$Id: ReleaseNotes,v 1.48 2006/10/17 11:52:20 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -64,8 +64,7 @@ Bugs fixed in $NEXT_VERSION
   - Various documentation bugs are fixed (SF bugs #1066765, #1078397, #1110024,
     #1471868)
 
-  - NEdit no longer checks the language modes for documents on the first
-    save if the user already picked one (SF bug #1371896).
+  - Some minor usability bugs has been fixed (SF bugs #1371896, #1508608).
 
   - New highlighting pattern are now used immediately (SF bug #1117848).
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.83 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.84 2006/10/17 11:52:20 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2765,7 +2765,7 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 	if (direction == SEARCH_BACKWARD) {
 	    beginPos = selStart-1;
 	} else {
-	    beginPos = selEnd;
+            beginPos = selStart + 1;
 	}
     } else {
     	selStart = -1; selEnd = -1;
