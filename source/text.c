@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.51 2004/10/08 21:55:51 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.52 2006/10/17 13:00:29 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -3270,10 +3270,17 @@ static void deselectAllAP(Widget w, XEvent *event, String *args,
     BufUnselect(((TextWidget)w)->text.textD->buffer);
 }
 
-static void focusInAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+/*
+**  Called on the Intrinsic FocusIn event.
+**
+**  Note that the widget has no internal state about the focus, ie. it does
+**  not know whether it has the focus or not.
+*/
+static void focusInAP(Widget widget, XEvent* event, String* unused1,
+        Cardinal* unused2)
 {
-    TextWidget tw = (TextWidget)w;
-    textDisp *textD = tw->text.textD;
+    TextWidget textwidget = (TextWidget) widget;
+    textDisp* textD = textwidget->text.textD;
 
     /* I don't entirely understand the traversal mechanism in Motif widgets,
        particularly, what leads to this widget getting a focus-in event when
@@ -3281,32 +3288,35 @@ static void focusInAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
        to do the comparison below, and not show the cursor when Motif says
        we don't have focus, but keep looking for the real answer */
 #if XmVersion >= 1002
-    if (w != XmGetFocusWidget(w))
+    if (widget != XmGetFocusWidget(widget))
     	return;
 #endif
 
     /* If the timer is not already started, start it */
-    if (tw->text.cursorBlinkRate != 0 && tw->text.cursorBlinkProcID == 0) {
-    	tw->text.cursorBlinkProcID = XtAppAddTimeOut(
-    	    	XtWidgetToApplicationContext((Widget)w),
-    		tw->text.cursorBlinkRate, cursorBlinkTimerProc, w);
+    if (textwidget->text.cursorBlinkRate != 0
+            && textwidget->text.cursorBlinkProcID == 0) {
+        textwidget->text.cursorBlinkProcID
+                = XtAppAddTimeOut(XtWidgetToApplicationContext(widget),
+                    textwidget->text.cursorBlinkRate, cursorBlinkTimerProc,
+                    widget);
     }
-    
+
     /* Change the cursor to active style */
-    if (((TextWidget)w)->text.overstrike)
+    if (textwidget->text.overstrike)
     	TextDSetCursorStyle(textD, BLOCK_CURSOR);
     else
-    	TextDSetCursorStyle(textD, ((TextWidget)w)->text.heavyCursor ?
-    		HEAVY_CURSOR : NORMAL_CURSOR);
+        TextDSetCursorStyle(textD, (textwidget->text.heavyCursor
+                ? HEAVY_CURSOR
+                : NORMAL_CURSOR));
     TextDUnblankCursor(textD);
 
 #ifndef NO_XMIM
     /* Notify Motif input manager that widget has focus */
-    XmImVaSetFocusValues(w,NULL);
+    XmImVaSetFocusValues(widget, NULL);
 #endif
 
     /* Call any registered focus-in callbacks */
-    XtCallCallbacks((Widget)w, textNfocusCallback, (XtPointer)event);
+    XtCallCallbacks((Widget) widget, textNfocusCallback, (XtPointer) event);
 }
 
 static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)

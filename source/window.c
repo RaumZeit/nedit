@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.192 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.193 2006/10/17 13:00:29 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1154,7 +1154,7 @@ void SplitPane(WindowInfo *window)
     int horizOffsets[MAX_PANES+1];
     int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
     char *delimiters;
-    Widget text;
+    Widget text = NULL;
     textDisp *textD, *newTextD;
     
     /* Don't create new panes if we're already at the limit */
@@ -1195,7 +1195,7 @@ void SplitPane(WindowInfo *window)
     }
     XtManageChild(text);
     window->textPanes[window->nPanes++] = text;
-    
+
     /* Fix up the colors */
     textD = ((TextWidget)window->textArea)->text.textD;
     newTextD = ((TextWidget)text)->text.textD;
@@ -2307,8 +2307,16 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData)
     /* Check for changes to read-only status and/or file modifications */
     CheckForChangesToFile(window);
 
-    /*  Start blinking the caret again.  */
-    ResetCursorBlink(textWidget, False);
+    /*  This callback is not only called for focussed panes, but for newly
+        created panes as well. So make sure that the cursor is left alone
+        for unfocussed panes.
+        TextWidget have no state per se about focus, so we use the related
+        ID for the blink procedure.  */
+    if (0 != textWidget->text.cursorBlinkProcID)
+    {
+        /*  Start blinking the caret again.  */
+        ResetCursorBlink(textWidget, False);
+    }
 }
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
