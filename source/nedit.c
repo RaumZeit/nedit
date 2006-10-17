@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.94 2006/09/30 17:26:42 yooden Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.95 2006/10/17 12:39:17 yooden Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -253,11 +253,11 @@ static char *fallbackResources[] = {
     "*editMenu.undo.acceleratorText: Ctrl+Z",
     "*editMenu.redo.accelerator: Shift Ctrl<Key>z",
     "*editMenu.redo.acceleratorText: Shift+Ctrl+Z",
-    "*editMenu.cut.accelerator: Ctrl<Key>x",
+    /*  Clipboard accelerators prevent the use of the clipboard in iSearch's
+        XmText, so they are left out. Their job is done by translations in
+        the main text widget, so the acceleratorText is still kept.  */
     "*editMenu.cut.acceleratorText: Ctrl+X",
-    "*editMenu.copy.accelerator: Ctrl<Key>c",
     "*editMenu.copy.acceleratorText: Ctrl+C",
-    "*editMenu.paste.accelerator: Ctrl<Key>v",
     "*editMenu.paste.acceleratorText: Ctrl+V",
     "*editMenu.pasteColumn.accelerator: Shift Ctrl<Key>v",
     "*editMenu.pasteColumn.acceleratorText: Ctrl+Shift+V",
