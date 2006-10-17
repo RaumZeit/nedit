@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.46 2006/10/16 14:26:52 yooden Exp $
+$Id: ReleaseNotes,v 1.47 2006/10/17 10:10:59 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -68,6 +68,9 @@ Bugs fixed in $NEXT_VERSION
     save if the user already picked one (SF bug #1371896).
 
   - New highlighting pattern are now used immediately (SF bug #1117848).
+
+  - Changes in case no longer modifiy the text if no change is actually
+    performed (SF #1333103).
 
 
 New features in 5.5 

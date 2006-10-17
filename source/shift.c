@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shift.c,v 1.17 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: shift.c,v 1.18 2006/10/17 10:10:59 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *
@@ -194,6 +194,7 @@ static void changeCase(WindowInfo *window, int makeUpper)
 {
     textBuffer *buf = window->buffer;
     char *text, *c;
+    char oldChar;
     int cursorPos, start, end, isRect, rectStart, rectEnd;
     
     /* Get the selection.  Use character before cursor if no selection */
@@ -209,11 +210,22 @@ static void changeCase(WindowInfo *window, int makeUpper)
 		tolower((unsigned char)*bufChar);
     	BufReplace(buf, cursorPos-1, cursorPos, bufChar);
     } else {
+        Boolean modified = False;
+
 	text = BufGetSelectionText(buf);
-	for (c=text; *c!='\0'; c++)
+        for (c = text; *c != '\0'; c++) {
+            oldChar = *c;
     	    *c = makeUpper ? toupper((unsigned char)*c) :
 		    tolower((unsigned char)*c);
-	BufReplaceSelected(buf, text);
+            if (*c != oldChar) {
+                modified = True;
+            }
+        }
+
+        if (modified) {
+            BufReplaceSelected(buf, text);
+        }
+
 	XtFree(text);
 	if (isRect)
 	    BufRectSelect(buf, start, end, rectStart, rectEnd);
