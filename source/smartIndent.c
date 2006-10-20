@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.38 2005/11/29 20:37:40 n8gray Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.39 2006/10/20 15:44:15 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1187,7 +1187,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtVaCreateManagedWidget("modifyArgsLbl", xmLabelGadgetClass,
     	    modifyForm, XmNalignment, XmALIGNMENT_END,
     	    XmNlabelString, s1=XmStringCreateSimple(
-	        "($1 is position, $2 is character just inserted)"),
+	        "($1 is position, $2 is character to be inserted)"),
 	    XmNrightAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
     n = 0;

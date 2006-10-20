@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.103 2006/10/16 13:45:17 yooden Exp $
+.. $Id: help.etx,v 1.104 2006/10/20 15:44:14 ajbj Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4803,8 +4803,9 @@ Smart Indent Macros
   sufficient.
 
   The type-in macro takes two arguments.  $1 is the insert position, and $2 is
-  the character just inserted, and does not return a value.  You can do just
-  about anything here, but keep in mind that this macro is executed for every
+  the character just typed, and does not return a value.  It also is invoked
+  before the character is inserted into the buffer.  You can do just about
+  anything here, but keep in mind that this macro is executed for every
   keystroke typed, so if you try to get too fancy, you may degrade performance.
    ----------------------------------------------------------------------
 
