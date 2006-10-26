@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.82 2006/03/17 10:05:39 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.83 2006/10/26 21:42:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -434,7 +434,13 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
         
     /* Generate a list of visuals to consider.  (Note, vestigial code for
        user-requested visual depth is left in, just in case that function
-       might be needed again, but it does nothing)  */
+       might be needed again, but it does nothing).
+       Note that Xorg 6.8+ ARGB visuals (with alpha-channel) cause a lot
+       of problems, so we have to avoid them. This is done by setting
+       the environment variable XLIB_SKIP_ARGB_VISUALS before the display
+       is opened (in nedit.c). 
+       Users can achieve the same effect with older versions of NEdit by 
+       setting the environment variable themselves. */
     if (reqID != -1) {
 	visTemplate.visualid = reqID;
 	visList = XGetVisualInfo(display, VisualScreenMask|VisualIDMask,
@@ -484,15 +490,6 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
     bestClass = 0;
     bestVisual = 0;
     for (i=0; i < nVis; i++) {
-        if (visList[i].depth >= 32 && 
-            strstr(ServerVendor(display), "X.Org") != 0) {
-             /* Xorg 6.8.* 32-bit visuals (with alpha-channel) cause a lot
-                of problems, so we have to skip them.
-                Users can achieve the same effect with older versions of
-                NEdit by setting the environment variable 
-                XLIB_SKIP_ARGB_VISUALS. */
-            continue;
-        }
 	if (visList[i].depth > maxDepth) {
 	    maxDepth = visList[i].depth;
 	    bestClass = 0;

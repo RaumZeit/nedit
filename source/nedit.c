@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.96 2006/10/26 02:15:21 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.97 2006/10/26 21:42:51 edg Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -450,6 +450,20 @@ int main(int argc, char **argv)
        and -iconic are per-window and it should not be allowed to consume them,
        so we temporarily masked them out. */
     maskArgvKeywords(argc, argv, protectedKeywords);
+    /* X.Org 6.8 and above add support for ARGB visuals (with alpha-channel),
+       typically with a 32-bit color depth. By default, NEdit uses the visual
+       with the largest color depth. However, both OpenMotif and Lesstif
+       cannot handle ARGB visuals (crashes, weird display effects, ...), so
+       NEdit should avoid selecting such a visual.
+       Unfortunatly, there appears to be no reliable way to identify
+       ARGB visuals that doesn't require some of the recent X.Org
+       extensions. Luckily, the X.Org developers have provided a mechanism
+       that can hide these problematic visuals from the application. This can
+       be achieved by setting the XLIB_SKIP_ARGB_VISUALS environment variable.
+       Users can set this variable before starting NEdit, but it is much 
+       more convenient that NEdit takes care of this. This must be done before
+       the display is opened (empirically verified). */
+    putenv("XLIB_SKIP_ARGB_VISUALS=1");
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS,
 	    NULL, 0, &argc, argv);
     unmaskArgvKeywords(argc, argv, protectedKeywords);
