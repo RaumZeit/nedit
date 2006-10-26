@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.95 2006/10/17 12:39:17 yooden Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.96 2006/10/26 02:15:21 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -1037,14 +1037,15 @@ static void patchResourcesForKDEbug(void)
 ** versions of Linux distros (e.g., RedHat 8) set the default language to
 ** to have "UTF-8" at the end, so users were seeing these crashes.
 **
-** LessTif and OpenMotif 2.2.3 dont appear to have this problem.
+** LessTif and OpenMotif 2.3 don't appear to have this problem.
+**
+** Some versions OpenMotif 2.2.3 don't have this problem, but there's
+** no way to tell which.
 */
-
-#define XmFullVersion (XmVersion * 100 + XmUPDATE_LEVEL)
 
 static void patchLocaleForMotif(void)
 {
-#if !(defined(LESSTIF_VERSION) || XmFullVersion >= 200203)
+#if !(defined(LESSTIF_VERSION) || XmVersion >= 2003)
     const char *ctype;
     char ctypebuf[1024];
     char *utf_start;
@@ -1067,7 +1068,6 @@ static void patchLocaleForMotif(void)
         (utf_start = strstr(ctypebuf, ".UTF-8")))
     {
         *utf_start = '\0'; /* Samurai chop */
-        XtWarning("UTF8 locale not supported.");
         setlocale(LC_CTYPE, ctypebuf);
     }
 #endif
