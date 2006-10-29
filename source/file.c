@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.102 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.103 2006/10/29 22:22:03 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -100,6 +100,8 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
 static int min(int i1, int i2);
+static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData,
+    XtPointer callData);
 
 #ifdef VMS
 void removeVersionNumber(char *fileName);
@@ -1556,6 +1558,16 @@ void UniqueUntitledName(char *name)
 }
 
 /*
+** Callback that guards us from trying to access a window after it has 
+** been destroyed while a modal dialog is up.
+*/
+static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, 
+    XtPointer callData)
+{
+    *(Bool*)clientData = TRUE;
+}
+
+/*
 ** Check if the file in the window was changed by an external source.
 ** and put up a warning dialog if it has.
 */
@@ -1569,6 +1581,7 @@ void CheckForChangesToFile(WindowInfo *window)
     FILE *fp;
     int resp, silent = 0;
     XWindowAttributes winAttr;
+    Boolean windowIsDestroyed = False;
     
     if(!window->filenameSet)
         return;
@@ -1625,6 +1638,12 @@ void CheckForChangesToFile(WindowInfo *window)
 
             /* See note below about pop-up timing and XUngrabPointer */
             XUngrabPointer(XtDisplay(window->shell), timestamp);
+            
+            /* If the window (and the dialog) are destroyed while the dialog
+               is up (typically closed via the window manager), we should
+               avoid accessing the window afterwards. */
+            XtAddCallback(window->shell, XmNdestroyCallback,
+                          modifiedWindowDestroyedCB, &windowIsDestroyed);
 
             /*  Set title, message body and button to match stat()'s error.  */
             switch (errno) {
@@ -1661,6 +1680,11 @@ void CheckForChangesToFile(WindowInfo *window)
                             errorString());
                     break;
             }
+            
+            if (!windowIsDestroyed) {
+                XtRemoveCallback(window->shell, XmNdestroyCallback,
+                                 modifiedWindowDestroyedCB, &windowIsDestroyed);
+            }
 
             switch (resp) {
                 case 1:
@@ -1674,9 +1698,12 @@ void CheckForChangesToFile(WindowInfo *window)
 
         /* A missing or (re-)saved file can't be read-only. */
         /*  TODO: A document without a file can be locked though.  */
-        SET_PERM_LOCKED(window->lockReasons, False);
-        UpdateWindowTitle(window);
-        UpdateWindowReadOnly(window);
+        /* Make sure that the window was not destroyed behind our back! */
+        if (!windowIsDestroyed) {
+            SET_PERM_LOCKED(window->lockReasons, False);
+            UpdateWindowTitle(window);
+            UpdateWindowReadOnly(window);
+        }
         return;
     }
     

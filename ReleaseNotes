@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.51 2006/10/29 13:23:00 yooden Exp $
+$Id: ReleaseNotes,v 1.52 2006/10/29 22:22:03 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -14,6 +14,9 @@ the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
 
 Bugs fixed in $NEXT_VERSION
+
+  - Crash on window close when a "File modified externally" dialog was up
+    (SF bug #1578869).
 
   - Crashes and artefacts when using ARGB visuals (SF bugs #1579544, 
     #1030467, and #1030192).
