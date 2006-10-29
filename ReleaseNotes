@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.50 2006/10/26 21:42:51 edg Exp $
+$Id: ReleaseNotes,v 1.51 2006/10/29 13:23:00 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -75,6 +75,9 @@ Bugs fixed in $NEXT_VERSION
   - Changes in case no longer modifiy the text if no change is actually
     performed (SF #1333103).
 
+  - Some Linux distros ship with XKEYSYMDB set to a bogus filename which
+    breaks all Motif applications. NEdit ignores that, and let X fall back
+    on the default which is far more likely to work (SF bug #1564907).
 
 New features in 5.5 
 
