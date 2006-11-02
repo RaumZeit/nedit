@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.103 2006/10/29 22:22:03 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.104 2006/11/02 13:24:35 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1692,7 +1692,7 @@ void CheckForChangesToFile(WindowInfo *window)
                     break;
                 case 2:
                     CloseWindow(window);
-                    break;
+                    return;
             }
         }
 
