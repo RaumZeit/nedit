@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.104 2006/11/02 13:24:35 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.105 2006/11/07 19:16:34 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -102,6 +102,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
 static int min(int i1, int i2);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData,
     XtPointer callData);
+static void forceShowLineNumbers(WindowInfo *window);
 
 #ifdef VMS
 void removeVersionNumber(char *fileName);
@@ -220,7 +221,8 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	
     	return NULL;
     }
-    
+    forceShowLineNumbers(window);
+
     /* Decide what language mode to use, trigger language specific actions */
     if (languageMode == NULL) 
     	DetermineLanguageMode(window, True);
@@ -296,6 +298,7 @@ void RevertToSaved(WindowInfo *window)
         }
     	return;
     }
+    forceShowLineNumbers(window);
     UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
     
@@ -2021,6 +2024,19 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
 	return (1);
     }
     return (0);
+}
+
+/*
+** Force ShowLineNumbers() to re-evaluate line counts for the window if line
+** counts are required.
+*/
+static void forceShowLineNumbers(WindowInfo *window)
+{
+    int showLineNum = window->showLineNumbers;
+    if (showLineNum) {
+        window->showLineNumbers = 0;
+        ShowLineNumbers(window, showLineNum);
+    }
 }
 
 static int min(int i1, int i2)
