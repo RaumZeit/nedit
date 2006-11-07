@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.97 2006/10/26 21:42:51 edg Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.98 2006/11/07 22:04:50 n8gray Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -193,6 +193,9 @@ static char *fallbackResources[] = {
     /* Prevent the file selection box from acting stupid. */
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",
     "*XmFileSelectionBox.textAccelerators:",
+    "*XmFileSelectionBox.pathMode: XmPATH_MODE_RELATIVE",
+    "*XmFileSelectionBox.width: 500",
+    "*XmFileSelectionBox.height: 400",
 
     /* NEdit-specific widgets.  Theses things should probably be manually
        jammed into the database, rather than fallbacks.  We really want
