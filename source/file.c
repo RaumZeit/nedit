@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.105 2006/11/07 19:16:34 ajbj Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.106 2006/11/22 20:59:24 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -2032,9 +2032,9 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
 */
 static void forceShowLineNumbers(WindowInfo *window)
 {
-    int showLineNum = window->showLineNumbers;
+    Boolean showLineNum = window->showLineNumbers;
     if (showLineNum) {
-        window->showLineNumbers = 0;
+        window->showLineNumbers = False;
         ShowLineNumbers(window, showLineNum);
     }
 }
