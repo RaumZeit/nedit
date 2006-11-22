@@ -1,6 +1,6 @@
                     NEdit Version 5.5, October 2004
 
-$Id: README,v 1.48 2005/05/27 16:49:00 edg Exp $
+$Id: README,v 1.49 2006/11/22 21:16:55 yooden Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -269,7 +269,12 @@ Some older Linux distributions are missing the /usr/X11R6/lib/X11/XKeysymDB
 file, which is necessary for running Motif programs.  When XKeysymDB is
 missing, NEdit will spew screenfulls of messages about translation table syntax
 errors, and many keys won't work.  You can obtain a copy of the XKeysymDB file
-from the contrib sub-directory of the NEdit distribution directory.  
+from the contrib sub-directory of the NEdit distribution directory.
+
+Linux binaries were built statically by default before NEdit 5.6. This has
+changed with 5.6 to make better use of distribution-specific features. The
+call 'make linux' will now create binaries dynamically linked to Motif or
+Lesstif; calling 'make linux-static' will create static binaries.
 
 
 Mac OS X Systems
