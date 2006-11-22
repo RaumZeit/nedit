@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.67 2006/08/13 18:41:54 yooden Exp $ */
+/* $Id: nedit.h,v 1.68 2006/11/22 13:45:52 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -41,6 +41,9 @@
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+
+#define NEDIT_VERSION           5
+#define NEDIT_REVISION          5
 
 /* Some default colors */
 #define NEDIT_DEFAULT_FG        "black"

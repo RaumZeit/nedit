@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.52 2006/10/29 22:22:03 edg Exp $
+$Id: ReleaseNotes,v 1.53 2006/11/22 13:45:51 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -12,6 +12,11 @@ version.
 If you are upgrading NEdit from a version prior to 5.0, please see the notes in
 the README file which came with the (source or executable) distribution kit,
 about updating macros and font settings in your .nedit file.
+
+New Features in $NEXT_VERSION
+
+  - The macro variable $VERSION returns NEdit's version number.
+
 
 Bugs fixed in $NEXT_VERSION
 

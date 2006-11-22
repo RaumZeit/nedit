@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.108 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.109 2006/11/22 13:45:52 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -359,6 +359,8 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
 */
 static int rangesetListMV(WindowInfo *window, DataValue *argList,
 	int nArgs, DataValue *result, char **errMsg);
+static int versionMV(WindowInfo* window, DataValue* argList, int nArgs,
+        DataValue* result, char** errMsg);
 static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, char **errMsg);
 static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
@@ -458,7 +460,7 @@ static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         displayWidthMV, activePaneMV, nPanesMV, emptyArrayMV,
         serverNameMV, calltipIDMV,
 /* DISABLED for 5.4        backlightStringMV, */
-	rangesetListMV
+	rangesetListMV, versionMV
     };
 #define N_SPECIAL_VARS (sizeof SpecialVars/sizeof *SpecialVars)
 static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$column",
@@ -476,7 +478,7 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$colu
         "$display_width", "$active_pane", "$n_panes", "$empty_array",
         "$server_name", "$calltip_ID",
 /* DISABLED for 5.4       "$backlight_string", */
-        "$rangeset_list"
+        "$rangeset_list", "$VERSION"
     };
 
 /* Global symbols for returning values from built-in functions */
@@ -4587,6 +4589,25 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
+/*
+**  Returns the version number of the current macro language implementation.
+**  For releases, this is the same number as NEdit's major.minor version
+**  number to keep things simple. For developer versions this could really
+**  be anything.
+**
+**  Note that the current way to build $VERSION builds the same value for
+**  different point revisions. This is done because the macro interface
+**  does not change for the same version.
+*/
+static int versionMV(WindowInfo* window, DataValue* argList, int nArgs,
+        DataValue* result, char** errMsg)
+{
+    static unsigned version = NEDIT_VERSION * 1000 + NEDIT_REVISION;
+
+    result->tag = INT_TAG;
+    result->val.n = version;
+    return True;
+}
 
 /*
 ** Built-in macro subroutine to create a new rangeset or rangesets.  

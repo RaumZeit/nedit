@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.104 2006/10/20 15:44:14 ajbj Exp $
+.. $Id: help.etx,v 1.105 2006/11/22 13:45:52 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2433,6 +2433,9 @@ Macro Subroutines
   True if the file in the current window has
   been modified and the modifications have not
   yet been saved.
+
+**$VERSION**
+  Returns NEdit's version number ('5006' for NEdit 5.6).
 
 **$n_display_lines**
   The number of lines visible in the currently active pane.
