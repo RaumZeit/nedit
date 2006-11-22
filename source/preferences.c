@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.145 2006/10/16 14:26:52 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.146 2006/11/22 14:16:37 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5035,15 +5035,15 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
 void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
         const char* name, const char* label, const char mnemonic)
 {
-    XmString s1 = XmStringCreateSimple(label);
+    XmString string = XmStringCreateSimple((char*) label);
 
     window->langModeCascade = XtVaCreateManagedWidget(name,
             xmCascadeButtonGadgetClass, parent,
-            XmNlabelString, s1,
+            XmNlabelString, string,
             XmNmnemonic, mnemonic,
             XmNsubMenuId, NULL,
             NULL);
-    XmStringFree(s1);
+    XmStringFree(string);
 
     updateLanguageModeSubmenu(window);
 }
