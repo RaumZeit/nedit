@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.193 2006/10/17 13:00:29 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.194 2006/11/28 20:11:31 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -3323,6 +3323,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
     window->flashTimeoutID = 0;
+    window->fileClosedAtom = None;
     window->wasSelected = FALSE;
     strcpy(window->fontName, GetPrefFontName());
     strcpy(window->italicFontName, GetPrefItalicFontName());
