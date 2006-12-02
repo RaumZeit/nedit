@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.20 2006/12/02 09:38:17 yooden Exp $ */
+/* $Id: textBuf.h,v 1.21 2006/12/02 12:01:41 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *
@@ -162,7 +162,7 @@ int BufCountDispChars(const textBuffer* buf, const int lineStartPos,
 int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
 int BufCountLines(textBuffer *buf, int startPos, int endPos);
 int BufCountForwardNLines(const textBuffer* buf, const int startPos,
-        const int nLines);
+        const unsigned nLines);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
 int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);

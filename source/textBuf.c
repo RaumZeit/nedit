@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.35 2006/12/02 09:38:17 yooden Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.36 2006/12/02 12:01:38 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -1183,7 +1183,7 @@ int BufCountLines(textBuffer *buf, int startPos, int endPos)
 ** in "buf" and return its position
 */
 int BufCountForwardNLines(const textBuffer* buf, const int startPos,
-        const int nLines)
+        const unsigned nLines)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
     int lineCount = 0;
