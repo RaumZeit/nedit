@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.64 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.65 2006/12/02 09:38:17 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -127,7 +127,8 @@ static void clearRect(textDisp *textD, GC gc, int x, int y,
 static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos,
         int lineLen, int lineIndex, int dispIndex, int thisChar);
-static int stringWidth(textDisp *textD, char *string, int length, int style);
+static int stringWidth(const textDisp* textD, const char* string,
+        const int length, const int style);
 static int inSelection(selection *sel, int pos, int lineStartPos,
         int dispIndex);
 static int xyToPos(textDisp *textD, int x, int y, int posType);
@@ -164,9 +165,10 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted);
 static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
         int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
         int *linesInserted, int *linesDeleted);
-static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
-        int maxPos, int maxLines, int startPosIsLineStart, int styleBufOffset,
-        int *retPos, int *retLines, int *retLineStart, int *retLineEnd);
+static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
+        const int startPos, const int maxPos, const int maxLines,
+        const Boolean startPosIsLineStart, const int styleBufOffset,
+        int* retPos, int* retLines, int* retLineStart, int* retLineEnd);
 static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart,
         int *lineEnd, int *nextLineStart);
 static int wrapUsesCharacter(textDisp *textD, int lineEndPos);
@@ -177,7 +179,8 @@ static int getAbsTopLineNum(textDisp *textD);
 static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
-static int measurePropChar(textDisp *textD, char c, int colNum, int pos);
+static int measurePropChar(const textDisp* textD, const char c,
+        const int colNum, const int pos);
 static Pixel allocBGColor(Widget w, char *colorName, int *ok);
 static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
 
@@ -1239,8 +1242,9 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos)
     }
 
     /* Decide what column to move to, if there's a preferred column use that */
-    column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
-        BufCountDispChars(textD->buffer, *lineStartPos, textD->cursorPos);
+    column = (textD->cursorPreferredCol >= 0)
+            ? textD->cursorPreferredCol
+            : BufCountDispChars(textD->buffer, *lineStartPos, textD->cursorPos);
     return(column);
 }
 
@@ -1297,16 +1301,19 @@ int TextDMoveUp(textDisp *textD, int absolute)
     	return False;
     
     /* Decide what column to move to, if there's a preferred column use that */
-    column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
-    	    BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
+    column = textD->cursorPreferredCol >= 0
+            ? textD->cursorPreferredCol
+            : BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
     
     /* count forward from the start of the previous line to reach the column */
-    if (absolute)
+    if (absolute) {
         prevLineStartPos = BufCountBackwardNLines(textD->buffer, lineStartPos, 1);
-    else if (visLineNum != -1 && visLineNum != 0)
-    	prevLineStartPos = textD->lineStarts[visLineNum-1];
-    else
-    	prevLineStartPos = TextDCountBackwardNLines(textD, lineStartPos, 1);
+    } else if (visLineNum != -1 && visLineNum != 0) {
+        prevLineStartPos = textD->lineStarts[visLineNum-1];
+    } else{
+        prevLineStartPos = TextDCountBackwardNLines(textD, lineStartPos, 1);
+    }
+
     newPos = BufCountForwardDispChars(textD->buffer, prevLineStartPos, column);
     if (textD->continuousWrap && !absolute)
     	newPos = min(newPos, TextDEndOfLine(textD, prevLineStartPos, True));
@@ -1334,8 +1341,10 @@ int TextDMoveDown(textDisp *textD, int absolute)
     	lineStartPos = TextDStartOfLine(textD, textD->cursorPos);
     	visLineNum = -1;
     }
-    column = textD->cursorPreferredCol >= 0 ? textD->cursorPreferredCol :
-    	    BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
+    column = textD->cursorPreferredCol >= 0
+            ? textD->cursorPreferredCol
+            : BufCountDispChars(textD->buffer, lineStartPos, textD->cursorPos);
+
     if (absolute)
         nextLineStartPos = BufCountForwardNLines(textD->buffer, lineStartPos, 1);
     else
@@ -1376,8 +1385,8 @@ int TextDCountLines(textDisp *textD, int startPos, int endPos,
 ** it can pass "startPosIsLineStart" as True to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,
-    	int startPosIsLineStart)
+int TextDCountForwardNLines(const textDisp* textD, const int startPos,
+        const unsigned nLines, const Boolean startPosIsLineStart)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
@@ -1412,11 +1421,12 @@ int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-int TextDEndOfLine(textDisp *textD, int pos, int startPosIsLineStart)
+int TextDEndOfLine(const textDisp* textD, const int pos,
+    const Boolean startPosIsLineStart)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
-    /* If we're not wrapping use more efficien BufEndOfLine */
+    /* If we're not wrapping use more efficient BufEndOfLine */
     if (!textD->continuousWrap)
     	return BufEndOfLine(textD->buffer, pos);
     
@@ -1432,7 +1442,7 @@ int TextDEndOfLine(textDisp *textD, int pos, int startPosIsLineStart)
 ** Same as BufStartOfLine, but returns the character after last wrap point
 ** rather than the last newline.
 */
-int TextDStartOfLine(textDisp *textD, int pos)
+int TextDStartOfLine(const textDisp* textD, const int pos)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
@@ -2170,7 +2180,8 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
 /*
 ** Find the width of a string in the font of a particular style
 */
-static int stringWidth(textDisp *textD, char *string, int length, int style)
+static int stringWidth(const textDisp* textD, const char *string,
+        const int length, const int style)
 {
     XFontStruct *fs;
     
@@ -2178,7 +2189,7 @@ static int stringWidth(textDisp *textD, char *string, int length, int style)
     	fs = textD->styleTable[(style & STYLE_LOOKUP_MASK) - ASCII_A].font;
     else 
     	fs = textD->fontStruct;
-    return XTextWidth(fs, string, length);
+    return XTextWidth(fs, (char*) string, (int) length);
 }
 
 /*
@@ -3335,9 +3346,10 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
 **   retLineStart:  Start of the line where counting ended
 **   retLineEnd:    End position of the last line traversed
 */
-static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
-	int maxPos, int maxLines, int startPosIsLineStart, int styleBufOffset,
-	int *retPos, int *retLines, int *retLineStart, int *retLineEnd)
+static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
+        const int startPos, const int maxPos, const int maxLines,
+        const Boolean startPosIsLineStart, const int styleBufOffset,
+        int* retPos, int* retLines, int* retLineStart, int* retLineEnd)
 {
     int lineStart, newLineStart = 0, b, p, colNum, wrapMargin;
     int maxWidth, width, countPixels, i, foundBreak;
@@ -3474,7 +3486,8 @@ static void wrappedLineCounter(textDisp *textD, textBuffer *buf, int startPos,
 ** insertion/deletion, though static display and wrapping and resizing
 ** should now be solid because they are now used for online help display.
 */
-static int measurePropChar(textDisp *textD, char c, int colNum, int pos)
+static int measurePropChar(const textDisp* textD, const char c,
+    const int colNum, const int pos)
 {
     int charLen, style;
     char expChar[MAX_EXP_CHAR_LEN];

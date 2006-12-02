@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.52 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.53 2006/12/02 09:38:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -141,8 +141,10 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent,
     	highlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
-static void handleUnparsedRegion(WindowInfo* win, textBuffer *buf, int pos);
-static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg);
+static void handleUnparsedRegion(const WindowInfo* win, textBuffer* styleBuf,
+        const int pos);
+static void handleUnparsedRegionCB(const textDisp* textD, const int pos,
+        const void* cbArg);
 static void incrementalReparse(windowHighlightData *highlightData,
     	textBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns,
@@ -1298,8 +1300,8 @@ int HighlightCodeIsItalic(WindowInfo *window, int hCode)
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf, 
-                                 int pos)
+static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
+        const int pos)
 {
     textBuffer *buf = window->buffer;
     int beginParse, endParse, beginSafety, endSafety, p;
@@ -1377,9 +1379,10 @@ static void handleUnparsedRegion(WindowInfo *window, textBuffer *styleBuf,
 /*
 ** Callback wrapper around the above function.
 */
-static void handleUnparsedRegionCB(textDisp *textD, int pos, void *cbArg)
+static void handleUnparsedRegionCB(const textDisp* textD, const int pos,
+        const void* cbArg)
 {
-    handleUnparsedRegion((WindowInfo*)cbArg, textD->styleBuffer, pos);
+    handleUnparsedRegion((WindowInfo*) cbArg, textD->styleBuffer, pos);
 }
 
 /*

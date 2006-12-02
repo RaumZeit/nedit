@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.18 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: interpret.h,v 1.19 2006/12/02 09:38:16 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *
@@ -117,11 +117,11 @@ void InitMacroGlobals(void);
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
 struct SparseArrayEntry *ArrayNew(void);
-int ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
+Boolean ArrayInsert(DataValue* theArray, char* keyStr, DataValue* theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
-int ArraySize(DataValue *theArray);
-int ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
+unsigned ArraySize(DataValue *theArray);
+Boolean ArrayGet(DataValue* theArray, char* keyStr, DataValue* theValue);
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with

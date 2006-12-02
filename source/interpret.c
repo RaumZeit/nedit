@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.43 2004/11/23 14:37:37 tringali Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.44 2006/12/02 09:38:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1386,7 +1386,7 @@ static int add(void)
             leftIter = arrayIterateFirst(&leftVal);
             rightIter = arrayIterateFirst(&rightVal);
             while (leftIter || rightIter) {
-                int insertResult = 1;
+                Boolean insertResult = True;
                 
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
@@ -1458,7 +1458,7 @@ static int subtract(void)
             leftIter = arrayIterateFirst(&leftVal);
             rightIter = arrayIterateFirst(&rightVal);
             while (leftIter) {
-                int insertResult = 1;
+                Boolean insertResult = True;
                 
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
@@ -1659,7 +1659,7 @@ static int bitAnd(void)
             leftIter = arrayIterateFirst(&leftVal);
             rightIter = arrayIterateFirst(&rightVal);
             while (leftIter && rightIter) {
-                int insertResult = 1;
+                Boolean insertResult = True;
                 int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
 
                 if (compareResult < 0) {
@@ -1719,7 +1719,7 @@ static int bitOr(void)
             leftIter = arrayIterateFirst(&leftVal);
             rightIter = arrayIterateFirst(&rightVal);
             while (leftIter || rightIter) {
-                int insertResult = 1;
+                Boolean insertResult = True;
                 
                 if (leftIter && rightIter) {
                     int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
@@ -2284,29 +2284,31 @@ struct SparseArrayEntry *ArrayNew(void)
 ** insert a DataValue into an array, allocate the array if needed
 ** keyStr must be a string that was allocated with AllocString()
 */
-int ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue)
+Boolean ArrayInsert(DataValue* theArray, char* keyStr, DataValue* theValue)
 {
     SparseArrayEntry tmpEntry;
     rbTreeNode *insertedNode;
-    
+
     tmpEntry.key = keyStr;
     tmpEntry.value = *theValue;
-    
+
     if (theArray->val.arrayPtr == NULL) {
         theArray->val.arrayPtr = ArrayNew();
     }
+
     if (theArray->val.arrayPtr != NULL) {
-        insertedNode = rbTreeInsert((rbTreeNode *)(theArray->val.arrayPtr),
-            (rbTreeNode *)&tmpEntry,
-            arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
+        insertedNode = rbTreeInsert((rbTreeNode*) (theArray->val.arrayPtr),
+                (rbTreeNode *)&tmpEntry, arrayEntryCompare, arrayAllocateNode,
+                arrayEntryCopyToNode);
+
         if (insertedNode) {
-            return(1);
-        }
-        else {
-            return(0);
+            return True;
+        } else {
+            return False;
         }
     }
-    return(0);
+
+    return False;
 }
 
 /*
@@ -2328,7 +2330,6 @@ void ArrayDelete(DataValue *theArray, char *keyStr)
 */
 void ArrayDeleteAll(DataValue *theArray)
 {
-    
     if (theArray->val.arrayPtr) {
         rbTreeNode *iter = rbTreeBegin((rbTreeNode *)theArray->val.arrayPtr);
         while (iter) {
@@ -2344,13 +2345,12 @@ void ArrayDeleteAll(DataValue *theArray)
 /*
 ** returns the number of elements (nodes containing values) of an array
 */
-int ArraySize(DataValue *theArray)
+unsigned ArraySize(DataValue* theArray)
 {
     if (theArray->val.arrayPtr) {
-        return(rbTreeSize((rbTreeNode *)theArray->val.arrayPtr));
-    }
-    else {
-        return(0);
+        return rbTreeSize((rbTreeNode *)theArray->val.arrayPtr);
+    } else {
+        return 0;
     }
 }
 
@@ -2358,21 +2358,22 @@ int ArraySize(DataValue *theArray)
 ** retrieves an array node whose key matches
 ** returns 1 for success 0 for not found
 */
-int ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue)
+Boolean ArrayGet(DataValue* theArray, char* keyStr, DataValue* theValue)
 {
     SparseArrayEntry searchEntry;
     rbTreeNode *foundNode;
 
     if (theArray->val.arrayPtr) {
         searchEntry.key = keyStr;
-        foundNode = rbTreeFind((rbTreeNode *)theArray->val.arrayPtr,
-                (rbTreeNode *)&searchEntry, arrayEntryCompare);
+        foundNode = rbTreeFind((rbTreeNode*) theArray->val.arrayPtr,
+                (rbTreeNode*) &searchEntry, arrayEntryCompare);
         if (foundNode) {
-            *theValue = ((SparseArrayEntry *)foundNode)->value;
-            return(1);
+            *theValue = ((SparseArrayEntry*) foundNode)->value;
+            return True;
         }
     }
-    return(0);
+
+    return False;
 }
 
 /*

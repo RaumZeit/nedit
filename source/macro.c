@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.109 2006/11/22 13:45:52 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.110 2006/12/02 09:38:16 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -418,8 +418,8 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         stringCompareMS, splitMS, calltipMS, killCalltipMS,
 /* DISABLED for 5.4        setBacklightStringMS,*/
         rangesetCreateMS, rangesetDestroyMS,
-        rangesetAddMS, rangesetSubtractMS, rangesetInvertMS, 
-        rangesetInfoMS, rangesetRangeMS, rangesetIncludesPosMS, 
+        rangesetAddMS, rangesetSubtractMS, rangesetInvertMS,
+        rangesetInfoMS, rangesetRangeMS, rangesetIncludesPosMS,
         rangesetSetColorMS, rangesetSetNameMS, rangesetSetModeMS,
         rangesetGetByNameMS,
         getPatternByNameMS, getPatternAtPosMS,
@@ -438,7 +438,7 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "string_compare", "split", "calltip", "kill_calltip",
 /* DISABLED for 5.4        "set_backlight_string", */
         "rangeset_create", "rangeset_destroy",
-        "rangeset_add", "rangeset_subtract", "rangeset_invert", 
+        "rangeset_add", "rangeset_subtract", "rangeset_invert",
         "rangeset_info", "rangeset_range", "rangeset_includes",
         "rangeset_set_color", "rangeset_set_name", "rangeset_set_mode",
         "rangeset_get_by_name",
@@ -4669,7 +4669,6 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
         return True;
     }
 }
-    
 
 /*
 ** Built-in macro subroutine for forgetting a range set.
@@ -4715,9 +4714,7 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
         for (i = 0; i < arraySize; i++) {
             RangesetForget(rangesetTable, deleteLabels[i]);
         }
-    }    
-            
-    else {        
+    } else {
         if (!readIntArg(argList[0], &label, errMsg)
                 || !RangesetLabelOK(label)) {
             M_FAILURE("Invalid rangeset label in %s");

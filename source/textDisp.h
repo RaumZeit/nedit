@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.28 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: textDisp.h,v 1.29 2006/12/02 09:38:17 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDisp.h -- Nirvana Editor Text Diplay Header File                         *
@@ -212,10 +212,11 @@ void TextDBlankCursor(textDisp *textD);
 void TextDUnblankCursor(textDisp *textD);
 void TextDSetCursorStyle(textDisp *textD, int style);
 void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
-int TextDEndOfLine(textDisp *textD, int pos, int startPosIsLineStart);
-int TextDStartOfLine(textDisp *textD, int pos);
-int TextDCountForwardNLines(textDisp *textD, int startPos, int nLines,
-    	int startPosIsLineStart);
+int TextDEndOfLine(const textDisp* textD, const int pos,
+    const Boolean startPosIsLineStart);
+int TextDStartOfLine(const textDisp* textD, const int pos);
+int TextDCountForwardNLines(const textDisp* textD, const int startPos,
+        const unsigned nLines, const Boolean startPosIsLineStart);
 int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
 int TextDCountLines(textDisp *textD, int startPos, int endPos,
     	int startPosIsLineStart);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.106 2006/11/22 20:59:24 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.107 2006/12/02 09:38:16 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1457,73 +1457,84 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     XmStringFree(s2);
     formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass,
 	    fileSB, NULL);
-    formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass,
-	    formatForm,
-	    XmNradioBehavior, XmONE_OF_MANY,
-	    XmNorientation, XmHORIZONTAL,
-	    XmNpacking, XmPACK_TIGHT,
-	    XmNtopAttachment, XmATTACH_FORM,
-	    XmNleftAttachment, XmATTACH_FORM, NULL);
+    formatBtns = XtVaCreateManagedWidget("formatBtns",
+            xmRowColumnWidgetClass, formatForm,
+            XmNradioBehavior, XmONE_OF_MANY,
+            XmNorientation, XmHORIZONTAL,
+            XmNpacking, XmPACK_TIGHT,
+            XmNtopAttachment, XmATTACH_FORM,
+            XmNleftAttachment, XmATTACH_FORM,
+            NULL);
     XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
 	    XmNlabelString, s1=XmStringCreateSimple("Format:"), NULL);
     XmStringFree(s1);
     unixFormat = XtVaCreateManagedWidget("unixFormat",
-	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
-	    s1=XmStringCreateSimple("Unix"),
-	    XmNset, *fileFormat == UNIX_FILE_FORMAT,
-	    XmNuserData, UNIX_FILE_FORMAT,
-    	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'U', NULL);
+            xmToggleButtonWidgetClass, formatBtns,
+            XmNlabelString, s1 = XmStringCreateSimple("Unix"),
+            XmNset, *fileFormat == UNIX_FILE_FORMAT,
+            XmNuserData, UNIX_FILE_FORMAT,
+            XmNmarginHeight, 0,
+            XmNalignment, XmALIGNMENT_BEGINNING,
+            XmNmnemonic, 'U',
+            NULL);
     XmStringFree(s1);
     XtAddCallback(unixFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
     dosFormat = XtVaCreateManagedWidget("dosFormat",
-	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
-	    s1=XmStringCreateSimple("DOS"),
-	    XmNset, *fileFormat == DOS_FILE_FORMAT,
-	    XmNuserData, DOS_FILE_FORMAT,
-    	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'O', NULL);
+            xmToggleButtonWidgetClass, formatBtns,
+            XmNlabelString, s1 = XmStringCreateSimple("DOS"),
+            XmNset, *fileFormat == DOS_FILE_FORMAT,
+            XmNuserData, DOS_FILE_FORMAT,
+            XmNmarginHeight, 0,
+            XmNalignment, XmALIGNMENT_BEGINNING,
+            XmNmnemonic, 'O',
+            NULL);
     XmStringFree(s1);
     XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
     macFormat = XtVaCreateManagedWidget("macFormat",
-	    xmToggleButtonWidgetClass, formatBtns, XmNlabelString,
-	    s1=XmStringCreateSimple("Macintosh"),
-	    XmNset, *fileFormat == MAC_FILE_FORMAT,
-	    XmNuserData, MAC_FILE_FORMAT,
-    	    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING,
-	    XmNmnemonic, 'M', NULL);
+            xmToggleButtonWidgetClass, formatBtns,
+            XmNlabelString, s1 = XmStringCreateSimple("Macintosh"),
+            XmNset, *fileFormat == MAC_FILE_FORMAT,
+            XmNuserData, MAC_FILE_FORMAT,
+            XmNmarginHeight, 0,
+            XmNalignment, XmALIGNMENT_BEGINNING,
+            XmNmnemonic, 'M',
+            NULL);
     XmStringFree(s1);
     XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
     if (window->wrapMode == CONTINUOUS_WRAP) {
 	wrapToggle = XtVaCreateManagedWidget("addWrap",
-	    	xmToggleButtonWidgetClass, formatForm, XmNlabelString,
-	    	s1=XmStringCreateSimple("Add line breaks where wrapped"),
-    		XmNalignment, XmALIGNMENT_BEGINNING,
-		XmNmnemonic, 'A',
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, formatBtns,
-		XmNleftAttachment, XmATTACH_FORM, NULL);
+                xmToggleButtonWidgetClass, formatForm,
+                XmNlabelString, s1 = XmStringCreateSimple("Add line breaks where wrapped"),
+                XmNalignment, XmALIGNMENT_BEGINNING,
+                XmNmnemonic, 'A',
+                XmNtopAttachment, XmATTACH_WIDGET,
+                XmNtopWidget, formatBtns,
+                XmNleftAttachment, XmATTACH_FORM,
+                NULL);
 	XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB,
     	    	addWrap);
 	XmStringFree(s1);
     }
     *addWrap = False;
-    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
-    	    XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
-    	    XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
-    	    XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), NULL);
-    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB,
-    	    XmDIALOG_SELECTION_LABEL), XmNmnemonic,
-    	    prompt[strspn(prompt, "lFD")], XmNuserData,
-    	    XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_LABEL),
+            XmNmnemonic, 'l',
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL),
+            XmNmnemonic, 'D',
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL),
+            XmNmnemonic, 'F',
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST),
+            NULL);
+    XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL),
+            XmNmnemonic, prompt[strspn(prompt, "lFD")],
+            XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT),
+            NULL);
     AddDialogMnemonicHandler(fileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));

@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.19 2006/10/13 07:26:02 ajbj Exp $ */
+/* $Id: textBuf.h,v 1.20 2006/12/02 09:38:17 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *
@@ -90,8 +90,8 @@ void BufFree(textBuffer *buf);
 char *BufGetAll(textBuffer *buf);
 const char *BufAsString(textBuffer *buf);
 void BufSetAll(textBuffer *buf, const char *text);
-char *BufGetRange(textBuffer *buf, int start, int end);
-char BufGetCharacter(textBuffer *buf, int pos);
+char* BufGetRange(const textBuffer* buf, int start, int end);
+char BufGetCharacter(const textBuffer* buf, const int pos);
 char *BufGetTextInRect(textBuffer *buf, int start, int end,
 	int rectStart, int rectEnd);
 void BufInsert(textBuffer *buf, int pos, const char *text);
@@ -152,14 +152,17 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc
 char *BufGetLineText(textBuffer *buf, int pos);
 int BufStartOfLine(textBuffer *buf, int pos);
 int BufEndOfLine(textBuffer *buf, int pos);
-int BufGetExpandedChar(textBuffer *buf, int pos, int indent, char *outStr);
+int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent,
+        char* outStr);
 int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
 	char nullSubsChar);
 int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
-int BufCountDispChars(textBuffer *buf, int lineStartPos, int targetPos);
+int BufCountDispChars(const textBuffer* buf, const int lineStartPos,
+        const int targetPos);
 int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
 int BufCountLines(textBuffer *buf, int startPos, int endPos);
-int BufCountForwardNLines(textBuffer *buf, int startPos, int nLines);
+int BufCountForwardNLines(const textBuffer* buf, const int startPos,
+        const int nLines);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
 int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
