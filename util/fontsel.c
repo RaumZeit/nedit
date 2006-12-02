@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fontsel.c,v 1.28 2004/08/01 10:06:12 yooden Exp $";
+static const char CVSID[] = "$Id: fontsel.c,v 1.29 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * fontsel.c -- Nirvana Font Selector                                           *
@@ -896,16 +896,13 @@ static void propFontToggleAction(Widget widget,
         else
             ctrlBlk->showPropFonts = PREF_FIXED;
 
-        if (ctrlBlk->sel1 != NULL)
-            XtFree(ctrlBlk->sel1);
+        XtFree(ctrlBlk->sel1);
         ctrlBlk->sel1 = NULL;
 
-        if (ctrlBlk->sel2 != NULL)
-            XtFree(ctrlBlk->sel2);
+        XtFree(ctrlBlk->sel2);
         ctrlBlk->sel2 = NULL;
 
-        if (ctrlBlk->sel3 != NULL)
-            XtFree(ctrlBlk->sel3);
+        XtFree(ctrlBlk->sel3);
         ctrlBlk->sel3 = NULL;
 
         setupScrollLists(NONE, *ctrlBlk);
@@ -943,8 +940,7 @@ static void sizeToggleAction(Widget widget,
         else
             ctrlBlk->showSizeInPixels = TRUE;
 
-        if (ctrlBlk->sel3 != NULL)
-            XtFree(ctrlBlk->sel3);
+        XtFree(ctrlBlk->sel3);
 
         ctrlBlk->sel3 = NULL;
         setupScrollLists(NONE, *ctrlBlk);
@@ -1114,8 +1110,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk)
 {
     int i;
 
-    if (ctrlBlk->fontName != NULL)
-        XtFree(ctrlBlk->fontName);
+    XtFree(ctrlBlk->fontName);
     ctrlBlk->fontName = NULL;
 
     for (i = 0; i < ctrlBlk->numFonts; i++)
@@ -1179,14 +1174,10 @@ static void destroyCB(Widget widget, xfselControlBlkType *ctrlBlk,
 static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk,
                  XmListCallbackStruct *call_data)
 {
-    if (ctrlBlk->sel1 != NULL) 
-        XtFree(ctrlBlk->sel1);
-    if (ctrlBlk->sel2 != NULL) 
-        XtFree(ctrlBlk->sel2);
-    if (ctrlBlk->sel3 != NULL) 
-        XtFree(ctrlBlk->sel3);
-    if (ctrlBlk->fontName != NULL) 
-        XtFree(ctrlBlk->fontName);
+    XtFree(ctrlBlk->sel1);
+    XtFree(ctrlBlk->sel2);
+    XtFree(ctrlBlk->sel3);
+    XtFree(ctrlBlk->fontName);
 
     ctrlBlk->fontName = NULL;
     XFreeFontNames(ctrlBlk->fontData);
@@ -1214,17 +1205,13 @@ static void okAction(Widget widget, xfselControlBlkType *ctrlBlk,
     }
     else
     {
-        if (ctrlBlk->fontName != NULL)
-            XtFree(ctrlBlk->fontName);
+        XtFree(ctrlBlk->fontName);
         ctrlBlk->fontName = XtMalloc(strlen(fontName[0]) + 1);
         strcpy(ctrlBlk->fontName, fontName[0]);
 
-        if (ctrlBlk->sel1 != NULL) 
-            XtFree(ctrlBlk->sel1);
-        if (ctrlBlk->sel2 != NULL) 
-            XtFree(ctrlBlk->sel2);
-        if (ctrlBlk->sel3 != NULL) 
-            XtFree(ctrlBlk->sel3);
+        XtFree(ctrlBlk->sel1);
+        XtFree(ctrlBlk->sel2);
+        XtFree(ctrlBlk->sel3);
     
         XFreeFontNames(fontName);
         XFreeFontNames(ctrlBlk->fontData);

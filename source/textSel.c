@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.16 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.17 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -468,8 +468,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
  
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
-    	if (value != NULL)
-    	    XtFree((char *)value);
+        XtFree((char*) value);
     	return;
     }
     
@@ -523,8 +522,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
  
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8 || value == NULL) {
-    	if (value != NULL)
-    	    XtFree((char *)value);
+        XtFree((char*) value);
     	*resultFlag = UNSUCCESSFUL_INSERT;
     	return;
     }
@@ -565,8 +563,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType,
 {
     /* Confirm that there is a value and it is of the correct type */
     if (*length == 0 || value == NULL || *type != XA_STRING || *format != 8) {
-    	if (value != NULL)
-    	    XtFree((char *)value);
+        XtFree((char*) value);
     	XBell(XtDisplay(w), 0);
     	BufSecondaryUnselect(((TextWidget)w)->text.textD->buffer);
     	return;
@@ -823,8 +820,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
     	XBell(XtDisplay(w), 0);
     	BufSecondaryUnselect(buf);
         XtDisownSelection(w, XA_SECONDARY, e->time);
-        if (cbInfo->actionText != NULL)
-            XtFree((char *)cbInfo->actionText);
+        XtFree((char*) cbInfo->actionText);
     	XtFree((char *)cbInfo);
     	return;
     }
@@ -856,8 +852,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
     }
     BufSecondaryUnselect(buf);
     XtDisownSelection(w, XA_SECONDARY, e->time);
-    if (cbInfo->actionText != NULL)
-        XtFree((char *)cbInfo->actionText);
+    XtFree((char *)cbInfo->actionText);
     XtFree((char *)cbInfo);
 }
 
@@ -875,8 +870,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id)
     XtRemoveEventHandler(cbInfo->widget, 0, True, selectNotifyEH, cbInfo);
     BufSecondaryUnselect(buf);
     XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
-    if (cbInfo->actionText != NULL)
-        XtFree((char *)cbInfo->actionText);
+    XtFree((char*) cbInfo->actionText);
     XtFree((char *)cbInfo);
 }
 

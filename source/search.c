@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.84 2006/10/17 11:52:20 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.85 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1857,10 +1857,7 @@ static void collectWritableWindows(WindowInfo* window)
     WindowInfo *w;
     WindowInfo **windows;
     
-    if (window->writableWindows)
-    {
-       XtFree((XtPointer)window->writableWindows);
-    }
+    XtFree((char*) window->writableWindows);
 
     /* Make a sorted list of writable windows */
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
@@ -2094,7 +2091,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
           XmListSelectPos(list, selected[i], False);
        }
        
-       XtFree((XtPointer)selected);
+       XtFree((char*) selected);
     } else {
        Arg args[1];
        int nVisible;
@@ -2151,7 +2148,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
     
     for (i = 0; i < nWritable; ++i)
        XmStringFree(names[i]);
-    XtFree((XtPointer)names);
+    XtFree((char*) names);
 }
 
 /*

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.107 2006/12/02 09:38:16 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.108 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1413,8 +1413,9 @@ int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
     retVal = GetExistingFilename(window->shell, prompt, fullname);
     if (retVal != GFN_OK)
     	SetFileDialogDefaultDirectory(savedDefaultDir);
-    if (savedDefaultDir != NULL)
-    	XtFree(savedDefaultDir);
+
+    XtFree(savedDefaultDir);
+
     return retVal;
 }
 
@@ -1543,8 +1544,9 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
 
     if (retVal != GFN_OK)
     	SetFileDialogDefaultDirectory(savedDefaultDir);
-    if (savedDefaultDir != NULL)
-    	XtFree(savedDefaultDir);
+
+    XtFree(savedDefaultDir);
+
     return retVal;
 }
 

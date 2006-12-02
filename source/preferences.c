@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.147 2006/11/22 15:13:25 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.148 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -2188,8 +2188,7 @@ static void setStringAllocPref(char **pprefDataField, char *newValue)
       PrefsHaveChanged = True;
 
     /* get rid of old preference */
-    if (*pprefDataField)
-      XtFree(*pprefDataField);
+    XtFree(*pprefDataField);
 
     /* store new preference */
     if (newValue) {
@@ -3490,16 +3489,12 @@ static void freeLanguageModeRec(languageModeRec *lm)
     int i;
     
     XtFree(lm->name);
-    if (lm->recognitionExpr != NULL)
-    	XtFree(lm->recognitionExpr);
-    if (lm->defTipsFile != NULL)
-        XtFree(lm->defTipsFile);
-    if (lm->delimiters != NULL)
-    	XtFree(lm->delimiters);
+    XtFree(lm->recognitionExpr);
+    XtFree(lm->defTipsFile);
+    XtFree(lm->delimiters);
     for (i=0; i<lm->nExtensions; i++)
     	XtFree(lm->extensions[i]);
-    if (lm->nExtensions != 0)
-	XtFree((char *)lm->extensions);
+    XtFree((char*) lm->extensions);
     XtFree((char *)lm);
 }
 
@@ -4969,7 +4964,6 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
             XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
         }
         XtFree(string);
-        if (parsedString != NULL)
         XtFree(parsedString);
         return NULL;
     }

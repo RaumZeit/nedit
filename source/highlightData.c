@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.77 2006/10/26 22:09:10 edg Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.78 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -153,7 +153,6 @@ static patternSet *getDialogPatternSet(void);
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
 static highlightPattern *copyPatternSrc(highlightPattern *pat,
     	highlightPattern *copyTo);
-static void freeNonNull(void *ptr);
 static void freeItemCB(void *item);
 static void freePatternSrc(highlightPattern *pat, int freeStruct);
 static void freePatternSet(patternSet *p);
@@ -2206,8 +2205,7 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs)
 static void freeHighlightStyleRec(highlightStyleRec *hs)
 {
     XtFree(hs->name);
-    if (hs->color != NULL)
-    	XtFree(hs->color);
+    XtFree(hs->color);
     XtFree((char *)hs);
 }
 
@@ -2893,7 +2891,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int i;
     
-    freeNonNull(HighlightDialog.langModeName);
+    XtFree((char*) HighlightDialog.langModeName);
     for (i=0; i<HighlightDialog.nPatterns; i++)
      	freePatternSrc(HighlightDialog.patterns[i], True);
     HighlightDialog.shell = NULL;
@@ -2952,7 +2950,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     	freePatternSet(newPatSet);
 
     /* Free the old dialog information */
-    freeNonNull(HighlightDialog.langModeName);
+    XtFree((char*) HighlightDialog.langModeName);
     for (i=0; i<HighlightDialog.nPatterns; i++)
      	freePatternSrc(HighlightDialog.patterns[i], True);
     
@@ -3658,12 +3656,6 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
     return newPat;
 }
 
-static void freeNonNull(void *ptr)
-{
-    if (ptr != NULL)
-    	XtFree((char *)ptr);
-}
-
 /*
 ** Free the allocated memory contained in a highlightPattern data structure
 ** If "freeStruct" is true, free the structure itself as well.
@@ -3671,11 +3663,11 @@ static void freeNonNull(void *ptr)
 static void freePatternSrc(highlightPattern *pat, int freeStruct)
 {
     XtFree(pat->name);
-    freeNonNull(pat->startRE);
-    freeNonNull(pat->endRE);
-    freeNonNull(pat->errorRE);
-    freeNonNull(pat->style);
-    freeNonNull(pat->subPatternOf);
+    XtFree((char*) pat->startRE);
+    XtFree((char*) pat->endRE);
+    XtFree((char*) pat->errorRE);
+    XtFree((char*) pat->style);
+    XtFree((char*) pat->subPatternOf);
     if (freeStruct)
     	XtFree((char *)pat);
 }

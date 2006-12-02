@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.31 2004/08/01 10:06:11 yooden Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.32 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -375,8 +375,7 @@ static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
 	XBell(TheDisplay, 0);
-	if (value != NULL)
-	    XtFree((char *)value);
+        XtFree((char*) value);
 	*result = NULL;
 	return;
     }

@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.16 2006/10/13 07:26:02 ajbj Exp $ */
+/* $Id: rangeset.c,v 1.17 2006/12/02 10:27:06 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -167,8 +167,7 @@ static Range* RangesRealloc(Range* ranges, int n)
                 ? XtRealloc((char *)ranges, size)
                 : XtMalloc(size));
         return newRanges;
-    } else if (ranges != NULL)
-    {
+    } else {
         XtFree((char*) ranges);
     }
 
@@ -179,8 +178,7 @@ static Range* RangesRealloc(Range* ranges, int n)
 
 static Range *RangesFree(Range *ranges)
 {
-    if (ranges != NULL)
-	XtFree((char *)ranges);
+    XtFree((char*) ranges);
 
     return NULL;
 }
@@ -228,12 +226,8 @@ void RangesetEmpty(Rangeset *rangeset)
 	}
     }
 
-    if (rangeset->color_name)
-	XtFree(rangeset->color_name);
-
-    if (rangeset->name) {
-        XtFree(rangeset->name);
-    }
+    XtFree(rangeset->color_name);
+    XtFree(rangeset->name);
 
     rangeset->color_name = (char *)0;
     rangeset->name = (char *)0;
@@ -1115,8 +1109,7 @@ int RangesetAssignColorName(Rangeset *rangeset, char *color_name)
 	cp = color_name;
 
     /* free old color name value */
-    if (rangeset->color_name)
-	XtFree(rangeset->color_name);
+    XtFree(rangeset->color_name);
 
     rangeset->color_name = cp;
     rangeset->color_set = 0;
@@ -1146,9 +1139,7 @@ int RangesetAssignName(Rangeset *rangeset, char *name)
     }
 
     /* free old name value */
-    if (rangeset->name) {
-        XtFree(rangeset->name);
-    }
+    XtFree(rangeset->name);
 
     rangeset->name = cp;
 

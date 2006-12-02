@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.83 2006/10/26 21:42:51 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.84 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1869,7 +1869,7 @@ static void addAccelGrab(Widget topWidget, Widget w)
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
     if (accelString == NULL || *accelString == '\0') {
-        if (accelString != NULL) XtFree(accelString);
+        XtFree(accelString);
 	return;
     }
     

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.41 2006/01/02 22:35:04 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.42 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -510,12 +510,12 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     
     /* set the pipes connected to the process for non-blocking i/o */
     if (fcntl(stdinFD, F_SETFL, O_NONBLOCK) < 0)
-    	perror("NEdit: Internal error (fcntl)");
+    	perror("nedit: Internal error (fcntl)");
     if (fcntl(stdoutFD, F_SETFL, O_NONBLOCK) < 0)
-    	perror("NEdit: Internal error (fcntl1)");
+    	perror("nedit: Internal error (fcntl1)");
     if (flags & ERROR_DIALOGS) {
 	if (fcntl(stderrFD, F_SETFL, O_NONBLOCK) < 0)
-    	    perror("NEdit: Internal error (fcntl2)");
+    	    perror("nedit: Internal error (fcntl2)");
     }
     
     /* if there's nothing to write to the process' stdin, close it now */
@@ -594,7 +594,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
     /* error in read */
     if (nRead == -1) { /* error */
 	if (errno != EWOULDBLOCK && errno != EAGAIN) {
-	    perror("NEdit: Error reading shell command output");
+	    perror("nedit: Error reading shell command output");
 	    XtFree((char *)buf);
 	    finishCmdExecution(window, True);
 	}
@@ -635,7 +635,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
     /* error in read */
     if (nRead == -1) {
 	if (errno != EWOULDBLOCK && errno != EAGAIN) {
-	    perror("NEdit: Error reading shell command error stream");
+	    perror("nedit: Error reading shell command error stream");
 	    XtFree((char *)buf);
 	    finishCmdExecution(window, True);
 	}
@@ -678,7 +678,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
     	    close(cmdData->stdinFD);
     	    cmdData->inPtr = NULL;
     	} else if (errno != EWOULDBLOCK && errno != EAGAIN) {
-    	    perror("NEdit: Write to shell command failed");
+    	    perror("nedit: Write to shell command failed");
     	    finishCmdExecution(window, True);
     	}
     } else {
@@ -776,7 +776,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
 	    cmdData->leftPos += len;
 	    cmdData->rightPos = cmdData->leftPos;
 	} else
-	    fprintf(stderr, "NEdit: Too much binary data\n");
+	    fprintf(stderr, "nedit: Too much binary data\n");
     }
     XtFree(outText);
 
@@ -817,8 +817,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     	close(cmdData->stdinFD);
 
     /* Free the provided input text */
-    if (cmdData->input != NULL)
-	XtFree(cmdData->input);
+    XtFree(cmdData->input);
     
     /* Cancel pending timeouts */
     if (cmdData->flushTimeoutID != 0)
@@ -902,7 +901,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     } else {
 	buf = TextGetBuffer(cmdData->textW);
 	if (!BufSubstituteNullChars(outText, outTextLen, buf)) {
-	    fprintf(stderr,"NEdit: Too much binary data in shell cmd output\n");
+	    fprintf(stderr,"nedit: Too much binary data in shell cmd output\n");
 	    outText[0] = '\0';
 	}
 	if (cmdData->flags & REPLACE_SELECTION) {
@@ -953,13 +952,13 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
        returned to the caller, the other half is spliced to stdin, stdout
        and stderr in the child process */
     if (pipe(pipeFDs) != 0) {
-    	perror("NEdit: Internal error (opening stdout pipe)");
+    	perror("nedit: Internal error (opening stdout pipe)");
         return -1;
     }
     *stdoutFD = pipeFDs[0];
     childStdoutFD = pipeFDs[1];
     if (pipe(pipeFDs) != 0) {
-    	perror("NEdit: Internal error (opening stdin pipe)");
+    	perror("nedit: Internal error (opening stdin pipe)");
         return -1;
     }
     *stdinFD = pipeFDs[1];
@@ -968,7 +967,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     	childStderrFD = childStdoutFD;
     else {
 	if (pipe(pipeFDs) != 0) {
-    	    perror("NEdit: Internal error (opening stdin pipe)");
+    	    perror("nedit: Internal error (opening stdin pipe)");
             return -1;
         }
 	*stderrFD = pipeFDs[0];

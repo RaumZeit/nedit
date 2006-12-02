@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.39 2006/10/20 15:44:15 ajbj Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.40 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -1674,8 +1674,7 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
     }
     
     /* replace common macros with default */
-    if (CommonMacros != NULL)
-    	XtFree(CommonMacros);
+    XtFree(CommonMacros);
     CommonMacros = XtNewString(DefaultCommonMacros);
    
     /* Update the dialog */
@@ -1904,8 +1903,7 @@ int LoadSmartIndentCommonString(char *inString)
     char *inPtr = inString;
     
     /* If called from -import, can replace existing ones */
-    if (CommonMacros != NULL)
-	XtFree(CommonMacros);
+    XtFree(CommonMacros);
     
     /* skip over blank space */
     inPtr += strspn(inPtr, " \t\n");

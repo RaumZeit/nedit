@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.65 2006/12/02 09:38:17 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.66 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -921,8 +921,7 @@ void TextDOverstrike(textDisp *textD, char *text)
     textD->cursorToHint = startPos + textLen;
     BufReplace(buf, startPos, endPos, paddedText == NULL ? text : paddedText);
     textD->cursorToHint = NO_HINT;
-    if (paddedText != NULL)
-    	XtFree(paddedText);
+    XtFree(paddedText);
 }
 
 /*
@@ -1732,7 +1731,8 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     	    return True;
     	}
     }
-    return False; /* probably never be reached */
+
+    return False;
 }
 
 /*
@@ -1789,7 +1789,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
        potential infinite loop if x does not advance */
     stdCharWidth = textD->fontStruct->max_bounds.width;
     if (stdCharWidth <= 0) {
-    	fprintf(stderr, "Internal Error, bad font measurement\n");
+    	fprintf(stderr, "nedit: Internal Error, bad font measurement\n");
     	XtFree(lineStr);
     	return;
     }
@@ -1909,8 +1909,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     if (hasCursor && (y_orig != textD->cursorY || y_orig != y))
         TextDRedrawCalltip(textD, 0);
     
-    if (lineStr != NULL)
-    	XtFree(lineStr);
+    XtFree(lineStr);
 }
 
 /*

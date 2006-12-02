@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.137 2006/08/15 21:16:01 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.138 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1373,11 +1373,13 @@ static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData)
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     Widget menu = MENU_WIDGET(w);
+    Widget widget = WidgetToWindow(menu)->lastFocus;
+    String action = (String) clientData;
+    XEvent* event = ((XmAnyCallbackStruct*) callData)->event;
 
-    HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
-    XtCallActionProc(WidgetToWindow(menu)->lastFocus, (char *)clientData,
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    HidePointerOnKeyedEvent(widget, event);
+
+    XtCallActionProc(widget, action, event, NULL, 0);
 }
 
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) 

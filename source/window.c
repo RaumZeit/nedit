@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.194 2006/11/28 20:11:31 arnef Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.195 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1622,8 +1622,7 @@ void SetModeMessage(WindowInfo *window, const char *message)
        so we save a copy of the mode message, so we can restore the
        statsline when the document is raised to top again */
     window->modeMessageDisplayed = True;
-    if (window->modeMessage)
-    	XtFree(window->modeMessage);
+    XtFree(window->modeMessage);
     window->modeMessage = XtNewString(message);
 
     if (!IsTopDocument(window))

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.110 2006/12/02 09:38:16 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.111 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -660,8 +660,7 @@ void FinishLearn(void)
     MacroRecordActionHook = 0;
     
     /* Free the old learn/replay sequence */
-    if (ReplayMacro != NULL)
-    	XtFree(ReplayMacro);
+    XtFree(ReplayMacro);
     
     /* Store the finished action for the replay menu item */
     ReplayMacro = BufGetAll(MacroRecordBuf);
@@ -1556,8 +1555,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
     /* Record the action and its parameters */
     actionString = actionToString(w, actionName, event, params, *numParams);
     if (actionString != NULL) {
-	if (LastCommand != NULL)
-	    XtFree(LastCommand);
+        XtFree(LastCommand);
 	LastCommand = actionString;
     }
 }
@@ -3683,7 +3681,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
     /* forget lines stored in list */
     while (n--)
-      XmStringFree(test_strings[n]);
+        XmStringFree(test_strings[n]);
     XtFree((char *)test_strings);
 
     /* modify the list */

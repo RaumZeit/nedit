@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.53 2005/01/31 14:34:24 edg Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.54 2006/12/02 10:27:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -2415,11 +2415,8 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
             XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
+        XtFree(cmdText);
 
-        if (cmdText!=NULL)
-        {
-            XtFree(cmdText);
-        }
         return NULL;
     }
 
@@ -3487,10 +3484,8 @@ static void freeUserMenuList(UserMenuList *list)
 
     list->umlNbrItems = 0;
 
-    if (list->umlItems != NULL) {
-        XtFree((char *)list->umlItems);
-        list->umlItems = NULL;
-    }
+    XtFree((char*) list->umlItems);
+    list->umlItems = NULL;
 }
 
 static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys)
@@ -3515,9 +3510,7 @@ static void freeUserMenuListElement(UserMenuListElement *element)
     if (element->umleSubMenuList != NULL)
         freeUserSubMenuList(element->umleSubMenuList);
 
-    if (element->umleAccKeys != NULL)
-        XtFree(element->umleAccKeys);
-
+    XtFree(element->umleAccKeys);
     XtFree((char *)element);
 }
 
