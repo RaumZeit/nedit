@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.52 2006/10/17 13:00:29 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.53 2007/01/03 23:40:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -2316,9 +2316,13 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args,
     simpleInsertAtCursor(w, indentStr, event, True);
     XtFree(indentStr);
     
-    /* If emulated tabs are on, make the inserted indent deletable by tab */
-    if (tw->text.emulateTabs)
-    	tw->text.emTabsBeforeCursor = column / tw->text.emulateTabs;
+    if (tw->text.emulateTabs > 0) {
+        /*  If emulated tabs are on, make the inserted indent deletable by
+            tab. Round this up by faking the column a bit to the right to
+            let the user delete half-tabs with one keypress.  */
+        column += tw->text.emulateTabs - 1;
+        tw->text.emTabsBeforeCursor = column / tw->text.emulateTabs;
+    }
     
     BufUnselect(buf);
 }
@@ -2414,15 +2418,19 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args,
     cancelDrag(w);
     if (checkReadOnly(w))
 	return;
+
     TakeMotifDestination(w, e->time);
     if (deletePendingSelection(w, event))
     	return;
+
     if (insertPos == 0) {
         ringIfNecessary(silent, w);
     	return;
     }
+
     if (deleteEmulatedTab(w, event))
     	return;
+
     if (((TextWidget)w)->text.overstrike) {
     	c = BufGetCharacter(textD->buffer, insertPos - 1);
     	if (c == '\n')
@@ -2432,6 +2440,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args,
     } else {
     	BufRemove(textD->buffer, insertPos - 1, insertPos);
     }
+
     TextDSetInsertPosition(textD, insertPos - 1);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
