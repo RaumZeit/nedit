@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.54 2007/01/03 23:40:00 yooden Exp $
+$Id: ReleaseNotes,v 1.55 2007/01/04 01:42:23 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -16,6 +16,9 @@ about updating macros and font settings in your .nedit file.
 New Features in $NEXT_VERSION
 
   - The macro variable $VERSION returns NEdit's version number.
+
+  - The new macro function filename_dialog() can be used to query a file
+    name from the user by using the usual file selection dialog.
 
 
 Bugs fixed in $NEXT_VERSION

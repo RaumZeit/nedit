@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.111 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.112 2007/01/04 01:42:24 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -401,10 +401,8 @@ static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg);
 static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, char **errMsg);
-static int newFilenameDialogMS(WindowInfo *window, DataValue *argList, 
-        int nArgs, DataValue *result, char **errMsg);
-static int existFilenameDialogMS(WindowInfo *window, DataValue *argList, 
-        int nArgs, DataValue *result, char **errMsg);
+static int filenameDialogMS(WindowInfo* window, DataValue* argList, int nArgs,
+        DataValue* result, char** errMsg);
 
 /* Built-in subroutines and variables for the macro language */
 static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
@@ -423,8 +421,7 @@ static BuiltInSubr MacroSubrs[] = {lengthMS, getRangeMS, tPrintMS,
         rangesetSetColorMS, rangesetSetNameMS, rangesetSetModeMS,
         rangesetGetByNameMS,
         getPatternByNameMS, getPatternAtPosMS,
-        getStyleByNameMS, getStyleAtPosMS, newFilenameDialogMS, 
-        existFilenameDialogMS
+        getStyleByNameMS, getStyleAtPosMS, filenameDialogMS
     };
 #define N_MACRO_SUBRS (sizeof MacroSubrs/sizeof *MacroSubrs)
 static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_print",
@@ -443,8 +440,7 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {"length", "get_range", "t_pr
         "rangeset_set_color", "rangeset_set_name", "rangeset_set_mode",
         "rangeset_get_by_name",
         "get_pattern_by_name", "get_pattern_at_pos",
-        "get_style_by_name", "get_style_at_pos", "new_filename_dialog",
-        "exist_filename_dialog"
+        "get_style_by_name", "get_style_at_pos", "filename_dialog"
     };
 static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         fileNameMV, filePathMV, lengthMV, selectionStartMV, selectionEndMV,
@@ -3354,160 +3350,124 @@ static int calltipIDMV(WindowInfo *window, DataValue *argList,
     return True;
 }
 
-/* 
- * new_filename_dialog(title[, path[, defaultName]])
- * Presents a file selection dialog to the user prompting for a new file.
- *
- * <title> will be the title of the dialog
- * <path> is the default path to use.  Default (or "") is the current file's
- *      directory.
- * <defaultName> is the default filename that is filled in automatically.
- *
- * Returns "" if the user cancelled the dialog, otherwise returns the path to
- * the file that was selected
- *
- * Note that defaultName doesn't work on all *tifs.  :-(
- */
-static int newFilenameDialogMS(WindowInfo *window, DataValue *argList, 
-        int nArgs, DataValue *result, char **errMsg)
+/*
+**  filename_dialog([title[, mode[, defaultPath[, filter[, defaultName]]]]])
+**
+**  Presents a FileSelectionDialog to the user prompting for a new file.
+**
+**  Options are:
+**  title       - will be the title of the dialog, defaults to "Choose file".
+**  mode        - if set to "exist" (default), the "New File Name" TextField
+**                of the FSB will be unmanaged. If "new", the TextField will
+**                be managed.
+**  defaultPath - is the default path to use. Default (or "") will use the
+**                active document's directory.
+**  filter      - the file glob which determines which files to display.
+**                Is set to "*" if filter is "" and by default.
+**  defaultName - is the default filename that is filled in automatically.
+**
+** Returns "" if the user cancelled the dialog, otherwise returns the path to
+** the file that was selected
+**
+** Note that defaultName doesn't work on all *tifs.  :-(
+*/
+static int filenameDialogMS(WindowInfo* window, DataValue* argList, int nArgs,
+        DataValue* result, char** errMsg)
 {
-    macroCmdInfo *cmdData;
+    char stringStorage[5][TYPE_INT_STR_SIZE(int)];
     char filename[MAXPATHLEN + 1];
-    char stringStorage[3][TYPE_INT_STR_SIZE(int)];
-    char *title, *path="", *defaultName="";
-    char *savedDefaultDir;
-    int gfn_result;
-    
-    /* Ignore the focused window passed as the function argument and put
-       the dialog up over the window which is executing the macro */
-    window = MacroRunWindow();
-    cmdData = window->macroCmdData;
-    
-    /* Dialogs require macro to be suspended and interleaved with other macros.
-       This subroutine can't be run if macro execution can't be interrupted */
-    if (!cmdData) {
-        *errMsg = "%s can't be called from non-suspendable context";
-         return False;
-    }
-    
-    /* Get the arguments (use filename var for temp. storage) */
-    if (nArgs < 1) {
-        *errMsg = "%s subroutine called with no title.  Requires at least 1"
-                  " argument";
-        return False;
-    }
-    if (!readStringArg(argList[0], &title, stringStorage[0], errMsg)) {
-        return False;
-    }
-    if (nArgs > 1 && !readStringArg(argList[1], &path, stringStorage[1], 
-            errMsg)) {
-        return False;
-    }
-    if (nArgs > 2 && !readStringArg(argList[2], &defaultName, stringStorage[2], 
-            errMsg)) {
-        return False;
-    }
-    if (nArgs > 3) {
-        *errMsg = "%s called with too many arguments.  Expects 3 arguments.";
-        return False;
-    }
-    
-    /* Pop up the dialog, saving and restoring the default dir */
-    savedDefaultDir = GetFileDialogDefaultDirectory();
-    if (path[0] != '\0') {
-        SetFileDialogDefaultDirectory(path);
-    } else {
-        SetFileDialogDefaultDirectory(window->path);
-    }
-    gfn_result = GetNewFilename( window->shell, title, filename, defaultName );
-    SetFileDialogDefaultDirectory(savedDefaultDir);
-    result->tag = STRING_TAG;
-    if (gfn_result == GFN_OK) {
-        /* Got a string, copy it to the result */
-        if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
-            *errMsg = "failed to allocate return value: %s";
-            return False;
-        }
-    } else {
-        /* User cancelled.  Return "" */
-        result->val.str.rep = PERM_ALLOC_STR("");
-        result->val.str.len = 0;
-    }
-    return True;
-}
+    char* title = "Choose Filename";
+    char* mode = "exist";
+    char* defaultPath = "";
+    char* filter = "";
+    char* defaultName = "";
+    char* orgDefaultPath;
+    char* orgFilter;
+    int gfnResult;
 
-/* 
- * exist_filename_dialog(title[, path[, filter]])
- */
-static int existFilenameDialogMS(WindowInfo *window, DataValue *argList, 
-        int nArgs, DataValue *result, char **errMsg)
-{
-    macroCmdInfo *cmdData;
-    char filename[MAXPATHLEN + 1];
-    char stringStorage[3][TYPE_INT_STR_SIZE(int)];
-    char *title, *path="", *filter="";
-    char *savedDefaultDir, *savedFilter;
-    int gfn_result;
-    
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     window = MacroRunWindow();
-    cmdData = window->macroCmdData;
-    
+
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
-    if (!cmdData) {
-        *errMsg = "%s can't be called from non-suspendable context";
-         return False;
+    if (NULL == window->macroCmdData) {
+        M_FAILURE("%s can't be called from non-suspendable context");
     }
-    
-    /* Get the arguments (use filename var for temp. storage) */
-    if (nArgs < 1) {
-        *errMsg = "%s subroutine called with no title.  Requires at least 1"
-                  " argument";
-        return False;
-    }
-    if (!readStringArg(argList[0], &title, stringStorage[0], errMsg)) {
-        return False;
-    }
-    if (nArgs > 1 && !readStringArg(argList[1], &path, stringStorage[1], 
+
+    /*  Get the argument list.  */
+    if (nArgs > 0 && !readStringArg(argList[0], &title, stringStorage[0],
             errMsg)) {
         return False;
     }
-    if (nArgs > 2 && !readStringArg(argList[2], &filter, stringStorage[2], 
+
+    if (nArgs > 1 && !readStringArg(argList[1], &mode, stringStorage[1],
             errMsg)) {
         return False;
     }
-    if (nArgs > 3) {
-        *errMsg = "%s called with too many arguments.  Expects 3 arguments.";
+    if (0 != strcmp(mode, "exist") && 0 != strcmp(mode, "new")) {
+        M_FAILURE("Invalid value for mode in %s");
+    }
+
+    if (nArgs > 2 && !readStringArg(argList[2], &defaultPath, stringStorage[2],
+            errMsg)) {
         return False;
     }
-    
-    /* Pop up the dialog, saving and restoring the default dir/filter */
-    savedDefaultDir = GetFileDialogDefaultDirectory();
-    savedFilter = GetFileDialogDefaultPattern();
-    if (path[0] != '\0') {
-        SetFileDialogDefaultDirectory(path);
+
+    if (nArgs > 3 && !readStringArg(argList[3], &filter, stringStorage[3],
+            errMsg)) {
+        return False;
+    }
+
+    if (nArgs > 4 && !readStringArg(argList[4], &defaultName, stringStorage[4],
+            errMsg)) {
+        return False;
+    }
+
+    if (nArgs > 5) {
+        M_FAILURE("%s called with too many arguments. Expects at most 5 arguments.");
+    }
+
+    /*  Set default directory (saving original for later)  */
+    orgDefaultPath = GetFileDialogDefaultDirectory();
+    if ('\0' != defaultPath[0]) {
+        SetFileDialogDefaultDirectory(defaultPath);
     } else {
         SetFileDialogDefaultDirectory(window->path);
     }
-    if (filter[0] != '\0')
+
+    /*  Set filter (saving original for later)  */
+    orgFilter = GetFileDialogDefaultPattern();
+    if ('\0' != filter[0]) {
         SetFileDialogDefaultPattern(filter);
-    gfn_result = GetExistingFilename( window->shell, title, filename );
-    SetFileDialogDefaultDirectory(savedDefaultDir);
-    SetFileDialogDefaultPattern(savedFilter);
+    }
+
+    /*  Fork to one of the worker methods from util/getfiles.c.
+        (This should obviously be refactored.)  */
+    if (0 == strcmp(mode, "exist")) {
+        gfnResult = GetExistingFilename(window->shell, title, filename);
+    } else {
+        gfnResult = GetNewFilename(window->shell, title, filename, defaultName);
+    }   /*  Invalid values are weeded out above.  */ 
+
+    /*  Reset original values and free temps  */
+    SetFileDialogDefaultDirectory(orgDefaultPath);
+    SetFileDialogDefaultPattern(orgFilter);
+    XtFree(orgDefaultPath);
+    XtFree(orgFilter);
+
     result->tag = STRING_TAG;
-    if (gfn_result == GFN_OK) {
-        /* Got a string, copy it to the result */
+    if (GFN_OK == gfnResult) {
+        /*  Got a string, copy it to the result  */
         if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
-            *errMsg = "failed to allocate return value: %s";
-            return False;
+            M_FAILURE("failed to allocate return value: %s");
         }
     } else {
         /* User cancelled.  Return "" */
         result->val.str.rep = PERM_ALLOC_STR("");
         result->val.str.len = 0;
     }
+
     return True;
 }
 

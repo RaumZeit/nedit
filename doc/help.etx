@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.105 2006/11/22 13:45:52 yooden Exp $
+.. $Id: help.etx,v 1.106 2007/01/04 01:42:23 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2552,13 +2552,22 @@ Macro Subroutines
   first button is number 1), or 0 if the user closed the dialog via the window
   close box.
 
-**exist_filename_dialog( title[, default_path[, filter]] )**
+**filename_dialog( [title[, mode[, defaultPath[, filter[, defaultName]]]]] )**
   Presents a file selection dialog with the given title to the user that 
-  prompts for an existing file.  A default path and a filter (e.g. "*.c") can be
-  optionally specified.  To specify a filter without a default path, specify ""
-  as the default path.  Returns "" if the user cancelled the dialog,  otherwise
-  returns the fully-qualified path, including the filename.  See also 
-  **new_filename_dialog( ... )**.
+  prompts for a new or existing file.
+
+  Options are: ~title~ will be the title of the dialog, defaults to "Choose
+  file". If ~mode~ is set to "exist" (default), the "New File Name"TextField
+  of the FSB will be unmanaged. If "new", the TextField will be managed.
+  ~defaultPath~ is the default path to use. Default (or "") will use the
+  active document's directory. ~filter~ is the file glob which determines
+  which files to display. Is set to "*" if filter is "" and by default.
+  ~defaultName~ is the default filename that is filled in automatically.
+  (**Note** that the default_filename argument does not work on all Motif
+  implementations.)
+
+  Returns "" if the user cancelled the dialog, otherwise returns the
+  fully-qualified path, including the filename.
 
 **focus_window( window_name )**  
   Sets the window on which subsequent macro commands operate. window_name can
@@ -2611,15 +2620,6 @@ Macro Subroutines
 
 **min( n1, n2, ... )**
   Returns the minimum value of all of its arguments
-
-**new_filename_dialog( title[, default_path[, default_filename]] )**
-  Presents a file selection dialog with the given title to the user that 
-  prompts for a new or existing file.  A default path and filename can be
-  optionally specified.  To specify a default filename without a default path,
-  specify "" as the default path.  Returns "" if the user cancelled the dialog, 
-  otherwise returns the fully-qualified path, including the filename.  Note that
-  the default_filename argument does not work on all Motif implementations.
-  See also **exist_filename_dialog( ... )**.
 
 **read_file( filename )**  
   Reads the contents of a text file into a string. On success, returns 1 in
