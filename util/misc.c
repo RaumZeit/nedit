@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.84 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.85 2007/01/04 00:02:42 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -1870,9 +1870,9 @@ static void addAccelGrab(Widget topWidget, Widget w)
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
     if (accelString == NULL || *accelString == '\0') {
         XtFree(accelString);
-	return;
+        return;
     }
-    
+
     if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers)) {
         XtFree(accelString);
 	return;
@@ -1944,7 +1944,7 @@ static int parseAccelString(Display *display, const char *string, KeySym *keySym
     
     /* Get the keysym part */
     keyStart = c;
-    for ( ; *c != '\0'; c++);
+    for ( ; *c != '\0' && !(c != keyStart && *c == ':'); c++);
     strncpy(keyStr, keyStart, c - keyStart);
     keyStr[c - keyStart] = '\0';
     *keySym = XStringToKeysym(keyStr);
@@ -1984,12 +1984,14 @@ static void lockCB(Widget w, XtPointer callData, XEvent *event,
     Modifiers numLockMask = GetNumLockModMask(XtDisplay(w));
     Widget topMenuWidget = (Widget)callData;
     *continueDispatch = TRUE;
+    
     if (!(((XKeyEvent *)event)->state & (LockMask | numLockMask)))
 	return;
 
-    if (!findAndActivateAccel(topMenuWidget, ((XKeyEvent *)event)->keycode,
-	    ((XKeyEvent *)event)->state & ~(LockMask | numLockMask), event))
-	*continueDispatch = FALSE;
+    if (findAndActivateAccel(topMenuWidget, ((XKeyEvent*) event)->keycode,
+            ((XKeyEvent*) event)->state & ~(LockMask | numLockMask), event)) {
+        *continueDispatch = FALSE;
+    }
 }
 
 /*
@@ -1999,7 +2001,6 @@ static void lockCB(Widget w, XtPointer callData, XEvent *event,
 static int findAndActivateAccel(Widget w, unsigned int keyCode,
 	unsigned int modifiers, XEvent *event)
 {
-
     WidgetList children;
     Widget menu;
     Cardinal numChildren;
