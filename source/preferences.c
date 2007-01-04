@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.148 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.149 2007/01/04 00:10:48 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -369,99 +369,177 @@ static PrefDescripRec PrefDescrip[] = {
 #endif /* VMS */
     {"macroCommands", "MacroCommands", PREF_ALLOC_STRING,
 	"Complete Word:Alt+D::: {\n\
-		# Tuning parameters\n\
-		ScanDistance = 200\n\
+		# This macro attempts to complete the current word by\n\
+		# finding another word in the same document that has\n\
+		# the same prefix; repeated invocations of the macro\n\
+		# (by repeated typing of its accelerator, say) cycles\n\
+		# through the alternatives found.\n\
+		# \n\
+		# This version avoids the need of initializing the global\n\
+		# variable in an external macro file\n\
+		$compWord[\"\"] = \"\"\n\
 		\n\
-		# Search back to a word boundary to find the word to complete\n\
-		startScan = max(0, $cursor - ScanDistance)\n\
-		endScan = min($text_length, $cursor + ScanDistance)\n\
-		scanString = get_range(startScan, endScan)\n\
-		keyEnd = $cursor-startScan\n\
-		keyStart = search_string(scanString, \"<\", keyEnd, \"backward\", \"regex\")\n\
-		if (keyStart == -1)\n\
-		    return\n\
-		keyString = \"<\" substring(scanString, keyStart, keyEnd)\n\
-		\n\
-		# search both forward and backward from the cursor position.  Note that\n\
-		# using a regex search can lead to incorrect results if any of the special\n\
-		# regex characters is encountered, which is not considered a delimiter\n\
-		backwardSearchResult = search_string(scanString, keyString, keyStart-1, \\\n\
-		    	\"backward\", \"regex\")\n\
-		forwardSearchResult = search_string(scanString, keyString, keyEnd, \"regex\")\n\
-		if (backwardSearchResult == -1 && forwardSearchResult == -1) {\n\
-		    beep()\n\
-		    return\n\
+		if (!(\"wordEnd\" in $compWord)) {\n\
+		    $compWord[\"wordEnd\"] = 0\n\
+		    $compWord[\"repeat\"] = 0\n\
+		    $compWord[\"init\"] = 0\n\
+		    $compWord[\"wordStart\"] = 0\n\
 		}\n\
 		\n\
-		# if only one direction matched, use that, otherwise use the nearest\n\
-		if (backwardSearchResult == -1)\n\
-		    matchStart = forwardSearchResult\n\
-		else if (forwardSearchResult == -1)\n\
-		    matchStart = backwardSearchResult\n\
+		if ($compWord[\"wordEnd\"] == $cursor) {\n\
+		        $compWord[\"repeat\"] += 1\n\
+		}\n\
 		else {\n\
-		    if (keyStart - backwardSearchResult <= forwardSearchResult - keyEnd)\n\
-		    	matchStart = backwardSearchResult\n\
+		   $compWord[\"repeat\"] = 1\n\
+		   $compWord[\"init\"] = $cursor\n\
+		\n\
+		   # search back to a word boundary to find the word to complete\n\
+		   $compWord[\"wordStart\"] = search(\"<\\\\l+\", $cursor, \"backward\", \"regex\", \"wrap\")\n\
+		\n\
+		   if ($compWord[\"wordStart\"] == -1)\n\
+		      return\n\
+		\n\
+		    if ($search_end == $cursor)\n\
+		       $compWord[\"word\"] = get_range($compWord[\"wordStart\"], $cursor)\n\
 		    else\n\
-		    	matchStart = forwardSearchResult\n\
+		        return\n\
 		}\n\
+		s = $cursor\n\
+		for (i=0; i <= $compWord[\"repeat\"]; i++)\n\
+		    s = search($compWord[\"word\"], s - 1, \"backward\", \"regex\", \"wrap\")\n\
 		\n\
-		# find the complete word\n\
-		matchEnd = search_string(scanString, \">\", matchStart, \"regex\")\n\
-		completedWord = substring(scanString, matchStart, matchEnd)\n\
+		if (s == $compWord[\"wordStart\"]) {\n\
+		   beep()\n\
+		   $compWord[\"repeat\"] = 0\n\
+		   s = $compWord[\"wordStart\"]\n\
+		   se = $compWord[\"init\"]\n\
+		}\n\
+		else\n\
+		   se = search(\">\", s, \"regex\")\n\
 		\n\
-		# replace it in the window\n\
-		replace_range(startScan + keyStart, $cursor, completedWord)\n\
+		replace_range($compWord[\"wordStart\"], $cursor, get_range(s, se))\n\
+		\n\
+		$compWord[\"wordEnd\"] = $cursor\n\
 	}\n\
 	Fill Sel. w/Char:::R: {\n\
+		# This macro replaces each character position in\n\
+		# the selection with the string typed into the dialog\n\
+		# it displays.\n\
 		if ($selection_start == -1) {\n\
 		    beep()\n\
 		    return\n\
 		}\n\
 		\n\
 		# Ask the user what character to fill with\n\
-		fillChar = string_dialog(\"Fill selection with what character?\", \"OK\", \"Cancel\")\n\
+		fillChar = string_dialog(\"Fill selection with what character?\", \\\n\
+		                         \"OK\", \"Cancel\")\n\
 		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
 		    return\n\
 		\n\
-		# Count the number of lines in the selection\n\
-		nLines = 0\n\
-		for (i=$selection_start; i<$selection_end; i++)\n\
-		    if (get_character(i) == \"\\n\")\n\
-		    	nLines++\n\
+		# Count the number of lines (NL characters) in the selection\n\
+		# (by removing all non-NLs in selection and counting the remainder)\n\
+		nLines = length(replace_in_string(get_selection(), \\\n\
+		                                  \"^.*$\", \"\", \"regex\"))\n\
 		\n\
-		# Create the fill text\n\
 		rectangular = $selection_left != -1\n\
-		line = \"\"\n\
-		fillText = \"\"\n\
+		\n\
+		# work out the pieces of required of the replacement text\n\
+		# this will be top mid bot where top is empty or ends in NL,\n\
+		# mid is 0 or more lines of repeats ending with NL, and\n\
+		# bot is 0 or more repeats of the fillChar\n\
+		\n\
+		toplen = -1 # top piece by default empty (no NL)\n\
+		midlen = 0\n\
+		botlen = 0\n\
+		\n\
 		if (rectangular) {\n\
-		    for (i=0; i<$selection_right-$selection_left; i++)\n\
-			line = line fillChar\n\
-		    for (i=0; i<nLines; i++)\n\
-			fillText = fillText line \"\\n\"\n\
-		    fillText = fillText line\n\
+		    # just fill the rectangle:  mid\\n \\ nLines\n\
+		    #                           mid\\n /\n\
+		    #                           bot   - last line with no nl\n\
+		    midlen = $selection_right -  $selection_left\n\
+		    botlen = $selection_right -  $selection_left\n\
 		} else {\n\
+		    #                  |col[0]\n\
+		    #         .........toptoptop\\n                      |col[0]\n\
+		    # either  midmidmidmidmidmid\\n \\ nLines - 1   or ...botbot...\n\
+		    #         midmidmidmidmidmid\\n /                          |col[1]\n\
+		    #         botbot...         |\n\
+		    #                 |col[1]   |wrap margin\n\
+		    # we need column positions col[0], col[1] of selection start and\n\
+		    # end (use a loop and arrays to do the two positions)\n\
+		    sel[0] = $selection_start\n\
+		    sel[1] = $selection_end\n\
+		\n\
+		    # col[0] = pos_to_column($selection_start)\n\
+		    # col[1] = pos_to_column($selection_end)\n\
+		\n\
+		    for (i = 0; i < 2; ++i) {\n\
+		        end = sel[i]\n\
+		        pos = search(\"^\", end, \"regex\", \"backward\")\n\
+		        thisCol = 0\n\
+		        while (pos < end) {\n\
+		            nexttab = search(\"\\t\", pos)\n\
+		            if (nexttab < 0 || nexttab >= end) {\n\
+		                thisCol += end - pos # count remaining non-tabs\n\
+		                nexttab = end\n\
+		            } else {\n\
+		                thisCol += nexttab - pos + $tab_dist\n\
+		                thisCol -= (thisCol % $tab_dist)\n\
+		            }\n\
+		            pos = nexttab + 1 # skip past the tab or end\n\
+		        }\n\
+		        col[i] = thisCol\n\
+		    }\n\
+		    toplen = max($wrap_margin - col[0], 0)\n\
+		    botlen = min(col[1], $wrap_margin)\n\
+		\n\
 		    if (nLines == 0) {\n\
-		    	for (i=$selection_start; i<$selection_end; i++)\n\
-		    	    fillText = fillText fillChar\n\
+		        toplen = -1\n\
+		        botlen = max(botlen - col[0], 0)\n\
 		    } else {\n\
-		    	startIndent = 0\n\
-		    	for (i=$selection_start-1; i>=0 && get_character(i)!=\"\\n\"; i--)\n\
-		    	    startIndent++\n\
-		    	for (i=0; i<$wrap_margin-startIndent; i++)\n\
-		    	    fillText = fillText fillChar\n\
-		    	fillText = fillText \"\\n\"\n\
-			for (i=0; i<$wrap_margin; i++)\n\
-			    line = line fillChar\n\
-			for (i=0; i<nLines-1; i++)\n\
-			    fillText = fillText line \"\\n\"\n\
-			for (i=$selection_end-1; i>=$selection_start && get_character(i)!=\"\\n\"; \\\n\
-			    	i--)\n\
-			    fillText = fillText fillChar\n\
+		        midlen = $wrap_margin\n\
+		        if (toplen < 0)\n\
+		            toplen = 0\n\
+		        nLines-- # top piece will end in a NL\n\
 		    }\n\
 		}\n\
 		\n\
-		# Replace the selection with the fill text\n\
-		replace_selection(fillText)\n\
+		# Create the fill text\n\
+		# which is the longest piece? make a line of that length\n\
+		# (use string doubling - this allows the piece to be\n\
+		# appended to double in size at each iteration)\n\
+		\n\
+		len = max(toplen, midlen, botlen)\n\
+		charlen = length(fillChar) # maybe more than one char given!\n\
+		\n\
+		line = \"\"\n\
+		while (len > 0) {\n\
+		    if (len % 2)\n\
+		        line = line fillChar\n\
+		    len /= 2\n\
+		    if (len > 0)\n\
+		        fillChar = fillChar fillChar\n\
+		}\n\
+		# assemble our pieces\n\
+		toppiece = \"\"\n\
+		midpiece = \"\"\n\
+		botpiece = \"\"\n\
+		if (toplen >= 0)\n\
+		    toppiece = substring(line, 0, toplen * charlen) \"\\n\"\n\
+		if (botlen > 0)\n\
+		    botpiece = substring(line, 0, botlen * charlen)\n\
+		\n\
+		# assemble midpiece (use doubling again)\n\
+		line = substring(line, 0, midlen * charlen) \"\\n\"\n\
+		while (nLines > 0) {\n\
+		    if (nLines % 2)\n\
+		        midpiece = midpiece line\n\
+		    nLines /= 2\n\
+		    if (nLines > 0)\n\
+		        line = line line\n\
+		}\n\
+		# Replace the selection with the complete fill text\n\
+		replace_selection(toppiece midpiece botpiece)\n\
 	}\n\
 	Quote Mail Reply:::: {\n\
 		if ($selection_start == -1)\n\
