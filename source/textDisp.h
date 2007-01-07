@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.29 2006/12/02 09:38:17 yooden Exp $ */
+/* $Id: textDisp.h,v 1.30 2007/01/07 13:18:12 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDisp.h -- Nirvana Editor Text Diplay Header File                         *
@@ -186,7 +186,6 @@ int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
 void TextDResize(textDisp *textD, int width, int height);
 void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
 	int height);
-void TextDRedisplayRange(textDisp *textD, int start, int end);
 void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset);
 void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
 void TextDInsert(textDisp *textD, char *text);

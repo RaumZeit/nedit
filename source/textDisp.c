@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.67 2006/12/02 12:01:41 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.68 2007/01/07 13:18:12 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -183,6 +183,7 @@ static int measurePropChar(const textDisp* textD, const char c,
         const int colNum, const int pos);
 static Pixel allocBGColor(Widget w, char *colorName, int *ok);
 static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
+static void textDRedisplayRange(textDisp *textD, int start, int end);
 
 textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
         Position left, Position top, Position width, Position height,
@@ -665,7 +666,7 @@ void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
 ** after pos, including blank lines which are not technically part of
 ** any range of characters.
 */
-void TextDRedisplayRange(textDisp *textD, int start, int end)
+void textDRedisplayRange(textDisp *textD, int start, int end)
 {
     int i, startLine, lastLine, startIndex, endIndex;
     
@@ -681,10 +682,14 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
     if (end > textD->buffer->length) end = textD->buffer->length;
     
     /* Get the starting and ending lines */
-    if (start < textD->firstChar)
+    if (start < textD->firstChar) {
     	start = textD->firstChar;
-    if (!posToVisibleLineNum(textD, start, &startLine))
+    }
+
+    if (!posToVisibleLineNum(textD, start, &startLine)) {
     	startLine = textD->nVisibleLines - 1;
+    }
+
     if (end >= textD->lastChar) {
     	lastLine = textD->nVisibleLines - 1;
     } else {
@@ -700,9 +705,14 @@ void TextDRedisplayRange(textDisp *textD, int start, int end)
             : start - textD->lineStarts[startLine];
     if (end >= textD->lastChar)
     {
+        /*  Request to redisplay beyond textD->lastChar, so tell
+            redisplayLine() to display everything to infy.  */
         endIndex = INT_MAX;
     } else if (textD->lineStarts[lastLine] == -1)
     {
+        /*  Here, lastLine is determined by posToVisibleLineNum() (see
+            if/else above) but deemed to be out of display according to
+            textD->lineStarts. */
         endIndex = 0;
     } else
     {
@@ -790,7 +800,7 @@ void TextDSetInsertPosition(textDisp *textD, int newPos)
     /* draw it at its new position */
     textD->cursorPos = newPos;
     textD->cursorOn = True;
-    TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos + 1);
+    textDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos + 1);
 }
 
 void TextDBlankCursor(textDisp *textD)
@@ -800,14 +810,14 @@ void TextDBlankCursor(textDisp *textD)
     
     blankCursorProtrusions(textD);
     textD->cursorOn = False;
-    TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
+    textDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
 }
 
 void TextDUnblankCursor(textDisp *textD)
 {
     if (!textD->cursorOn) {
     	textD->cursorOn = True;
-    	TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
+        textDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
     }
 }
 
@@ -815,8 +825,9 @@ void TextDSetCursorStyle(textDisp *textD, int style)
 {
     textD->cursorStyle = style;
     blankCursorProtrusions(textD);
-    if (textD->cursorOn)
-    	TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos + 1);
+    if (textD->cursorOn) {
+        textDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos + 1);
+    }
 }
 
 void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin)
@@ -1186,7 +1197,7 @@ void TextDMakeInsertPosVisible(textDisp *textD)
                     cursorPos, True);
     }
     if (topLine < 1) {
-        fprintf(stderr, "internal consistency check tl1 failed\n");
+        fprintf(stderr, "nedit: internal consistency check tl1 failed\n");
         topLine = 1;
     }
     
@@ -1639,7 +1650,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     	extendRangeForStyleMods(textD, &startDispPos, &endDispPos);
     
     /* Redisplay computed range */
-    TextDRedisplayRange(textD, startDispPos, endDispPos);
+    textDRedisplayRange(textD, startDispPos, endDispPos);
 }
 
 /*
@@ -1721,7 +1732,7 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     	if (emptyLinesVisible(textD)) {
     	    if (textD->lastChar < textD->buffer->length) {
     		if (!posToVisibleLineNum(textD, textD->lastChar, lineNum)) {
-    		    fprintf(stderr, "Consistency check ptvl failed\n");
+    		    fprintf(stderr, "nedit: Consistency check ptvl failed\n");
     		    return False;
     		}
     		return ++(*lineNum) <= textD->nVisibleLines-1;
@@ -1823,15 +1834,19 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
        that character */
     x = textD->left - textD->horizOffset;
     outIndex = 0;
-    for(charIndex=0; ; charIndex++) {
+
+    for (charIndex = 0; ; charIndex++) {
         baseChar = '\0';
-    	charLen = charIndex >= lineLen ? 1 :
-                BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
-    	    	expandedChar, buf->tabDist, buf->nullSubsChar);
+        charLen = charIndex >= lineLen
+                ? 1
+                : BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
+                        expandedChar, buf->tabDist, buf->nullSubsChar);
     	style = styleOfPos(textD, lineStartPos, lineLen, charIndex,
                 outIndex + dispIndexOffset, baseChar);
-    	charWidth = charIndex >= lineLen ? stdCharWidth :
-    	    	stringWidth(textD, expandedChar, charLen, style);
+        charWidth = charIndex >= lineLen
+                ? stdCharWidth
+                : stringWidth(textD, expandedChar, charLen, style);
+
     	if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
     	    startIndex = charIndex;
     	    outStartIndex = outIndex;
@@ -1849,10 +1864,10 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     outPtr = outStr;
     outIndex = outStartIndex;
     x = startX;
-    for(charIndex=startIndex; charIndex<rightCharIndex; charIndex++) {
+    for (charIndex = startIndex; charIndex < rightCharIndex; charIndex++) {
     	if (lineStartPos+charIndex == cursorPos) {
-    	    if (charIndex < lineLen || (charIndex == lineLen &&
-    	    	    cursorPos >= buf->length)) {
+    	    if (charIndex < lineLen
+                    || (charIndex == lineLen && cursorPos >= buf->length)) {
     		hasCursor = True;
     		cursorX = x - 1;
     	    } else if (charIndex == lineLen) {
@@ -1862,33 +1877,43 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     	    	}
     	    }
     	}
+
         baseChar = '\0';
-     	charLen = charIndex >= lineLen ? 1 :
-                BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
-                expandedChar, buf->tabDist, buf->nullSubsChar);
+     	charLen = charIndex >= lineLen
+                ? 1
+                : BufExpandCharacter(baseChar = lineStr[charIndex], outIndex,
+                        expandedChar, buf->tabDist, buf->nullSubsChar);
    	charStyle = styleOfPos(textD, lineStartPos, lineLen, charIndex,
                 outIndex + dispIndexOffset, baseChar);
-   	for (i=0; i<charLen; i++) {
-   	    if (i != 0 && charIndex < lineLen && lineStr[charIndex] == '\t')
-   		charStyle = styleOfPos(textD, lineStartPos, lineLen,
-    		    charIndex, outIndex + dispIndexOffset, '\t');
+   	for (i = 0; i < charLen; i++) {
+            if (i != 0 && charIndex < lineLen && lineStr[charIndex] == '\t') {
+                charStyle = styleOfPos(textD, lineStartPos, lineLen, charIndex,
+                        outIndex + dispIndexOffset, '\t');
+            }
+
      	    if (charStyle != style) {
     		drawString(textD, style, startX, y, x, outStr, outPtr - outStr);
     		outPtr = outStr;
     		startX = x;
     		style = charStyle;
     	    }
+
     	    if (charIndex < lineLen) {
     		*outPtr = expandedChar[i];
     		charWidth = stringWidth(textD, &expandedChar[i], 1, charStyle);
-    	    } else
+    	    } else {
     		charWidth = stdCharWidth;
+            }
+
     	    outPtr++;
     	    x += charWidth;
     	    outIndex++;
 	}
-    	if (outPtr-outStr+MAX_EXP_CHAR_LEN>=MAX_DISP_LINE_LEN || x>=rightClip)
+
+        if (outPtr - outStr + MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN
+                || x >= rightClip) {
     	    break;
+        }
     }
     
     /* Draw the remaining style segment */
@@ -1900,15 +1925,17 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
        of the redisplayed section. */
     y_orig = textD->cursorY;
     if (textD->cursorOn) {
-	if (hasCursor)
+        if (hasCursor) {
     	    drawCursor(textD, cursorX, y);
-	else if (charIndex<lineLen && (lineStartPos+charIndex+1 == cursorPos)
+        } else if (charIndex < lineLen
+                && (lineStartPos+charIndex+1 == cursorPos)
 	    	&& x == rightClip) {
-    	    if (cursorPos >= buf->length)
+            if (cursorPos >= buf->length) {
     	    	drawCursor(textD, x - 1, y);
-    	    else {
-    		if (wrapUsesCharacter(textD, cursorPos))
+            } else {
+                if (wrapUsesCharacter(textD, cursorPos)) {
     	    	    drawCursor(textD, x - 1, y);
+                }
     	    }
     	} 
     }
@@ -2709,7 +2736,7 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
                     textD->top, -xOffset, textD->height);
         }
         /* Restore protruding parts of the cursor */
-        TextDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
+        textDRedisplayRange(textD, textD->cursorPos-1, textD->cursorPos+1);
     }
     
     /* Refresh line number/calltip display if its up and we've scrolled 
