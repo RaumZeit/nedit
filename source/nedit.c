@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.98 2006/11/07 22:04:50 n8gray Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.99 2007/01/12 22:44:46 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -103,9 +103,8 @@ static unsigned char* sanitizeVirtualKeyBindings(void);
 static int sortAlphabetical(const void* k1, const void* k2);
 static int virtKeyBindingsAreInvalid(const unsigned char* bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
-#ifdef LESSTIF_VERSION
-static void bogusWarningFilter(String);
-#endif
+static void noWarningFilter(String);
+static void showWarningFilter(String);
 
 WindowInfo *WindowList = NULL;
 Display *TheDisplay = NULL;
@@ -404,8 +403,9 @@ int main(int argc, char **argv)
     /* Warn user if this has been compiled wrong. */
     enum MotifStability stability = GetMotifStability();
     if (stability == MotifKnownBad) {
-        fprintf(stderr, "nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n"
-                "nedit: Please get a stable version of NEdit from http://www.nedit.org.\n");
+        fputs("nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n"
+              "nedit: Please get a stable version of NEdit from http://www.nedit.org.\n",
+              stderr);
     }
 
     /* Save the command which was used to invoke nedit for restart command */
@@ -422,10 +422,8 @@ int main(int argc, char **argv)
     /* Set up a warning handler to trap obnoxious Xt grab warnings */
     SuppressPassiveGrabWarnings();
 
-#ifdef LESSTIF_VERSION
-    /* Set up a handler to suppress bogus Lesstif warning messages */
-    XtAppSetWarningHandler(context, bogusWarningFilter);
-#endif
+    /* Set up a handler to suppress X warning messages by default */
+    XtAppSetWarningHandler(context, noWarningFilter);
     
     /* Set up default resources if no app-defaults file is found */
     XtAppSetFallbackResources(context, fallbackResources);
@@ -480,7 +478,7 @@ int main(int argc, char **argv)
                 exit(EXIT_SUCCESS);
             }
         }
-	XtWarning ("NEdit: Can't open display\n");
+	fputs ("NEdit: Can't open display\n", stderr);
 	exit(EXIT_FAILURE);
     }
     
@@ -612,6 +610,8 @@ int main(int argc, char **argv)
     	    	gotoLine = True;
     	} else if (opts && !strcmp(argv[i], "-server")) {
     	    IsServer = True;
+        } else if (opts && !strcmp(argv[i], "-xwarn")) {
+            XtAppSetWarningHandler(context, showWarningFilter);
 	} else if (opts && (!strcmp(argv[i], "-iconic") || 
 	                    !strcmp(argv[i], "-icon"))) {
     	    iconic = True;
@@ -1274,18 +1274,20 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings
    }
 }
 
-#ifdef LESSTIF_VERSION
 /*
 ** Warning handler that suppresses harmless but annoying warnings generated
 ** by non-production Lesstif versions.
 */
-static void bogusWarningFilter(String message)
+static void showWarningFilter(String message)
 {
   const char* bogusMessages[] = {
+#ifdef LESSTIF_VERSION
     "XmFontListCreate() is an obsolete function!",
     "No type converter registered for 'String' to 'PathMode' conversion.",
     "XtRemoveGrab asked to remove a widget not on the list",
-    NULL };
+#endif
+    NULL 
+  };
   const char **bogusMessage = &bogusMessages[0]; 
   
   while (*bogusMessage) {
@@ -1303,4 +1305,8 @@ static void bogusWarningFilter(String message)
   /* An unknown message. Keep it. */
   fprintf(stderr, "%s\n", message);
 }
-#endif /* LESSTIF_VERSION */
+
+static void noWarningFilter(String message)
+{
+  return;
+}
