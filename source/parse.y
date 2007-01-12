@@ -1,4 +1,4 @@
-/* $Id: parse.y,v 1.28 2005/02/16 03:44:16 ajbj Exp $ */
+/* $Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $ */
 %{
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -33,12 +33,12 @@
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) *((int *)(from)) = ((Inst *)(to)) - ((Inst *)(from))
+#define SET_BR_OFF(from, to) ((from)->value) = ((Inst *)(to)) - ((Inst *)(from))
 
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.28 2005/02/16 03:44:16 ajbj Exp $";
+static const char CVSID[] = "$Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -178,69 +178,69 @@ simpstmt:   SYMBOL '=' expr {
                 ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN); ADD_SYM($1);
             }
             | DELETE arraylv '[' arglist ']' {
-                ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((void *)$4);
+                ADD_OP(OP_ARRAY_DELETE); ADD_IMMED($4);
             }
             | initarraylv '[' arglist ']' '=' expr {
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' ADDEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_ADD);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' SUBEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_SUB);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' MULEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_MUL);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' DIVEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_DIV);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' MODEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_MOD);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' ANDEQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_BIT_AND);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' OREQ expr {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED($3);
                 ADD_OP(OP_BIT_OR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' INCR {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED($3);
                 ADD_OP(OP_INCR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | initarraylv '[' arglist ']' DECR {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED($3);
                 ADD_OP(OP_DECR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($3);
             }
             | INCR initarraylv '[' arglist ']' {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$4);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED($4);
                 ADD_OP(OP_INCR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$4);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($4);
             }
             | DECR initarraylv '[' arglist ']' {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)$4);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED($4);
                 ADD_OP(OP_DECR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)$4);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED($4);
             }
             | SYMBOL '(' arglist ')' {
                 ADD_OP(OP_SUBR_CALL);
-                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
+                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED($3);
             }
             | INCR SYMBOL {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM($2); ADD_OP(OP_INCR);
@@ -289,17 +289,17 @@ expr:       numexpr %prec CONCAT
             }
             ;
 initarraylv:    SYMBOL {
-                    ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED((void *)1);
+                    ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED(1);
                 }
                 | initarraylv '[' arglist ']' {
-                    ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+                    ADD_OP(OP_ARRAY_REF); ADD_IMMED($3);
                 }
                 ;
 arraylv:    SYMBOL {
-                ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED((void *)0);
+                ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM($1); ADD_IMMED(0);
             }
             | arraylv '[' arglist ']' {
-                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED($3);
             }
             ;
 arrayexpr:  numexpr {
@@ -317,7 +317,7 @@ numexpr:    NUMBER {
             }
             | SYMBOL '(' arglist ')' {
                 ADD_OP(OP_SUBR_CALL);
-                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED((void *)$3);
+                ADD_SYM(PromoteToGlobal($1)); ADD_IMMED($3);
                 ADD_OP(OP_FETCH_RET_VAL);
             }
             | '(' expr ')'
@@ -331,7 +331,7 @@ numexpr:    NUMBER {
                ADD_OP(OP_PUSH_ARG_ARRAY);
             }
             | numexpr '[' arglist ']' {
-                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)$3);
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED($3);
             }
             | numexpr '+' numexpr {
                 ADD_OP(OP_ADD);

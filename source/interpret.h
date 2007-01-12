@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.19 2006/12/02 09:38:16 yooden Exp $ */
+/* $Id: interpret.h,v 1.20 2007/01/12 16:17:42 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *
@@ -58,8 +58,13 @@ enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
 
 struct DataValueTag;
 struct ProgramTag;
+struct SymbolRec;
 
-typedef int (*Inst)(void);
+typedef union InstTag {
+    int (*func)(void);
+    int value;
+    struct SymbolRec *sym;
+} Inst;
 
 typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList, 
         int nArgs, struct DataValueTag *result, char **errMsg);
@@ -129,7 +134,7 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 void BeginCreatingProgram(void);
 int AddOp(int op, char **msg);
 int AddSym(Symbol *sym, char **msg);
-int AddImmediate(void *value, char **msg);
+int AddImmediate(int value, char **msg);
 int AddBranchOffset(Inst *to, char **msg);
 Inst *GetPC(void);
 Symbol *InstallIteratorSymbol(void);

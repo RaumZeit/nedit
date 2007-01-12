@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.44 2006/12/02 09:38:16 yooden Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.45 2007/01/12 16:17:42 tringali Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -72,8 +72,8 @@ static const char CVSID[] = "$Id: interpret.c,v 1.44 2006/12/02 09:38:16 yooden 
 
 /* Temporary markers placed in a branch address location to designate
    which loop address (break or continue) the location needs */
-#define NEEDS_BREAK (Inst)1
-#define NEEDS_CONTINUE (Inst)2
+#define NEEDS_BREAK 1
+#define NEEDS_CONTINUE 2
 
 #define N_ARGS_ARG_SYM -1   	/* special arg number meaning $n_args value */
 
@@ -325,7 +325,8 @@ int AddOp(int op, char **msg)
 	*msg = "macro too large";
 	return 0;
     }
-    *ProgP++ = OpFns[op];
+    ProgP->func = OpFns[op];
+    ProgP++;
     return 1;
 }
 
@@ -338,20 +339,22 @@ int AddSym(Symbol *sym, char **msg)
 	*msg = "macro too large";
 	return 0;
     }
-    *ProgP++ = (Inst)sym;
+    ProgP->sym = sym;
+    ProgP++;
     return 1;
 }
 
 /*
 ** Add an immediate value operand to the current program
 */
-int AddImmediate(void *value, char **msg)
+int AddImmediate(int value, char **msg)
 {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
 	*msg = "macro too large";
 	return 0;
     }
-    *ProgP++ = (Inst)value;
+    ProgP->value = value;
+    ProgP++;
     return 1;
 }
 
@@ -364,7 +367,8 @@ int AddBranchOffset(Inst *to, char **msg)
 	*msg = "macro too large";
 	return 0;
     }
-    *ProgP = (Inst)(to - ProgP);
+    /* Should be ptrdiff_t for branch offsets */
+    ProgP->value = to - ProgP;
     ProgP++;
     
     return 1;
@@ -414,7 +418,7 @@ int AddBreakAddr(Inst *addr)
 {
     if (LoopStackPtr == LoopStack) return 1;
     addLoopAddr(addr);
-    *addr = NEEDS_BREAK;
+    addr->value = NEEDS_BREAK;
     return 0;
 }
 
@@ -422,7 +426,7 @@ int AddContinueAddr(Inst *addr)
 {   
     if (LoopStackPtr == LoopStack) return 1;
     addLoopAddr(addr);
-    *addr = NEEDS_CONTINUE;
+    addr->value = NEEDS_CONTINUE;
     return 0;
 }
 
@@ -445,9 +449,9 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr)
     	}
     	if (*LoopStackPtr == NULL)
     	    break;
-    	if (**LoopStackPtr == NEEDS_BREAK)
+    	if ((*LoopStackPtr)->value == NEEDS_BREAK)
     	    **(Inst ***)LoopStackPtr = (Inst *)(breakAddr - *LoopStackPtr);
-    	else if (**LoopStackPtr == NEEDS_CONTINUE)
+    	else if ((*LoopStackPtr)->value == NEEDS_CONTINUE)
     	    **(Inst ***)LoopStackPtr = (Inst *)(continueAddr - *LoopStackPtr);
     	else
     	    fprintf(stderr, "NEdit: internal error (uat) in macro parser\n");
@@ -533,7 +537,7 @@ int ContinueMacro(RestartData *continuation, DataValue *result, char **msg)
     	
     	/* Execute an instruction */
     	inst = PC++;
-	status = (*inst)();
+	status = (inst->func)();
     	
     	/* If error return was not STAT_OK, return to caller */
     	if (status != STAT_OK) {
@@ -626,7 +630,7 @@ void PreemptMacro(void)
 */
 void ModifyReturnedValue(RestartData *context, DataValue dv)
 {
-    if (*(context->pc-1) == fetchRetVal)
+    if ((context->pc-1)->func == fetchRetVal)
 	*(context->stackP-1) = dv;
 }
 
@@ -1147,7 +1151,9 @@ static int pushSymVal(void)
     DISASM_RT(PC-1, 2);
     STACKDUMP(0, 3);
 
-    s = (Symbol *)*PC++;
+    s = PC->sym;
+    PC++;
+
     if (s->type == LOCAL_SYM) {
     	*StackP = FP_GET_SYM_VAL(FrameP, s);
     } else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
@@ -1259,9 +1265,9 @@ static int pushArraySymVal(void)
     DISASM_RT(PC-1, 3);
     STACKDUMP(0, 3);
 
-    sym = (Symbol *)*PC;
+    sym = PC->sym;
     PC++;
-    initEmpty = (int)*PC;
+    initEmpty = PC->value;
     PC++;
     
     if (sym->type == LOCAL_SYM) {
@@ -1308,7 +1314,9 @@ static int assign(void)
     DISASM_RT(PC-1, 2);
     STACKDUMP(1, 3);
 
-    sym = (Symbol *)(*PC++);
+    sym = PC->sym;
+    PC++;
+
     if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
         if (sym->type == ARG_SYM) {
             return execError("assignment to function argument: %s",  sym->name);
@@ -1871,8 +1879,10 @@ static int callSubroutine(void)
     Program *prog;
     char *errMsg;
     
-    sym = (Symbol *)*PC++;
-    nArgs = (int)*PC++;
+    sym = PC->sym;
+    PC++;
+    nArgs = PC->value;
+    PC++;
     
     DISASM_RT(PC-3, 3);
     STACKDUMP(nArgs, 3);
@@ -1891,7 +1901,7 @@ static int callSubroutine(void)
 	if (!sym->value.val.subr(FocusWindow, StackP,
 	    	nArgs, &result, &errMsg))
 	    return execError(errMsg, sym->name);
-    	if (*PC == fetchRetVal) {
+    	if (PC->func == fetchRetVal) {
     	    if (result.tag == NO_TAG) {
     	    	return execError("%s does not return a value", sym->name);
             }
@@ -1968,7 +1978,7 @@ static int callSubroutine(void)
     	PreemptRequest = False;
     	sym->value.val.xtproc(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
-    	if (*PC == fetchRetVal) {
+    	if (PC->func == fetchRetVal) {
     	    return execError("%s does not return a value", sym->name);
         }
     	return PreemptRequest ? STAT_PREEMPT : STAT_OK;
@@ -2038,14 +2048,14 @@ static int returnValOrNone(int valOnStack)
 	} else {
 	    PUSH(noValue);
 	}
-    } else if (*PC == fetchRetVal) {
+    } else if (PC->func == fetchRetVal) {
 	if (valOnStack) {
     	    PUSH(retVal);
 	    PC++;
 	} else {
 	    return execError(
 	    	"using return value of %s which does not return a value",
-	    	((Symbol *)*(PC - 2))->name);
+	    	((PC-2)->sym->name));
 	}
     }
     
@@ -2064,7 +2074,7 @@ static int branch(void)
     DISASM_RT(PC-1, 2);
     STACKDUMP(0, 3);
 
-    PC += (int)*PC;
+    PC += PC->value;
     return STAT_OK;
 }
 
@@ -2085,7 +2095,7 @@ static int branchTrue(void)
     STACKDUMP(1, 3);
 
     POP_INT(value)
-    addr = PC + (int)*PC;
+    addr = PC + PC->value;
     PC++;
     
     if (value)
@@ -2101,7 +2111,7 @@ static int branchFalse(void)
     STACKDUMP(1, 3);
 
     POP_INT(value)
-    addr = PC + (int)*PC;
+    addr = PC + PC->value;
     PC++;
     
     if (!value)
@@ -2421,7 +2431,7 @@ static int arrayRef(void)
     char *keyString = NULL;
     int nDim;
     
-    nDim = (int)*PC;
+    nDim = PC->value;
     PC++;
 
     DISASM_RT(PC-2, 2);
@@ -2472,7 +2482,7 @@ static int arrayAssign(void)
     int errNum;
     int nDim;
     
-    nDim = (int)*PC;
+    nDim = PC->value;
     PC++;
 
     DISASM_RT(PC-2, 1);
@@ -2525,9 +2535,9 @@ static int arrayRefAndAssignSetup(void)
     char *keyString = NULL;
     int binaryOp, nDim;
     
-    binaryOp = (int)*PC;
+    binaryOp = PC->value;
     PC++;
-    nDim = (int)*PC;
+    nDim = PC->value;
     PC++;
 
     DISASM_RT(PC-3, 3);
@@ -2584,7 +2594,7 @@ static int beginArrayIter(void)
     DISASM_RT(PC-1, 2);
     STACKDUMP(1, 3);
 
-    iterator = (Symbol *)*PC;
+    iterator = PC->sym;
     PC++;
 
     POP(arrayVal)
@@ -2639,11 +2649,11 @@ static int arrayIter(void)
     DISASM_RT(PC-1, 4);
     STACKDUMP(0, 3);
 
-    item = (Symbol *)*PC;
+    item = PC->sym;
     PC++;
-    iterator = (Symbol *)*PC;
+    iterator = PC->sym;
     PC++;
-    branchAddr = PC + (int)*PC;
+    branchAddr = PC + PC->value;
     PC++;
 
     if (item->type == LOCAL_SYM) {
@@ -2740,7 +2750,7 @@ static int deleteArrayElement(void)
     char *keyString = NULL;
     int nDim;
 
-    nDim = (int)*PC;
+    nDim = PC->value;
     PC++;
 
     DISASM_RT(PC-2, 2);

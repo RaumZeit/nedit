@@ -47,12 +47,12 @@ static int yygrowstack();
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) *((int *)(from)) = ((Inst *)(to)) - ((Inst *)(from))
+#define SET_BR_OFF(from, to) ((from)->value) = ((Inst *)(to)) - ((Inst *)(from))
 
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.9 2005/02/16 03:44:16 ajbj Exp $";
+static const char CVSID[] = "$Id: parse_noyacc.c,v 1.10 2007/01/12 16:19:35 tringali Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);
@@ -1075,7 +1075,7 @@ static int yyerror(char *s)
     ErrMsg = s;
     return 0;
 }
-#line 998 "y.tab.c"
+#line 1079 "y.tab.c"
 /* allocate initial stack or double stack size, up to YYMAXDEPTH */
 static int yygrowstack()
 {
@@ -1418,108 +1418,108 @@ break;
 case 29:
 #line 180 "parse.y"
 {
-                ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_DELETE); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 30:
 #line 183 "parse.y"
 {
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 31:
 #line 186 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_ADD);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 32:
 #line 191 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_SUB);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 33:
 #line 196 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_MUL);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 34:
 #line 201 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_DIV);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 35:
 #line 206 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_MOD);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 36:
 #line 211 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_BIT_AND);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 37:
 #line 216 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)1); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED(yyvsp[-3].nArgs);
                 ADD_OP(OP_BIT_OR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-3].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-3].nArgs);
             }
 break;
 case 38:
 #line 221 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-2].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED(yyvsp[-2].nArgs);
                 ADD_OP(OP_INCR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-2].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-2].nArgs);
             }
 break;
 case 39:
 #line 226 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-2].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED(yyvsp[-2].nArgs);
                 ADD_OP(OP_DECR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-2].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-2].nArgs);
             }
 break;
 case 40:
 #line 231 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED(yyvsp[-1].nArgs);
                 ADD_OP(OP_INCR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 41:
 #line 236 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED((void *)0); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED(yyvsp[-1].nArgs);
                 ADD_OP(OP_DECR);
-                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 42:
 #line 241 "parse.y"
 {
                 ADD_OP(OP_SUBR_CALL);
-                ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 43:
@@ -1601,25 +1601,25 @@ break;
 case 56:
 #line 291 "parse.y"
 {
-                    ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED((void *)1);
+                    ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED(1);
                 }
 break;
 case 57:
 #line 294 "parse.y"
 {
-                    ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                    ADD_OP(OP_ARRAY_REF); ADD_IMMED(yyvsp[-1].nArgs);
                 }
 break;
 case 58:
 #line 298 "parse.y"
 {
-                ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED((void *)0);
+                ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM(yyvsp[0].sym); ADD_IMMED(0);
             }
 break;
 case 59:
 #line 301 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 60:
@@ -1650,7 +1650,7 @@ case 64:
 #line 318 "parse.y"
 {
                 ADD_OP(OP_SUBR_CALL);
-                ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_SYM(PromoteToGlobal(yyvsp[-3].sym)); ADD_IMMED(yyvsp[-1].nArgs);
                 ADD_OP(OP_FETCH_RET_VAL);
             }
 break;
@@ -1675,7 +1675,7 @@ break;
 case 69:
 #line 333 "parse.y"
 {
-                ADD_OP(OP_ARRAY_REF); ADD_IMMED((void *)yyvsp[-1].nArgs);
+                ADD_OP(OP_ARRAY_REF); ADD_IMMED(yyvsp[-1].nArgs);
             }
 break;
 case 70:
@@ -1864,7 +1864,7 @@ case 99:
             ADD_BR_OFF(0);
         }
 break;
-#line 1787 "y.tab.c"
+#line 1868 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;
