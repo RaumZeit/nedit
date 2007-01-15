@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.45 2007/01/12 16:17:42 tringali Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.46 2007/01/15 14:04:42 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -2934,10 +2934,10 @@ static void disasm(Inst *inst, int nInstr)
     for (i = 0; i < nInstr; ++i) {
         printf("Prog %8p ", &inst[i]);
         for (j = 0; j < N_OPS; ++j) {
-            if (inst[i] == OpFns[j]) {
+            if (inst[i].func == OpFns[j]) {
                 printf("%22s ", opNames[j]);
                 if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
-                    Symbol *sym = (Symbol *)inst[i+1];
+                    Symbol *sym = inst[i+1].sym;
                     printf("%s", sym->name);
                     if (sym->value.tag == STRING_TAG &&
                         strncmp(sym->name, "string #", 8) == 0) {
@@ -2947,45 +2947,38 @@ static void disasm(Inst *inst, int nInstr)
                 }
                 else if (j == OP_BRANCH || j == OP_BRANCH_FALSE ||
                         j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-                    printf("to=(%d) %x", (int)inst[i+1],
-                            (int)(&inst[i+1] + (int)inst[i+1]));
+                    printf("to=(%d) %p", inst[i+1].value,
+                            &inst[i+1] + inst[i+1].value);
                     ++i;
                 }
                 else if (j == OP_SUBR_CALL) {
-                    printf("%s (%d arg)", ((Symbol *)inst[i+1])->name,
-                            (int)inst[i+2]);
+                    printf("%s (%d arg)", inst[i+1].sym->name, inst[i+2].value);
                     i += 2;
                 }
                 else if (j == OP_BEGIN_ARRAY_ITER) {
-                    printf("%s in",
-                            ((Symbol *)inst[i+1])->name);
+                    printf("%s in", inst[i+1].sym->name);
                     ++i;
                 }
                 else if (j == OP_ARRAY_ITER) {
-                    printf("%s = %s++ end-loop=(%d) %x",
-                            ((Symbol *)inst[i+1])->name,
-                            ((Symbol *)inst[i+2])->name,
-                            (int)inst[i+3],
-                            (int)(&inst[i+3] + (int)inst[i+3]));
+                    printf("%s = %s++ end-loop=(%d) %p",
+                            inst[i+1].sym->name,
+                            inst[i+2].sym->name,
+                            inst[i+3].value, &inst[i+3] + inst[i+3].value);
                     i += 3;
                 }
                 else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE ||
                             j == OP_ARRAY_ASSIGN) {
-                    printf("nDim=%d",
-                            ((int)inst[i+1]));
+                    printf("nDim=%d", inst[i+1].value);
                     ++i;
                 }
                 else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
-                    printf("binOp=%s ",
-                            ((int)inst[i+1]) ? "true" : "false");
-                    printf("nDim=%d",
-                            ((int)inst[i+2]));
+                    printf("binOp=%s ", inst[i+1].value ? "true" : "false");
+                    printf("nDim=%d", inst[i+2].value);
                     i += 2;
                 }
                 else if (j == OP_PUSH_ARRAY_SYM) {
-                    printf("%s", ((Symbol *)inst[++i])->name);
-                    printf(" %s",
-                            (int)inst[i+1] ? "createAndRef" : "refOnly");
+                    printf("%s", inst[++i].sym->name);
+                    printf(" %s", inst[i+1].value ? "createAndRef" : "refOnly");
                     ++i;
                 }
 
@@ -2994,7 +2987,7 @@ static void disasm(Inst *inst, int nInstr)
             }
         }
         if (j == N_OPS) {
-            printf("%x\n", (int)inst[i]);
+            printf("%x\n", inst[i].value);
         }
     }
 }
@@ -3022,13 +3015,14 @@ static void stackdump(int n, int extra)
         printf("%8p ", dv);
         switch (offset) {
             case 0:                         pos = "FrameP"; break;  /* first local symbol value */
-            case FP_ARG_ARRAY_CACHE_INDEX:  pos = "args";  break;  /* number of arguments */
+            case FP_ARG_ARRAY_CACHE_INDEX:  pos = "args";   break;  /* arguments array */
             case FP_ARG_COUNT_INDEX:        pos = "NArgs";  break;  /* number of arguments */
             case FP_OLD_FP_INDEX:           pos = "OldFP";  break;
             case FP_RET_PC_INDEX:           pos = "RetPC";  break;
             default:
                 if (offset < -FP_TO_ARGS_DIST && offset >= -FP_TO_ARGS_DIST - nArgs) {
-                    sprintf(pos = buffer, STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
+                    sprintf(pos = buffer, STACK_DUMP_ARG_PREFIX "%d",
+                            offset + FP_TO_ARGS_DIST + nArgs + 1);
                 }
                 break;
         }
