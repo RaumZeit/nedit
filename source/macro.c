@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.112 2007/01/04 01:42:24 yooden Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.113 2007/01/25 23:51:56 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -862,9 +862,15 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 	    inPtr += 6;
 	    inPtr += strspn(inPtr, " \t\n");
 	    namePtr = subrName;
-	    while (isalnum((unsigned char)*inPtr) || *inPtr == '_')
-	    	*namePtr++ = *inPtr++;
-	    *namePtr = '\0';
+            while ((namePtr < &subrName[MAX_SYM_LEN - 1])
+                   && (isalnum((unsigned char)*inPtr) || *inPtr == '_')) {
+                *namePtr++ = *inPtr++;
+            }
+            *namePtr = '\0';
+            if (isalnum((unsigned char)*inPtr) || *inPtr == '_') {
+                return ParseError(dialogParent, string, inPtr, errIn,
+                                  "subroutine name too long");
+            }
 	    inPtr += strspn(inPtr, " \t\n");
 	    if (*inPtr != '{') {
 	    	if (errPos != NULL) *errPos = stoppedAt;
