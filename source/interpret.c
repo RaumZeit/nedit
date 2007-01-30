@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.46 2007/01/15 14:04:42 ajbj Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.47 2007/01/30 13:51:11 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1086,7 +1086,7 @@ static void freeSymbolTable(Symbol *symTab)
         sprintf(string, "%d", (StackP - peekIndex - 1)->val.n); \
     } \
     else if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
-        string = (StackP - peekIndex - 1)->val.str; \
+        string = (StackP - peekIndex - 1)->val.str.rep; \
     } \
     else { \
         return(execError("can't convert array to string", NULL)); \
@@ -1094,7 +1094,7 @@ static void freeSymbolTable(Symbol *symTab)
 
 #define PEEK_INT(number, peekIndex) \
     if ((StackP - peekIndex - 1)->tag == STRING_TAG) { \
-        if (!StringToNum((StackP - peekIndex - 1)->val.str, &number)) { \
+        if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) { \
     	    return execError(StringToNumberMsg, ""); \
         } \
     } else if ((StackP - peekIndex - 1)->tag == INT_TAG) { \
