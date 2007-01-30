@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.195 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.196 2007/01/30 19:42:35 arnef Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4339,6 +4339,8 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->iSearchLastLiteralCase = orgWin->iSearchLastLiteralCase;
     window->findLastRegexCase = orgWin->findLastRegexCase;
     window->findLastLiteralCase = orgWin->findLastLiteralCase;
+    window->fileClosedAtom = orgWin->fileClosedAtom;
+    orgWin->fileClosedAtom = None;
     
     /* copy the text/split panes settings, cursor pos & selection */
     cloneTextPanes(window, orgWin);
