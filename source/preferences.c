@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.149 2007/01/04 00:10:48 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.150 2007/03/02 00:01:04 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -629,6 +629,7 @@ static PrefDescripRec PrefDescrip[] = {
 		select(selStart, selStart + length(newText))\n\
 	}\n\
 	Make C Prototypes@C@C++:::: {\n\
+		# simplistic extraction of C function prototypes, usually good enough\n\
 		if ($selection_start == -1) {\n\
 		    start = 0\n\
 		    end = $text_length\n\
@@ -637,6 +638,10 @@ static PrefDescripRec PrefDescrip[] = {
 		    end = $selection_end\n\
 		}\n\
 		string = get_range(start, end)\n\
+		# remove all C++ and C comments, then all blank lines in the extracted range\n\
+		string = replace_in_string(string, \"//.*$\", \"\", \"regex\", \"copy\")\n\
+		string = replace_in_string(string, \"(?n/\\\\*.*?\\\\*/)\", \"\", \"regex\", \"copy\")\n\
+		string = replace_in_string(string, \"^\\\\s*\\n\", \"\", \"regex\", \"copy\")\n\
 		nDefs = 0\n\
 		searchPos = 0\n\
 		prototypes = \"\"\n\
@@ -652,7 +657,7 @@ static PrefDescripRec PrefDescrip[] = {
 		    if (substring(string, headerStart, headerStart+6) == \"static\")\n\
 			staticPrototypes = staticPrototypes prototype\n\
 		    else\n\
-    			prototypes = prototypes prototype\n\
+			prototypes = prototypes prototype\n\
 		    searchPos = headerEnd\n\
 		    nDefs++\n\
 		}\n\
