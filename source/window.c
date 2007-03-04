@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.196 2007/01/30 19:42:35 arnef Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.197 2007/03/04 23:26:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -198,6 +198,7 @@ static int DoneWithMoveDocumentDialog;
 static void updateLineNumDisp(const WindowInfo* window);
 static int max(const int i1, const int i2);
 static void setGutterWidth(const WindowInfo* window, const unsigned reqCols);
+static void deleteDocument(WindowInfo *window);
 
 /*
 ** Create a new editor window
@@ -1013,18 +1014,17 @@ void CloseWindow(WindowInfo *window)
     
     /* close the document/window */
     if (NDocuments(window) > 1) {
-    	if (MacroRunWindow() && MacroRunWindow() != window &&
-	    	MacroRunWindow()->shell == window->shell) {
-	    nextBuf = MacroRunWindow();
-    	    RaiseDocument(nextBuf);
-	}
-	else if (IsTopDocument(window)) {
-	    /* need to find a successor before closing a top document */
-    	    nextBuf = getNextTabWindow(window, 1, 0, 0);
-    	    RaiseDocument(nextBuf);
-	}
-	else
-	    topBuf = GetTopDocument(window->shell);	    
+        if (MacroRunWindow() && MacroRunWindow() != window
+                && MacroRunWindow()->shell == window->shell) {
+            nextBuf = MacroRunWindow();
+            RaiseDocument(nextBuf);
+        } else if (IsTopDocument(window)) {
+            /* need to find a successor before closing a top document */
+            nextBuf = getNextTabWindow(window, 1, 0, 0);
+            RaiseDocument(nextBuf);
+        } else {
+            topBuf = GetTopDocument(window->shell);         
+        }
     }
     
     /* remove the window from the global window list, update window menus */
@@ -1063,9 +1063,9 @@ void CloseWindow(WindowInfo *window)
 
     /* destroy the document's pane, or the window */
     if (nextBuf || topBuf) {
-        DeleteDocument(window);
-    }
-    else {
+        deleteDocument(window);
+    } else
+    {
         /* free user menu cache for window */
         FreeUserMenuCache(window->userMenuCache);
 
@@ -4047,10 +4047,11 @@ Boolean IsTopDocument(const WindowInfo *window)
     return window == GetTopDocument(window->shell)? True : False;
 }
 
-void DeleteDocument(WindowInfo *window)
+static void deleteDocument(WindowInfo *window)
 {    
-    if (!window)
+    if (NULL != window) {
     	return;
+    }
     
     XtDestroyWidget(window->splitPane);
 }

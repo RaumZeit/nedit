@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.30 2006/09/30 16:12:57 yooden Exp $ */
+/* $Id: window.h,v 1.31 2007/03/04 23:26:06 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * window.h -- Nirvana Editor Window header file                                *
@@ -83,7 +83,6 @@ WindowInfo *TabToWindow(Widget tab);
 void RaiseDocument(WindowInfo *window);
 void RaiseDocumentWindow(WindowInfo *window);
 void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus);
-void DeleteDocument(WindowInfo *window);
 WindowInfo *MarkLastDocument(WindowInfo *window);
 WindowInfo *MarkActiveDocument(WindowInfo *window);
 void NextDocument(WindowInfo *window);

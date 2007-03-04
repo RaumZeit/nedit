@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.150 2007/03/02 00:01:04 ajbj Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.151 2007/03/04 23:26:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -5795,7 +5795,8 @@ static int shortPrefToDefault(Widget parent, const char *settingName, int *setDe
 #endif
 
 /* Decref the default calltips file(s) for this window */
-void UnloadLanguageModeTipsFile(WindowInfo *window) {
+void UnloadLanguageModeTipsFile(WindowInfo *window)
+{
     int mode;
     
     mode = window->languageMode;
@@ -5885,7 +5886,8 @@ static void cursorFgModifiedCB(Widget w, XtPointer clientData,
 /* 
  * Helper functions for validating colors
  */
-static int verifyAllColors(colorDialog *cd) {
+static int verifyAllColors(colorDialog *cd)
+{
     /* Maybe just check for empty strings in error widgets instead? */
     return (checkColorStatus(cd, cd->textFgW) &&
             checkColorStatus(cd, cd->textBgW) &&

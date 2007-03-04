@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.108 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.109 2007/03/04 23:26:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1669,19 +1669,19 @@ void CheckForChangesToFile(WindowInfo *window)
                     body = "File '%s' (or directory in its path)\n"
                             "no longer exists.\n"
                             "Another program may have deleted or moved it.";
-                    resp = DialogF(DF_ERR, window->shell, 3, title, body,
-                            "Save", "Close", "Cancel", window->filename);
+                    resp = DialogF(DF_ERR, window->shell, 2, title, body,
+                            "Save", "Cancel", window->filename);
                     break;
                 case EACCES:
                     /*  Search permission denied for a path component. We add
                         one to the response because Re-Save wouldn't really
                         make sense here.  */
                     title = "Permission Denied";
-                    body = "You not longer have access to file '%s'.\n"
+                    body = "You no longer have access to file '%s'.\n"
                             "Another program may have changed the permissions of\n"
                             "one of its parent directories.";
-                    resp = 1 + DialogF(DF_ERR, window->shell, 2, title, body,
-                            "Close", "Cancel", window->filename);
+                    resp = 1 + DialogF(DF_ERR, window->shell, 1, title, body,
+                            "Cancel", window->filename);
                     break;
                 default:
                     /*  Everything else. This hints at an internal error (eg.
@@ -1691,8 +1691,8 @@ void CheckForChangesToFile(WindowInfo *window)
                             "    '%s'\n"
                             "Please make sure that no data is lost before closing\n"
                             "this window.";
-                    resp = DialogF(DF_ERR, window->shell, 3, title, body,
-                            "Save", "Close", "Cancel", window->filename,
+                    resp = DialogF(DF_ERR, window->shell, 2, title, body,
+                            "Save", "Cancel", window->filename,
                             errorString());
                     break;
             }
@@ -1706,9 +1706,14 @@ void CheckForChangesToFile(WindowInfo *window)
                 case 1:
                     SaveWindow(window);
                     break;
+                /*  Good idea, but this leads to frequent crashes, see
+                    SF#1578869. Reinsert this if circumstances change by
+                    uncommenting this part and inserting a "Close" button
+                    before each Cancel button above.
                 case 2:
                     CloseWindow(window);
                     return;
+                */
             }
         }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.65 2006/10/13 07:26:02 ajbj Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.66 2007/03/04 23:26:05 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -482,8 +482,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
     
     /* To prevent any possible segfault */
     if (tagSpec == NULL) {
-        fprintf(stderr, "nedit: Internal Error!\n"
-                "  Passed NULL pointer to DeleteTagsFile!\n");
+        fprintf(stderr, "nedit: Internal Error: Passed NULL pointer to DeleteTagsFile!\n");
         return FALSE;
     }
     
