@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.68 2007/01/07 13:18:12 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.69 2007/03/04 23:44:00 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -716,9 +716,7 @@ void textDRedisplayRange(textDisp *textD, int start, int end)
         endIndex = 0;
     } else
     {
-        /*  Add one so that the caret is properly displayed at the end of a
-            range. Else it would be correctly drawn only on the first blink. */
-        endIndex = end - textD->lineStarts[lastLine] + 1;
+        endIndex = end - textD->lineStarts[lastLine];
     }
     
     /* Reset the clipping rectangles for the drawing GCs which are shared
@@ -1774,7 +1772,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     char expandedChar[MAX_EXP_CHAR_LEN], outStr[MAX_DISP_LINE_LEN];
     char *lineStr, *outPtr;
     char baseChar;
-    
+
     /* If line is not displayed, skip it */
     if (visLineNum < 0 || visLineNum >= textD->nVisibleLines)
     	return;
@@ -1937,7 +1935,9 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     	    	    drawCursor(textD, x - 1, y);
                 }
     	    }
-    	} 
+        } else if ((lineStartPos + rightCharIndex) == cursorPos) {
+            drawCursor(textD, x - 1, y);
+        }
     }
     
     /* If the y position of the cursor has changed, redraw the calltip */
