@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.55 2007/01/04 01:42:23 yooden Exp $
+$Id: ReleaseNotes,v 1.56 2007/03/04 23:17:26 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -89,6 +89,14 @@ Bugs fixed in $NEXT_VERSION
   - Some Linux distros ship with XKEYSYMDB set to a bogus filename which
     breaks all Motif applications. NEdit ignores that, and let X fall back
     on the default which is far more likely to work (SF bug #1564907).
+
+  - Fixed a problem in the macro language on 64-bit systems (SF bug #1625283).
+
+  - Long macro function names could cause a buffer overflow (SF bug #1640304).
+
+  - The built-in macro "Make C prototypes" choked on some comments (SF bug
+    #1574071).
+
 
 New features in 5.5 
 
