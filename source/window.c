@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.197 2007/03/04 23:26:06 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.198 2007/03/04 23:54:24 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -319,7 +319,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->findLastRegexCase      = TRUE;
     window->findLastLiteralCase    = FALSE;
     window->tab = NULL;
-    
+    window->device = 0;
+    window->inode = 0;
+
     /* If window geometry was specified, split it apart into a window position
        component and a window size component.  Create a new geometry string
        containing the position component only.  Rows and cols are stripped off
@@ -979,6 +981,9 @@ void CloseWindow(WindowInfo *window)
         window->fileChanged = FALSE;
         window->fileFormat = UNIX_FILE_FORMAT;
         window->lastModTime = 0;
+        window->device = 0;
+        window->inode = 0;
+
         StopHighlighting(window);
         EndSmartIndent(window);
         UpdateWindowTitle(window);
@@ -3352,6 +3357,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     window->tab = NULL;
     window->bgMenuUndoItem = NULL;
     window->bgMenuRedoItem = NULL;
+    window->device = 0;
+    window->inode = 0;
 
     if (window->fontList == NULL)
         XtVaGetValues(shellWindow->statsLine, XmNfontList, 
@@ -4340,6 +4347,8 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->iSearchLastLiteralCase = orgWin->iSearchLastLiteralCase;
     window->findLastRegexCase = orgWin->findLastRegexCase;
     window->findLastLiteralCase = orgWin->findLastLiteralCase;
+    window->device = orgWin->device;
+    window->inode = orgWin->inode;
     window->fileClosedAtom = orgWin->fileClosedAtom;
     orgWin->fileClosedAtom = None;
     

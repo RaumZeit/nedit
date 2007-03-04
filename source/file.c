@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.109 2007/03/04 23:26:05 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.110 2007/03/04 23:54:24 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1038,6 +1038,8 @@ static int doSave(WindowInfo *window)
             accessed! */
 	window->lastModTime = 0;
         window->fileMissing = TRUE;
+        window->device = 0;
+        window->inode = 0;
     }
 
     return TRUE;
@@ -1645,6 +1647,8 @@ void CheckForChangesToFile(WindowInfo *window)
            The filename is now invalid */
         window->fileMissing = TRUE;
         window->lastModTime = 1;
+        window->device = 0;
+        window->inode = 0;
 
         /* Warn the user, if they like to be warned (Maybe this should be its
             own preference setting: GetPrefWarnFileDeleted()) */
