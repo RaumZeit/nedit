@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.54 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.55 2007/03/18 08:54:53 yooden Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -460,7 +460,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNset, False, NULL);
     XmStringFree(s1);
     outLabel = XtVaCreateManagedWidget("outLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING("Command Output:"),
+    	    XmNlabelString, s1=MKSTRING("Command Output (stdout/stderr):"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -515,7 +515,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNset, False, NULL);
     XmStringFree(s1);
     inpLabel = XtVaCreateManagedWidget("inpLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING("Command Input:"),
+    	    XmNlabelString, s1=MKSTRING("Command Input (stdin):"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
 	    XmNleftAttachment, XmATTACH_POSITION,
