@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.53 2007/01/03 23:40:00 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.54 2007/03/18 08:34:49 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: text.c,v 1.53 2007/01/03 23:40:00 yooden Exp $
 #include "textDrag.h"
 #include "nedit.h"
 #include "calltips.h"
+#include "../util/DialogF.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2227,6 +2228,8 @@ static void insertStringAP(Widget w, XEvent *event, String *args,
 
 static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {   
+    WindowInfo* window = WidgetToWindow(w);
+
 #ifdef NO_XMIM
     static XComposeStatus compose = {NULL, 0};
 #else
@@ -2256,6 +2259,11 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     TakeMotifDestination(w, e->time);
     chars[nChars] = '\0';
     
+    if (!BufSubstituteNullChars(chars, nChars, window->buffer)) {
+        DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data", "OK");
+        return;
+    }
+
     /* If smart indent is on, call the smart indent callback to check the
        inserted character */
     if (((TextWidget)w)->text.smartIndent) {
