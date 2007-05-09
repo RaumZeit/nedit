@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.151 2007/03/04 23:26:05 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.152 2007/05/09 13:11:45 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -375,11 +375,14 @@ static PrefDescripRec PrefDescrip[] = {
 		# (by repeated typing of its accelerator, say) cycles\n\
 		# through the alternatives found.\n\
 		# \n\
-		# This version avoids the need of initializing the global\n\
-		# variable in an external macro file\n\
+		# Make sure $compWord contains something (a dummy index)\n\
 		$compWord[\"\"] = \"\"\n\
 		\n\
+		# Test whether the rest of $compWord has been initialized:\n\
+		# this avoids having to initialize the global variable\n\
+		# $compWord in an external macro file\n\
 		if (!(\"wordEnd\" in $compWord)) {\n\
+		    # we need to initialize it\n\
 		    $compWord[\"wordEnd\"] = 0\n\
 		    $compWord[\"repeat\"] = 0\n\
 		    $compWord[\"init\"] = 0\n\
@@ -394,7 +397,9 @@ static PrefDescripRec PrefDescrip[] = {
 		   $compWord[\"init\"] = $cursor\n\
 		\n\
 		   # search back to a word boundary to find the word to complete\n\
-		   $compWord[\"wordStart\"] = search(\"<\\\\l+\", $cursor, \"backward\", \"regex\", \"wrap\")\n\
+		   # (we use \\w here to allow for programming \"words\" that can include\n\
+		   # digits and underscores; use \\l for letters only)\n\
+		   $compWord[\"wordStart\"] = search(\"<\\\\w+\", $cursor, \"backward\", \"regex\", \"wrap\")\n\
 		\n\
 		   if ($compWord[\"wordStart\"] == -1)\n\
 		      return\n\
@@ -573,9 +578,9 @@ static PrefDescripRec PrefDescrip[] = {
 		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n\
 		    keepEnd = keepEnd - 1\n\
 		replace_range(selStart + commentStart, selStart + commentEnd, \\\n\
-			substring(sel, keepStart, keepEnd))\n\
+		    substring(sel, keepStart, keepEnd))\n\
 		select(selStart, selEnd - (keepStart-commentStart) - \\\n\
-			(commentEnd - keepEnd))\n\
+		    (commentEnd - keepEnd))\n\
 	}\n\
 	Comments>// Comment@C@C++@Java@JavaScript:::R: {\n\
 		replace_in_selection(\"^.*$\", \"// &\", \"regex\")\n\
@@ -601,12 +606,12 @@ static PrefDescripRec PrefDescrip[] = {
 	Comments>! Uncomment@X Resources:::R: {\n\
 		replace_in_selection(\"(^[ \\\\t]*!)(.*)$\", \"\\\\2\", \"regex\")\n\
 	}\n\
-        Comments>% Comment@LaTeX:::R: {\n\
-                replace_in_selection(\"^.*$\", \"%&\", \"regex\")\n\
-                }\n\
-        Comments>% Uncomment@LaTeX:::R: {\n\
-                replace_in_selection(\"(^[ \\\\t]*%)(.*)$\", \"\\\\2\", \"regex\")\n\
-                }\n\
+	Comments>% Comment@LaTeX:::R: {\n\
+		replace_in_selection(\"^.*$\", \"%&\", \"regex\")\n\
+		}\n\
+	Comments>% Uncomment@LaTeX:::R: {\n\
+		replace_in_selection(\"(^[ \\\\t]*%)(.*)$\", \"\\\\2\", \"regex\")\n\
+		}\n\
 	Comments>Bar Comment@C:::R: {\n\
 		if ($selection_left != -1) {\n\
 		    dialog(\"Selection must not be rectangular\")\n\
@@ -616,7 +621,7 @@ static PrefDescripRec PrefDescrip[] = {
 		end = $selection_end-1\n\
 		origText = get_range($selection_start, $selection_end-1)\n\
 		newText = \"/*\\n\" replace_in_string(get_range(start, end), \\\n\
-			\"^\", \" * \", \"regex\") \"\\n */\\n\"\n\
+		    \"^\", \" * \", \"regex\") \"\\n */\\n\"\n\
 		replace_selection(newText)\n\
 		select(start, start + length(newText))\n\
 	}\n\
@@ -648,16 +653,16 @@ static PrefDescripRec PrefDescrip[] = {
 		staticPrototypes = \"\"\n\
 		for (;;) {\n\
 		    headerStart = search_string(string, \\\n\
-			    \"^[a-zA-Z]([^;#\\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*\\\\{\", \\\n\
-			    searchPos, \"regex\")\n\
+		        \"^[a-zA-Z]([^;#\\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*\\\\{\", \\\n\
+		        searchPos, \"regex\")\n\
 		    if (headerStart == -1)\n\
-			break\n\
+		        break\n\
 		    headerEnd = search_string(string, \")\", $search_end,\"backward\") + 1\n\
 		    prototype = substring(string, headerStart, headerEnd) \";\\n\"\n\
 		    if (substring(string, headerStart, headerStart+6) == \"static\")\n\
-			staticPrototypes = staticPrototypes prototype\n\
+		        staticPrototypes = staticPrototypes prototype\n\
 		    else\n\
-			prototypes = prototypes prototype\n\
+		        prototypes = prototypes prototype\n\
 		    searchPos = headerEnd\n\
 		    nDefs++\n\
 		}\n\
