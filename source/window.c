@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.198 2007/03/04 23:54:24 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.199 2007/07/02 21:53:10 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -4055,11 +4055,11 @@ Boolean IsTopDocument(const WindowInfo *window)
 }
 
 static void deleteDocument(WindowInfo *window)
-{    
-    if (NULL != window) {
-    	return;
+{
+    if (NULL == window) {
+        return;
     }
-    
+
     XtDestroyWidget(window->splitPane);
 }
 
@@ -4546,10 +4546,11 @@ void MoveDocumentDialog(WindowInfo *window)
 
     /* stop here if there's no other window to move to */
     if (!nList) {
-    	XtFree((char *)list);
-    	return;    
+        XtFree((char *)list);
+        XtFree((char *)shellWinList);
+        return;
     }
-    
+
     /* create the dialog */
     parent = window->shell;
     popupTitle = XmStringCreateSimple("Move Document");
