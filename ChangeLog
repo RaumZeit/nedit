@@ -1,3 +1,549 @@
+2007-07-02 21:53  ajbj
+
+	* source/window.c (1.199): A couple of small mistakes caught by
+	  Bert Wesarg.
+
+2007-06-01 20:32  tringali
+
+	* source/nedit.c (REL-5-5.1): Backport ARGB fix to 5.5
+
+2007-05-09 13:11  ajbj
+
+	* source/preferences.c (1.152): Changed "Complete Word" macro to
+	  use \w instead of \l and changed its comments.
+
+2007-03-18 08:54  yooden
+
+	* source/userCmds.c (1.55): Adds stdout/in/err help texts to Shell
+	  Menu dialog, as pointed out in @discuss by Gerald Grabner.
+
+2007-03-18 08:34  yooden
+
+	* source/text.c (1.54): Fix for SF#682004
+
+	  This adds a call to BufSubstituteNullChars() when a control code
+	  is self-inserted (as with ALT-CTRL-a, for example). (Fix from
+	  Mark Geary.)
+
+2007-03-04 23:54  yooden
+
+	* source/: file.c (1.110), window.c (1.198): Fix for SF#1645661
+
+	  Another fixfix, this adds missing initializers for device/inode.
+
+2007-03-04 23:44  yooden
+
+	* source/textDisp.c (1.69): Fix for SF#1608609
+
+	  Some leftovers from fixing SF#464967/SF#1041077: The cursor is
+	  now redrawn in all cases.
+
+2007-03-04 23:26  yooden
+
+	* source/: file.c (1.109), preferences.c (1.151), tags.c (1.66),
+	  window.c (1.197), window.h (1.31): Fix for SF#1578869
+
+	  NEdit's old file-not-found dialog, while user-unfriendly, at
+	  least did not crash. The new did, so this change removes the
+	  Close button again.
+
+	  Also localizes source/window.c:deleteDocument() from
+	  DeleteDocument().
+
+2007-03-04 23:17  yooden
+
+	* ReleaseNotes (1.56): Added three entries to release notes about
+	  recently fixed bugs.
+
+2007-03-02 00:01  ajbj
+
+	* source/preferences.c (1.150): Fixed #1574071 built-in macro "Make
+	  C prototypes" doesn't work as suggested.
+
+2007-01-30 19:42  arnef
+
+	* source/window.c (1.196): Fix for 1645223, 'nc -wait' doesn't work
+	  when detaching/moving tab (from Bert Wesarg)
+
+2007-01-30 13:51  ajbj
+
+	* source/interpret.c (1.47): Fixed unused macros PEEK_INT and
+	  PEEK_STRING (for future use, if any).
+
+2007-01-25 23:51  ajbj
+
+	* source/macro.c (1.113): Bert Wesarg's fix of #1640304: ident read
+	  buffer overflow in parsing 'define'.
+
+2007-01-15 14:04  ajbj
+
+	* source/interpret.c (1.46): Changed DEBUG_ASSEMBLY code to use new
+	  instruction union from previous commit.
+
+2007-01-12 22:44  tringali
+
+	* source/nedit.c (1.99): Disable warnings unless "-xwarn" debug
+	  switch is passed in.
+
+2007-01-12 16:17  tringali
+
+	* source/: interpret.c (1.45), interpret.h (1.20), parse.y (1.29),
+	  parse_noyacc.c (1.10): SF 1625283: Replace nonportable casts with
+	  unions
+
+2007-01-07 13:18  yooden
+
+	* source/: textDisp.c (1.68), textDisp.h (1.30): Various cleanups:
+
+	  - Makes a function in textDisp.c non-global.	- Style - Add
+	  "nedit:" to error messages - Comments
+
+2007-01-04 01:42  yooden
+
+	* ReleaseNotes (1.55), doc/help.etx (1.106), source/macro.c
+	  (1.112): This merges the two functions new_filename_dialog() and
+	  exist_filename_dialog() to one new function filename_dialog().
+	  The memory leak is also fixed, but the other bugs remain for now.
+
+	  (Fix for pseudo-bug SF#1600022)
+
+2007-01-04 00:10  yooden
+
+	* source/preferences.c (1.149): Replaces default macros 'Complete
+	  Word' and 'Fill Sel. w/Char' with new alternatives by Jörg
+	  Fischer.
+
+	  (Fix for pseudo-bug SF#1578888)
+
+2007-01-04 00:02  yooden
+
+	* util/misc.c (1.85): Fix for SF#1245502
+
+	  This fixes two bugs pointed out in the tracker. One allows for :
+	  as accelerators, the other fixes a wrong boolean.
+
+2007-01-03 23:40  yooden
+
+	* ReleaseNotes (1.54), source/text.c (1.53): Fix for SF#1066692
+
+	  If emulated tabs are on, make the inserted indent deletable by
+	  tab. Round this up by faking the column a bit to the right to let
+	  the user delete half-tabs with one keypress. (Thanks to Tony
+	  Balinski)
+
+2006-12-02 12:01  yooden
+
+	* source/: textBuf.c (1.36), textBuf.h (1.21), textDisp.c (1.67):
+	  Some leftovers from the last two patches.
+
+2006-12-02 10:27  yooden
+
+	* source/file.c (1.108), source/highlight.c (1.54),
+	  source/highlightData.c (1.78), source/macro.c (1.111),
+	  source/menu.c (1.138), source/preferences.c (1.148),
+	  source/rangeset.c (1.17), source/search.c (1.85),
+	  source/selection.c (1.32), source/shell.c (1.42),
+	  source/smartIndent.c (1.40), source/textDisp.c (1.66),
+	  source/textSel.c (1.17), source/userCmds.c (1.54),
+	  source/window.c (1.195), util/fontsel.c (1.29), util/misc.c
+	  (1.84): Removes a number of 'if (NULL == foo)' from XtFree. Also
+	  changes some error messages from "NEdit:" to "nedit:" and minos
+	  cleanup.
+
+2006-12-02 09:38  yooden
+
+	* source/: file.c (1.107), highlight.c (1.53), interpret.c (1.44),
+	  interpret.h (1.19), macro.c (1.110), textBuf.c (1.35), textBuf.h
+	  (1.20), textDisp.c (1.65), textDisp.h (1.29): Makes a number of
+	  parameters const, changes some types to Boolean and changes some
+	  style.
+
+2006-11-28 20:11  arnef
+
+	* source/window.c (1.194): Fix for #1525831
+
+	  Initialise window->fileClosedAtom to None when creating new
+	  Document. Thereby nc -wait doesn't return when closing file
+	  opened in a tab
+
+2006-11-22 21:16  yooden
+
+	* README (1.49): Adds comment about Linux linkage mode (now
+	  dynamic, then static).
+
+2006-11-22 20:59  yooden
+
+	* source/file.c (1.106): Changed type in fresh bug fix.
+
+2006-11-22 15:13  yooden
+
+	* source/preferences.c (1.147): Adds the two styles Operator and
+	  Bracket.
+
+	  (Fix for pseudo-bug SF#1600018)
+
+2006-11-22 14:16  yooden
+
+	* source/preferences.c (1.146): Fix for SF#1592236
+
+	  Adds a missing downcast from const.
+
+2006-11-22 13:45  yooden
+
+	* ReleaseNotes (1.53), doc/help.etx (1.105), source/macro.c
+	  (1.109), source/nedit.h (1.68): This adds the special macro
+	  variable $VERSION which returns NEdit's version number ('5006'
+	  for NEdit 5.6).
+
+	  (Fixes pseudo-bug #1576902)
+
+2006-11-07 22:04  n8gray
+
+	* source/nedit.c (1.98): Changed the default mode of the
+	  file-selection dialog to path-relative.  It's more like what
+	  people expect these days.  Also changed the default size to
+	  500x400.  I would have made it bigger, but perhaps somebody out
+	  there still uses 640x480...
+
+2006-11-07 19:16  ajbj
+
+	* source/file.c (1.105): Fix for SF Bug #1588932 line number not
+	  shown correctly
+
+2006-11-02 13:24  edg
+
+	* source/file.c (1.104): Closed another path that could lead to the
+	  crash of SF bug #1578869: hitting 'Close' in the dialog has the
+	  same effect as closing the window via the window manager.
+
+2006-10-29 22:22  edg
+
+	* ReleaseNotes (1.52), source/file.c (1.103): Fix for SF bug
+	  #1578869: NEdit crashed on window close.
+
+2006-10-29 13:23  yooden
+
+	* ReleaseNotes (1.51): Adds a ReleaseNotes entry for Scotts fix of
+	  SF#1564907.
+
+2006-10-26 22:09  edg
+
+	* source/highlightData.c (1.77): Python highlight pattern updates
+	  (new keywords for 2.4 and 2.5).
+
+2006-10-26 21:42  edg
+
+	* ReleaseNotes (1.50), source/nedit.c (1.97), util/misc.c (1.83):
+	  Removed the apparently unreliable detection of problematic ARGB
+	  visuals and set XLIB_SKIP_ARGB_VISUALS before opening the display
+	  instead.  This should solve SF bug #1579544 and duplicates
+	  (#1030467, #1030192, ...).
+
+2006-10-26 02:20  tringali
+
+	* makefiles/: Makefile.linux (1.14), Makefile.linux-static (1.1):
+	  SF #1572838: Linux binary should be dynamic by default
+
+2006-10-26 02:15  tringali
+
+	* source/nedit.c (1.96): Remove UTF8 from LC_CTYPE for OpenMotif
+	  2.2.3, based on Eddy's experience
+
+2006-10-20 15:44  ajbj
+
+	* doc/help.etx (1.104), source/smartIndent.c (1.39): Corrected
+	  smart indent Type-in Macro usage information.
+
+2006-10-17 13:00  yooden
+
+	* source/: text.c (1.52), window.c (1.193): Fix for #1543586
+
+	  The fix for #906878 activated the cursor blink for any new pane.
+	  This is now modified to be only called for active panes.
+
+2006-10-17 12:39  yooden
+
+	* ReleaseNotes (1.49), source/nedit.c (1.95): Fox for SF#1525074
+
+	  Motif menu accelerators prevent use of clipboard translations in
+	  the i-search bar. This change removes accelerators, their job is
+	  in turn done by text widget translations.
+
+2006-10-17 11:52  yooden
+
+	* ReleaseNotes (1.48), source/search.c (1.84): Fix for SF#1508608
+
+	  NEdit works slightly different on forward and backward searches.
+	  This is fixed by letting a repeated search start at the beginning
+	  of a selected search result instead of at the end.
+
+2006-10-17 10:10  yooden
+
+	* ReleaseNotes (1.47), source/shift.c (1.18): Fix for SF#1333103
+
+	  NEdit's case change always modified the buffer, even if replacee
+	  and replacement were identical. This is now checked during the
+	  casing, so that the replacement is only done if necessary.
+	  (Thanks to Dimitar Zhekov)
+
+2006-10-16 19:52  tringali
+
+	* util/motif.c (1.6): 0.95.0 has the menu unposting bug, too.
+	  Verified with LessTif's test suite.
+
+2006-10-16 14:26  yooden
+
+	* ReleaseNotes (1.46), source/highlightData.c (1.76),
+	  source/preferences.c (1.145), source/preferences.h (1.55): Fix
+	  for SF#1117848
+
+	  A few more states are checked to find out whether the user is
+	  working on a new syntax highlighting pattern, and make it usable
+	  immediately.
+
+2006-10-16 13:45  yooden
+
+	* doc/help.etx (1.103): Fix for SF#1046832
+
+	  Adds an explanation for -untabbed mode.
+
+2006-10-13 13:56  tringali
+
+	* util/motif.c (1.5): Add LessTif 0.94.4 to known-bad list
+
+2006-10-13 07:26  ajbj
+
+	* source/: file.c (1.102), highlight.c (1.52), highlight.h (1.15),
+	  macro.c (1.108), rangeset.c (1.16), rangeset.h (1.7), search.c
+	  (1.83), search.h (1.28), shift.c (1.17), tags.c (1.65), textBuf.c
+	  (1.34), textBuf.h (1.19), textDisp.c (1.64), textSel.c (1.16),
+	  window.c (1.192): Extended use of BufAsString() and addition of
+	  const: see SF bug 1528893.
+
+2006-09-30 17:26  yooden
+
+	* source/nedit.c (1.94): Adds unistd.h to include files for
+	  access().
+
+2006-09-30 17:18  yooden
+
+	* doc/help.etx (1.102): Fixes another small documentation bug about
+	  the use of single digit marks.
+
+2006-09-30 17:07  yooden
+
+	* source/macro.c (1.107): Fix for fix for SF#1493662
+
+	  This removes some spurious changes to get NEdit to compile under
+	  Solaris.
+
+2006-09-30 16:54  yooden
+
+	* ReleaseNotes (1.45), source/file.c (1.101): Fix for SF#1371896
+
+	  NEdit sets the language mode for freshly-saved documents even if
+	  the user chose a language mode already. This is changed.
+
+2006-09-30 16:46  tringali
+
+	* doc/help.etx (1.101): Updated credits to be a bit more readable
+
+2006-09-30 16:36  yooden
+
+	* ReleaseNotes (1.44), doc/help.etx (1.100), source/macro.c
+	  (1.106), source/search.c (1.82): Fix for SF#1066765, #1078397,
+	  #1110024, #1471868
+
+	  Various documentation fixes, some reformating and a few text
+	  changes in other parts of the code.
+
+2006-09-30 16:29  yooden
+
+	* ReleaseNotes (1.43), source/file.c (1.100): Fix for SF#1066144
+
+	  The "File not found" NEdt pops up when a document is focused
+	  which file is missing is unfriendly to the user. This is fixed by
+	  adding the most usual case (and removing one which is still
+	  available elsewhere) and by slightly more detailed information.
+
+2006-09-30 16:12  yooden
+
+	* ReleaseNotes (1.42), source/window.c (1.191), source/window.h
+	  (1.30): Fix for SF#1055649
+
+	  The window size is changed repeatedly if two document with large
+	  difference in size are used in the same window. This is fixed by
+	  giving all documents a gutter of the same size.
+
+2006-09-30 16:09  tringali
+
+	* source/nedit.c (1.93): SF 1564907: guard against bogus XKEYSYMDB
+
+2006-09-27 11:51  michaelsmith
+
+	* makefiles/buildvms.com (1.2), source/macro.c (1.105),
+	  source/window.c (1.190): BUG #1395689 Patches to permit nedit to
+	  be compiled under OpenVMS VMS compilation script and patches
+	  contributed by zinser@zinser.no-ip.info
+
+2006-08-22 13:23  yooden
+
+	* util/getfiles.c (1.36): Using Lesstif, util/getfiles.c compiled
+	  only with a warning about a missing #include <Xm/TextF.h>.
+
+2006-08-17 17:33  ajbj
+
+	* source/search.c (1.81): Fix for bug 1541650 where non-regex
+	  replace-in-selection didn't work.
+
+2006-08-15 21:16  yooden
+
+	* Microline/XmL/Folder.c (1.7), Microline/XmL/Tree.c (1.3),
+	  source/menu.c (1.137), source/preferences.c (1.144): Removes some
+	  compiler warnings and minor bugs on VMS.
+
+	  It compiles and runs on Linux, I have no way to check it on VMS.
+
+2006-08-15 18:55  ajbj
+
+	* source/: preferences.h (1.54), search.c (1.80): Made function
+	  prototypes match their definitions (added "const").  This
+	  corrects broken builds.
+
+2006-08-15 18:36  ajbj
+
+	* source/preferences.c (1.143): Adds a line to the nedit.rc file
+	  header commentary:   ! (User settings in X "application defaults"
+	  format) which allows copies to be recognised as X app default
+	  files for syntax highlighting using the language detection regex
+	  for X Resources.
+
+2006-08-13 21:47  yooden
+
+	* source/: highlightData.c (1.75), preferences.c (1.142),
+	  rangeset.c (1.15), regularExp.c (1.30), search.c (1.79): This
+	  fixes several small issues: - Some bugs in various language modes
+	  pointed out by Volker Kuhlmann.  - Some compiler warning
+	  (function footprint) caused from my latest changes.  - Some
+	  compiler warnings (variable initialisation) from elsewhere.  -
+	  One stuck return.
+
+2006-08-13 18:41  yooden
+
+	* ReleaseNotes (1.41), doc/help.etx (1.99), source/file.c (1.99),
+	  source/nedit.h (1.67), source/preferences.c (1.141),
+	  source/preferences.h (1.53), source/window.c (1.189): Fix for
+	  SF#1027788
+
+	  On opening a symlink, NEdit as yet creates a new document. This
+	  behaviour is now optional: If the new resource
+	  nedit.honorSymlinks is set to false, NEdit will try to detect
+	  whether the file is already opened with another filename.
+
+2006-08-13 18:02  yooden
+
+	* ReleaseNotes (1.40), doc/help.etx (1.98), source/nedit.h (1.66),
+	  source/preferences.c (1.140), source/preferences.h (1.52),
+	  source/regularExp.c (1.29), source/regularExp.h (1.14),
+	  source/search.c (1.78), source/search.h (1.27): Fix for
+	  SF#1015499
+
+	  An internal buffer limits the size of replace operation; the
+	  result was truncated at 511 characters.
+
+	  This change increases the buffer limit to 5119 characters and
+	  prevents data loss by catching an already existing internal error
+	  higher up the call chain. A new resource let's the user decide
+	  how the error is handled then.
+
+2006-08-12 13:40  yooden
+
+	* ReleaseNotes (1.39), doc/help.etx (1.97), source/file.c (1.98),
+	  source/preferences.c (1.139), source/preferences.h (1.51): Fix
+	  for SF#1003241
+
+	  NEdit converts all open files into an internal Unix-like
+	  representation.  This mechanism is lacking for files which
+	  contains both LF and CRLF.
+
+	  This patch adds the resource 'nedit.forceOSConversion' which, if
+	  set to False, prohibits all internal conversion. DOS and Mac
+	  files are no longer conveniently editable, but the stranger file
+	  types are editable at all.
+
+2006-08-09 08:50  edg
+
+	* source/highlightData.c (1.74): Proper fix for part of SF bug
+	  #1536451, correcting my previous attempt.
+
+2006-08-08 18:06  tringali
+
+	* util/system.h (1.18): Updates for newer Solaris (sparc + x86)
+	  boxes.
+
+2006-08-08 10:59  edg
+
+	* ReleaseNotes (1.38), source/highlightData.c (1.73),
+	  util/managedList.c (1.15): Fixes for SF bug #1536451:
+	  highlighting pattern capacity overflow.  Limits on the number of
+	  patterns per set were not properly checked, or not checked at
+	  all.
+
+2006-08-07 15:41  edg
+
+	* ReleaseNotes (1.37), source/regularExp.c (1.28): Fix for SF bug
+	  #1536002: highlighting pattern compilation crash.  An invalid
+	  size was used in a malloc call, causing memory corruption.
+
+2006-08-06 18:34  edg
+
+	* util/getfiles.c (1.35): Workaround for a Lesstif bug that caused
+	  a crash in the Save As dialog when a proportional font is used
+	  (reported by Alexey Kuznetsov at the discuss list).
+
+2006-05-31 16:39  n8gray
+
+	* source/macro.c (1.104): Added #include <limits.h> as potential
+	  fix for SF #1493662.	Also fixed an unused variable warning.
+
+2006-04-21 21:13  ajbj
+
+	* source/: macro.c (1.103), textBuf.c (1.33), textBuf.h (1.18):
+	  From patch 1191453: Avoiding buffer copying in macro search; use
+	  the text buffer directly instead.
+
+2006-04-11 06:29  n8gray
+
+	* source/window.c (1.188): Since I'm on a roll, this is TK's fix
+	  for SF bug 1460456: Crash when saving over open file.
+
+2006-04-11 01:14  n8gray
+
+	* doc/help.etx (1.96), source/help_data.h (1.86),
+	  source/help_topic.h (1.75), source/macro.c (1.102),
+	  util/getfiles.c (1.34), util/getfiles.h (1.11): Adds two new
+	  (long overdue!) builtin functions to the macro language for
+	  displaying file-selection dialogs:	 new_filename_dialog
+	  exist_filename_dialog
+
+	  Includes one unbracketed if statement, just as flamebait.  :-)
+
+2006-03-17 14:20  edg
+
+	* ReleaseNotes (1.36), util/getfiles.c (1.33): Fix for SF bug
+	  #1451337: current file name does not appear in "save as" dialog
+	  box
+
+2006-03-17 10:05  edg
+
+	* util/misc.c (1.82): Suppressed one more usually bogus clipboard
+	  locking warning.
+
+2006-03-17 09:31  edg
+
+	* ChangeLog (1.43): Long overdue ChangeLog update (cvs2cl.pl -b -r
+	  -t --accum --gmt).
+
 2006-02-11 10:37  yooden
 
 	* ReleaseNotes (1.35), source/macro.c (1.101), util/utils.c (1.25),
