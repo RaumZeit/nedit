@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.85 2007/01/04 00:02:42 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.86 2007/07/20 16:09:19 edg Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -434,13 +434,7 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
         
     /* Generate a list of visuals to consider.  (Note, vestigial code for
        user-requested visual depth is left in, just in case that function
-       might be needed again, but it does nothing).
-       Note that Xorg 6.8+ ARGB visuals (with alpha-channel) cause a lot
-       of problems, so we have to avoid them. This is done by setting
-       the environment variable XLIB_SKIP_ARGB_VISUALS before the display
-       is opened (in nedit.c). 
-       Users can achieve the same effect with older versions of NEdit by 
-       setting the environment variable themselves. */
+       might be needed again, but it does nothing). */
     if (reqID != -1) {
 	visTemplate.visualid = reqID;
 	visList = XGetVisualInfo(display, VisualScreenMask|VisualIDMask,
@@ -490,6 +484,21 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
     bestClass = 0;
     bestVisual = 0;
     for (i=0; i < nVis; i++) {
+        /* X.Org 6.8+ 32-bit visuals (with alpha-channel) cause a lot of
+           problems, so we have to skip them. We already try this by setting
+           the environment variable XLIB_SKIP_ARGB_VISUALS at startup (in
+           nedit.c), but that doesn't cover the case where NEdit is running on
+           a host that doesn't use the X.Org X libraries but is displaying
+           remotely on an X.Org server. Therefore, this additional check is
+           added. 
+           Note that this check in itself is not sufficient. There have been
+           bug reports that seemed to indicate that non-32-bit visuals with an
+           alpha-channel exist. The combined approach (env. var. + 32-bit
+           check) should cover the vast majority of the cases, though. */
+	if (visList[i].depth >= 32 &&
+	    strstr(ServerVendor(display), "X.Org") != 0) {
+	    continue;
+	}
 	if (visList[i].depth > maxDepth) {
 	    maxDepth = visList[i].depth;
 	    bestClass = 0;
