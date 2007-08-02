@@ -71,7 +71,9 @@ static const char *const knownGoodLesstif[] = {
     "0.93.0",
     "0.93.12",
     "0.93.18",
-    "0.93.94",
+#ifndef __x86_64
+    "0.93.94",    /* 64-bit build .93.94 is broken */
+#endif
     NULL
 };
 
@@ -88,6 +90,9 @@ const char *const knownBadLessTif[] = {
     "0.93.40",
     "0.93.41",
     "0.93.44",
+#ifdef __x86_64
+    "0.93.94",    /* 64-bit build .93.94 is broken */
+#endif
     "0.93.95b",   /* SF bug 1087192 */
     "0.94.4",     /* Alt-H, ESC => crash */
     "0.95.0",     /* same as above */
@@ -146,7 +151,7 @@ static enum MotifStability GetOpenMotifStability(void)
     {
         result = MotifKnownBad;
     }
-    else if (XmFullVersion == 200203)       /* 2.2.3 is good */
+    else if (XmFullVersion >= 200203 && XmFullVersion <= 200300) /* 2.2.3 - 2.3 is good */
     {
         result = MotifKnownGood;
     }
@@ -184,6 +189,7 @@ const char *GetMotifStableVersions(void)
 
     strcat(msg, "OpenMotif 2.1.30\n");
     strcat(msg, "OpenMotif 2.2.3\n");
+    strcat(msg, "OpenMotif 2.3\n");
 
     return msg;
 }
