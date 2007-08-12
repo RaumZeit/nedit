@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.138 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.139 2007/08/12 18:13:10 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4175,6 +4175,9 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
+    if (window == NULL)
+        return;
+ 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike, "set_overtype_mode");
 
     if (IsTopDocument(window))
