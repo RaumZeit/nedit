@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.139 2007/08/12 18:13:10 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.140 2007/10/02 15:47:08 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -1252,7 +1252,7 @@ static Widget makeHelpMenuItem(
     Widget menuItem = 
         createMenuItem( parent, name, label, mnemonic, callback, cbArg, mode );
     
-    XtVaSetValues( menuItem, XmNuserData, topic, 0 );
+    XtVaSetValues( menuItem, XmNuserData, (XtPointer)topic, NULL );
     return menuItem;
 }
 
@@ -1261,10 +1261,12 @@ static Widget makeHelpMenuItem(
 static void helpCB( Widget menuItem, XtPointer clientData, XtPointer callData )
 {
     enum HelpTopic topic;
+    XtPointer userData;
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    XtVaGetValues( menuItem, XmNuserData, &topic, 0 );
+    XtVaGetValues( menuItem, XmNuserData, &userData, NULL );
+    topic = (enum HelpTopic)userData;
     
     Help(topic);
 }

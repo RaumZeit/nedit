@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.199 2007/07/02 21:53:10 ajbj Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.200 2007/10/02 15:47:10 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -199,6 +199,7 @@ static void updateLineNumDisp(const WindowInfo* window);
 static int max(const int i1, const int i2);
 static void setGutterWidth(const WindowInfo* window, const unsigned reqCols);
 static void deleteDocument(WindowInfo *window);
+static void cancelTimeOut(XtIntervalId *timer);
 
 /*
 ** Create a new editor window
@@ -961,6 +962,11 @@ void CloseWindow(WindowInfo *window)
     /* Destroy the file closed property for this file */
     DeleteFileClosedProperty(window);
 
+    /* Remove any possibly pending callback which might fire after the 
+       widget is gone. */
+    cancelTimeOut(&window->flashTimeoutID);
+    cancelTimeOut(&window->markTimeoutID);
+
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
     if (keepWindow || (WindowList == window && window->next == NULL)) {
@@ -1196,7 +1202,7 @@ void SplitPane(WindowInfo *window)
     if (window->backlightChars)
     {
         XtVaSetValues(text, textNbacklightCharTypes,
-                window->backlightCharTypes, 0);
+                window->backlightCharTypes, NULL);
     }
     XtManageChild(text);
     window->textPanes[window->nPanes++] = text;
@@ -2920,6 +2926,12 @@ void UpdateWMSizeHints(WindowInfo *window)
             XmNbaseWidth, baseWidth, XmNbaseHeight, baseHeight,
             XmNminWidth, baseWidth + fontWidth,
             XmNminHeight, baseHeight + (1+window->nPanes) * fontHeight, NULL);
+
+    /* Motif will keep placing this on the shell every time we change it,
+       so it needs to be undone every single time.  This only seems to
+       happen on mult-head dispalys on screens 1 and higher. */
+
+    RemovePPositionHint(window->shell);
 }
 
 /*
@@ -3113,10 +3125,10 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
       window->backlightCharTypes = NULL;
 
     XtVaSetValues(window->textArea,
-          textNbacklightCharTypes, window->backlightCharTypes, 0);
+          textNbacklightCharTypes, window->backlightCharTypes, NULL);
     for (i=0; i<window->nPanes; i++)
       XtVaSetValues(window->textPanes[i],
-              textNbacklightCharTypes, window->backlightCharTypes, 0);
+              textNbacklightCharTypes, window->backlightCharTypes, NULL);
     if (is_applied != do_apply)
       SetToggleButtonState(window, window->backlightCharsItem, do_apply, False);
 }
@@ -4698,6 +4710,15 @@ static Widget containingPane(Widget w)
     /* The containing pane used to simply be the first parent, but with
        the introduction of an XmFrame, it's the grandparent. */
     return XtParent(XtParent(w));
+}
+
+static void cancelTimeOut(XtIntervalId *timer)
+{
+    if (*timer != 0)
+    {
+        XtRemoveTimeOut(*timer);
+        *timer = 0;
+    }    
 }
 
 /*

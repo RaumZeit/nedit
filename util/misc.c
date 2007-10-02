@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.86 2007/07/20 16:09:19 edg Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.87 2007/10/02 15:47:12 tringali Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -302,10 +302,25 @@ static void setWindowGroup(Widget shell) {
 ** realizing and the mapping of the window to remove the inappropriate
 ** PPlacement hint.
 */ 
-void RealizeWithoutForcingPosition(Widget shell)
+
+void RemovePPositionHint(Widget shell)
 {
     XSizeHints *hints = XAllocSizeHints();
     long suppliedHints;
+
+    /* Get rid of the incorrect WMNormal hint */
+    if (XGetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints,
+    	    &suppliedHints)) 
+    {
+	hints->flags &= ~PPosition;
+	XSetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints);
+    }
+
+    XFree(hints);
+}
+
+void RealizeWithoutForcingPosition(Widget shell)
+{
     Boolean mappedWhenManaged;
     
     /* Temporarily set value of XmNmappedWhenManaged
@@ -315,14 +330,9 @@ void RealizeWithoutForcingPosition(Widget shell)
     
     /* Realize the widget in unmapped state */
     XtRealizeWidget(shell);
-    
-    /* Get rid of the incorrect WMNormal hint */
-    if (XGetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints,
-    	    &suppliedHints)) {
-	hints->flags &= ~PPosition;
-	XSetWMNormalHints(XtDisplay(shell), XtWindow(shell), hints);
-    }
-    XFree(hints);
+
+    /* Remove the hint */
+    RemovePPositionHint(shell);
     
     /* Set WindowGroupHint so the NEdit icons can be grouped; this
        seems to be necessary starting with Gnome 2.0  */

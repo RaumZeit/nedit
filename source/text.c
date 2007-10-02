@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.54 2007/03/18 08:34:49 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.55 2007/10/02 15:47:08 tringali Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -38,6 +38,7 @@ static const char CVSID[] = "$Id: text.c,v 1.54 2007/03/18 08:34:49 yooden Exp $
 #include "nedit.h"
 #include "calltips.h"
 #include "../util/DialogF.h"
+#include "window.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3143,7 +3144,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     cancelDrag(w);
     if (hasKey("scrollbar", args, nArgs)) {
         XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-    	    XmNsliderSize, &sliderSize, 0);
+    	    XmNsliderSize, &sliderSize, NULL);
 	horizOffset = min(textD->horizOffset + textD->width, sliderMax - sliderSize);
 	if (textD->horizOffset == horizOffset) {
             ringIfNecessary(silent, w);
@@ -3235,7 +3236,7 @@ static void scrollLeftAP(Widget w, XEvent *event, String *args,
     if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1)
     	return;
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-   	XmNsliderSize, &sliderSize, 0);
+   	XmNsliderSize, &sliderSize, NULL);
     horizOffset = min(max(0, textD->horizOffset - nPixels), sliderMax - sliderSize);
     if (textD->horizOffset != horizOffset) {
 	TextDSetScroll(textD, textD->topLineNum, horizOffset);
@@ -3252,7 +3253,7 @@ static void scrollRightAP(Widget w, XEvent *event, String *args,
     if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1)
     	return;
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-    	    XmNsliderSize, &sliderSize, 0);
+    	    XmNsliderSize, &sliderSize, NULL);
     horizOffset = min(max(0, textD->horizOffset + nPixels), sliderMax - sliderSize);
     if (textD->horizOffset != horizOffset) {
 	TextDSetScroll(textD, textD->topLineNum, horizOffset);

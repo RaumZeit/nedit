@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.85 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.86 2007/10/02 15:47:08 tringali Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -1066,7 +1066,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtAddCallback(replaceBtn, XmNactivateCallback, (XtCallbackProc)replaceCB, window);
     XmStringFree(st1);
     XtManageChild(replaceBtn);
-    XtVaGetValues(replaceBtn, XmNshadowThickness, &shadowThickness, 0);
+    XtVaGetValues(replaceBtn, XmNshadowThickness, &shadowThickness, NULL);
     defaultBtnOffset = shadowThickness + 4;
 	
     argcnt = 0;

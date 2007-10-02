@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.28 2005/08/13 19:29:08 edg Exp $ */
+/* $Id: misc.h,v 1.29 2007/10/02 15:47:12 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -54,6 +54,7 @@ void PopDownBugPatch(Widget w);
 void RemapDeleteKey(Widget w);
 void SetDeleteRemap(int state);
 void RealizeWithoutForcingPosition(Widget shell);
+void RemovePPositionHint(Widget shell);
 void ManageDialogCenteredOnPointer(Widget dialogChild);
 void SetPointerCenteredDialogs(int state);
 void RaiseDialogWindow(Widget shell);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.110 2007/03/04 23:54:24 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.111 2007/10/02 15:47:07 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1475,7 +1475,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
             xmToggleButtonWidgetClass, formatBtns,
             XmNlabelString, s1 = XmStringCreateSimple("Unix"),
             XmNset, *fileFormat == UNIX_FILE_FORMAT,
-            XmNuserData, UNIX_FILE_FORMAT,
+            XmNuserData, (XtPointer)UNIX_FILE_FORMAT,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'U',
@@ -1487,7 +1487,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
             xmToggleButtonWidgetClass, formatBtns,
             XmNlabelString, s1 = XmStringCreateSimple("DOS"),
             XmNset, *fileFormat == DOS_FILE_FORMAT,
-            XmNuserData, DOS_FILE_FORMAT,
+            XmNuserData, (XtPointer)DOS_FILE_FORMAT,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'O',
@@ -1499,7 +1499,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
             xmToggleButtonWidgetClass, formatBtns,
             XmNlabelString, s1 = XmStringCreateSimple("Macintosh"),
             XmNset, *fileFormat == MAC_FILE_FORMAT,
-            XmNuserData, MAC_FILE_FORMAT,
+            XmNuserData, (XtPointer)MAC_FILE_FORMAT,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'M',
@@ -1870,8 +1870,11 @@ void removeVersionNumber(char *fileName)
 */
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    if (XmToggleButtonGetState(w))
-	XtVaGetValues(w, XmNuserData, clientData, NULL);
+    if (XmToggleButtonGetState(w)) {
+	XtPointer userData;
+	XtVaSetValues(w, XmNuserData, &userData, NULL);
+	*(int *)clientData = (int)userData;
+    }
 }
 
 /*
