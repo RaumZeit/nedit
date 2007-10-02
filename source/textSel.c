@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.17 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.18 2007/10/02 16:50:49 tringali Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -390,13 +390,12 @@ static void modifiedCB(int pos, int nInserted, int nDeleted,
     if ((isOwner && selected) || (!isOwner && !selected))
     	return;
 
-    /* If we own the selection and the selection is now empty, give it up */
-    if (isOwner && !selected) {
-    	XtDisownSelection((Widget)w, XA_PRIMARY, time);
-    	w->text.selectionOwner = False;
-    	return;
-    }
-    
+    /* Don't disown the selection here.  Another application (namely: klipper)
+       may try to take it when it thinks nobody has the selection.  We then
+       lose it, making selection-based macro operations fail.  Disowning
+       is really only for when the widget is destroyed to avoid a convert
+       callback from firing at a bad time. */
+
     /* Take ownership of the selection */
     if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB,
     	    loseSelectionCB, NULL))
