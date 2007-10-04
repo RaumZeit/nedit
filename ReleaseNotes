@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.57 2007/07/20 16:09:19 edg Exp $
+$Id: ReleaseNotes,v 1.58 2007/10/04 13:38:53 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,6 +22,8 @@ New Features in $NEXT_VERSION
 
 
 Bugs fixed in $NEXT_VERSION
+
+  - Fix for SF bug #1730611: $match_syntax_based is not set.
 
   - Crash on window close when a "File modified externally" dialog was up
     (SF bug #1578869).

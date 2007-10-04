@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.113 2007/01/25 23:51:56 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.114 2007/10/04 13:38:53 edg Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -295,6 +295,8 @@ static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
 static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
+static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg);
 static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg);
 static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs,
@@ -448,7 +450,7 @@ static BuiltInSubr SpecialVars[] = {cursorMV, lineMV, columnMV,
         emTabDistMV, useTabsMV, languageModeMV, modifiedMV,
         statisticsLineMV, incSearchLineMV, showLineNumbersMV,
         autoIndentMV, wrapTextMV, highlightSyntaxMV,
-        makeBackupCopyMV, incBackupMV, showMatchingMV,
+        makeBackupCopyMV, incBackupMV, showMatchingMV, matchSyntaxBasedMV,
         overTypeModeMV, readOnlyMV, lockedMV, fileFormatMV,
         fontNameMV, fontNameItalicMV,
         fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV,
@@ -466,7 +468,7 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor", "$line", "$colu
         "$language_mode", "$modified",
         "$statistics_line", "$incremental_search_line", "$show_line_numbers",
         "$auto_indent", "$wrap_text", "$highlight_syntax",
-        "$make_backup_copy", "$incremental_backup", "$show_matching",
+        "$make_backup_copy", "$incremental_backup", "$show_matching", "$match_syntax_based",
         "$overtype_mode", "$read_only", "$locked", "$file_format",
         "$font_name", "$font_name_italic",
         "$font_name_bold", "$font_name_bold_italic", "$sub_sep",
@@ -4289,6 +4291,16 @@ static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
     result->val.str.len = strlen(res);
     return True;
 }
+
+static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs,
+    DataValue *result, char **errMsg)
+{
+    result->tag = INT_TAG;
+    result->val.n = window->matchSyntaxBased ? 1 : 0;
+    return True;
+}
+
+
 
 static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, char **errMsg)
