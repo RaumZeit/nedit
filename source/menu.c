@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.140 2007/10/02 15:47:08 tringali Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.141 2007/10/04 16:04:25 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -4233,7 +4233,6 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args,
     if (*nArgs > 0) {
         int newEmTabDist = 0;
         if (sscanf(args[0], "%d", &newEmTabDist) == 1 &&
-            newEmTabDist >= -1 &&
             newEmTabDist < 1000) {
             if (newEmTabDist < 0) {
                 newEmTabDist = 0;
@@ -4246,7 +4245,7 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args,
         }
     }
     else {
-        fprintf(stderr, "nedit: set_em_tab_dist requires argument\n");
+        fprintf(stderr, "nedit: set_em_tab_dist requires integer argument\n");
     }
 }
 

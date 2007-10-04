@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.106 2007/01/04 01:42:23 yooden Exp $
+.. $Id: help.etx,v 1.107 2007/10/04 16:04:25 ajbj Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -2365,9 +2365,9 @@ Macro Subroutines
 
 **$em_tab_dist**
   If tab emulation is turned on in the Tabs...
-  dialog of the Preferences menu, value is the
+  dialog of the Preferences menu, the value is the
   distance between emulated tab stops. If tab
-  emulation is turned off, value is -1.
+  emulation is turned off, the value is 0.
 
 **$empty_array**
   An array with no elements. This can be used to initialize
@@ -3213,7 +3213,7 @@ Action Routines
 
 **set_em_tab_dist( em-tab-distance )**
   Set the emulated tab size. An em-tab-distance value of
-  0 or -1 translates to no emulated tabs. Em-tab-distance must
+  0 or less translates to no emulated tabs. Em-tab-distance must
   be smaller than 1000.
 
 **set_fonts( font-name, italic-font-name, bold-font-name, bold-italic-font-name )**

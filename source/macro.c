@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.114 2007/10/04 13:38:53 edg Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.115 2007/10/04 16:04:25 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -4479,7 +4479,7 @@ static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
     
     XtVaGetValues(window->textArea, textNemulateTabs, &dist, NULL);
     result->tag = INT_TAG;
-    result->val.n = dist == 0 ? -1 : dist;
+    result->val.n = dist;
     return True;
 }
 
