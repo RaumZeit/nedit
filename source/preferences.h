@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.55 2006/10/16 14:26:52 yooden Exp $ */
+/* $Id: preferences.h,v 1.56 2007/10/15 15:33:28 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -208,10 +208,8 @@ void SetPrefTitleFormat(const char* format);
 const char* GetPrefTitleFormat(void);
 int GetPrefOverrideVirtKeyBindings(void);
 int GetPrefTruncSubstitution(void);
-void SetPrefOpenInTab(int state);
 int GetPrefOpenInTab(void);
 void SetPrefUndoModifiesSelection(Boolean);
-void SetPrefOpenInTab(int state);
 int GetPrefOpenInTab(void);
 void SetPrefOpenInTab(int state);
 int GetPrefOpenInTab(void);
@@ -220,6 +218,5 @@ Boolean GetPrefFocusOnRaise(void);
 Boolean GetPrefHonorSymlinks(void);
 Boolean GetPrefForceOSConversion(void);
 void SetPrefFocusOnRaise(Boolean);
-int GetPrefOverrideVirtKeyBindings(void);
 
 #endif /* NEDIT_PREFERENCES_H_INCLUDED */
