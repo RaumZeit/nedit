@@ -49,6 +49,7 @@
 #include "ProgressP.h"
 #include <stdio.h>
 #include <sys/time.h>
+#include <time.h>
 
 static void ClassInitialize(void);
 static void Initialize(Widget , Widget, ArgList, Cardinal *);
