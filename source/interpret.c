@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.47 2007/01/30 13:51:11 ajbj Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.48 2007/10/18 13:26:43 tringali Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -187,7 +187,7 @@ static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */
 static Inst **LoopStackPtr = LoopStack;  /*  to fill at the end of a loop */
 
 /* Global data for the interpreter */
-static DataValue *Stack;	    /* the stack */
+static DataValue *TheStack;	    /* the stack */
 static DataValue *StackP;	    /* next free spot on stack */
 static DataValue *FrameP;   	    /* frame pointer (start of local variables
     	    	    	    	       for the current subroutine invocation) */
@@ -1013,7 +1013,7 @@ void GarbageCollectStrings(void)
 */
 static void saveContext(RestartData *context)
 {
-    context->stack = Stack;
+    context->stack = TheStack;
     context->stackP = StackP;
     context->frameP = FrameP;
     context->pc = PC;
@@ -1023,7 +1023,7 @@ static void saveContext(RestartData *context)
 
 static void restoreContext(RestartData *context)
 {
-    Stack = context->stack;
+    TheStack = context->stack;
     StackP = context->stackP;
     FrameP = context->frameP;
     PC = context->pc;
@@ -1044,12 +1044,12 @@ static void freeSymbolTable(Symbol *symTab)
 }
 
 #define POP(dataVal) \
-    if (StackP == Stack) \
+    if (StackP == TheStack) \
 	return execError(StackUnderflowMsg, ""); \
     dataVal = *--StackP;
    
 #define PUSH(dataVal) \
-    if (StackP >= &Stack[STACK_SIZE]) \
+    if (StackP >= &TheStack[STACK_SIZE]) \
     	return execError(StackOverflowMsg, ""); \
     *StackP++ = dataVal;
 
@@ -1057,7 +1057,7 @@ static void freeSymbolTable(Symbol *symTab)
     dataVal = *(StackP - peekIndex - 1);
 
 #define POP_INT(number) \
-    if (StackP == Stack) \
+    if (StackP == TheStack) \
 	return execError(StackUnderflowMsg, ""); \
     --StackP; \
     if (StackP->tag == STRING_TAG) { \
@@ -1069,7 +1069,7 @@ static void freeSymbolTable(Symbol *symTab)
         return(execError("can't convert array to integer", NULL));
 
 #define POP_STRING(string) \
-    if (StackP == Stack) \
+    if (StackP == TheStack) \
 	return execError(StackUnderflowMsg, ""); \
     --StackP; \
     if (StackP->tag == INT_TAG) { \
@@ -1105,14 +1105,14 @@ static void freeSymbolTable(Symbol *symTab)
     }
 
 #define PUSH_INT(number) \
-    if (StackP >= &Stack[STACK_SIZE]) \
+    if (StackP >= &TheStack[STACK_SIZE]) \
     	return execError(StackOverflowMsg, ""); \
     StackP->tag = INT_TAG; \
     StackP->val.n = number; \
     StackP++;
     
 #define PUSH_STRING(string, length) \
-    if (StackP >= &Stack[STACK_SIZE]) \
+    if (StackP >= &TheStack[STACK_SIZE]) \
     	return execError(StackOverflowMsg, ""); \
     StackP->tag = STRING_TAG; \
     StackP->val.str.rep = string; \
@@ -1139,9 +1139,9 @@ static void freeSymbolTable(Symbol *symTab)
 /*
 ** copy a symbol's value onto the stack
 ** Before: Prog->  [Sym], next, ...
-**         Stack-> next, ...
+**         TheStack-> next, ...
 ** After:  Prog->  Sym, [next], ...
-**         Stack-> [SymValue], next, ...
+**         TheStack-> [SymValue], next, ...
 */
 static int pushSymVal(void)
 {
@@ -1185,7 +1185,7 @@ static int pushSymVal(void)
     	return execError("variable not set: %s", s->name);
     }
     StackP++;
-    if (StackP >= &Stack[STACK_SIZE]) {
+    if (StackP >= &TheStack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
     }
     return STAT_OK;
@@ -1250,9 +1250,9 @@ static int pushArgArray(void)
 /*
 ** Push an array (by reference) onto the stack
 ** Before: Prog->  [ArraySym], makeEmpty, next, ...
-**         Stack-> next, ...
+**         TheStack-> next, ...
 ** After:  Prog->  ArraySym, makeEmpty, [next], ...
-**         Stack-> [elemValue], next, ...
+**         TheStack-> [elemValue], next, ...
 ** makeEmpty is either true (1) or false (0): if true, and the element is not
 ** present in the array, create it.
 */
@@ -1292,7 +1292,7 @@ static int pushArraySymVal(void)
     *StackP = *dataPtr;
     StackP++;
 
-    if (StackP >= &Stack[STACK_SIZE]) {
+    if (StackP >= &TheStack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
     }
     return STAT_OK;
@@ -1302,9 +1302,9 @@ static int pushArraySymVal(void)
 ** assign top value to next symbol
 **
 ** Before: Prog->  [symbol], next, ...
-**         Stack-> [value], next, ...
+**         TheStack-> [value], next, ...
 ** After:  Prog->  symbol, [next], ...
-**         Stack-> next, ...
+**         TheStack-> next, ...
 */
 static int assign(void)
 {
@@ -1328,7 +1328,7 @@ static int assign(void)
             return execError("assignment to non-variable: %s", sym->name);
         }
     }
-    if (StackP == Stack) {
+    if (StackP == TheStack) {
         return execError(StackUnderflowMsg, "");
     }
     --StackP;
@@ -1349,15 +1349,15 @@ static int assign(void)
 
 /*
 ** copy the top value of the stack
-** Before: Stack-> value, next, ...
-** After:  Stack-> value, value, next, ...
+** Before: TheStack-> value, next, ...
+** After:  TheStack-> value, value, next, ...
 */
 static int dupStack(void)
 {
     DISASM_RT(PC-1, 1);
     STACKDUMP(1, 3);
 
-    if (StackP >= &Stack[STACK_SIZE]) {
+    if (StackP >= &TheStack[STACK_SIZE]) {
     	return execError(StackOverflowMsg, "");
     }
     *StackP = *(StackP - 1);
@@ -1370,8 +1370,8 @@ static int dupStack(void)
 ** in which all the keys from both the right and left are copied
 ** the values from the right array are used in the result array when the
 ** keys are the same
-** Before: Stack-> value2, value1, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value2, value1, next, ...
+** After:  TheStack-> resValue, next, ...
 */
 static int add(void)
 {
@@ -1442,8 +1442,8 @@ static int add(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in the left array but not in the right
 ** are copied
-** Before: Stack-> value2, value1, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value2, value1, next, ...
+** After:  TheStack-> resValue, next, ...
 */
 static int subtract(void)
 {
@@ -1506,12 +1506,12 @@ static int subtract(void)
 
 /*
 ** Other binary operators
-** Before: Stack-> value2, value1, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value2, value1, next, ...
+** After:  TheStack-> resValue, next, ...
 **
 ** Other unary operators
-** Before: Stack-> value, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value, next, ...
+** After:  TheStack-> resValue, next, ...
 */
 static int multiply(void)
 {
@@ -1587,8 +1587,8 @@ static int le(void)
 
 /*
 ** verify that compares are between integers and/or strings only
-** Before: Stack-> value1, value2, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value1, value2, next, ...
+** After:  TheStack-> resValue, next, ...
 ** where resValue is 1 for true, 0 for false
 */
 static int eq(void)
@@ -1643,8 +1643,8 @@ static int ne(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in both the right or left are copied
 ** the values from the right array are used in the result array
-** Before: Stack-> value2, value1, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value2, value1, next, ...
+** After:  TheStack-> resValue, next, ...
 */
 static int bitAnd(void)
 { 
@@ -1703,8 +1703,8 @@ static int bitAnd(void)
 ** if left and right arguments are arrays, then the result is a new array
 ** in which only the keys which exist in either the right or left but not both
 ** are copied
-** Before: Stack-> value2, value1, next, ...
-** After:  Stack-> resValue, next, ...
+** Before: TheStack-> value2, value1, next, ...
+** After:  TheStack-> resValue, next, ...
 */
 static int bitOr(void)
 { 
@@ -1787,8 +1787,8 @@ static int not(void)
 
 /*
 ** raise one number to the power of another
-** Before: Stack-> raisedBy, number, next, ...
-** After:  Stack-> result, next, ...
+** Before: TheStack-> raisedBy, number, next, ...
+** After:  TheStack-> result, next, ...
 */
 static int power(void)
 {
@@ -1832,8 +1832,8 @@ static int power(void)
 
 /*
 ** concatenate two top items on the stack
-** Before: Stack-> str2, str1, next, ...
-** After:  Stack-> result, next, ...
+** Before: TheStack-> str2, str1, next, ...
+** After:  TheStack-> result, next, ...
 */
 static int concat(void)
 {
@@ -1865,11 +1865,11 @@ static int concat(void)
 ** arguments are popped off the stack, and the routine is just called.
 **
 ** Before: Prog->  [subrSym], nArgs, next, ...
-**         Stack-> argN-arg1, next, ...
+**         TheStack-> argN-arg1, next, ...
 ** After:  Prog->  next, ...            -- (built-in called subr)
-**         Stack-> retVal?, next, ...
+**         TheStack-> retVal?, next, ...
 **    or:  Prog->  (in called)next, ... -- (macro code called subr)
-**         Stack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
+**         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
 static int callSubroutine(void)
 {
@@ -2011,9 +2011,9 @@ static int returnVal(void)
 /*
 ** Return from a subroutine call
 ** Before: Prog->  [next], ...
-**         Stack-> retVal?, ...(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
+**         TheStack-> retVal?, ...(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 ** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
-**         Stack-> retVal?, next, ...
+**         TheStack-> retVal?, next, ...
 */
 static int returnValOrNone(int valOnStack)
 {
@@ -2420,9 +2420,9 @@ SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator)
 ** evaluate an array element and push the result onto the stack
 **
 ** Before: Prog->  [nDim], next, ...
-**         Stack-> indnDim, ... ind1, ArraySym, next, ...
+**         TheStack-> indnDim, ... ind1, ArraySym, next, ...
 ** After:  Prog->  nDim, [next], ...
-**         Stack-> indexedArrayVal, next, ...
+**         TheStack-> indexedArrayVal, next, ...
 */
 static int arrayRef(void)
 {
@@ -2471,9 +2471,9 @@ static int arrayRef(void)
 ** assign to an array element of a referenced array on the stack
 **
 ** Before: Prog->  [nDim], next, ...
-**         Stack-> rhs, indnDim, ... ind1, ArraySym, next, ...
+**         TheStack-> rhs, indnDim, ... ind1, ArraySym, next, ...
 ** After:  Prog->  nDim, [next], ...
-**         Stack-> next, ...
+**         TheStack-> next, ...
 */
 static int arrayAssign(void)
 {
@@ -2524,9 +2524,9 @@ static int arrayAssign(void)
 ** for use with assign-op operators (eg a[i,j] += k
 **
 ** Before: Prog->  [binOp], nDim, next, ...
-**         Stack-> [rhs], indnDim, ... ind1, next, ...
+**         TheStack-> [rhs], indnDim, ... ind1, next, ...
 ** After:  Prog->  binOp, nDim, [next], ...
-**         Stack-> [rhs], arrayValue, next, ...
+**         TheStack-> [rhs], arrayValue, next, ...
 */
 static int arrayRefAndAssignSetup(void)
 {
@@ -2577,9 +2577,9 @@ static int arrayRefAndAssignSetup(void)
 ** setup symbol values for array iteration in interpreter
 **
 ** Before: Prog->  [iter], ARRAY_ITER, iterVar, iter, endLoopBranch, next, ...
-**         Stack-> [arrayVal], next, ...
+**         TheStack-> [arrayVal], next, ...
 ** After:  Prog->  iter, [ARRAY_ITER], iterVar, iter, endLoopBranch, next, ...
-**         Stack-> [next], ...
+**         TheStack-> [next], ...
 ** Where: 
 **      iter is a symbol which gives the position of the iterator value in
 **              the stack frame
@@ -2622,9 +2622,9 @@ static int beginArrayIter(void)
 ** except the item just after the current key
 **
 ** Before: Prog->  iter, ARRAY_ITER, [iterVar], iter, endLoopBranch, next, ...
-**         Stack-> [next], ...
+**         TheStack-> [next], ...
 ** After:  Prog->  iter, ARRAY_ITER, iterVar, iter, endLoopBranch, [next], ...
-**         Stack-> [next], ...      (unchanged)
+**         TheStack-> [next], ...      (unchanged)
 ** Where: 
 **      iter is a symbol which gives the position of the iterator value in
 **              the stack frame (set up by BEGIN_ARRAY_ITER); that value refers
@@ -2696,9 +2696,9 @@ static int arrayIter(void)
 ** in the left array exists in the right array, otherwise 0
 **
 ** Before: Prog->  [next], ...
-**         Stack-> [ArraySym], inSymbol, next, ...
+**         TheStack-> [ArraySym], inSymbol, next, ...
 ** After:  Prog->  [next], ...      -- (unchanged)
-**         Stack-> next, ...
+**         TheStack-> next, ...
 */
 static int inArray(void)
 {
@@ -2740,9 +2740,9 @@ static int inArray(void)
 **
 ** for use with assign-op operators (eg a[i,j] += k
 ** Before: Prog->  [nDim], next, ...
-**         Stack-> [indnDim], ... ind1, arrayValue, next, ...
+**         TheStack-> [indnDim], ... ind1, arrayValue, next, ...
 ** After:  Prog->  nDim, [next], ...
-**         Stack-> next, ...
+**         TheStack-> next, ...
 */
 static int deleteArrayElement(void)
 {
@@ -2997,7 +2997,7 @@ static void disasm(Inst *inst, int nInstr)
 #define STACK_DUMP_ARG_PREFIX "Arg"
 static void stackdump(int n, int extra)
 {
-    /* Stack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
+    /* TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
     int nArgs = FP_GET_ARG_COUNT(FrameP);
     int i, offset;
     char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
@@ -3005,7 +3005,7 @@ static void stackdump(int n, int extra)
     for (i = 0; i < n + extra; i++) {
         char *pos = "";
         DataValue *dv = &StackP[-i - 1];
-        if (dv < Stack) {
+        if (dv < TheStack) {
             printf("--------------Stack base--------------\n");
             break;
         }
