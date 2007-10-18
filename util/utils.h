@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.15 2006/02/11 10:37:28 yooden Exp $ */
+/* $Id: utils.h,v 1.16 2007/10/18 13:24:56 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * utils.h -- Nirvana Editor Utilities Header File                              *
@@ -38,7 +38,7 @@
 
 const char *GetCurrentDir(void);
 const char *GetHomeDir(void);
-char *PrependHome(const char *filename, char *buf, int buflen);
+char *PrependHome(const char *filename, char *buf, size_t buflen);
 const char *GetUserName(void);
 const char *GetNameOfHost(void);
 int Max(int i1, int i2);

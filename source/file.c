@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.111 2007/10/02 15:47:07 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.112 2007/10/18 13:24:56 tringali Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -90,7 +90,7 @@ static int doSave(WindowInfo *window);
 static void safeClose(WindowInfo *window);
 static int doOpen(WindowInfo *window, const char *name, const char *path,
      int flags);
-static void backupFileName(WindowInfo *window, char *name, int len);
+static void backupFileName(WindowInfo *window, char *name, size_t len);
 static int writeBckVersion(WindowInfo *window);
 static int bckError(WindowInfo *window, const char *errString, const char *file);
 static int fileWasModifiedExternally(WindowInfo *window);
@@ -1149,7 +1149,7 @@ void RemoveBackupFile(WindowInfo *window)
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-static void backupFileName(WindowInfo *window, char *name, int len)
+static void backupFileName(WindowInfo *window, char *name, size_t len)
 {
     char bckname[MAXPATHLEN];
 #ifdef VMS

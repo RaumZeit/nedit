@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.25 2006/02/11 10:37:28 yooden Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.26 2007/10/18 13:24:56 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -69,7 +69,7 @@ const char* GetCurrentDir(void)
 {
     static char curdir[MAXPATHLEN];
 
-    if (!getcwd(curdir, MAXPATHLEN)) {
+    if (!getcwd(curdir, (size_t) MAXPATHLEN)) {
         perror("nedit: getcwd() fails");
         strcpy(curdir, ".");
     }
@@ -85,7 +85,7 @@ const char* GetHomeDir(void)
     const char *ptr;
     static char homedir[MAXPATHLEN]="";
     struct passwd *passwdEntry;
-    int len;
+    size_t len;
 
     if (*homedir) {
        return homedir;
@@ -206,10 +206,10 @@ const char
 ** Return "" if it doesn't fit into the buffer
 */
 char 
-*PrependHome(const char *filename, char *buf, int buflen)
+*PrependHome(const char *filename, char *buf, size_t buflen)
 {
     const char *homedir;
-    int home_len, file_len;
+    size_t home_len, file_len;
     
     homedir=GetHomeDir();
     home_len=strlen(homedir);

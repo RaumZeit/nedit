@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.78 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.79 2007/10/18 13:24:56 tringali Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -1654,7 +1654,8 @@ static int readHighlightPattern(char **inPtr, char **errMsg,
 */
 static patternSet *readDefaultPatternSet(const char *langModeName)
 {
-    int i, modeNameLen;
+    int i;
+    size_t modeNameLen;
     char *strPtr;
     
     modeNameLen = strlen(langModeName);

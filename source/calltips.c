@@ -192,7 +192,8 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
 ** formatting just right.
 */
 static char *expandAllTabs( char *text, int tab_width ) {
-    int i, len, nTabs=0;
+    int i, nTabs=0;
+    size_t len;
     char *c, *cCpy, *textCpy;
     
     /* First count 'em */
