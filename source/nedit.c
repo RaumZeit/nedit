@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.99 2007/01/12 22:44:46 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.100 2007/11/29 22:18:09 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -124,13 +124,13 @@ Widget TheAppShell;
    RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
    and so reverts to "fixed".  Yech. */
 
-#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-iso8859-1," \
-                                "-*-helvetica-bold-r-normal-*-*-120-*-*-*-iso8859-1=BOLD," \
-                                "-*-helvetica-medium-o-normal-*-*-120-*-*-*-iso8859-1=ITALIC"
+#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-1," \
+                                "-*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD," \
+                                "-*-helvetica-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
 
-#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-iso8859-1," \
-                                "-*-courier-bold-r-normal-*-*-120-*-*-*-iso8859-1=BOLD," \
-                                "-*-courier-medium-o-normal-*-*-120-*-*-*-iso8859-1=ITALIC"
+#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-*-iso8859-1," \
+                                "-*-courier-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD," \
+                                "-*-courier-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
 
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
