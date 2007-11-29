@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.47 2005/08/06 04:31:25 tksoh Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.48 2007/11/29 22:18:48 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -204,7 +204,7 @@ static void addToFileList(const char *path)
 }
 
 /* Creates the properties for the various paths */
-static void createWaitProperties()
+static void createWaitProperties(void)
 {
     FileListEntry *item;
 
