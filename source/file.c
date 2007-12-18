@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.112 2007/10/18 13:24:56 tringali Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.113 2007/12/18 22:35:52 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1871,9 +1871,9 @@ void removeVersionNumber(char *fileName)
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w)) {
-	XtPointer userData;
-	XtVaSetValues(w, XmNuserData, &userData, NULL);
-	*(int *)clientData = (int)userData;
+        XtPointer userData;
+        XtVaGetValues(w, XmNuserData, &userData, NULL);
+        *(int*) clientData = (int) userData;
     }
 }
 
