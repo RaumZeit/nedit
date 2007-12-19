@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.107 2007/10/04 16:04:25 ajbj Exp $
+.. $Id: help.etx,v 1.108 2007/12/19 23:22:13 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1865,7 +1865,7 @@ Shell Commands and Filters
 
   The X resource called nedit.shell (See "Customizing_NEdit_") determines which
   Unix shell is used to execute commands.  The default value for this resource
-  is /bin/csh.
+  is the user's login shell.
    ----------------------------------------------------------------------
 
 Learn/Replay
@@ -3762,7 +3762,7 @@ Preferences
   are displayed in a dialog.  In Smart mode, if one of the matching tags is in
   the current window, that tag is chosen, without displaying the dialog.
 
-**Select Shell...**
+**Command Shell...**
   Set the shell used to run programs from the shell_command() macro function
   and from the Shell menu. This defaults to the user's login shell.
 
@@ -3905,7 +3905,7 @@ Preferences
   as choosing a proportional font: column alignment will sometimes look wrong,
   and rectangular operations, wrapping, and filling will behave strangely.  A
   mismatch in height will cause windows to re-size themselves slightly when
-  syntax highlighting is turned on or off, and increase the inter- line spacing
+  syntax highlighting is turned on or off, and increase the inter-line spacing
   of the text.  Unfortunately, on some systems it is hard to find sets of fonts
   which match exactly in height.
 
