@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.86 2007/10/02 15:47:08 tringali Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.87 2007/12/28 19:48:06 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4496,9 +4496,9 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	return FALSE;
 
     /* search from beginPos to end of string */
-    if (ExecRE(compiledRE, NULL, string + beginPos, NULL, FALSE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string,
-            NULL)) {
+    if (ExecRE(compiledRE, string + beginPos, NULL, FALSE,
+            (beginPos == 0) ? '\0' : string[beginPos-1], '\0', delimiters,
+            string, NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4516,8 +4516,8 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
     }
     
     /* search from the beginning of the string to beginPos */
-    if (ExecRE(compiledRE, NULL, string, string + beginPos, FALSE, '\0',
-	    string[beginPos], delimiters, string, NULL)) {
+    if (ExecRE(compiledRE, string, string + beginPos, FALSE, '\0',
+            string[beginPos], delimiters, string, NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4548,8 +4548,8 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     /* search from beginPos to start of file.  A negative begin pos	*/
     /* says begin searching from the far end of the file.		*/
     if (beginPos >= 0) {
-	if (ExecRE(compiledRE, NULL, string, string + beginPos, TRUE, '\0',
-		'\0', delimiters, string, NULL)) {
+	if (ExecRE(compiledRE, string, string + beginPos, TRUE, '\0', '\0',
+                delimiters, string, NULL)) {
 	    *startPos = compiledRE->startp[0] - string;
 	    *endPos = compiledRE->endp[0] - string;
 	    if (searchExtentFW != NULL)
@@ -4571,9 +4571,9 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
     if (beginPos < 0)
     	beginPos = 0;
     length = strlen(string); /* sadly, this means scanning entire string */
-    if (ExecRE(compiledRE, NULL, string + beginPos, string + length, TRUE,
-    	    beginPos==0 ? '\0' : string[beginPos-1], '\0', delimiters, string,
-            NULL)) {
+    if (ExecRE(compiledRE, string + beginPos, string + length, TRUE,
+            (beginPos == 0) ? '\0' : string[beginPos-1], '\0', delimiters,
+            string, NULL)) {
 	*startPos = compiledRE->startp[0] - string;
 	*endPos = compiledRE->endp[0] - string;
 	if (searchExtentFW != NULL)
@@ -4722,8 +4722,8 @@ static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
     Boolean substResult = False;
     
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
-    ExecRE(compiledRE, NULL, sourceStr+beginPos, NULL, False, prevChar,
-   	   '\0', delimiters, sourceStr, NULL);
+    ExecRE(compiledRE, sourceStr+beginPos, NULL, False, prevChar, '\0',
+            delimiters, sourceStr, NULL);
     substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
     free((char *)compiledRE);
 

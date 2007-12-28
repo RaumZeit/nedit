@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: DialogF.c,v 1.31 2004/08/01 10:06:12 yooden Exp $";
+static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * DialogF -- modal dialog printf routine                                       *
@@ -311,7 +311,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	}				/* end switch */
 
         /*  Set margin width to managed buttons.  */
-        for (i = 0; i < N_SELECTION_BUTTONS; i++)
+        for (i = 0; (unsigned) i < N_SELECTION_BUTTONS; i++)
         {
             Widget button = XmSelectionBoxGetChild(dialog, selectionButton_id[i]);
 
@@ -415,7 +415,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 	}
 
         /*  Set margin width to managed buttons.  */
-        for (i = 0; i < N_MESSAGE_BUTTONS; i++)
+        for (i = 0; (unsigned) i < N_MESSAGE_BUTTONS; i++)
         {
             Widget button = XmMessageBoxGetChild(dialog, messageButton_id[i]);
 

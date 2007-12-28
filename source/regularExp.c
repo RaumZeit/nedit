@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.30 2006/08/13 21:47:45 yooden Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.31 2007/12/28 19:48:05 yooden Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2693,17 +2693,10 @@ static unsigned char * makeDelimiterTable (unsigned char *, unsigned char *);
  * larger than or equal to end, if set.
  */
 
-int ExecRE (
-   regexp *prog,
-   regexp *cross_regex_backref,
-   const char   *string,
-   const char   *end,
-   int     reverse,
-   char    prev_char,
-   char    succ_char,
-   const char   *delimiters,
-   const char   *look_behind_to,
-   const char   *match_to) {
+int ExecRE(regexp *prog, const char* string, const char* end, int reverse,
+        char prev_char, char succ_char, const char* delimiters,
+        const char* look_behind_to, const char* match_to)
+{
 
    register unsigned char  *str;
             unsigned char **s_ptr;
@@ -2769,8 +2762,6 @@ int ExecRE (
    
    /* Reset the recursion detection flag */
    Recursion_Limit_Exceeded = 0;
-
-/*   Cross_Regex_Backref = cross_regex_backref; */
 
    /* Allocate memory for {m,n} construct counting variables if need be. */
 

@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.14 2006/08/13 18:02:28 yooden Exp $ */
+/* $Id: regularExp.h,v 1.15 2007/12/28 19:48:06 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * regularExp.h -- Nirvana Editor Regular Expression Package Header File        *
@@ -72,11 +72,6 @@ regexp * CompileRE (
 
 int ExecRE (
    regexp *prog,                /* Compiled regex. */
-   regexp *cross_regex_backref, /* Pointer to a `regexp' that was used in a
-                                   previous execution of ExecRE.  Used to
-                                   implement back references across regular
-                                   expressions for use in syntax
-                                   highlighting.*/
    const char   *string,              /* Text to search within. */
    const char   *end,                 /* Pointer to the end of `string'.  If NULL will
                                    scan from `string' until '\0' is found. */

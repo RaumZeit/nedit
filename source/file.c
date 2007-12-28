@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.113 2007/12/18 22:35:52 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.114 2007/12/28 19:48:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -121,7 +121,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 
     /* create new window/document */
     if (inWindow)
-	window = CreateDocument(inWindow, name, geometry, iconic);
+	window = CreateDocument(inWindow, name);
     else 
 	window = CreateWindow(name, geometry, iconic);
 	
@@ -197,7 +197,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     else if (inWindow->filenameSet || inWindow->fileChanged ||
 	    inWindow->macroCmdData != NULL) {
 	if (tabbed) {
-	    window = CreateDocument(inWindow, name, geometry, iconic);
+	    window = CreateDocument(inWindow, name);
     	}
 	else {
 	    window = CreateWindow(name, geometry, iconic);

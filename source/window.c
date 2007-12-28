@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.200 2007/10/02 15:47:10 tringali Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.201 2007/12/28 19:48:06 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -152,7 +152,7 @@ static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width,
 	unsigned int height);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
         int crossWin, int wrap);
-static Widget addTab(Widget folder, WindowInfo *window, const char *string);
+static Widget addTab(Widget folder, const char *string);
 static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
@@ -165,7 +165,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
         int lineNumCols);
 static void showStats(WindowInfo *window, int state);
 static void showISearch(WindowInfo *window, int state);
-static void showStatsForm(WindowInfo *window, int state);
+static void showStatsForm(WindowInfo *window);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
 static unsigned requestLineNumCols(const WindowInfo* window);
@@ -595,7 +595,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtAddCallback(window->tabBar, XmNactivateCallback,
     	    raiseTabCB, NULL);
 
-    window->tab = addTab(window->tabBar, window, name);
+    window->tab = addTab(window->tabBar, name);
 
     /* A form to hold the stats line text and line/col widgets */
     window->statsLineForm = XtVaCreateWidget("statsLineForm",
@@ -802,7 +802,7 @@ static void tabClickEH(Widget w, XtPointer clientData, XEvent *event)
 /*
 ** add a tab to the tab bar for the new document.
 */
-static Widget addTab(Widget folder, WindowInfo *window, const char *string)
+static Widget addTab(Widget folder, const char *string)
 {
     Widget tooltipLabel, tab;
     XmString s1;
@@ -1498,10 +1498,10 @@ static void showStats(WindowInfo *window, int state)
 {
     if (state) {
         XtManageChild(window->statsLineForm);
-        showStatsForm(window, True);
+        showStatsForm(window);
     } else {
         XtUnmanageChild(window->statsLineForm);
-        showStatsForm(window, window->showISearchLine);
+        showStatsForm(window);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
@@ -1515,10 +1515,10 @@ static void showTabBar(WindowInfo *window, int state)
 {
     if (state) {
 	XtManageChild(XtParent(window->tabBar));
-	showStatsForm(window, True);
+	showStatsForm(window);
     } else {
 	XtUnmanageChild(XtParent(window->tabBar));
-	showStatsForm(window, False);
+	showStatsForm(window);
     }
 }
 
@@ -1573,11 +1573,10 @@ static void showISearch(WindowInfo *window, int state)
 {
     if (state) {
 	XtManageChild(window->iSearchForm);
-	showStatsForm(window, True);
+	showStatsForm(window);
     } else {
 	XtUnmanageChild(window->iSearchForm);
-	showStatsForm(window, window->showStats || 
-                window->modeMessageDisplayed);
+	showStatsForm(window);
     }
       
     /* Tell WM that the non-expandable part of the window has changed size */
@@ -1589,7 +1588,7 @@ static void showISearch(WindowInfo *window, int state)
 ** Show or hide the extra display area under the main menu bar which
 ** optionally contains the status line and the incremental search bar
 */
-static void showStatsForm(WindowInfo *window, int state)
+static void showStatsForm(WindowInfo *window)
 {
     Widget statsAreaForm = XtParent(window->statsLineForm);
     Widget mainW = XtParent(statsAreaForm);
@@ -3262,8 +3261,7 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols)
 ** unnecessarily; hence speeding up the process of opening 
 ** multiple files.
 */
-WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
-	char *geometry, int iconic)
+WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
 {
     Widget pane, text;
     WindowInfo *window;
@@ -3454,7 +3452,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
     /* Set the requested hardware tab distance and useTabs in the text buffer */
     BufSetTabDistance(window->buffer, GetPrefTabDist(PLAIN_LANGUAGE_MODE));
     window->buffer->useTabs = GetPrefInsertTabs();
-    window->tab = addTab(window->tabBar, window, name);
+    window->tab = addTab(window->tabBar, name);
 
     /* add the window to the global window list, update the Windows menus */
     InvalidateWindowMenus();
@@ -4486,7 +4484,7 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
     }
     
     /* relocate the document to target window */
-    cloneWin = CreateDocument(toWindow, window->filename, NULL, False);
+    cloneWin = CreateDocument(toWindow, window->filename);
     ShowTabBar(cloneWin, GetShowTabBar(cloneWin));
     cloneDocument(cloneWin, window);
     

@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.31 2007/03/04 23:26:06 yooden Exp $ */
+/* $Id: window.h,v 1.32 2007/12/28 19:48:06 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * window.h -- Nirvana Editor Window header file                                *
@@ -77,8 +77,7 @@ void AddSmallIcon(Widget shell);
 void SetTabDist(WindowInfo *window, int tabDist);
 void SetEmTabDist(WindowInfo *window, int emTabDist);
 int CloseAllDocumentInWindow(WindowInfo *window);
-WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name,
-	char *geometry, int iconic);
+WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name);
 WindowInfo *TabToWindow(Widget tab);
 void RaiseDocument(WindowInfo *window);
 void RaiseDocumentWindow(WindowInfo *window);
