@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.105 2005/12/28 22:19:49 tringali Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.106 2007/12/29 00:51:50 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -796,7 +796,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
 static void changeTopicOrRaise(int existingTopic, int newTopic) {
     if(HelpWindows[newTopic] == NULL)
     {
-        changeWindowTopic(existingTopic, newTopic);
+        changeWindowTopic(existingTopic, (enum HelpTopic) newTopic);
         adaptNavigationButtons(newTopic);
     } else
     {
@@ -991,10 +991,11 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
         {
             if (newWindow)
             {
-                HelpWindows[link_topic] = createHelpPanel(link_topic);
+                HelpWindows[link_topic]
+                        = createHelpPanel((enum HelpTopic) link_topic);
             } else
             {
-                changeWindowTopic(topic, link_topic);
+                changeWindowTopic(topic, (enum HelpTopic) link_topic);
             }
         }
         navHistBack[link_topic] = topic;
