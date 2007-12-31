@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.33 2004/10/18 15:54:12 yooden Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.34 2007/12/31 11:12:44 yooden Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -233,40 +233,40 @@ ResolvePath(const char * pathIn, char * pathResolved)
     return TRUE;
 #else
     /* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
-    for(loops=0; loops<MAXSYMLINKS; loops++) {
+    for (loops=0; loops<MAXSYMLINKS; loops++) {
 #ifdef UNICOS
 	rlResult=readlink((char *)pathIn, resolveBuf, MAXPATHLEN-1);
 #else
 	rlResult=readlink(pathIn, resolveBuf, MAXPATHLEN-1);
 #endif
-	if(rlResult<0) {
+        if (rlResult<0) {
 
 #ifndef __Lynx__
   	    if (errno == EINVAL)
 #else
 	    if (errno == ENXIO)
 #endif
-        {
-            /* It's not a symlink - we are done */
-            strncpy(pathResolved, pathIn, MAXPATHLEN);
-            pathResolved[MAXPATHLEN-1] = '\0';
-            return TRUE;
-        } else
-        {
-            return FALSE;
-        }
-	} else if (rlResult==0) {
+            {
+                /* It's not a symlink - we are done */
+                strncpy(pathResolved, pathIn, MAXPATHLEN);
+                pathResolved[MAXPATHLEN-1] = '\0';
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+        } else if (rlResult == 0) {
 	    return FALSE;
 	}
 
 	resolveBuf[rlResult]=0;
 
-	if(resolveBuf[0]!='/') {
+        if (resolveBuf[0]!='/') {
 	    strncpy(pathBuf, pathIn, MAXPATHLEN);
 	    pathBuf[MAXPATHLEN-1] = '\0';
 	    pathEnd=strrchr(pathBuf, '/');
-	    if(!pathEnd)
+            if (!pathEnd) {
 	      	return FALSE;
+            }
 	    strcpy(pathEnd+1, resolveBuf);
 	} else {
 	    strcpy(pathBuf, resolveBuf);
@@ -274,6 +274,7 @@ ResolvePath(const char * pathIn, char * pathResolved)
 	NormalizePathname(pathBuf);
 	pathIn=pathBuf;
     }
+
     return FALSE;
 #endif /* NO_READLINK */
 }

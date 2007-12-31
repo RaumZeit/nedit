@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.87 2007/12/28 19:48:06 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.88 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -4096,16 +4096,22 @@ char *ReplaceAllInString(const char *inString, const char *searchString,
 static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, 
 	int beginPos, int startPos) 
 {
-    if(GetPrefBeepOnSearchWrap())  {
-	if(direction == SEARCH_FORWARD) {
-	    if(  (startPos >= beginPos && window->iSearchLastBeginPos < beginPos)
-	       ||(startPos < beginPos && window->iSearchLastBeginPos >= beginPos)) 
-	    XBell(TheDisplay, 0);
-	} else {
-	    if(  (startPos <= beginPos && window->iSearchLastBeginPos > beginPos)
-	       ||(startPos > beginPos && window->iSearchLastBeginPos <= beginPos))
-	    XBell(TheDisplay, 0);
-	}
+    if (GetPrefBeepOnSearchWrap()) {
+        if (direction == SEARCH_FORWARD) {
+            if ((startPos >= beginPos
+                        && window->iSearchLastBeginPos < beginPos)
+                    ||(startPos < beginPos
+                        && window->iSearchLastBeginPos >= beginPos)) {
+                XBell(TheDisplay, 0);
+            }
+        } else {
+            if ((startPos <= beginPos
+                        && window->iSearchLastBeginPos > beginPos)
+                    ||(startPos > beginPos
+                        && window->iSearchLastBeginPos <= beginPos)) {
+                XBell(TheDisplay, 0);
+            }
+        }
     }
 }
 

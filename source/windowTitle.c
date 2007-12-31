@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.15 2004/12/23 22:25:47 edg Exp $";
+static const char CVSID[] = "$Id: windowTitle.c,v 1.16 2007/12/31 11:12:44 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *
@@ -321,31 +321,31 @@ char *FormatWindowTitle(const char* filename,
                     }
                     break;
                     
-               case '0': /* directory with limited no. of components */
-               case '1':
-               case '2':
-               case '3':
-               case '4':
-               case '5':
-               case '6':
-               case '7':
-               case '8':
-               case '9':
-                   if (*titleFormat == 'd') {
-                       dirNamePresent = True;
-                       noOfComponents = c - '0';
-                       titleFormat++; /* delete the argument */
+                case '0': /* directory with limited no. of components */
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    if (*titleFormat == 'd') {
+                        dirNamePresent = True;
+                        noOfComponents = c - '0';
+                        titleFormat++; /* delete the argument */
 
-                       if (filenameSet) {
-                           const char* trailingPath = GetTrailingPathComponents(path,
+                        if (filenameSet) {
+                            const char* trailingPath = GetTrailingPathComponents(path,
                                                                                 noOfComponents);
 
-                           /* prefix with ellipsis if components were skipped */
-                           if (trailingPath > path) {
-                               titlePtr = safeStrCpy(titlePtr, titleEnd, "...");
-                           }
-                           titlePtr = safeStrCpy(titlePtr, titleEnd, trailingPath);
-                       }
+                            /* prefix with ellipsis if components were skipped */
+                            if (trailingPath > path) {
+                                titlePtr = safeStrCpy(titlePtr, titleEnd, "...");
+                            }
+                            titlePtr = safeStrCpy(titlePtr, titleEnd, trailingPath);
+                        }
                     }
                     break;
                     
@@ -508,15 +508,12 @@ static void setToggleButtons(void)
     XmToggleButtonSetState(etDialog.oServerNameW,
     	    	etDialog.isServer, False);
 
-    if (GetClearCaseViewTag() != NULL &&
-        etDialog.isServer &&
-        GetPrefServerName()[0] != '\0' &&  
-        strcmp(GetClearCaseViewTag(), GetPrefServerName()) == 0) {
-        XmToggleButtonSetState(etDialog.oServerEqualViewW,
-    	    	    True, False);
-     } else {
-        XmToggleButtonSetState(etDialog.oServerEqualViewW,
-    	    	    False, False);
+    if (GetClearCaseViewTag() != NULL && etDialog.isServer
+            && GetPrefServerName()[0] != '\0'
+            && strcmp(GetClearCaseViewTag(), GetPrefServerName()) == 0) {
+        XmToggleButtonSetState(etDialog.oServerEqualViewW, True, False);
+    } else {
+        XmToggleButtonSetState(etDialog.oServerEqualViewW, False, False);
     }
 #endif /* VMS */
 }    

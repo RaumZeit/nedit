@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.154 2007/12/28 22:05:44 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.155 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1445,8 +1445,9 @@ void SaveNEditPrefs(Widget parent, int quietly)
                 "%s\n"
                 "SAVING WILL INCORPORATE SETTINGS\n"
                 "FROM FILE: %s", "OK", "Cancel",
-                prefFileName, ImportedFile) == 2)
-        return;
+                prefFileName, ImportedFile) == 2) {
+            return;
+        }
     }
 
     /*  Write the more dynamic settings into TempStringPrefs.

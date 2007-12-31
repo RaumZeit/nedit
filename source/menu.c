@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.141 2007/10/04 16:04:25 ajbj Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.142 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -3349,27 +3349,25 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
           [line]:[column]   (menu action)
           line              (macro call)
           line, column      (macro call) */
-    if ( *nArgs == 0 || 
-         *nArgs > 2  ||
-        (*nArgs == 1 && 
-            StringToLineAndCol( args[0], &lineNum, &column ) == -1) ||
-        (*nArgs == 2 && 
-           (!StringToNum(args[0], &lineNum) || 
-            !StringToNum(args[1], &column)) ) ) {
+    if (*nArgs == 0 || *nArgs > 2 
+            || (*nArgs == 1
+                && StringToLineAndCol(args[0], &lineNum, &column ) == -1)
+            || (*nArgs == 2
+                && (!StringToNum(args[0], &lineNum)
+                    || !StringToNum(args[1], &column)))) {
         fprintf(stderr,"nedit: goto_line_number action requires line and/or column number\n");
-    	return;
+        return;
     }
+
     /* User specified column, but not line number */
-    if ( lineNum == -1 ) {
+    if (lineNum == -1) {
         position = TextGetCursorPos(w);
-        if (TextPosToLineAndCol(w, position, &lineNum,
-                                 &curCol) == False) {
+        if (TextPosToLineAndCol(w, position, &lineNum, &curCol) == False) {
             return;
         }
-    }
-    /* User didn't specify a column */
-    else if ( column == -1 ) {
-    SelectNumberedLine(WidgetToWindow(w), lineNum);
+    } else if ( column == -1 ) {
+        /* User didn't specify a column */
+        SelectNumberedLine(WidgetToWindow(w), lineNum);
         return;
     }
 
@@ -3377,6 +3375,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if ( position == -1 ) {
         return;
     }
+
     TextSetCursorPos(w, position);
     return;
 }

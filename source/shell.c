@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.42 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.43 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -986,7 +986,6 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     ** child ends of the pipes and execute the command
     */
     if (0 == childPid) {
-
 	/* close the parent end of the pipes in the child process   */
 	close(*stdinFD);
 	close(*stdoutFD);
@@ -1025,11 +1024,13 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 #endif
 #endif
      
-       /* change the current working directory to the directory of the current
-	  file. */ 
-       if(cmdDir[0] != 0)
-	   if(chdir(cmdDir) == -1)
-	       perror("chdir to directory of current file failed");
+        /* change the current working directory to the directory of the
+            current file. */ 
+        if (cmdDir[0] != 0) {
+           if (chdir(cmdDir) == -1) {
+                perror("chdir to directory of current file failed");
+           }
+        }
      
 	/* execute the command using the shell specified by preferences */
 	execlp(GetPrefShell(), GetPrefShell(), "-c", command, NULL);
@@ -1038,7 +1039,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
 	exit(EXIT_FAILURE);
     }
-    
+
     /* Parent process context, check if fork succeeded */
     if (childPid == -1)
     {

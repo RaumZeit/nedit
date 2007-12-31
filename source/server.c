@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.33 2005/07/30 18:05:21 edg Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.34 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -305,31 +305,35 @@ static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop)
 
 static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
 {
-   WindowInfo *window;
+    WindowInfo *window;
    
-   if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
-       /* A new window is requested, unless we find an untitled unmodified
-          document on the current desktop */
-       for (window=WindowList; window!=NULL; window=window->next) {
-           if (window->filenameSet || window->fileChanged ||
-	       window->macroCmdData != NULL) 
-               continue;
-           /* No check for top document here! */
-           if (isLocatedOnDesktop(window, currentDesktop))
-               return window;
-      }
-   }
-   else {
-       /* Find a window on the current desktop to hold the new document */
-       for (window=WindowList; window!=NULL; window=window->next) {
-           /* Avoid unnecessary property access (server round-trip) */
-           if (!IsTopDocument(window)) 
-               continue;
-           if (isLocatedOnDesktop(window, currentDesktop))
-               return window;
-       }
-   }
-   return NULL; /* No window found on current desktop -> create new window */
+    if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
+        /* A new window is requested, unless we find an untitled unmodified
+            document on the current desktop */
+        for (window=WindowList; window!=NULL; window=window->next) {
+            if (window->filenameSet || window->fileChanged ||
+                    window->macroCmdData != NULL) {
+                continue;
+            }
+            /* No check for top document here! */
+            if (isLocatedOnDesktop(window, currentDesktop)) {
+                return window;
+            }
+        }
+    } else {
+        /* Find a window on the current desktop to hold the new document */
+        for (window=WindowList; window!=NULL; window=window->next) {
+            /* Avoid unnecessary property access (server round-trip) */
+            if (!IsTopDocument(window)) {
+                continue;
+            }
+            if (isLocatedOnDesktop(window, currentDesktop)) {
+                return window;
+            }
+        }
+    }
+
+    return NULL; /* No window found on current desktop -> create new window */
 }
 
 static void processServerCommandString(char *string)

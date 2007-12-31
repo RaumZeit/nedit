@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.17 2006/12/02 10:27:06 yooden Exp $ */
+/* $Id: rangeset.c,v 1.18 2007/12/31 11:12:43 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -601,70 +601,72 @@ int RangesetRemove(Rangeset *origSet, Rangeset *minusSet)
        may change origRanges's - it will be discarded at the end */
 
     while (nOrigRanges > 0) {
-	do {
-	    /* skip all minusRanges ranges strictly in front of *origRanges */
-	    while (nMinusRanges > 0 && minusRanges->end <= origRanges->start) {
-		minusRanges++;		/* *minusRanges in front of *origRanges: move onto next *minusRanges */
-		nMinusRanges--;
-	    }
+        do {
+            /* skip all minusRanges ranges strictly in front of *origRanges */
+            while (nMinusRanges > 0
+                    && minusRanges->end <= origRanges->start) {
+                minusRanges++;      /* *minusRanges in front of *origRanges: move onto next *minusRanges */
+                nMinusRanges--;
+            }
 
-	    if (nMinusRanges > 0) {
-		/* keep all origRanges ranges strictly in front of *minusRanges */
-		while (nOrigRanges > 0 && origRanges->end <= minusRanges->start) {
-		    *newRanges++ = *origRanges++;   /* *minusRanges beyond *origRanges: save *origRanges in *newRanges */
-		    nOrigRanges--;
-		    origSet->n_ranges++;
-		}
-	    }
-	    else {
-		/* no more minusRanges ranges to remove - save the rest of origRanges */
-		while (nOrigRanges > 0) {
-		    *newRanges++ = *origRanges++;
-		    nOrigRanges--;
-		    origSet->n_ranges++;
-	      }
-	    }
-	} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
+            if (nMinusRanges > 0) {
+                /* keep all origRanges ranges strictly in front of *minusRanges */
+                while (nOrigRanges > 0
+                        && origRanges->end <= minusRanges->start) {
+                    *newRanges++ = *origRanges++;   /* *minusRanges beyond *origRanges: save *origRanges in *newRanges */
+                    nOrigRanges--;
+                    origSet->n_ranges++;
+                }
+            } else {
+                /* no more minusRanges ranges to remove - save the rest of origRanges */
+                while (nOrigRanges > 0) {
+                    *newRanges++ = *origRanges++;
+                    nOrigRanges--;
+                    origSet->n_ranges++;
+                }
+            }
+        } while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
 
-	/* when we get here either we're done, or we have overlap */
-	if (nOrigRanges > 0) {
-	    if (minusRanges->start <= origRanges->start) {
-		/* origRanges->start inside *minusRanges */
-		if (minusRanges->end < origRanges->end) {
-		    RangesetRefreshRange(origSet, origRanges->start, minusRanges->end);
-		    origRanges->start = minusRanges->end;  /* cut off front of original *origRanges */
-		    minusRanges++;		    /* dealt with this *minusRanges: move on */
-		    nMinusRanges--;
-		}
-		else {
-		    /* all *origRanges inside *minusRanges */
-		    RangesetRefreshRange(origSet, origRanges->start, origRanges->end);
-		    origRanges++;			/* all of *origRanges can be skipped */
-		    nOrigRanges--;
-		}
-	    }
-	    else {
-		/* minusRanges->start inside *origRanges: save front, adjust or skip rest */
-		newRanges->start = origRanges->start;	/* save front of *origRanges in *newRanges */
-		newRanges->end = minusRanges->start;
-		newRanges++;
-		origSet->n_ranges++;
+        /* when we get here either we're done, or we have overlap */
+        if (nOrigRanges > 0) {
+            if (minusRanges->start <= origRanges->start) {
+                /* origRanges->start inside *minusRanges */
+                if (minusRanges->end < origRanges->end) {
+                    RangesetRefreshRange(origSet, origRanges->start,
+                            minusRanges->end);
+                    origRanges->start = minusRanges->end;  /* cut off front of original *origRanges */
+                    minusRanges++;      /* dealt with this *minusRanges: move on */
+                    nMinusRanges--;
+                } else {
+                    /* all *origRanges inside *minusRanges */
+                    RangesetRefreshRange(origSet, origRanges->start,
+                            origRanges->end);
+                    origRanges++;       /* all of *origRanges can be skipped */
+                    nOrigRanges--;
+                }
+            } else {
+                /* minusRanges->start inside *origRanges: save front, adjust or skip rest */
+                newRanges->start = origRanges->start;   /* save front of *origRanges in *newRanges */
+                newRanges->end = minusRanges->start;
+                newRanges++;
+                origSet->n_ranges++;
 
-		if (minusRanges->end < origRanges->end) {
-		    /* all *minusRanges inside *origRanges */
-		    RangesetRefreshRange(origSet, minusRanges->start, minusRanges->end); 
-		    origRanges->start = minusRanges->end; /* cut front of *origRanges upto end *minusRanges */
-		    minusRanges++;		   /* dealt with this *minusRanges: move on */
-		    nMinusRanges--;
-		}
-		else {
-		    /* minusRanges->end beyond *origRanges */
-		    RangesetRefreshRange(origSet, minusRanges->start, origRanges->end); 
-		    origRanges++;			/* skip rest of *origRanges */
-		    nOrigRanges--;
-		}
-	    }
-	}
+                if (minusRanges->end < origRanges->end) {
+                    /* all *minusRanges inside *origRanges */
+                    RangesetRefreshRange(origSet, minusRanges->start,
+                            minusRanges->end); 
+                    origRanges->start = minusRanges->end; /* cut front of *origRanges upto end *minusRanges */
+                    minusRanges++;      /* dealt with this *minusRanges: move on */
+                    nMinusRanges--;
+                } else {
+                    /* minusRanges->end beyond *origRanges */
+                    RangesetRefreshRange(origSet, minusRanges->start,
+                            origRanges->end); 
+                    origRanges++;       /* skip rest of *origRanges */
+                    nOrigRanges--;
+                }
+            }
+        }
     }
 
     /* finally, forget the old rangeset values, and reallocate the new ones */

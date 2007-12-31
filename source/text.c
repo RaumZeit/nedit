@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.55 2007/10/02 15:47:08 tringali Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.56 2007/12/31 11:12:43 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -2489,19 +2489,26 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args,
     int silent = hasKey("nobell", args, nArgs);
     
     cancelDrag(w);
-    if (checkReadOnly(w))
-	return;
+    if (checkReadOnly(w)) {
+        return;
+    }
+
     TakeMotifDestination(w, e->time);
-    if (deletePendingSelection(w, event))
-    	return;
+    if (deletePendingSelection(w, event)) {
+        return;
+    }
+
     if (insertPos == lineStart) {
         ringIfNecessary(silent, w);
-    return;
+        return;
     }
+
     pos = max(insertPos - 1, 0);
     while (strchr(delimiters, BufGetCharacter(textD->buffer, pos)) != NULL &&
-    	    pos != lineStart)
-    	pos--;
+            pos != lineStart) {
+        pos--;
+    }
+
     pos = startOfWord((TextWidget)w, pos);
     BufRemove(textD->buffer, pos, insertPos);
     checkAutoShowInsertPos(w);
@@ -2519,19 +2526,26 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args,
     int silent = hasKey("nobell", args, nArgs);
     
     cancelDrag(w);
-    if (checkReadOnly(w))
-	return;
+    if (checkReadOnly(w)) {
+        return;
+    }
+
     TakeMotifDestination(w, e->time);
-    if (deletePendingSelection(w, event))
-    	return;
+    if (deletePendingSelection(w, event)) {
+        return;
+    }
+
     if (insertPos == lineEnd) {
         ringIfNecessary(silent, w);
-    	return;
+        return;
     }
+
     pos = insertPos;
     while (strchr(delimiters, BufGetCharacter(textD->buffer, pos)) != NULL &&
-    	    pos != lineEnd)
+            pos != lineEnd) {
         pos++;
+    }
+
     pos = endOfWord((TextWidget)w, pos);
     BufRemove(textD->buffer, insertPos, pos);
     checkAutoShowInsertPos(w);
@@ -2639,22 +2653,27 @@ static void forwardWordAP(Widget w, XEvent *event, String *args,
     	return;
     }
     pos = insertPos;
-	if (hasKey("tail", args, nArgs)) {
-    	for (; pos<buf->length; pos++) {
-    		if (strchr(delimiters, BufGetCharacter(buf, pos)) == NULL)
-    	    	break;
-    	}
-    	if (strchr(delimiters, BufGetCharacter(buf, pos)) == NULL)
-        	pos = endOfWord((TextWidget)w, pos);
-	}
-	else {
-    	if (strchr(delimiters, BufGetCharacter(buf, pos)) == NULL)
-        	pos = endOfWord((TextWidget)w, pos);
-    	for (; pos<buf->length; pos++) {
-    		if (strchr(delimiters, BufGetCharacter(buf, pos)) == NULL)
-    	    	break;
-    	}
-	}
+
+    if (hasKey("tail", args, nArgs)) {
+        for (; pos<buf->length; pos++) {
+            if (NULL == strchr(delimiters, BufGetCharacter(buf, pos))) {
+                break;
+            }
+        }
+        if (NULL == strchr(delimiters, BufGetCharacter(buf, pos))) {
+            pos = endOfWord((TextWidget)w, pos);
+        }
+    } else {
+        if (NULL == strchr(delimiters, BufGetCharacter(buf, pos))) {
+            pos = endOfWord((TextWidget)w, pos);
+        }
+        for (; pos<buf->length; pos++) {
+            if (NULL == strchr(delimiters, BufGetCharacter(buf, pos))) {
+                break;
+            }
+        }
+    }
+
     TextDSetInsertPosition(textD, pos);
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
