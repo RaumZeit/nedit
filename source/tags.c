@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.67 2008/01/04 22:11:04 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.68 2008/01/04 22:31:48 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -875,11 +875,13 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
             tagText[ml] = '\0';
             /* See if we can find the tip/tag */
             status = findAllMatches(window, tagText);
+
             /* If we didn't find a requested calltip, see if we can use a tag */
             if (status == 0 && search_type == TIP && TagsFileList != NULL) {
                 searchMode = TIP_FROM_TAG;
                 status = findAllMatches(window, tagText);
             }
+
             if (status == 0) {
                 /* Didn't find any matches */
                 if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
@@ -1196,10 +1198,11 @@ static int findAllMatches(WindowInfo *window, const char *string)
     
     if (nMatches>1) {
         if (!(dupTagsList = (char **) malloc(sizeof(char *) * nMatches))) {
-            fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
+            fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
             XBell(TheDisplay, 0);
             return -1;
         }
+
         for (i=0; i<nMatches; i++) {
             ParseFilename(tagFiles[i], filename, pathname);
             if ((i<nMatches-1 && !strcmp(tagFiles[i],tagFiles[i+1])) ||
@@ -1214,14 +1217,25 @@ static int findAllMatches(WindowInfo *window, const char *string)
                     sprintf(temp,"%2d. %s%s %8i", i+1, pathname, filename,
                             tagPosInf[i]);
                 }
-            } else 
+            } else {
                 sprintf(temp,"%2d. %s%s",i+1,pathname,filename);
-            if (!(dupTagsList[i] = (char *) malloc(strlen(temp) + 1))) {
-                fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
+            }
+
+            if (NULL == (dupTagsList[i] = (char*) malloc(strlen(temp) + 1))) {
+                int j;
+                fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
+
+                /*  dupTagsList[i] is unallocated, let's free [i - 1] to [0]  */
+                for (j = i - 1; j > -1; j--) {
+                    free(dupTagsList[j])
+                }
+                free(dupTagsList);
+
                 XBell(TheDisplay, 0);
                 free(dupTagsList);
                 return -1;
             }
+
             strcpy(dupTagsList[i],temp);
         }
         createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
@@ -1230,6 +1244,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
         free(dupTagsList);
         return 1;
     }
+
     /*
     **  No need for a dialog list, there is only one tag matching --
     **  Go directly to the tag

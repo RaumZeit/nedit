@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.70 2008/01/04 22:11:04 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.71 2008/01/04 22:31:48 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -653,7 +653,7 @@ void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
 ** after pos, including blank lines which are not technically part of
 ** any range of characters.
 */
-void textDRedisplayRange(textDisp *textD, int start, int end)
+static void textDRedisplayRange(textDisp *textD, int start, int end)
 {
     int i, startLine, lastLine, startIndex, endIndex;
     
