@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.18 2007/10/02 16:50:49 tringali Exp $";
+static const char CVSID[] = "$Id: textSel.c,v 1.19 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *
@@ -56,7 +56,6 @@ static const char CVSID[] = "$Id: textSel.c,v 1.18 2007/10/02 16:50:49 tringali 
 
 
 #define N_SELECT_TARGETS 7
-#define N_CLIP_TARGETS 4
 #define N_ATOMS 11
 enum atomIndex {A_TEXT, A_TARGETS, A_MULTIPLE, A_TIMESTAMP,
 	A_INSERT_SELECTION, A_DELETE, A_CLIPBOARD, A_INSERT_INFO,

@@ -1,4 +1,4 @@
-/* $Id: nedit.h,v 1.68 2006/11/22 13:45:52 yooden Exp $ */
+/* $Id: nedit.h,v 1.69 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * nedit.h -- Nirvana Editor Common Header File                                 *
@@ -354,7 +354,6 @@ typedef struct _WindowInfo {
     Widget  	noWrapItem;
     Widget  	newlineWrapItem;
     Widget  	continuousWrapItem;
-    Widget	showTabBarItem;
     Widget	statsLineItem;
     Widget	iSearchLineItem;
     Widget	lineNumsItem;

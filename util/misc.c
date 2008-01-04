@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.87 2007/10/02 15:47:12 tringali Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.88 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -141,8 +141,6 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 static void removeWhiteSpace(char *string);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
-static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
-	*txtVerStr);
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
 	Boolean *continueDispatch);
@@ -1144,18 +1142,6 @@ Widget AddMenuToggle(Widget parent, char *name, char *label,
 }
 
 /*
-** Add a separator line to a menu
-*/
-Widget AddMenuSeparator(Widget parent, char *name)
-{
-    Widget button;
-    
-    button = XmCreateSeparator(parent, name, NULL, 0);
-    XtManageChild(button);
-    return button;
-}
-
-/*
 ** Add a sub-menu to an established pull-down or pop-up menu, including
 ** mnemonics, accelerators and callbacks.  Returns the menu pane of the
 ** new sub menu.
@@ -1175,49 +1161,15 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic)
 }
 
 /*
-** SetIntLabel, SetFloatLabel, SetIntText, SetFloatText
+** SetIntText
 **
-** Set the text of a motif label or text widget to show an integer or
-** floating number.
+** Set the text of a motif label to show an integer
 */
-void SetIntLabel(Widget label, int value)
-{
-    char labelString[20];
-    XmString s1;
-    
-    sprintf(labelString, "%d", value);
-    s1=XmStringCreateSimple(labelString);
-    XtVaSetValues(label, XmNlabelString, s1, NULL);
-    XmStringFree(s1);
-}
-
-
-void SetFloatLabel(Widget label, double value)
-{
-    char labelString[20];
-    XmString s1;
-    
-    sprintf(labelString, "%g", value);
-    s1=XmStringCreateSimple(labelString);
-    XtVaSetValues(label, XmNlabelString, s1, NULL);
-    XmStringFree(s1);
-}
-
-
 void SetIntText(Widget text, int value)
 {
     char labelString[20];
     
     sprintf(labelString, "%d", value);
-    XmTextSetString(text, labelString);
-}
-
-
-void SetFloatText(Widget text, double value)
-{
-    char labelString[20];
-    
-    sprintf(labelString, "%g", value);
     XmTextSetString(text, labelString);
 }
 
@@ -1440,25 +1392,6 @@ void AddToHistoryList(char *newItem, char ***historyList, int *nItems)
 }
 
 /*
- * PasswordText - routine to add a callback to any text widget so that all
- * 		  text typed by the user is echoed with asterisks, allowing
- *		  a password to be typed in without being seen.
- *
- * parameters: w       - text widget to add the callback to
- *             passTxt - pointer to a string created by caller of this routine.
- *		         **NOTE** The length of this string should be one 
- *			 greater than the maximum specified by XmNmaxLength.
- *			 This string is set to empty just before the callback
- *			 is added.
- */
-
-void PasswordText(Widget w, char *passTxt)
-{
-    passTxt[0] = '\0';
-    XtAddCallback(w, XmNmodifyVerifyCallback, (XtCallbackProc)passwdCB,passTxt);
-}
-
-/*
 ** BeginWait/EndWait
 **
 ** Display/Remove a watch cursor over topCursorWidget and its descendents
@@ -1565,75 +1498,6 @@ void CreateGeometryString(char *string, int x, int y,
 	ptr += nChars;
     }
     *ptr = '\0';
-}
-
-/*									     */
-/* passwdCB: callback routine added by PasswordText routine.  This routine   */
-/* 	     echoes each character typed as an asterisk (*) and a few other  */
-/* 	     necessary things so that the password typed in is not visible   */
-/*									     */
-static void passwdCB(Widget w, char * passTxt, XmTextVerifyCallbackStruct
-	*txtVerStr)
-
-/* XmTextVerifyCallbackStruct:						      */
-/*   int reason;	should be XmCR_MODIFYING_TEXT_VALUE 		      */
-/*   XEvent  *event;	points to XEvent that triggered the callback	      */
-/*   Boolean doit;	indicates whether action should be performed; setting */
-/*			this to false negates the action		      */
-/*   long currInsert, 	current position of insert cursor		      */
-/*	  newInsert;	position user attempts to position the insert cursor  */
-/*   long startPos,	starting position of the text to modify		      */
-/*	  endPos;	ending position of the text to modify		      */
-/*   XmTextBlock text;							      */
-
-/* XmTextBlock (used to pass text around): 		    		      */
-/*   char *ptr;                   points to text to be inserted 	      */
-/*   int length;		  Number of bytes (length)		      */
-/*   XmTextFormat format;         Representations format		      */
-
-/* XmTextFormat: either FMT8BIT or FMT16BIT */
-
-{
-    int numCharsTyped, i, j, pos;
-
-    /* ensure text format is 8-bit characters */
-    if (txtVerStr->text->format != FMT8BIT)
-	return;
-
-    /* verify assumptions */
-/*    if (txtVerStr->endPos < txtVerStr->startPos)
-	fprintf(stderr, "User password callback error: endPos < startPos\n");
-    if (strlen(passTxt) == 0 && txtVerStr->endPos != 0)
-	fprintf(stderr, "User password callback error: no txt, but end != 0\n");
-
-    printf("passTxt = %s, startPos = %d, endPos = %d, txtBlkAddr = %d\n",
-	 passTxt, txtVerStr->startPos, txtVerStr->endPos, txtVerStr->text);
-    if (txtVerStr->text != NULL && txtVerStr->text->ptr != NULL)
-	printf("       string typed = %s, length = %d\n", txtVerStr->text->ptr,
-		txtVerStr->text->length);
-*/
-    /* If necessary, expand/compress passTxt and insert any new text */
-    if (txtVerStr->text != NULL && txtVerStr->text->ptr != NULL)
-	numCharsTyped = txtVerStr->text->length;
-    else
-	numCharsTyped = 0;
-    /* numCharsTyped = # chars to insert (that user typed) */
-    /* j = # chars to expand (+) or compress (-) the password string */
-    j = numCharsTyped - (txtVerStr->endPos - txtVerStr->startPos);
-    if (j > 0) 				/* expand case: start at ending null  */
-	for (pos = strlen(passTxt) + 1; pos >= txtVerStr->endPos; --pos)
-	    passTxt[pos+j] = passTxt[pos];
-    if (j < 0)				/* compress case */
-	for (pos = txtVerStr->startPos + numCharsTyped; 
-			     pos <= (int)strlen(passTxt)+1; ++pos)
-	    passTxt[pos] = passTxt[pos-j];
-    /* then copy text to be inserted into passTxt */
-    for (pos = txtVerStr->startPos, i = 0; i < numCharsTyped; ++i) {
-	passTxt[pos+i] = *(txtVerStr->text->ptr + i);
-	/* Replace text typed by user with asterisks (*) */
-	*(txtVerStr->text->ptr + i) = '*';
-    }
-/*    printf("  Password string now = %s\n", passTxt);  */
 }
 
 /*

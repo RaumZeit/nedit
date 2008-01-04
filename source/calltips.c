@@ -94,10 +94,6 @@ static Boolean offscreenV(XWindowAttributes *screenAttr, int top, int height) {
 /*
 ** Update the position of the current calltip if one exists, else do nothing
 */
-void RedrawCalltip(WindowInfo *window, int calltipID) {
-    textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
-    TextDRedrawCalltip( textD, calltipID );
-}
 void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     int lineHeight = textD->ascent + textD->descent;
     Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;

@@ -35,7 +35,6 @@
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
-#include "textBuf.h"
 #include "nedit.h"
 #include "server_common.h"
 #include "../util/utils.h"

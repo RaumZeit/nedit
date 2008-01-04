@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.114 2007/12/28 19:48:05 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.115 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -628,9 +628,14 @@ int IncludeFile(WindowInfo *window, const char *name)
     /* Detect and convert DOS and Macintosh format files */
     switch (FormatOfFile(fileString)) {
         case DOS_FILE_FORMAT:
-	    ConvertFromDosFileString(fileString, &readLen, NULL); break;
+            ConvertFromDosFileString(fileString, &readLen, NULL);
+            break;
         case MAC_FILE_FORMAT:
-	    ConvertFromMacFileString(fileString, readLen); break;
+            ConvertFromMacFileString(fileString, readLen);
+            break;
+        default:
+            /*  Default is Unix, no conversion necessary.  */
+            break;
     }
     
     /* If the file contained ascii nulls, re-map them */
@@ -1181,7 +1186,8 @@ static int writeBckVersion(WindowInfo *window)
     char fullname[MAXPATHLEN], bckname[MAXPATHLEN];
     struct stat statbuf;
     FILE *inFP, *outFP;
-    int fd, fileLen;
+    int fd;
+    off_t fileLen;
     char *fileString;
 
     /* Do only if version backups are turned on */
@@ -1194,8 +1200,7 @@ static int writeBckVersion(WindowInfo *window)
     strcat(fullname, window->filename);
     
     /* Generate name for old version */
-    if ((int)(strlen(fullname) + 5) > (int)MAXPATHLEN)
-    {
+    if ((strlen(fullname) + 5) > (size_t) MAXPATHLEN) {
         return bckError(window, "file name too long", window->filename);
     }
     sprintf(bckname, "%s.bck", fullname);
@@ -1225,7 +1230,7 @@ static int writeBckVersion(WindowInfo *window)
     }
     
     /* Allocate space for the whole contents of the file */
-    fileString = (char *)malloc(fileLen);
+    fileString = (char*) malloc((size_t) fileLen);
     if (fileString == NULL) {
     	fclose(inFP);
     	fclose(outFP);
@@ -1233,7 +1238,7 @@ static int writeBckVersion(WindowInfo *window)
     }
     
     /* read the file into fileString */
-    fread(fileString, sizeof(char), fileLen, inFP);
+    fread(fileString, sizeof(char), (size_t) fileLen, inFP);
     if (ferror(inFP)) {
     	fclose(inFP);
     	fclose(outFP);
@@ -1246,9 +1251,9 @@ static int writeBckVersion(WindowInfo *window)
 
     /* write to the file */
 #ifdef IBM_FWRITE_BUG
-    write(fileno(outFP), fileString, fileLen);
+    write(fileno(outFP), fileString, (size_t) fileLen);
 #else
-    fwrite(fileString, sizeof(char), fileLen, outFP);
+    fwrite(fileString, sizeof(char), (size_t) fileLen, outFP);
 #endif
     if (ferror(outFP)) {
 	fclose(outFP);
@@ -1591,7 +1596,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData,
 */
 void CheckForChangesToFile(WindowInfo *window)
 {
-    static WindowInfo *lastCheckWindow;
+    static WindowInfo* lastCheckWindow = NULL;
     static Time lastCheckTime = 0;
     char fullname[MAXPATHLEN];
     struct stat statbuf;

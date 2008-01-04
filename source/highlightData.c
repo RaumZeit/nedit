@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlightData.c,v 1.79 2007/10/18 13:24:56 tringali Exp $";
+static const char CVSID[] = "$Id: highlightData.c,v 1.80 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
@@ -167,12 +167,11 @@ static struct {
     Widget nameW;
     Widget colorW;
     Widget bgColorW;
-    Widget recogW;
     Widget plainW, boldW, italicW, boldItalicW;
     Widget managedListW;
     highlightStyleRec **highlightStyleList;
     int nHighlightStyles;
-} HSDialog = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0};
+} HSDialog = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0};
 
 /* Highlight dialog information */
 static struct {

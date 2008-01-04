@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: menu.c,v 1.142 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: menu.c,v 1.143 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *
@@ -374,7 +374,6 @@ static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(WindowInfo *win);
 static int strCaseCmp(const char *str1, const char *str2);
 static int compareWindowNames(const void *windowA, const void *windowB);
-static int compareWindowShell(const void *windowA, const void *windowB);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void tabMenuPostAP(Widget w, XEvent *event, String *args,
@@ -4591,7 +4590,6 @@ static void updateWindowMenu(const WindowInfo *window)
     	return;
 	
     /* Make a sorted list of windows */
-    /* windows = MakeSortedWindowArray();*/
     for (w=WindowList, nWindows=0; w!=NULL; w=w->next, nWindows++);
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
     for (w=WindowList, i=0; w!=NULL; w=w->next, i++)
@@ -5243,40 +5241,6 @@ static int compareWindowNames(const void *windowA, const void *windowB)
 	 return rc;
     rc = strcmp(a->path, b->path);
     return rc;
-}
-
-static int compareWindowShell(const void *windowA, const void *windowB)
-{
-    const WindowInfo *a = *((WindowInfo**)windowA);
-    const WindowInfo *b = *((WindowInfo**)windowB);
-
-    return a->shell > b->shell;
-}
-
-/*
-** create & return a sorted list of windows
-** Windows are first sort by their filename then,
-** if windows are tabbed, grouped by their shell windows
-**
-** Note: caller must XtFree the returned window list.
-*/
-WindowInfo **MakeSortedWindowArray(void)
-{
-    WindowInfo *w, **windows;
-    int i, nWindows;
-    
-    /* Make a sorted list of windows */
-    for (w=WindowList, nWindows=0; w!=NULL; w=w->next, nWindows++);
-    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
-    for (w=WindowList, i=0; w!=NULL; w=w->next, i++)
-    	windows[i] = w;
-    qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
-    
-    /* group the documents together by their shell window */
-    if (GetPrefOpenInTab())
-        qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowShell);
-
-    return windows;
 }
 
 /*

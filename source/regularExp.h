@@ -1,4 +1,4 @@
-/* $Id: regularExp.h,v 1.15 2007/12/28 19:48:06 yooden Exp $ */
+/* $Id: regularExp.h,v 1.16 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * regularExp.h -- Nirvana Editor Regular Expression Package Header File        *
@@ -97,9 +97,5 @@ Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
 
 void SetREDefaultWordDelimiters (
    char *delimiters);
-
-/* Enable (or disable) brace counting quantifiers, e.g. `(foo){0,3}'. */
-
-void EnableCountingQuantifier (int is_enabled);
 
 #endif /* NEDIT_REGULAREXP_H_INCLUDED */

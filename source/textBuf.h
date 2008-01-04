@@ -1,4 +1,4 @@
-/* $Id: textBuf.h,v 1.21 2006/12/02 12:01:41 yooden Exp $ */
+/* $Id: textBuf.h,v 1.22 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *
@@ -138,7 +138,6 @@ void BufRectHighlight(textBuffer *buf, int start, int end,
         int rectStart, int rectEnd);
 int BufGetHighlightPos(textBuffer *buf, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
-char *BufGetHighlightText(textBuffer *buf);
 void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
 	void *cbArg);
 void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
@@ -149,7 +148,6 @@ void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
 	void *cbArg);
 void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc 
 	bufPreDeleteCB,	void *cbArg);
-char *BufGetLineText(textBuffer *buf, int pos);
 int BufStartOfLine(textBuffer *buf, int pos);
 int BufEndOfLine(textBuffer *buf, int pos);
 int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent,

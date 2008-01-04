@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.201 2007/12/28 19:48:06 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.202 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -1291,7 +1291,7 @@ void ClosePane(WindowInfo *window)
     short paneHeights[MAX_PANES+1];
     int insertPositions[MAX_PANES+1], topLines[MAX_PANES+1];
     int horizOffsets[MAX_PANES+1];
-    int i, focusPane,totalHeight=0;
+    int i, focusPane;
     Widget text;
     
     /* Don't delete the last pane */
@@ -1306,7 +1306,6 @@ void ClosePane(WindowInfo *window)
         insertPositions[i] = TextGetCursorPos(text);
         XtVaGetValues(containingPane(text),
                             XmNheight, &paneHeights[i], NULL);
-        totalHeight += paneHeights[i];
         TextGetScroll(text, &topLines[i], &horizOffsets[i]);
         if (text == window->lastFocus)
             focusPane = i;
@@ -1935,18 +1934,6 @@ void SetAutoWrap(WindowInfo *window, int state)
     }
 }
 
-/*
-** Set the wrap margin (0 == wrap at right edge of window)
-*/
-void SetWrapMargin(WindowInfo *window, int margin)
-{
-    int i;
-    
-    XtVaSetValues(window->textArea, textNwrapMargin, margin, NULL);
-    for (i=0; i<window->nPanes; i++)
-        XtVaSetValues(window->textPanes[i], textNwrapMargin, margin, NULL);
-}
-
 /* 
 ** Set the auto-scroll margin
 */
@@ -2094,16 +2081,6 @@ void UpdateWindowReadOnly(WindowInfo *window)
 }
 
 /*
-** Get the start and end of the current selection.  This routine is obsolete
-** because it ignores rectangular selections, and reads from the widget
-** instead of the buffer.  Use BufGetSelectionPos.
-*/
-int GetSelection(Widget widget, int *left, int *right)
-{
-    return GetSimpleSelection(TextGetBuffer(widget), left, right);
-}
-
-/*
 ** Find the start and end of a single line selection.  Hides rectangular
 ** selection issues for older routines which use selections that won't
 ** span lines.
@@ -2126,16 +2103,6 @@ int GetSimpleSelection(textBuffer *buf, int *left, int *right)
     *left = selStart;
     *right = selEnd;
     return True;
-}
-
-/*
-** Returns a range of text from a text widget (this routine is obsolete,
-** get text from the buffer instead).  Memory is allocated with
-** XtMalloc and caller should free it.
-*/
-char *GetTextRange(Widget widget, int left, int right)
-{
-    return BufGetRange(TextGetBuffer(widget), left, right);
 }
 
 /*

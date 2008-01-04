@@ -1,4 +1,4 @@
-/* $Id: highlight.h,v 1.15 2006/10/13 07:26:02 ajbj Exp $ */
+/* $Id: highlight.h,v 1.16 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * highlight.h -- Nirvana Editor Syntax Highlighting Header File                *
@@ -79,13 +79,9 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName);
 char *HighlightNameOfCode(WindowInfo *window, int hCode);
 char *HighlightStyleOfCode(WindowInfo *window, int hCode);
-char *HighlightColorOfCode(WindowInfo *window, int hCode);
-char *HighlightBackgroundColorOfCode(WindowInfo *window, int hCode);
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b);
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b);
-int HighlightCodeIsBold(WindowInfo *window, int hCode);
-int HighlightCodeIsItalic(WindowInfo *window, int hCode);
 
 #endif /* NEDIT_HIGHLIGHT_H_INCLUDED */

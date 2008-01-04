@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.23 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: text.h,v 1.24 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * text.h -- Nirvana Editor Text Widget Header File                            *
@@ -120,7 +120,6 @@ extern WidgetClass textWidgetClass;
 struct _TextClassRec;
 struct _TextRec;
 
-typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec *TextWidget;
 
 typedef struct {
@@ -151,7 +150,6 @@ void TextSetScroll(Widget w, int topLineNum, int horizOffset);
 int TextGetMinFontWidth(Widget w, Boolean considerStyles);
 int TextGetMaxFontWidth(Widget w, Boolean considerStyles);
 void TextHandleXSelections(Widget w);
-void TextStopHandlingSelections(Widget w);
 void TextPasteClipboard(Widget w, Time time);
 void TextColPasteClipboard(Widget w, Time time);
 void TextCopyClipboard(Widget w, Time time);
@@ -164,7 +162,6 @@ void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
 int TextFirstVisiblePos(Widget w);
 int TextLastVisiblePos(Widget w);
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
-const char *GetDefaultTranslations(void);
 XtActionsRec *TextGetActions(int *nActions);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);

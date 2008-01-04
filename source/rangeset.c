@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.18 2007/12/31 11:12:43 yooden Exp $ */
+/* $Id: rangeset.c,v 1.19 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -715,18 +715,6 @@ void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label,
 
 /* -------------------------------------------------------------------------- */
 
-/*
-** Set maxpos for rangeset rangeset.
-*/
-
-void RangesetSetMaxpos(Rangeset *rangeset, int maxpos)
-{
-    if (rangeset)
-	rangeset->maxpos = maxpos;
-}
-
-/* -------------------------------------------------------------------------- */
-
 static Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del)
 {
     rangeset->maxpos += ins - del;
@@ -1160,15 +1148,6 @@ int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok)
     return 1;
 }
 
-
-/*
-** Return the color name, if any.
-*/
-
-char *RangesetGetColorName(Rangeset *rangeset)
-{
-    return rangeset->color_name;
-}
 
 /*
 ** Return the name, if any.

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: utils.c,v 1.26 2007/10/18 13:24:56 tringali Exp $";
+static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -225,28 +225,9 @@ char
     return buf;
 }
 
-int Max(int i1, int i2)
-{
-    return i1 >= i2 ? i1 : i2;
-}
-
 int Min(int i1, int i2)
 {
     return i1 <= i2 ? i1 : i2;
-}
-
-int Min3(int i1, int i2, int i3)
-{
-    if (i1 <= i2 && i1 <= i3)
-    	return i1;
-    return i2 <= i3 ? i2 : i3;
-}
-
-int Max3(int i1, int i2, int i3)
-{
-    if (i1 >= i2 && i1 >= i3)
-    	return i1;
-    return i2 >= i3 ? i2 : i3;
 }
 
 /*

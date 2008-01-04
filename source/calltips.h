@@ -1,4 +1,4 @@
-/* $Id: calltips.h,v 1.4 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: calltips.h,v 1.5 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * calltips.h -- Nirvana Editor Calltips Header File                            *
@@ -44,7 +44,6 @@ int  ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
 void KillCalltip(WindowInfo *window, int calltipID);
 void TextDKillCalltip(textDisp *textD, int calltipID);
 int  GetCalltipID(WindowInfo *window, int calltipID);
-void RedrawCalltip(WindowInfo *window, int calltipID);
 void TextDRedrawCalltip(textDisp *textD, int calltipID);
 
 #endif /* ifndef NEDIT_CALLTIPS_H_INCLUDED */

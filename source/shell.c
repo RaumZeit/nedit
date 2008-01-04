@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: shell.c,v 1.43 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: shell.c,v 1.44 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *
@@ -319,7 +319,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     int flags = 0;
     char *text;
     char *subsCommand, fullName[MAXPATHLEN];
-    int left, right, textLen;
+    int left = 0, right = 0, textLen;
     int pos, line, column;
     char lineNumber[11];
     WindowInfo *inWindow = window;

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.66 2007/03/04 23:26:05 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.67 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1219,6 +1219,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
             if (!(dupTagsList[i] = (char *) malloc(strlen(temp) + 1))) {
                 fprintf(stderr, "NEdit: findDef(): out of heap space!\n");
                 XBell(TheDisplay, 0);
+                free(dupTagsList);
                 return -1;
             }
             strcpy(dupTagsList[i],temp);
@@ -1596,8 +1597,20 @@ static const char *rcs_strdup(const char *str)
     }
     else     /* Doesn't exist, conjure up a new one. */
     {
-        struct rcs *newrcs = malloc(sizeof(struct rcs));
-        newrcs->string = malloc(len+1);
+        struct rcs* newrcs;
+        if (NULL == (newrcs = (struct rcs*) malloc(sizeof(struct rcs)))) {
+            /*  Not much to fall back to here.  */
+            fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
+            XBell(TheDisplay, 0);
+            exit(1);
+        }
+
+        if (NULL == (newrcs->string = (char*) malloc(len + 1))) {
+            /*  Not much to fall back to here.  */
+            fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
+            XBell(TheDisplay, 0);
+            exit(1);
+        }
         strcpy(newrcs->string, str);
         newrcs->usage = 1;
         newrcs->next = NULL;

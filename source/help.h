@@ -1,4 +1,4 @@
-/* $Id: help.h,v 1.12 2004/07/21 11:32:05 yooden Exp $ */
+/* $Id: help.h,v 1.13 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * help.h --  Nirvana Editor Help Display                                       *
@@ -47,7 +47,6 @@ typedef struct HelpMenu         /* Maintains help menu structure */
     int               hideIt;   /* value which determines displayability */
     char              mnemonic; /* '-' for separator                     */
     char            * subTitle; /* title for sub menu, or NULL           */
-
 } HelpMenu;
 
 typedef struct Href             /* Source to topic internal hyperlinks */
@@ -56,8 +55,6 @@ typedef struct Href             /* Source to topic internal hyperlinks */
     int            location;    /* position to link in topic    */
     enum HelpTopic topic;       /* target of link in this topic */
     char *         source;      /* hypertext link characters    */
-    char *         target;      /* hypertext target characters  */
-
 } Href;
 
 /*============================================================================*/

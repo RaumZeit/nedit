@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.31 2007/12/28 19:48:05 yooden Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.32 2008/01/04 22:11:04 yooden Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -4173,8 +4173,4 @@ static unsigned char * makeDelimiterTable (
 
 void SetREDefaultWordDelimiters (char *delimiters) {
    makeDelimiterTable ((unsigned char *) delimiters, Default_Delimiters);
-}
-
-void EnableCountingQuantifier (int is_enabled) {
-   Enable_Counting_Quantifier = is_enabled;
 }

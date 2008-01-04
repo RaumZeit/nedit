@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: selection.c,v 1.32 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: selection.c,v 1.33 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * Copyright (C) 1999 Mark Edel						       *
@@ -106,7 +106,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 
     /* Find the next digit */
     for ( textLen = strlen( endptr ); textLen > 0; endptr++, textLen-- ) {
-        if (isdigit((unsigned char) *endptr ) || *endptr == '-' || *endptr == '+') {
+        if (isdigit((int) *endptr ) || *endptr == '-' || *endptr == '+') {
             break;
         }
     }

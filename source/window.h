@@ -1,4 +1,4 @@
-/* $Id: window.h,v 1.32 2007/12/28 19:48:06 yooden Exp $ */
+/* $Id: window.h,v 1.33 2008/01/04 22:11:05 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * window.h -- Nirvana Editor Window header file                                *
@@ -45,9 +45,7 @@ void UpdateMinPaneHeights(WindowInfo *window);
 void UpdateNewOppositeMenu(WindowInfo *window, int openInTab);
 void SetWindowModified(WindowInfo *window, int modified);
 void MakeSelectionVisible(WindowInfo *window, Widget textPane);
-int GetSelection(Widget widget, int *left, int *right);
 int GetSimpleSelection(textBuffer *buf, int *left, int *right);
-char *GetTextRange(Widget widget, int left, int right);
 WindowInfo *FindWindowWithFile(const char *name, const char *path);
 void SetAutoIndent(WindowInfo *window, int state);
 void SetShowMatching(WindowInfo *window, int state);
@@ -58,7 +56,6 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
         const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 void SetOverstrike(WindowInfo *window, int overstrike);
 void SetAutoWrap(WindowInfo *window, int state);
-void SetWrapMargin(WindowInfo *window, int margin);
 void SetAutoScroll(WindowInfo *window, int margin);
 void SplitPane(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: text.c,v 1.56 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: text.c,v 1.57 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * text.c - Display text from a text buffer				       *
@@ -1335,11 +1335,6 @@ void TextHandleXSelections(Widget w)
     HandleXSelections(w);
 }
 
-void TextStopHandlingSelections(Widget w)
-{
-    StopHandlingXSelections(w);
-}
-
 void TextPasteClipboard(Widget w, Time time)
 {
     cancelDrag(w);
@@ -2617,8 +2612,9 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args,
     int silent = hasKey("nobell", args, nArgs);
     
     cancelDrag(w);
-    if (!TextDMoveRight(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveRight(((TextWidget)w)->text.textD)) {
+        ringIfNecessary(silent, w);
+    }
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
@@ -2631,8 +2627,9 @@ static void backwardCharacterAP(Widget w, XEvent *event, String *args,
     int silent = hasKey("nobell", args, nArgs);
     
     cancelDrag(w);
-    if (!TextDMoveLeft(((TextWidget)w)->text.textD))
-    ringIfNecessary(silent, w);
+    if (!TextDMoveLeft(((TextWidget)w)->text.textD)) {
+        ringIfNecessary(silent, w);
+    }
     checkMoveSelectionChange(w, event, insertPos, args, nArgs);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
@@ -4222,10 +4219,6 @@ static int min(int i1, int i2)
     return i1 <= i2 ? i1 : i2;
 }
 
-const char *GetDefaultTranslations(void)
-{
-    return defaultTranslations;
-}
 /*
 ** strCaseCmp compares its arguments and returns 0 if the two strings
 ** are equal IGNORING case differences.  Otherwise returns 1.

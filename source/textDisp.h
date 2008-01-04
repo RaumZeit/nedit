@@ -1,4 +1,4 @@
-/* $Id: textDisp.h,v 1.30 2007/01/07 13:18:12 yooden Exp $ */
+/* $Id: textDisp.h,v 1.31 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDisp.h -- Nirvana Editor Text Diplay Header File                         *
@@ -173,7 +173,6 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
         Pixel calltipFGPixel, Pixel calltipBGPixel);
 void TextDFree(textDisp *textD);
 void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
-textBuffer *TextDGetBuffer(textDisp *textD);
 void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
     	styleTableEntry *styleTable, int nStyles, char unfinishedStyle,
     	unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);

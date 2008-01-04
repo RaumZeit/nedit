@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.155 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.156 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1642,11 +1642,6 @@ int GetPrefStickyCaseSenseBtn(void)
     return PrefData.stickyCaseSenseBtn;
 }
 
-void SetPrefStickyCaseSenseBtn(int state)
-{
-    setIntPref(&PrefData.stickyCaseSenseBtn, state);
-}
-
 int GetPrefSearchWraps(void)
 {
     return PrefData.searchWraps;
@@ -1782,19 +1777,9 @@ int GetPrefFindReplaceUsesSelection(void)
     return PrefData.findReplaceUsesSelection;
 }
 
-void SetPrefMapDelete(int state)
-{
-    setIntPref(&PrefData.mapDelete, state);
-}
-
 int GetPrefMapDelete(void)
 {
     return PrefData.mapDelete;
-}
-
-void SetPrefStdOpenDialog(int state)
-{
-    setIntPref(&PrefData.stdOpenDialog, state);
 }
 
 int GetPrefStdOpenDialog(void)
@@ -1973,11 +1958,6 @@ int GetPrefSortOpenPrevMenu(void)
     return PrefData.sortOpenPrevMenu;
 }
 
-void SetPrefTagFile(const char *tagFileName)
-{
-    setStringPref(PrefData.tagFile, tagFileName);
-}
-
 char *GetPrefTagFile(void)
 {
     return PrefData.tagFile;
@@ -2109,11 +2089,6 @@ void SetPrefShell(const char *shell)
 const char* GetPrefShell(void)
 {
     return PrefData.shell;
-}
-
-void SetPrefGeometry(const char *geometry)
-{
-    setStringPref(PrefData.geometry, geometry);
 }
 
 char *GetPrefGeometry(void)

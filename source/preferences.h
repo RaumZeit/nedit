@@ -1,4 +1,4 @@
-/* $Id: preferences.h,v 1.56 2007/10/15 15:33:28 tringali Exp $ */
+/* $Id: preferences.h,v 1.57 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *
@@ -126,7 +126,6 @@ void SetPrefAppendLF(int state);
 int GetPrefAppendLF(void);
 void SetPrefSortOpenPrevMenu(int state);
 int GetPrefSortOpenPrevMenu(void);
-void SetPrefTagFile(const char *tagFileName);
 char *GetPrefTagFile(void);
 int GetPrefSmartTags(void);
 void SetPrefSmartTags(int state);
@@ -150,16 +149,13 @@ char *GetPrefColorName(int colorIndex);
 void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefShell(const char *shell);
 const char* GetPrefShell(void);
-void SetPrefGeometry(const char *geometry);
 char *GetPrefGeometry(void);
 char *GetPrefServerName(void);
 char *GetPrefBGMenuBtn(void);
 void RowColumnPrefDialog(Widget parent);
 void TabsPrefDialog(Widget parent, WindowInfo *forWindow);
 void WrapMarginDialog(Widget parent, WindowInfo *forWindow);
-void SetPrefMapDelete(int state);
 int GetPrefMapDelete(void);
-void SetPrefStdOpenDialog(int state);
 int GetPrefStdOpenDialog(void);
 char *GetPrefDelimiters(void);
 int GetPrefMaxPrevOpenFiles(void);
@@ -197,7 +193,6 @@ void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
 void SetPrefFindReplaceUsesSelection(int state);
 int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);
-void SetPrefStickyCaseSenseBtn(int state);
 void SetPrefBeepOnSearchWrap(int state);
 int GetPrefBeepOnSearchWrap(void);
 #ifdef REPLACE_SCOPE
@@ -210,9 +205,7 @@ int GetPrefOverrideVirtKeyBindings(void);
 int GetPrefTruncSubstitution(void);
 int GetPrefOpenInTab(void);
 void SetPrefUndoModifiesSelection(Boolean);
-int GetPrefOpenInTab(void);
 void SetPrefOpenInTab(int state);
-int GetPrefOpenInTab(void);
 Boolean GetPrefUndoModifiesSelection(void);
 Boolean GetPrefFocusOnRaise(void);
 Boolean GetPrefHonorSymlinks(void);

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: highlight.c,v 1.55 2007/12/28 19:48:05 yooden Exp $";
+static const char CVSID[] = "$Id: highlight.c,v 1.56 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *									       *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
@@ -1209,18 +1209,6 @@ char *HighlightStyleOfCode(WindowInfo *window, int hCode)
     return entry ? entry->styleName : "";
 }
 
-char *HighlightColorOfCode(WindowInfo *window, int hCode)
-{
-    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-    return entry ? entry->colorName : "";
-}
-
-char *HighlightBackgroundColorOfCode(WindowInfo *window, int hCode)
-{
-    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-    return entry && entry->bgColorName ? entry->bgColorName : "";
-}
-
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b)
 {
@@ -1279,18 +1267,6 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
         }
         return colorDef.pixel;
     }
-}
-
-int HighlightCodeIsBold(WindowInfo *window, int hCode)
-{
-    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-    return entry ? entry->isBold : 0;
-}
-
-int HighlightCodeIsItalic(WindowInfo *window, int hCode)
-{
-    styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-    return entry ? entry->isItalic : 0;
 }
 
 /*

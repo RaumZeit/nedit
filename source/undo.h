@@ -1,4 +1,4 @@
-/* $Id: undo.h,v 1.8 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: undo.h,v 1.9 2008/01/04 22:11:05 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * undo.h -- Nirvana Editor Undo header file                                    *
@@ -39,6 +39,5 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 	int nDeleted, const char *deletedText);
 void ClearUndoList(WindowInfo *window);
 void ClearRedoList(WindowInfo *window);
-void DisableUnmodified(WindowInfo *window);
 
 #endif /* NEDIT_UNDO_H_INCLUDED */

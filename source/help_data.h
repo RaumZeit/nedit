@@ -5666,9 +5666,9 @@ HelpMenu H_M [] =
 
 Href H_R [] =
 {
-    { &H_R[ 1],     54, HELP_TAGS,                "ctag support", "ctags" },
-    { &H_R[ 2],   5794, HELP_BASICSYNTAX,         "Alternation", "alternation" },
-    { NULL,      14799, HELP_PREFERENCES,         "Autoload Files", "automatically" }
+    {&H_R[1],    54, HELP_TAGS,        "ctag support"},
+    {&H_R[2],  5794, HELP_BASICSYNTAX, "Alternation"},
+    {NULL,    14799, HELP_PREFERENCES, "Autoload Files"}
 };
 
 static const char * NEditVersion = "NEdit release of Aug 20, 2004\n";

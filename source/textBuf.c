@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textBuf.c,v 1.36 2006/12/02 12:01:38 yooden Exp $";
+static const char CVSID[] = "$Id: textBuf.c,v 1.37 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * textBuf.c - Manage source text for one or more text areas                    *
@@ -807,11 +807,6 @@ int BufGetHighlightPos(textBuffer *buf, int *start, int *end,
     	    rectEnd);
 }
 
-char *BufGetHighlightText(textBuffer *buf)
-{
-    return getSelectionText(buf, &buf->highlight);
-}
-
 /*
 ** Add a callback routine to be called when the buffer is modified
 */
@@ -994,14 +989,6 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDelete
     XtFree((char *)buf->preDeleteCbArgs);
     buf->preDeleteProcs = newPreDeleteProcs;
     buf->preDeleteCbArgs = newCBArgs;
-}
-
-/*
-** Return the text from the entire line containing position "pos"
-*/
-char *BufGetLineText(textBuffer *buf, int pos)
-{
-    return BufGetRange(buf, BufStartOfLine(buf, pos), BufEndOfLine(buf, pos));
 }
 
 /*

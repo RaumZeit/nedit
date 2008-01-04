@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: textDisp.c,v 1.69 2007/03/04 23:44:00 yooden Exp $";
+static const char CVSID[] = "$Id: textDisp.c,v 1.70 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textDisp.c - Display text from a text buffer				       *
@@ -61,11 +61,6 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.69 2007/03/04 23:44:00 yooden E
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
-
-#define TOP_MARGIN 1
-#define BOTTOM_MARGIN 1
-#define LEFT_MARGIN 3
-#define RIGHT_MARGIN 3
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
@@ -352,14 +347,6 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
     
     /* Update the display */
     bufModifiedCB(0, buffer->length, 0, 0, NULL, textD);
-}
-
-/*
-** return the displayed text buffer
-*/
-textBuffer *TextDGetBuffer(textDisp *textD)
-{
-    return textD->buffer;
 }
 
 /*
@@ -3801,18 +3788,17 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
         *semicol = ';';       /* un-null-terminate low[-high]:color clause */
       s = semicol + was_semicol;
     }
+
     /* when we get here, we've set up our class table and class-to-pixel table
        in local variables: now put them into the "real thing" */
-    if (class_no) {
-      class_no++;                     /* bigger than all valid class_nos */
-      *pp_bgClass = (unsigned char *)XtMalloc(256);
-      *pp_bgClassPixel = (Pixel *)XtMalloc(class_no * sizeof (Pixel));
-      if (!*pp_bgClass || !*pp_bgClassPixel) {
-          XtFree((char *)*pp_bgClass);
-          XtFree((char *)*pp_bgClassPixel);
-          return;
-      }
-      memcpy(*pp_bgClass, bgClass, 256);
-      memcpy(*pp_bgClassPixel, bgClassPixel, class_no * sizeof (Pixel));
+    class_no++;                     /* bigger than all valid class_nos */
+    *pp_bgClass = (unsigned char *)XtMalloc(256);
+    *pp_bgClassPixel = (Pixel *)XtMalloc(class_no * sizeof (Pixel));
+    if (!*pp_bgClass || !*pp_bgClassPixel) {
+        XtFree((char *)*pp_bgClass);
+        XtFree((char *)*pp_bgClassPixel);
+        return;
     }
+    memcpy(*pp_bgClass, bgClass, 256);
+    memcpy(*pp_bgClassPixel, bgClassPixel, class_no * sizeof (Pixel));
 }

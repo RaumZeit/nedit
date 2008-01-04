@@ -1,4 +1,4 @@
-/* $Id: menu.h,v 1.13 2004/11/09 21:58:44 yooden Exp $ */
+/* $Id: menu.h,v 1.14 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * menu.h -- Nirvana Editor Menu Header File                                    *
@@ -46,7 +46,6 @@ void WriteNEditDB(void);
 void ReadNEditDB(void);
 Widget CreateBGMenu(WindowInfo *window);
 void AddBGMenuAction(Widget widget);
-WindowInfo **MakeSortedWindowArray(void);
 void HidePointerOnKeyedEvent(Widget w, XEvent *event);
 Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
 void AddTabContextMenuAction(Widget widget);

@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.29 2007/10/02 15:47:12 tringali Exp $ */
+/* $Id: misc.h,v 1.30 2008/01/04 22:11:05 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -73,12 +73,8 @@ Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic,
 	char *acc, char *accText, XtCallbackProc callback, void *cbArg);
 Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic,
 	char *acc, char *accText, XtCallbackProc callback, void *cbArg,int set);
-Widget AddMenuSeparator(Widget parent, char *name);
 Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic);
-void SetIntLabel(Widget label, int value);
-void SetFloatLabel(Widget label, double value);
 void SetIntText(Widget text, int value);
-void SetFloatText(Widget text, double value);
 int GetFloatText(Widget text, double *value);
 int GetIntText(Widget text, int *value);
 int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warnBlank);
