@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.58 2007/10/04 13:38:53 edg Exp $
+$Id: ReleaseNotes,v 1.59 2008/01/04 19:32:54 yooden Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -98,6 +98,13 @@ Bugs fixed in $NEXT_VERSION
 
   - The built-in macro "Make C prototypes" choked on some comments (SF bug
     #1574071).
+
+  - Fixed a small bug while inserting special characters (SF bug #682004).
+
+  - Fixed a translation bug which crashed NEdit on pressing osfInsert in the
+    help window (SF bug #1772468).
+
+  - Fixed bad exception handling of default macros (SF bug #1731384).
 
 
 New features in 5.5 
