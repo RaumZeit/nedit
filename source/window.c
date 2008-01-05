@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.202 2008/01/04 22:11:05 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.203 2008/01/05 02:24:13 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -168,7 +168,6 @@ static void showISearch(WindowInfo *window, int state);
 static void showStatsForm(WindowInfo *window);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
-static unsigned requestLineNumCols(const WindowInfo* window);
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
         const char *deletedText, void *cbArg);
@@ -195,9 +194,8 @@ static Widget containingPane(Widget w);
 static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
 static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
 static int DoneWithMoveDocumentDialog;
-static void updateLineNumDisp(const WindowInfo* window);
-static int max(const int i1, const int i2);
-static void setGutterWidth(const WindowInfo* window, const unsigned reqCols);
+static int updateLineNumDisp(WindowInfo* window);
+static int updateGutterWidth(WindowInfo* window);
 static void deleteDocument(WindowInfo *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
@@ -1004,6 +1002,7 @@ void CloseWindow(WindowInfo *window)
         UpdateStatsLine(window);
         DetermineLanguageMode(window, True);
 	RefreshTabState(window);
+        updateLineNumDisp(window);
         return;
     }
     
@@ -1047,10 +1046,13 @@ void CloseWindow(WindowInfo *window)
     XtDestroyWidget(window->tab);
 
     /* refresh tab bar after closing a document */
-    if (nextBuf)
+    if (nextBuf) {
 	ShowWindowTabBar(nextBuf);
-    else if (topBuf)
+        updateLineNumDisp(nextBuf);
+    } else if (topBuf) {
 	ShowWindowTabBar(topBuf);
+        updateLineNumDisp(topBuf);
+    }
     
     /* dim/undim Detach_Tab menu items */
     win = nextBuf? nextBuf : topBuf;
@@ -1368,7 +1370,7 @@ void ShowLineNumbers(WindowInfo *window, int state)
 {
     Widget text;
     int i, marginWidth;
-    unsigned reqCols;
+    unsigned reqCols = 0;
     Dimension windowWidth;
     WindowInfo *win;
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
@@ -1382,7 +1384,7 @@ void ShowLineNumbers(WindowInfo *window, int state)
        size for the number of lines required.  To hide the line number
        display, set the width to zero, and contract the window width. */
     if (state) {
-        updateLineNumDisp(window);
+        reqCols = updateLineNumDisp(window);
     } else {
         XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
         XtVaGetValues(window->textArea,
@@ -1404,7 +1406,6 @@ void ShowLineNumbers(WindowInfo *window, int state)
 	    
     	win->showLineNumbers = state;
 
-        reqCols = state ? requestLineNumCols(window) : 0;
         for (i=0; i<=win->nPanes; i++) {
             text = i==0 ? win->textArea : win->textPanes[i-1];
             /*  reqCols should really be cast here, but into what? XmRInt?  */
@@ -2572,30 +2573,82 @@ static void removeFromWindowList(WindowInfo *window)
 }
 
 /*
-**  Determine how wide the line number field has to be to display all possible
-**  line numbers in the text area. This has to happen across all documents in
-**  this window; else the smaller files would get a wider width and the text
-**  would skitter while switching documents.
+**  Set the new gutter width in the window. Sadly, the only way to do this is
+**  to set it on every single document, so we have to iterate over them.
+**
+**  (Iteration taken from NDocuments(); is there a better way to do it?)
 */
-static unsigned requestLineNumCols(const WindowInfo* window)
+static int updateGutterWidth(WindowInfo* window)
 {
-    unsigned reqCols = MIN_LINE_NUM_COLS;
     WindowInfo* document;
+    int reqCols = MIN_LINE_NUM_COLS;
+    int newColsDiff = 0;
+    int maxCols = 0;
 
-    /*  Iterate over all documents and compare each to this window's shell.
-        (Taken from NDocuments(); is this really the best way to do this?)  */
     for (document = WindowList; NULL != document; document = document->next) {
         if (document->shell == window->shell) {
-            /*  We found ourselves a document from this window. Now let's see
-                whether its reqCols is smaller than what we already have.  */
-            unsigned tmpReqCols = 0;
+            /*  We found ourselves a document from this window.  */
+            int lineNumCols, tmpReqCols;
+            textDisp *textD = ((TextWidget) document->textArea)->text.textD;
 
-            textDisp* textD = ((TextWidget) document->textArea)->text.textD;
+            XtVaGetValues(document->textArea,
+                    textNlineNumCols, &lineNumCols,
+                    NULL);
+
+            /* Is the width of the line number area sufficient to display all the
+               line numbers in the file?  If not, expand line number field, and the
+               window width. */
+
+            if (lineNumCols > maxCols) {
+                maxCols = lineNumCols;
+            }
+
             tmpReqCols = textD->nBufferLines < 1
                     ? 1
-                    : (unsigned) log10((double) textD->nBufferLines + 1) + 1;
+                    : (int) log10((double) textD->nBufferLines + 1) + 1;
 
-            reqCols = max(reqCols, tmpReqCols);
+            if (tmpReqCols > reqCols) {
+                reqCols = tmpReqCols;
+            }
+        }
+    }
+
+    if (reqCols != maxCols) {
+        XFontStruct *fs;
+        Dimension windowWidth;
+        short fontWidth;
+
+        newColsDiff = reqCols - maxCols;
+
+        XtVaGetValues(window->textArea, textNfont, &fs, NULL);
+        fontWidth = fs->max_bounds.width;
+
+        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+        XtVaSetValues(window->shell,
+                XmNwidth, (Dimension) windowWidth + (newColsDiff * fontWidth),
+                NULL);
+
+        UpdateWMSizeHints(window);
+    }
+
+    for (document = WindowList; NULL != document; document = document->next) {
+        if (document->shell == window->shell) {
+            Widget text;
+            int i;
+            int lineNumCols;
+
+            XtVaGetValues(document->textArea,
+                textNlineNumCols, &lineNumCols, NULL);
+
+            if (lineNumCols == reqCols) {
+                continue;
+            }
+
+            /*  Update all panes of this document.  */
+            for (i = 0; i <= document->nPanes; i++) {
+                text = 0==i ? document->textArea : document->textPanes[i-1];
+                XtVaSetValues(text, textNlineNumCols, reqCols, NULL);
+            }
         }
     }
 
@@ -2603,70 +2656,18 @@ static unsigned requestLineNumCols(const WindowInfo* window)
 }
 
 /*
-**  Set the new gutter width in the window. Sadly, the only way to do this is
-**  to set it on every single document, so we have to iterate over them.
-**
-**  (Iteration taken from NDocuments(); is there a better way to do it?)
-*/
-static void setGutterWidth(const WindowInfo* window, const unsigned reqCols)
-{
-    WindowInfo* document;
-
-    for (document = WindowList; NULL != document; document = document->next) {
-        if (document->shell == window->shell) {
-            /*  We found ourselves a document from this window.  */
-            Dimension windowWidth;
-            int oldWidth, newWidth, marginWidth;
-            int i, lineNumCols;
-            short fontWidth;
-            Widget text;
-            textDisp* textD = ((TextWidget) document->textArea)->text.textD;
-
-            /* Is the width of the line number area sufficient to display all the
-               line numbers in the file?  If not, expand line number field, and the
-               window width. */
-            XtVaGetValues(document->textArea,
-                    textNlineNumCols, &lineNumCols,
-                    textNmarginWidth, &marginWidth,
-                    NULL);
-            if (lineNumCols < reqCols) {
-                fontWidth = textD->fontStruct->max_bounds.width;
-                oldWidth = textD->left - marginWidth;
-                newWidth = reqCols * fontWidth + marginWidth;
-                XtVaGetValues(document->shell, XmNwidth, &windowWidth, NULL);
-                XtVaSetValues(document->shell,
-                        XmNwidth, (Dimension) windowWidth + newWidth - oldWidth,
-                        NULL);
-
-                UpdateWMSizeHints(document);
-
-                /*  Update all panes of this document.  */
-                for (i = 0; i <= document->nPanes; i++) {
-                    text = ((0 == i) ? document->textArea : document->textPanes[i-1]);
-                    XtVaSetValues(text, textNlineNumCols, reqCols, NULL);
-                }               
-            }
-        }
-    }
-}
-
-/*
 **  If necessary, enlarges the window and line number display area to make
 **  room for numbers.
 */
-static void updateLineNumDisp(const WindowInfo* window)
+static int updateLineNumDisp(WindowInfo* window)
 {
-    unsigned reqCols;
-    
     if (!window->showLineNumbers) {
-        return;
+        return 0;
     }
     
     /* Decide how wide the line number field has to be to display all
        possible line numbers */
-    reqCols = requestLineNumCols(window);
-
-    setGutterWidth(window, reqCols);
+    return updateGutterWidth(window);
 }
 
 /*
@@ -2885,7 +2886,7 @@ void UpdateWMSizeHints(WindowInfo *window)
     nRows = totalHeight / fontHeight;
     baseWidth = shellWidth - nCols * fontWidth;
     baseHeight = shellHeight - nRows * fontHeight;
-    
+
     /* Set the size hints in the shell widget */
     XtVaSetValues(window->shell, XmNwidthInc, fs->max_bounds.width,
             XmNheightInc, fontHeight,
@@ -4100,6 +4101,8 @@ void RefreshWindowStates(WindowInfo *window)
     
     XmUpdateDisplay(window->statsLine);    
     refreshMenuBar(window);
+
+    updateLineNumDisp(window);
 }
 
 static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
@@ -4143,7 +4146,8 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
     /* Copy some parameters */
     XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
     	    textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
-	    textNlineNumCols, &lineNumCols, NULL);
+            NULL);
+    lineNumCols = orgWin->showLineNumbers ? MIN_LINE_NUM_COLS : 0;
     XtVaSetValues(window->textArea, textNemulateTabs, emTabDist,
     	    textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin,
 	    textNlineNumCols, lineNumCols, NULL);
@@ -4418,8 +4422,9 @@ WindowInfo *DetachDocument(WindowInfo *window)
     CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
     
     /* refresh former host window */
-    if (win)
-    	RefreshWindowStates(win);
+    if (win) {
+        RefreshWindowStates(win);
+    }
     
     /* this should keep the new document window fresh */
     RefreshWindowStates(cloneWin);
@@ -4739,8 +4744,3 @@ void CleanUpTabBarExposeQueue(WindowInfo *window)
 		ExposureMask, (XEvent *)&ev);
     }
 }    
-
-static int max(const int i1, const int i2)
-{
-    return (i1 >= i2 ? i1 : i2);
-}
