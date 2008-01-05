@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.115 2008/01/04 22:11:03 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.116 2008/01/05 13:48:18 yooden Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -1185,10 +1185,9 @@ static int writeBckVersion(WindowInfo *window)
 #ifndef VMS
     char fullname[MAXPATHLEN], bckname[MAXPATHLEN];
     struct stat statbuf;
-    FILE *inFP, *outFP;
-    int fd;
-    off_t fileLen;
-    char *fileString;
+    int in_fd, out_fd;
+    char *io_buffer;
+#define IO_BUFFER_SIZE ((size_t)(1024*1024))
 
     /* Do only if version backups are turned on */
     if (!window->saveOldVersion) {
@@ -1207,67 +1206,82 @@ static int writeBckVersion(WindowInfo *window)
 
     /* Delete the old backup file */
     /* Errors are ignored; we'll notice them later. */
-    unlink(bckname);
+    remove(bckname);
 
     /* open the file being edited.  If there are problems with the
        old file, don't bother the user, just skip the backup */
-    inFP = fopen(fullname, "rb");
-    if (inFP == NULL) {
+    in_fd = open(fullname, O_RDONLY);
+    if (in_fd<0) {
     	return FALSE;
     }
 
-    /* find the length of the file */
-    if (fstat(fileno(inFP), &statbuf) != 0) {
+    /* Get permissions of the file.
+       We preserve the normal permissions but not ownership, extended
+       attributes, et cetera. */
+    if (fstat(in_fd, &statbuf) != 0) {
 	return FALSE;
     }
-    fileLen = statbuf.st_size;
 
-    /* open the file exclusive and with restrictive permissions. */
-    if ((fd = open(bckname, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
-        || (outFP = fdopen(fd, "wb")) == NULL) {
-    	fclose(inFP);
+    /* open the destination file exclusive and with restrictive permissions. */
+    out_fd = open(bckname, O_CREAT|O_EXCL|O_TRUNC|O_WRONLY, S_IRUSR | S_IWUSR);
+    if (out_fd < 0) {
         return bckError(window, "Error open backup file", bckname);
     }
-    
-    /* Allocate space for the whole contents of the file */
-    fileString = (char*) malloc((size_t) fileLen);
-    if (fileString == NULL) {
-    	fclose(inFP);
-    	fclose(outFP);
+
+    /* Set permissions on new file */
+    if (fchmod(out_fd, statbuf.st_mode) != 0) {
+        close(in_fd);
+        close(out_fd);
+        remove(bckname);
+        return bckError(window, "fchmod() failed", bckname);
+    }
+
+    /* Allocate I/O buffer */
+    io_buffer = (char*) malloc(IO_BUFFER_SIZE);
+    if (NULL == io_buffer) {
+        close(in_fd);
+        close(out_fd);
+        remove(bckname);
 	return bckError(window, "out of memory", bckname);
     }
-    
-    /* read the file into fileString */
-    fread(fileString, sizeof(char), (size_t) fileLen, inFP);
-    if (ferror(inFP)) {
-    	fclose(inFP);
-    	fclose(outFP);
-    	free(fileString);
-    	return FALSE;
-    }
- 
-    /* close the input file, ignore any errors */
-    fclose(inFP);
 
-    /* write to the file */
-#ifdef IBM_FWRITE_BUG
-    write(fileno(outFP), fileString, (size_t) fileLen);
-#else
-    fwrite(fileString, sizeof(char), (size_t) fileLen, outFP);
-#endif
-    if (ferror(outFP)) {
-	fclose(outFP);
-	remove(bckname);
-        free(fileString);
-	return bckError(window, errorString(), bckname);
+    /* copy loop */
+    for(;;) {
+        ssize_t bytes_read;
+        ssize_t bytes_written;
+        bytes_read = read(in_fd, io_buffer, IO_BUFFER_SIZE);
+
+        if (bytes_read < 0) {
+            close(in_fd);
+            close(out_fd);
+            remove(bckname);
+            free(io_buffer);
+            return bckError(window, "read() error", window->filename);
+        }
+
+        if (0 == bytes_read) {
+            break; /* EOF */
+        }
+
+        /* write to the file */
+        bytes_written = write(out_fd, io_buffer, (size_t) bytes_read);
+        if (bytes_written != bytes_read) {
+            close(in_fd);
+            close(out_fd);
+            remove(bckname);
+            free(io_buffer);
+            return bckError(window, errorString(), bckname);
+        }
     }
-    free(fileString);
-    
-    /* close the file */
-    if (fclose(outFP) != 0)
-	return bckError(window, errorString(), bckname);
+
+    /* close the input and output files */
+    close(in_fd);
+    close(out_fd);
+
+    free(io_buffer);
+
 #endif /* VMS */
-	
+
     return FALSE;
 }
 
