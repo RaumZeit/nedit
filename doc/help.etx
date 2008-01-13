@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.108 2007/12/19 23:22:13 yooden Exp $
+.. $Id: help.etx,v 1.109 2008/01/13 01:42:49 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -1394,11 +1394,13 @@ Basic Regular Expression Syntax
      >    Right word boundary
      \B   Not a word boundary
 
-  Note that the \B token ensures that neither the left nor the right
-  character are delimiters, or that both left and right characters are
-  delimiters.  The left word anchor checks whether the previous character
-  is a delimiter and the next character is not.  The right word anchor
-  works in a similar way.
+  Note that the \B token ensures that neither the left nor the right character
+  are delimiters, **or** that both left and right characters are delimiters.
+  The left word anchor checks whether the previous character is a delimiter and
+  the next character is not. The right word anchor works in a similar way.
+
+  Note that word delimiters are user-settable, and defined by the X resource
+  wordDelimiters, cf. X_Resources_.
 
 3>Quantifiers
 
@@ -4116,10 +4118,15 @@ X Resources
 
 **nedit.wordDelimiters**: .,/\\`'!@@#%^&*()-=+{}[]":;<>?
 
-  The characters, in addition to blanks and tabs, which mark the boundaries
-  between words for the move-by-word (Ctrl+Arrow) and select-word (double
-  click) commands.  Note that this default value may be overridden by the
-  setting in Preferences -> Default Settings -> Language Modes....
+  The set of characters which mark the boundaries between words. In addition
+  to these, spaces, tabs, and newlines are always word boundaries.
+
+  These boundaries take effect for the move-by-word (Ctrl+Arrow) and
+  select-word (double click) commands, and for doing regex searches using the
+  \B, < and > tokens.
+  
+  Note that this default value may be overridden by the setting in
+  Preferences -> Default Settings -> Language Modes....
 
 **nedit.remapDeleteKey**: False
 
