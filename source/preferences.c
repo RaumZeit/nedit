@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.156 2008/01/04 22:11:03 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.157 2008/01/13 12:04:35 yooden Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -565,13 +565,13 @@ static PrefDescripRec PrefDescrip[] = {
 		select(selStart, selEnd + 6)\n\
 	}\n\
 	Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
-              pos = search(\"(?n\\\\s*/\\\\*\\\\s*)\", $selection_start, \"regex\")\n\
-              start = $search_end\n\
-              end = search(\"(?n\\\\*/\\\\s*)\", $selection_end, \"regex\", \"backward\")\n\
-              if (pos != $selection_start || end == -1 )\n\
-                  return\n\
-              replace_selection(get_range(start, end))\n\
-              select(pos, $cursor)\n\
+		pos = search(\"(?n\\\\s*/\\\\*\\\\s*)\", $selection_start, \"regex\")\n\
+		start = $search_end\n\
+		end = search(\"(?n\\\\*/\\\\s*)\", $selection_end, \"regex\", \"backward\")\n\
+		if (pos != $selection_start || end == -1 )\n\
+		    return\n\
+		replace_selection(get_range(start, end))\n\
+		select(pos, $cursor)\n\
 	}\n\
 	Comments>// Comment@C@C++@Java@JavaScript:::R: {\n\
 		replace_in_selection(\"^.*$\", \"// &\", \"regex\")\n\
@@ -619,16 +619,16 @@ static PrefDescripRec PrefDescrip[] = {
 	Comments>Bar Uncomment@C:::R: {\n\
 		selStart = $selection_start\n\
 		selEnd = $selection_end\n\
-                pos = search(\"/\\\\*\\\\s*\\\\n\", selStart, \"regex\")\n\
-                if (pos != selStart) return\n\
-                start = $search_end\n\
-                end = search(\"\\\\n\\\\s*\\\\*/\\\\s*\\\\n?\", selEnd, \"regex\", \"backward\")\n\
-                if (end == -1 || $search_end < selEnd) return\n\
-                newText = get_range(start, end)\n\
-                newText = replace_in_string(newText,\"^ *\\\\* ?\", \"\", \"regex\", \"copy\")\n\
-                if (get_range(selEnd, selEnd - 1) == \"\\n\") selEnd -= 1\n\
-                replace_range(selStart, selEnd, newText)\n\
-                select(selStart, selStart + length(newText))\n\
+		pos = search(\"/\\\\*\\\\s*\\\\n\", selStart, \"regex\")\n\
+		if (pos != selStart) return\n\
+		start = $search_end\n\
+		end = search(\"\\\\n\\\\s*\\\\*/\\\\s*\\\\n?\", selEnd, \"regex\", \"backward\")\n\
+		if (end == -1 || $search_end < selEnd) return\n\
+		newText = get_range(start, end)\n\
+		newText = replace_in_string(newText,\"^ *\\\\* ?\", \"\", \"regex\", \"copy\")\n\
+		if (get_range(selEnd, selEnd - 1) == \"\\n\") selEnd -= 1\n\
+		replace_range(selStart, selEnd, newText)\n\
+		select(selStart, selStart + length(newText))\n\
 	}\n\
 	Make C Prototypes@C@C++:::: {\n\
 		# simplistic extraction of C function prototypes, usually good enough\n\
