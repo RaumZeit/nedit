@@ -5,7 +5,7 @@ eval 'exec perl -S $0 ${1+"$@"}'
 #
 # setext.pl -- Structure Enhanced Text Converter (to HTML or simple text)
 # 
-# $Id: setext,v 1.13 2004/11/09 21:58:43 yooden Exp $
+# $Id: setext,v 1.14 2008/01/13 02:48:02 yooden Exp $
 # 
 # Copyright (c) 2000 Steven Haehn
 # 
@@ -2619,11 +2619,11 @@ sub emit_helpText
     #------------------------------------
     print $stream "\nHref H_R [] =\n{\n";
     $sep = "";
-    for( $index = 0; $index < scalar( @href ); $index++ )
+    for ($index = 0; $index < scalar(@href); $index++)
     {
-        $element = $href[ $index ];
-        $nextone = ( $index == $#href ) ? "NULL,    " : "&H_R[%2d],";
-        printf $stream "$sep    { $nextone $element }", $index+1;
+        $element = $href[$index];
+        $nextone = ($index == $#href) ? "NULL,    " : "&H_R[%2d],";
+        printf $stream "$sep    {$nextone$element}", $index+1;
         $sep = ",\n"
     }
     print $stream "\n};\n";
@@ -2699,11 +2699,9 @@ sub emit_help_menu_text
                     $href   =~ s/_/ /go;
                     $target =~ s/_/ /go;
                     $topic  = "HELP_\U$helpName,";
-                    $nl1    = $name_length+6;  # for HELP_ and comma
+                    $nl1    = $name_length;  # for HELP_ and comma
 
-                    push @href, 
-                       sprintf("0, %-${nl1}.${nl1}s \"$href\", \"$target\"", $topic );
-
+                    push @href, sprintf("0, %-${nl1}.${nl1}s \"$href\"", $topic);
                     push @hot_tt_links, $href;  # collect for later verification.
                 }
                 

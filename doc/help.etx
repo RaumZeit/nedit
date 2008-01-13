@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.109 2008/01/13 01:42:49 yooden Exp $
+.. $Id: help.etx,v 1.110 2008/01/13 02:48:02 yooden Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -4104,7 +4104,7 @@ X Resources
 
   This can be the name of a file, or multiple files separated by a colon (:)
   character, of the type produced by Exuberant Ctags or the Unix ctags
-  command, which NEdit will load at startup time (see ctag_support_ ). The tag
+  command, which NEdit will load at startup time (see ctags_support_). The tag
   file provides a database from which NEdit can automatically open files
   containing the definition of a particular subroutine or data type.
 
@@ -5789,7 +5789,7 @@ Problems/Defects
 .. _announce-request@@nedit.org  mailto:announce-request@@nedit.org
 .. _develop-request@@nedit.org   mailto:develop-request@@nedit.org
 .. _http://www.nedit.org http://www.nedit.org
-.. _ctag_support         #ctags
+.. _ctags_support         #ctags
 .. _Alternation          #alternation
 .. _Autoload_Files       #automatically
 
