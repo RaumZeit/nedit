@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.157 2008/01/13 12:04:35 yooden Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.158 2008/01/14 20:39:20 edg Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -97,7 +97,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.157 2008/01/13 12:04:35 yood
 #define MENU_WIDGET(w) (w)
 #endif
 
-#define PREF_FILE_VERSION "5.5"
+#define PREF_FILE_VERSION "5.6"
 
 /* New styles added in 5.2 for auto-upgrade */
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
@@ -1230,11 +1230,21 @@ static void updatePatternsTo5dot4(void);
 static void updateShellCmdsTo5dot3(void);
 static void updateShellCmdsTo5dot4(void);
 static void updateMacroCmdsTo5dot5(void);
+static void updatePatternsTo5dot6(void);
+static void updateMacroCmdsTo5dot6(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr,
-	const char *replaceWith);
+                        const char *replaceWith);
+static int caseFind(const char *inString, const char *expr);
+static int caseReplace(char **inString, const char *expr,
+                       const char *replaceWith, int replaceLen);
+static int stringReplace(char **inString, const char *expr, 
+                         const char *replaceWith, int searchType,
+                         int replaceLen);
+static int replaceMacroIfUnchanged(const char* oldText, const char* newStart, 
+                                    const char* newEnd);
 static const char* getDefaultShell(void);
 
 
@@ -1304,9 +1314,13 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB)
         updatePatternsTo5dot4();
     }
     if (PrefData.prefFileRead && (fileVer < 5005)) {
-        fprintf(stderr, "NEdit: Converting .nedit file to 5.5 version.\n"
-                "    To keep, use Preferences -> Save Defaults\n");
         updateMacroCmdsTo5dot5();
+    }
+    if (PrefData.prefFileRead && (fileVer < 5006)) {
+        fprintf(stderr, "NEdit: Converting .nedit file to 5.6 version.\n"
+                "    To keep, use Preferences -> Save Defaults\n");
+        updateMacroCmdsTo5dot6();
+        updatePatternsTo5dot6();
     }
     /* Migrate colors if there's no config file yet */
     if (!PrefData.prefFileRead) {
@@ -5472,6 +5486,58 @@ static void updatePatternsTo5dot4(void)
 		"^[ \t]*Subroutine:");
 }
 
+static void updatePatternsTo5dot6(void)
+{
+    const char *pats[] = {
+#ifndef VMS
+        "Csh:\\.csh \\.cshrc \\.login \\.logout:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ \\\\t\\]\\*/bin/csh\"::::::\\n",
+        "Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n",
+	"LaTeX:\\.tex \\.sty \\.cls \\.ltx \\.ins:::::::\\n",
+	"LaTeX:.tex .sty .cls .ltx .ins .clo .fd:::::::\n",
+        "X Resources:\\.Xresources \\.Xdefaults \\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::\\n",
+        "X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n",
+#else
+	"Csh:\\.csh \\.cshrc \\.login \\.logout:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ \\\\t\\]\\*/bin/csh\"::::::\\n",
+	"Csh:.CSH .CSHRC .TCSHRC .LOGIN .LOGOUT:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n",
+	"LaTeX:\\.TEX \\.STY \\.CLS \\.LTX \\.INS:::::::\\n",
+	"LaTeX:.TEX .STY .CLS .LTX .INS .CLO .FD:::::::\n",
+	"Lex:\\.lex:::::::\\n",
+	"Lex:.LEX:::::::\n",
+	"Matlab:\\.m \\.oct \\.sci:::::::\\n",
+	"Matlab:.M .OCT .SCI:::::::\n",
+	"Regex:\\.reg \\.regex:\"\\\\\\(\\\\\\?\\[:#=!iInN\\]\\.\\+\\\\\\\)\":None:Continuous::::\\n",
+	"Regex:.REG .REGEX:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n",
+	"SGML HTML:\\.sgml \\.sgm \\.html \\.htm:\"\\\\\\<\\[Hh\\]\\[Tt\\]\\[Mm\\]\\[Ll\\]\\\\\\>\"::::::\\n",
+	"SGML HTML:.SGML .SGM .HTML .HTM:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n",
+	"SQL:\\.sql:::::::\\n",
+	"SQL:.SQL:::::::\n",
+	"Sh Ksh Bash:\\.sh \\.bash \\.ksh \\.profile \\.bashrc \\.bash_logout \\.bash_login \\.bash_profile:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ \\\\t\\]\\*/\\.\\*bin/\\(bash\\|ksh\\|sh\\|zsh\\)\"::::::\\n",
+	"Sh Ksh Bash:.SH .BASH .KSH .PROFILE .BASHRC .BASH_LOGOUT .BASH_LOGIN .BASH_PROFILE:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n",
+	"XML:\\.xml \\.xsl \\.dtd:\"\\\\\\<\\(\\?i\\\\\\?xml\\|!doctype\\)\"::None:::\"\\<\\>/=\"\"'\\(\\)\\+\\*\\?\\|\":\\n",
+	"XML:.XML .XSL .DTD:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n",
+	"X Resources:\\.XRESOURCES \\.XDEFAULTS \\.NEDIT:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::\\n",
+	"X Resources:.XRESOURCES .XDEFAULTS .NEDIT .PATS NEDIT.RC:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n",
+#endif
+        NULL };
+
+    /* Upgrade modified language modes, only if the user hasn't
+       altered the default 5.5 definitions. */
+    int i;
+    for (i = 0; pats[i]; i+=2) {
+        if (regexFind(TempStringPrefs.language, pats[i]))
+            regexReplace(&TempStringPrefs.language, pats[i], pats[i+1]);
+    }
+
+    /* Add new styles */
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Bracket:"))
+	spliceString(&TempStringPrefs.styles, "Bracket:dark blue:Bold",
+		"^[ \t]*Storage Type:");
+    if (!regexFind(TempStringPrefs.styles, "^[ \t]*Operator:"))
+	spliceString(&TempStringPrefs.styles, "Operator:dark blue:Bold",
+		"^[ \t]*Bracket:");
+}
+
+
 /* 
  * We migrate a color from the X resources to the prefs if:
  *      1.  The prefs entry is equal to the default entry
@@ -5591,19 +5657,28 @@ static int regexFind(const char *inString, const char *expr)
 }
 
 /*
-** Simplified regular expression replacement routine which replaces the
-** first occurence of expr in inString with replaceWith, reallocating
-** inString with XtMalloc.  If expr is not found, does nothing and
-** returns false.
+** Simplified case-sensisitive string search routine which just 
+** returns true or false depending on whether inString matches expr
 */
-static int regexReplace(char **inString, const char *expr, const char *replaceWith)
+static int caseFind(const char *inString, const char *expr)
+{
+    int beginPos, endPos;
+    return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_CASE_SENSE,
+            False, 0, &beginPos, &endPos, NULL, NULL, NULL);
+}
+
+/*
+** Common implementation for simplified string replacement routines.
+*/
+static int stringReplace(char **inString, const char *expr, 
+                         const char *replaceWith, int searchType,
+			 int replaceLen)
 {
     int beginPos, endPos, newLen;
     char *newString;
-    int replaceLen = strlen(replaceWith);
     int inLen = strlen(*inString);
-    
-    if (!SearchString(*inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False,
+    if (0 >= replaceLen) replaceLen = strlen(replaceWith);
+    if (!SearchString(*inString, expr, SEARCH_FORWARD, searchType, False,
 	    0, &beginPos, &endPos, NULL, NULL, NULL))
 	return FALSE;
     newLen = inLen + replaceLen - (endPos-beginPos);
@@ -5618,6 +5693,57 @@ static int regexReplace(char **inString, const char *expr, const char *replaceWi
     return TRUE;
 }
 
+/*
+** Simplified regular expression replacement routine which replaces the
+** first occurence of expr in inString with replaceWith, reallocating
+** inString with XtMalloc.  If expr is not found, does nothing and
+** returns false.
+*/
+static int regexReplace(char **inString, const char *expr, 
+                        const char *replaceWith)
+{
+    return stringReplace(inString, expr, replaceWith, SEARCH_REGEX, -1);
+}
+
+/*
+** Simplified case-sensisitive string replacement routine which 
+** replaces the first occurence of expr in inString with replaceWith,
+** reallocating inString with XtMalloc.  If expr is not found, does nothing 
+** and returns false.
+*/
+static int caseReplace(char **inString, const char *expr, 
+                       const char *replaceWith, int replaceLen)
+{
+    return stringReplace(inString, expr, replaceWith, SEARCH_CASE_SENSE,
+                         replaceLen);
+}
+
+/*
+** Looks for a (case-sensitive literal) match of an old macro text in a
+** temporary macro commands buffer. If the text is found, it is replaced by
+** a substring of the default macros, bounded by a given start and end pattern
+** (inclusive). Returns the length of the replacement.
+*/
+static int replaceMacroIfUnchanged(const char* oldText, const char* newStart, 
+                                   const char* newEnd)
+{
+    if (caseFind(TempStringPrefs.macroCmds, oldText)) {
+#ifdef VMS
+        const char *start = strstr(PrefDescrip[1].defaultString, newStart);
+#else
+        const char *start = strstr(PrefDescrip[2].defaultString, newStart);
+#endif
+	if (start) {
+            const char *end = strstr(start, newEnd);
+            if (end) {
+                int length = (int)(end-start) + strlen(newEnd);
+                caseReplace(&TempStringPrefs.macroCmds, oldText, start, length);
+                return length;
+            }
+	}
+    }
+    return 0;
+}
 
 #ifndef VMS
 /* 
@@ -5736,6 +5862,157 @@ static void updateMacroCmdsTo5dot5(void)
     if (regexFind(TempStringPrefs.macroCmds, uc5dot4))
 	regexReplace(&TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
 
+    return;
+}
+
+static void updateMacroCmdsTo5dot6(void) 
+{
+    /* 
+       This is ridiculous. Macros don't belong in the default preferences
+       string.
+       This code is also likely to break when the macro commands are upgraded
+       again in a next release, because it looks for patterns in the default
+       macro string (which may change). 
+       Using a "Default" mechanism, like we do for highlighting patterns 
+       would simplify upgrading A LOT in the future, but changing the way
+       default macros are stored, is a lot of work too, unfortunately.
+    */
+    const char *pats[] = {
+        "Complete Word:Alt+D::: {\n\
+		# Tuning parameters\n\
+		ScanDistance = 200\n\
+		\n\
+		# Search back to a word boundary to find the word to complete\n\
+		startScan = max(0, $cursor - ScanDistance)\n\
+		endScan = min($text_length, $cursor + ScanDistance)\n\
+		scanString = get_range(startScan, endScan)\n\
+		keyEnd = $cursor-startScan\n\
+		keyStart = search_string(scanString, \"<\", keyEnd, \"backward\", \"regex\")\n\
+		if (keyStart == -1)\n\
+		    return\n\
+		keyString = \"<\" substring(scanString, keyStart, keyEnd)\n\
+		\n\
+		# search both forward and backward from the cursor position.  Note that\n\
+		# using a regex search can lead to incorrect results if any of the special\n\
+		# regex characters is encountered, which is not considered a delimiter\n\
+		backwardSearchResult = search_string(scanString, keyString, keyStart-1, \\\n\
+		    	\"backward\", \"regex\")\n\
+		forwardSearchResult = search_string(scanString, keyString, keyEnd, \"regex\")\n\
+		if (backwardSearchResult == -1 && forwardSearchResult == -1) {\n\
+		    beep()\n\
+		    return\n\
+		}\n\
+		\n\
+		# if only one direction matched, use that, otherwise use the nearest\n\
+		if (backwardSearchResult == -1)\n\
+		    matchStart = forwardSearchResult\n\
+		else if (forwardSearchResult == -1)\n\
+		    matchStart = backwardSearchResult\n\
+		else {\n\
+		    if (keyStart - backwardSearchResult <= forwardSearchResult - keyEnd)\n\
+		    	matchStart = backwardSearchResult\n\
+		    else\n\
+		    	matchStart = forwardSearchResult\n\
+		}\n\
+		\n\
+		# find the complete word\n\
+		matchEnd = search_string(scanString, \">\", matchStart, \"regex\")\n\
+		completedWord = substring(scanString, matchStart, matchEnd)\n\
+		\n\
+		# replace it in the window\n\
+		replace_range(startScan + keyStart, $cursor, completedWord)\n\
+	}", "Complete Word:", "\n\t}",
+        "Fill Sel. w/Char:::R: {\n\
+		if ($selection_start == -1) {\n\
+		    beep()\n\
+		    return\n\
+		}\n\
+		\n\
+		# Ask the user what character to fill with\n\
+		fillChar = string_dialog(\"Fill selection with what character?\", \"OK\", \"Cancel\")\n\
+		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
+		    return\n\
+		\n\
+		# Count the number of lines in the selection\n\
+		nLines = 0\n\
+		for (i=$selection_start; i<$selection_end; i++)\n\
+		    if (get_character(i) == \"\\n\")\n\
+		    	nLines++\n\
+		\n\
+		# Create the fill text\n\
+		rectangular = $selection_left != -1\n\
+		line = \"\"\n\
+		fillText = \"\"\n\
+		if (rectangular) {\n\
+		    for (i=0; i<$selection_right-$selection_left; i++)\n\
+			line = line fillChar\n\
+		    for (i=0; i<nLines; i++)\n\
+			fillText = fillText line \"\\n\"\n\
+		    fillText = fillText line\n\
+		} else {\n\
+		    if (nLines == 0) {\n\
+		    	for (i=$selection_start; i<$selection_end; i++)\n\
+		    	    fillText = fillText fillChar\n\
+		    } else {\n\
+		    	startIndent = 0\n\
+		    	for (i=$selection_start-1; i>=0 && get_character(i)!=\"\\n\"; i--)\n\
+		    	    startIndent++\n\
+		    	for (i=0; i<$wrap_margin-startIndent; i++)\n\
+		    	    fillText = fillText fillChar\n\
+		    	fillText = fillText \"\\n\"\n\
+			for (i=0; i<$wrap_margin; i++)\n\
+			    line = line fillChar\n\
+			for (i=0; i<nLines-1; i++)\n\
+			    fillText = fillText line \"\\n\"\n\
+			for (i=$selection_end-1; i>=$selection_start && get_character(i)!=\"\\n\"; \\\n\
+			    	i--)\n\
+			    fillText = fillText fillChar\n\
+		    }\n\
+		}\n\
+		\n\
+		# Replace the selection with the fill text\n\
+		replace_selection(fillText)\n\
+	}", "Fill Sel. w/Char:", "\n\t}",
+        "Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
+		sel = get_selection()\n\
+		selStart = $selection_start\n\
+		selEnd = $selection_end\n\
+		commentStart = search_string(sel, \"/*\", 0)\n\
+		if (substring(sel, commentStart + 2, commentStart + 3) == \" \")\n\
+		    keepStart = commentStart + 3\n\
+		else\n\
+		    keepStart = commentStart + 2\n\
+		keepEnd = search_string(sel, \"*/\", length(sel), \"backward\")\n\
+		commentEnd = keepEnd + 2\n\
+		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n\
+		    keepEnd = keepEnd - 1\n\
+		replace_range(selStart + commentStart, selStart + commentEnd, \\\n\
+			substring(sel, keepStart, keepEnd))\n\
+		select(selStart, selEnd - (keepStart-commentStart) - \\\n\
+			(commentEnd - keepEnd))\n\
+	}", "Comments>/* Uncomment */", "\n\t}",
+        "Comments>Bar Uncomment@C:::R: {\n\
+		selStart = $selection_start\n\
+		selEnd = $selection_end\n\
+		newText = get_range(selStart+3, selEnd-4)\n\
+		newText = replace_in_string(newText, \"^ \\\\* \", \"\", \"regex\")\n\
+		replace_range(selStart, selEnd, newText)\n\
+		select(selStart, selStart + length(newText))\n\
+	}","Comments>Bar Uncomment@C:", "\n\t}",
+        "Make C Prototypes@C@C++:::: {\n\
+		if ($selection_start == -1) {\n\
+		    start = 0\n\
+		    end = $text_length\n\
+		} else {\n\
+		    start = $selection_start\n\
+		    end = $selection_end\n\
+		}\n\
+		string = get_range(start, end)\n\
+		nDefs = 0", "Make C Prototypes@C@C++:", "\t\tnDefs = 0",
+        NULL };
+    int i;
+    for (i = 0; pats[i]; i+=3) 
+        replaceMacroIfUnchanged(pats[i], pats[i+1], pats[i+2]);
     return;
 }
 
