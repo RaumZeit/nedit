@@ -1,4 +1,4 @@
-/* $Id: rangeset.c,v 1.20 2008/02/09 21:02:35 ajbj Exp $ */
+/* $Id: rangeset.c,v 1.21 2008/02/11 19:50:53 ajbj Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *
@@ -1604,7 +1604,7 @@ int RangesetInverse(Rangeset *rangeset)
 
     if (rangeset->n_ranges == 0) {
         if (!rangeTable) {
-            rangeTable = rangeset->ranges = RangesNew(1);
+            rangeset->ranges = RangesNew(1);
             rangeTable = (int *)rangeset->ranges;
         }
 	rangeTable[0] = 0;
