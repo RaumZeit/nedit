@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.110 2008/01/13 02:48:02 yooden Exp $
+.. $Id: help.etx,v 1.111 2008/02/19 22:31:51 ajbj Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -821,7 +821,7 @@ File Format
   challenge to portability, they affect NEdit only indirectly via the same font
   and localization mechanisms common to all X applications.  If your system is
   set up properly, you will probably never see character-set related problems
-  in NEdit.  NEdit can not display Unicode text files, or any multi-byte
+  in NEdit.  NEdit cannot display Unicode text files, nor any multi-byte
   character set.
 
   The primary difference between an MS DOS format file and a Unix format file,
@@ -1368,7 +1368,7 @@ Basic Regular Expression Syntax
   come in two flavors as described below:
 
      [...]   Regular class, match only characters listed.
-     [^...]  Negated class, match only characters NOT listed.
+     [^...]  Negated class, match only characters ~not~ listed.
 
   As with the dot token, by default negated character classes do not match
   newline, but can be made to do so.
@@ -1560,11 +1560,11 @@ Metacharacters
 
   The `\y' token matches any single character that is one of the characters
   that NEdit recognizes as a word delimiter character, while the `\Y' token
-  matches any character that is NOT a word delimiter character.  Word delimiter
-  characters are dynamic in nature, meaning that the user can change them through
-  preference settings.  For this reason, they must be handled differently by the
-  regular expression engine.  As a consequence of this, `\y' and `\Y' can not be
-  used within a character class specification.
+  matches any character that is ~not~ a word delimiter character.  Word
+  delimiter characters are dynamic in nature, meaning that the user can change
+  them through preference settings.  For this reason, they must be handled
+  differently by the regular expression engine.  As a consequence of this,
+  `\y' and `\Y' cannot be used within a character class specification.
    ----------------------------------------------------------------------
 
 Parenthetical Constructs
@@ -1604,7 +1604,7 @@ Parenthetical Constructs
   first character discrimination optimization.  You can include a positive
   look-ahead that contains a character class which lists every character that
   the following (potentially complex) regular expression could possibly start
-  with.  This will quickly filter out match attempts that can not possibly
+  with.  This will quickly filter out match attempts that cannot possibly
   succeed.
 
 3>Negative Look-Ahead
@@ -1639,7 +1639,7 @@ Parenthetical Constructs
 
   Negative look-behind takes the form `(?<!<regex>)' and is exactly the same as
   positive look-behind except that the enclosed regular expression must
-  NOT match. The same restrictions apply.
+  ~not~ match. The same restrictions apply.
 
   Note however, that performance is even more sensitive to the distance
   between the size boundaries: a negative look-behind must not match for
@@ -1668,7 +1668,7 @@ Parenthetical Constructs
   however, that require finer control over how newlines are matched by some
   regular expression tokens.
 
-  By default, NEdit regular expressions will NOT match a newline character for
+  By default, NEdit regular expressions will ~not~ match a newline character for
   the following regex tokens: dot (`.'); a negated character class (`[^...]');
   and the following shortcuts for character classes:
 
@@ -2053,7 +2053,7 @@ Macro Language
      a = fn1(b, c) + fn2(d)
      dialog("fn3 says: " fn3())
 
-  Arguments are passed by value.  This means that you can not return values via
+  Arguments are passed by value.  This means that you cannot return values via
   the argument list, only through the function value or indirectly through
   agreed-upon global variables.
 
@@ -2064,8 +2064,8 @@ Macro Language
   functions, and editor action routines.  Editor action routines are more
   flexible, in that they may be called either from the macro language, or bound
   directly to keys via translation tables.  They are also limited, however, in
-  that they can not return values.  Macro language routines can return values,
-  but can not be bound to keys in translation tables.
+  that they cannot return values.  Macro language routines can return values,
+  but cannot be bound to keys in translation tables.
 
   Nearly all of the built-in subroutines operate on an implied window, which is
   initially the window from which the macro was started.  To manipulate the
@@ -2090,7 +2090,7 @@ Macro Language
         < body of subroutine >
      }
 
-  Subroutine definitions can not appear within other definitions, or within
+  Subroutine definitions cannot appear within other definitions, nor within
   macro menu item definitions.  They can only appear in (macro) files, such as
   the autoload macro file, cf. Preferences_. Macro files can be loaded with
   File -> Load Macro File or with the load_macro_file() action.
@@ -2334,7 +2334,7 @@ Macro Subroutines
 
 3>Built in Variables
 
-  These variables are read-only and can not be changed.
+  These variables are read-only and cannot be changed by direct assignment.
 
 **$1**, **$2**, **$3**, **$4**, **$5**, **$6**, **$7**, **$8**, **$9**
 **$args**[~expr~]
@@ -3241,8 +3241,8 @@ Action Routines
   "" or unrecognized, it will be set to Plain.
 
 **set_locked( [0 | 1] )**
-  This only affects the locked status of a file, not it's read-only
-  status. Permissions are NOT changed.
+  This only affects the locked status of a file, not its read-only
+  status. Permissions are ~not~ changed.
   A value of 0 turns it off and a value of 1 turns it on.
   If no parameters are supplied the option is toggled.
 
@@ -3345,7 +3345,7 @@ Action Routines
   location, or, if pending-delete is on and a primary selection exists in the
   window, replaces the primary selection.  If the user is dragging a block of
   text (primary selection), completes the drag operation and leaves the text at
-  it's current location.
+  its current location.
 
 **cut_clipboard()**
   Deletes the text in the primary selection and places it in
@@ -3477,7 +3477,7 @@ Action Routines
   location, or, if pending-delete is on and a primary selection exists in the
   window, replaces the primary selection.  If the user is dragging a block of
   text (primary selection), completes the drag operation and deletes the text
-  from it's current location.
+  from its current location.
 
 **newline()**
   Inserts a newline character.  If Auto Indent is on, lines up the
