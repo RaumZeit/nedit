@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: getfiles.c,v 1.36 2006/08/22 13:23:02 yooden Exp $";
+static const char CVSID[] = "$Id: getfiles.c,v 1.37 2008/02/29 16:06:05 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * Getfiles.c -- File Interface Routines                                        *
@@ -1108,6 +1108,10 @@ static void sortWidgetList(Widget listWidget)
     XmString *items, *sortedItems;
     int nItems, i;
     
+    /* OpenMotif 2.3 will crash if we try to replace the items, when they
+       are selected. This function is only called when we refresh the
+       contents anyway. */
+    XmListDeselectAllItems(listWidget);
     XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, NULL);
     sortedItems = (XmString *)XtMalloc(sizeof(XmString) * nItems);
     for (i=0; i<nItems; i++)
