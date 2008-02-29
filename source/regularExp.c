@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.32 2008/01/04 22:11:04 yooden Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.33 2008/02/29 23:12:26 lebert Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2705,9 +2705,6 @@ int ExecRE(regexp *prog, const char* string, const char* end, int reverse,
             unsigned char   tempDelimitTable [256];
                      int    i;
 
-   s_ptr = (unsigned char **) prog->startp;
-   e_ptr = (unsigned char **) prog->endp;
-
    /* Check for valid parameters. */
 
    if (prog == NULL || string == NULL) {
@@ -2721,6 +2718,9 @@ int ExecRE(regexp *prog, const char* string, const char* end, int reverse,
       reg_error ("corrupted program");
       goto SINGLE_RETURN;
    }
+
+   s_ptr = (unsigned char **) prog->startp;
+   e_ptr = (unsigned char **) prog->endp;
 
    /* If caller has supplied delimiters, make a delimiter table */
 
