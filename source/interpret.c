@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.49 2008/03/01 00:27:32 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.50 2008/03/01 15:26:39 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1929,7 +1929,7 @@ static int callSubroutine(void)
         *(StackP++) = noValue; /* cached arg array */
         
     	FrameP = StackP;
-    	prog = (Program *)sym->value.val.str.rep;
+    	prog = sym->value.val.prog;
     	PC = prog->code;
 	for (s = prog->localSymList; s != NULL; s = s->next) {
 	    FP_GET_SYM_VAL(FrameP, s) = noValue;
