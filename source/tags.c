@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.69 2008/01/05 02:24:13 yooden Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.70 2008/03/01 22:18:06 lebert Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1232,7 +1232,6 @@ static int findAllMatches(WindowInfo *window, const char *string)
                 free(dupTagsList);
 
                 XBell(TheDisplay, 0);
-                free(dupTagsList);
                 return -1;
             }
 
