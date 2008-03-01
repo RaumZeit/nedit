@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.48 2007/10/18 13:26:43 tringali Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.49 2008/03/01 00:27:32 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1141,12 +1141,13 @@ static void freeSymbolTable(Symbol *symTab)
 ** Before: Prog->  [Sym], next, ...
 **         TheStack-> next, ...
 ** After:  Prog->  Sym, [next], ...
-**         TheStack-> [SymValue], next, ...
+**         TheStack-> [symVal], next, ...
 */
 static int pushSymVal(void)
 {
     Symbol *s;
     int nArgs, argNum;
+    DataValue symVal;
 
     DISASM_RT(PC-1, 2);
     STACKDUMP(0, 3);
@@ -1155,9 +1156,9 @@ static int pushSymVal(void)
     PC++;
 
     if (s->type == LOCAL_SYM) {
-    	*StackP = FP_GET_SYM_VAL(FrameP, s);
+        symVal = FP_GET_SYM_VAL(FrameP, s);
     } else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
-    	*StackP = s->value;
+        symVal = s->value;
     } else if (s->type == ARG_SYM) {
     	nArgs = FP_GET_ARG_COUNT(FrameP);
     	argNum = s->value.val.n;
@@ -1165,29 +1166,26 @@ static int pushSymVal(void)
     	    return execError("referenced undefined argument: %s",  s->name);
         }
     	if (argNum == N_ARGS_ARG_SYM) {
-    	    StackP->tag = INT_TAG;
-    	    StackP->val.n = nArgs;
+            symVal.tag = INT_TAG;
+            symVal.val.n = nArgs;
     	}
         else {
-    	    *StackP = FP_GET_ARG_N(FrameP, argNum);
+            symVal = FP_GET_ARG_N(FrameP, argNum);
         }
     } else if (s->type == PROC_VALUE_SYM) {
-	DataValue result;
 	char *errMsg;
 	if (!(s->value.val.subr)(FocusWindow, NULL, 0,
-	    	&result, &errMsg)) {
+	    	&symVal, &errMsg)) {
 	    return execError(errMsg, s->name);
         }
-    	*StackP = result;
     } else
     	return execError("reading non-variable: %s", s->name);
-    if (StackP->tag == NO_TAG) {
+    if (symVal.tag == NO_TAG) {
     	return execError("variable not set: %s", s->name);
     }
-    StackP++;
-    if (StackP >= &TheStack[STACK_SIZE]) {
-    	return execError(StackOverflowMsg, "");
-    }
+
+    PUSH(symVal)
+
     return STAT_OK;
 }
 
@@ -1289,12 +1287,8 @@ static int pushArraySymVal(void)
         return execError("variable not set: %s", sym->name);
     }
 
-    *StackP = *dataPtr;
-    StackP++;
+    PUSH(*dataPtr)
 
-    if (StackP >= &TheStack[STACK_SIZE]) {
-    	return execError(StackOverflowMsg, "");
-    }
     return STAT_OK;
 }
 
@@ -1310,6 +1304,7 @@ static int assign(void)
 {
     Symbol *sym;
     DataValue *dataPtr;
+    DataValue value;
     
     DISASM_RT(PC-1, 2);
     STACKDUMP(1, 3);
@@ -1328,21 +1323,21 @@ static int assign(void)
             return execError("assignment to non-variable: %s", sym->name);
         }
     }
-    if (StackP == TheStack) {
-        return execError(StackUnderflowMsg, "");
-    }
-    --StackP;
+
     if (sym->type == LOCAL_SYM) {
         dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
     }
     else {
         dataPtr = &sym->value;
     }
-    if (StackP->tag == ARRAY_TAG) {
-        ArrayCopy(dataPtr, StackP);
+
+    POP(value)
+
+    if (value.tag == ARRAY_TAG) {
+        ArrayCopy(dataPtr, &value);
     }
     else {
-        *dataPtr = *StackP;
+        *dataPtr = value;
     }
     return STAT_OK;
 }
@@ -1354,14 +1349,14 @@ static int assign(void)
 */
 static int dupStack(void)
 {
+    DataValue value;
+
     DISASM_RT(PC-1, 1);
     STACKDUMP(1, 3);
 
-    if (StackP >= &TheStack[STACK_SIZE]) {
-    	return execError(StackOverflowMsg, "");
-    }
-    *StackP = *(StackP - 1);
-    StackP++;
+    PEEK(value, 0)
+    PUSH(value)
+
     return STAT_OK;
 }
 
