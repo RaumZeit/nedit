@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.59 2008/01/04 19:32:54 yooden Exp $
+$Id: ReleaseNotes,v 1.60 2008/03/03 15:54:42 tringali Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -28,7 +28,7 @@ Bugs fixed in $NEXT_VERSION
   - Crash on window close when a "File modified externally" dialog was up
     (SF bug #1578869).
 
-  - Crashes and artefacts when using ARGB visuals (SF bugs #1579544, 
+  - Crashes and artifacts when using ARGB visuals (SF bugs #1579544, 
     #1030467, #1030192, and #1458006).
 
   - The text insertion cursor does no longer blink while typing
