@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: window.c,v 1.203 2008/01/05 02:24:13 yooden Exp $";
+static const char CVSID[] = "$Id: window.c,v 1.204 2008/03/03 22:32:24 tringali Exp $";
 /*******************************************************************************
 *                                                                              *
 * window.c -- Nirvana Editor window creation/deletion                          *
@@ -199,6 +199,9 @@ static int updateGutterWidth(WindowInfo* window);
 static void deleteDocument(WindowInfo *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
+/* From Xt, Shell.c, "BIGSIZE" */
+static const Dimension XT_IGNORE_PPOSITION = 32767;
+
 /*
 ** Create a new editor window
 */
@@ -366,6 +369,24 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
+
+    if (newGeometry[0] == '\0')
+    {
+        /* Workaround to make Xt ignore Motif's bad PPosition size changes. Even
+           though we try to remove the PPosition in RealizeWithoutForcingPosition,
+           it is not sufficient.  Motif will recompute the size hints some point
+           later and put PPosition back! If the window is mapped after that time,
+           then the window will again wind up at 0, 0.  So, XEmacs does this, and
+           now we do.
+
+           Alternate approach, relying on ShellP.h:
+
+           ((WMShellWidget)winShell)->shell.client_specified &= ~_XtShellPPositionOK;
+         */
+
+        XtSetArg(al[ac], XtNx, XT_IGNORE_PPOSITION); ac++;
+        XtSetArg(al[ac], XtNy, XT_IGNORE_PPOSITION); ac++;
+    }
 
     winShell = CreateWidget(TheAppShell, "textShell",
                 topLevelShellWidgetClass, al, ac);
