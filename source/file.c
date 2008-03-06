@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.116 2008/01/05 13:48:18 yooden Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.117 2008/03/06 17:24:22 edg Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -881,7 +881,6 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     window->fileGid = 0;
     CLEAR_ALL_LOCKS(window->lockReasons);
     retVal = doSave(window);
-    UpdateWindowTitle(window);
     UpdateWindowReadOnly(window);
     RefreshTabState(window);
     
@@ -896,7 +895,8 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     }
     window->filenameSet = True;
     
-    /* Update the stats line with the new filename */
+    /* Update the stats line and window title with the new filename */
+    UpdateWindowTitle(window);
     UpdateStatsLine(window);
 
     SortTabBar(window);
