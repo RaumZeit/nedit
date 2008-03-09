@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.88 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.89 2008/03/09 12:07:19 yooden Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -3421,8 +3421,16 @@ void SelectToMatchingCharacter(WindowInfo *window)
     startPos = (matchPos > selStart) ? selStart : matchPos;
     endPos = (matchPos > selStart) ? matchPos : selStart;
 
+    /* temporarily shut off autoShowInsertPos before setting the cursor
+       position so MakeSelectionVisible gets a chance to place the cursor
+       string at a pleasing position on the screen (otherwise, the cursor would
+       be automatically scrolled on screen and MakeSelectionVisible would do
+       nothing) */
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, NULL);
     /* select the text between the matching characters */
     BufSelect(buf, startPos, endPos+1);
+    MakeSelectionVisible(window, window->lastFocus);
+    XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, NULL);
 }
 
 void GotoMatchingCharacter(WindowInfo *window)
