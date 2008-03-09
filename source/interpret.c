@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.51 2008/03/09 16:34:51 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.52 2008/03/09 18:58:45 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -785,14 +785,25 @@ Symbol *PromoteToGlobal(Symbol *sym)
     }
     
     /* There are two scenarios which could make this check succeed:
-       - this sym is in the GlobalSymList as a LOCAL_SYM symbol
-       - there is another symbol as a non-LOCAL_SYM in the GlobalSymList
+       a) this sym is in the GlobalSymList as a LOCAL_SYM symbol
+       b) there is another symbol as a non-LOCAL_SYM in the GlobalSymList
        Both are errors, without question.
        We currently just print this warning, but we should error out the
        parsing process. */
-    if (NULL != LookupSymbol(sym->name)) {
+    s = LookupSymbol(sym->name);
+    if (sym == s) {
+        /* case a)
+           just make this symbol a GLOBAL_SYM symbol and return */
         fprintf(stderr,
                 "nedit: To boldly go where no local sym has gone before: %s\n",
+                sym->name);
+        sym->type = GLOBAL_SYM;
+        return sym;
+    } else if (NULL != s) {
+        /* case b)
+           sym will shadow the old symbol from the GlobalSymList */
+        fprintf(stderr,
+                "nedit: duplicate symbol in LocalSymList and GlobalSymList: %s\n",
                 sym->name);
     }
 
