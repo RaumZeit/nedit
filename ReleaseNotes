@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.61 2008/03/06 17:24:22 edg Exp $
+$Id: ReleaseNotes,v 1.62 2008/03/09 16:34:51 lebert Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,6 +22,9 @@ New Features in $NEXT_VERSION
 
 
 Bugs fixed in $NEXT_VERSION
+
+  - Fix multiple memory leaks in interpret.c:PromoteToGlobal()
+    (SF bug #1894726)
 
   - Fix for SF bug #1908890: window title not updated.
 

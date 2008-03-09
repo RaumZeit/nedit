@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.50 2008/03/01 15:26:39 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.51 2008/03/09 16:34:51 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -758,11 +758,16 @@ Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value)
 /*
 ** Promote a symbol from local to global, removing it from the local symbol
 ** list.
+**
+** This is used as a forward declaration feature for macro functions.
+** If a function is called (ie while parsing the macro) where the
+** function isn't defined yet, the symbol is put into the GlobalSymList
+** so that the function definition uses the same symbol.
+**
 */
 Symbol *PromoteToGlobal(Symbol *sym)
 {
     Symbol *s;
-    static DataValue noValue = {NO_TAG, {0}};
 
     if (sym->type != LOCAL_SYM)
 	return sym;
@@ -779,10 +784,29 @@ Symbol *PromoteToGlobal(Symbol *sym)
 	}
     }
     
-    s = LookupSymbol(sym->name);
-    if (s != NULL)
-	return s;
-    return InstallSymbol(sym->name, GLOBAL_SYM, noValue);
+    /* There are two scenarios which could make this check succeed:
+       - this sym is in the GlobalSymList as a LOCAL_SYM symbol
+       - there is another symbol as a non-LOCAL_SYM in the GlobalSymList
+       Both are errors, without question.
+       We currently just print this warning, but we should error out the
+       parsing process. */
+    if (NULL != LookupSymbol(sym->name)) {
+        fprintf(stderr,
+                "nedit: To boldly go where no local sym has gone before: %s\n",
+                sym->name);
+    }
+
+    /* Add the symbol directly to the GlobalSymList, because InstallSymbol()
+       will allocate a new Symbol, which results in a memory leak of sym.
+       Don't use MACRO_FUNCTION_SYM as type, because in
+       macro.c:readCheckMacroString() we use ProgramFree() for the .val.prog,
+       but this symbol has no program attached and ProgramFree() is not NULL
+       pointer safe */
+    sym->type = GLOBAL_SYM;
+    sym->next = GlobalSymList;
+    GlobalSymList = sym;
+
+    return sym;
 }
 
 /*
