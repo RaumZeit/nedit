@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.52 2008/03/09 18:58:45 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.53 2008/03/09 19:29:38 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -165,10 +165,10 @@ static Symbol *GlobalSymList = NULL;
 /* List of all memory allocated for strings */
 static char *AllocatedStrings = NULL;
 
-typedef struct {
+typedef struct SparseArrayEntryWrapperTag {
     SparseArrayEntry 	data; /* LEAVE this as top entry */
     int inUse;              /* we use pointers to the data to refer to the entire struct */
-    struct SparseArrayEntryWrapper *next;
+    struct SparseArrayEntryWrapperTag *next;
 } SparseArrayEntryWrapper;
 
 static SparseArrayEntryWrapper *AllocatedSparseArrayEntries = NULL; 
@@ -931,7 +931,7 @@ static SparseArrayEntry *allocateSparseArrayEntry(void)
     SparseArrayEntryWrapper *mem;
 
     mem = (SparseArrayEntryWrapper *)XtMalloc(sizeof(SparseArrayEntryWrapper));
-    mem->next = (struct SparseArrayEntryWrapper *)AllocatedSparseArrayEntries;
+    mem->next = AllocatedSparseArrayEntries;
     AllocatedSparseArrayEntries = mem;
 #ifdef TRACK_GARBAGE_LEAKS
     ++numAllocatedSparseArrayElements;
@@ -961,7 +961,7 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr)
                 }
             }
             else if (globalSEUse->value.tag == ARRAY_TAG) {
-                MarkArrayContentsAsUsed((SparseArrayEntry *)globalSEUse->value.val.arrayPtr);
+                MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
             }
         }
     }
@@ -985,7 +985,7 @@ void GarbageCollectStrings(void)
     }
     
     for (thisAP = AllocatedSparseArrayEntries;
-        thisAP != NULL; thisAP = (SparseArrayEntryWrapper *)thisAP->next) {
+        thisAP != NULL; thisAP = thisAP->next) {
         thisAP->inUse = 0;
     }
 
@@ -999,7 +999,7 @@ void GarbageCollectStrings(void)
             }
         }
         else if (s->value.tag == ARRAY_TAG) {
-            MarkArrayContentsAsUsed((SparseArrayEntry *)s->value.val.arrayPtr);
+            MarkArrayContentsAsUsed(s->value.val.arrayPtr);
         }
     }
 
@@ -1025,16 +1025,16 @@ void GarbageCollectStrings(void)
     AllocatedSparseArrayEntries = NULL;
     while (nextAP != NULL) {
         thisAP = nextAP;
-        nextAP = (SparseArrayEntryWrapper *)nextAP->next;
+        nextAP = nextAP->next;
         if (thisAP->inUse != 0) {
-            thisAP->next = (struct SparseArrayEntryWrapper *)AllocatedSparseArrayEntries;
+            thisAP->next = AllocatedSparseArrayEntries;
             AllocatedSparseArrayEntries = thisAP;
         }
         else {
 #ifdef TRACK_GARBAGE_LEAKS
             --numAllocatedSparseArrayElements;
 #endif
-            XtFree((void *)thisAP);
+            XtFree((char *)thisAP);
         }
     }
 
@@ -2315,9 +2315,9 @@ static void arrayDisposeNode(rbTreeNode *src)
     src->color = -1;
 }
 
-struct SparseArrayEntry *ArrayNew(void)
+SparseArrayEntry *ArrayNew(void)
 {
-	return((struct SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator));
+	return((SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator));
 }
 
 /*
@@ -2641,7 +2641,7 @@ static int beginArrayIter(void)
         return(execError("can't iterate non-array", NULL));
     }
 
-    iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateFirst(&arrayVal);
+    iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
     return(STAT_OK);
 }
 
@@ -2704,13 +2704,13 @@ static int arrayIter(void)
         return(execError("bad temporary iterator: %s",  iterator->name));
     }
 
-    thisEntry = (SparseArrayEntry *)iteratorValPtr->val.arrayPtr;
+    thisEntry = iteratorValPtr->val.arrayPtr;
     if (thisEntry && thisEntry->nodePtrs.color != -1) {
         itemValPtr->tag = STRING_TAG;
         itemValPtr->val.str.rep = thisEntry->key;
         itemValPtr->val.str.len = strlen(thisEntry->key);
         
-        iteratorValPtr->val.arrayPtr = (struct SparseArrayEntry *)arrayIterateNext(thisEntry);
+        iteratorValPtr->val.arrayPtr = arrayIterateNext(thisEntry);
     }
     else {
         PC = branchAddr;

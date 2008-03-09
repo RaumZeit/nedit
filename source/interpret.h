@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.20 2007/01/12 16:17:42 tringali Exp $ */
+/* $Id: interpret.h,v 1.21 2008/03/09 19:29:38 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *
@@ -57,6 +57,7 @@ enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
 #define ARRAY_DIM_SEP "\034"
 
 struct DataValueTag;
+struct SparseArrayEntryTag;
 struct ProgramTag;
 struct SymbolRec;
 
@@ -84,11 +85,11 @@ typedef struct DataValueTag {
         XtActionProc xtproc;
         Inst* inst;
         struct DataValueTag* dataval;
-        struct SparseArrayEntry *arrayPtr;
+        struct SparseArrayEntryTag *arrayPtr;
     } val;
 } DataValue;
 
-typedef struct {
+typedef struct SparseArrayEntryTag {
     rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
     char *key;
     DataValue value;
@@ -121,7 +122,7 @@ void InitMacroGlobals(void);
 
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
-struct SparseArrayEntry *ArrayNew(void);
+SparseArrayEntry *ArrayNew(void);
 Boolean ArrayInsert(DataValue* theArray, char* keyStr, DataValue* theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
