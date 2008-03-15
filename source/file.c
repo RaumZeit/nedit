@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.117 2008/03/06 17:24:22 edg Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.118 2008/03/15 14:43:08 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -113,7 +113,9 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 {
     char name[MAXPATHLEN];
     WindowInfo *window;
-    
+    size_t pathlen;
+    char *path;
+
     /*... test for creatability? */
     
     /* Find a (relatively) unique name for the new file */
@@ -124,9 +126,29 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 	window = CreateDocument(inWindow, name);
     else 
 	window = CreateWindow(name, geometry, iconic);
-	
+
+    path = window->path;
     strcpy(window->filename, name);
-    strcpy(window->path, defaultPath ? defaultPath : "");
+    strcpy(path, (defaultPath && *defaultPath) ? defaultPath : GetCurrentDir());
+    pathlen = strlen(window->path);
+#ifndef VMS
+    /* do we have a "/" at the end? if not, add one */
+    if (0 < pathlen && path[pathlen - 1] != '/' && pathlen < MAXPATHLEN - 1) {
+        strcpy(&path[pathlen], "/");
+    }
+#else /* VMS */
+    /* A logical name should be followed by a colon so that the filename can
+       be added to it to make a full file specification; otherwise a directory
+       path had the form
+         device_or_logicalname:[dir.dir.dir]
+       this requires no separator before the file name.
+     */
+    if (0 < pathlen && strchr(":]", path[pathlen - 1]) == NULL) {
+        strcpy(&path[pathlen], ":"); /* could not find a separator at end */
+    }
+    /* TODO: is this enough for VMS? what of posix emulation? */
+    /* TODO: what about other platforms? */
+#endif /* VMS */
     SetWindowModified(window, FALSE);
     CLEAR_ALL_LOCKS(window->lockReasons);
     UpdateWindowReadOnly(window);
