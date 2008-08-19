@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: help.c,v 1.106 2007/12/29 00:51:50 yooden Exp $";
+static const char CVSID[] = "$Id: help.c,v 1.107 2008/08/19 22:24:41 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *
@@ -112,11 +112,11 @@ static int LastSearchWasAllTopics = False;
 static enum helpFonts StyleFonts[] =
 {
     /* Fixed fonts, styles: 'A', 'B', 'C', 'D' */
-    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
+    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT,
     BOLD_ITALIC_FIXED_HELP_FONT,
 
     /* Underlined fixed fonts, styles: 'E', 'F', 'G', 'H' */
-    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
+    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT,
     BOLD_ITALIC_FIXED_HELP_FONT,
 
     /* Normal (proportional) fonts, styles: 'I', 'J', 'K', 'L' */
