@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.158 2008/01/14 20:39:20 edg Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.159 2008/08/20 14:57:35 lebert Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1509,7 +1509,7 @@ void ImportPrefFile(const char *filename, int convertOld)
     XrmDatabase db;
     char *fileString;
     
-    fileString = ReadAnyTextFile(filename);
+    fileString = ReadAnyTextFile(filename, False);
     if (fileString != NULL){
         db = XrmGetStringDatabase(fileString);
         XtFree(fileString);

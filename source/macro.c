@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: macro.c,v 1.115 2007/10/04 16:04:25 ajbj Exp $";
+static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *
@@ -784,7 +784,10 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
     int result;
     char *fileString;
 
-    fileString = ReadAnyTextFile(fileName);
+    /* read-in macro file and force a terminating \n, to prevent syntax
+    ** errors with statements on the last line
+    */
+    fileString = ReadAnyTextFile(fileName, True);
     if (fileString == NULL){
         if (errno != ENOENT || warnNotExist)
         {

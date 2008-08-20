@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: fileUtils.c,v 1.34 2007/12/31 11:12:44 yooden Exp $";
+static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert Exp $";
 /*******************************************************************************
 *									       *
 * fileUtils.c -- File utilities for Nirvana applications		       *
@@ -662,8 +662,10 @@ void ConvertToMacFileString(char *fileString, int length)
 /*
 ** Reads a text file into a string buffer, converting line breaks to 
 ** unix-style if appropriate. 
+**
+** Force a terminating \n, if this is requested
 */
-char *ReadAnyTextFile(const char *fileName)
+char *ReadAnyTextFile(const char *fileName, int forceNL)
 {
     struct stat statbuf;
     FILE *fp;
@@ -680,7 +682,10 @@ char *ReadAnyTextFile(const char *fileName)
       return NULL;
     }
     fileLen = statbuf.st_size;
-    fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
+    /* +1 = space for null
+    ** +1 = possible additional \n
+    */
+    fileString = XtMalloc(fileLen + 2);
     readLen = fread(fileString, sizeof(char), fileLen, fp);
     if (ferror(fp)) {
       XtFree(fileString);
@@ -697,6 +702,12 @@ char *ReadAnyTextFile(const char *fileName)
         ConvertFromDosFileString(fileString, &readLen, &pendingCR);
     } else if (format == MAC_FILE_FORMAT){
         ConvertFromMacFileString(fileString, readLen);
+    }
+
+    /* now, that the fileString is in Unix format, check for terminating \n */
+    if (forceNL && fileString[readLen - 1] != '\n') {
+        fileString[readLen]     = '\n';
+        fileString[readLen + 1] = '\0';
     }
 
     return fileString;

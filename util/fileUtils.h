@@ -1,4 +1,4 @@
-/* $Id: fileUtils.h,v 1.12 2004/11/09 21:58:45 yooden Exp $ */
+/* $Id: fileUtils.h,v 1.13 2008/08/20 14:57:36 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * fileUtils.h -- Nirvana Editor File Utilities Header File                     *
@@ -44,6 +44,6 @@ void ConvertFromDosFileString(char *inString, int *length,
 void ConvertFromMacFileString(char *fileString, int length);
 int ConvertToDosFileString(char **fileString, int *length);
 void ConvertToMacFileString(char *fileString, int length);
-char *ReadAnyTextFile(const char *fileName);
+char *ReadAnyTextFile(const char *fileName, int forceNL);
 
 #endif /* NEDIT_FILEUTILS_H_INCLUDED */
