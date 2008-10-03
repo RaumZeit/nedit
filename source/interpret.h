@@ -1,4 +1,4 @@
-/* $Id: interpret.h,v 1.21 2008/03/09 19:29:38 lebert Exp $ */
+/* $Id: interpret.h,v 1.22 2008/10/03 14:34:55 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *
@@ -31,7 +31,6 @@
 #include "nedit.h"
 #include "rbTree.h"
 
-#define MAX_ARGS 9  	    	/* Maximum number of subroutine arguments */
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
 #define MACRO_EVENT_MARKER 2 	/* Special value for the send_event field of

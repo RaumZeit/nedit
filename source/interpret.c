@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.53 2008/03/09 19:29:38 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.54 2008/10/03 14:34:55 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1977,7 +1977,7 @@ static int callSubroutine(void)
     ** Call an action routine
     */
     if (sym->type == ACTION_ROUTINE_SYM) {
-    	String argList[MAX_ARGS];
+        String *argList;
     	Cardinal numArgs = nArgs;
     	XKeyEvent key_event;
 	Display *disp;
@@ -1999,6 +1999,7 @@ static int callSubroutine(void)
         key_event.display=disp;
         key_event.window=key_event.root=key_event.subwindow=win;
     
+        argList = (String *)XtCalloc(nArgs, sizeof(*argList));
 	/* pop arguments off the stack and put them in the argument list */
 	for (i=nArgs-1; i>=0; i--) {
     	    POP_STRING(argList[i])
@@ -2008,6 +2009,7 @@ static int callSubroutine(void)
     	PreemptRequest = False;
     	sym->value.val.xtproc(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
+        XtFree((char *)argList);
     	if (PC->func == fetchRetVal) {
     	    return execError("%s does not return a value", sym->name);
         }
