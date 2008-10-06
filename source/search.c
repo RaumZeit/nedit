@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: search.c,v 1.89 2008/03/09 12:07:19 yooden Exp $";
+static const char CVSID[] = "$Id: search.c,v 1.90 2008/10/06 04:40:42 ajbj Exp $";
 /*******************************************************************************
 *									       *
 * search.c -- Nirvana Editor search and replace functions		       *
@@ -2750,7 +2750,8 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 {
     int startPos, endPos;
     int beginPos, cursorPos, selStart, selEnd;
-    
+    int movedFwd = 0;
+
     /* Save a copy of searchString in the search history */
     saveSearchHistory(searchString, NULL, searchType, FALSE);
         
@@ -2760,9 +2761,10 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
     	    &selStart, &selEnd, NULL, NULL)) {
     	/* selection matches search string, start before or after sel.	*/
 	if (direction == SEARCH_BACKWARD) {
-	    beginPos = selStart-1;
+	    beginPos = selStart - 1;
 	} else {
             beginPos = selStart + 1;
+            movedFwd = 1;
 	}
     } else {
     	selStart = -1; selEnd = -1;
@@ -2794,11 +2796,13 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction==SEARCH_FORWARD && beginPos==startPos && beginPos==endPos)
-    	if (!SearchWindow(window, direction, searchString, searchType, searchWrap,
-    		beginPos+1, &startPos, &endPos, NULL, NULL))
+    if (direction==SEARCH_FORWARD && beginPos==startPos && beginPos==endPos) {
+        if (!movedFwd &&
+            !SearchWindow(window, direction, searchString, searchType,
+                searchWrap, beginPos+1, &startPos, &endPos, NULL, NULL))
     	    return FALSE;
-    
+    }
+
     /* if matched text is already selected, just beep */
     if (selStart==startPos && selEnd==endPos) {
     	XBell(TheDisplay, 0);
