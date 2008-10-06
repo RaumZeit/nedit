@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.54 2008/10/03 14:34:55 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -450,9 +450,9 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr)
     	if (*LoopStackPtr == NULL)
     	    break;
     	if ((*LoopStackPtr)->value == NEEDS_BREAK)
-    	    **(Inst ***)LoopStackPtr = (Inst *)(breakAddr - *LoopStackPtr);
+            (*LoopStackPtr)->value = breakAddr - *LoopStackPtr;
     	else if ((*LoopStackPtr)->value == NEEDS_CONTINUE)
-    	    **(Inst ***)LoopStackPtr = (Inst *)(continueAddr - *LoopStackPtr);
+            (*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
     	else
     	    fprintf(stderr, "NEdit: internal error (uat) in macro parser\n");
     }
