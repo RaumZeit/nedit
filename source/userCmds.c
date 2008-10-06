@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.56 2007/10/02 15:47:09 tringali Exp $";
+static const char CVSID[] = "$Id: userCmds.c,v 1.56.2.1 2008/10/06 11:37:24 lebert Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
@@ -2709,6 +2709,11 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
    	while (*inPtr == ' ' || *inPtr == '\t')
    	    inPtr++;
    	
+        /* end of string in proper place */
+        if (*inPtr == '\0') {
+            return True;
+        }
+
    	/* read name field */
    	nameLen = strcspn(inPtr, ":");
 	if (nameLen == 0)
@@ -2828,9 +2833,6 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
 	if (i == *nItems)
 	    menuItems[(*nItems)++] = f;
     	
-    	/* end of string in proper place */
-    	if (*inPtr == '\0')
-    	    return True;
     }
 }
 
