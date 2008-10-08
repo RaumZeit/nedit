@@ -1,6 +1,6 @@
-                    NEdit Version 5.5, October 2004
+                    NEdit Version 5.6, October 2008
 
-$Id: README,v 1.49 2006/11/22 21:16:55 yooden Exp $
+$Id: README,v 1.49.2.1 2008/10/08 14:16:59 tringali Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -64,16 +64,9 @@ John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou,
 Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.
 
 
-VERSION 5.5
+VERSION 5.6
 
-Version 5.5 offers one major new feature along with a few others:
-
-  - Tabbed Windows  (How long has this been on the wish list?  :-)
-  - A menu item for enabling auto-scrolling
-  - Find and Clear buttons for the interactive search bar
-  - Improved Latex & Python syntax highlighting patterns
-  - Superuser receives a warning when trying to overwrite a read-only file
-  - Various bug fixes and performance improvements
+Version 5.6 is a maintenance release.
 
 See the ReleaseNotes file for a more detailed description of these new features
 and a list of bugs fixed in this version.
