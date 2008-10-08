@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.40 2006/12/02 10:27:06 yooden Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.41 2008/10/08 08:37:41 lebert Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -749,6 +749,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg,
     	    &stoppedAt);
     if (winData->newlineMacro == NULL) {
+        XtFree((char *)winData);
     	ParseError(window->shell, indentMacros->newlineMacro, stoppedAt,
     	    	"newline macro", errMsg);
     	return;
@@ -759,6 +760,8 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     	winData->modMacro = ParseMacro(indentMacros->modMacro, &errMsg,
     	    	&stoppedAt);
     	if (winData->modMacro == NULL) {
+            FreeProgram(winData->newlineMacro);
+            XtFree((char *)winData);
     	    ParseError(window->shell, indentMacros->modMacro, stoppedAt,
     	    	    "smart indent modify macro", errMsg);
     	    return;
