@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: file.c,v 1.118 2008/03/15 14:43:08 ajbj Exp $";
+static const char CVSID[] = "$Id: file.c,v 1.119 2008/11/05 09:09:44 lebert Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *
@@ -2060,6 +2060,13 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
         filePos += nRead;
         
         nRead += offset;
+
+        /* check for on-disk file format changes, but only for the first hunk */
+        if (bufPos == 0 && fileFormat != FormatOfFile(fileString)) {
+            fclose(fp);
+            AllWindowsUnbusy();
+            return (1);
+        }
 
         if (fileFormat == MAC_FILE_FORMAT)
             ConvertFromMacFileString(fileString, nRead);
