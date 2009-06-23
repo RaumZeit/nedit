@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.6, October 2008
 
 
-$Id: ReleaseNotes,v 1.63.2.3 2008/11/05 09:17:20 lebert Exp $
+$Id: ReleaseNotes,v 1.63.2.4 2009/06/23 21:28:12 lebert Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,6 +22,8 @@ New Features in 5.6
 
 
 Bugs fixed in 5.6
+
+  - Fix for SF bug #2687525: tipsfile parser error wrt to eof
 
   - Fix for SF bug #2222159: File was not reload when type was changed
     externaly

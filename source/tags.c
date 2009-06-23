@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: tags.c,v 1.70 2008/03/01 22:18:06 lebert Exp $";
+static const char CVSID[] = "$Id: tags.c,v 1.70.2.1 2009/06/23 21:28:12 lebert Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -1811,9 +1811,9 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         if (incPos < 0) 
             return TF_ERROR;
         /* Figure out how long the block is */
-        while((status=fgets(line, MAXLINE, fp))) {
+        while((status=fgets(line, MAXLINE, fp)) || feof(fp)) {
             ++(*currLine);
-            if(lineEmpty( line )) 
+            if(feof(fp) || lineEmpty( line ))
                 break;
         }
         incLen = ftell(fp) - incPos;
