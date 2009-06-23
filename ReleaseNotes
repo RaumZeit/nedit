@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.64 2008/11/05 09:12:31 lebert Exp $
+$Id: ReleaseNotes,v 1.65 2009/06/23 21:03:12 lebert Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -25,6 +25,8 @@ Bugs fixed in $NEXT_VERSION
 
   - Fix for SF bug #2222159: File was not reload when type was changed
     externaly
+
+  - Fix for SF bug #2149312: parse error with zero menu entries.
 
   - Force a terminating \n on macro file load time, to prevent syntax errors
     with statements on the last line. (util/fileUtils.c:ReadMacroFile())
