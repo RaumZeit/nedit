@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.66 2009/06/23 21:30:09 lebert Exp $
+$Id: ReleaseNotes,v 1.67 2009/09/14 19:18:23 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,6 +22,8 @@ New Features in $NEXT_VERSION
 
 
 Bugs fixed in $NEXT_VERSION
+
+  - Fix for SF bug #2858723: off-by-one error causing a crash
 
   - Fix for SF bug #2687525: tipsfile parser error wrt to eof
 
