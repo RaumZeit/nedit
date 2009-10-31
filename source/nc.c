@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.48 2007/11/29 22:18:48 tringali Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.48.2.1 2009/10/31 11:32:31 lebert Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -997,7 +997,7 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
 /* Print version of 'nc' */
 static void printNcVersion(void ) {
    static const char *const ncHelpText = \
-   "nc (NEdit) Version 5.5 (October 2004)\n\n\
+   "nc (NEdit) Version 5.6 (November 2009)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
      
