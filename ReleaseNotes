@@ -1,7 +1,7 @@
-          Release Notes for NEdit Version 5.6, October 2008
+          Release Notes for NEdit Version 5.6, November 2009
 
 
-$Id: ReleaseNotes,v 1.63.2.4 2009/06/23 21:28:12 lebert Exp $
+$Id: ReleaseNotes,v 1.63.2.5 2009/10/31 20:32:46 edg Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -19,6 +19,8 @@ New Features in 5.6
 
   - The new macro function filename_dialog() can be used to query a file
     name from the user by using the usual file selection dialog.
+
+  - The Python syntax highlighting patterns have been updated to Python 2.6.
 
 
 Bugs fixed in 5.6
