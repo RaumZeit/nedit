@@ -1,4 +1,4 @@
-.. $Id: help.etx,v 1.111 2008/02/19 22:31:51 ajbj Exp $
+.. $Id: help.etx,v 1.111.2.1 2009/11/07 13:52:30 lebert Exp $
 .. NOTE: Remember to supply 'version' variable on setext command line.
 ..       For example,  setext -m -v "version=NEdit Version 6.0".
 ..
@@ -34,13 +34,13 @@ Table of Contents
       Cut_and_Paste_                       Macro_Language_
       Using_the_Mouse_                     Macro_Subroutines_
       Keyboard_Shortcuts_                  Highlighting_Information_
-      Shifting_and_Filling_                Range_Sets_
+      Shifting_and_Filling_                Rangesets_
       Tabbed_Editing_                      Action_Routines_
       File_Format_
                                         Customizing
     Features for Programming              Customizing_NEdit_
       Programming_with_NEdit_              Preferences_
-      Tabs/Emulated_Tabs_                  X_Resources_
+      Tab_Stops/Emulated_Tab_Stops_        X_Resources_
       Auto/Smart_Indent_                   Key_Binding_
       Syntax_Highlighting_                 Highlighting_Patterns_
       Finding_Declarations_(ctags)_        Smart_Indent_Macros_
@@ -861,7 +861,7 @@ Programming with NEdit
   Though general in appearance, NEdit has many features intended specifically
   for programmers.  Major programming-related topics are listed in separate
   sections under the heading: "Features for Programming": Syntax_Highlighting_,
-  Tabs/Emulated_Tabs_, Finding_Declarations_(ctags)_, Calltips_, and
+  Tab_Stops/Emulated_Tab_Stops_, Finding_Declarations_(ctags)_, Calltips_, and
   Auto/Smart_Indent_.  Minor topics related to programming are discussed below:
 
 3>Language Modes
@@ -961,15 +961,15 @@ Programming with NEdit
   available in the NEdit contrib directory on ftp.nedit.org.
    ----------------------------------------------------------------------
 
-Tabs/Emulated Tabs
+Tab Stops/Emulated Tab Stops
 ------------------
 
-3>Changing the Tab Distance
+3>Changing the Tab Stop Distance
 
-  Tabs are important for programming in languages which use indentation to show
-  nesting, as short-hand for producing white-space for leading indents.  As a
-  programmer, you have to decide how to use indentation, and how or whether tab
-  characters map to your indentation scheme.
+  Tab stops are important for programming in languages which use indentation to
+  show nesting, as short-hand for producing white-space for leading indents.
+  As a programmer, you have to decide how to use indentation, and how or whether
+  tab characters map to your indentation scheme.
 
   Ideally, tab characters map directly to the amount of indent that you use to
   distinguish nesting levels in your code.  Unfortunately, the Unix standard
@@ -979,26 +979,26 @@ Tabs/Emulated Tabs
 
   Most text editors, NEdit included, allow you to change the interpretation of
   the tab character, and many programmers take advantage of this, and set their
-  tabs to 3 or 4 characters to match their programming style.  In NEdit you set
-  the hardware tab distance in Preferences -> Tabs... for the current window,
-  or Preferences -> Default Settings -> Tabs... (general), or Preferences ->
-  Default Settings -> Language Modes... (language-specific) to change the
-  defaults for future windows.
+  tab stops to 3 or 4 characters to match their programming style.  In NEdit you
+  set the hardware tab distance in Preferences -> Tab Stops... for the current
+  window, or Preferences -> Default Settings -> Tab Stops... (general), or
+  Preferences -> Default Settings -> Language Modes... (language-specific) to
+  change the defaults for future windows.
 
   Changing the meaning of the tab character makes programming much easier while
   you're in the editor, but can cause you headaches outside of the editor,
   because there is no way to pass along the tab setting as part of a plain-text
   file.  All of the other tools which display, print, and otherwise process
-  your source code have to be made aware of how the tabs are set, and must be
-  able to handle the change.  Non-standard tabs can also confuse other
+  your source code have to be made aware of how the tab stops are set, and must
+  be able to handle the change.  Non-standard tab stops can also confuse other
   programmers, or make editing your code difficult for them if their text
-  editors don't support changes in tab distance.
+  editors don't support changes in tab stop distance.
 
-3>Emulated Tabs
+3>Emulated Tab Stops
 
-  An alternative to changing the interpretation of the tab character is tab
-  emulation.  In the Tabs... dialog(s), turning on Emulated Tabs causes the Tab
-  key to insert the correct number of spaces and/or tabs to bring the cursor
+  An alternative to changing the interpretation of the tab character is tab stop
+  emulation.  In the Tab Stops... dialog(s), turning on Emulated Tabs causes the
+  Tab key to insert the correct number of spaces and/or tabs to bring the cursor
   the next emulated tab stop, as if tabs were set at the emulated tab distance
   rather than the hardware tab distance. Backspacing immediately after entering
   an emulated tab will delete the fictitious tab as a unit, but as soon as you
@@ -2366,7 +2366,7 @@ Macro Subroutines
   Width of the current pane in pixels.
 
 **$em_tab_dist**
-  If tab emulation is turned on in the Tabs...
+  If tab stop emulation is turned on in the Tab Stops...
   dialog of the Preferences menu, the value is the
   distance between emulated tab stops. If tab
   emulation is turned off, the value is 0.
@@ -2482,7 +2482,7 @@ Macro Subroutines
 **$tab_dist**
   The distance between tab stops for a
   hardware tab character, as set in the
-  Tabs... dialog of the Preferences menu.
+  Tab Stops... dialog of the Preferences menu.
 
 **$text_length**
   The length of the text in the current document.
@@ -2493,8 +2493,8 @@ Macro Subroutines
 **$use_tabs**
   Whether the user is allowing the NEdit to insert tab characters to maintain
   spacing in tab emulation and rectangular dragging operations. (The setting of
-  the "Use tab characters in padding and emulated tabs" button in the Tabs...
-  dialog of the Preferences menu.)
+  the "Use tab characters in padding and emulated tabs" button in the
+  Tab Stops... dialog of the Preferences menu.)
 
 **$wrap_margin**
   The right margin in the current window for text wrapping and filling.
@@ -5846,7 +5846,7 @@ Problems/Defects
 
 .. Menu: Features for Programming           # features
 .. Menu:   Programming with NEdit           # programmer
-.. Menu:   Tabs/Emulated Tabs               # tabs
+.. Menu:   Tab Stops/Emulated Tab Stops     # tabs
 .. Menu:   Auto/Smart Indent                # indent
 .. Menu:   Syntax Highlighting              # syntax
 .. Menu:   Finding Declarations (ctags)     # tags
