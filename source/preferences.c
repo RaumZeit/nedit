@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: preferences.c,v 1.159 2008/08/20 14:57:35 lebert Exp $";
+static const char CVSID[] = "$Id: preferences.c,v 1.159.2.1 2009/11/07 13:16:56 lebert Exp $";
 /*******************************************************************************
 *									       *
 * preferences.c -- Nirvana Editor preferences processing		       *
@@ -1519,9 +1519,8 @@ void ImportPrefFile(const char *filename, int convertOld)
         ImportedFile = XtNewString(filename);
     } else
     {
-        fprintf(stderr, "Could not read additional preferences file: ");
-        fprintf(stderr, filename);
-        fprintf(stderr, "\n");
+        fprintf(stderr, "Could not read additional preferences file: %s\n",
+                filename);
     }
 }
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.33 2008/02/29 23:12:26 lebert Exp $";
+static const char CVSID[] = "$Id: regularExp.c,v 1.33.2.1 2009/11/07 13:16:57 lebert Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *
@@ -2656,7 +2656,7 @@ static struct brace_counts *Brace;
 
 /* Default table for determining whether a character is a word delimiter. */
 
-static unsigned char  Default_Delimiters [UCHAR_MAX] = {0};
+static unsigned char  Default_Delimiters [UCHAR_MAX+1] = {0};
 
 static unsigned char *Current_Delimiters;  /* Current delimiter table */
 

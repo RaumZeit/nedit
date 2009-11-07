@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.17 2008/01/04 22:11:05 yooden Exp $ */
+/* $Id: utils.h,v 1.17.2.1 2009/11/07 13:16:57 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * utils.h -- Nirvana Editor Utilities Header File                              *
@@ -29,6 +29,7 @@
 #define NEDIT_UTILS_H_INCLUDED
 
 #include <sys/utsname.h>
+#include <sys/types.h>
 
 #ifdef VMS
 #include "vmsparam.h"
