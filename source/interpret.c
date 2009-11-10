@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.54.2.1 2009/11/07 13:16:56 lebert Exp $";
+static const char CVSID[] = "$Id: interpret.c,v 1.54.2.2 2009/11/10 07:40:31 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -1369,11 +1369,10 @@ static int assign(void)
     POP(value)
 
     if (value.tag == ARRAY_TAG) {
-        ArrayCopy(dataPtr, &value);
+       return ArrayCopy(dataPtr, &value);
     }
-    else {
-        *dataPtr = value;
-    }
+
+    *dataPtr = value;
     return STAT_OK;
 }
 
