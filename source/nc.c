@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nc.c,v 1.48.2.1 2009/10/31 11:32:31 lebert Exp $";
+static const char CVSID[] = "$Id: nc.c,v 1.48.2.2 2009/11/30 20:21:18 lebert Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *
@@ -706,6 +706,8 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 	    /* Use VMS's LIB$FILESCAN for filename in argv[i] to process */
 	    /* wildcards and to obtain a full VMS file specification     */
 	    numFiles = VMSFileScan(argv[i], &nameList, NULL, INCLUDE_FNF);
+            /* Should we warn the user if he provided a -line or -do switch
+               and a wildcard pattern that expands to more than one file?  */
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
 	    	oldLength = outPtr-commandString;
@@ -794,12 +796,15 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     	    strcpy(outPtr, geometry);
     	    outPtr += strlen(geometry);
     	    *outPtr++ = '\n';
-	    toDoCommand = "";
 
             /* Create the file open atoms for the paths supplied */
             addToFileList(path);
 	    fileCount++;
 #endif /* VMS */
+
+            /* These switches only affect the next filename argument, not all */
+            toDoCommand = "";
+            lineNum = 0;
     	}
     }
 #ifdef VMS

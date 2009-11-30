@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.100 2007/11/29 22:18:09 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.100.2.1 2009/11/30 20:21:18 lebert Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -648,6 +648,8 @@ int main(int argc, char **argv)
 	    /* Use VMS's LIB$FILESCAN for filename in argv[i] to process */
 	    /* wildcards and to obtain a full VMS file specification     */
 	    numFiles = VMSFileScan(argv[i], &nameList, NULL, INCLUDE_FNF);
+            /* Should we warn the user if he provided a -line or -do switch
+               and a wildcard pattern that expands to more than one file?  */
 	    /* for each expanded file name do: */
 	    for (j = 0; j < numFiles; ++j) {
 	    	if (ParseFilename(nameList[j], filename, pathname) == 0) {
@@ -762,6 +764,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 	    }
 #endif /*VMS*/
+
+            /* -line/+n does only affect the file following this switch */
+            gotoLine = False;
 	}
     }
 #ifdef VMS
