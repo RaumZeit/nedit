@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.67 2009/09/14 19:18:23 edg Exp $
+$Id: ReleaseNotes,v 1.68 2010/07/05 06:23:59 lebert Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -22,6 +22,9 @@ New Features in $NEXT_VERSION
 
 
 Bugs fixed in $NEXT_VERSION
+
+  - Fix raising of windows from within nedit (e.g. when opening an already
+    opened document with nc). Patch is SF patch #2337783.
 
   - Fix for SF bug #2858723: off-by-one error causing a crash
 
