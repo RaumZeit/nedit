@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: misc.c,v 1.88 2008/01/04 22:11:05 yooden Exp $";
+static const char CVSID[] = "$Id: misc.c,v 1.88.2.1 2010/07/05 06:36:17 lebert Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *
@@ -887,6 +887,7 @@ void RaiseWindow(Display *display, Window w, Boolean focus)
             XSetInputFocus(display, w, RevertToParent, CurrentTime);	
     }
 
+    WmClientMsg(display, w, "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
     XMapRaised(display, w);
 }
 
@@ -2375,4 +2376,33 @@ int SpinClipboardUnlock(Display *display, Window window)
             "by another application.");
      */
     return res;
+}
+
+/*
+** Send a client message to a EWMH/NetWM compatible X Window Manager.
+** Code taken from wmctrl-1.07 (GPL licensed)
+*/
+void WmClientMsg(Display *disp, Window win, const char *msg,
+        unsigned long data0, unsigned long data1,
+        unsigned long data2, unsigned long data3,
+        unsigned long data4)
+{
+    XEvent event;
+    long mask = SubstructureRedirectMask | SubstructureNotifyMask;
+
+    event.xclient.type = ClientMessage;
+    event.xclient.serial = 0;
+    event.xclient.send_event = True;
+    event.xclient.message_type = XInternAtom(disp, msg, False);
+    event.xclient.window = win;
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = data0;
+    event.xclient.data.l[1] = data1;
+    event.xclient.data.l[2] = data2;
+    event.xclient.data.l[3] = data3;
+    event.xclient.data.l[4] = data4;
+
+    if (!XSendEvent(disp, DefaultRootWindow(disp), False, mask, &event)) {
+        fprintf(stderr, "nedit: cannot send %s EWMH event.\n", msg);
+    }
 }

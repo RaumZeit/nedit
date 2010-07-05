@@ -1,4 +1,4 @@
-/* $Id: misc.h,v 1.30 2008/01/04 22:11:05 yooden Exp $ */
+/* $Id: misc.h,v 1.30.2.1 2010/07/05 06:36:17 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *
@@ -138,5 +138,9 @@ int SpinClipboardRetrieve(Display *display, Window window, char *format_name,
         long *private_id);
 int SpinClipboardLock(Display *display, Window window);
 int SpinClipboardUnlock(Display *display, Window window);
+void WmClientMsg(Display *disp, Window win, const char *msg,
+        unsigned long data0, unsigned long data1,
+        unsigned long data2, unsigned long data3,
+        unsigned long data4);
 
 #endif /* NEDIT_MISC_H_INCLUDED */

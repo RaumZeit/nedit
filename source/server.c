@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: server.c,v 1.34 2007/12/31 11:12:43 yooden Exp $";
+static const char CVSID[] = "$Id: server.c,v 1.34.2.1 2010/07/05 06:36:17 lebert Exp $";
 /*******************************************************************************
 *									       *
 * server.c -- Nirvana Editor edit-server component			       *
@@ -361,6 +361,8 @@ static void processServerCommandString(char *string)
     	} 
 	else {
 	    RaiseDocument(window);
+            WmClientMsg(TheDisplay, XtWindow(window->shell),
+                    "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
     	    XMapRaised(TheDisplay, XtWindow(window->shell));
     	}
 	return;
@@ -495,8 +497,11 @@ static void processServerCommandString(char *string)
 	    if (*doCommand != '\0') {
 		RaiseDocument(window);
 
-		if (!iconicFlag)
+                if (!iconicFlag) {
+                    WmClientMsg(TheDisplay, XtWindow(window->shell),
+                            "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
 		    XMapRaised(TheDisplay, XtWindow(window->shell));
+                }
 
 		/* Starting a new command while another one is still running
 		   in the same window is not possible (crashes). */
