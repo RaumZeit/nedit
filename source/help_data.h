@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Nov 7, 2009 (Do NOT edit!)
+                 Generated on Jul 5, 2010 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2009 Mark Edel                                            *
+* Copyright (c) 1999-2010 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -4646,7 +4646,7 @@ static char * htxt_command_line [] = {
 "\01IDon't warn about file creation when a file doesn't exist. ",
 "\n\n",
 "\01A\01B-line n (or +n)\01A\n",
-"\01IGo to line number n ",
+"\01IGo to line number n in the file following this switch. ",
 "\n\n",
 "\01A\01B-server\01A\n",
 "\01IDesignate this session as an NEdit server, for processing commands from the ",
@@ -5748,4 +5748,4 @@ Href H_R [] =
     {NULL,     14799, HELP_PREFERENCES,   "Autoload Files"}
 };
 
-static const char * NEditVersion = "NEdit 5.6 (November 2009)\nNov 7, 2009\n";
+static const char * NEditVersion = "NEdit 5.6\nJul 5, 2010\n";
