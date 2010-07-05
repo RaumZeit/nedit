@@ -1,6 +1,6 @@
                     NEdit Version 5.6, July 2010
 
-$Id: README,v 1.49.2.3 2010/07/05 06:38:08 lebert Exp $
+$Id: README,v 1.49.2.4 2010/07/05 06:49:52 lebert Exp $
 
 
 NEdit is a multi-purpose text editor for the X Window System, which combines a
@@ -79,7 +79,9 @@ most major Unix and VMS systems. Check out the NEdit web page at
 
   http://nedit.org
 
-If you have downloaded a pre-built executable you can skip ahead to the section called INSTALLATION.  Otherwise, the requirements to build NEdit from the sources are: 
+If you have downloaded a pre-built executable you can skip ahead to the section
+called INSTALLATION.  Otherwise, the requirements to build NEdit from the
+sources are:
 
  - ANSI C89 system (compiler, headers, libraries)
  - make utility (eg, GNU make)
