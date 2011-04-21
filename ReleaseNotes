@@ -1,7 +1,7 @@
           Release Notes for NEdit Version 5.5, October 2004
 
 
-$Id: ReleaseNotes,v 1.68 2010/07/05 06:23:59 lebert Exp $
+$Id: ReleaseNotes,v 1.69 2011/04/21 06:43:02 lebert Exp $
 
 This file contains last minute notes to users about the release, which are not
 included in the documentation or README files included with the distribution
@@ -20,6 +20,11 @@ New Features in $NEXT_VERSION
   - The new macro function filename_dialog() can be used to query a file
     name from the user by using the usual file selection dialog.
 
+Changes in behaviour in $NEXT_VERSION
+
+  - The value of $em_tab_dist has changed when the emulation is turned off.
+    It is now 0, which was anyway a value for 'turned off'. (See SF bug
+    #1560892 and #3290514)
 
 Bugs fixed in $NEXT_VERSION
 

@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: smartIndent.c,v 1.41 2008/10/08 08:37:41 lebert Exp $";
+static const char CVSID[] = "$Id: smartIndent.c,v 1.42 2011/04/21 06:43:02 lebert Exp $";
 /*******************************************************************************
 *									       *
 * smartIndent.c -- Maintain, and allow user to edit, macros for smart indent   *
@@ -170,7 +170,7 @@ return measureIndent($1) + defaultIndent($pyIndentDist)\n", NULL},
 $caseDepth = 2\n\
 define matlabNewlineMacro\n\
 {\n\
-   if ($em_tab_dist == -1)\n\
+   if (!$em_tab_dist)\n\
         tabsize = $tab_dist\n\
    else\n\
         tabsize = $em_tab_dist\n\
@@ -324,7 +324,7 @@ define defaultIndent {\n\
 \n\
     if ($1 != \"default\")\n\
     	return $1\n\
-    if ($em_tab_dist != -1)\n\
+    if ($em_tab_dist)\n\
     	return $em_tab_dist\n\
     if ($tab_dist <= 8)\n\
     	return $tab_dist\n\
@@ -340,7 +340,7 @@ define defaultContIndent {\n\
 \n\
     if ($1 != \"default\")\n\
     	return $1\n\
-    if ($em_tab_dist != -1)\n\
+    if ($em_tab_dist)\n\
     	return $em_tab_dist * 2\n\
     if ($tab_dist <= 8)\n\
     	return $tab_dist * 2\n\
