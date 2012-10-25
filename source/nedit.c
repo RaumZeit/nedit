@@ -1,4 +1,4 @@
-static const char CVSID[] = "$Id: nedit.c,v 1.100 2007/11/29 22:18:09 tringali Exp $";
+static const char CVSID[] = "$Id: nedit.c,v 1.101 2012/10/25 14:10:25 tringali Exp $";
 /*******************************************************************************
 *									       *
 * nedit.c -- Nirvana Editor main program				       *
@@ -150,12 +150,26 @@ static char *fallbackResources[] = {
        groups the fonts into the right classes.  It's then easier for
        the user or environment to override this sensibly:
 
-       nedit -xrm '*textFontList: myfont'
+         nedit -xrm '*textFontList: myfont'
 
        This is broken in recent versions of LessTif.
+
+       If using OpenMotif 2.3.3 or better, support XFT fonts.  XFT is
+       claimed supported in OpenMotif 2.3.0, but doesn't work very well,
+       as insensitive text buttons are blank.  That bug is fixed in 2.3.3.
       */
 
-#ifdef LESSTIF_VERSION
+#if (XmVersion >= 2003 && XmUPDATE_LEVEL >= 3 && USE_XFT == 1)
+    "*buttonRenderTable:        defaultRT",
+    "*labelRenderTable:         defaultRT",
+    "*textRenderTable:          fixedRT",
+    "*defaultRT.fontType:       FONT_IS_XFT",
+    "*defaultRT.fontName:       Sans",
+    "*defaultRT.fontSize:       9",
+    "*fixedRT.fontType:         FONT_IS_XFT",
+    "*fixedRT.fontName:         Monospace",
+    "*fixedRT.fontSize:         9",
+#elif LESSTIF_VERSION
     "*FontList: "               NEDIT_DEFAULT_FONT,
     "*XmText.FontList: "        NEDIT_FIXED_FONT,
     "*XmTextField.FontList: "   NEDIT_FIXED_FONT,
