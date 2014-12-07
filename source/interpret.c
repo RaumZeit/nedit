@@ -1369,11 +1369,10 @@ static int assign(void)
     POP(value)
 
     if (value.tag == ARRAY_TAG) {
-        ArrayCopy(dataPtr, &value);
+       return ArrayCopy(dataPtr, &value);
     }
-    else {
-        *dataPtr = value;
-    }
+
+    *dataPtr = value;
     return STAT_OK;
 }
 
