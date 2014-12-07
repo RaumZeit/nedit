@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # $Id: Makefile.minix,v 1.1 2009/09/19 09:17:59 edg Exp $
-=======
-# $Id: Makefile.minix,v 1.1.2.2 2010/07/05 06:31:16 lebert Exp $
->>>>>>> remotes/origin/BETA-5-6
 # NEdit makefile for MINIX 3
 CC=/usr/gnu/bin/gcc
 AR=/usr/gnu/bin/gar
