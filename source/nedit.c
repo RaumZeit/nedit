@@ -124,13 +124,13 @@ Widget TheAppShell;
    RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
    and so reverts to "fixed".  Yech. */
 
-#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-1," \
-                                "-*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD," \
-                                "-*-helvetica-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
+#define NEDIT_DEFAULT_FONT      "-*-helvetica-medium-r-normal-*-14-*-*-*-*-*-iso8859-1," \
+                                "-*-helvetica-bold-r-normal-*-14-*-*-*-*-*-iso8859-1=BOLD," \
+                                "-*-helvetica-medium-o-normal-*-14-*-*-*-*-*-iso8859-1=ITALIC"
 
-#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-*-120-*-*-*-*-iso8859-1," \
-                                "-*-courier-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD," \
-                                "-*-courier-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
+#define NEDIT_FIXED_FONT        "-*-courier-medium-r-normal-*-14-*-*-*-*-*-iso8859-1," \
+                                "-*-courier-bold-r-normal-*-14-*-*-*-*-*-iso8859-1=BOLD," \
+                                "-*-courier-medium-o-normal-*-14-*-*-*-*-*-iso8859-1=ITALIC"
 
 #define NEDIT_DEFAULT_BG        "#b3b3b3"
 
