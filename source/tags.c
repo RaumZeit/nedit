@@ -103,7 +103,7 @@ enum searchDirection {FORWARD, BACKWARD};
 
 static int loadTagsFile(const char *tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
-        Atom *type, char *value, int *length, int *format);
+        Atom *type, char *value, unsigned long *length, int *format);
 static void setTag(tag *t, const char *name, const char *file,
                    int language, const char *searchString, int posInf, 
                    const char * tag);
@@ -953,7 +953,7 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg)
 
 /* Callback function for FindDefinition */
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
-        Atom *type, char *value, int *length, int *format)
+        Atom *type, char *value, unsigned long *length, int *format)
 {
     /* skip if we can't get the selection data, or it's obviously too long */
     if (*type == XT_CONVERT_FAIL || value == NULL) {

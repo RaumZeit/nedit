@@ -109,7 +109,7 @@ static int HistStart = 0;
 static int textFieldNonEmpty(Widget w);
 static void setTextField(WindowInfo* window, Time time, Widget textField);
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
-	Atom *type, char *value, int *length, int *format);
+	Atom *type, char *value, unsigned long *length, int *format);
 static void fFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData);
@@ -180,7 +180,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
 static int getFindDlogInfo(WindowInfo *window, int *direction,
 	char *searchString, int *searchType);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
-	Atom *type, char *value, int *length, int *format);
+	Atom *type, char *value, unsigned long *length, int *format);
 static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
         Cardinal *nArg);
 static void iSearchTextClearCB(Widget w, WindowInfo *window,
@@ -560,7 +560,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
 }    
 
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
-        Atom *type, char *value, int *length, int *format)
+        Atom *type, char *value, unsigned long *length, int *format)
 {
     WindowInfo *window = selectionInfo->window;
 
@@ -2829,7 +2829,7 @@ void SearchForSelected(WindowInfo *window, int direction, int searchType,
 }
 
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
-	Atom *type, char *value, int *length, int *format)
+	Atom *type, char *value, unsigned long *length, int *format)
 {
     WindowInfo *window = WidgetToWindow(w);
     SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;

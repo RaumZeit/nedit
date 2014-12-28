@@ -66,11 +66,11 @@ static const char CVSID[] = "$Id: selection.c,v 1.34 2008/02/26 22:21:47 ajbj Ex
 
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
-	Atom *type, char *value, int *length, int *format);
+	Atom *type, char *value, unsigned long *length, int *format);
 static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
-	Atom *type, char *value, int *length, int *format);
+	Atom *type, char *value, unsigned long *length, int *format);
 static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
-	Atom *type, char *value, int *length, int *format);
+	Atom *type, char *value, unsigned long *length, int *format);
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
     	Boolean *continueDispatch, char *action, int extend);
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -188,7 +188,7 @@ char *GetAnySelection(WindowInfo *window)
 }
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, int *length, int *format)
+    	Atom *type, char *value, unsigned long *length, int *format)
 {
      /* two integers and some space in between */
     char lineText[(TYPE_INT_STR_SIZE(int) * 2) + 5];
@@ -244,7 +244,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
 }
 
 static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, int *length, int *format)
+    	Atom *type, char *value, unsigned long *length, int *format)
 {
     char nameText[MAXPATHLEN], includeName[MAXPATHLEN];
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -371,7 +371,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 }
 
 static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
-	Atom *type, char *value, int *length, int *format)
+	Atom *type, char *value, unsigned long *length, int *format)
 {
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
