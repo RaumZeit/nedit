@@ -1197,7 +1197,7 @@ static void okAction(Widget widget, xfselControlBlkType *ctrlBlk,
     fontName    = XListFonts(XtDisplay(ctrlBlk->form), fontPattern, 1, &i);
     XtFree(fontPattern);
     
-    if (i != 1)
+    if ((fontName == NULL) || (i == 0))
     {
         DialogF (DF_ERR, ctrlBlk->okButton, 1, "Font Specification",
                 "Invalid Font Specification", "OK");
@@ -1233,7 +1233,7 @@ static void startupFont(xfselControlBlkType *ctrlBlk, const char *font)
 
     fontName = XListFonts(XtDisplay(ctrlBlk->form), font, 1, &i);
 
-    if (i == 0)
+    if ((fontName == NULL) || (i == 0))
     {           /*  invalid font passed in at startup */
         XFreeFontNames(fontName);
         return;
