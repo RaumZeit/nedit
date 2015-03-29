@@ -102,8 +102,8 @@ typedef struct _tag {
 enum searchDirection {FORWARD, BACKWARD};
 
 static int loadTagsFile(const char *tagSpec, int index, int recLevel);
-static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
-        Atom *type, char *value, unsigned long *length, int *format);
+static void findDefCB(Widget widget, XtPointer closure, Atom *sel,
+        Atom *type, XtPointer value, unsigned long *length, int *format);
 static void setTag(tag *t, const char *name, const char *file,
                    int language, const char *searchString, int posInf, 
                    const char * tag);
@@ -924,7 +924,7 @@ static void findDefinitionHelper(WindowInfo *window, Time time, const char *arg,
     {
         searchMode = search_type;
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-                (XtSelectionCallbackProc)findDefCB, window, time);
+                findDefCB, window, time);
     }
 }
 
@@ -952,9 +952,12 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg)
 }
 
 /* Callback function for FindDefinition */
-static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
-        Atom *type, char *value, unsigned long *length, int *format)
+static void findDefCB(Widget widget, XtPointer closure, Atom *sel,
+        Atom *type, XtPointer v, unsigned long *length, int *format)
 {
+    WindowInfo *window = closure;
+    char *value = v;
+    
     /* skip if we can't get the selection data, or it's obviously too long */
     if (*type == XT_CONVERT_FAIL || value == NULL) {
         XBell(TheDisplay, 0);

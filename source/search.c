@@ -108,8 +108,8 @@ static int HistStart = 0;
 
 static int textFieldNonEmpty(Widget w);
 static void setTextField(WindowInfo* window, Time time, Widget textField);
-static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
-	Atom *type, char *value, unsigned long *length, int *format);
+static void getSelectionCB(Widget w, XtPointer selectionInfo, Atom *selection,
+	Atom *type, XtPointer value, unsigned long *length, int *format);
 static void fFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData);
 static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData);
@@ -180,7 +180,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
 static int getFindDlogInfo(WindowInfo *window, int *direction,
 	char *searchString, int *searchType);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
-	Atom *type, char *value, unsigned long *length, int *format);
+	Atom *type, XtPointer value, unsigned long *length, int *format);
 static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
         Cardinal *nArg);
 static void iSearchTextClearCB(Widget w, WindowInfo *window,
@@ -541,7 +541,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
         selectionInfo->window = window;
         selectionInfo->selection = 0;
         XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-                            (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
+                            getSelectionCB, selectionInfo, time);
         while (selectionInfo->done == 0) {
             XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
             ServerDispatchEvent(&nextEvent);
@@ -559,9 +559,11 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
     XtFree((char*)selectionInfo);
 }    
 
-static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
-        Atom *type, char *value, unsigned long *length, int *format)
+static void getSelectionCB(Widget w, XtPointer si, Atom *selection,
+        Atom *type, XtPointer v, unsigned long *length, int *format)
 {
+    SelectionInfo *selectionInfo = si;
+    char *value = v;
     WindowInfo *window = selectionInfo->window;
 
     /* return an empty string if we can't get the selection data */
@@ -2825,14 +2827,15 @@ void SearchForSelected(WindowInfo *window, int direction, int searchType,
    callData->searchType = searchType;
    callData->searchWrap = searchWrap;
    XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-    	    (XtSelectionCallbackProc)selectedSearchCB, callData, time);
+    	    selectedSearchCB, callData, time);
 }
 
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
-	Atom *type, char *value, unsigned long *length, int *format)
+	Atom *type, XtPointer v, unsigned long *length, int *format)
 {
     WindowInfo *window = WidgetToWindow(w);
     SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;
+    char *value = v;
     int searchType;
     char searchString[SEARCHMAX+1];
     

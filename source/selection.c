@@ -65,12 +65,12 @@ static const char CVSID[] = "$Id: selection.c,v 1.34 2008/02/26 22:21:47 ajbj Ex
 #endif
 
 
-static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
-	Atom *type, char *value, unsigned long *length, int *format);
-static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
-	Atom *type, char *value, unsigned long *length, int *format);
-static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
-	Atom *type, char *value, unsigned long *length, int *format);
+static void gotoCB(Widget widget, XtPointer window, Atom *sel,
+	Atom *type, XtPointer value, unsigned long *length, int *format);
+static void fileCB(Widget widget, XtPointer window, Atom *sel,
+	Atom *type, XtPointer value, unsigned long *length, int *format);
+static void getAnySelectionCB(Widget widget, XtPointer result, Atom *sel,
+	Atom *type, XtPointer value, unsigned long *length, int *format);
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
     	Boolean *continueDispatch, char *action, int extend);
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -145,13 +145,13 @@ void GotoLineNumber(WindowInfo *window)
 void GotoSelectedLineNumber(WindowInfo *window, Time time)
 {
     XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-    	    (XtSelectionCallbackProc)gotoCB, window, time);
+    	    gotoCB, window, time);
 }
 
 void OpenSelectedFile(WindowInfo *window, Time time)
 {
     XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-    	    (XtSelectionCallbackProc)fileCB, window, time);
+    	    fileCB, window, time);
 }
 
 /*
@@ -175,7 +175,7 @@ char *GetAnySelection(WindowInfo *window)
     
     /* Request the selection value to be delivered to getAnySelectionCB */
     XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING,
-	    (XtSelectionCallbackProc)getAnySelectionCB, &selText, 
+	    getAnySelectionCB, &selText, 
 	    XtLastTimestampProcessed(XtDisplay(window->textArea)));
 
     /* Wait for the value to appear */
@@ -187,9 +187,12 @@ char *GetAnySelection(WindowInfo *window)
     return selText;
 }
 
-static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, unsigned long *length, int *format)
+static void gotoCB(Widget widget, XtPointer wi, Atom *sel,
+    	Atom *type, XtPointer v, unsigned long *length, int *format)
 {
+    WindowInfo *window = wi;
+    char *value = v;
+    
      /* two integers and some space in between */
     char lineText[(TYPE_INT_STR_SIZE(int) * 2) + 5];
     int rc, lineNum, column, position, curCol;
@@ -243,9 +246,12 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     TextSetCursorPos(widget, position);
 }
 
-static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, unsigned long *length, int *format)
+static void fileCB(Widget widget, XtPointer wi, Atom *sel,
+    	Atom *type, XtPointer v, unsigned long *length, int *format)
 {
+    WindowInfo *window = wi;
+    char *value = v;
+
     char nameText[MAXPATHLEN], includeName[MAXPATHLEN];
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *inPtr, *outPtr;
@@ -370,9 +376,12 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
     CheckCloseDim();
 }
 
-static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
-	Atom *type, char *value, unsigned long *length, int *format)
+static void getAnySelectionCB(Widget widget, XtPointer voidresult, Atom *sel,
+	Atom *type, XtPointer voidvalue, unsigned long *length, int *format)
 {
+    char **result = voidresult;
+    char *value = voidvalue;
+    
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
 	XBell(TheDisplay, 0);
