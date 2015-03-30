@@ -263,10 +263,13 @@ static char *DefaultPatternSets[] = {
     	preprocessor string:\"L?\"\"\":\"\"\"\":\"\\n\":Preprocessor1:preprocessor line:\n\
     	prepr string esc chars:\"\\\\(?:.|\\n)\":::String1:preprocessor string:\n\
 	preprocessor keywords:\"<__(?:LINE|FILE|DATE|TIME|STDC)__>\":::Preprocessor::\n\
+	preprocessor keywords c++11:\"<__func__|__STDC_HOSTED__|_Pragma>\":::Preprocessor::\n\
 	character constant:\"L?'\":\"'\":\"[^\\\\][^']\":Character Const::\n\
 	numeric constant:\"(?<!\\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\\.?[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\\Y)\":::Numeric Const::D\n\
 	storage keyword:\"<(?:class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>\":::Storage Type::D\n\
+	storage keyword c++11:\"<(?:override|final|decltype|constexpr|noexcept)>\":::Storage Type::D\n\
 	keyword:\"<(?:new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>\":::Keyword::D\n\
+	keyword c++11:\"<(?:nullptr|static_assert|alignof)>\":::Keyword::D\n\
 	braces:\"[{}]\":::Keyword::D}",
     "C:1:0 {\n\
     	comment:\"/\\*\":\"\\*/\"::Comment::\n\
