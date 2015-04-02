@@ -77,6 +77,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp
 #endif
 #include <fcntl.h>
 #endif /*VMS*/
+#include <inttypes.h>
 
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
@@ -2924,7 +2925,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
     	    	XmNlabelString, s1=XmStringCreateSimple(btnLabel),
-    	    	XmNuserData, (XtPointer)(i+1), NULL);
+    	    	XmNuserData, (XtPointer)(intptr_t)(i+1), NULL);
     	XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
     	XmStringFree(s1);
     }
@@ -2965,7 +2966,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
     	return; /* shouldn't happen */
     if (XtClass(w) == xmPushButtonWidgetClass) {
 	XtVaGetValues(w, XmNuserData, &userData, NULL);
-	retVal.val.n = (int)userData;
+	retVal.val.n = (int)(intptr_t)userData;
     } else
     	retVal.val.n = 1;
     retVal.tag = INT_TAG;
@@ -3101,7 +3102,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
     	    	XmNlabelString, s1=XmStringCreateSimple(btnLabel),
-    	    	XmNuserData, (XtPointer)(i+1), NULL);
+    	    	XmNuserData, (XtPointer)(intptr_t)(i+1), NULL);
     	XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
     	XmStringFree(s1);
     }
@@ -3155,7 +3156,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
 	XtVaGetValues(w, XmNuserData, &userData, NULL);
-	btnNum = (int)userData;
+	btnNum = (int)(intptr_t)userData;
     } else
     	btnNum = 1;
     
@@ -3680,7 +3681,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
       btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
               XmNlabelString, s1=XmStringCreateSimple(btnLabel),
-              XmNuserData, (XtPointer)(i+1), NULL);
+              XmNuserData, (XtPointer)(intptr_t)(i+1), NULL);
       XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
       XmStringFree(s1);
     }
@@ -3760,7 +3761,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
       XtVaGetValues(w, XmNuserData, &userData, NULL);
-      btnNum = (int)userData;
+      btnNum = (int)(intptr_t)userData;
     } else
       btnNum = 1;
     

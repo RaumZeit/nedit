@@ -57,6 +57,7 @@ static const char CVSID[] = "$Id: highlight.c,v 1.56 2008/01/04 22:11:03 yooden 
 #include <sys/param.h>
 #endif
 #endif /*VMS*/
+#include <inttypes.h>
 
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
@@ -512,7 +513,7 @@ void* GetHighlightInfo(WindowInfo *window, int pos)
     if (!pattern) {
 	return NULL;
     }
-    return (void*)pattern->userStyleIndex;    
+    return (void*)(intptr_t)pattern->userStyleIndex;    
 }
     
 /*

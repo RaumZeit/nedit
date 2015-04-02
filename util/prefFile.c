@@ -51,6 +51,8 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.27 2008/08/20 14:57:36 lebert E
 #include "../debug.h"
 #endif
 
+#include <inttypes.h>
+
 #define N_BOOLEAN_STRINGS 13
 static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
 	"Yes", "yes", "YES", "y", "Y", "on", "On", "ON"};
@@ -353,9 +355,9 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
       	*(int *)rsrcDescrip->valueAddr = 0;
     	return False;
       case PREF_STRING:
-	if ((int)strlen(string) >= (int)rsrcDescrip->arg)
+	if (strlen(string) >= (size_t)(intptr_t)rsrcDescrip->arg)
       	    return False;
-	strncpy(rsrcDescrip->valueAddr, string, (int)rsrcDescrip->arg);
+	strncpy(rsrcDescrip->valueAddr, string, (size_t)(intptr_t)rsrcDescrip->arg);
       	return True;
       case PREF_ALLOC_STRING:
       	*(char **)rsrcDescrip->valueAddr = XtMalloc(strlen(string) + 1);

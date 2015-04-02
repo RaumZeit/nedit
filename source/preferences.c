@@ -2295,7 +2295,7 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults)
 	XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
 	for (n=0; n<(int)nItems; n++) {
     	    XtVaGetValues(items[n], XmNuserData, &userData, NULL);
-    	    XmToggleButtonSetState(items[n], (int)userData == mode, False);
+    	    XmToggleButtonSetState(items[n], (int)(intptr_t)userData == mode, False);
 	}
     }
 }
@@ -5147,7 +5147,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
             	xmToggleButtonGadgetClass, menu,
             	XmNlabelString, s1=XmStringCreateSimple(LanguageModes[i]->name),
  	    	XmNmarginHeight, 0,
-   		XmNuserData, (void *)i,
+   		XmNuserData, (void *)(intptr_t)i,
     		XmNset, window->languageMode==i, NULL);
         XmStringFree(s1);
 	XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
@@ -5168,14 +5168,14 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
     XtVaGetValues(w, XmNuserData, &mode, NULL);
     
     /* If the mode didn't change, do nothing */
-    if (window->languageMode == (int)mode)
+    if (window->languageMode == (int)(intptr_t)mode)
     	return;
     
     /* redo syntax highlighting word delimiters, etc. */
 /*
     reapplyLanguageMode(window, (int)mode, False);
 */
-    params[0] = (((int)mode) == PLAIN_LANGUAGE_MODE) ? "" : LanguageModes[(int)mode]->name;
+    params[0] = (((int)(intptr_t)mode) == PLAIN_LANGUAGE_MODE) ? "" : LanguageModes[(int)(intptr_t)mode]->name;
     XtCallActionProc(window->textArea, "set_language_mode", NULL, params, 1);
 }
 

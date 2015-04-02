@@ -73,6 +73,8 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.57 2009/06/23 21:03:13 lebert E
 #include <Xm/CascadeB.h>
 #include <Xm/MenuShell.h>
 
+#include <inttypes.h>
+
 #ifdef HAVE_DEBUG_H
 #include "../debug.h"
 #endif
@@ -1116,7 +1118,7 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 	    	XtVaGetValues(items[n], XmNsubMenuId, &subMenu, NULL);
 		dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
 	    } else {
-		index = (int)userData - 10;
+		index = (int)(intptr_t)userData - 10;
 		if (index <0 || index >= nMenuItems)
     		    return;
 		if (menuList[index]->input == FROM_SELECTION)
@@ -1928,7 +1930,7 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
     	    XmNmnemonic, f->mnemonic,
-    	    XmNuserData, (XtPointer)(index+10), NULL);
+    	    XmNuserData, (XtPointer)(intptr_t)(index+10), NULL);
     XtAddCallback(btn, XmNactivateCallback, cbRtn, cbArg);
     XmStringFree(st1);
     XmStringFree(st2);

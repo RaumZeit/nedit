@@ -80,6 +80,8 @@ static const char CVSID[] = "$Id: file.c,v 1.119 2008/11/05 09:09:44 lebert Exp 
 #include "../debug.h"
 #endif
 
+#include <inttypes.h>
+
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
@@ -1914,7 +1916,7 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
     if (XmToggleButtonGetState(w)) {
         XtPointer userData;
         XtVaGetValues(w, XmNuserData, &userData, NULL);
-        *(int*) clientData = (int) userData;
+        *(int*) clientData = (int) (intptr_t) userData;
     }
 }
 
