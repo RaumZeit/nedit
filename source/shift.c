@@ -36,6 +36,7 @@ static const char CVSID[] = "$Id: shift.c,v 1.18 2006/10/17 10:10:59 yooden Exp 
 #include "text.h"
 #include "nedit.h"
 #include "window.h"
+#include "../util/nedit_malloc.h"
 
 #include <string.h>
 #include <limits.h>
@@ -124,9 +125,9 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
     	shiftDist = 1;
     shiftedText = ShiftText(text, direction, buf->useTabs, buf->tabDist,
     	    shiftDist, &shiftedLen);
-    XtFree(text);
+    NEditFree(text);
     BufReplaceSelected(buf, shiftedText);
-    XtFree(shiftedText);
+    NEditFree(shiftedText);
     
     newEndPos = selStart + shiftedLen;
     BufSelect(buf, selStart, newEndPos);
@@ -160,13 +161,13 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     tempBuf->useTabs = buf->useTabs;
     text = BufGetRange(buf, selStart, selEnd);
     BufSetAll(tempBuf, text);
-    XtFree(text);
+    NEditFree(text);
     
     /* Do the shift in the temporary buffer */
     text = BufGetTextInRect(buf, selStart, selEnd, rectStart, rectEnd);
     BufRemoveRect(tempBuf, 0, selEnd-selStart, rectStart, rectEnd);
     BufInsertCol(tempBuf, rectStart+offset, 0, text, NULL, NULL);
-    XtFree(text);
+    NEditFree(text);
     
     /* Make the change in the real buffer */
     BufReplace(buf, selStart, selEnd, BufAsString(tempBuf));
@@ -226,7 +227,7 @@ static void changeCase(WindowInfo *window, int makeUpper)
             BufReplaceSelected(buf, text);
         }
 
-	XtFree(text);
+	NEditFree(text);
 	if (isRect)
 	    BufRectSelect(buf, start, end, rectStart, rectEnd);
 	else
@@ -286,7 +287,7 @@ void FillSelection(WindowInfo *window)
     /* Fill the text */
     filledText = fillParagraphs(text, rightMargin, buf->tabDist, buf->useTabs,
 	    buf->nullSubsChar, &len, False);
-    XtFree(text);
+    NEditFree(text);
         
     /* Replace the text in the window */
     if (hasSelection && isRect) {
@@ -299,7 +300,7 @@ void FillSelection(WindowInfo *window)
 	if (hasSelection)
     	    BufSelect(buf, left, left + len);
     }
-    XtFree(filledText);
+    NEditFree(filledText);
     
     /* Find a reasonable cursor position.  Usually insertPos is best, but
        if the text was indented, positions can shift */
@@ -312,7 +313,7 @@ void FillSelection(WindowInfo *window)
 
 /*
 ** shift lines left and right in a multi-line text string.  Returns the
-** shifted text in memory that must be freed by the caller with XtFree.
+** shifted text in memory that must be freed by the caller with NEditFree.
 */
 char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
 	int nChars, int *newLen)
@@ -330,7 +331,7 @@ char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
         bufLen = strlen(text) + countLines(text) * nChars;
     else
         bufLen = strlen(text) + countLines(text) * tabDist;
-    shiftedText = (char *)XtMalloc(bufLen + 1);
+    shiftedText = (char*)NEditMalloc(bufLen + 1);
     
     /*
     ** break into lines and call shiftLine(Left/Right) on each
@@ -347,7 +348,7 @@ char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
 			nChars);
 	    strcpy(shiftedPtr, shiftedLine);
 	    shiftedPtr += strlen(shiftedLine);
-	    XtFree(shiftedLine);
+	    NEditFree(shiftedLine);
 	    if (*textPtr == '\0') {
 	        /* terminate string & exit loop at end of text */
 	    	*shiftedPtr = '\0';
@@ -373,7 +374,7 @@ static char *shiftLineRight(char *line, int lineLen, int tabsAllowed,
     int whiteWidth, i;
     
     lineInPtr = line;
-    lineOut = XtMalloc(lineLen + nChars + 1);
+    lineOut = (char*)NEditMalloc(lineLen + nChars + 1);
     lineOutPtr = lineOut;
     whiteWidth = 0;
     while (TRUE) {
@@ -416,7 +417,7 @@ static char *shiftLineLeft(char *line, int lineLen, int tabDist, int nChars)
     char *lineInPtr, *lineOutPtr;
     
     lineInPtr = line;
-    lineOut = XtMalloc(lineLen + tabDist + 1);
+    lineOut = (char*)NEditMalloc(lineLen + tabDist + 1);
     lineOutPtr = lineOut;
     whiteWidth = 0;
     lastWhiteWidth = 0;
@@ -583,11 +584,11 @@ static char *fillParagraphs(char *text, int rightMargin, int tabDist,
 	/* Fill the paragraph */
 	filledText = fillParagraph(paraText, leftMargin, firstLineIndent,
 		rightMargin, tabDist, useTabs, nullSubsChar, &len);
-	XtFree(paraText);
+	NEditFree(paraText);
 	
 	/* Replace it in the buffer */
 	BufReplace(buf, paraStart, fillEnd, filledText);
-	XtFree(filledText);
+	NEditFree(filledText);
 	
 	/* move on to the next paragraph */
 	paraStart += len;
@@ -616,7 +617,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     int inWhitespace, inMargin;
     
     /* remove leading spaces, convert newlines to spaces */
-    cleanedText = XtMalloc(strlen(text)+1);
+    cleanedText = (char*)NEditMalloc(strlen(text)+1);
     outPtr = cleanedText;
     inMargin = True;
     for (c=text; *c!='\0'; c++) {
@@ -676,7 +677,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     indentString = makeIndentString(leftMargin, tabDist, allowTabs, &indentLen);
         
     /* allocate memory for the finished string */
-    outText = XtMalloc(sizeof(char) * (cleanedLen + leadIndentLen +
+    outText = (char*)NEditMalloc(sizeof(char) * (cleanedLen + leadIndentLen +
 	    indentLen * (nLines-1) + 1));
     outPtr = outText;
     
@@ -697,9 +698,9 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
     *outPtr = '\0';
     
     /* clean up, return result */
-    XtFree(cleanedText);
-    XtFree(leadIndentStr);
-    XtFree(indentString);
+    NEditFree(cleanedText);
+    NEditFree(leadIndentStr);
+    NEditFree(indentString);
     *filledLen = outPtr - outText;
     return outText;
 }
@@ -709,7 +710,7 @@ static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChar
     char *indentString, *outPtr;
     int i;
     
-    outPtr = indentString = XtMalloc(sizeof(char) * indent + 1);
+    outPtr = indentString = (char*)NEditMalloc(sizeof(char) * indent + 1);
     if (allowTabs) {
 	for (i=0; i<indent/tabDist; i++)
     	    *outPtr++ = '\t';

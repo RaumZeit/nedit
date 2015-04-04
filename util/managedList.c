@@ -34,6 +34,7 @@ static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg E
 #include "managedList.h"
 #include "misc.h"
 #include "DialogF.h"
+#include "nedit_malloc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -134,11 +135,11 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
     
     /* AFAIK the only way to make a list widget n-columns wide is to make up
        a fake initial string of that width, and create it with that */
-    placeholderStr = XtMalloc(nColumns+1);
+    placeholderStr = (char*)NEditMalloc(nColumns+1);
     memset(placeholderStr, 'm', nColumns);
     placeholderStr[nColumns] = '\0';
     placeholderTable = StringTable(1, placeholderStr);
-    XtFree(placeholderStr);
+    NEditFree(placeholderStr);
  
     ac = 0;
     XtSetArg(al[ac], XmNscrollBarDisplayPolicy, XmAS_NEEDED); ac++;
@@ -187,7 +188,7 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
 **
 **  	 cbArg:	an arbitrary argument passed on to the callback routine
 **
-** The callback "setDialogDataCB" must allocate (with XtMalloc) and return a
+** The callback "setDialogDataCB" must allocate (with NEditMalloc) and return a
 ** new record reflecting the current contents of the dialog fields.  It may
 ** do error checking on the data that the user has entered, and can abort
 ** whatever operation triggered the request by setting "abort" to True.
@@ -246,7 +247,7 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn,
     
     /* Create a managedList data structure to hold information about the
        widgets, callbacks, and current state of the list */
-    ml = (managedListData *)XtMalloc(sizeof(managedListData));
+    ml = (managedListData *)NEditMalloc(sizeof(managedListData));
     ml->listW = listW;
     ml->deleteBtn = deleteBtn;
     ml->copyBtn = copyBtn;
@@ -360,7 +361,7 @@ void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *),
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* Free the managed list data structure */
-    XtFree((char *)clientData);
+    NEditFree(clientData);
 }
 
 /*
@@ -590,7 +591,7 @@ static void updateDialogFromList(managedListData *ml, int selection)
     XmListDeselectAllItems(ml->listW);
 
     /* Fill in the list widget with the names from the item list */
-    stringTable = (XmString *)XtMalloc(sizeof(XmString) * (*ml->nItems+1));
+    stringTable = (XmString *)NEditMalloc(sizeof(XmString) * (*ml->nItems+1));
     stringTable[0] = XmStringCreateSimple("New");
     for (i=0; i < *ml->nItems; i++)
     	stringTable[i+1] = XmStringCreateSimple(*(char **)ml->itemList[i]);
@@ -598,7 +599,7 @@ static void updateDialogFromList(managedListData *ml, int selection)
     	    XmNitemCount, *ml->nItems+1, NULL);
     for (i=0; i < *ml->nItems+1; i++)
     	XmStringFree(stringTable[i]);
-    XtFree((char *)stringTable);
+    NEditFree(stringTable);
 
     /* Select the requested item (indirectly filling in the dialog fields),
        but don't trigger an update of the last selected item from the current
@@ -644,7 +645,7 @@ static int selectedListPosition(managedListData *ml)
     	return 1;
     }
     listPos = *posList;
-    XtFree((char *)posList);
+    NEditFree(posList);
     if (listPos < 1 || listPos > *ml->nItems+1) {
     	fprintf(stderr, "Internal error (XmList bad value)");
     	return 1;

@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.29 2006/12/02 10:27:06 yooden Ex
 
 #include "fontsel.h"
 #include "misc.h"
+#include "nedit_malloc.h"
 #include "DialogF.h"
 
 #include <stdio.h>
@@ -633,7 +634,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk)
         for (i = 0; i < itemCount1; i++)
         {
             items[i] = XmStringCreate(itemBuf1[i], XmSTRING_DEFAULT_CHARSET);
-            XtFree(itemBuf1[i]);
+            NEditFree(itemBuf1[i]);
         }
         XmListDeleteAllItems(ctrlBlk.fontList);
         XmListAddItems(ctrlBlk.fontList, items, itemCount1, 1);
@@ -653,7 +654,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk)
         for (i = 0; i < itemCount2; i++)
         {
             items[i] = XmStringCreate(itemBuf2[i], XmSTRING_DEFAULT_CHARSET);
-            XtFree(itemBuf2[i]);
+            NEditFree(itemBuf2[i]);
         }
         XmListDeleteAllItems(ctrlBlk.styleList);
         XmListAddItems(ctrlBlk.styleList, items, itemCount2, 1);
@@ -674,7 +675,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk)
         {
             items[i] = XmStringCreate(itemBuf3[i],
                               XmSTRING_DEFAULT_CHARSET);
-            XtFree(itemBuf3[i]);
+            NEditFree(itemBuf3[i]);
         }
         XmListDeleteAllItems(ctrlBlk.sizeList);
         XmListAddItems(ctrlBlk.sizeList, items, itemCount3, 1);
@@ -783,8 +784,7 @@ static void addItemToList(char **buf, const char *item, int *count)
 
     for (j = *count; j > i; j--)
         buf[j] = buf[j-1];
-    buf[i] = XtMalloc(strlen(item) + 1);
-    strcpy(buf[i], item);
+    buf[i] = NEditStrdup(item);
     (*count)++;
 }
 
@@ -896,13 +896,13 @@ static void propFontToggleAction(Widget widget,
         else
             ctrlBlk->showPropFonts = PREF_FIXED;
 
-        XtFree(ctrlBlk->sel1);
+        NEditFree(ctrlBlk->sel1);
         ctrlBlk->sel1 = NULL;
 
-        XtFree(ctrlBlk->sel2);
+        NEditFree(ctrlBlk->sel2);
         ctrlBlk->sel2 = NULL;
 
-        XtFree(ctrlBlk->sel3);
+        NEditFree(ctrlBlk->sel3);
         ctrlBlk->sel3 = NULL;
 
         setupScrollLists(NONE, *ctrlBlk);
@@ -940,7 +940,7 @@ static void sizeToggleAction(Widget widget,
         else
             ctrlBlk->showSizeInPixels = TRUE;
 
-        XtFree(ctrlBlk->sel3);
+        NEditFree(ctrlBlk->sel3);
 
         ctrlBlk->sel3 = NULL;
         setupScrollLists(NONE, *ctrlBlk);
@@ -991,26 +991,24 @@ static void fontAction(Widget widget, xfselControlBlkType *ctrlBlk,
 
     if (ctrlBlk->sel1 == NULL)
     {
-        ctrlBlk->sel1 = XtMalloc(strlen(sel) + 1);
-        strcpy(ctrlBlk->sel1, sel);
+        ctrlBlk->sel1 = NEditStrdup(sel);
     }
     else
     {
         if (strcmp(ctrlBlk->sel1, sel) == 0)
         {           /* Unselecting current selection */
-            XtFree(ctrlBlk->sel1);
+            NEditFree(ctrlBlk->sel1);
             ctrlBlk->sel1 = NULL;
             XmListDeselectItem(widget, call_data->item);
         }
         else
         {
-            XtFree(ctrlBlk->sel1);
-            ctrlBlk->sel1 = XtMalloc(strlen(sel) + 1);
-            strcpy(ctrlBlk->sel1, sel);
+            NEditFree(ctrlBlk->sel1);
+            ctrlBlk->sel1 = NEditStrdup(sel);
         }
     }
 
-    XtFree(sel);
+    NEditFree(sel);
     setupScrollLists(FONT, *ctrlBlk);
     if ((ctrlBlk->sel1 != NULL) && (ctrlBlk->sel2 != NULL) && 
         (ctrlBlk->sel3 != NULL))
@@ -1032,26 +1030,24 @@ static void styleAction(Widget widget, xfselControlBlkType *ctrlBlk,
 
     if (ctrlBlk->sel2 == NULL)
     {
-        ctrlBlk->sel2 = XtMalloc(strlen(sel) + 1);
-        strcpy(ctrlBlk->sel2, sel);
+        ctrlBlk->sel2 = NEditStrdup(sel);
     }
     else
     {
         if (strcmp(ctrlBlk->sel2, sel) == 0)
         {           /* unselecting current selection */
-            XtFree(ctrlBlk->sel2);
+            NEditFree(ctrlBlk->sel2);
             ctrlBlk->sel2 = NULL;
             XmListDeselectItem(widget, call_data->item);
         }
         else
         {
-            XtFree(ctrlBlk->sel2);
-            ctrlBlk->sel2 = XtMalloc(strlen(sel) + 1);
-            strcpy(ctrlBlk->sel2, sel);
+            NEditFree(ctrlBlk->sel2);
+            ctrlBlk->sel2 = NEditStrdup(sel);
         }
     }
 
-    XtFree(sel);
+    NEditFree(sel);
     setupScrollLists(STYLE, *ctrlBlk);
     if ((ctrlBlk->sel1 != NULL) && (ctrlBlk->sel2 != NULL) && 
         (ctrlBlk->sel3 != NULL))
@@ -1072,26 +1068,24 @@ static void sizeAction(Widget widget, xfselControlBlkType *ctrlBlk,
 
     if (ctrlBlk->sel3 == NULL)
     {
-        ctrlBlk->sel3 = XtMalloc(strlen(sel) + 1);
-        strcpy(ctrlBlk->sel3, sel);
+        ctrlBlk->sel3 = NEditStrdup(sel);
     }
     else
     {
         if (strcmp(ctrlBlk->sel3, sel) == 0)
         {           /* unselecting current selection */
-            XtFree(ctrlBlk->sel3);
+            NEditFree(ctrlBlk->sel3);
             ctrlBlk->sel3 = NULL;
             XmListDeselectItem(widget, call_data->item);
         }
         else
         {
-            XtFree(ctrlBlk->sel3);
-            ctrlBlk->sel3 = XtMalloc(strlen(sel) + 1);
-            strcpy(ctrlBlk->sel3, sel);
+            NEditFree(ctrlBlk->sel3);
+            ctrlBlk->sel3 = NEditStrdup(sel);
         }
     }
 
-    XtFree(sel);
+    NEditFree(sel);
     setupScrollLists(SIZE, *ctrlBlk);
     if ((ctrlBlk->sel1 != NULL) && (ctrlBlk->sel2 != NULL) && 
         (ctrlBlk->sel3 != NULL))
@@ -1110,7 +1104,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk)
 {
     int i;
 
-    XtFree(ctrlBlk->fontName);
+    NEditFree(ctrlBlk->fontName);
     ctrlBlk->fontName = NULL;
 
     for (i = 0; i < ctrlBlk->numFonts; i++)
@@ -1119,9 +1113,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk)
             (styleMatch(ctrlBlk, ctrlBlk->fontData[i])) &&
             (sizeMatch (ctrlBlk, ctrlBlk->fontData[i])))
         {
-            ctrlBlk->fontName = XtMalloc(
-                          strlen(ctrlBlk->fontData[i]) + 1);
-            strcpy(ctrlBlk->fontName, ctrlBlk->fontData[i]);
+            ctrlBlk->fontName = NEditStrdup(ctrlBlk->fontData[i]);
             break;
         }
     }
@@ -1174,10 +1166,10 @@ static void destroyCB(Widget widget, xfselControlBlkType *ctrlBlk,
 static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk,
                  XmListCallbackStruct *call_data)
 {
-    XtFree(ctrlBlk->sel1);
-    XtFree(ctrlBlk->sel2);
-    XtFree(ctrlBlk->sel3);
-    XtFree(ctrlBlk->fontName);
+    NEditFree(ctrlBlk->sel1);
+    NEditFree(ctrlBlk->sel2);
+    NEditFree(ctrlBlk->sel3);
+    NEditFree(ctrlBlk->fontName);
 
     ctrlBlk->fontName = NULL;
     XFreeFontNames(ctrlBlk->fontData);
@@ -1195,7 +1187,7 @@ static void okAction(Widget widget, xfselControlBlkType *ctrlBlk,
 
     fontPattern = XmTextGetString(ctrlBlk->fontNameField);
     fontName    = XListFonts(XtDisplay(ctrlBlk->form), fontPattern, 1, &i);
-    XtFree(fontPattern);
+    NEditFree(fontPattern);
     
     if ((fontName == NULL) || (i == 0))
     {
@@ -1205,13 +1197,12 @@ static void okAction(Widget widget, xfselControlBlkType *ctrlBlk,
     }
     else
     {
-        XtFree(ctrlBlk->fontName);
-        ctrlBlk->fontName = XtMalloc(strlen(fontName[0]) + 1);
-        strcpy(ctrlBlk->fontName, fontName[0]);
+        NEditFree(ctrlBlk->fontName);
+        ctrlBlk->fontName = NEditStrdup(fontName[0]);
 
-        XtFree(ctrlBlk->sel1);
-        XtFree(ctrlBlk->sel2);
-        XtFree(ctrlBlk->sel3);
+        NEditFree(ctrlBlk->sel1);
+        NEditFree(ctrlBlk->sel2);
+        NEditFree(ctrlBlk->sel3);
     
         XFreeFontNames(fontName);
         XFreeFontNames(ctrlBlk->fontData);
@@ -1239,8 +1230,7 @@ static void startupFont(xfselControlBlkType *ctrlBlk, const char *font)
         return;
     }
 
-    ctrlBlk->fontName = XtMalloc(strlen(fontName[0]) + 1);
-    strcpy(ctrlBlk->fontName, fontName[0]);
+    ctrlBlk->fontName = NEditStrdup(fontName[0]);
 
     getFontPart(fontName[0], part);
     XFreeFontNames(fontName);

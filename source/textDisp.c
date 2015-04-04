@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: textDisp.c,v 1.71 2008/01/04 22:31:48 yooden E
 #include "calltips.h"
 #include "highlight.h"
 #include "rangeset.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -193,7 +194,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     XGCValues gcValues;
     int i;
     
-    textD = (textDisp *)XtMalloc(sizeof(textDisp));
+    textD = (textDisp *)NEditMalloc(sizeof(textDisp));
     textD->w = widget;
     textD->top = top;
     textD->left = left;
@@ -244,7 +245,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->nVisibleLines = (height - 1) / (textD->ascent + textD->descent) + 1;
     gcValues.foreground = cursorFGPixel;
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
-    textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
+    textD->lineStarts = (int *)NEditMalloc(sizeof(int) * textD->nVisibleLines);
     textD->lineStarts[0] = 0;
     textD->calltipW = NULL;
     textD->calltipShell = NULL;
@@ -318,12 +319,12 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->styleGC);
     releaseGC(textD->w, textD->lineNumGC);
-    XtFree((char *)textD->lineStarts);
+    NEditFree(textD->lineStarts);
     while (TextDPopGraphicExposeQueueEntry(textD)) {
     }
-    XtFree((char *)textD->bgClassPixel);
-    XtFree((char *)textD->bgClass);
-    XtFree((char *)textD);
+    NEditFree(textD->bgClassPixel);
+    NEditFree(textD->bgClass);
+    NEditFree(textD);
 }
 
 /*
@@ -574,8 +575,8 @@ void TextDResize(textDisp *textD, int width, int height)
        size and/or contents. (contents can change in continuous wrap mode
        when the width changes, even without a change in height) */
     if (oldVisibleLines < newVisibleLines) {
-        XtFree((char *)textD->lineStarts);
-        textD->lineStarts = (int *)XtMalloc(sizeof(int) * newVisibleLines);
+        NEditFree(textD->lineStarts);
+        textD->lineStarts = (int *)NEditMalloc(sizeof(int) * newVisibleLines);
     }
     textD->nVisibleLines = newVisibleLines;
     calcLineStarts(textD, 0, newVisibleLines);
@@ -903,7 +904,7 @@ void TextDOverstrike(textDisp *textD, char *text)
     	} else if (indent > endIndent) {
     	    if (ch != '\t') {
     	    	p++;
-    	    	paddedText = XtMalloc(textLen + MAX_EXP_CHAR_LEN + 1);
+    	    	paddedText = (char*)NEditMalloc(textLen + MAX_EXP_CHAR_LEN + 1);
     	    	strcpy(paddedText, text);
     	    	for (i=0; i<indent-endIndent; i++)
     	    	    paddedText[textLen+i] = ' ';
@@ -917,7 +918,7 @@ void TextDOverstrike(textDisp *textD, char *text)
     textD->cursorToHint = startPos + textLen;
     BufReplace(buf, startPos, endPos, paddedText == NULL ? text : paddedText);
     textD->cursorToHint = NO_HINT;
-    XtFree(paddedText);
+    NEditFree(paddedText);
 }
 
 /*
@@ -1051,7 +1052,7 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
     	outIndex += charLen;
     }
     *x = xStep;
-    XtFree(lineStr);
+    NEditFree(lineStr);
     return True;
 }
 
@@ -1794,7 +1795,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     stdCharWidth = textD->fontStruct->max_bounds.width;
     if (stdCharWidth <= 0) {
     	fprintf(stderr, "nedit: Internal Error, bad font measurement\n");
-    	XtFree(lineStr);
+    	NEditFree(lineStr);
     	return;
     }
     
@@ -1931,7 +1932,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     if (hasCursor && (y_orig != textD->cursorY || y_orig != y))
         TextDRedrawCalltip(textD, 0);
     
-    XtFree(lineStr);
+    NEditFree(lineStr);
 }
 
 /*
@@ -2270,7 +2271,7 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
 				lineStr[charIndex]);
     	charWidth = stringWidth(textD, expandedChar, charLen, charStyle);
     	if (x < xStep + (posType == CURSOR_POS ? charWidth/2 : charWidth)) {
-    	    XtFree(lineStr);
+    	    NEditFree(lineStr);
     	    return lineStart + charIndex;
     	}
     	xStep += charWidth;
@@ -2279,7 +2280,7 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
     
     /* If the x position was beyond the end of the line, return the position
        of the newline at the end of the line */
-    XtFree(lineStr);
+    NEditFree(lineStr);
     return lineStart + lineLen;
 }
 
@@ -2612,7 +2613,7 @@ Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD)
 
     if (removedGEQEntry) {
         textD->graphicsExposeQueue = removedGEQEntry->next;
-        XtFree((char *)removedGEQEntry);
+        NEditFree(removedGEQEntry);
     }
     return(removedGEQEntry?True:False);
 }
@@ -2621,7 +2622,7 @@ void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, 
 {
     graphicExposeTranslationEntry *newGEQEntry = NULL;
     if (appendEntry) {
-        newGEQEntry = (graphicExposeTranslationEntry *)XtMalloc(sizeof(graphicExposeTranslationEntry));
+        newGEQEntry = (graphicExposeTranslationEntry *)NEditMalloc(sizeof(graphicExposeTranslationEntry));
         newGEQEntry->next = NULL;
         newGEQEntry->horizontal = xOffset;
         newGEQEntry->vertical = yOffset;
@@ -3715,8 +3716,8 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
     char *pos;
     Boolean is_good = True;
 
-    XtFree((char *)*pp_bgClass);
-    XtFree((char *)*pp_bgClassPixel);
+    NEditFree(*pp_bgClass);
+    NEditFree(*pp_bgClassPixel);
 
     *pp_bgClassPixel = NULL;
     *pp_bgClass = NULL;
@@ -3792,11 +3793,11 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
     /* when we get here, we've set up our class table and class-to-pixel table
        in local variables: now put them into the "real thing" */
     class_no++;                     /* bigger than all valid class_nos */
-    *pp_bgClass = (unsigned char *)XtMalloc(256);
-    *pp_bgClassPixel = (Pixel *)XtMalloc(class_no * sizeof (Pixel));
+    *pp_bgClass = (unsigned char *)NEditMalloc(256);
+    *pp_bgClassPixel = (Pixel *)NEditMalloc(class_no * sizeof (Pixel));
     if (!*pp_bgClass || !*pp_bgClassPixel) {
-        XtFree((char *)*pp_bgClass);
-        XtFree((char *)*pp_bgClassPixel);
+        NEditFree(*pp_bgClass);
+        NEditFree(*pp_bgClassPixel);
         return;
     }
     memcpy(*pp_bgClass, bgClass, 256);

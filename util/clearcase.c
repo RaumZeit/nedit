@@ -32,6 +32,7 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden E
 #endif
 
 #include "clearcase.h"
+#include "nedit_malloc.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -68,8 +69,7 @@ const char *GetClearCaseViewTag(void)
         const char *envPtr = getenv("CLEARCASE_ROOT");
         if (envPtr != NULL) {
             const char *tagPtr;
-            ClearCaseViewRoot = XtMalloc(strlen(envPtr) + 1);
-            strcpy(ClearCaseViewRoot, envPtr);
+            ClearCaseViewRoot = NEditStrdup(envPtr);
 
             tagPtr = strrchr(ClearCaseViewRoot, '/');
             if (tagPtr != NULL) {

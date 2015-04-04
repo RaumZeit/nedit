@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: rbTree.c,v 1.7 2002/07/11 21:18:10 slobasso Ex
 #endif
 
 #include "rbTree.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -588,26 +589,26 @@ static int rbTreeCompareNode_TestNode(rbTreeNode *left, rbTreeNode *right)
 
 static rbTreeNode *rbTreeAllocateNode_TestNode(rbTreeNode *src)
 {
-    TestNode *newNode = malloc(sizeof(TestNode));
+    TestNode *newNode = NEditMalloc(sizeof(TestNode));
     if (newNode) {
-        newNode->str = malloc(strlen(((TestNode *)src)->str) + 1);
+        newNode->str = NEditMalloc(strlen(((TestNode *)src)->str) + 1);
         if (newNode->str) {
             strcpy(newNode->str, ((TestNode *)src)->str);
             
-            newNode->key = malloc(strlen(((TestNode *)src)->key) + 1);
+            newNode->key = NEditMalloc(strlen(((TestNode *)src)->key) + 1);
             if (newNode->key) {
                 strcpy(newNode->key, ((TestNode *)src)->key);
             }
             else {
-                free(newNode->str);
+                NEditFree(newNode->str);
                 newNode->str = NULL;
 
-                free(newNode);
+                NEditFree(newNode);
                 newNode = NULL;
             }
         }
         else {
-            free(newNode);
+            NEditFree(newNode);
             newNode = NULL;
         }
     }
@@ -616,7 +617,7 @@ static rbTreeNode *rbTreeAllocateNode_TestNode(rbTreeNode *src)
 
 rbTreeNode *rbTreeAllocateEmptyNodeCB_TestNode(void)
 {
-    TestNode *newNode = malloc(sizeof(TestNode));
+    TestNode *newNode = NEditMalloc(sizeof(TestNode));
     if (newNode) {
         newNode->str = NULL;
         newNode->key = NULL;
@@ -628,11 +629,11 @@ static void rbTreeDisposeNode_TestNode(rbTreeNode *src)
 {
     if (src) {
         if (((TestNode *)src)->str) {
-            free(((TestNode *)src)->str);
+            NEditFree(((TestNode *)src)->str);
             ((TestNode *)src)->str = NULL;
         }
         if (((TestNode *)src)->key) {
-            free(((TestNode *)src)->key);
+            NEditFree(((TestNode *)src)->key);
             ((TestNode *)src)->key = NULL;
         }
         src->left = (void *)-1;
@@ -640,7 +641,7 @@ static void rbTreeDisposeNode_TestNode(rbTreeNode *src)
         src->parent = (void *)-1;
         src->color = rbTreeNodeBlack;
 
-        free(src);
+        NEditFree(src);
     }
 }
 
@@ -649,11 +650,11 @@ static int rbTreeCopyToNode_TestNode(rbTreeNode *dst, rbTreeNode *src)
     TestNode newValues;
     int copiedOK = 0;
     
-    newValues.str = malloc(strlen(((TestNode *)src)->str) + 1);
+    newValues.str = NEditMalloc(strlen(((TestNode *)src)->str) + 1);
     if (newValues.str) {
         strcpy(newValues.str, ((TestNode *)src)->str);
         
-        newValues.key = malloc(strlen(((TestNode *)src)->key) + 1);
+        newValues.key = NEditMalloc(strlen(((TestNode *)src)->key) + 1);
         if (newValues.key) {
             strcpy(newValues.key, ((TestNode *)src)->key);
             
@@ -662,7 +663,7 @@ static int rbTreeCopyToNode_TestNode(rbTreeNode *dst, rbTreeNode *src)
             copiedOK = 1;
         }
         else {
-            free(newValues.str);
+            NEditFree(newValues.str);
             newValues.str = NULL;
         }
     }

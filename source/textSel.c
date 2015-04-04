@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: textSel.c,v 1.19 2008/01/04 22:11:05 yooden Ex
 #include "textDisp.h"
 #include "textBuf.h"
 #include "../util/misc.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -157,7 +158,7 @@ void CopyToClipboard(Widget w, Time time)
     /* Get the selected text, if there's no selection, do nothing */
     text = BufGetSelectionText(((TextWidget)w)->text.textD->buffer);
     if (*text == '\0') {
-    	XtFree(text);
+    	NEditFree(text);
     	return;
     }
 
@@ -168,7 +169,7 @@ void CopyToClipboard(Widget w, Time time)
     
     /* Shut up LessTif */
     if (SpinClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
-        XtFree(text);
+        NEditFree(text);
         return;
     }
     
@@ -189,12 +190,12 @@ void CopyToClipboard(Widget w, Time time)
 
     if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, "STRING",
     	    text, length, 0, NULL) != ClipboardSuccess) {
-    	XtFree(text);
+    	NEditFree(text);
         SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
     }
-    XtFree(text);
+    NEditFree(text);
     SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
     SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 }
@@ -304,10 +305,10 @@ void InsertClipboard(Widget w, int isColumnar)
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
     }
-    string = XtMalloc(length+1);
+    string = (char*)NEditMalloc(length+1);
     if (SpinClipboardRetrieve(XtDisplay(w), XtWindow(w), "STRING", string,
     	    length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
-    	XtFree(string);
+    	NEditFree(string);
         /*
          * Possibly, the clipboard can remain in a locked state after
          * a failure, so we try to remove the lock, just to be sure.
@@ -321,7 +322,7 @@ void InsertClipboard(Widget w, int isColumnar)
        else, or give up, warn, and refuse */
     if (!BufSubstituteNullChars(string, retLength, buf)) {
 	fprintf(stderr, "Too much binary data, text not pasted\n");
-	XtFree(string);
+	NEditFree(string);
 	return;
     }
 
@@ -343,7 +344,7 @@ void InsertClipboard(Widget w, int isColumnar)
     } else
     	TextInsertAtCursor(w, string, NULL, True,
 		((TextWidget)w)->text.autoWrapPastedText);
-    XtFree(string);
+    NEditFree(string);
 }
 
 /*
@@ -439,7 +440,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action,
        notify event is never returned */
     XConvertSelection(XtDisplay(w), sel, getAtom(disp, A_INSERT_SELECTION),
     	    getAtom(disp, A_INSERT_INFO), XtWindow(w), time);
-    cbInfo = (selectNotifyInfo *)XtMalloc(sizeof(selectNotifyInfo));
+    cbInfo = (selectNotifyInfo *)NEditMalloc(sizeof(selectNotifyInfo));
     cbInfo->action = action;
     cbInfo->timeStamp = time;
     cbInfo->widget = (Widget)w;
@@ -466,14 +467,14 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
  
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
-        XtFree((char*) value);
+        NEditFree(value);
     	return;
     }
     
     /* Copy the string just to make space for the null character (this may
        not be necessary, XLib documentation claims a NULL is already added,
        but the Xt documentation for this routine makes no such claim) */
-    string = XtMalloc(*length + 1);
+    string = (char*)NEditMalloc(*length + 1);
     memcpy(string, (char *)value, *length);
     string[*length] = '\0';
     
@@ -481,8 +482,8 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
        else, or give up, warn, and refuse */
     if (!BufSubstituteNullChars(string, *length, textD->buffer)) {
 	fprintf(stderr, "Too much binary data, giving up\n");
-	XtFree(string);
-	XtFree((char *)value);
+	NEditFree(string);
+	NEditFree(value);
 	return;
     }
     
@@ -497,11 +498,11 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
     } else
     	TextInsertAtCursor(w, string, NULL, False,
 		((TextWidget)w)->text.autoWrapPastedText);
-    XtFree(string);
+    NEditFree(string);
     
     /* The selection requstor is required to free the memory passed
        to it via value */
-    XtFree((char *)value);
+    NEditFree(value);
 }
 
 /*
@@ -520,13 +521,13 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
  
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8 || value == NULL) {
-        XtFree((char*) value);
+        NEditFree(value);
     	*resultFlag = UNSUCCESSFUL_INSERT;
     	return;
     }
     
     /* Copy the string just to make space for the null character */
-    string = XtMalloc(*length + 1);
+    string = (char*)NEditMalloc(*length + 1);
     memcpy(string, (char *)value, *length);
     string[*length] = '\0';
     
@@ -534,19 +535,19 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
        else, or give up, warn, and refuse */
     if (!BufSubstituteNullChars(string, *length, buf)) {
 	fprintf(stderr, "Too much binary data, giving up\n");
-	XtFree(string);
-	XtFree((char *)value);
+	NEditFree(string);
+	NEditFree(value);
 	return;
     }
     
     /* Insert it in the text widget */
     TextInsertAtCursor(w, string, NULL, True,
 	    ((TextWidget)w)->text.autoWrapPastedText);
-    XtFree(string);
+    NEditFree(string);
     *resultFlag = SUCCESSFUL_INSERT;
     
     /* This callback is required to free the memory passed to it thru value */
-    XtFree((char *)value);
+    NEditFree(value);
 }
 
 /*
@@ -561,7 +562,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType,
 {
     /* Confirm that there is a value and it is of the correct type */
     if (*length == 0 || value == NULL || *type != XA_STRING || *format != 8) {
-        XtFree((char*) value);
+        NEditFree(value);
     	XBell(XtDisplay(w), 0);
     	BufSecondaryUnselect(((TextWidget)w)->text.textD->buffer);
     	return;
@@ -610,7 +611,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
     
     /* target is "TARGETS", return a list of targets we can handle */
     if (*target == getAtom(display, A_TARGETS)) {
-	targets = (Atom *)XtMalloc(sizeof(Atom) * N_SELECT_TARGETS);
+	targets = (Atom *)NEditMalloc(sizeof(Atom) * N_SELECT_TARGETS);
 	targets[0] = XA_STRING;
 	targets[1] = getAtom(display, A_TEXT);
 	targets[2] = getAtom(display, A_TARGETS);
@@ -730,7 +731,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target,
     
     /* target is "TARGETS", return a list of targets it can handle */
     if (*target == getAtom(display, A_TARGETS)) {
-	targets = (Atom *)XtMalloc(sizeof(Atom) * 3);
+	targets = (Atom *)NEditMalloc(sizeof(Atom) * 3);
 	targets[0] = getAtom(display, A_TARGETS);
 	targets[1] = getAtom(display, A_TIMESTAMP);
 	targets[2] = getAtom(display, A_INSERT_SELECTION);
@@ -818,8 +819,8 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
     	XBell(XtDisplay(w), 0);
     	BufSecondaryUnselect(buf);
         XtDisownSelection(w, XA_SECONDARY, e->time);
-        XtFree((char*) cbInfo->actionText);
-    	XtFree((char *)cbInfo);
+        NEditFree(cbInfo->actionText);
+    	NEditFree(cbInfo);
     	return;
     }
 
@@ -829,7 +830,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
     if (cbInfo->action == REMOVE_SECONDARY) {
     	BufRemoveSecSelect(buf);
     } else if (cbInfo->action == EXCHANGE_SECONDARY) {
-	string = XtMalloc(cbInfo->length + 1);
+	string = (char*)NEditMalloc(cbInfo->length + 1);
 	memcpy(string, cbInfo->actionText, cbInfo->length);
 	string[cbInfo->length] = '\0';
 	selStart = buf->secondary.start;
@@ -846,12 +847,12 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
 	    }
 	} else
 	    fprintf(stderr, "Too much binary data\n");
-	XtFree(string);
+	NEditFree(string);
     }
     BufSecondaryUnselect(buf);
     XtDisownSelection(w, XA_SECONDARY, e->time);
-    XtFree((char *)cbInfo->actionText);
-    XtFree((char *)cbInfo);
+    NEditFree(cbInfo->actionText);
+    NEditFree(cbInfo);
 }
 
 /*
@@ -868,8 +869,8 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id)
     XtRemoveEventHandler(cbInfo->widget, 0, True, selectNotifyEH, cbInfo);
     BufSecondaryUnselect(buf);
     XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
-    XtFree((char*) cbInfo->actionText);
-    XtFree((char *)cbInfo);
+    NEditFree(cbInfo->actionText);
+    NEditFree(cbInfo);
 }
 
 /*

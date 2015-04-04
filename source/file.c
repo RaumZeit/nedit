@@ -47,6 +47,7 @@ static const char CVSID[] = "$Id: file.c,v 1.119 2008/11/05 09:09:44 lebert Exp 
 #include "../util/getfiles.h"
 #include "../util/printUtils.h"
 #include "../util/utils.h"
+#include "../util/nedit_malloc.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -488,7 +489,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     fileLen = statbuf.st_size;
     
     /* Allocate space for the whole contents of the file (unfortunately) */
-    fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
+    fileString = (char *)NEditMalloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
@@ -506,7 +507,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
                 "Error reading %s:\n%s", "OK", name, errorString());
         window->filenameSet = TRUE;
-        free(fileString);
+        NEditFree(fileString);
         return FALSE;
     }
     fileString[readLen] = 0;
@@ -573,7 +574,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     }
 
     /* Release the memory that holds fileString */
-    free(fileString);
+    NEditFree(fileString);
 
     /* Set window title and file changed flag */
     if ((flags & PREF_READ_ONLY) != 0) {
@@ -628,7 +629,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     fileLen = statbuf.st_size;
  
     /* allocate space for the whole contents of the file */
-    fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
+    fileString = (char *)NEditMalloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
@@ -644,7 +645,7 @@ int IncludeFile(WindowInfo *window, const char *name)
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Error reading %s:\n%s", "OK", name, errorString());
         fclose(fp);
-        free(fileString);
+        NEditFree(fileString);
         return FALSE;
     }
     fileString[readLen] = 0;
@@ -687,7 +688,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     		fileString);
 
     /* release the memory that holds fileString */
-    free(fileString);
+    NEditFree(fileString);
 
     return TRUE;
 }
@@ -1032,7 +1033,7 @@ static int doSave(WindowInfo *window)
                 "%s not saved:\n%s", "OK", window->filename, errorString());
         fclose(fp);
         remove(fullname);
-        XtFree(fileString);
+        NEditFree(fileString);
         return FALSE;
     }
     
@@ -1041,12 +1042,12 @@ static int doSave(WindowInfo *window)
     {
         DialogF(DF_ERR, window->shell, 1, "Error closing File",
                 "Error closing file:\n%s", "OK", errorString());
-        XtFree(fileString);
+        NEditFree(fileString);
         return FALSE;
     }
 
     /* free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
+    NEditFree(fileString);
     
 #ifdef VMS
     /* reflect the fact that NEdit is now editing a new version of the file */
@@ -1142,19 +1143,19 @@ int WriteBackupFile(WindowInfo *window)
                 errorString());
         fclose(fp);
         remove(name);
-        XtFree(fileString);
+        NEditFree(fileString);
         window->autoSave = FALSE;
         return FALSE;
     }
     
     /* close the backup file */
     if (fclose(fp) != 0) {
-	XtFree(fileString);
+	NEditFree(fileString);
 	return FALSE;
     }
 
     /* Free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
+    NEditFree(fileString);
 
     return TRUE;
 }
@@ -1261,7 +1262,7 @@ static int writeBckVersion(WindowInfo *window)
     }
 
     /* Allocate I/O buffer */
-    io_buffer = (char*) malloc(IO_BUFFER_SIZE);
+    io_buffer = (char*) NEditMalloc(IO_BUFFER_SIZE);
     if (NULL == io_buffer) {
         close(in_fd);
         close(out_fd);
@@ -1365,7 +1366,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
     PrintString(fileString, fileLen, window->shell, window->filename);
 
     /* Free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
+    NEditFree(fileString);
 }
 
 /*
@@ -1459,7 +1460,7 @@ int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
     if (retVal != GFN_OK)
     	SetFileDialogDefaultDirectory(savedDefaultDir);
 
-    XtFree(savedDefaultDir);
+    NEditFree(savedDefaultDir);
 
     return retVal;
 }
@@ -1590,7 +1591,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     if (retVal != GFN_OK)
     	SetFileDialogDefaultDirectory(savedDefaultDir);
 
-    XtFree(savedDefaultDir);
+    NEditFree(savedDefaultDir);
 
     return retVal;
 }
@@ -1976,7 +1977,7 @@ static void addWrapNewlines(WindowInfo *window)
     fileString = TextGetWrapped(window->textArea, 0,
     	    window->buffer->length, &fileLen);
     BufSetAll(window->buffer, fileString);
-    XtFree(fileString);
+    NEditFree(fileString);
 
     /* restore the insert and scroll positions of each pane */
     for (i=0; i<=window->nPanes; i++) {

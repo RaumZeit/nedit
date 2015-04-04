@@ -39,6 +39,7 @@ static const char CVSID[] = "$Id: text.c,v 1.57 2008/01/04 22:11:04 yooden Exp $
 #include "calltips.h"
 #include "../util/DialogF.h"
 #include "window.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -831,7 +832,7 @@ static void initialize(TextWidget request, TextWidget new)
        delimiters.  The memory use scheme here is that new values are
        always copied, and can therefore be safely freed on subsequent
        set-values calls or destroy */
-    delimiters = XtMalloc(strlen(new->text.delimiters) + 4);
+    delimiters = (char*)NEditMalloc(strlen(new->text.delimiters) + 4);
     sprintf(delimiters, "%s%s", " \t\n", new->text.delimiters);
     new->text.delimiters = delimiters;
 
@@ -947,7 +948,7 @@ static void destroy(TextWidget w)
 
     if (w->text.cursorBlinkProcID != 0)
     	XtRemoveTimeOut(w->text.cursorBlinkProcID);
-    XtFree(w->text.delimiters);
+    NEditFree(w->text.delimiters);
     XtRemoveAllCallbacks((Widget)w, textNfocusCallback);
     XtRemoveAllCallbacks((Widget)w, textNlosingFocusCallback);
     XtRemoveAllCallbacks((Widget)w, textNcursorMovementCallback);
@@ -1127,8 +1128,8 @@ static Boolean setValues(TextWidget current, TextWidget request,
        doesn't have to manage it, and add mandatory delimiters blank,
        tab, and newline to the list */
     if (new->text.delimiters != current->text.delimiters) {
-	char *delimiters = XtMalloc(strlen(new->text.delimiters) + 4);
-    	XtFree(current->text.delimiters);
+	char *delimiters = (char*)NEditMalloc(strlen(new->text.delimiters) + 4);
+    	NEditFree(current->text.delimiters);
 	sprintf(delimiters, "%s%s", " \t\n", new->text.delimiters);
 	new->text.delimiters = delimiters;
     }
@@ -1462,7 +1463,7 @@ void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
     lineStartText = BufGetRange(buf, lineStartPos, cursorPos);
     wrappedText = wrapText(tw, lineStartText, chars, lineStartPos, wrapMargin,
     	    replaceSel ? NULL : &breakAt);
-    XtFree(lineStartText);
+    NEditFree(lineStartText);
     
     /* Insert the text.  Where possible, use TextDInsert which is optimized
        for less redraw. */
@@ -1484,7 +1485,7 @@ void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
     	    TextDSetInsertPosition(textD, buf->cursorPosHint);
     	}
     }
-    XtFree(wrappedText);
+    NEditFree(wrappedText);
     checkAutoShowInsertPos(w);
     callCursorMovementCBs(w, event);
 }
@@ -1907,7 +1908,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	    } else
 	    	TextInsertAtCursor(w, textToCopy, event, True,
 			tw->text.autoWrapPastedText);
-	    XtFree(textToCopy);
+	    NEditFree(textToCopy);
 	    BufSecondaryUnselect(buf);
 	    TextDUnblankCursor(textD);
 	} else
@@ -1917,7 +1918,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	TextDSetInsertPosition(textD, TextDXYToPosition(textD, e->x, e->y));
 	TextInsertAtCursor(w, textToCopy, event, False,
 			tw->text.autoWrapPastedText);
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
     } else {
     	TextDSetInsertPosition(textD, TextDXYToPosition(textD, e->x, e->y));
     	InsertPrimarySelection(w, e->time, False);
@@ -1974,7 +1975,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	    } else
 	    	TextInsertAtCursor(w, textToCopy, event, True,
 			((TextWidget)w)->text.autoWrapPastedText);
-	    XtFree(textToCopy);
+	    NEditFree(textToCopy);
 	    BufRemoveSecSelect(buf);
 	    BufSecondaryUnselect(buf);
 	} else
@@ -1984,7 +1985,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	TextDSetInsertPosition(textD, TextDXYToPosition(textD, e->x, e->y));
 	TextInsertAtCursor(w, textToCopy, event, False,
 			((TextWidget)w)->text.autoWrapPastedText);
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
 	BufRemoveSelected(buf);
 	BufUnselect(buf);
     } else {
@@ -2059,8 +2060,8 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     newPrimaryStart = primary->start;
     BufReplaceSelected(buf, secText);
     newPrimaryEnd = newPrimaryStart + strlen(secText);
-    XtFree(primaryText);
-    XtFree(secText);
+    NEditFree(primaryText);
+    NEditFree(secText);
     BufSecondaryUnselect(buf);
     if (secWasRect) {
     	TextDSetInsertPosition(textD, buf->cursorPosHint);
@@ -2092,14 +2093,14 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args,
 	col = BufCountDispChars(buf, BufStartOfLine(buf, insertPos), insertPos);
 	BufInsertCol(buf, col, insertPos, textToCopy, NULL, NULL);
 	TextDSetInsertPosition(textD, buf->cursorPosHint);
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
 	checkAutoShowInsertPos(w);
     } else if (primary->selected) {
 	textToCopy = BufGetSelectionText(buf);
 	insertPos = TextDGetInsertPosition(textD);
 	BufInsert(buf, insertPos, textToCopy);
 	TextDSetInsertPosition(textD, insertPos + strlen(textToCopy));
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
 	checkAutoShowInsertPos(w);
     } else if (rectangular) {
     	if (!TextDPositionToXY(textD, TextDGetInsertPosition(textD),
@@ -2130,7 +2131,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args,
 	col = BufCountDispChars(buf, BufStartOfLine(buf, insertPos), insertPos);
 	BufInsertCol(buf, col, insertPos, textToCopy, NULL, NULL);
 	TextDSetInsertPosition(textD, buf->cursorPosHint);
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
 	BufRemoveSelected(buf);
 	checkAutoShowInsertPos(w);
     } else if (primary->selected) {
@@ -2138,7 +2139,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args,
 	insertPos = TextDGetInsertPosition(textD);
 	BufInsert(buf, insertPos, textToCopy);
 	TextDSetInsertPosition(textD, insertPos + strlen(textToCopy));
-	XtFree(textToCopy);
+	NEditFree(textToCopy);
 	BufRemoveSelected(buf);
 	checkAutoShowInsertPos(w);
     } else if (rectangular) {
@@ -2318,7 +2319,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args,
     
     /* Insert it at the cursor */
     simpleInsertAtCursor(w, indentStr, event, True);
-    XtFree(indentStr);
+    NEditFree(indentStr);
     
     if (tw->text.emulateTabs > 0) {
         /*  If emulated tabs are on, make the inserted indent deletable by
@@ -2371,7 +2372,7 @@ static void processTabAP(Widget w, XEvent *event, String *args,
     }
 
     /* Allocate a buffer assuming all the inserted characters will be spaces */
-    outStr = XtMalloc(toIndent - startIndent + 1);
+    outStr = (char*)NEditMalloc(toIndent - startIndent + 1);
 
     /* Add spaces and tabs to outStr until it reaches toIndent */
     outPtr = outStr;
@@ -2390,7 +2391,7 @@ static void processTabAP(Widget w, XEvent *event, String *args,
     
     /* Insert the emulated tab */
     TextInsertAtCursor(w, outStr, event, True, True);
-    XtFree(outStr);
+    NEditFree(outStr);
     
     /* Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursor */
     ((TextWidget)w)->text.emTabsBeforeCursor = emTabsBeforeCursor + 1;
@@ -3596,12 +3597,12 @@ static int deleteEmulatedTab(Widget w, XEvent *event)
        to be inserted to make up for a deleted tab, do a BufReplace, otherwise,
        do a BufRemove. */
     if (startPosIndent < toIndent) {
-    	spaceString = XtMalloc(toIndent - startPosIndent + 1);
+    	spaceString = (char*)NEditMalloc(toIndent - startPosIndent + 1);
     	memset(spaceString, ' ', toIndent-startPosIndent);
     	spaceString[toIndent - startPosIndent] = '\0';
     	BufReplace(buf, startPos, insertPos, spaceString);
     	TextDSetInsertPosition(textD, startPos + toIndent - startPosIndent);
-    	XtFree(spaceString);
+    	NEditFree(spaceString);
     } else {
 	BufRemove(buf, startPos, insertPos);
 	TextDSetInsertPosition(textD, startPos);
@@ -4010,7 +4011,7 @@ static int wrapLine(TextWidget tw, textBuffer *buf, int bufOffset,
        and return the stats */
     BufReplace(buf, p, p+1, indentStr);
     if (tw->text.autoIndent || tw->text.smartIndent)
-    	XtFree(indentStr);
+    	NEditFree(indentStr);
     *breakAt = p;
     *charsAdded = length-1;
     return True;
@@ -4065,7 +4066,7 @@ static char *createIndentString(TextWidget tw, textBuffer *buf, int bufOffset,
     }
     
     /* Allocate and create a string of tabs and spaces to achieve the indent */
-    indentPtr = indentStr = XtMalloc(indent + 2);
+    indentPtr = indentStr = (char*)NEditMalloc(indent + 2);
     *indentPtr++ = '\n';
     if (useTabs) {
 	for (i=0; i < indent / tabDist; i++)

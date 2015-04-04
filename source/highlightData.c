@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: highlightData.c,v 1.80.2.1 2009/10/31 19:22:05
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -1029,23 +1030,23 @@ int LoadStylesString(char *inString)
 	inPtr += strspn(inPtr, " \t");
 
 	/* Allocate a language mode structure in which to store the info. */
-	hs = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
+	hs = (highlightStyleRec *)NEditMalloc(sizeof(highlightStyleRec));
 
 	/* read style name */
 	hs->name = ReadSymbolicField(&inPtr);
 	if (hs->name == NULL)
     	    return styleError(inString,inPtr, "style name required");
 	if (!SkipDelimiter(&inPtr, &errMsg)) {
-	    XtFree(hs->name);
-	    XtFree((char *)hs);
+	    NEditFree(hs->name);
+	    NEditFree(hs);
     	    return styleError(inString,inPtr, errMsg);
     	}
     	
     	/* read color */
 	hs->color = ReadSymbolicField(&inPtr);
 	if (hs->color == NULL) {
-	    XtFree(hs->name);
-	    XtFree((char *)hs);
+	    NEditFree(hs->name);
+	    NEditFree(hs);
     	    return styleError(inString,inPtr, "color name required");
 	}
         hs->bgColor = NULL;
@@ -1067,11 +1068,11 @@ int LoadStylesString(char *inString)
 	    }
 	}
 	if (i == N_FONT_TYPES) {
-	    XtFree(fontStr);
+	    NEditFree(fontStr);
 	    freeHighlightStyleRec(hs);
 	    return styleError(inString, inPtr, "unrecognized font type");
 	}
-	XtFree(fontStr);
+	NEditFree(fontStr);
 
    	/* pattern set was read correctly, add/change it in the list */
    	for (i=0; i<NHighlightStyles; i++) {
@@ -1201,7 +1202,7 @@ char *WriteHighlightString(void)
     	    BufInsert(outBuf, outBuf->length, "{\n");
     	    BufInsert(outBuf, outBuf->length,
     	    	    str = createPatternsString(patSet, "\t\t"));
-    	    XtFree(str);
+    	    NEditFree(str);
     	    BufInsert(outBuf, outBuf->length, "\t}\n\t");
     	}
     }
@@ -1213,7 +1214,7 @@ char *WriteHighlightString(void)
     /* Protect newlines and backslashes from translation by the resource
        reader */
     escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    NEditFree(outStr);
     return escapedStr;
 }
 
@@ -1252,11 +1253,11 @@ static void convertPatternExpr(char **patternRE, char *patSetName,
     if (*patternRE == NULL)
 	return;
     if (isSubsExpr) {
-	newRE = XtMalloc(strlen(*patternRE) + 5000);
+	newRE = (char*)NEditMalloc(strlen(*patternRE) + 5000);
 	ConvertSubstituteRE(*patternRE, newRE, strlen(*patternRE) + 5000);
-	XtFree(*patternRE);
-	*patternRE = XtNewString(newRE);
-	XtFree(newRE);
+	NEditFree(*patternRE);
+	*patternRE = NEditStrdup(newRE);
+	NEditFree(newRE);
     } else{
 	newRE = ConvertRE(*patternRE, &errorText);
 	if (newRE == NULL) {
@@ -1264,7 +1265,7 @@ static void convertPatternExpr(char **patternRE, char *patSetName,
 		    "expression in pattern set %s, pattern %s: %s\n",
 		    patSetName, patName, errorText);
 	} 
-	XtFree(*patternRE);
+	NEditFree(*patternRE);
 	*patternRE = newRE;
     }
 }
@@ -1390,14 +1391,14 @@ void RenameHighlightPattern(const char *oldName, const char *newName)
     
     for (i=0; i<NPatternSets; i++) {
     	if (!strcmp(oldName, PatternSets[i]->languageMode)) {
-    	    XtFree(PatternSets[i]->languageMode);
-    	    PatternSets[i]->languageMode = XtNewString(newName);
+    	    NEditFree(PatternSets[i]->languageMode);
+    	    PatternSets[i]->languageMode = NEditStrdup(newName);
     	}
     }
     if (HighlightDialog.shell != NULL) {
     	if (!strcmp(HighlightDialog.langModeName, oldName)) {
-    	    XtFree(HighlightDialog.langModeName);
-    	    HighlightDialog.langModeName = XtNewString(newName);
+    	    NEditFree(HighlightDialog.langModeName);
+    	    HighlightDialog.langModeName = NEditStrdup(newName);
     	}
     }
 }
@@ -1438,18 +1439,18 @@ static char *createPatternsString(patternSet *patSet, char *indentStr)
     	if (pat->startRE != NULL) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(pat->startRE));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
     	if (pat->endRE != NULL) {
     	    BufInsert(outBuf, outBuf->length, str=MakeQuotedString(pat->endRE));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
     	if (pat->errorRE != NULL) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(pat->errorRE));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
     	BufInsert(outBuf, outBuf->length, pat->style);
@@ -1495,7 +1496,7 @@ static patternSet *readPatternSet(char **inPtr, int convertOld)
     if (!strncmp(*inPtr, "Default", 7)) {
     	*inPtr += 7;
     	retPatSet = readDefaultPatternSet(patSet.languageMode);
-    	XtFree(patSet.languageMode);
+    	NEditFree(patSet.languageMode);
     	if (retPatSet == NULL)
     	    return highlightError(stringStart, *inPtr,
     	    	    "No default pattern set");
@@ -1521,7 +1522,7 @@ static patternSet *readPatternSet(char **inPtr, int convertOld)
 	return highlightError(stringStart, *inPtr, errMsg);
 
     /* pattern set was read correctly, make an allocated copy to return */
-    retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
+    retPatSet = (patternSet *)NEditMalloc(sizeof(patternSet));
     memcpy(retPatSet, &patSet, sizeof(patternSet));
     
     /* Convert pre-5.1 pattern sets which use old regular expression
@@ -1580,7 +1581,7 @@ static highlightPattern *readHighlightPatterns(char **inPtr, int withBraces,
     
     /* allocate a more appropriately sized list to return patterns */
     *nPatterns = pat - patternList;
-    returnedList = (highlightPattern *)XtMalloc(
+    returnedList = (highlightPattern *)NEditMalloc(
     	    sizeof(highlightPattern) * *nPatterns);
     memcpy(returnedList, patternList, sizeof(highlightPattern) * *nPatterns);
     return returnedList;
@@ -1733,7 +1734,7 @@ void EditHighlightStyles(const char *initialStyle)
     
     /* Copy the list of highlight style information to one that the user
        can freely edit (via the dialog and managed-list code) */
-    HSDialog.highlightStyleList = (highlightStyleRec **)XtMalloc(
+    HSDialog.highlightStyleList = (highlightStyleRec **)NEditMalloc(
     	    sizeof(highlightStyleRec *) * MAX_HIGHLIGHT_STYLES);
     for (i=0; i<NHighlightStyles; i++)
     	HSDialog.highlightStyleList[i] =
@@ -1957,7 +1958,7 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
     
     for (i=0; i<HSDialog.nHighlightStyles; i++)
     	freeHighlightStyleRec(HSDialog.highlightStyleList[i]);
-    XtFree((char *)HSDialog.highlightStyleList);
+    NEditFree(HSDialog.highlightStyleList);
 }
 
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2075,13 +2076,13 @@ static highlightStyleRec *readHSDialogFields(int silent)
     XColor rgb;
 
     /* Allocate a language mode structure to return */
-    hs = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
+    hs = (highlightStyleRec *)NEditMalloc(sizeof(highlightStyleRec));
 
     /* read the name field */
     hs->name = ReadSymbolicFieldTextWidget(HSDialog.nameW,
     	    "highlight style name", silent);
     if (hs->name == NULL) {
-    	XtFree((char *)hs);
+    	NEditFree(hs);
     	return NULL;
     }
 
@@ -2093,16 +2094,16 @@ static highlightStyleRec *readHSDialogFields(int silent)
                     "Please specify a name\nfor the highlight style", "OK");
             XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
         }
-        XtFree(hs->name);
-        XtFree((char *)hs);
+        NEditFree(hs->name);
+        NEditFree(hs);
         return NULL;
     }
 
     /* read the color field */
     hs->color = ReadSymbolicFieldTextWidget(HSDialog.colorW, "color", silent);
     if (hs->color == NULL) {
-    	XtFree(hs->name);
-    	XtFree((char *)hs);
+    	NEditFree(hs->name);
+    	NEditFree(hs);
     	return NULL;
     }
 
@@ -2115,9 +2116,9 @@ static highlightStyleRec *readHSDialogFields(int silent)
                     "OK");
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
-        XtFree(hs->name);
-        XtFree(hs->color);
-        XtFree((char *)hs);
+        NEditFree(hs->name);
+        NEditFree(hs->color);
+        NEditFree(hs);
         return NULL;
     }
 
@@ -2132,9 +2133,9 @@ static highlightStyleRec *readHSDialogFields(int silent)
                     hs->color);
             XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         }
-        XtFree(hs->name);
-        XtFree(hs->color);
-        XtFree((char *)hs);
+        NEditFree(hs->name);
+        NEditFree(hs->color);
+        NEditFree(hs);
         return NULL;;
     }
     
@@ -2142,7 +2143,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
     hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
                         "bgColor", silent);
     if (hs->bgColor && *hs->bgColor == '\0') {
-        XtFree(hs->bgColor);
+        NEditFree(hs->bgColor);
         hs->bgColor = NULL;
     }
 
@@ -2157,10 +2158,10 @@ static highlightStyleRec *readHSDialogFields(int silent)
                     hs->bgColor);
             XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
         }
-        XtFree(hs->name);
-        XtFree(hs->color);
-        XtFree(hs->bgColor);
-        XtFree((char *)hs);
+        NEditFree(hs->name);
+        NEditFree(hs->color);
+        NEditFree(hs->bgColor);
+        NEditFree(hs);
         return NULL;;
     }
     
@@ -2185,19 +2186,19 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs)
 {
     highlightStyleRec *newHS;
     
-    newHS = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
-    newHS->name = XtMalloc(strlen(hs->name)+1);
+    newHS = (highlightStyleRec *)NEditMalloc(sizeof(highlightStyleRec));
+    newHS->name = (char*)NEditMalloc(strlen(hs->name)+1);
     strcpy(newHS->name, hs->name);
     if (hs->color == NULL)
     	newHS->color = NULL;
     else {
-	newHS->color = XtMalloc(strlen(hs->color)+1);
+	newHS->color = (char*)NEditMalloc(strlen(hs->color)+1);
 	strcpy(newHS->color, hs->color);
     }
     if (hs->bgColor == NULL)
     	newHS->bgColor = NULL;
     else {
-	newHS->bgColor = XtMalloc(strlen(hs->bgColor)+1);
+	newHS->bgColor = (char*)NEditMalloc(strlen(hs->bgColor)+1);
 	strcpy(newHS->bgColor, hs->bgColor);
     }
     newHS->font = hs->font;
@@ -2210,9 +2211,9 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs)
 */
 static void freeHighlightStyleRec(highlightStyleRec *hs)
 {
-    XtFree(hs->name);
-    XtFree(hs->color);
-    XtFree((char *)hs);
+    NEditFree(hs->name);
+    NEditFree(hs->color);
+    NEditFree(hs);
 }
 
 /*
@@ -2307,7 +2308,7 @@ void EditHighlightPatterns(WindowInfo *window)
     }
     
     /* Decide on an initial language mode */
-    HighlightDialog.langModeName = XtNewString(
+    HighlightDialog.langModeName = NEditStrdup(
     	    LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 :
     	    window->languageMode));
 
@@ -2315,7 +2316,7 @@ void EditHighlightPatterns(WindowInfo *window)
     patSet = FindPatternSet(HighlightDialog.langModeName);
     
     /* Copy the list of patterns to one that the user can freely edit */
-    HighlightDialog.patterns = (highlightPattern **)XtMalloc(
+    HighlightDialog.patterns = (highlightPattern **)NEditMalloc(
     	    sizeof(highlightPattern *) * MAX_PATTERNS);
     nPatterns = patSet == NULL ? 0 : patSet->nPatterns;
     for (i=0; i<nPatterns; i++)
@@ -2897,7 +2898,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int i;
     
-    XtFree((char*) HighlightDialog.langModeName);
+    NEditFree(HighlightDialog.langModeName);
     for (i=0; i<HighlightDialog.nPatterns; i++)
      	freePatternSrc(HighlightDialog.patterns[i], True);
     HighlightDialog.shell = NULL;
@@ -2956,12 +2957,12 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     	freePatternSet(newPatSet);
 
     /* Free the old dialog information */
-    XtFree((char*) HighlightDialog.langModeName);
+    NEditFree(HighlightDialog.langModeName);
     for (i=0; i<HighlightDialog.nPatterns; i++)
      	freePatternSrc(HighlightDialog.patterns[i], True);
     
     /* Fill the dialog with the new language mode information */
-    HighlightDialog.langModeName = XtNewString(modeName);
+    HighlightDialog.langModeName = NEditStrdup(modeName);
     newPatSet = FindPatternSet(modeName);
     if (newPatSet == NULL) {
     	HighlightDialog.nPatterns = 0;
@@ -3328,7 +3329,7 @@ static highlightPattern *readDialogFields(int silent)
 
     /* Allocate a pattern source structure to return, zero out fields
        so that the whole pattern can be freed on error with freePatternSrc */
-    pat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
+    pat = (highlightPattern *)NEditMalloc(sizeof(highlightPattern));
     pat->endRE = NULL;
     pat->errorRE = NULL;
     pat->style = NULL;
@@ -3346,7 +3347,7 @@ static highlightPattern *readDialogFields(int silent)
     pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW,
     	    "highlight pattern name", silent);
     if (pat->name == NULL) {
-    	XtFree((char *)pat);
+    	NEditFree(pat);
     	return NULL;
     }
 
@@ -3358,8 +3359,8 @@ static highlightPattern *readDialogFields(int silent)
                     "Please specify a name\nfor the pattern", "OK");
             XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
         }
-        XtFree(pat->name);
-        XtFree((char *)pat);
+        NEditFree(pat->name);
+        NEditFree(pat);
         return NULL;
     }
     
@@ -3430,7 +3431,7 @@ static highlightPattern *readDialogFields(int silent)
     /* read the styles option menu */
     XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, NULL);
     XtVaGetValues(selectedItem, XmNuserData, &style, NULL);
-    pat->style = XtMalloc(strlen(style) + 1);
+    pat->style = (char*)NEditMalloc(strlen(style) + 1);
     strcpy(pat->style, style);
     
 
@@ -3456,7 +3457,7 @@ static highlightPattern *readDialogFields(int silent)
     if (XmToggleButtonGetState(HighlightDialog.rangeW)) {
 	pat->errorRE = XmTextGetString(HighlightDialog.errorW);
 	if (*pat->errorRE == '\0') {
-            XtFree(pat->errorRE);
+            NEditFree(pat->errorRE);
             pat->errorRE = NULL;
 	}
     }
@@ -3590,12 +3591,12 @@ static patternSet *getDialogPatternSet(void)
     
     /* Allocate a new pattern set structure and copy the fields read from the
        dialog, including the modified pattern list into it */
-    patSet = (patternSet *)XtMalloc(sizeof(patternSet));
-    patSet->languageMode = XtNewString(HighlightDialog.langModeName);
+    patSet = (patternSet *)NEditMalloc(sizeof(patternSet));
+    patSet->languageMode = NEditStrdup(HighlightDialog.langModeName);
     patSet->lineContext = lineContext;
     patSet->charContext = charContext;
     patSet->nPatterns = HighlightDialog.nPatterns;
-    patSet->patterns = (highlightPattern *)XtMalloc(sizeof(highlightPattern) *
+    patSet->patterns = (highlightPattern *)NEditMalloc(sizeof(highlightPattern) *
     	    HighlightDialog.nPatterns);
     for (i=0; i<HighlightDialog.nPatterns; i++)
     	copyPatternSrc(HighlightDialog.patterns[i], &patSet->patterns[i]);
@@ -3649,15 +3650,15 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
     highlightPattern *newPat;
     
     if (copyTo == NULL)
-    	newPat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
+    	newPat = (highlightPattern *)NEditMalloc(sizeof(highlightPattern));
     else
     	newPat = copyTo;
-    newPat->name = XtNewString(pat->name);
-    newPat->startRE = XtNewString(pat->startRE);
-    newPat->endRE = XtNewString(pat->endRE);
-    newPat->errorRE = XtNewString(pat->errorRE);
-    newPat->style = XtNewString(pat->style);
-    newPat->subPatternOf = XtNewString(pat->subPatternOf);
+    newPat->name = NEditStrdup(pat->name);
+    newPat->startRE = NEditStrdup(pat->startRE);
+    newPat->endRE = NEditStrdup(pat->endRE);
+    newPat->errorRE = NEditStrdup(pat->errorRE);
+    newPat->style = NEditStrdup(pat->style);
+    newPat->subPatternOf = NEditStrdup(pat->subPatternOf);
     newPat->flags = pat->flags;    
     return newPat;
 }
@@ -3668,14 +3669,14 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
 */
 static void freePatternSrc(highlightPattern *pat, int freeStruct)
 {
-    XtFree(pat->name);
-    XtFree((char*) pat->startRE);
-    XtFree((char*) pat->endRE);
-    XtFree((char*) pat->errorRE);
-    XtFree((char*) pat->style);
-    XtFree((char*) pat->subPatternOf);
+    NEditFree(pat->name);
+    NEditFree(pat->startRE);
+    NEditFree(pat->endRE);
+    NEditFree(pat->errorRE);
+    NEditFree(pat->style);
+    NEditFree(pat->subPatternOf);
     if (freeStruct)
-    	XtFree((char *)pat);
+    	NEditFree(pat);
 }
 
 /*
@@ -3688,9 +3689,9 @@ static void freePatternSet(patternSet *p)
     
     for (i=0; i<p->nPatterns; i++)
     	freePatternSrc(&p->patterns[i], False);
-    XtFree(p->languageMode);
-    XtFree((char *)p->patterns);
-    XtFree((char *)p);
+    NEditFree(p->languageMode);
+    NEditFree(p->patterns);
+    NEditFree(p);
 }
 
 #if 0

@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: undo.c,v 1.19 2008/01/04 22:11:05 yooden Exp $
 #include "file.h"
 #include "userCmds.h"
 #include "preferences.h"
+#include "../util/nedit_malloc.h"
 
 #include <string.h>
 #ifdef VMS
@@ -250,7 +251,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
     ** The user has started a new operation, create a new undo record
     ** and save the new undo data.
     */
-    undo = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+    undo = (UndoInfo *)NEditMalloc(sizeof(UndoInfo));
     undo->oldLen = 0;
     undo->oldText = NULL;
     undo->type = newType;
@@ -262,7 +263,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
     /* if text was deleted, save it */
     if (nDeleted > 0) {
 	undo->oldLen = nDeleted + 1;	/* +1 is for null at end */
-	undo->oldText = XtMalloc(nDeleted + 1);
+	undo->oldText = (char*)NEditMalloc(nDeleted + 1);
 	strcpy(undo->oldText, deletedText);
     }
     
@@ -408,7 +409,7 @@ static void appendDeletedText(WindowInfo *window, const char *deletedText,
     char *comboText;
 
     /* re-allocate, adding space for the new character(s) */
-    comboText = XtMalloc(undo->oldLen + deletedLen);
+    comboText = (char*)NEditMalloc(undo->oldLen + deletedLen);
 
     /* copy the new character and the already deleted text to the new memory */
     if (direction == FORWARD) {
@@ -423,7 +424,7 @@ static void appendDeletedText(WindowInfo *window, const char *deletedText,
     window->undoMemUsed++;
 
     /* free the old saved text and attach the new */
-    XtFree(undo->oldText);
+    NEditFree(undo->oldText);
     undo->oldText = comboText;
     undo->oldLen += deletedLen;
 }
@@ -492,6 +493,6 @@ static void freeUndoRecord(UndoInfo *undo)
     if (undo == NULL)
     	return;
     	
-    XtFree(undo->oldText);
-    XtFree((char *)undo);
+    NEditFree(undo->oldText);
+    NEditFree(undo);
 }

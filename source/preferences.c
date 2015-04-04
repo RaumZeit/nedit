@@ -54,6 +54,7 @@ static const char CVSID[] = "$Id: preferences.c,v 1.160 2008/10/22 09:00:48 lebe
 #include "../util/fontsel.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
+#include "../util/nedit_malloc.h"
 
 #include <ctype.h>
 #include <pwd.h>
@@ -1359,43 +1360,43 @@ static void translatePrefFormats(int convertOld, int fileVer)
 #ifndef VMS
     if (TempStringPrefs.shellCmds != NULL) {
 	LoadShellCmdsString(TempStringPrefs.shellCmds);
-	XtFree(TempStringPrefs.shellCmds);
+	NEditFree(TempStringPrefs.shellCmds);
 	TempStringPrefs.shellCmds = NULL;
     }
 #endif /* VMS */
     if (TempStringPrefs.macroCmds != NULL) {
 	LoadMacroCmdsString(TempStringPrefs.macroCmds);
-    	XtFree(TempStringPrefs.macroCmds);
+    	NEditFree(TempStringPrefs.macroCmds);
 	TempStringPrefs.macroCmds = NULL;
     }
     if (TempStringPrefs.bgMenuCmds != NULL) {
 	LoadBGMenuCmdsString(TempStringPrefs.bgMenuCmds);
-    	XtFree(TempStringPrefs.bgMenuCmds);
+    	NEditFree(TempStringPrefs.bgMenuCmds);
 	TempStringPrefs.bgMenuCmds = NULL;
     }
     if (TempStringPrefs.highlight != NULL) {
 	LoadHighlightString(TempStringPrefs.highlight, convertOld);
-    	XtFree(TempStringPrefs.highlight);
+    	NEditFree(TempStringPrefs.highlight);
 	TempStringPrefs.highlight = NULL;
     }
     if (TempStringPrefs.styles != NULL) {
 	LoadStylesString(TempStringPrefs.styles);
-    	XtFree(TempStringPrefs.styles);
+    	NEditFree(TempStringPrefs.styles);
 	TempStringPrefs.styles = NULL;
     }
     if (TempStringPrefs.language != NULL) {
 	loadLanguageModesString(TempStringPrefs.language, fileVer);
-    	XtFree(TempStringPrefs.language);
+    	NEditFree(TempStringPrefs.language);
 	TempStringPrefs.language = NULL;
     }
     if (TempStringPrefs.smartIndent != NULL) {
 	LoadSmartIndentString(TempStringPrefs.smartIndent);
-    	XtFree(TempStringPrefs.smartIndent);
+    	NEditFree(TempStringPrefs.smartIndent);
 	TempStringPrefs.smartIndent = NULL;
     }
     if (TempStringPrefs.smartIndentCommon != NULL) {
 	LoadSmartIndentCommonString(TempStringPrefs.smartIndentCommon);
-	XtFree(TempStringPrefs.smartIndentCommon);
+	NEditFree(TempStringPrefs.smartIndentCommon);
 	TempStringPrefs.smartIndentCommon = NULL;
     }
     
@@ -1487,15 +1488,15 @@ void SaveNEditPrefs(Widget parent, int quietly)
     }
 
 #ifndef VMS
-    XtFree(TempStringPrefs.shellCmds);
+    NEditFree(TempStringPrefs.shellCmds);
 #endif /* VMS */
-    XtFree(TempStringPrefs.macroCmds);
-    XtFree(TempStringPrefs.bgMenuCmds);
-    XtFree(TempStringPrefs.highlight);
-    XtFree(TempStringPrefs.language);
-    XtFree(TempStringPrefs.styles);
-    XtFree(TempStringPrefs.smartIndent);
-    XtFree(TempStringPrefs.smartIndentCommon);
+    NEditFree(TempStringPrefs.macroCmds);
+    NEditFree(TempStringPrefs.bgMenuCmds);
+    NEditFree(TempStringPrefs.highlight);
+    NEditFree(TempStringPrefs.language);
+    NEditFree(TempStringPrefs.styles);
+    NEditFree(TempStringPrefs.smartIndent);
+    NEditFree(TempStringPrefs.smartIndentCommon);
     
     PrefsHaveChanged = False;
 }
@@ -1512,11 +1513,11 @@ void ImportPrefFile(const char *filename, int convertOld)
     fileString = ReadAnyTextFile(filename, False);
     if (fileString != NULL){
         db = XrmGetStringDatabase(fileString);
-        XtFree(fileString);
+        NEditFree(fileString);
         OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip,
         XtNumber(PrefDescrip));
         translatePrefFormats(convertOld, -1);
-        ImportedFile = XtNewString(filename);
+        ImportedFile = NEditStrdup(filename);
     } else
     {
         fprintf(stderr, "Could not read additional preferences file: %s\n",
@@ -2262,12 +2263,11 @@ static void setStringAllocPref(char **pprefDataField, char *newValue)
       PrefsHaveChanged = True;
 
     /* get rid of old preference */
-    XtFree(*pprefDataField);
+    NEditFree(*pprefDataField);
 
     /* store new preference */
     if (newValue) {
-      p_newField = XtMalloc(strlen(newValue) + 1);
-      strcpy(p_newField, newValue);
+      p_newField = NEditStrdup(newValue);
     }
     *pprefDataField = newValue;
 }
@@ -2862,7 +2862,7 @@ static void shellSelOKCB(Widget widget, XtPointer clientData,
         XtPointer callData)
 {
     Widget shellSelDialog = (Widget) clientData;
-    String shellName = XtMalloc(MAXPATHLEN);
+    String shellName = (char*)NEditMalloc(MAXPATHLEN);
     struct stat attribute;
     unsigned dlgResult;
 
@@ -2886,7 +2886,7 @@ static void shellSelOKCB(Widget widget, XtPointer clientData,
     }
 
     SetPrefShell(shellName);
-    XtFree(shellName);
+    NEditFree(shellName);
 
     DoneWithShellSelDialog = True;
 }
@@ -2920,7 +2920,7 @@ void EditLanguageModes(void)
     	return;
     }
     
-    LMDialog.languageModeList = (languageModeRec **)XtMalloc(
+    LMDialog.languageModeList = (languageModeRec **)NEditMalloc(
     	    sizeof(languageModeRec *) * MAX_LANGUAGE_MODES);
     for (i=0; i<NLanguageModes; i++)
     	LMDialog.languageModeList[i] = copyLanguageModeRec(LanguageModes[i]);
@@ -3288,7 +3288,7 @@ static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
     
     for (i=0; i<LMDialog.nLanguageModes; i++)
     	freeLanguageModeRec(LMDialog.languageModeList[i]);
-    XtFree((char *)LMDialog.languageModeList);
+    NEditFree(LMDialog.languageModeList);
 }
 
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -3470,10 +3470,10 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
 	if (nCopies <= 1) {
     	    oldLen = strchr(oldLM->name, ':') == NULL ? strlen(oldLM->name) :
     	    	    strchr(oldLM->name, ':') - oldLM->name;
-    	    tempName = XtMalloc(oldLen + strlen(lm->name) + 2);
+    	    tempName = (char*)NEditMalloc(oldLen + strlen(lm->name) + 2);
     	    strncpy(tempName, oldLM->name, oldLen);
     	    sprintf(&tempName[oldLen], ":%s", lm->name);
-    	    XtFree(lm->name);
+    	    NEditFree(lm->name);
     	    lm->name = tempName;
 	}
     }
@@ -3522,7 +3522,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg)
     	    	lm->name : strchr(lm->name, ':')+1);
     	extStr = createExtString(lm->extensions, lm->nExtensions);
     	XmTextSetString(LMDialog.extW, extStr);
-    	XtFree(extStr);
+    	NEditFree(extStr);
     	XmTextSetString(LMDialog.recogW, lm->recognitionExpr);
         XmTextSetString(LMDialog.defTipsW, lm->defTipsFile);
     	XmTextSetString(LMDialog.delimitW, lm->delimiters);
@@ -3562,14 +3562,14 @@ static void freeLanguageModeRec(languageModeRec *lm)
 {
     int i;
     
-    XtFree(lm->name);
-    XtFree(lm->recognitionExpr);
-    XtFree(lm->defTipsFile);
-    XtFree(lm->delimiters);
+    NEditFree(lm->name);
+    NEditFree(lm->recognitionExpr);
+    NEditFree(lm->defTipsFile);
+    NEditFree(lm->delimiters);
     for (i=0; i<lm->nExtensions; i++)
-    	XtFree(lm->extensions[i]);
-    XtFree((char*) lm->extensions);
-    XtFree((char *)lm);
+    	NEditFree(lm->extensions[i]);
+    NEditFree(lm->extensions);
+    NEditFree(lm);
 }
 
 /*
@@ -3580,32 +3580,27 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm)
     languageModeRec *newLM;
     int i;
     
-    newLM = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
-    newLM->name = XtMalloc(strlen(lm->name)+1);
-    strcpy(newLM->name, lm->name);
+    newLM = (languageModeRec *)NEditMalloc(sizeof(languageModeRec));
+    newLM->name = NEditStrdup(lm->name);
     newLM->nExtensions = lm->nExtensions;
-    newLM->extensions = (char **)XtMalloc(sizeof(char *) * lm->nExtensions);
+    newLM->extensions = (char **)NEditMalloc(sizeof(char *) * lm->nExtensions);
     for (i=0; i<lm->nExtensions; i++) {
-    	newLM->extensions[i] = XtMalloc(strlen(lm->extensions[i]) + 1);
-    	strcpy(newLM->extensions[i], lm->extensions[i]);
+    	newLM->extensions[i] = NEditStrdup(lm->extensions[i]);
     }
     if (lm->recognitionExpr == NULL)
     	newLM->recognitionExpr = NULL;
     else {
-	newLM->recognitionExpr = XtMalloc(strlen(lm->recognitionExpr)+1);
-	strcpy(newLM->recognitionExpr, lm->recognitionExpr);
+	newLM->recognitionExpr = NEditStrdup(lm->recognitionExpr);
     }
     if (lm->defTipsFile == NULL)
     	newLM->defTipsFile = NULL;
     else {
-	newLM->defTipsFile = XtMalloc(strlen(lm->defTipsFile)+1);
-	strcpy(newLM->defTipsFile, lm->defTipsFile);
+	newLM->defTipsFile = NEditStrdup(lm->defTipsFile);
     }
     if (lm->delimiters == NULL)
     	newLM->delimiters = NULL;
     else {
-	newLM->delimiters = XtMalloc(strlen(lm->delimiters)+1);
-	strcpy(newLM->delimiters, lm->delimiters);
+	newLM->delimiters = NEditStrdup(lm->delimiters);
     }
     newLM->wrapStyle = lm->wrapStyle;
     newLM->indentStyle = lm->indentStyle;
@@ -3628,7 +3623,7 @@ static languageModeRec *readLMDialogFields(int silent)
 
     /* Allocate a language mode structure to return, set unread fields to
        empty so everything can be freed on errors by freeLanguageModeRec */
-    lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
+    lm = (languageModeRec *)NEditMalloc(sizeof(languageModeRec));
     lm->nExtensions = 0;
     lm->recognitionExpr = NULL;
     lm->defTipsFile = NULL;
@@ -3638,7 +3633,7 @@ static languageModeRec *readLMDialogFields(int silent)
     lm->name = ReadSymbolicFieldTextWidget(LMDialog.nameW,
     	    "language mode name", silent);
     if (lm->name == NULL) {
-    	XtFree((char *)lm);
+    	NEditFree(lm);
     	return NULL;
     }
 
@@ -3657,12 +3652,12 @@ static languageModeRec *readLMDialogFields(int silent)
     /* read the extension list field */
     extStr = extPtr = XmTextGetString(LMDialog.extW);
     lm->extensions = readExtensionList(&extPtr, &lm->nExtensions);
-    XtFree(extStr);
+    NEditFree(extStr);
     
     /* read recognition expression */
     lm->recognitionExpr = XmTextGetString(LMDialog.recogW);
     if (*lm->recognitionExpr == '\0') {
-    	XtFree(lm->recognitionExpr);
+    	NEditFree(lm->recognitionExpr);
     	lm->recognitionExpr = NULL;
     } else
     {
@@ -3676,19 +3671,19 @@ static languageModeRec *readLMDialogFields(int silent)
                         "Recognition expression:\n%s", "OK", compileMsg);
                 XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
             }
-            XtFree((char *)compiledRE);
+            NEditFree(compiledRE);
             freeLanguageModeRec(lm);
             return NULL;    
         }
 
-        XtFree((char *)compiledRE);
+        NEditFree(compiledRE);
     }
     
     /* Read the default calltips file for the language mode */
     lm->defTipsFile = XmTextGetString(LMDialog.defTipsW);
     if (*lm->defTipsFile == '\0') {
         /* Empty string */
-    	XtFree(lm->defTipsFile);
+    	NEditFree(lm->defTipsFile);
     	lm->defTipsFile = NULL;
     } else {
         /* Ensure that AddTagsFile will work */
@@ -3761,7 +3756,7 @@ static languageModeRec *readLMDialogFields(int silent)
     /* read delimiters string */
     lm->delimiters = XmTextGetString(LMDialog.delimitW);
     if (*lm->delimiters == '\0') {
-    	XtFree(lm->delimiters);
+    	NEditFree(lm->delimiters);
     	lm->delimiters = NULL;
     }
     
@@ -3827,7 +3822,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     }
     
     /* Create a structure for keeping track of dialog state */
-    fd = (fontDialog *)XtMalloc(sizeof(fontDialog));
+    fd = (fontDialog *)NEditMalloc(sizeof(fontDialog));
     fd->window = window;
     fd->forWindow = forWindow;
     window->fontDialog = (void*)fd;
@@ -4162,7 +4157,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     if (!ExecRE(compiledRE, primaryName, NULL, False, '\0', '\0', NULL, NULL, NULL)) {
     	XBell(XtDisplay(fd->shell), 0);
     	free(compiledRE);
-    	XtFree(primaryName);
+    	NEditFree(primaryName);
     	return;
     }
     
@@ -4176,8 +4171,8 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     SubstituteRE(compiledRE, boldItalicReplaceString, modifiedFontName,
     	    MAX_FONT_LEN);
     XmTextSetString(fd->boldItalicW, modifiedFontName);
-    XtFree(primaryName);
-    free(compiledRE);
+    NEditFree(primaryName);
+    NEditFree(compiledRE);
 }
 
 static void primaryModifiedCB(Widget w, XtPointer clientData,
@@ -4240,7 +4235,7 @@ static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
     fontDialog *fd = (fontDialog *)clientData;
     
     fd->window->fontDialog = NULL;
-    XtFree((char *)fd);
+    NEditFree(fd);
 }
 
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -4284,15 +4279,15 @@ static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW)
        an empty font name, and kill the whole application! */
     testName = XmTextGetString(fontTextFieldW);
     if (testName[0] == '\0') {
-	XtFree(testName);
+	NEditFree(testName);
     	return BAD_FONT;
     }
     testFont = XLoadQueryFont(display, testName);
     if (testFont == NULL) {
-    	XtFree(testName);
+    	NEditFree(testName);
     	return BAD_FONT;
     }
-    XtFree(testName);
+    NEditFree(testName);
     testWidth = testFont->min_bounds.width;
     testHeight = testFont->ascent + testFont->descent;
     XFreeFont(display, testFont);
@@ -4300,15 +4295,15 @@ static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW)
     /* Get width and height of the primary font */
     primaryName = XmTextGetString(fd->primaryW);
     if (primaryName[0] == '\0') {
-	XtFree(primaryName);
+	NEditFree(primaryName);
     	return BAD_FONT;
     }
     primaryFont = XLoadQueryFont(display, primaryName);
     if (primaryFont == NULL) {
-    	XtFree(primaryName);
+    	NEditFree(primaryName);
     	return BAD_PRIMARY;
     }
-    XtFree(primaryName);
+    NEditFree(primaryName);
     primaryWidth = primaryFont->min_bounds.width;
     primaryHeight = primaryFont->ascent + primaryFont->descent;
     XFreeFont(display, primaryFont);
@@ -4368,11 +4363,11 @@ static void browseFont(Widget parent, Widget fontTextW)
             &dummy, &dummy, &dummy);
 
     newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
-    XtFree(origFontName);
+    NEditFree(origFontName);
     if (newFontName == NULL)
     	return;
     XmTextSetString(fontTextW, newFontName);
-    XtFree(newFontName);
+    NEditFree(newFontName);
 }
 
 /*
@@ -4404,10 +4399,10 @@ static void updateFonts(fontDialog *fd)
     	SetPrefBoldFont(boldName);
     	SetPrefBoldItalicFont(boldItalicName);
     }
-    XtFree(fontName);
-    XtFree(italicName);
-    XtFree(boldName);
-    XtFree(boldItalicName);
+    NEditFree(fontName);
+    NEditFree(italicName);
+    NEditFree(boldName);
+    NEditFree(boldItalicName);
 }
 
 /*
@@ -4534,12 +4529,12 @@ static int matchLanguageMode(WindowInfo *window)
     	    	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos,
     	    	    &endPos, NULL, NULL, NULL))
             {
-		XtFree(first200);
+		NEditFree(first200);
     	    	return i;
 	    }
     	}
     }
-    XtFree(first200);
+    NEditFree(first200);
     
     /* Look at file extension ("@@/" starts a ClearCase version extended path,
        which gets appended after the file extension, and therefore must be
@@ -4585,7 +4580,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
     	
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
-	lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
+	lm = (languageModeRec *)NEditMalloc(sizeof(languageModeRec));
 	lm->nExtensions = 0;
 	lm->recognitionExpr = NULL;
         lm->defTipsFile = NULL;
@@ -4594,7 +4589,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
 	/* read language mode name */
 	lm->name = ReadSymbolicField(&inPtr);
 	if (lm->name == NULL) {
-    	    XtFree((char *)lm);
+    	    NEditFree(lm);
     	    return modeError(NULL,inString,inPtr,"language mode name required");
 	}
 	if (!SkipDelimiter(&inPtr, &errMsg))
@@ -4625,7 +4620,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
 	    	    break;
 	    	}
 	    }
-	    XtFree(styleName);
+	    NEditFree(styleName);
 	    if (i == N_INDENT_STYLES)
 	    	return modeError(lm,inString,inPtr,"unrecognized indent style");
 	}
@@ -4643,7 +4638,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
 	    	    break;
 	    	}
 	    }
-	    XtFree(styleName);
+	    NEditFree(styleName);
 	    if (i == N_WRAP_STYLES)
 	    	return modeError(lm, inString, inPtr,"unrecognized wrap style");
 	}
@@ -4718,12 +4713,12 @@ static char *writeLanguageModesString(void)
     	BufInsert(outBuf, outBuf->length, ":");
     	BufInsert(outBuf, outBuf->length, str = createExtString(
     	    	LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
-    	XtFree(str);
+    	NEditFree(str);
     	BufInsert(outBuf, outBuf->length, ":");
     	if (LanguageModes[i]->recognitionExpr != NULL) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(LanguageModes[i]->recognitionExpr));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
     	if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
@@ -4747,13 +4742,13 @@ static char *writeLanguageModesString(void)
     	if (LanguageModes[i]->delimiters != NULL) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(LanguageModes[i]->delimiters));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
     	if (LanguageModes[i]->defTipsFile != NULL) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(LanguageModes[i]->defTipsFile));
-    	    XtFree(str);
+    	    NEditFree(str);
     	}
         
     	BufInsert(outBuf, outBuf->length, "\n");
@@ -4763,7 +4758,7 @@ static char *writeLanguageModesString(void)
     outStr = BufGetRange(outBuf, 0, outBuf->length - 1);
     BufFree(outBuf);
     escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    NEditFree(outStr);
     return escapedStr;
 }
 
@@ -4774,7 +4769,7 @@ static char *createExtString(char **extensions, int nExtensions)
 
     for (e=0; e<nExtensions; e++)
     	length += strlen(extensions[e]) + 1;
-    outStr = outPtr = XtMalloc(length);
+    outStr = outPtr = (char*)NEditMalloc(length);
     for (e=0; e<nExtensions; e++) {
     	strcpy(outPtr, extensions[e]);
     	outPtr += strlen(extensions[e]);
@@ -4802,14 +4797,14 @@ static char **readExtensionList(char **inPtr, int *nExtensions)
 	while (**inPtr!=' ' && **inPtr!='\t' && **inPtr!=':' && **inPtr!='\0')
 	    (*inPtr)++;
     	len = *inPtr - strStart;
-    	extensionList[i] = XtMalloc(len + 1);
+    	extensionList[i] = (char*)NEditMalloc(len + 1);
     	strncpy(extensionList[i], strStart, len);
     	extensionList[i][len] = '\0';
     }
     *nExtensions = i;
     if (i == 0)
     	return NULL;
-    retList = (char **)XtMalloc(sizeof(char *) * i);
+    retList = (char **)NEditMalloc(sizeof(char *) * i);
     memcpy(retList, extensionList, sizeof(char *) * i);
     return retList;
 }
@@ -4851,7 +4846,7 @@ char *ReadSymbolicField(char **inPtr)
     len = *inPtr - strStart;
     if (len == 0)
     	return NULL;
-    outStr = outPtr = XtMalloc(len + 1);
+    outStr = outPtr = (char*)NEditMalloc(len + 1);
     
     /* Copy the string, compressing internal whitespace to a single space */
     strPtr = strStart;
@@ -4867,7 +4862,7 @@ char *ReadSymbolicField(char **inPtr)
     if (outPtr > outStr && *(outPtr-1) == ' ')
     	outPtr--;
     if (outPtr == outStr) {
-    	XtFree(outStr);
+    	NEditFree(outStr);
     	return NULL;
     }
     *outPtr = '\0';
@@ -4909,7 +4904,7 @@ int ReadQuotedString(char **inPtr, char **errMsg, char **string)
     }
     
     /* copy string up to end quote, transforming escaped quotes into quotes */
-    *string = XtMalloc(c - *inPtr + 1);
+    *string = (char*)NEditMalloc(c - *inPtr + 1);
     outPtr = *string;
     while (True) {
     	if (**inPtr == '\"') {
@@ -4935,7 +4930,7 @@ int ReadQuotedString(char **inPtr, char **errMsg, char **string)
 ** probably should be.  It would certainly be more asthetic if other
 ** control characters were replaced as well).
 **
-** Returns an allocated string which must be freed by the caller with XtFree.
+** Returns an allocated string which must be freed by the caller with NEditFree.
 */
 char *EscapeSensitiveChars(const char *string)
 {
@@ -4951,7 +4946,7 @@ char *EscapeSensitiveChars(const char *string)
     	    length += 3;
     	length++;
     }
-    outStr = XtMalloc(length + 1);
+    outStr = (char*)NEditMalloc(length + 1);
     outPtr = outStr;
     
     /* add backslashes */
@@ -4986,7 +4981,7 @@ char *MakeQuotedString(const char *string)
     	    length++;
     	length++;
     }
-    outStr = XtMalloc(length + 3);
+    outStr = (char*)NEditMalloc(length + 3);
     outPtr = outStr;
     
     /* add starting quote */
@@ -5037,14 +5032,13 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
                     fieldName);
             XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
         }
-        XtFree(string);
-        XtFree(parsedString);
+        NEditFree(string);
+        NEditFree(parsedString);
         return NULL;
     }
-    XtFree(string);
+    NEditFree(string);
     if (parsedString == NULL) {
-    	parsedString = XtMalloc(1);
-    	*parsedString = '\0';
+    	parsedString = NEditStrdup("");
     }
     return parsedString;
 }
@@ -5245,7 +5239,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
     	    nNonWhite++;
     }
     len = stoppedAt - c + (*stoppedAt == '\0' ? 0 : 1);
-    errorLine = XtMalloc(len+4);
+    errorLine = (char*)NEditMalloc(len+4);
     strncpy(errorLine, c, len);
     errorLine[len++] = '<';
     errorLine[len++] = '=';
@@ -5259,7 +5253,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
         DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "OK",
                 message, errorIn, errorLine);
     }
-    XtFree(errorLine);
+    NEditFree(errorLine);
     return False;
 }
 
@@ -5614,7 +5608,7 @@ static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB)
 }
 
 /*
-** Inserts a string into intoString, reallocating it with XtMalloc.  If
+** Inserts a string into intoString, reallocating it with nedit_realloc.  If
 ** regular expression atExpr is found, inserts the string before atExpr
 ** followed by a newline.  If atExpr is not found, inserts insertString
 ** at the end, PRECEDED by a newline.
@@ -5624,7 +5618,7 @@ static void spliceString(char **intoString, const char *insertString, const char
     int beginPos, endPos;
     int intoLen = strlen(*intoString);
     int insertLen = strlen(insertString);
-    char *newString = XtMalloc(intoLen + insertLen + 2);
+    char *newString = (char*)NEditMalloc(intoLen + insertLen + 2);
     
     if (atExpr != NULL && SearchString(*intoString, atExpr,
 	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos,
@@ -5640,7 +5634,7 @@ static void spliceString(char **intoString, const char *insertString, const char
 	strncpy(&newString[intoLen+1], insertString, insertLen);
     }
     newString[intoLen + insertLen + 1] = '\0';
-    XtFree(*intoString);
+    NEditFree(*intoString);
     *intoString = newString;
 }
 
@@ -5681,13 +5675,13 @@ static int stringReplace(char **inString, const char *expr,
 	    0, &beginPos, &endPos, NULL, NULL, NULL))
 	return FALSE;
     newLen = inLen + replaceLen - (endPos-beginPos);
-    newString = XtMalloc(newLen + 1);
+    newString = (char*)NEditMalloc(newLen + 1);
     strncpy(newString, *inString, beginPos);
     strncpy(&newString[beginPos], replaceWith, replaceLen);
     strncpy(&newString[beginPos+replaceLen],
 	    &((*inString)[endPos]), inLen - endPos);
     newString[newLen] = '\0';
-    XtFree(*inString);
+    NEditFree(*inString);
     *inString = newString;
     return TRUE;
 }
@@ -5695,7 +5689,7 @@ static int stringReplace(char **inString, const char *expr,
 /*
 ** Simplified regular expression replacement routine which replaces the
 ** first occurence of expr in inString with replaceWith, reallocating
-** inString with XtMalloc.  If expr is not found, does nothing and
+** inString with NEditMalloc.  If expr is not found, does nothing and
 ** returns false.
 */
 static int regexReplace(char **inString, const char *expr, 
@@ -5707,7 +5701,7 @@ static int regexReplace(char **inString, const char *expr,
 /*
 ** Simplified case-sensisitive string replacement routine which 
 ** replaces the first occurence of expr in inString with replaceWith,
-** reallocating inString with XtMalloc.  If expr is not found, does nothing 
+** reallocating inString with NEditMalloc.  If expr is not found, does nothing 
 ** and returns false.
 */
 static int caseReplace(char **inString, const char *expr, 
@@ -5771,7 +5765,7 @@ static void updateShellCmdsTo5dot3(void)
     if(!nHash)
 	return;
 
-    newString=XtMalloc(strlen(TempStringPrefs.shellCmds) + 1 + nHash);
+    newString=(char*)NEditMalloc(strlen(TempStringPrefs.shellCmds) + 1 + nHash);
 
     cOld  = TempStringPrefs.shellCmds;
     cNew  = newString;
@@ -5812,7 +5806,7 @@ static void updateShellCmdsTo5dot3(void)
     *cNew = 0;
 
     /* free the old memory */
-    XtFree(TempStringPrefs.shellCmds);
+    NEditFree(TempStringPrefs.shellCmds);
 
     /* exchange the string */
     TempStringPrefs.shellCmds = newString;
@@ -6163,7 +6157,7 @@ static Boolean checkColorStatus(colorDialog *cd, Widget colorFieldW)
     char *text = XmTextGetString(colorFieldW);
     XtVaGetValues(cd->shell, XtNcolormap, &cMap, NULL);
     status = XParseColor(display, cMap, text, &colorDef);
-    XtFree(text);
+    NEditFree(text);
     return (status != 0);
 }
 
@@ -6206,14 +6200,14 @@ static void updateColors(colorDialog *cd)
     SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
     SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
 
-    XtFree(textFg);
-    XtFree(textBg);
-    XtFree(selectFg);
-    XtFree(selectBg);
-    XtFree(hiliteFg);
-    XtFree(hiliteBg);
-    XtFree(lineNoFg);
-    XtFree(cursorFg);
+    NEditFree(textFg);
+    NEditFree(textBg);
+    NEditFree(selectFg);
+    NEditFree(selectBg);
+    NEditFree(hiliteFg);
+    NEditFree(hiliteBg);
+    NEditFree(lineNoFg);
+    NEditFree(cursorFg);
 }
 
 
@@ -6226,7 +6220,7 @@ static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
     colorDialog *cd = (colorDialog *)clientData;
 
     cd->window->colorDialog = NULL;
-    XtFree((char *)cd);
+    NEditFree(cd);
 }
 
 static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -6280,7 +6274,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
     int nameLen = strlen(name);
     
     /* The label widget */
-    longerName = XtMalloc(nameLen+7);
+    longerName = (char*)NEditMalloc(nameLen+7);
     strcpy(longerName, name);
     strcat(longerName, "Lbl");
     lblW = XtVaCreateManagedWidget(longerName,
@@ -6325,7 +6319,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
           modCallback, cd);
     XtVaSetValues(lblW, XmNuserData, *fieldW, NULL);
     
-    XtFree(longerName);
+    NEditFree(longerName);
     return *fieldW;
 }
 

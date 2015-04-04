@@ -46,6 +46,7 @@ static const char CVSID[] = "$Id: userCmds.c,v 1.57 2009/06/23 21:03:13 lebert E
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/managedList.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -347,11 +348,11 @@ void EditShellMenu(WindowInfo *window)
     }
 
     /* Create a structure for keeping track of dialog state */
-    ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+    ucd = (userCmdDialog *)NEditMalloc(sizeof(userCmdDialog));
     ucd->window = window;
     
     /* Set the dialog to operate on the Shell menu */
-    ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec *) *
+    ucd->menuItemsList = (menuItemRec **)NEditMalloc(sizeof(menuItemRec *) *
     	    MAX_ITEMS_PER_MENU);
     for (i=0; i<NShellMenuItems; i++)
     	ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
@@ -759,11 +760,11 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     }
 
     /* Create a structure for keeping track of dialog state */
-    ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+    ucd = (userCmdDialog *)NEditMalloc(sizeof(userCmdDialog));
     ucd->window = window;
 
     /* Set the dialog to operate on the Macro menu */
-    ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec **) *
+    ucd->menuItemsList = (menuItemRec **)NEditMalloc(sizeof(menuItemRec **) *
     	    MAX_ITEMS_PER_MENU);
     if (dialogType == MACRO_CMDS) {
 	for (i=0; i<NMacroMenuItems; i++)
@@ -1815,7 +1816,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 
     /* Allocate storage for structures to help find panes of sub-menus */
     size = sizeof(menuTreeItem) * menu->sumNbrOfListItems;
-    menuTree = (menuTreeItem *)XtMalloc(size);
+    menuTree = (menuTreeItem *)NEditMalloc(size);
     nTreeEntries = 0;
     
     /* Harmless kludge: undo and redo items are marked specially if found
@@ -1853,7 +1854,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 		    window->bgMenuRedoItem = btn;
                 /* generate accelerator keys */
                 genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
-                accKeys = item->keysym == NoSymbol ? NULL : XtNewString(accKeysBuf);
+                accKeys = item->keysym == NoSymbol ? NULL : NEditStrdup(accKeysBuf);
                 /* create corresponding menu list item */
                 menuList->umlItems[menuList->umlNbrItems ++] =
                         allocUserMenuListElement(btn, accKeys);
@@ -1865,7 +1866,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 	    if (newSubPane == NULL) {
 		subMenuName = copySubstring(namePtr, subSep - namePtr);
 	    	newSubPane = createUserSubMenu(subPane, subMenuName, &btn);
-		XtFree(subMenuName);
+		NEditFree(subMenuName);
 		menuTree[nTreeEntries].name = hierName;
 		menuTree[nTreeEntries++].menuPane = newSubPane;
 
@@ -1876,7 +1877,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
                         allocUserSubMenuList(subMenuInfo->usmiId[subMenuInfo->usmiIdLen]);
 	    } else {
                 currentLE = menuList->umlItems[subMenuInfo->usmiId[subMenuDepth]];
-		XtFree(hierName);
+		NEditFree(hierName);
             }
 	    subPane = newSubPane;
             menuList = currentLE->umleSubMenuList;
@@ -1889,8 +1890,8 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 
     /* Free the structure used to keep track of sub-menus durring creation */
     for (i=0; i<nTreeEntries; i++)
-	XtFree(menuTree[i].name);
-    XtFree((char *)menuTree);
+	NEditFree(menuTree[i].name);
+    NEditFree(menuTree);
 }
 
 /*
@@ -1909,7 +1910,7 @@ static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
 
 static char *copySubstring(const char *string, int length)
 {
-    char *retStr = XtMalloc(length + 1);
+    char *retStr = (char*)NEditMalloc(length + 1);
     
     strncpy(retStr, string, length);
     retStr[length] = '\0';
@@ -1975,7 +1976,7 @@ static void deleteMenuItems(Widget menuPane)
             XmNnumChildren, &nItems, NULL);
 
     /* make a copy because the widget alters the list as you delete widgets */
-    items = (WidgetList)XtMalloc(sizeof(Widget) * nItems);
+    items = (WidgetList)NEditMalloc(sizeof(Widget) * nItems);
     memcpy(items, itemList, sizeof(Widget) * nItems);
     
     /* delete all of the widgets not marked as PERMANENT_MENU_ITEM */
@@ -2006,7 +2007,7 @@ static void deleteMenuItems(Widget menuPane)
     	    XtDestroyWidget(items[n]);
     	}
     }
-    XtFree((char *)items);
+    NEditFree(items);
 }
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2172,8 +2173,8 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
     
     for (i=0; i<ucd->nMenuItems; i++)
     	freeMenuItemRec(ucd->menuItemsList[i]);
-    XtFree((char *)ucd->menuItemsList);
-    XtFree((char *)ucd);
+    NEditFree(ucd->menuItemsList);
+    NEditFree(ucd);
 }
 
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2387,7 +2388,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
                     "Please specify a name\nfor the menu item", "OK");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
-        XtFree(nameText);
+        NEditFree(nameText);
         return NULL;
     }
 
@@ -2400,7 +2401,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
                     "OK");
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
-        XtFree(nameText);
+        NEditFree(nameText);
         return NULL;
     }
 
@@ -2416,8 +2417,8 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
                             : "macro command(s)");
             XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
         }
-        XtFree(nameText);
-        XtFree(cmdText);
+        NEditFree(nameText);
+        NEditFree(cmdText);
 
         return NULL;
     }
@@ -2426,23 +2427,23 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
     	addTerminatingNewline(&cmdText);
 	if (!checkMacroText(cmdText, silent ? NULL : ucd->dlogShell,
 		ucd->cmdTextW)) {
-	    XtFree(nameText);
-	    XtFree(cmdText);
+	    NEditFree(nameText);
+	    NEditFree(cmdText);
 	    return NULL;
 	}
     }
-    f = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
+    f = (menuItemRec *)NEditMalloc(sizeof(menuItemRec));
     f->name = nameText;
     f->cmd = cmdText;
     if ((mneText = XmTextGetString(ucd->mneTextW)) != NULL) {
     	f->mnemonic = mneText==NULL ? '\0' : mneText[0];
-    	XtFree(mneText);
+    	NEditFree(mneText);
     	if (f->mnemonic == ':')		/* colons mess up string parsing */
     	    f->mnemonic = '\0';
     }
     if ((accText = XmTextGetString(ucd->accTextW)) != NULL) {
     	parseAcceleratorString(accText, &f->modifiers, &f->keysym);
-    	XtFree(accText);
+    	NEditFree(accText);
     }
     if (ucd->dialogType == SHELL_CMDS) {
 	if (XmToggleButtonGetState(ucd->selInpBtn))
@@ -2480,11 +2481,11 @@ static menuItemRec *copyMenuItemRec(menuItemRec *item)
 {
     menuItemRec *newItem;
     
-    newItem = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
+    newItem = (menuItemRec *)NEditMalloc(sizeof(menuItemRec));
     *newItem = *item;
-    newItem->name = XtMalloc(strlen(item->name)+1);
+    newItem->name = (char*)NEditMalloc(strlen(item->name)+1);
     strcpy(newItem->name, item->name);
-    newItem->cmd = XtMalloc(strlen(item->cmd)+1);
+    newItem->cmd = (char*)NEditMalloc(strlen(item->cmd)+1);
     strcpy(newItem->cmd, item->cmd);
     return newItem;
 }
@@ -2494,9 +2495,9 @@ static menuItemRec *copyMenuItemRec(menuItemRec *item)
 */
 static void freeMenuItemRec(menuItemRec *item)
 {
-    XtFree(item->name);
-    XtFree(item->cmd);
-    XtFree((char *)item);
+    NEditFree(item->name);
+    NEditFree(item->cmd);
+    NEditFree(item);
 }
 
 /*
@@ -2606,7 +2607,7 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems,
     	length += 21;			/* number of characters added below */
     }
     length++;				/* terminating null */
-    outStr = XtMalloc(length);
+    outStr = (char*)NEditMalloc(length);
     
     /* write the string */
     outPtr = outStr;
@@ -2720,7 +2721,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
    	nameLen = strcspn(inPtr, ":");
 	if (nameLen == 0)
     	    return parseError("no name field");
-    	nameStr = XtMalloc(nameLen+1);
+    	nameStr = (char*)NEditMalloc(nameLen+1);
     	strncpy(nameStr, inPtr, nameLen);
     	nameStr[nameLen] = '\0';
     	inPtr += nameLen;
@@ -2795,7 +2796,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
 	    cmdLen = strcspn(inPtr, "\n");
 	    if (cmdLen == 0)
     		return parseError("shell command field is empty");
-    	    cmdStr = XtMalloc(cmdLen+1);
+    	    cmdStr = (char*)NEditMalloc(cmdLen+1);
     	    strncpy(cmdStr, inPtr, cmdLen);
     	    cmdStr[cmdLen] = '\0';
     	    inPtr += cmdLen;
@@ -2812,7 +2813,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
     	    return parseError("couldn't read accelerator field");
     	
     	/* create a menu item record */
-    	f = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
+    	f = (menuItemRec *)NEditMalloc(sizeof(menuItemRec));
 	f->name = nameStr;
 	f->cmd = cmdStr;
 	f->mnemonic = mneChar;
@@ -3037,7 +3038,7 @@ static char *copyMacroToEnd(char **inPtr)
     if (**inPtr == '\n') (*inPtr)++;
     if (**inPtr == '\t') (*inPtr)++;
     if (**inPtr == '\t') (*inPtr)++;
-    retPtr = retStr = XtMalloc(stoppedAt - *inPtr + 1);
+    retPtr = retStr = (char*)NEditMalloc(stoppedAt - *inPtr + 1);
     for (p = *inPtr; p < stoppedAt - 1; p++) {
     	if (!strncmp(p, "\n\t\t", 3)) {
     	    *retPtr++ = '\n';
@@ -3064,11 +3065,11 @@ static void addTerminatingNewline(char **string)
     
     length = strlen(*string);
     if ((*string)[length-1] != '\n') {
-    	newString = XtMalloc(length + 2);
+    	newString = (char*)NEditMalloc(length + 2);
     	strcpy(newString, *string);
     	newString[length] = '\n';
     	newString[length+1] = '\0';
-    	XtFree(*string);
+    	NEditFree(*string);
     	*string = newString;
     }
 }
@@ -3080,7 +3081,7 @@ static void addTerminatingNewline(char **string)
 UserMenuCache *CreateUserMenuCache(void)
 {
     /* allocate some memory for the new data structure */
-    UserMenuCache *cache = (UserMenuCache *)XtMalloc(sizeof(UserMenuCache));
+    UserMenuCache *cache = (UserMenuCache *)NEditMalloc(sizeof(UserMenuCache));
 
     cache->umcLanguageMode              = -2;
     cache->umcShellMenuCreated          =  False;
@@ -3098,7 +3099,7 @@ void FreeUserMenuCache(UserMenuCache *cache)
     freeUserMenuList(&cache->umcShellMenuList);
     freeUserMenuList(&cache->umcMacroMenuList);
 
-    XtFree((char *)cache);
+    NEditFree(cache);
 }
 
 /*
@@ -3184,7 +3185,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item)
     int idSize;
 
     /* allocate a new user menu info element */
-    newInfo = (userMenuInfo *)XtMalloc(sizeof(userMenuInfo));
+    newInfo = (userMenuInfo *)NEditMalloc(sizeof(userMenuInfo));
 
     /* determine sub-menu depth and allocate some memory
        for hierarchical ID; init. ID with {0,.., 0} */
@@ -3193,7 +3194,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item)
     subMenuDepth = getSubMenuDepth(newInfo->umiName);
     idSize       = sizeof(int)*(subMenuDepth+1);
 
-    newInfo->umiId = (int *)XtMalloc(idSize);
+    newInfo->umiId = (int *)NEditMalloc(idSize);
     memset(newInfo->umiId,0,idSize);
 
     /* init. remaining parts of user menu info element */
@@ -3261,7 +3262,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info)
         if (nbrLM != 0) {
             info->umiNbrOfLanguageModes = nbrLM;
             size = sizeof(int)*nbrLM;
-            info->umiLanguageMode = (int *)XtMalloc(size);
+            info->umiLanguageMode = (int *)NEditMalloc(size);
             memcpy(info->umiLanguageMode, langModes, size);
         }
     }
@@ -3301,13 +3302,13 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus)
             subMenus->usmcNbrOfSubMenus ++;
             curSubMenu->usmiName  = hierName;
             idSize = sizeof(int)*(subMenuDepth+2);
-            curSubMenu->usmiId = (int *)XtMalloc(idSize);
+            curSubMenu->usmiId = (int *)NEditMalloc(idSize);
             memcpy(curSubMenu->usmiId, info->umiId, idSize);
             curSubMenu->usmiIdLen = subMenuDepth+1;
         } else {
             /* sub-menu info already stored before: takeover its
                hierarchical position */
-            XtFree(hierName);
+            NEditFree(hierName);
             info->umiId[subMenuDepth] = curSubMenu->usmiId[subMenuDepth];
         }
 
@@ -3349,7 +3350,7 @@ static char *stripLanguageMode(const char *menuItemName)
 
     firstAtPtr = strchr(menuItemName, '@');
     if (firstAtPtr == NULL)
-        return XtNewString(menuItemName);
+        return NEditStrdup(menuItemName);
     else
         return copySubstring(menuItemName, firstAtPtr-menuItemName);
 }
@@ -3436,14 +3437,14 @@ static void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems)
 
 static void freeUserMenuInfo(userMenuInfo *info)
 {
-    XtFree(info->umiName);
+    NEditFree(info->umiName);
 
-    XtFree((char *)info->umiId);
+    NEditFree(info->umiId);
 
     if (info->umiNbrOfLanguageModes != 0)
-        XtFree((char *)info->umiLanguageMode);
+        NEditFree(info->umiLanguageMode);
 
-    XtFree((char *)info);
+    NEditFree(info);
 }
 
 /*
@@ -3456,7 +3457,7 @@ static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems)
 
     subMenus->usmcNbrOfMainMenuItems = 0;
     subMenus->usmcNbrOfSubMenus = 0;
-    subMenus->usmcInfo = (userSubMenuInfo *)XtMalloc(size);
+    subMenus->usmcInfo = (userSubMenuInfo *)NEditMalloc(size);
 }
 
 static void freeSubMenuCache(userSubMenuCache *subMenus)
@@ -3464,11 +3465,11 @@ static void freeSubMenuCache(userSubMenuCache *subMenus)
     int i;
 
     for (i=0; i<subMenus->usmcNbrOfSubMenus; i++) {
-        XtFree(subMenus->usmcInfo[i].usmiName);
-        XtFree((char *)subMenus->usmcInfo[i].usmiId);
+        NEditFree(subMenus->usmcInfo[i].usmiName);
+        NEditFree(subMenus->usmcInfo[i].usmiId);
     }
 
-    XtFree((char *)subMenus->usmcInfo);
+    NEditFree(subMenus->usmcInfo);
 }
 
 static void allocUserMenuList(UserMenuList *list, int nbrOfItems)
@@ -3476,7 +3477,7 @@ static void allocUserMenuList(UserMenuList *list, int nbrOfItems)
     int size = sizeof(UserMenuListElement *) * nbrOfItems;
 
     list->umlNbrItems = 0;
-    list->umlItems = (UserMenuListElement **)XtMalloc(size);
+    list->umlItems = (UserMenuListElement **)NEditMalloc(size);
 }
 
 static void freeUserMenuList(UserMenuList *list)
@@ -3488,7 +3489,7 @@ static void freeUserMenuList(UserMenuList *list)
 
     list->umlNbrItems = 0;
 
-    XtFree((char*) list->umlItems);
+    NEditFree(list->umlItems);
     list->umlItems = NULL;
 }
 
@@ -3496,7 +3497,7 @@ static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accK
 {
     UserMenuListElement *element;
 
-    element = (UserMenuListElement *)XtMalloc(sizeof(UserMenuListElement));
+    element = (UserMenuListElement *)NEditMalloc(sizeof(UserMenuListElement));
 
     element->umleManageMode          = UMMM_UNMANAGE;
     element->umlePrevManageMode      = UMMM_UNMANAGE;
@@ -3514,15 +3515,15 @@ static void freeUserMenuListElement(UserMenuListElement *element)
     if (element->umleSubMenuList != NULL)
         freeUserSubMenuList(element->umleSubMenuList);
 
-    XtFree(element->umleAccKeys);
-    XtFree((char *)element);
+    NEditFree(element->umleAccKeys);
+    NEditFree(element);
 }
 
 static UserMenuList *allocUserSubMenuList(int nbrOfItems)
 {
     UserMenuList *list;
 
-    list = (UserMenuList *)XtMalloc(sizeof(UserMenuList));
+    list = (UserMenuList *)NEditMalloc(sizeof(UserMenuList));
 
     allocUserMenuList(list, nbrOfItems);
 
@@ -3533,5 +3534,5 @@ static void freeUserSubMenuList(UserMenuList *list)
 {
     freeUserMenuList(list);
 
-    XtFree((char *)list);
+    NEditFree(list);
 }

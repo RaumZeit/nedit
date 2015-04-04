@@ -27,6 +27,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 #endif
 
 #include "utils.h"
+#include "nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -412,7 +413,7 @@ void Push(Stack* stack, const void* value)
     }
 
     /*  Allocate memory for new value.  */
-    pushee = (stackObject*) XtMalloc(sizeof(stackObject));
+    pushee = (stackObject*) NEditMalloc(sizeof(stackObject));
 
     /*  Put pushee on top of stack.  */
     pushee->value = (void*) value;
@@ -453,7 +454,7 @@ void* Pop(Stack* stack)
     (stack->size)--;
 
     value = popee->value;
-    XtFree((char*) popee);
+    NEditFree((char*) popee);
 
     return value;
 }
@@ -471,6 +472,6 @@ void FreeStack(Stack* stack)
 
     while (NULL != (dummy = pop(progStack))) {}
 
-    XtFree((char*) stack);
+    NEditFree((char*) stack);
 }
 */

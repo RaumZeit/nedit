@@ -35,6 +35,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 
 #include "fileUtils.h"
 #include "utils.h"
+#include "nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -625,7 +626,7 @@ int ConvertToDosFileString(char **fileString, int *length)
     }
     
     /* Allocate the new string */
-    outString = XtMalloc(outLength + 1);
+    outString = (char*)NEditMalloc(outLength + 1);
     if (outString == NULL)
 	return FALSE;
     
@@ -638,7 +639,7 @@ int ConvertToDosFileString(char **fileString, int *length)
 	*outPtr++ = *inPtr++;
     }
     *outPtr = '\0';
-    XtFree(*fileString);
+    NEditFree(*fileString);
     *fileString = outString;
     *length = outLength;
     return TRUE;
@@ -685,10 +686,10 @@ char *ReadAnyTextFile(const char *fileName, int forceNL)
     /* +1 = space for null
     ** +1 = possible additional \n
     */
-    fileString = XtMalloc(fileLen + 2);
+    fileString = (char*)NEditMalloc(fileLen + 2);
     readLen = fread(fileString, sizeof(char), fileLen, fp);
     if (ferror(fp)) {
-      XtFree(fileString);
+      NEditFree(fileString);
       fclose(fp);
       return NULL;
     }

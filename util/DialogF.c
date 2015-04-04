@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Ex
 
 #include "DialogF.h"
 #include "misc.h"
+#include "nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -368,7 +369,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 		&input_string_ptr);
 	    strcpy (input_string, input_string_ptr);  /* This step is necessary */
 	    XmStringFree(input_string_xms );
-            XtFree(input_string_ptr);
+            NEditFree(input_string_ptr);
              /* Important! Only intercept unexpected destroy events. */
 	    XtRemoveCallback(dialog, XmNdestroyCallback, 
             	(XtCallbackProc)destroy_callback, &df);
@@ -628,7 +629,7 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
                     }
                 }
 
-                XtFree(label);
+                NEditFree(label);
             }
             XmStringFree(xmslabel);
         }

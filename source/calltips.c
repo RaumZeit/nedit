@@ -34,6 +34,7 @@
 #include "textP.h"
 #include "calltips.h"
 #include "../util/misc.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -201,7 +202,7 @@ static char *expandAllTabs( char *text, int tab_width ) {
 
     /* Allocate the new string */
     len = strlen( text ) + ( tab_width - 1 )*nTabs;
-    textCpy = (char*)malloc( len + 1 );
+    textCpy = (char*)NEditMalloc( len + 1 );
     if( !textCpy ) {
         fprintf(stderr, 
                 "nedit: Out of heap memory in expandAllTabs!\n");
@@ -247,7 +248,7 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
         return 0;       /* Out of memory */
     str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
     if( textCpy != text )
-        free( textCpy );
+        NEditFree( textCpy );
     
     /* Get the location/dimensions of the text area */
     XtVaGetValues(textD->w,

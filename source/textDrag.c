@@ -35,6 +35,7 @@ static const char CVSID[] = "$Id: textDrag.c,v 1.11 2005/02/02 09:15:31 edg Exp 
 #include "textBuf.h"
 #include "textDisp.h"
 #include "textP.h"
+#include "../util/nedit_malloc.h"
 
 #include <limits.h>
 
@@ -84,7 +85,7 @@ void BeginBlockDrag(TextWidget tw)
     tw->text.dragOrigBuf->useTabs = buf->useTabs;
     text = BufGetAll(buf);
     BufSetAll(tw->text.dragOrigBuf, text);
-    XtFree(text);
+    NEditFree(text);
     if (sel->rectangular)
     	BufRectSelect(tw->text.dragOrigBuf, sel->start, sel->end, sel->rectStart,
     	    	sel->rectEnd);
@@ -120,7 +121,7 @@ void BeginBlockDrag(TextWidget tw)
         BufSetTabDistance(testBuf, buf->tabDist);
         testBuf->useTabs = buf->useTabs;
     	BufSetAll(testBuf, testText);
-    	XtFree(testText);
+    	NEditFree(testText);
     	BufRemoveRect(testBuf, 0, sel->end - sel->start, sel->rectStart,
     	    	sel->rectEnd);
     	tw->text.dragDeleted = testBuf->length;
@@ -220,7 +221,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     	 origSel->end - origSel->start;
     text = BufGetRange(origBuf, tempStart, tempEnd);
     BufSetAll(tempBuf, text);
-    XtFree(text);
+    NEditFree(text);
 
     /* If the drag type is USE_LAST, use the last dragType applied */
     if (dragType == USE_LAST)
@@ -348,7 +349,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     	    	    &insertInserted, &insertDeleted);
     	trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd,
     	    	insStart, insertInserted, insertDeleted);
-    	XtFree(insText);
+    	NEditFree(insText);
     } else {
     	insText = BufGetSelectionText(origBuf);
     	BufInsert(tempBuf, insStart - tempStart, insText);
@@ -356,7 +357,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     	    	    insStart, origSel->end - origSel->start, 0);
     	insertInserted = origSel->end - origSel->start;
     	insertDeleted = 0;
-    	XtFree(insText);
+    	NEditFree(insText);
     }
  
     /* Make the changes in the real buffer */
@@ -365,7 +366,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     BufFree(tempBuf);
     TextDBlankCursor(textD);
     BufReplace(buf, modRangeStart, bufModRangeEnd, repText);
-    XtFree(repText);
+    NEditFree(repText);
     
     /* Store the necessary information for undoing this step */
     tw->text.dragInsertPos = insStart;
@@ -429,7 +430,7 @@ void FinishBlockDrag(TextWidget tw)
     endStruct.nCharsInserted = bufModRangeEnd - modRangeStart;
     endStruct.deletedText = deletedText;
     XtCallCallbacks((Widget)tw, textNdragEndCallback, (XtPointer)&endStruct);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 /*
@@ -459,7 +460,7 @@ void CancelBlockDrag(TextWidget tw)
     /* Make the changes in the buffer */
     repText = BufGetRange(origBuf, modRangeStart, origModRangeEnd);
     BufReplace(buf, modRangeStart, bufModRangeEnd, repText);
-    XtFree(repText);
+    NEditFree(repText);
     
     /* Reset the selection and cursor position */
     if (origSel->rectangular)

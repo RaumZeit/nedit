@@ -49,6 +49,7 @@ static const char CVSID[] = "$Id: search.c,v 1.90 2008/10/06 04:40:42 ajbj Exp $
 #endif
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -549,14 +550,14 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
         primary_selection = selectionInfo->selection;
     }
     if (primary_selection == 0) {
-        primary_selection = XtNewString("");
+        primary_selection = NEditStrdup("");
     }
 
     /* Update the field */
     XmTextSetString(textField, primary_selection);
 
-    XtFree(primary_selection);
-    XtFree((char*)selectionInfo);
+    NEditFree(primary_selection);
+    NEditFree(selectionInfo);
 }    
 
 static void getSelectionCB(Widget w, XtPointer si, Atom *selection,
@@ -568,7 +569,7 @@ static void getSelectionCB(Widget w, XtPointer si, Atom *selection,
 
     /* return an empty string if we can't get the selection data */
     if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == NULL || *length == 0) {
-        XtFree(value);
+        NEditFree(value);
         selectionInfo->selection = 0;
         selectionInfo->done = 1;
         return;
@@ -577,15 +578,15 @@ static void getSelectionCB(Widget w, XtPointer si, Atom *selection,
     if (*format != 8) {
         DialogF(DF_WARN, window->shell, 1, "Invalid Format",
                 "NEdit can't handle non 8-bit text", "OK");
-        XtFree(value);
+        NEditFree(value);
         selectionInfo->selection = 0;
         selectionInfo->done = 1;
         return;
     }
-    selectionInfo->selection = XtMalloc(*length+1);
+    selectionInfo->selection = (char*)NEditMalloc(*length+1);
     memcpy(selectionInfo->selection, value, *length);
     selectionInfo->selection[*length] = 0;
-    XtFree(value);
+    NEditFree(value);
     selectionInfo->done = 1;
 }
 
@@ -1794,7 +1795,7 @@ static void freeWritableWindowsCB(Widget w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData)
 {
     window = WidgetToWindow(w);
-    XtFree((XtPointer)window->writableWindows);
+    NEditFree(window->writableWindows);
     window->writableWindows = NULL;
     window->nWritableWindows = 0;
 }
@@ -1859,10 +1860,10 @@ static void collectWritableWindows(WindowInfo* window)
     WindowInfo *w;
     WindowInfo **windows;
     
-    XtFree((char*) window->writableWindows);
+    NEditFree(window->writableWindows);
 
     /* Make a sorted list of writable windows */
-    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
+    windows = (WindowInfo **)NEditMalloc(sizeof(WindowInfo *) * nWritable);
     for (w=WindowList, i=0; w!=NULL; w=w->next)
        if (!IS_ANY_LOCKED(w->lockReasons)) windows[i++] = w;
     qsort(windows, nWritable, sizeof(WindowInfo *), compareWindowNames);
@@ -2053,7 +2054,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
     nWritable = window->nWritableWindows;
     list = window->replaceMultiFileList;
     
-    names = (XmStringTable) XtMalloc(nWritable * sizeof(XmString*));
+    names = (XmStringTable) NEditMalloc(nWritable * sizeof(XmString*));
     
     usePathNames = XmToggleButtonGetState(window->replaceMultiFilePathBtn);
     
@@ -2093,7 +2094,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
           XmListSelectPos(list, selected[i], False);
        }
        
-       XtFree((char*) selected);
+       NEditFree(selected);
     } else {
        Arg args[1];
        int nVisible;
@@ -2150,7 +2151,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
     
     for (i = 0; i < nWritable; ++i)
        XmStringFree(names[i]);
-    XtFree((char*) names);
+    NEditFree(names);
 }
 
 /*
@@ -2255,8 +2256,8 @@ static void rFindCB(Widget w, WindowInfo *window,XmAnyCallbackStruct *callData)
        subsequent replaces, even though no actual replacement was done. */
     if (historyIndex(1) != -1 &&
     		!strcmp(SearchHistory[historyIndex(1)], searchString)) {
-	XtFree(ReplaceHistory[historyIndex(1)]);
-	ReplaceHistory[historyIndex(1)] = XtNewString(replaceString);
+	NEditFree(ReplaceHistory[historyIndex(1)]);
+	ReplaceHistory[historyIndex(1)] = NEditStrdup(replaceString);
     }
 
     /* Pop down the dialog */
@@ -2404,7 +2405,7 @@ static int textFieldNonEmpty(Widget w)
 {
     char *str = XmTextGetString(w);
     int nonEmpty = (str[0] != '\0');
-    XtFree(str);
+    NEditFree(str);
     return(nonEmpty);
 }
 
@@ -2619,11 +2620,11 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
       if (compiledRE == NULL) {
    	  DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String",
                   "Please respecify the search string:\n%s", "OK", compileMsg);
-	  XtFree(replaceText);
-	  XtFree(replaceWithText);
+	  NEditFree(replaceText);
+	  NEditFree(replaceWithText);
  	  return FALSE;
       }
-      free((char*)compiledRE);
+      NEditFree(compiledRE);
     } else {
       if(XmToggleButtonGetState(window->replaceCaseToggle)) {
       	if(XmToggleButtonGetState(window->replaceWordToggle))
@@ -2645,21 +2646,21 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
     if (strlen(replaceText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
                 "Search string too long.", "OK");
-	XtFree(replaceText);
-	XtFree(replaceWithText);
+	NEditFree(replaceText);
+	NEditFree(replaceWithText);
 	return FALSE;
     }
     if (strlen(replaceWithText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long",
                 "Replace string too long.", "OK");
-	XtFree(replaceText);
-	XtFree(replaceWithText);
+	NEditFree(replaceText);
+	NEditFree(replaceWithText);
 	return FALSE;
     }
     strcpy(searchString, replaceText);
     strcpy(replaceString, replaceWithText);
-    XtFree(replaceText);
-    XtFree(replaceWithText);
+    NEditFree(replaceText);
+    NEditFree(replaceWithText);
     return TRUE;
 }
 
@@ -2698,7 +2699,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
                   "Please respecify the search string:\n%s", "OK", compileMsg);
  	  return FALSE;
       }
-      free((char *)compiledRE);
+      NEditFree(compiledRE);
     } else {
       if(XmToggleButtonGetState(window->findCaseToggle)) {
       	if(XmToggleButtonGetState(window->findWordToggle))
@@ -2723,11 +2724,11 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
     if (strlen(findText) >= SEARCHMAX) {
 	DialogF(DF_WARN, XtParent(window->findDlog), 1, "String too long",
                 "Search string too long.", "OK");
-	XtFree(findText);
+	NEditFree(findText);
 	return FALSE;
     }
     strcpy(searchString, findText);
-    XtFree(findText);
+    NEditFree(findText);
     return TRUE;
 }
 
@@ -2848,7 +2849,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
                     "Selection not appropriate for searching", "OK");
     	else
     	    XBell(TheDisplay, 0);
-        XtFree(callData);
+        NEditFree(callData);
 	return;
     }
     if (*length > SEARCHMAX) {
@@ -2857,28 +2858,28 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
                     "Selection too long", "OK");
     	else
     	    XBell(TheDisplay, 0);
-	XtFree(value);
-        XtFree(callData);
+	NEditFree(value);
+        NEditFree(callData);
 	return;
     }
     if (*length == 0) {
     	XBell(TheDisplay, 0);
-	XtFree(value);
-        XtFree(callData);
+	NEditFree(value);
+        NEditFree(callData);
 	return;
     }
     /* should be of type text??? */
     if (*format != 8) {
     	fprintf(stderr, "NEdit: can't handle non 8-bit text\n");
     	XBell(TheDisplay, 0);
-	XtFree(value);
-        XtFree(callData);
+	NEditFree(value);
+        NEditFree(callData);
 	return;
     }
     /* make the selection the current search string */
     strncpy(searchString, value, *length);
     searchString[*length] = '\0';
-    XtFree(value);
+    NEditFree(value);
     
     /* Use the passed method for searching, unless it is regex, since this
        kind of search is by definition a literal search */
@@ -2891,7 +2892,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     /* search for it in the window */
     SearchAndSelect(window, callDataItems->direction, searchString,
         searchType, callDataItems->searchWrap);
-    XtFree(callData);
+    NEditFree(callData);
 }
 
 /*
@@ -3123,7 +3124,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
     iSearchTextSetString(w, window, selText);
     if (selText) {
         XmTextSetInsertionPosition(window->iSearchText, strlen(selText));
-        XtFree(selText);
+        NEditFree(selText);
     }
     iSearchTextActivateCB(w, window, &cbdata);
 }
@@ -3183,7 +3184,7 @@ static void iSearchTextActivateCB(Widget w, WindowInfo *window,
     params[2] = searchTypeArg(searchType);
     params[3] = searchWrapArg(GetPrefSearchWraps());
     XtCallActionProc(window->lastFocus, "find", callData->event, params, 4);
-    XtFree(searchString);
+    NEditFree(searchString);
 }
 
 /*
@@ -3226,10 +3227,10 @@ static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
 	compiledRE = CompileRE(searchString, &compileMsg, 
 	                       defaultRegexFlags(searchType));
 	if (compiledRE == NULL) {
-	    XtFree(searchString);
+	    NEditFree(searchString);
 	    return;
 	}
-	free((char *)compiledRE);
+	NEditFree(compiledRE);
     }
     
     /* Call the incremental search action proc to do the searching and
@@ -3246,7 +3247,7 @@ static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
 	params[nParams++] = "continued";
     XtCallActionProc(window->lastFocus, "find_incremental",
 	    callData->event, params, nParams);
-    XtFree(searchString);
+    NEditFree(searchString);
 }
 
 /*
@@ -3629,7 +3630,7 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
 		    replaceResult, SEARCHMAX, startPos == 0 ? '\0' :
 		    BufGetCharacter(window->buffer, startPos-1),
 		    GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	    XtFree(foundString);
+	    NEditFree(foundString);
     	    BufReplace(window->buffer, startPos, endPos, replaceResult);
     	    replaceLen = strlen(replaceResult);
 	} else {
@@ -3696,7 +3697,7 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 		replaceResult, SEARCHMAX, startPos == 0 ? '\0' :
 		BufGetCharacter(window->buffer, startPos-1),
 		GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	XtFree(foundString);
+	NEditFree(foundString);
     	BufReplace(window->buffer, startPos, endPos, replaceResult);
     	replaceLen = strlen(replaceResult);
     } else {
@@ -3877,7 +3878,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
                         ? '\0'
                         : BufGetCharacter(tempBuf, startPos + realOffset - 1),
                     GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	    XtFree(foundString);
+	    NEditFree(foundString);
 
             if (!substSuccess) {
                 /*  The substitution failed. Primary reason for this would be
@@ -3908,7 +3909,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
 	if (fileString[endPos] == '\0')
 	    break;
     }
-    XtFree(fileString);
+    NEditFree(fileString);
 
     if (anyFound) {
         if (substSuccess || !cancelSubst) {
@@ -3997,7 +3998,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString,
     /* Move the cursor to the end of the last replacement */
     TextSetCursorPos(window->lastFocus, copyStart + replacementLen);
 
-    XtFree(newFileString);
+    NEditFree(newFileString);
     return TRUE;	
 }    
 
@@ -4061,7 +4062,7 @@ char *ReplaceAllInString(const char *inString, const char *searchString,
     /* Allocate a new buffer to hold all of the new text between the first
        and last substitutions */
     copyLen = *copyEnd - *copyStart;
-    outString = XtMalloc(copyLen - removeLen + addLen + 1);
+    outString = (char*)NEditMalloc(copyLen - removeLen + addLen + 1);
     
     /* Scan through the text buffer again, substituting the replace string
        and copying the part between replaced text to the new buffer  */
@@ -4526,13 +4527,13 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	    *searchExtentFW = compiledRE->extentpFW - string;
 	if (searchExtentBW != NULL)
            *searchExtentBW = compiledRE->extentpBW - string;
-	free((char *)compiledRE);
+	NEditFree(compiledRE);
 	return TRUE;
     }
     
     /* if wrap turned off, we're done */
     if (!wrap) {
-    	free((char *)compiledRE);
+    	NEditFree(compiledRE);
 	return FALSE;
     }
     
@@ -4545,11 +4546,11 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
        	    *searchExtentFW = compiledRE->extentpFW - string;
 	if (searchExtentBW != NULL)
 	    *searchExtentBW = compiledRE->extentpBW - string;
-	free((char *)compiledRE);
+	NEditFree(compiledRE);
 	return TRUE;
     }
 
-    free((char *)compiledRE);
+    NEditFree(compiledRE);
     return FALSE;
 }
 
@@ -4577,14 +4578,14 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 		*searchExtentFW = compiledRE->extentpFW - string;
 	    if (searchExtentBW != NULL)
 		*searchExtentBW = compiledRE->extentpBW - string;
-	    free((char *)compiledRE);
+	    NEditFree(compiledRE);
 	    return TRUE;
 	}
     }
     
     /* if wrap turned off, we're done */
     if (!wrap) {
-    	free((char *)compiledRE);
+    	NEditFree(compiledRE);
     	return FALSE;
     }
     
@@ -4601,10 +4602,10 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	    *searchExtentFW = compiledRE->extentpFW - string;
 	if (searchExtentBW != NULL)
 	    *searchExtentBW = compiledRE->extentpBW - string;
-	free((char *)compiledRE);
+	NEditFree(compiledRE);
 	return TRUE;
     }
-    free((char *)compiledRE);
+    NEditFree(compiledRE);
     return FALSE;
 }
 
@@ -4691,7 +4692,7 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 	beginPos = selStart - stringStart;
     }
     if (*string == '\0') {
-    	XtFree(string);
+    	NEditFree(string);
     	return FALSE;
     }
 
@@ -4701,7 +4702,7 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
     found = SearchString(string, searchString, SEARCH_FORWARD, searchType,
     	    FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW,
             GetWindowDelimiters(window));
-    XtFree(string);
+    NEditFree(string);
 
     /* decide if it is an exact match */
     if (!found)
@@ -4746,7 +4747,7 @@ static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
     ExecRE(compiledRE, sourceStr+beginPos, NULL, False, prevChar, '\0',
             delimiters, sourceStr, NULL);
     substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-    free((char *)compiledRE);
+    NEditFree(compiledRE);
 
     return substResult;
 }
@@ -4790,8 +4791,8 @@ static void saveSearchHistory(const char *searchString,
     /* If the current history item came from an incremental search, and the
        new one is also incremental, just update the entry */
     if (currentItemIsIncremental && isIncremental) {
-    	XtFree(SearchHistory[historyIndex(1)]);
-    	SearchHistory[historyIndex(1)] = XtNewString(searchString);
+    	NEditFree(SearchHistory[historyIndex(1)]);
+    	SearchHistory[historyIndex(1)] = NEditStrdup(searchString);
 	SearchTypeHistory[historyIndex(1)] = searchType;
 	return;
     }
@@ -4810,17 +4811,15 @@ static void saveSearchHistory(const char *searchString,
     /* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
        some space, free the entry that's about to be overwritten */
     if (NHist == MAX_SEARCH_HISTORY) {
-    	XtFree(SearchHistory[HistStart]);
-    	XtFree(ReplaceHistory[HistStart]);
+    	NEditFree(SearchHistory[HistStart]);
+    	NEditFree(ReplaceHistory[HistStart]);
     } else
     	NHist++;
 
     /* Allocate and copy the search and replace strings and add them to the
        circular buffers at HistStart, bump the buffer pointer to next pos. */
-    sStr = XtMalloc(strlen(searchString) + 1);
-    rStr = XtMalloc(strlen(replaceString) + 1);
-    strcpy(sStr, searchString);
-    strcpy(rStr, replaceString);
+    sStr = NEditStrdup(searchString);
+    rStr = NEditStrdup(replaceString);
     SearchHistory[HistStart] = sStr;
     ReplaceHistory[HistStart] = rStr;
     SearchTypeHistory[HistStart] = searchType;

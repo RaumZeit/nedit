@@ -632,7 +632,7 @@ static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data)
             	sprintf(copiesArg, " %s%s", CopiesOption, str);
             }
 	}
-	XtFree(str);
+	NEditFree(str);
     }
     if (QueueOption[0] == '\0') {
     	queueArg[0] = '\0';
@@ -642,7 +642,7 @@ static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data)
 	    queueArg[0] = '\0';
 	else 	
 	    sprintf(queueArg, " %s%s", QueueOption, str);	
-	XtFree(str);
+	NEditFree(str);
     }
     if (HostOption[0] == '\0') {
     	hostArg[0] = '\0';
@@ -652,7 +652,7 @@ static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data)
 	    hostArg[0] = '\0';
 	else  	
 	    sprintf(hostArg, " %s%s", HostOption, str);
-	XtFree(str);
+	NEditFree(str);
     }
     if (NameOption[0] == '\0')
     	jobArg[0] = '\0';
@@ -701,7 +701,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     /* add the file name to the print command */
     sprintf(command, "%s %s", str, PrintFileName);
 
-    XtFree(str);
+    NEditFree(str);
 
     /* append /DELETE to print command if requested */
     if (DeleteFile)
@@ -731,7 +731,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
 
     /* add the file name and output redirection to the print command */
     sprintf(command, "cat %s | %s 2>&1", PrintFileName, str);
-    XtFree(str);
+    NEditFree(str);
     
     /* Issue the print command using a popen call and recover error messages
        from the output stream of the command. */
@@ -767,21 +767,21 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
     if (CopiesOption[0] != '\0') {
     	str = XmTextGetString(Text1);
     	strcpy(Copies, str);
-    	XtFree(str);
+    	NEditFree(str);
     }
     if (QueueOption[0] != '\0') {
     	str = XmTextGetString(Text2);
     	strcpy(Queue, str);
-    	XtFree(str);
+    	NEditFree(str);
     }
     if (HostOption[0] != '\0') {
     	str = XmTextGetString(Text3);
     	strcpy(Host, str);
-    	XtFree(str);
+    	NEditFree(str);
     }
     str = XmTextGetString(Text4);
     strcpy(CmdText, str);
-    XtFree(str);
+    NEditFree(str);
 
     
     /* Pop down the dialog */

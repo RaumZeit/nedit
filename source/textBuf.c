@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.37 2008/01/04 22:11:04 yooden Ex
 
 #include "textBuf.h"
 #include "rangeset.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,9 +144,9 @@ textBuffer *BufCreatePreallocated(int requestedSize)
 {
     textBuffer *buf;
     
-    buf = (textBuffer *)XtMalloc(sizeof(textBuffer));
+    buf = (textBuffer *)NEditMalloc(sizeof(textBuffer));
     buf->length = 0;
-    buf->buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
+    buf->buf = (char*) NEditMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
     buf->buf[requestedSize + PREFERRED_GAP_SIZE] = '\0';
     buf->gapStart = 0;
     buf->gapEnd = PREFERRED_GAP_SIZE;
@@ -182,29 +183,29 @@ textBuffer *BufCreatePreallocated(int requestedSize)
 */
 void BufFree(textBuffer *buf)
 {
-    XtFree(buf->buf);
+    NEditFree(buf->buf);
     if (buf->nModifyProcs != 0) {
-    	XtFree((char *)buf->modifyProcs);
-    	XtFree((char *)buf->cbArgs);
+    	NEditFree(buf->modifyProcs);
+    	NEditFree(buf->cbArgs);
     }
     if (buf->rangesetTable)
 	RangesetTableFree(buf->rangesetTable);
     if (buf->nPreDeleteProcs != 0) {
-    	XtFree((char *)buf->preDeleteProcs);
-    	XtFree((char *)buf->preDeleteCbArgs);
+    	NEditFree(buf->preDeleteProcs);
+    	NEditFree(buf->preDeleteCbArgs);
     }
-    XtFree((char *)buf);
+    NEditFree(buf);
 }
 
 /*
 ** Get the entire contents of a text buffer.  Memory is allocated to contain
-** the returned string, which the caller must free.
+** the returned string, which the caller must free with NEditFree.
 */
 char *BufGetAll(textBuffer *buf)
 {
     char *text;
     
-    text = XtMalloc(buf->length+1);
+    text = (char*)NEditMalloc(buf->length+1);
     memcpy(text, buf->buf, buf->gapStart);
     memcpy(&text[buf->gapStart], &buf->buf[buf->gapEnd],
             buf->length - buf->gapStart);
@@ -255,10 +256,10 @@ void BufSetAll(textBuffer *buf, const char *text)
     /* Save information for redisplay, and get rid of the old buffer */
     deletedText = BufGetAll(buf);
     deletedLength = buf->length;
-    XtFree(buf->buf);
+    NEditFree(buf->buf);
     
     /* Start a new buffer with a gap of PREFERRED_GAP_SIZE in the center */
-    buf->buf = XtMalloc(length + PREFERRED_GAP_SIZE + 1);
+    buf->buf = (char*)NEditMalloc(length + PREFERRED_GAP_SIZE + 1);
     buf->buf[length + PREFERRED_GAP_SIZE] = '\0';
     buf->length = length;
     buf->gapStart = length/2;
@@ -274,7 +275,7 @@ void BufSetAll(textBuffer *buf, const char *text)
     
     /* Call the saved display routine(s) to update the screen */
     callModifyCBs(buf, 0, deletedLength, length, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 /*
@@ -290,7 +291,7 @@ char* BufGetRange(const textBuffer* buf, int start, int end)
     /* Make sure start and end are ok, and allocate memory for returned string.
        If start is bad, return "", if end is bad, adjust it. */
     if (start < 0 || start > buf->length) {
-    	text = XtMalloc(1);
+    	text = (char*)NEditMalloc(1);
 	text[0] = '\0';
         return text;
     }
@@ -302,7 +303,7 @@ char* BufGetRange(const textBuffer* buf, int start, int end)
     if (end > buf->length)
         end = buf->length;
     length = end - start;
-    text = XtMalloc(length+1);
+    text = (char*)NEditMalloc(length+1);
     
     /* Copy the text from the buffer to the returned string */
     if (end <= buf->gapStart) {
@@ -366,7 +367,7 @@ void BufReplace(textBuffer *buf, int start, int end, const char *text)
     insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
     callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 void BufRemove(textBuffer *buf, int start, int end)
@@ -390,7 +391,7 @@ void BufRemove(textBuffer *buf, int start, int end)
     delete(buf, start, end);
     buf->cursorPosHint = start;
     callModifyCBs(buf, start, end-start, 0, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
@@ -452,7 +453,7 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ins1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
     if (charsInserted != NULL)
     	*charsInserted = nInserted;
     if (charsDeleted != NULL)
@@ -486,7 +487,7 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ovly1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
     if (charsInserted != NULL)
     	*charsInserted = nInserted;
     if (charsDeleted != NULL)
@@ -526,7 +527,7 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
         char *insPtr;
 
     	insLen = strlen(text);
-    	insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
+    	insText = (char*)NEditMalloc(insLen + nDeletedLines - nInsertedLines + 1);
     	strcpy(insText, text);
     	insPtr = insText + insLen;
     	for (i=0; i<nDeletedLines-nInsertedLines; i++)
@@ -547,7 +548,7 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     if (insText) {
     	insertCol(buf, rectStart, start, insText, &insertDeleted, &insertInserted,
     		    &buf->cursorPosHint);
-        XtFree(insText);
+        NEditFree(insText);
     }
     else
     	insertCol(buf, rectStart, start, text, &insertDeleted, &insertInserted,
@@ -557,7 +558,7 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
     if (insertDeleted != deleteInserted + linesPadded)
     	fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
     callModifyCBs(buf, start, end-start, insertInserted, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 /*
@@ -577,7 +578,7 @@ void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart,
     deleteRect(buf, start, end, rectStart, rectEnd, &nInserted,
     	    &buf->cursorPosHint);
     callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
-    XtFree(deletedText);
+    NEditFree(deletedText);
 }
 
 /*
@@ -592,13 +593,13 @@ void BufClearRect(textBuffer *buf, int start, int end, int rectStart,
     char *newlineString;
     
     nLines = BufCountLines(buf, start, end);
-    newlineString = XtMalloc(nLines+1);
+    newlineString = (char*)NEditMalloc(nLines+1);
     for (i=0; i<nLines; i++)
     	newlineString[i] = '\n';
     newlineString[i] = '\0';
     BufOverlayRect(buf, start, rectStart, rectEnd, newlineString,
     	    NULL, NULL);
-    XtFree(newlineString);
+    NEditFree(newlineString);
 }
 
 char *BufGetTextInRect(textBuffer *buf, int start, int end,
@@ -609,7 +610,7 @@ char *BufGetTextInRect(textBuffer *buf, int start, int end,
    
     start = BufStartOfLine(buf, start);
     end = BufEndOfLine(buf, end);
-    textOut = XtMalloc((end - start) + 1);
+    textOut = (char*)NEditMalloc((end - start) + 1);
     lineStart = start;
     outPtr = textOut;
     while (lineStart <= end) {
@@ -618,7 +619,7 @@ char *BufGetTextInRect(textBuffer *buf, int start, int end,
         textIn = BufGetRange(buf, selLeft, selRight);
         len = selRight - selLeft;
         memcpy(outPtr, textIn, len);
-        XtFree(textIn);
+        NEditFree(textIn);
         outPtr += len;
         lineStart = BufEndOfLine(buf, selRight) + 1;
         *outPtr++ = '\n';
@@ -631,7 +632,7 @@ char *BufGetTextInRect(textBuffer *buf, int start, int end,
        positioned at the left margin */
     retabbedStr = realignTabs(textOut, rectStart, 0, buf->tabDist,
     	    buf->useTabs, buf->nullSubsChar, &len);
-    XtFree(textOut);
+    NEditFree(textOut);
     return retabbedStr;
 }
 
@@ -818,15 +819,15 @@ void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     int i;
     
     newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
+    	    NEditMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
+    newCBArgs = (void **)NEditMalloc(sizeof(void *) * (buf->nModifyProcs+1));
     for (i=0; i<buf->nModifyProcs; i++) {
     	newModifyProcs[i] = buf->modifyProcs[i];
     	newCBArgs[i] = buf->cbArgs[i];
     }
     if (buf->nModifyProcs != 0) {
-	XtFree((char *)buf->modifyProcs);
-	XtFree((char *)buf->cbArgs);
+	NEditFree(buf->modifyProcs);
+	NEditFree(buf->cbArgs);
     }
     newModifyProcs[buf->nModifyProcs] = bufModifiedCB;
     newCBArgs[buf->nModifyProcs] = cbArg;
@@ -847,15 +848,15 @@ void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifi
     int i;
     
     newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
+    	    NEditMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
+    newCBArgs = (void **)NEditMalloc(sizeof(void *) * (buf->nModifyProcs+1));
     for (i=0; i<buf->nModifyProcs; i++) {
     	newModifyProcs[i+1] = buf->modifyProcs[i];
     	newCBArgs[i+1] = buf->cbArgs[i];
     }
     if (buf->nModifyProcs != 0) {
-	XtFree((char *)buf->modifyProcs);
-	XtFree((char *)buf->cbArgs);
+	NEditFree(buf->modifyProcs);
+	NEditFree(buf->cbArgs);
     }
     newModifyProcs[0] = bufModifiedCB;
     newCBArgs[0] = cbArg;
@@ -888,15 +889,15 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     buf->nModifyProcs--;
     if (buf->nModifyProcs == 0) {
     	buf->nModifyProcs = 0;
-    	XtFree((char *)buf->modifyProcs);
+    	NEditFree(buf->modifyProcs);
     	buf->modifyProcs = NULL;
-	XtFree((char *)buf->cbArgs);
+	NEditFree(buf->cbArgs);
 	buf->cbArgs = NULL;
 	return;
     }
     newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs));
+    	    NEditMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs));
+    newCBArgs = (void **)NEditMalloc(sizeof(void *) * (buf->nModifyProcs));
     
     /* copy out the remaining members and free the old lists */
     for (i=0; i<toRemove; i++) {
@@ -907,8 +908,8 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
 	newModifyProcs[i] = buf->modifyProcs[i+1];
     	newCBArgs[i] = buf->cbArgs[i+1];
     }
-    XtFree((char *)buf->modifyProcs);
-    XtFree((char *)buf->cbArgs);
+    NEditFree(buf->modifyProcs);
+    NEditFree(buf->cbArgs);
     buf->modifyProcs = newModifyProcs;
     buf->cbArgs = newCBArgs;
 }
@@ -924,15 +925,15 @@ void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
     int i;
     
     newPreDeleteProcs = (bufPreDeleteCallbackProc *)
-    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
+    	    NEditMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs+1));
+    newCBArgs = (void **)NEditMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
     for (i=0; i<buf->nPreDeleteProcs; i++) {
     	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
     	newCBArgs[i] = buf->preDeleteCbArgs[i];
     }
     if (buf->nPreDeleteProcs != 0) {
-	XtFree((char *)buf->preDeleteProcs);
-	XtFree((char *)buf->preDeleteCbArgs);
+	NEditFree(buf->preDeleteProcs);
+	NEditFree(buf->preDeleteCbArgs);
     }
     newPreDeleteProcs[buf->nPreDeleteProcs] =  bufPreDeleteCB;
     newCBArgs[buf->nPreDeleteProcs] = cbArg;
@@ -966,15 +967,15 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDelete
     buf->nPreDeleteProcs--;
     if (buf->nPreDeleteProcs == 0) {
     	buf->nPreDeleteProcs = 0;
-    	XtFree((char *)buf->preDeleteProcs);
+    	NEditFree(buf->preDeleteProcs);
     	buf->preDeleteProcs = NULL;
-	XtFree((char *)buf->preDeleteCbArgs);
+	NEditFree(buf->preDeleteCbArgs);
 	buf->preDeleteCbArgs = NULL;
 	return;
     }
     newPreDeleteProcs = (bufPreDeleteCallbackProc *)
-    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
+    	    NEditMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs));
+    newCBArgs = (void **)NEditMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
     
     /* copy out the remaining members and free the old lists */
     for (i=0; i<toRemove; i++) {
@@ -985,8 +986,8 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDelete
 	newPreDeleteProcs[i] = buf->preDeleteProcs[i+1];
     	newCBArgs[i] = buf->preDeleteCbArgs[i+1];
     }
-    XtFree((char *)buf->preDeleteProcs);
-    XtFree((char *)buf->preDeleteCbArgs);
+    NEditFree(buf->preDeleteProcs);
+    NEditFree(buf->preDeleteCbArgs);
     buf->preDeleteProcs = newPreDeleteProcs;
     buf->preDeleteCbArgs = newCBArgs;
 }
@@ -1545,12 +1546,12 @@ static void insertCol(textBuffer *buf, int column, int startPos,
     replText = BufGetRange(buf, start, end);
     expText = expandTabs(replText, 0, buf->tabDist, buf->nullSubsChar,
 	    &expReplLen);
-    XtFree(replText);
-    XtFree(expText);
+    NEditFree(replText);
+    NEditFree(expText);
     expText = expandTabs(insText, 0, buf->tabDist, buf->nullSubsChar,
 	    &expInsLen);
-    XtFree(expText);
-    outStr = XtMalloc(expReplLen + expInsLen +
+    NEditFree(expText);
+    outStr = (char*) NEditMalloc(expReplLen + expInsLen +
     	    nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
     
     /* Loop over all lines in the buffer between start and end inserting
@@ -1565,8 +1566,8 @@ static void insertCol(textBuffer *buf, int column, int startPos,
     	insPtr += len;
     	insertColInLine(line, insLine, column, insWidth, buf->tabDist,
     		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
-    	XtFree(line);
-    	XtFree(insLine);
+    	NEditFree(line);
+    	NEditFree(insLine);
 #if 0   /* Earlier comments claimed that trailing whitespace could multiply on
         the ends of lines, but insertColInLine looks like it should never
         add space unnecessarily, and this trimming interfered with
@@ -1594,7 +1595,7 @@ static void insertCol(textBuffer *buf, int column, int startPos,
     *nInserted = outPtr - outStr;
     *nDeleted = end - start;
     *endPos = start + (outPtr - outStr) - len + endOffset;
-    XtFree(outStr);
+    NEditFree(outStr);
 }
 
 /*
@@ -1620,9 +1621,9 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
     nLines = BufCountLines(buf, start, end) + 1;
     text = BufGetRange(buf, start, end);
     expText = expandTabs(text, 0, buf->tabDist, buf->nullSubsChar, &len);
-    XtFree(text);
-    XtFree(expText);
-    outStr = XtMalloc(len + nLines * MAX_EXP_CHAR_LEN * 2 + 1);
+    NEditFree(text);
+    NEditFree(expText);
+    outStr = (char*)NEditMalloc(len + nLines * MAX_EXP_CHAR_LEN * 2 + 1);
     
     /* loop over all lines in the buffer between start and end removing
        the text between rectStart and rectEnd and padding appropriately */
@@ -1633,7 +1634,7 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
     	line = BufGetRange(buf, lineStart, lineEnd);
     	deleteRectFromLine(line, rectStart, rectEnd, buf->tabDist,
     		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
-    	XtFree(line);
+    	NEditFree(line);
 	outPtr += len;
 	*outPtr++ = '\n';
     	lineStart = lineEnd + 1;
@@ -1647,7 +1648,7 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
     insert(buf, start, outStr);
     *replaceLen = outPtr - outStr;
     *endPos = start + (outPtr - outStr) - len + endOffset;
-    XtFree(outStr);
+    NEditFree(outStr);
 }
 
 /*
@@ -1680,8 +1681,8 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
     end = BufEndOfLine(buf, BufCountForwardNLines(buf, start, nLines-1));
     expText = expandTabs(insText, 0, buf->tabDist, buf->nullSubsChar,
 	    &expInsLen);
-    XtFree(expText);
-    outStr = XtMalloc(end-start + expInsLen +
+    NEditFree(expText);
+    outStr = (char*)NEditMalloc(end-start + expInsLen +
     	    nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1);
     
     /* Loop over all lines in the buffer between start and end overlaying the
@@ -1698,8 +1699,8 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
     	insPtr += len;
     	overlayRectInLine(line, insLine, rectStart, rectEnd, buf->tabDist,
 		buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
-    	XtFree(line);
-    	XtFree(insLine);
+    	NEditFree(line);
+    	NEditFree(insLine);
     	for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
     	    len--;
 	outPtr += len;
@@ -1719,7 +1720,7 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
     *nInserted = outPtr - outStr;
     *nDeleted = end - start;
     *endPos = start + (outPtr - outStr) - len + endOffset;
-    XtFree(outStr);
+    NEditFree(outStr);
 }
 
 /*
@@ -1787,7 +1788,7 @@ static void insertColInLine(const char *line, const char *insLine,
     	    len = BufCharWidth(*c, indent, tabDist, nullSubsChar);
     	    indent += len;
 	}
-	XtFree(retabbedStr);
+	NEditFree(retabbedStr);
     }
     
     /* If the original line did not extend past "column", that's all */
@@ -1807,7 +1808,7 @@ static void insertColInLine(const char *line, const char *insLine,
     retabbedStr = realignTabs(linePtr, postColIndent, indent, tabDist,
     	useTabs, nullSubsChar, &len);
     strcpy(outPtr, retabbedStr);
-    XtFree(retabbedStr);
+    NEditFree(retabbedStr);
     *endOffset = outPtr - outStr;
     *outLen = (outPtr - outStr) + len;
 }
@@ -1869,7 +1870,7 @@ static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
     retabbedStr = realignTabs(c, postRectIndent, indent, tabDist, useTabs,
     	    nullSubsChar, &len);
     strcpy(outPtr, retabbedStr);
-    XtFree(retabbedStr);
+    NEditFree(retabbedStr);
     *endOffset = outPtr - outStr;
     *outLen = (outPtr - outStr) + len;
 }
@@ -1955,7 +1956,7 @@ static void overlayRectInLine(const char *line, const char *insLine,
     	    len = BufCharWidth(*c, outIndent, tabDist, nullSubsChar);
     	    outIndent += len;
 	}
-	XtFree(retabbedStr);
+	NEditFree(retabbedStr);
     }
     
     /* If the original line did not extend past "rectStart", that's all */
@@ -2019,7 +2020,7 @@ static char *getSelectionText(textBuffer *buf, selection *sel)
     
     /* If there's no selection, return an allocated empty string */
     if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd)) {
-    	text = XtMalloc(1);
+    	text = (char*)NEditMalloc(1);
     	*text = '\0';
     	return text;
     }
@@ -2208,7 +2209,7 @@ static void reallocateBuf(textBuffer *buf, int newGapStart, int newGapLen)
     char *newBuf;
     int newGapEnd;
 
-    newBuf = XtMalloc(buf->length + newGapLen + 1);
+    newBuf = (char*)NEditMalloc(buf->length + newGapLen + 1);
     newBuf[buf->length + PREFERRED_GAP_SIZE] = '\0';
     newGapEnd = newGapStart + newGapLen;
     if (newGapStart <= buf->gapStart) {
@@ -2225,7 +2226,7 @@ static void reallocateBuf(textBuffer *buf, int newGapStart, int newGapLen)
 		&buf->buf[buf->gapEnd + newGapStart - buf->gapStart],
 		buf->length - newGapStart);
     }
-    XtFree(buf->buf);
+    NEditFree(buf->buf);
     buf->buf = newBuf;
     buf->gapStart = newGapStart;
     buf->gapEnd = newGapEnd;
@@ -2352,7 +2353,7 @@ static char *copyLine(const char *text, int *lineLen)
     
     for (c=text; *c!='\0' && *c!='\n'; c++)
     	len++;
-    outStr = XtMalloc(len + 1);
+    outStr = (char*)NEditMalloc(len + 1);
     strncpy(outStr, text, len);
     outStr[len] = '\0';
     *lineLen = len;
@@ -2450,7 +2451,7 @@ static void findRectSelBoundariesForCopy(textBuffer *buf, int lineStartPos,
 ** Adjust the space and tab characters from string "text" so that non-white
 ** characters remain stationary when the text is shifted from starting at
 ** "origIndent" to starting at "newIndent".  Returns an allocated string
-** which must be freed by the caller with XtFree.
+** which must be freed by the caller with NEditFree.
 */
 static char *realignTabs(const char *text, int origIndent, int newIndent,
 	int tabDist, int useTabs, char nullSubsChar, int *newLength)
@@ -2461,7 +2462,7 @@ static char *realignTabs(const char *text, int origIndent, int newIndent,
     /* If the tabs settings are the same, retain original tabs */
     if (origIndent % tabDist == newIndent %tabDist) {
     	len = strlen(text);
-    	outStr = XtMalloc(len + 1);
+    	outStr = (char*)NEditMalloc(len + 1);
     	strcpy(outStr, text);
     	*newLength = len;
     	return outStr;
@@ -2475,7 +2476,7 @@ static char *realignTabs(const char *text, int origIndent, int newIndent,
     	return expStr;
     }
     outStr = unexpandTabs(expStr, newIndent, tabDist, nullSubsChar, newLength);
-    XtFree(expStr);
+    NEditFree(expStr);
     return outStr;
 }    
 
@@ -2508,7 +2509,7 @@ static char *expandTabs(const char *text, int startIndent, int tabDist,
     }
     
     /* do the expansion */
-    outStr = XtMalloc(outLen+1);
+    outStr = (char*)NEditMalloc(outLen+1);
     outPtr = outStr;
     indent = startIndent;
     for (c=text; *c!= '\0'; c++) {
@@ -2541,7 +2542,7 @@ static char *unexpandTabs(const char *text, int startIndent, int tabDist,
     const char *c;
     int indent, len;
     
-    outStr = XtMalloc(strlen(text)+1);
+    outStr = (char*)NEditMalloc(strlen(text)+1);
     outPtr = outStr;
     indent = startIndent;
     for (c=text; *c!='\0';) {

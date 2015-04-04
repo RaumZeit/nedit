@@ -53,6 +53,7 @@ static const char CVSID[] = "$Id: nedit.c,v 1.101 2012/10/25 14:10:25 tringali E
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
 #include "../util/motif.h"
+#include "../util/nedit_malloc.h"
 
 #include <ctype.h>
 #include <limits.h>
@@ -845,14 +846,14 @@ static int checkDoMacroArg(const char *macro)
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
     macroLen = strlen(macro);
-    tMacro = XtMalloc(strlen(macro)+2);
+    tMacro = (char*)NEditMalloc(strlen(macro)+2);
     strncpy(tMacro, macro, macroLen);
     tMacro[macroLen] = '\n';
     tMacro[macroLen+1] = '\0';
     
     /* Do a test parse */
     prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
-    XtFree(tMacro);
+    NEditFree(tMacro);
     if (prog == NULL) {
     	ParseError(NULL, tMacro, stoppedAt, "argument to -do", errMsg);
 	return False;
@@ -1170,8 +1171,8 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     if (maxCount == 1) 
         return False; /* One binding is always ok */
     
-    keys = (char**)malloc(maxCount*sizeof(char*));
-    copy = XtNewString((const char*)bindings);
+    keys = (char**)NEditMalloc(maxCount*sizeof(char*));
+    copy = NEditStrdup((const char*)bindings);
     i = 0;
     pos2 = copy;
     
@@ -1203,7 +1204,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
     if (count <= 1)
     {
        free(keys);
-       XtFree(copy);
+       NEditFree(copy);
        return False; /* No conflict */
     }
     
@@ -1215,12 +1216,12 @@ static int virtKeyBindingsAreInvalid(const unsigned char* bindings)
         {
             /* Duplicate detected */
             free(keys);
-            XtFree(copy);
+            NEditFree(copy);
             return True;
         }
     }
     free(keys);
-    XtFree(copy);
+    NEditFree(copy);
     return False;
 }
 

@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.42 2011/04/21 06:43:02 leber
 #include "help.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -743,13 +744,13 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     }
     
     /* Compile the newline and modify macros and attach them to the window */
-    winData = (windowSmartIndentData *)XtMalloc(sizeof(windowSmartIndentData));
+    winData = (windowSmartIndentData *)NEditMalloc(sizeof(windowSmartIndentData));
     winData->inNewLineMacro = 0;
     winData->inModMacro = 0;
     winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg,
     	    &stoppedAt);
     if (winData->newlineMacro == NULL) {
-        XtFree((char *)winData);
+        NEditFree(winData);
     	ParseError(window->shell, indentMacros->newlineMacro, stoppedAt,
     	    	"newline macro", errMsg);
     	return;
@@ -761,7 +762,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     	    	&stoppedAt);
     	if (winData->modMacro == NULL) {
             FreeProgram(winData->newlineMacro);
-            XtFree((char *)winData);
+            NEditFree(winData);
     	    ParseError(window->shell, indentMacros->modMacro, stoppedAt,
     	    	    "smart indent modify macro", errMsg);
     	    return;
@@ -782,7 +783,7 @@ void EndSmartIndent(WindowInfo *window)
     if (winData->modMacro != NULL)
     	FreeProgram(winData->modMacro);
     FreeProgram(winData->newlineMacro);
-    XtFree((char *)winData);
+    NEditFree(winData);
     window->smartIndentData = NULL;
 }
 
@@ -965,7 +966,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     /* Decide on an initial language mode */
     lmName = LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 :
     	    window->languageMode);
-    SmartIndentDialog.langModeName = XtNewString(lmName);
+    SmartIndentDialog.langModeName = NEditStrdup(lmName);
 
     /* Create a form widget in an application shell */
     n = 0;
@@ -1226,7 +1227,7 @@ void EditSmartIndentMacros(WindowInfo *window)
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    XtFree(SmartIndentDialog.langModeName);
+    NEditFree(SmartIndentDialog.langModeName);
     SmartIndentDialog.shell = NULL;
 }
 
@@ -1287,7 +1288,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     freeIndentSpec(newMacros);
     
     /* Fill the dialog with the new language mode information */
-    SmartIndentDialog.langModeName = XtNewString(modeName);
+    SmartIndentDialog.langModeName = NEditStrdup(modeName);
     setSmartIndentDialogData(findIndentSpec(modeName));
 }
 
@@ -1425,10 +1426,10 @@ static int checkSmartIndentDialogData(void)
     	    XmTextSetInsertionPosition(SmartIndentDialog.initMacro,
 		    stoppedAt - widgetText);
 	    XmProcessTraversal(SmartIndentDialog.initMacro, XmTRAVERSE_CURRENT);
-	    XtFree(widgetText);
+	    NEditFree(widgetText);
 	    return False;
 	}
-	XtFree(widgetText);
+	NEditFree(widgetText);
     }
     
     /* Test compile the newline macro */
@@ -1447,10 +1448,10 @@ static int checkSmartIndentDialogData(void)
      	XmTextSetInsertionPosition(SmartIndentDialog.newlineMacro,
 		stoppedAt - widgetText);
 	XmProcessTraversal(SmartIndentDialog.newlineMacro, XmTRAVERSE_CURRENT);
-  	XtFree(widgetText);
+	NEditFree(widgetText);
     	return False;
     }
-    XtFree(widgetText);
+    NEditFree(widgetText);
     FreeProgram(prog);
     
     /* Test compile the modify macro */
@@ -1463,10 +1464,10 @@ static int checkSmartIndentDialogData(void)
      	    XmTextSetInsertionPosition(SmartIndentDialog.modMacro,
 		    stoppedAt - widgetText);
 	    XmProcessTraversal(SmartIndentDialog.modMacro, XmTRAVERSE_CURRENT);
-    	    XtFree(widgetText);
+	    NEditFree(widgetText);
     	    return False;
     	}
-    	XtFree(widgetText);
+	NEditFree(widgetText);
 	FreeProgram(prog);
     }
     return True;
@@ -1476,8 +1477,8 @@ static smartIndentRec *getSmartIndentDialogData(void)
 {
     smartIndentRec *is;
     
-    is = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-    is->lmName = XtNewString(SmartIndentDialog.langModeName);
+    is = (smartIndentRec *)NEditMalloc(sizeof(smartIndentRec));
+    is->lmName = NEditStrdup(SmartIndentDialog.langModeName);
     is->initMacro = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? NULL :
 	    ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
     is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? NULL:
@@ -1677,8 +1678,8 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
     }
     
     /* replace common macros with default */
-    XtFree(CommonMacros);
-    CommonMacros = XtNewString(DefaultCommonMacros);
+    NEditFree(CommonMacros);
+    CommonMacros = NEditStrdup(DefaultCommonMacros);
    
     /* Update the dialog */
     XmTextSetString(CommonDialog.text, CommonMacros);
@@ -1739,10 +1740,10 @@ static int checkSmartIndentCommonDialogData(void)
 		"macros", &stoppedAt)) {
     	    XmTextSetInsertionPosition(CommonDialog.text, stoppedAt-widgetText);
 	    XmProcessTraversal(CommonDialog.text, XmTRAVERSE_CURRENT);
-	    XtFree(widgetText);
+	    NEditFree(widgetText);
 	    return False;
 	}
-	XtFree(widgetText);
+	NEditFree(widgetText);
     }
     return True;
 }
@@ -1834,7 +1835,7 @@ int LoadSmartIndentString(char *inString)
 	if (is.lmName == NULL)
     	    return siParseError(inString, inPtr, "language mode name required");
 	if (!SkipDelimiter(&inPtr, &errMsg)) {
-    	    XtFree(is.lmName);
+	    NEditFree(is.lmName);
     	    return siParseError(inString, inPtr, errMsg);
     	}
     	
@@ -1843,11 +1844,11 @@ int LoadSmartIndentString(char *inString)
 	if (!strncmp(inPtr, "Default", 7)) {
     	    inPtr += 7;
     	    if (!loadDefaultIndentSpec(is.lmName)) {
-    		XtFree(is.lmName);
+    		NEditFree(is.lmName);
     		return siParseError(inString, inPtr,
     	    		"no default smart indent macros");
     	    }
-    	    XtFree(is.lmName);
+	    NEditFree(is.lmName);
     	    continue;
 	}
 
@@ -1855,7 +1856,7 @@ int LoadSmartIndentString(char *inString)
 	   macro end boundary string) */
 	is.initMacro = readSIMacro(&inPtr);
 	if (is.initMacro == NULL) {
-    	    XtFree(is.lmName);
+    	    NEditFree(is.lmName);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to initialization macro");
 	}
@@ -1863,8 +1864,8 @@ int LoadSmartIndentString(char *inString)
 	/* read the newline macro */
 	is.newlineMacro = readSIMacro(&inPtr);
 	if (is.newlineMacro == NULL) {
-    	    XtFree(is.lmName);
-    	    XtFree(is.initMacro);
+    	    NEditFree(is.lmName);
+    	    NEditFree(is.initMacro);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to newline macro");
 	}
@@ -1872,21 +1873,21 @@ int LoadSmartIndentString(char *inString)
 	/* read the modify macro */
 	is.modMacro = readSIMacro(&inPtr);
 	if (is.modMacro == NULL) {
-    	    XtFree(is.lmName);
-    	    XtFree(is.initMacro);
-    	    XtFree(is.newlineMacro);
+    	    NEditFree(is.lmName);
+    	    NEditFree(is.initMacro);
+    	    NEditFree(is.newlineMacro);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to modify macro");
 	}
 	
 	/* if there's no mod macro, make it null so it won't be executed */
 	if (is.modMacro[0] == '\0') {
-	    XtFree(is.modMacro);
+	    NEditFree(is.modMacro);
             is.modMacro = NULL;
     	}
     	
     	/* create a new data structure and add/change it in the list */
-	isCopy = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
+	isCopy = (smartIndentRec *)NEditMalloc(sizeof(smartIndentRec));
 	*isCopy = is;
 	for (i=0; i<NSmartIndentSpecs; i++) {
 	    if (!strcmp(SmartIndentSpecs[i]->lmName, is.lmName)) {
@@ -1906,7 +1907,7 @@ int LoadSmartIndentCommonString(char *inString)
     char *inPtr = inString;
     
     /* If called from -import, can replace existing ones */
-    XtFree(CommonMacros);
+    NEditFree(CommonMacros);
     
     /* skip over blank space */
     inPtr += strspn(inPtr, " \t\n");
@@ -1914,7 +1915,7 @@ int LoadSmartIndentCommonString(char *inString)
     /* look for "Default" keyword, and if it's there, return the default
        smart common macro */
     if (!strncmp(inPtr, "Default", 7)) {
-    	CommonMacros = XtNewString(DefaultCommonMacros);
+    	CommonMacros = NEditStrdup(DefaultCommonMacros);
 	return True;
     }
         
@@ -1944,33 +1945,33 @@ static char *readSIMacro(char **inPtr)
 	return NULL;
     
     /* Copy the macro */
-    macroStr = XtMalloc(macroEnd - *inPtr + 1);
+    macroStr = (char*)NEditMalloc(macroEnd - *inPtr + 1);
     strncpy(macroStr, *inPtr, macroEnd - *inPtr);
     macroStr[macroEnd - *inPtr] = '\0';
     
     /* Remove leading tabs added by writer routine */
     *inPtr = macroEnd + strlen(MacroEndBoundary);
     retStr = ShiftText(macroStr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
-    XtFree(macroStr);
+    NEditFree(macroStr);
     return retStr;
 }
 
 static smartIndentRec *copyIndentSpec(smartIndentRec *is)
 {
-    smartIndentRec *ris = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-    ris->lmName = XtNewString(is->lmName);
-    ris->initMacro = XtNewString(is->initMacro);
-    ris->newlineMacro = XtNewString(is->newlineMacro);
-    ris->modMacro = XtNewString(is->modMacro);
+    smartIndentRec *ris = (smartIndentRec *)NEditMalloc(sizeof(smartIndentRec));
+    ris->lmName = NEditStrdup(is->lmName);
+    ris->initMacro = NEditStrdup(is->initMacro);
+    ris->newlineMacro = NEditStrdup(is->newlineMacro);
+    ris->modMacro = NEditStrdup(is->modMacro);
     return ris;
 }
 
 static void freeIndentSpec(smartIndentRec *is)
 {
-    XtFree(is->lmName);
-    if (is->initMacro != NULL) XtFree(is->initMacro);
-    XtFree(is->newlineMacro);
-    if (is->modMacro != NULL)XtFree(is->modMacro);
+    NEditFree(is->lmName);
+    NEditFree(is->initMacro);
+    NEditFree(is->newlineMacro);
+    NEditFree(is->modMacro);
 }
 
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
@@ -2015,7 +2016,7 @@ char *WriteSmartIndentString(void)
     /* Protect newlines and backslashes from translation by the resource
        reader */
     escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    NEditFree(outStr);
     return escapedStr;
 }
 
@@ -2025,9 +2026,9 @@ char *WriteSmartIndentCommonString(void)
     char *outStr, *escapedStr;
     
     if (!strcmp(CommonMacros, DefaultCommonMacros))
-    	return XtNewString("Default");
+    	return NEditStrdup("Default");
     if (CommonMacros == NULL)
-    	return XtNewString("");
+    	return NEditStrdup("");
     
     /* Shift the macro over by a tab to keep .nedit file bright and clean */
     outStr = ShiftText(CommonMacros, SHIFT_RIGHT, True, 8, 8, &len);
@@ -2035,7 +2036,7 @@ char *WriteSmartIndentCommonString(void)
     /* Protect newlines and backslashes from translation by the resource
        reader */
     escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    NEditFree(outStr);
     
     /* If there's a trailing escaped newline, remove it */
     len = strlen(escapedStr);
@@ -2057,7 +2058,7 @@ static void insertShiftedMacro(textBuffer *buf, char  *macro)
     if (macro != NULL) {
 	shiftedMacro = ShiftText(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
 	BufInsert(buf, buf->length, shiftedMacro);
-	XtFree(shiftedMacro);
+	NEditFree(shiftedMacro);
     }
     BufInsert(buf, buf->length, "\t");
     BufInsert(buf, buf->length, MacroEndBoundary);
@@ -2104,11 +2105,11 @@ static char *ensureNewline(char *string)
     length = strlen(string);
     if (length == 0 || string[length-1] == '\n')
 	return string;
-    newString = XtMalloc(length + 2);
+    newString = (char*)NEditMalloc(length + 2);
     strcpy(newString, string);
     newString[length] = '\n';
     newString[length+1] = '\0';
-    XtFree(string);
+    NEditFree(string);
     return newString;
 }
 
@@ -2135,14 +2136,14 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName)
 
     for (i=0; i<NSmartIndentSpecs; i++) {
     	if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
-    	    XtFree(SmartIndentSpecs[i]->lmName);
-    	    SmartIndentSpecs[i]->lmName = XtNewString(newName);
+    	    NEditFree(SmartIndentSpecs[i]->lmName);
+    	    SmartIndentSpecs[i]->lmName = NEditStrdup(newName);
     	}
     }
     if (SmartIndentDialog.shell != NULL) {
     	if (!strcmp(SmartIndentDialog.langModeName, oldName)) {
-    	    XtFree(SmartIndentDialog.langModeName);
-    	    SmartIndentDialog.langModeName = XtNewString(newName);
+    	    NEditFree(SmartIndentDialog.langModeName);
+    	    SmartIndentDialog.langModeName = NEditStrdup(newName);
     	}
     }
 }

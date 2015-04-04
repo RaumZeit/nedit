@@ -37,6 +37,7 @@ static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert 
 #include "menu.h"
 #include "text.h"
 #include "rbTree.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -292,9 +293,9 @@ Program *FinishCreatingProgram(void)
     int progLen, fpOffset = 0;
     Symbol *s;
     
-    newProg = (Program *)XtMalloc(sizeof(Program));
+    newProg = (Program *)NEditMalloc(sizeof(Program));
     progLen = ((char *)ProgP) - ((char *)Prog);
-    newProg->code = (Inst *)XtMalloc(progLen);
+    newProg->code = (Inst *)NEditMalloc(progLen);
     memcpy(newProg->code, Prog, progLen);
     newProg->localSymList = LocalSymList;
     LocalSymList = NULL;
@@ -312,8 +313,8 @@ Program *FinishCreatingProgram(void)
 void FreeProgram(Program *prog)
 {
     freeSymbolTable(prog->localSymList);
-    XtFree((char *)prog->code);
-    XtFree((char *)prog);    
+    NEditFree(prog->code);
+    NEditFree(prog);    
 }
 
 /*
@@ -476,8 +477,8 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
        preemption and resumption of execution */
-    context = (RestartData *)XtMalloc(sizeof(RestartData));
-    context->stack = (DataValue *)XtMalloc(sizeof(DataValue) * STACK_SIZE);
+    context = (RestartData *)NEditMalloc(sizeof(RestartData));
+    context->stack = (DataValue *)NEditMalloc(sizeof(DataValue) * STACK_SIZE);
     *continuation = context;
     context->stackP = context->stack;
     context->pc = prog->code;
@@ -609,8 +610,8 @@ void RunMacroAsSubrCall(Program *prog)
 
 void FreeRestartData(RestartData *context)
 {
-    XtFree((char *)context->stack);
-    XtFree((char *)context);
+    NEditFree(context->stack);
+    NEditFree(context);
 }
 
 /*
@@ -740,9 +741,8 @@ Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value)
 {
     Symbol *s;
 
-    s = (Symbol *)malloc(sizeof(Symbol));
-    s->name = (char *)malloc(strlen(name)+1); /* +1 for '\0' */
-    strcpy(s->name, name);
+    s = (Symbol *)NEditMalloc(sizeof(Symbol));
+    s->name = NEditStrdup(name);
     s->type = type;
     s->value = value;
     if (type == LOCAL_SYM) {
@@ -840,7 +840,7 @@ char *AllocString(int length)
 {
     char *mem;
     
-    mem = XtMalloc(length + sizeof(char *) + 1);
+    mem = (char*)NEditMalloc(length + sizeof(char *) + 1);
     *((char **)mem) = AllocatedStrings;
     AllocatedStrings = mem;
 #ifdef TRACK_GARBAGE_LEAKS
@@ -858,7 +858,7 @@ int AllocNString(NString *string, int length)
 {
     char *mem;
     
-    mem = XtMalloc(length + sizeof(char *) + 1);
+    mem = (char*)NEditMalloc(length + sizeof(char *) + 1);
     if (!mem) {
         string->rep = 0;
         string->len = 0;
@@ -930,7 +930,7 @@ static SparseArrayEntry *allocateSparseArrayEntry(void)
 {
     SparseArrayEntryWrapper *mem;
 
-    mem = (SparseArrayEntryWrapper *)XtMalloc(sizeof(SparseArrayEntryWrapper));
+    mem = (SparseArrayEntryWrapper *)NEditMalloc(sizeof(SparseArrayEntryWrapper));
     mem->next = AllocatedSparseArrayEntries;
     AllocatedSparseArrayEntries = mem;
 #ifdef TRACK_GARBAGE_LEAKS
@@ -1017,7 +1017,7 @@ void GarbageCollectStrings(void)
 #ifdef TRACK_GARBAGE_LEAKS
             --numAllocatedStrings;
 #endif
-    	    XtFree(p);
+    	    NEditFree(p);
     	}
     }
     
@@ -1034,7 +1034,7 @@ void GarbageCollectStrings(void)
 #ifdef TRACK_GARBAGE_LEAKS
             --numAllocatedSparseArrayElements;
 #endif
-            XtFree((char *)thisAP);
+            NEditFree(thisAP);
         }
     }
 
@@ -1074,7 +1074,7 @@ static void freeSymbolTable(Symbol *symTab)
     	s = symTab;
     	free(s->name);
     	symTab = s->next;
-    	free((char *)s);
+    	NEditFree(s);
     }    
 }
 
@@ -1998,7 +1998,7 @@ static int callSubroutine(void)
         key_event.display=disp;
         key_event.window=key_event.root=key_event.subwindow=win;
     
-        argList = (String *)XtCalloc(nArgs, sizeof(*argList));
+        argList = (String *)NEditCalloc(nArgs, sizeof(*argList));
 	/* pop arguments off the stack and put them in the argument list */
 	for (i=nArgs-1; i>=0; i--) {
     	    POP_STRING(argList[i])
@@ -2008,7 +2008,7 @@ static int callSubroutine(void)
     	PreemptRequest = False;
     	sym->value.val.xtproc(FocusWindow->lastFocus,
     	    	(XEvent *)&key_event, argList, &numArgs);
-        XtFree((char *)argList);
+        NEditFree(argList);
     	if (PC->func == fetchRetVal) {
     	    return execError("%s does not return a value", sym->name);
         }

@@ -44,6 +44,7 @@ static const char CVSID[] = "$Id: highlight.c,v 1.56 2008/01/04 22:11:03 yooden 
 #include "window.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -230,12 +231,12 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
         char *insStyle;
         int i;
 
-    	insStyle = XtMalloc(sizeof(char) * (nInserted + 1));
+    	insStyle = (char*)NEditMalloc(nInserted + 1);
     	for (i=0; i<nInserted; i++)
     	    insStyle[i] = UNFINISHED_STYLE;
     	insStyle[i] = '\0';
     	BufReplace(highlightData->styleBuffer, pos, pos+nDeleted, insStyle);
-    	XtFree(insStyle);
+    	NEditFree(insStyle);
     } else {
     	BufRemove(highlightData->styleBuffer, pos, pos+nDeleted);
     }
@@ -283,7 +284,7 @@ void StartHighlighting(WindowInfo *window, int warn)
     
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-    stylePtr = styleString = XtMalloc(window->buffer->length + 1);
+    stylePtr = styleString = (char*)NEditMalloc(window->buffer->length + 1);
     if (highlightData->pass1Patterns == NULL) {
     	for (i=0; i<window->buffer->length; i++)
     	    *stylePtr++ = UNFINISHED_STYLE;
@@ -295,7 +296,7 @@ void StartHighlighting(WindowInfo *window, int warn)
     }
     *stylePtr = '\0';
     BufSetAll(highlightData->styleBuffer, styleString);
-    XtFree(styleString);
+    NEditFree(styleString);
 
     /* install highlight pattern data in the window data structure */
     window->highlightData = highlightData;
@@ -531,10 +532,10 @@ static void freeHighlightData(windowHighlightData *hd)
     	freePatterns(hd->pass1Patterns);
     if (hd->pass2Patterns != NULL)
     	freePatterns(hd->pass2Patterns);
-    XtFree(hd->parentStyles);
+    NEditFree(hd->parentStyles);
     BufFree(hd->styleBuffer);
-    XtFree((char *)hd->styleTable);
-    XtFree((char *)hd);
+    NEditFree(hd->styleTable);
+    NEditFree(hd);
 }
 
 /*
@@ -680,9 +681,9 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     	    nPass2Patterns++;
     	else
     	    nPass1Patterns++;
-    p1Ptr = pass1PatternSrc = (highlightPattern *)XtMalloc(
+    p1Ptr = pass1PatternSrc = (highlightPattern *)NEditMalloc(
     	    sizeof(highlightPattern) * nPass1Patterns);
-    p2Ptr = pass2PatternSrc = (highlightPattern *)XtMalloc(
+    p2Ptr = pass2PatternSrc = (highlightPattern *)NEditMalloc(
     	    sizeof(highlightPattern) * nPass2Patterns);
     p1Ptr->name = p2Ptr->name = "";
     p1Ptr->startRE = p2Ptr->startRE = NULL;
@@ -744,7 +745,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
        	pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns-1) + i;
     
     /* Create table for finding parent styles */
-    parentStylesPtr = parentStyles = XtMalloc(nPass1Patterns+nPass2Patterns+2);
+    parentStylesPtr = parentStyles = (char*)NEditMalloc(nPass1Patterns+nPass2Patterns+2);
     *parentStylesPtr++ = '\0';
     *parentStylesPtr++ = '\0';
     for (i=1; i<nPass1Patterns; i++) {
@@ -761,7 +762,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     }
     
     /* Set up table for mapping colors and fonts to syntax */
-    styleTablePtr = styleTable = (styleTableEntry *)XtMalloc(
+    styleTablePtr = styleTable = (styleTableEntry *)NEditMalloc(
     	    sizeof(styleTableEntry) * (nPass1Patterns + nPass2Patterns + 1));
 #define setStyleTablePtr(styleTablePtr, patternSrc) \
     do { \
@@ -815,14 +816,14 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     }
 
     /* Free the temporary sorted pattern source list */
-    XtFree((char *)pass1PatternSrc);
-    XtFree((char *)pass2PatternSrc);
+    NEditFree(pass1PatternSrc);
+    NEditFree(pass2PatternSrc);
     
     /* Create the style buffer */
     styleBuf = BufCreate();
     
     /* Collect all of the highlighting information in a single structure */
-    highlightData =(windowHighlightData *)XtMalloc(sizeof(windowHighlightData));
+    highlightData =(windowHighlightData *)NEditMalloc(sizeof(windowHighlightData));
     highlightData->pass1Patterns = pass1Pats;
     highlightData->pass2Patterns = pass2Pats;
     highlightData->parentStyles = parentStyles;
@@ -851,7 +852,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     
     /* Allocate memory for the compiled patterns.  The list is terminated
        by a record with style == 0. */
-    compiledPats = (highlightDataRec *)XtMalloc(sizeof(highlightDataRec) *
+    compiledPats = (highlightDataRec *)NEditMalloc(sizeof(highlightDataRec) *
     	    (nPatterns + 1));
     compiledPats[nPatterns].style = 0;
     
@@ -868,7 +869,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    	    patternSrc[i].subPatternOf)].nSubPatterns++;
     for (i=0; i<nPatterns; i++)
     	compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ?
-    	    	NULL : (highlightDataRec **)XtMalloc(
+    	    	NULL : (highlightDataRec **)NEditMalloc(
     	    	    sizeof(highlightDataRec *) * compiledPats[i].nSubPatterns);
     for (i=0; i<nPatterns; i++)
     	compiledPats[i].nSubPatterns = 0;
@@ -978,7 +979,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	    compiledPats[patternNum].subPatternRE = NULL;
 	    continue;
 	}
-	bigPattern = XtMalloc(sizeof(char) * (length+1));
+	bigPattern = (char*)NEditMalloc(length+1);
 	ptr=bigPattern;
 	if (patternSrc[patternNum].endRE != NULL) {
 	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
@@ -1015,7 +1016,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    	    compileMsg);
     	    return NULL;
 	}
-	XtFree(bigPattern);
+	NEditFree(bigPattern);
     }
     
     /* Copy remaining parameters from pattern template to compiled tree */
@@ -1044,10 +1045,10 @@ static void freePatterns(highlightDataRec *patterns)
     }
 
     for (i=0; patterns[i].style!=0; i++) {
-        XtFree((char*) patterns[i].subPatterns);
+        NEditFree(patterns[i].subPatterns);
     }
 
-    XtFree((char *)patterns);
+    NEditFree(patterns);
 }
 
 /*
@@ -1351,8 +1352,8 @@ static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
     styleString[endParse-beginSafety] = '\0';
     BufReplace(styleBuf, beginParse, endParse,
     	    &styleString[beginParse-beginSafety]);
-    XtFree(styleString);
-    XtFree(string);    
+    NEditFree(styleString);
+    NEditFree(string);    
 }
 
 /*
@@ -1558,12 +1559,12 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	    goto parseDone;
 	} else {
 	    tempLen = endPass2Safety - modStart;
-	    temp = XtMalloc(tempLen);
+	    temp = (char*)NEditMalloc(tempLen);
 	    strncpy(temp, &styleString[modStart-beginSafety], tempLen);
 	    passTwoParseString(pass2Patterns, string, styleString,
                     modStart - beginSafety, &prevChar, delimiters, string, NULL);
 	    strncpy(&styleString[modStart-beginSafety], temp, tempLen);
-	    XtFree(temp);
+	    NEditFree(temp);
 	}
     }
     
@@ -1579,7 +1580,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	    startPass2Safety = max(beginSafety,
 	    	    backwardOneContext(buf, contextRequirements, modEnd));
 	    tempLen = modEnd - startPass2Safety;
-	    temp = XtMalloc(tempLen);
+	    temp = (char*)NEditMalloc(tempLen);
 	    strncpy(temp, &styleString[startPass2Safety-beginSafety], tempLen);
 	    prevChar = getPrevChar(buf, startPass2Safety);
 	    passTwoParseString(pass2Patterns,
@@ -1588,7 +1589,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
                     endParse-startPass2Safety, &prevChar, delimiters, string,
                     NULL);
 	    strncpy(&styleString[startPass2Safety-beginSafety], temp, tempLen);
-	    XtFree(temp);
+	    NEditFree(temp);
 	}
     }
     	
@@ -1599,8 +1600,8 @@ parseDone:
     styleString[endParse-beginSafety] = '\0';
     modifyStyleBuf(styleBuf, &styleString[beginParse-beginSafety],
     	    beginParse, endParse, firstPass2Style);
-    XtFree(styleString);
-    XtFree(string);
+    NEditFree(styleString);
+    NEditFree(string);
     
     return endParse;
 }
@@ -2099,7 +2100,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
     compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
     if (compiledRE == NULL)
     {
-        char *boundedRe = XtNewString(re);
+        char *boundedRe = NEditStrdup(re);
         size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
 
         /* Prevent buffer overflow in DialogF. If the re is too long, 
@@ -2112,7 +2113,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
         DialogF(DF_WARN, parent, 1, "Error in Regex",
                 "Error in syntax highlighting regular expression:\n%s\n%s",
                 "OK", boundedRe, compileMsg);
-        XtFree(boundedRe);
+        NEditFree(boundedRe);
         return NULL;
     }
     return compiledRE;

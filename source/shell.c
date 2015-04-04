@@ -42,6 +42,7 @@ static const char CVSID[] = "$Id: shell.c,v 1.44 2008/01/04 22:11:04 yooden Exp 
 #include "interpret.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/nedit_malloc.h"
 #include "menu.h"
 
 #include <stdio.h>
@@ -170,7 +171,7 @@ void FilterSelection(WindowInfo *window, const char *command, int fromMacro)
        occupies.  Beep and return if no selection */
     text = BufGetSelectionText(window->buffer);
     if (*text == '\0') {
-	XtFree(text);
+	NEditFree(text);
 	XBell(TheDisplay, 0);
 	return;
     }
@@ -243,7 +244,7 @@ void ShellCmdToMacroString(WindowInfo *window, const char *command,
     
     /* Make a copy of the input string for issueCommand to hold and free
        upon completion */
-    inputCopy = *input == '\0' ? NULL : XtNewString(input);
+    inputCopy = *input == '\0' ? NULL : NEditStrdup(input);
     
     /* fork the command and begin processing input/output */
     issueCommand(window, command, inputCopy, strlen(input),
@@ -304,7 +305,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     issueCommand(window, subsCommand, NULL, 0, 0, window->lastFocus, insertPos+1,
 	    insertPos+1, fromMacro);
     free(subsCommand);
-    XtFree(cmdText);
+    NEditFree(cmdText);
 }
 
 /*
@@ -354,8 +355,8 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     if (input == FROM_SELECTION) {
 	text = BufGetSelectionText(window->buffer);
 	if (*text == '\0') {
-    	    XtFree(text);
-            free(subsCommand);
+    	    NEditFree(text);
+            NEditFree(subsCommand);
     	    XBell(TheDisplay, 0);
     	    return;
     	}
@@ -366,7 +367,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     } else if (input == FROM_EITHER) {
 	text = BufGetSelectionText(window->buffer);
 	if (*text == '\0') {
-	    XtFree(text);
+	    NEditFree(text);
 	    text = BufGetAll(window->buffer);
     	}
     	flags |= ACCUMULATE | ERROR_DIALOGS;
@@ -423,7 +424,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     if (saveFirst) {
     	if (!SaveWindow(window)) {
     	    if (input != FROM_NONE)
-    		XtFree(text);
+    		NEditFree(text);
             free(subsCommand);
     	    return;
 	}
@@ -524,7 +525,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     
     /* Create a data structure for passing process information around
        amongst the callback routines which will process i/o and completion */
-    cmdData = (shellCmdInfo *)XtMalloc(sizeof(shellCmdInfo));
+    cmdData = (shellCmdInfo *)NEditMalloc(sizeof(shellCmdInfo));
     window->shellCmdData = cmdData;
     cmdData->flags = flags;
     cmdData->stdinFD = stdinFD;
@@ -588,14 +589,14 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
     int nRead;
 
     /* read from the process' stdout stream */
-    buf = (buffer *)XtMalloc(sizeof(buffer));
+    buf = (buffer *)NEditMalloc(sizeof(buffer));
     nRead = read(cmdData->stdoutFD, buf->contents, IO_BUF_SIZE);
     
     /* error in read */
     if (nRead == -1) { /* error */
 	if (errno != EWOULDBLOCK && errno != EAGAIN) {
 	    perror("nedit: Error reading shell command output");
-	    XtFree((char *)buf);
+	    NEditFree(buf);
 	    finishCmdExecution(window, True);
 	}
 	return;
@@ -604,7 +605,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
     /* end of data.  If the stderr stream is done too, execution of the
        shell process is complete, and we can display the results */
     if (nRead == 0) {
-    	XtFree((char *)buf);
+    	NEditFree(buf);
     	XtRemoveInput(cmdData->stdoutInputID);
     	cmdData->stdoutInputID = 0;
     	if (cmdData->stderrInputID == 0)
@@ -629,14 +630,14 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
     int nRead;
     
     /* read from the process' stderr stream */
-    buf = (buffer *)XtMalloc(sizeof(buffer));
+    buf = (buffer *)NEditMalloc(sizeof(buffer));
     nRead = read(cmdData->stderrFD, buf->contents, IO_BUF_SIZE);
     
     /* error in read */
     if (nRead == -1) {
 	if (errno != EWOULDBLOCK && errno != EAGAIN) {
 	    perror("nedit: Error reading shell command error stream");
-	    XtFree((char *)buf);
+	    NEditFree(buf);
 	    finishCmdExecution(window, True);
 	}
 	return;
@@ -645,7 +646,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
     /* end of data.  If the stdout stream is done too, execution of the
        shell process is complete, and we can display the results */
     if (nRead == 0) {
-    	XtFree((char *)buf);
+    	NEditFree(buf);
     	XtRemoveInput(cmdData->stderrInputID);
     	cmdData->stderrInputID = 0;
     	if (cmdData->stdoutInputID == 0)
@@ -730,7 +731,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     }
 
     /* Free C-string */
-    XtFree(cCancel);
+    NEditFree(cCancel);
 
     SetModeMessage(window, message);
     cmdData->bannerTimeoutID = 0;
@@ -778,7 +779,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
 	} else
 	    fprintf(stderr, "nedit: Too much binary data\n");
     }
-    XtFree(outText);
+    NEditFree(outText);
 
     /* re-establish the timer proc (this routine) to continue processing */
     cmdData->flushTimeoutID = XtAppAddTimeOut(
@@ -817,7 +818,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     	close(cmdData->stdinFD);
 
     /* Free the provided input text */
-    XtFree(cmdData->input);
+    NEditFree(cmdData->input);
     
     /* Cancel pending timeouts */
     if (cmdData->flushTimeoutID != 0)
@@ -881,10 +882,10 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
             cancel = resp == 2;
         }
 
-        XtFree(errText);
+        NEditFree(errText);
         if (cancel)
         {
-            XtFree(outText);
+            NEditFree(outText);
             goto cmdDone;
         }
     }
@@ -921,9 +922,9 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     	RevertToSaved(window);
 
     /* Command is complete, free data structure and continue macro execution */
-    XtFree(outText);
+    NEditFree(outText);
 cmdDone:
-    XtFree((char *)cmdData);
+    NEditFree(cmdData);
     window->shellCmdData = NULL;
     if (fromMacro)
     	ResumeMacroExecution(window);
@@ -1082,7 +1083,7 @@ static char *coalesceOutput(buffer **bufList, int *outLength)
     	length += buf->length;
     
     /* allocate contiguous memory for returning data */
-    outBuf = XtMalloc(length+1);
+    outBuf = (char*)NEditMalloc(length+1);
     
     /* reverse the buffer list */
     while (*bufList != NULL) {
@@ -1117,7 +1118,7 @@ static void freeBufList(buffer **bufList)
     while (*bufList != NULL) {
     	buf = *bufList;
     	*bufList = buf->next;
-    	XtFree((char *)buf);
+    	NEditFree(buf);
     }
 }
 
@@ -1381,7 +1382,7 @@ static char *shellCommandSubstitutes(const char *inStr, const char *fileStr,
 
     cmdLen = shellSubstituter(NULL, inStr, fileStr, lineStr, 0, 1);
     if (cmdLen >= 0) {
-        subsCmdStr = malloc(cmdLen);
+        subsCmdStr = (char*)NEditMalloc(cmdLen);
         if (subsCmdStr) {
             cmdLen = shellSubstituter(subsCmdStr, inStr, fileStr, lineStr, cmdLen, 0);
             if (cmdLen < 0) {

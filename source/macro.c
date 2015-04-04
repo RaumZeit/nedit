@@ -57,6 +57,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp
 #include "highlight.h"
 #include "highlightData.h"
 #include "rangeset.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -634,8 +635,8 @@ void BeginLearn(WindowInfo *window)
     }
 
     /* Free C-strings */
-    XtFree(cFinish);
-    XtFree(cCancel);
+    NEditFree(cFinish);
+    NEditFree(cCancel);
 
     /* Put up the learn-mode banner */
     SetModeMessage(window, message);    
@@ -659,7 +660,7 @@ void FinishLearn(void)
     MacroRecordActionHook = 0;
     
     /* Free the old learn/replay sequence */
-    XtFree(ReplayMacro);
+    NEditFree(ReplayMacro);
     
     /* Store the finished action for the replay menu item */
     ReplayMacro = BufGetAll(MacroRecordBuf);
@@ -806,7 +807,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
     /* Parse fileString */
     result = readCheckMacroString(window->shell, fileString, window, fileName,
 	    NULL);
-    XtFree(fileString);
+    NEditFree(fileString);
     return result;
 }
 
@@ -846,7 +847,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
     Program *prog;
     Symbol *sym;
     DataValue subrPtr;
-    Stack* progStack = (Stack*) XtMalloc(sizeof(Stack));
+    Stack* progStack = (Stack*) NEditMalloc(sizeof(Stack));
     progStack->top = NULL;
     progStack->size = 0;
 
@@ -954,7 +955,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
     }
 
     /*  This stack is empty, so just free it without checking the members.  */
-    XtFree((char*) progStack);
+    NEditFree(progStack);
 
     return True;
 }
@@ -991,7 +992,7 @@ static void runMacro(WindowInfo *window, Program *prog)
 
     /* Create a data structure for passing macro execution information around
        amongst the callback routines which will process i/o and completion */
-    cmdData = (macroCmdInfo *)XtMalloc(sizeof(macroCmdInfo));
+    cmdData = (macroCmdInfo *)NEditMalloc(sizeof(macroCmdInfo));
     window->macroCmdData = cmdData;
     cmdData->bannerIsUp = False;
     cmdData->closeOnCompletion = False;
@@ -1151,7 +1152,7 @@ static void finishMacroCmdExecution(WindowInfo *window)
 
     /* Free execution information */
     FreeProgram(cmdData->program);
-    XtFree((char *)cmdData);
+    NEditFree(cmdData);
     window->macroCmdData = NULL;
     
     /* If macro closed its own window, window was made empty and untitled,
@@ -1208,7 +1209,7 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
     macroLen = strlen(macro);
-    tMacro = XtMalloc(strlen(macro)+2);
+    tMacro = (char*)NEditMalloc(strlen(macro)+2);
     strncpy(tMacro, macro, macroLen);
     tMacro[macroLen] = '\n';
     tMacro[macroLen+1] = '\0';
@@ -1217,10 +1218,10 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
     prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
     if (prog == NULL) {
     	ParseError(window->shell, tMacro, stoppedAt, errInName, errMsg);
-	XtFree(tMacro);
+	NEditFree(tMacro);
     	return;
     }
-    XtFree(tMacro);
+    NEditFree(tMacro);
 
     /* run the executable program (prog is freed upon completion) */
     runMacro(window, prog);
@@ -1258,8 +1259,8 @@ void RepeatDialog(WindowInfo *window)
     
     /* Remeber the last command, since the user is allowed to work in the
        window while the dialog is up */
-    rd = (repeatDialog *)XtMalloc(sizeof(repeatDialog));
-    rd->lastCommand = XtNewString(LastCommand);
+    rd = (repeatDialog *)NEditMalloc(sizeof(repeatDialog));
+    rd->lastCommand = NEditStrdup(LastCommand);
     
     /* make a label for the Last command item of the dialog, which includes
        the last executed action name */
@@ -1267,7 +1268,7 @@ void RepeatDialog(WindowInfo *window)
     if (parenChar == NULL)
 	return;
     cmdNameLen = parenChar-LastCommand;
-    lastCmdLabel = XtMalloc(16 + cmdNameLen);
+    lastCmdLabel = (char*)NEditMalloc(16 + cmdNameLen);
     strcpy(lastCmdLabel, "Last Command (");
     strncpy(&lastCmdLabel[14], LastCommand, cmdNameLen);
     strcpy(&lastCmdLabel[14 + cmdNameLen], ")");
@@ -1299,7 +1300,7 @@ void RepeatDialog(WindowInfo *window)
 	    XmNlabelString, s1=XmStringCreateSimple(lastCmdLabel),
 	    XmNmnemonic, 'C', NULL);
     XmStringFree(s1);
-    XtFree(lastCmdLabel);
+    NEditFree(lastCmdLabel);
     XtVaCreateManagedWidget("learnReplayToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
 	    XmNlabelString,
@@ -1412,16 +1413,16 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
     
     /* Figure out which command user wants to repeat */
     if (XmToggleButtonGetState(rd->lastCmdToggle))
-	params[1] = XtNewString(rd->lastCommand);
+	params[1] = NEditStrdup(rd->lastCommand);
     else {
 	if (ReplayMacro == NULL)
 	    return False;
-	params[1] = XtNewString(ReplayMacro);
+	params[1] = NEditStrdup(ReplayMacro);
     }
 
     /* call the action routine repeat_macro to do the work */
     XtCallActionProc(rd->forWindow->lastFocus, "repeat_macro", event, params,2);
-    XtFree(params[1]);
+    NEditFree(params[1]);
     return True;
 }
 
@@ -1436,8 +1437,8 @@ static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     repeatDialog *rd = (repeatDialog *)clientData;
     
-    XtFree(rd->lastCommand);
-    XtFree((char *)rd);
+    NEditFree(rd->lastCommand);
+    NEditFree(rd);
 }
 
 /*
@@ -1471,7 +1472,7 @@ startLength = $text_length\n%s\n\
 selEnd += $text_length - startLength\n}\n";
     else
     	loopMacro = "for(i=0;i<%d;i++){\n%s\n}\n";
-    loopedCmd = XtMalloc(strlen(command) + strlen(loopMacro) + 25);
+    loopedCmd = (char*)NEditMalloc(strlen(command) + strlen(loopMacro) + 25);
     if (how == REPEAT_TO_END || how == REPEAT_IN_SEL)
 	sprintf(loopedCmd, loopMacro, command);
     else
@@ -1484,7 +1485,7 @@ selEnd += $text_length - startLength\n}\n";
     		errMsg);
     	return;
     }
-    XtFree(loopedCmd);
+    NEditFree(loopedCmd);
 
     /* run the executable program */
     runMacro(window, prog);
@@ -1527,7 +1528,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
     actionString = actionToString(w, actionName, event, params, *numParams);
     if (actionString != NULL) {
 	BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
-	XtFree(actionString);
+	NEditFree(actionString);
     }
 }
 
@@ -1563,7 +1564,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
     /* Record the action and its parameters */
     actionString = actionToString(w, actionName, event, params, *numParams);
     if (actionString != NULL) {
-        XtFree(LastCommand);
+        NEditFree(LastCommand);
 	LastCommand = actionString;
     }
 }
@@ -1616,7 +1617,7 @@ static char *actionToString(Widget w, char *actionName, XEvent *event,
 	length += escapedStringLength(params[i]) + 4;
     
     /* Allocate the string and copy the information to it */
-    outPtr = outStr = XtMalloc(length + 1);
+    outPtr = outStr = (char*)NEditMalloc(length + 1);
     strcpy(outPtr, actionName);
     outPtr += nameLength;
     *outPtr++ = '(';
@@ -1700,7 +1701,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     }
 
     /* Free C-string */
-    XtFree(cCancel);
+    NEditFree(cCancel);
 
     SetModeMessage(window, message);
     cmdData->bannerTimeoutID = 0;
@@ -1959,7 +1960,7 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
     strcpy(result->val.str.rep, rangeText);
     /* Note: after the un-substitution, it is possible that strlen() != len,
        but that's because strlen() can't deal with 0-characters. */
-    XtFree(rangeText);
+    NEditFree(rangeText);
     return True;
 }
 
@@ -2101,7 +2102,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     	}
 	selText = GetAnySelection(window);
 	if (selText == NULL)
-	    selText = XtNewString("");
+	    selText = NEditStrdup("");
     } else {
 	selText = BufGetSelectionText(window->buffer);
     	BufUnsubstituteNullChars(selText, window->buffer);
@@ -2110,7 +2111,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Return the text as an allocated string */
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, selText);
-    XtFree(selText);
+    NEditFree(selText);
     return True;
 }
 
@@ -2363,19 +2364,19 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
         int chunkSize = 1024;
         char *buffer;
         
-        buffer = XtMalloc(readLen * sizeof(char));
+        buffer = (char*)NEditMalloc(readLen * sizeof(char));
         memcpy(buffer, result->val.str.rep, readLen * sizeof(char));
         while (!feof(fp)){
-            buffer = XtRealloc(buffer, (readLen+chunkSize)*sizeof(char));
+            buffer = NEditRealloc(buffer, (readLen+chunkSize)*sizeof(char));
             readLen += fread(&buffer[readLen], sizeof(char), chunkSize, fp);
             if (ferror(fp)){
-                XtFree(buffer);
+                NEditFree(buffer);
 	        goto error;
             }
         }
         AllocNString(&result->val.str, readLen + 1);
         memcpy(result->val.str.rep, buffer, readLen * sizeof(char));
-        XtFree(buffer);
+        NEditFree(buffer);
     }
     fclose(fp);
     
@@ -2623,7 +2624,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
 	strncpy(result->val.str.rep, string, copyStart);
 	strcpy(&result->val.str.rep[copyStart], replacedStr);
 	strcpy(&result->val.str.rep[replaceEnd], &string[copyEnd]);
-        XtFree(replacedStr);
+        NEditFree(replacedStr);
     }
     return True;
 }
@@ -3148,7 +3149,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     	    XmDIALOG_TEXT));
     retVal.tag = STRING_TAG;
     AllocNStringCpy(&retVal.val.str, text);
-    XtFree(text);
+    NEditFree(text);
     ModifyReturnedValue(cmdData->context, retVal);
     
     /* Find the index of the button which was pressed (stored in the userData
@@ -3465,8 +3466,8 @@ static int filenameDialogMS(WindowInfo* window, DataValue* argList, int nArgs,
     /*  Reset original values and free temps  */
     SetFileDialogDefaultDirectory(orgDefaultPath);
     SetFileDialogDefaultPattern(orgFilter);
-    XtFree(orgDefaultPath);
-    XtFree(orgFilter);
+    NEditFree(orgDefaultPath);
+    NEditFree(orgFilter);
 
     result->tag = STRING_TAG;
     if (GFN_OK == gfnResult) {
@@ -3561,8 +3562,8 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* now set up arrays of pointers to lines */
     /*   test_strings to hold the display strings (tab expanded) */
     /*   text_lines to hold the original text lines (without the '\n's) */
-    test_strings = (XmString *) XtMalloc(sizeof(XmString) * nlines);
-    text_lines = (char **)XtMalloc(sizeof(char *) * (nlines + 1));
+    test_strings = (XmString *) NEditMalloc(sizeof(XmString) * nlines);
+    text_lines = (char **)NEditMalloc(sizeof(char *) * (nlines + 1));
     for (n = 0; n < nlines; n++) {
       test_strings[n] = (XmString)0;
       text_lines[n] = (char *)0;
@@ -3577,7 +3578,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     is_last = 0;
     p = old_p = text;
     tmp_len = 0;      /* current allocated size of temporary buffer tmp */
-    tmp = malloc(1);  /* temporary buffer into which to expand tabs */
+    tmp = (char*)NEditMalloc(1);  /* temporary buffer into which to expand tabs */
     do {
       is_last = (*p == '\0');
       if (*p == '\n' || is_last) {
@@ -3587,7 +3588,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
               int l;
 
               /* save the actual text line in text_lines[n] */
-              text_lines[n] = (char *)XtMalloc(strlen(old_p) + 1);
+              text_lines[n] = (char *)NEditMalloc(strlen(old_p) + 1);
               strcpy(text_lines[n], old_p);
 
               /* work out the tabs expanded length */
@@ -3596,7 +3597,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
               /* verify tmp is big enough then tab-expand old_p into tmp */
               if (l > tmp_len)
-                  tmp = realloc(tmp, (tmp_len = l) + 1);
+                  tmp = (char*)NEditRealloc(tmp, (tmp_len = l) + 1);
               for (s = old_p, t = tmp, l = 0; *s; s++) {
                   if (*s == '\t') {
                       for (i = tabDist - (l % tabDist); i--; l++)
@@ -3619,7 +3620,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
       p++;
     } while (!is_last);
 
-    free(tmp);                /* don't need this anymore */
+    NEditFree(tmp);                /* don't need this anymore */
     nlines = n;
     if (nlines == 0) {
       test_strings[0] = MKSTRING("");
@@ -3654,7 +3655,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* forget lines stored in list */
     while (n--)
         XmStringFree(test_strings[n]);
-    XtFree((char *)test_strings);
+    NEditFree(test_strings);
 
     /* modify the list */
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST),
@@ -3733,23 +3734,22 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     }
     else {
       sel_index = seltable[0] - 1;
-      XtFree((XtPointer)seltable);
+      NEditFree(seltable);
     }
 
     if (!n_sel) {
-      text = PERM_ALLOC_STR("");
+      text = NEditStrdup("");
       length = 0;
     }
     else {
       length = strlen((char *)text_lines[sel_index]);
-      text = AllocString(length + 1);
-      strcpy(text, text_lines[sel_index]);
+      text = NEditStrdup(text_lines[sel_index]);
     }
 
     /* don't need text_lines anymore: free it */
     for (sel_index = 0; text_lines[sel_index]; sel_index++)
-      XtFree((XtPointer)text_lines[sel_index]);
-    XtFree((XtPointer)text_lines);
+      NEditFree(text_lines[sel_index]);
+    NEditFree(text_lines);
 
     retVal.tag = STRING_TAG;
     retVal.val.str.rep = text;
@@ -3795,12 +3795,12 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
     theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
     XtVaGetValues(theList, XmNuserData, &text_lines, NULL);
     for (sel_index = 0; text_lines[sel_index]; sel_index++)
-      XtFree((XtPointer)text_lines[sel_index]);
-    XtFree((XtPointer)text_lines);
+      NEditFree(text_lines[sel_index]);
+    NEditFree(text_lines);
 
     /* Return an empty string */
     retVal.tag = STRING_TAG;
-    retVal.val.str.rep = PERM_ALLOC_STR("");
+    retVal.val.str.rep = NEditStrdup("");
     retVal.val.str.len = 0;
     ModifyReturnedValue(cmdData->context, retVal);
     

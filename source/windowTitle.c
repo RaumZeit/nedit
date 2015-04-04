@@ -41,6 +41,7 @@ static const char CVSID[] = "$Id: windowTitle.c,v 1.16 2007/12/31 11:12:44 yoode
 #include "../util/DialogF.h"
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -454,7 +455,7 @@ char *FormatWindowTitle(const char* filename,
                sprintf(&buf[0], "%d", noOfComponents);
                if (strcmp(&buf[0], value)) /* Don't overwrite unless diff. */
        	           SetIntText(etDialog.ndirW, noOfComponents);
-               XtFree(value);
+               NEditFree(value);
 	   }
 	   else
 	   {
@@ -560,7 +561,7 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
                   etDialog.lockReasons,
                   XmToggleButtonGetState(etDialog.oFileChangedW),
                   format);
-    XtFree(format);
+    NEditFree(format);
     XmTextFieldSetString(etDialog.previewW, title);
 }
 
@@ -623,7 +624,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
     if (strcmp(format, GetPrefTitleFormat()) != 0) {
         SetPrefTitleFormat(format);
     }
-    XtFree(format);
+    NEditFree(format);
 }
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -657,12 +658,12 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData)
 static void appendToFormat(const char* string)
 {
     char *format = XmTextGetString(etDialog.formatW);
-    char *buf = XtMalloc(strlen(string) + strlen(format) + 1);
+    char *buf = (char*)NEditMalloc(strlen(string) + strlen(format) + 1);
     strcpy(buf, format);
     strcat(buf, string);
     XmTextSetString(etDialog.formatW, buf);
-    XtFree(format);
-    XtFree(buf);
+    NEditFree(format);
+    NEditFree(buf);
 }
 
 static void removeFromFormat(const char* string)
@@ -726,7 +727,7 @@ static void removeFromFormat(const char* string)
     *(pos+1) = (char)0;
     
     XmTextSetString(etDialog.formatW, format);
-    XtFree(format);
+    NEditFree(format);
 }
 
 
@@ -799,12 +800,12 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 	    pos = strstr(format, "%S");
 	    if (pos)
 	    {
-     	        char* tmp = (char*)XtMalloc((strlen(format)+2)*sizeof(char));
+     	        char* tmp = (char*)NEditMalloc((strlen(format)+2)*sizeof(char));
 		strncpy(tmp, format, (size_t)(pos-format+1));
 		tmp[pos-format+1] = 0;
 		strcat(tmp, "*");
 		strcat(tmp, pos+1);
-		XtFree(format);
+		NEditFree(format);
 		format = tmp;
 	    }
 	}
@@ -825,7 +826,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
     }
     
     XmTextSetString(etDialog.formatW, format);
-    XtFree(format);
+    NEditFree(format);
 }
 
 static void toggleUserCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -858,7 +859,7 @@ static void toggleDirectoryCB(Widget w, XtPointer clientData, XtPointer callData
 	{
 	   sprintf(&buf[0], " %%d ");
 	}
-	XtFree(value);
+	NEditFree(value);
         appendToFormat(buf);
     }
     else
@@ -914,12 +915,12 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData)
 	    pos = strstr(format, "%d");
 	    if (pos)
 	    {
-     	        char* tmp = (char*)XtMalloc((strlen(format)+2)*sizeof(char));
+     	        char* tmp = (char*)NEditMalloc((strlen(format)+2)*sizeof(char));
 		strncpy(tmp, format, (size_t)(pos-format+1));
 		tmp[pos-format+1] = 0;
 		strcat(tmp, &insert[0]);
 		strcat(tmp, pos+1);
-		XtFree(format);
+		NEditFree(format);
 		format = tmp;
 		found = True;
 	    }
@@ -967,8 +968,8 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData)
     }
     
     XmTextSetString(etDialog.formatW, format);
-    XtFree(format);
-    XtFree(value);
+    NEditFree(format);
+    NEditFree(value);
 }
 
 static void createEditTitleDialog(Widget parent)

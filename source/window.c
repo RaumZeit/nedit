@@ -63,6 +63,7 @@ static const char CVSID[] = "$Id: window.c,v 1.204 2008/03/03 22:32:24 tringali 
 #include "../util/DialogF.h"
 #include "../Xlt/BubbleButtonP.h"
 #include "../Microline/XmL/Folder.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,7 +226,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     static Pixmap closeTabPixmap = 0;
 
     /* Allocate some memory for the new window data structure */
-    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    window = (WindowInfo *)NEditMalloc(sizeof(WindowInfo));
     
     /* initialize window structure */
     /* + Schwarzenberg: should a 
@@ -283,7 +284,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     if (window->backlightChars) {
         char *cTypes = GetPrefBacklightCharTypes();
         if (cTypes && window->backlightChars) {
-            if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+            if ((window->backlightCharTypes = (char*)NEditMalloc(strlen(cTypes) + 1)))
                 strcpy(window->backlightCharTypes, cTypes);
         }
     }
@@ -904,7 +905,7 @@ void SortTabBar(WindowInfo *window)
         return;
 
     /* first sort the documents */
-    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
+    windows = (WindowInfo **)NEditMalloc(sizeof(WindowInfo *) * nDoc);
     for (w=WindowList, i=0; w!=NULL; w=w->next) {
     	if (window->shell == w->shell)
     	    windows[i++] = w;
@@ -928,7 +929,7 @@ void SortTabBar(WindowInfo *window)
         j++;
     }
     
-    XtFree((char *)windows);
+    NEditFree(windows);
 }
 
 /* 
@@ -1104,13 +1105,13 @@ void CloseWindow(WindowInfo *window)
         FreeUserMenuCache(window->userMenuCache);
 
 	/* remove and deallocate all of the widgets associated with window */
-    	XtFree(window->backlightCharTypes); /* we made a copy earlier on */
+    	NEditFree(window->backlightCharTypes); /* we made a copy earlier on */
 	CloseAllPopupsFor(window->shell);
     	XtDestroyWidget(window->shell);
     }
 
     /* deallocate the window data structure */
-    XtFree((char*)window);
+    NEditFree(window);
 }
 
 /*
@@ -1653,8 +1654,8 @@ void SetModeMessage(WindowInfo *window, const char *message)
        so we save a copy of the mode message, so we can restore the
        statsline when the document is raised to top again */
     window->modeMessageDisplayed = True;
-    XtFree(window->modeMessage);
-    window->modeMessage = XtNewString(message);
+    NEditFree(window->modeMessage);
+    window->modeMessage = NEditStrdup(message);
 
     if (!IsTopDocument(window))
     	return;
@@ -1677,7 +1678,7 @@ void ClearModeMessage(WindowInfo *window)
     	return;
 
     window->modeMessageDisplayed = False;
-    XtFree(window->modeMessage);
+    NEditFree(window->modeMessage);
     window->modeMessage = NULL;
     
     if (!IsTopDocument(window))
@@ -2058,7 +2059,7 @@ void UpdateWindowTitle(const WindowInfo *window)
                                     window->fileChanged,
                                     GetPrefTitleFormat());
                    
-    iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
+    iconTitle = (char*)NEditMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
     strcpy(iconTitle, window->filename);
     if (window->fileChanged)
@@ -2075,7 +2076,7 @@ void UpdateWindowTitle(const WindowInfo *window)
         sprintf(title, "Replace (in %s)", window->filename);
         XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, NULL);
     }
-    XtFree(iconTitle);
+    NEditFree(iconTitle);
 
     /* Update the Windows menus with the new name */
     InvalidateWindowMenus();
@@ -2456,18 +2457,18 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
         maxArgc += 5;  /* -iconic -group -geometry WxH+x+y filename */
         nWindows++;
     }
-    argv = (char **)XtMalloc(maxArgc*sizeof(char *));
-    revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *)*nWindows);
+    argv = (char **)NEditMalloc(maxArgc*sizeof(char *));
+    revWindowList = (WindowInfo **)NEditMalloc(sizeof(WindowInfo *)*nWindows);
     for (win=WindowList, i=nWindows-1; win!=NULL; win=win->next, i--)
         revWindowList[i] = win;
         
     /* Create command line arguments for restoring each window in the list */
-    argv[argc++] = XtNewString(ArgV0);
+    argv[argc++] = NEditStrdup(ArgV0);
     if (IsServer) {
-        argv[argc++] = XtNewString("-server");
+        argv[argc++] = NEditStrdup("-server");
         if (GetPrefServerName()[0] != '\0') {
-            argv[argc++] = XtNewString("-svrname");
-            argv[argc++] = XtNewString(GetPrefServerName());
+            argv[argc++] = NEditStrdup("-svrname");
+            argv[argc++] = NEditStrdup(GetPrefServerName());
         }
     }
 
@@ -2485,14 +2486,14 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 
 	/* create a group for each window */
         getGeometryString(topWin, geometry);
-        argv[argc++] = XtNewString("-group");
-        argv[argc++] = XtNewString("-geometry");
-        argv[argc++] = XtNewString(geometry);
+        argv[argc++] = NEditStrdup("-group");
+        argv[argc++] = NEditStrdup("-geometry");
+        argv[argc++] = NEditStrdup(geometry);
         if (IsIconic(topWin)) {
-            argv[argc++] = XtNewString("-iconic");
+            argv[argc++] = NEditStrdup("-iconic");
             wasIconic = True;
         } else if (wasIconic) {
-            argv[argc++] = XtNewString("-noiconic");
+            argv[argc++] = NEditStrdup("-noiconic");
             wasIconic = False;
 	}
 	
@@ -2504,20 +2505,20 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 	    win = TabToWindow(tabs[i]);
             if (win->filenameSet) {
 		/* add filename */
-        	argv[argc] = XtMalloc(strlen(win->path) +
+        	argv[argc] = (char*)NEditMalloc(strlen(win->path) +
                 	strlen(win->filename) + 1);
         	sprintf(argv[argc++], "%s%s", win->path, win->filename);
             }
 	}
     }
 
-    XtFree((char *)revWindowList);
+    NEditFree(revWindowList);
 
     /* Set the window's WM_COMMAND property to the created command line */
     XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
     for (i=0; i<argc; i++)
-        XtFree(argv[i]);
-    XtFree((char *)argv);
+        NEditFree(argv[i]);
+    NEditFree(argv);
 }
 
 void AttachSessionMgrHandler(Widget appShell)
@@ -2558,7 +2559,7 @@ int IsIconic(WindowInfo *window)
             nItems != 1 || property == NULL)
         return FALSE;
     result = *property == IconicState;
-    XtFree((char *)property);
+    NEditFree(property);
     return result;
 }
 
@@ -2714,7 +2715,7 @@ void UpdateStatsLine(WindowInfo *window)
     
     /* Compose the string to display. If line # isn't available, leave it off */
     pos = TextGetCursorPos(window->lastFocus);
-    string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
+    string = (char*)NEditMalloc(strlen(window->filename) + strlen(window->path) + 45);
     format = window->fileFormat == DOS_FILE_FORMAT ? " DOS" :
             (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
     if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
@@ -2758,7 +2759,7 @@ void UpdateStatsLine(WindowInfo *window)
         XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 #endif
     }
-    XtFree(string);
+    NEditFree(string);
     
     /* Update the line/col display */
     xmslinecol = XmStringCreateSimple(slinecol);
@@ -3105,9 +3106,9 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
 
     window->backlightChars = do_apply;
 
-    XtFree(window->backlightCharTypes);
+    NEditFree(window->backlightCharTypes);
     if (window->backlightChars &&
-      (window->backlightCharTypes = XtMalloc(strlen(applyBacklightTypes)+1)))
+      (window->backlightCharTypes = (char*)NEditMalloc(strlen(applyBacklightTypes)+1)))
       strcpy(window->backlightCharTypes, applyBacklightTypes);
     else
       window->backlightCharTypes = NULL;
@@ -3257,7 +3258,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     int nCols, nRows;
     
     /* Allocate some memory for the new window data structure */
-    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    window = (WindowInfo *)NEditMalloc(sizeof(WindowInfo));
     
     /* inherit settings and later reset those required */
     memcpy(window, shellWindow, sizeof(WindowInfo));
@@ -3317,7 +3318,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     if (window->backlightChars) {
       char *cTypes = GetPrefBacklightCharTypes();
       if (cTypes && window->backlightChars) {
-          if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+          if ((window->backlightCharTypes = (char*)NEditMalloc(strlen(cTypes) + 1)))
               strcpy(window->backlightCharTypes, cTypes);
       }
     }
@@ -3496,7 +3497,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     	return NULL;
 
     /* get the list of tabs */
-    tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
+    tabs = (WidgetList)NEditMalloc(sizeof(Widget) * nBuf);
     tabTotalCount = 0;
     if (crossWin) {
 	int n, nItems;
@@ -3555,7 +3556,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     
     /* return the document where the next tab belongs to */
     win = TabToWindow(tabs[nextPos]);
-    XtFree((char *)tabs);
+    NEditFree(tabs);
     return win;
 }
 
@@ -4379,11 +4380,11 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
     UndoInfo *head = NULL, *undo, *clone, *last = NULL;
 
     for (undo = orgList; undo; undo = undo->next) {
-	clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+	clone = (UndoInfo *)NEditMalloc(sizeof(UndoInfo));
 	memcpy(clone, undo, sizeof(UndoInfo));
 
 	if (undo->oldText) {
-	    clone->oldText = XtMalloc(strlen(undo->oldText)+1);
+	    clone->oldText = (char*)NEditMalloc(strlen(undo->oldText)+1);
 	    strcpy(clone->oldText, undo->oldText);
 	}
 	clone->next = NULL;
@@ -4532,8 +4533,8 @@ void MoveDocumentDialog(WindowInfo *window)
     /* get the list of available shell windows, not counting
        the document to be moved */    
     nWindows = NWindows();
-    list = (XmStringTable) XtMalloc(nWindows * sizeof(XmString *));
-    shellWinList = (WindowInfo **) XtMalloc(nWindows * sizeof(WindowInfo *));
+    list = (XmStringTable) NEditMalloc(nWindows * sizeof(XmString *));
+    shellWinList = (WindowInfo **) NEditMalloc(nWindows * sizeof(WindowInfo *));
 
     for (win=WindowList; win; win=win->next) {
 	if (!IsTopDocument(win) || win->shell == window->shell)
@@ -4549,8 +4550,8 @@ void MoveDocumentDialog(WindowInfo *window)
 
     /* stop here if there's no other window to move to */
     if (!nList) {
-        XtFree((char *)list);
-        XtFree((char *)shellWinList);
+        NEditFree(list);
+        NEditFree(shellWinList);
         return;
     }
 
@@ -4580,7 +4581,7 @@ void MoveDocumentDialog(WindowInfo *window)
     /* free the window list */
     for (i=0; i<nList; i++)
 	XmStringFree(list[i]);
-    XtFree((char *)list);    
+    NEditFree(list);    
 
     /* create the option box for moving all documents */    
     s1 = MKSTRING("Move all documents in this window");
@@ -4614,7 +4615,7 @@ void MoveDocumentDialog(WindowInfo *window)
     /* get the window to move document into */   
     XmListGetSelectedPos(listBox, &position_list, &position_count);
     targetWin = shellWinList[position_list[0]-1];
-    XtFree((char *)position_list);
+    NEditFree(position_list);
     
     /* now move document(s) */
     if (DoneWithMoveDocumentDialog == XmCR_OK) {
@@ -4639,7 +4640,7 @@ void MoveDocumentDialog(WindowInfo *window)
 	}
     }
 
-    XtFree((char *)shellWinList);    
+    NEditFree(shellWinList);    
     XtDestroyWidget(dialog);	
 }
 

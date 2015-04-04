@@ -58,6 +58,7 @@ static const char CVSID[] = "$Id: menu.c,v 1.143 2008/01/04 22:11:03 yooden Exp 
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "../Xlt/BubbleButton.h"
+#include "../util/nedit_malloc.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -4532,12 +4533,11 @@ void AddToPrevOpenMenu(const char *filename)
     /* If the list is already full, make room */
     if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
         /*  This is only safe if GetPrefMaxPrevOpenFiles() > 0.  */
-        XtFree(PrevOpen[--NPrevOpen]);
+        NEditFree(PrevOpen[--NPrevOpen]);
     }
     
     /* Add it to the list */
-    nameCopy = XtMalloc(strlen(filename) + 1);
-    strcpy(nameCopy, filename);
+    nameCopy = NEditStrdup(filename);
     memmove(&PrevOpen[1], &PrevOpen[0], sizeof(char *) * NPrevOpen);
     PrevOpen[0] = nameCopy;
     NPrevOpen++;
@@ -4591,7 +4591,7 @@ static void updateWindowMenu(const WindowInfo *window)
 	
     /* Make a sorted list of windows */
     for (w=WindowList, nWindows=0; w!=NULL; w=w->next, nWindows++);
-    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
+    windows = (WindowInfo **)NEditMalloc(sizeof(WindowInfo *) * nWindows);
     for (w=WindowList, i=0; w!=NULL; w=w->next, i++)
     	windows[i] = w;
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
@@ -4651,7 +4651,7 @@ static void updateWindowMenu(const WindowInfo *window)
 	    	windows[windowIndex]);
     	XmStringFree(st1);
     }
-    XtFree((char *)windows);
+    NEditFree(windows);
 
     /* if the menu is torn off, we need to manually adjust the
        dimension of the menuShell _before_ re-managing the menu
@@ -4686,7 +4686,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
     ReadNEditDB();
                 
     /* Sort the previously opened file list if requested */
-    prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char*));
+    prevOpenSorted = (char **)NEditMalloc(NPrevOpen * sizeof(char*));
     memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char*));
     if (GetPrefSortOpenPrevMenu())
     	qsort(prevOpenSorted, NPrevOpen, sizeof(char*), cmpStrPtr);
@@ -4727,7 +4727,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
         XmStringFree(st1);
     }
                 
-    XtFree((char*)prevOpenSorted);
+    NEditFree(prevOpenSorted);
 }
 
 /*
@@ -4938,7 +4938,7 @@ void ReadNEditDB(void)
     /* Initialize the files list and allocate a (permanent) block memory
        of the size prescribed by the maxPrevOpenFiles resource */
     if (!PrevOpen) {
-        PrevOpen = (char**) XtMalloc(sizeof(char*) * GetPrefMaxPrevOpenFiles());
+        PrevOpen = (char**) NEditMalloc(sizeof(char*) * GetPrefMaxPrevOpenFiles());
         NPrevOpen = 0;
     }
 
@@ -4977,7 +4977,7 @@ void ReadNEditDB(void)
 
     /*  Clear previous list.  */
     while (0 != NPrevOpen) {
-        XtFree(PrevOpen[--NPrevOpen]);
+        NEditFree(PrevOpen[--NPrevOpen]);
     }
 
     /* read lines of the file, lines beginning with # are considered to be
@@ -5015,8 +5015,7 @@ void ReadNEditDB(void)
             fprintf(stderr, "nedit: History file may be corrupted\n");
             continue;
         }
-        nameCopy = XtMalloc(lineLen + 1);
-        strcpy(nameCopy, line);
+        nameCopy = NEditStrdup(line);
         PrevOpen[NPrevOpen++] = nameCopy;
         if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
             /* too many entries */

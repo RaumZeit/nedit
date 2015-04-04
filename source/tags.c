@@ -45,6 +45,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,7 +80,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $
    (should probably be a language-dependent option, but...) */
 #define TIP_DEFAULT_LINES 4
 
-#define STRSAVE(a)  ((a!=NULL)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
+#define STRSAVE(a)  (NEditStrdup(a!=NULL?a:""))
 
 typedef struct _tag {
     struct _tag *next;
@@ -241,11 +242,11 @@ static int addTag(const char *name, const char *file, int lang,
 
     if (searchMode == TIP) {
         if (Tips == NULL) 
-            Tips = (tag **)calloc(DefTagHashSize, sizeof(tag*));
+            Tips = (tag **)NEditCalloc(DefTagHashSize, sizeof(tag*));
         table = Tips;
     } else {
         if (Tags == NULL) 
-            Tags = (tag **)calloc(DefTagHashSize, sizeof(tag*));
+            Tags = (tag **)NEditCalloc(DefTagHashSize, sizeof(tag*));
         table = Tags;
     }
     
@@ -271,7 +272,7 @@ static int addTag(const char *name, const char *file, int lang,
         return 0;
     }
         
-    t = (tag *) malloc(sizeof(tag));
+    t = (tag *) NEditMalloc(sizeof(tag));
     setTag(t, name, file, lang, search, posInf, path);
     t->index = index;
     t->next = table[addr];
@@ -321,7 +322,7 @@ static int delTag(const char *name, const char *file, int lang,
             rcs_free(t->file);
             rcs_free(t->searchString);
             rcs_free(t->path);
-            free(t);
+            NEditFree(t);
             t = NULL;
             del++;
         }
@@ -353,8 +354,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
     else
         FileList = TipsFileList;
 
-    tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
-    strcpy(tmptagSpec, tagSpec);
+    tmptagSpec = NEditStrdup(tagSpec);
     for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(NULL, ":")){
         if (*filename == '/' || *filename == '~')
             continue;
@@ -374,7 +374,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
         }
         if (stat(pathName, &statbuf) != 0)
             continue;
-        t = (tagFile *) malloc(sizeof(tagFile));
+        t = (tagFile *) NEditMalloc(sizeof(tagFile));
         t->filename = STRSAVE(pathName);
         t->loaded = 0;
         t->date = statbuf.st_mtime;
@@ -383,7 +383,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
         FileList = setFileListHead(t, file_type);
         added=1;
     }
-    free(tmptagSpec);
+    NEditFree(tmptagSpec);
     updateMenuItems();
     if (added)
         return TRUE;
@@ -423,8 +423,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
     else
         FileList = TipsFileList;
 
-    tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
-    strcpy(tmptagSpec, tagSpec);    
+    tmptagSpec = NEditStrdup(tagSpec);
     for (filename = strtok(tmptagSpec,":"); filename; filename = strtok(NULL,":")) {
         if (*filename != '/') {
           strcpy(pathName, GetCurrentDir());
@@ -449,7 +448,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
             added = 0;
             continue;
         }
-        t = (tagFile *) malloc(sizeof(tagFile));
+        t = (tagFile *) NEditMalloc(sizeof(tagFile));
         t->filename = STRSAVE(pathName);
         t->loaded = 0;
         t->date = statbuf.st_mtime;
@@ -458,7 +457,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
         t->refcount = 1;
         FileList = setFileListHead(t, file_type );
     }
-    free(tmptagSpec);
+    NEditFree(tmptagSpec);
     updateMenuItems();
     if (added)
         return TRUE;
@@ -492,8 +491,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
     else
         FileList = TipsFileList;
 
-    tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
-    strcpy(tmptagSpec, tagSpec);
+    tmptagSpec = NEditStrdup(tagSpec);
     removed=1;
     for (filename = strtok(tmptagSpec,":"); filename; 
             filename = strtok(NULL,":")) {
@@ -517,8 +515,8 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
                 delTag(NULL,NULL,-2,NULL,-2,t->index);
             if (last) last->next = t->next;
             else FileList = setFileListHead(t->next, file_type);
-            free(t->filename);
-            free(t);
+            NEditFree(t->filename);
+            NEditFree(t);
             updateMenuItems();
             break;
         }
@@ -964,7 +962,7 @@ static void findDefCB(Widget widget, XtPointer closure, Atom *sel,
     } else {
         findDef(window, value, searchMode);
     }
-    XtFree(value);
+    NEditFree(value);
 }
 
 /* 
@@ -1014,7 +1012,7 @@ static void setTag(tag *t, const char *name, const char *file,
 ** Etags search expressions are plain literals strings, which 
 ** 
 ** If in_buffer is not NULL then it is searched instead of the window buffer.
-** In this case in_buffer should be an XtMalloc allocated buffer and the
+** In this case in_buffer should be an NEditMalloc allocated buffer and the
 ** caller is responsible for freeing it.
 */
 static int fakeRegExSearch(WindowInfo *window, char *in_buffer, 
@@ -1200,7 +1198,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
     }
     
     if (nMatches>1) {
-        if (!(dupTagsList = (char **) malloc(sizeof(char *) * nMatches))) {
+        if (!(dupTagsList = (char **) NEditMalloc(sizeof(char *) * nMatches))) {
             fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
             XBell(TheDisplay, 0);
             return -1;
@@ -1224,15 +1222,15 @@ static int findAllMatches(WindowInfo *window, const char *string)
                 sprintf(temp,"%2d. %s%s",i+1,pathname,filename);
             }
 
-            if (NULL == (dupTagsList[i] = (char*) malloc(strlen(temp) + 1))) {
+            if (NULL == (dupTagsList[i] = (char*) NEditMalloc(strlen(temp) + 1))) {
                 int j;
                 fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
 
                 /*  dupTagsList[i] is unallocated, let's free [i - 1] to [0]  */
                 for (j = i - 1; j > -1; j--) {
-                    free(dupTagsList[j]);
+                    NEditFree(dupTagsList[j]);
                 }
-                free(dupTagsList);
+                NEditFree(dupTagsList);
 
                 XBell(TheDisplay, 0);
                 return -1;
@@ -1242,8 +1240,8 @@ static int findAllMatches(WindowInfo *window, const char *string)
         }
         createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
         for (i=0; i<nMatches; i++)
-            free(dupTagsList[i]);
-        free(dupTagsList);
+            NEditFree(dupTagsList[i]);
+        NEditFree(dupTagsList);
         return 1;
     }
 
@@ -1346,7 +1344,7 @@ static void showMatchingCalltip( Widget parent, int i )
     /* 2. Read the target file */
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileLen = statbuf.st_size;
-    fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
+    fileString = (char*)NEditMalloc(fileLen+1);  /* +1 = space for null */
     if (fileString == NULL) {
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "File too large",
@@ -1360,7 +1358,7 @@ static void showMatchingCalltip( Widget parent, int i )
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "Error reading File", "Error reading %s",
                 "OK", tagFiles[i]);
-        XtFree(fileString);
+        NEditFree(fileString);
         return;
     }
     fileString[readLen] = 0;
@@ -1380,7 +1378,7 @@ static void showMatchingCalltip( Widget parent, int i )
             DialogF(DF_ERR, parent, 1, "Tags Error",
                     "%s\n not long enough for definition to be on line %d",
                     "OK", tagFiles[i], tagPosInf[i]);
-            XtFree(fileString);
+            NEditFree(fileString);
             return;
         }
     } else {
@@ -1390,7 +1388,7 @@ static void showMatchingCalltip( Widget parent, int i )
             DialogF(DF_WARN, parent, 1, "Tag not found",
                     "Definition for %s\nnot found in %s", "OK", tagName,
                     tagFiles[i]);
-            XtFree(fileString);
+            NEditFree(fileString);
             return;
         }
     }
@@ -1420,12 +1418,12 @@ static void showMatchingCalltip( Widget parent, int i )
     }
     /* 5. Copy the calltip to a string */
     tipLen = endPos - startPos;
-    message = XtMalloc(tipLen+1);  /* +1 = space for null */
+    message = (char*)NEditMalloc(tipLen+1);  /* +1 = space for null */
     if (message == NULL)
     {
         DialogF(DF_ERR, parent, 1, "Out of Memory",
                 "Can't allocate memory for calltip message", "OK");
-        XtFree(fileString);
+        NEditFree(fileString);
         return;
     }
     strncpy( message, &fileString[startPos], tipLen );
@@ -1433,8 +1431,8 @@ static void showMatchingCalltip( Widget parent, int i )
     
     /* 6. Display it */
     tagsShowCalltip( WidgetToWindow(parent), message );
-    XtFree(message);
-    XtFree(fileString);
+    NEditFree(message);
+    NEditFree(fileString);
 }
 
 /*  Open a new (or existing) editor window to the location specified in
@@ -1500,7 +1498,7 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
     int ac;
     Arg csdargs[20];
     
-    list = (XmStringTable) XtMalloc(nArgs * sizeof(XmString *));
+    list = (XmStringTable) NEditMalloc(nArgs * sizeof(XmString *));
     for (i=0; i<nArgs; i++)
         list[i] = XmStringCreateSimple(args[i]);
     sprintf(tmpStr,"Select File With TAG: %s",tagName);
@@ -1521,7 +1519,7 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
     AddMotifCloseCallback(XtParent(menu), findAllCloseCB, NULL);
     for (i=0; i<nArgs; i++)
         XmStringFree(list[i]);
-    XtFree((char *)list);
+    NEditFree(list);
     XmStringFree(popupTitle);
     ManageDialogCenteredOnPointer(menu);
     return menu;
@@ -1615,14 +1613,14 @@ static const char *rcs_strdup(const char *str)
     else     /* Doesn't exist, conjure up a new one. */
     {
         struct rcs* newrcs;
-        if (NULL == (newrcs = (struct rcs*) malloc(sizeof(struct rcs)))) {
+        if (NULL == (newrcs = (struct rcs*) NEditMalloc(sizeof(struct rcs)))) {
             /*  Not much to fall back to here.  */
             fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
             XBell(TheDisplay, 0);
             exit(1);
         }
 
-        if (NULL == (newrcs->string = (char*) malloc(len + 1))) {
+        if (NULL == (newrcs->string = (char*) NEditMalloc(len + 1))) {
             /*  Not much to fall back to here.  */
             fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
             XBell(TheDisplay, 0);
@@ -1680,12 +1678,12 @@ static void rcs_free(const char *rcs_str)
 
         if (rp->usage == 0)  /* Last one- free the storage */
         {
-            free(rp->string);
+            NEditFree(rp->string);
             if (prev)
                 prev->next = rp->next;
             else
                 Rcs[bucket] = rp->next;
-            free(rp);
+            NEditFree(rp);
         }
     }
     else    /* Doesn't appear to be a shared string */
@@ -1829,12 +1827,12 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
             return TF_ERROR;
         }
         /* Make space for the filenames/alias sources */
-        *body = (char *)malloc(incLen+1);
+        *body = (char *)NEditMalloc(incLen+1);
         if (!*body) 
             return TF_ERROR;
         *body[0]=0;
         if (fseek(fp, incPos, SEEK_SET) != 0) {
-            free (*body);
+            NEditFree(*body);
             return TF_ERROR;
         }
         /* Read all the lines in the block */
@@ -1842,7 +1840,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
         for (i=0; i<incLines; i++) {
             status = fgets(line, MAXLINE, fp);
             if (!status) {
-                free (*body);
+                NEditFree(*body);
                 return TF_ERROR_EOF;
             }
             rstrip(line,line);
@@ -1935,12 +1933,12 @@ static tf_alias *new_alias(const char *dest, char *sources) {
     
     /* fprintf(stderr, "new_alias: %s <- %s\n", dest, sources); */
     /* Allocate the alias */
-    alias = (tf_alias *)malloc( sizeof(tf_alias) );
+    alias = (tf_alias *)NEditMalloc( sizeof(tf_alias) );
     if(!alias) 
         return NULL;
 
     /* Fill it in */
-    alias->dest = (char*)malloc( strlen(dest)+1 );
+    alias->dest = (char*)NEditMalloc( strlen(dest)+1 );
     if(!(alias->dest))
         return NULL;
     strcpy( alias->dest, dest );
@@ -1953,9 +1951,9 @@ static void free_alias_list(tf_alias *alias) {
     tf_alias *tmp_alias;
     while(alias) {
         tmp_alias = alias->next;
-        free(alias->dest);
-        free(alias->sources);
-        free(alias);
+        NEditFree(alias->dest);
+        NEditFree(alias->sources);
+        NEditFree(alias);
         alias = tmp_alias;
     }
 }
@@ -2018,7 +2016,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                     regex metacharacters that might appear in the string */
                 nTipsAdded += addTag(header, resolvedTipsFile, langMode, "", 
                         blkLine, tipPath, index);
-                free( body );
+                NEditFree( body );
                 break;
             case TF_INCLUDE:
                 /* nextTFBlock returns a colon-separated list of tips files
@@ -2030,7 +2028,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                         tipIncFile); */
                     nTipsAdded += loadTipsFile( tipIncFile, index, recLevel+1);
                 }
-                free( body );
+                NEditFree( body );
                 break;
             case TF_LANGUAGE:
                 /* Switch to the new language mode if it's valid, else ignore

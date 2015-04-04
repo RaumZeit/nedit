@@ -36,6 +36,7 @@
 #include "textBuf.h"
 #include "textDisp.h"
 #include "rangeset.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -144,7 +145,7 @@ static Range *RangesNew(int n)
 	   	n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
 	 */
 	n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-	newRanges = (Range *)XtMalloc(n * sizeof (Range));
+	newRanges = (Range *)NEditMalloc(n * sizeof (Range));
 	return newRanges;
     }
 
@@ -163,12 +164,10 @@ static Range* RangesRealloc(Range* ranges, int n)
         /* see RangesNew() for comments */
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
         size = n * sizeof (Range);
-        newRanges = (Range*) (ranges != NULL
-                ? XtRealloc((char *)ranges, size)
-                : XtMalloc(size));
+        newRanges = (Range*)NEditRealloc(ranges,size);
         return newRanges;
     } else {
-        XtFree((char*) ranges);
+        NEditFree(ranges);
     }
 
     return NULL;
@@ -178,7 +177,7 @@ static Range* RangesRealloc(Range* ranges, int n)
 
 static Range *RangesFree(Range *ranges)
 {
-    XtFree((char*) ranges);
+    NEditFree(ranges);
 
     return NULL;
 }
@@ -226,8 +225,8 @@ void RangesetEmpty(Rangeset *rangeset)
 	}
     }
 
-    XtFree(rangeset->color_name);
-    XtFree(rangeset->name);
+    NEditFree(rangeset->color_name);
+    NEditFree(rangeset->name);
 
     rangeset->color_name = (char *)0;
     rangeset->name = (char *)0;
@@ -730,7 +729,7 @@ static Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del)
 RangesetTable *RangesetTableAlloc(textBuffer *buffer)
 {
     int i;
-    RangesetTable *table = (RangesetTable *)XtMalloc(sizeof (RangesetTable));
+    RangesetTable *table = (RangesetTable *)NEditMalloc(sizeof (RangesetTable));
 
     if (!table)
 	return table;
@@ -760,7 +759,7 @@ RangesetTable *RangesetTableFree(RangesetTable *table)
 	BufRemoveModifyCB(table->buf, RangesetBufModifiedCB, table);
 	for (i = 0; i < N_RANGESETS; i++)
 	    RangesetEmpty(&table->set[i]);
-	XtFree((char *)table);
+	NEditFree(table);
     }
     return (RangesetTable *)0;
 }
@@ -779,12 +778,12 @@ static void rangesetClone(Rangeset *destRangeset, Rangeset *srcRangeset)
     destRangeset->color       = srcRangeset->color;
 
     if (srcRangeset->color_name) {
-	destRangeset->color_name = XtMalloc(strlen(srcRangeset->color_name) +1);
+	destRangeset->color_name = (char*)NEditMalloc(strlen(srcRangeset->color_name) +1);
 	strcpy(destRangeset->color_name, srcRangeset->color_name);
     }
 
     if (srcRangeset->name) {
-	destRangeset->name = XtMalloc(strlen(srcRangeset->name) + 1);
+	destRangeset->name = (char*)NEditMalloc(strlen(srcRangeset->name) + 1);
 	strcpy(destRangeset->name, srcRangeset->name);
     }
 
@@ -1092,14 +1091,14 @@ int RangesetAssignColorName(Rangeset *rangeset, char *color_name)
 
     /* store new color name value */
     if (color_name) {
-	cp = XtMalloc(strlen(color_name) + 1);
+	cp = (char*)NEditMalloc(strlen(color_name) + 1);
 	strcpy(cp, color_name);
     }
     else
 	cp = color_name;
 
     /* free old color name value */
-    XtFree(rangeset->color_name);
+    NEditFree(rangeset->color_name);
 
     rangeset->color_name = cp;
     rangeset->color_set = 0;
@@ -1121,7 +1120,7 @@ int RangesetAssignName(Rangeset *rangeset, char *name)
 
     /* store new name value */
     if (name) {
-        cp = XtMalloc(strlen(name) + 1);
+        cp = (char*)NEditMalloc(strlen(name) + 1);
         strcpy(cp, name);
     }
     else {
@@ -1129,7 +1128,7 @@ int RangesetAssignName(Rangeset *rangeset, char *name)
     }
 
     /* free old name value */
-    XtFree(rangeset->name);
+    NEditFree(rangeset->name);
 
     rangeset->name = cp;
 

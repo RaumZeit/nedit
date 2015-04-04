@@ -40,6 +40,7 @@ static const char CVSID[] = "$Id: selection.c,v 1.34 2008/02/26 22:21:47 ajbj Ex
 #include "server.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -204,21 +205,21 @@ static void gotoCB(Widget widget, XtPointer wi, Atom *sel,
     }
     if (((size_t) *length) > sizeof(lineText) - 1) {
     	XBell(TheDisplay, 0);
-	XtFree(value);
+	NEditFree(value);
 	return;
     }
     /* should be of type text??? */
     if (*format != 8) {
     	fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
     	XBell(TheDisplay, 0);
-	XtFree(value);
+	NEditFree(value);
 	return;
     }
     strncpy(lineText, value, sizeof(lineText));
     lineText[sizeof(lineText) - 1] = '\0';
     
     rc = StringToLineAndCol(lineText, &lineNum, &column);
-    XtFree(value);
+    NEditFree(value);
     if (rc == -1) {
     	XBell(TheDisplay, 0);
 	return;
@@ -273,18 +274,18 @@ static void fileCB(Widget widget, XtPointer wi, Atom *sel,
     }
     if (*length > MAXPATHLEN || *length == 0) {
     	XBell(TheDisplay, 0);
-	XtFree(value);
+	NEditFree(value);
 	return;
     }
     /* should be of type text??? */
     if (*format != 8) {
     	fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
     	XBell(TheDisplay, 0);
-	XtFree(value);
+	NEditFree(value);
 	return;
     }
     strncpy(nameText, value, *length);
-    XtFree(value);
+    NEditFree(value);
     nameText[*length] = '\0';
     
     /* extract name from #include syntax */
@@ -353,9 +354,9 @@ static void fileCB(Widget widget, XtPointer wi, Atom *sel,
 	  }
       }
       for (i=0; i<nFiles; i++) {
-	   XtFree(nameList[i]);
+	   NEditFree(nameList[i]);
 	}
-      XtFree((char *)nameList);
+      NEditFree(nameList);
     }
 #else
     { glob_t globbuf;
@@ -385,15 +386,15 @@ static void getAnySelectionCB(Widget widget, XtPointer voidresult, Atom *sel,
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
 	XBell(TheDisplay, 0);
-        XtFree((char*) value);
+        NEditFree(value);
 	*result = NULL;
 	return;
     }
 
     /* Append a null, and return the string */
-    *result = XtMalloc(*length + 1);
+    *result = (char*)NEditMalloc(*length + 1);
     strncpy(*result, value, *length);
-    XtFree(value);
+    NEditFree(value);
     (*result)[*length] = '\0';
 }
 

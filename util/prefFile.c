@@ -34,6 +34,7 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.27 2008/08/20 14:57:36 lebert E
 #include "prefFile.h"
 #include "fileUtils.h"
 #include "utils.h"
+#include "nedit_malloc.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -152,14 +153,14 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
         {
             char* rsrcName;
             db = XrmGetStringDatabase(fileString);
-            XtFree(fileString);
+            NEditFree(fileString);
 
             /*  Add a resource to the database which remembers that
                 the file is read, so that NEdit will know it.  */
-            rsrcName = (char*) XtMalloc(strlen(appName) + 14);
+            rsrcName = (char*) NEditMalloc(strlen(appName) + 14);
             sprintf(rsrcName, "%s.prefFileRead", appName);
             XrmPutStringResource(&db, rsrcName, "True");
-            XtFree(rsrcName);
+            NEditFree(rsrcName);
         }
     }
     
@@ -171,12 +172,12 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
        pertaining to preference resources will be included in the database.
        Don't remove -xrm arguments from the argument vector, however, so
        XtDisplayInitialize can still read the non-preference resources */
-    argvCopy = (char**)XtMalloc(sizeof(char *) * *argcInOut);
+    argvCopy = (char**)NEditMalloc(sizeof(char *) * *argcInOut);
     memcpy(argvCopy, argvInOut, sizeof(char *) * *argcInOut);
     argcCopy = *argcInOut;
     XrmParseCommand(&db, xrmOnlyTable, XtNumber(xrmOnlyTable), appName,
     	    &argcCopy, argvCopy);
-    XtFree((char *)argvCopy);
+    NEditFree((char *)argvCopy);
     return db;
 }
 
@@ -315,30 +316,30 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
 		strtol(cleanStr, &endPtr, 10);
 	if (strlen(cleanStr) == 0) {		/* String is empty */
 	    *(int *)rsrcDescrip->valueAddr = 0;
-	    XtFree(cleanStr);
+	    NEditFree(cleanStr);
 	    return False;
 	} else if (*endPtr != '\0') {		/* Whole string not parsed */
     	    *(int *)rsrcDescrip->valueAddr = 0;
-	    XtFree(cleanStr);
+	    NEditFree(cleanStr);
     	    return False;
     	}
-	XtFree(cleanStr);
+	NEditFree(cleanStr);
 	return True;
       case PREF_BOOLEAN:
       	cleanStr = removeWhiteSpace(string);
       	for (i=0; i<N_BOOLEAN_STRINGS; i++) {
       	    if (!strcmp(TrueStrings[i], cleanStr)) {
       	    	*(int *)rsrcDescrip->valueAddr = True;
-      	    	XtFree(cleanStr);
+      	    	NEditFree(cleanStr);
       	    	return True;
       	    }
       	    if (!strcmp(FalseStrings[i], cleanStr)) {
       	    	*(int *)rsrcDescrip->valueAddr = False;
-      	    	XtFree(cleanStr);
+      	    	NEditFree(cleanStr);
       	    	return True;
       	    }
       	}
-      	XtFree(cleanStr);
+      	NEditFree(cleanStr);
       	*(int *)rsrcDescrip->valueAddr = False;
     	return False;
       case PREF_ENUM:
@@ -347,11 +348,11 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
       	for (i=0; enumStrings[i]!=NULL; i++) {
       	    if (!strcmp(enumStrings[i], cleanStr)) {
       	    	*(int *)rsrcDescrip->valueAddr = i;
-      	    	XtFree(cleanStr);
+      	    	NEditFree(cleanStr);
       	    	return True;
       	    }
       	}
-      	XtFree(cleanStr);
+      	NEditFree(cleanStr);
       	*(int *)rsrcDescrip->valueAddr = 0;
     	return False;
       case PREF_STRING:
@@ -360,8 +361,7 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
 	strncpy(rsrcDescrip->valueAddr, string, (size_t)(intptr_t)rsrcDescrip->arg);
       	return True;
       case PREF_ALLOC_STRING:
-      	*(char **)rsrcDescrip->valueAddr = XtMalloc(strlen(string) + 1);
-      	strcpy(*(char **)rsrcDescrip->valueAddr, string);
+      	*(char **)rsrcDescrip->valueAddr = NEditStrdup(string);
       	return True;
     }
     return False;
@@ -375,7 +375,7 @@ static char *removeWhiteSpace(const char *string)
 {
     char *outPtr, *outString;
     
-    outPtr = outString = XtMalloc(strlen(string)+1);
+    outPtr = outString = (char*)NEditMalloc(strlen(string)+1);
     while (TRUE) {
     	if (*string != ' ' && *string != '\t')
 	    *(outPtr++) = *(string++);

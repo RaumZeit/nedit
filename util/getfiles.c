@@ -51,6 +51,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.37 2008/02/29 16:06:05 tringali
 #include "getfiles.h"
 #include "fileUtils.h"
 #include "misc.h"
+#include "nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -448,10 +449,10 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
    	    XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
 	    strcpy(filename, dirString);
 	    strcat(filename, fileString);
-  	    XtFree(dirString);
+  	    NEditFree(dirString);
 	}
 	XmStringFree(cFileString);
-	XtFree(fileString);
+	NEditFree(fileString);
     }
     /* Destroy the dialog _shell_ iso. the dialog. Normally, this shouldn't
        be necessary as the shell is destroyed automatically when the dialog
@@ -599,10 +600,10 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
    	    XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
 	    strcpy(filename, dirString);
 	    strcat(filename, fileString);
-  	    XtFree(dirString);
+  	    NEditFree(dirString);
 	}
 	XmStringFree(cFileString);
-	XtFree(fileString);
+	NEditFree(fileString);
     }
     XtDestroyWidget(newFileSB);
     return SelectResult;
@@ -612,7 +613,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 ** Return current default directory used by GetExistingFilename.
 ** Can return NULL if no default directory has been set (meaning
 ** use the application's current working directory) String must
-** be freed by the caller using XtFree.
+** be freed by the caller using NEditFree.
 */
 char *GetFileDialogDefaultDirectory(void)
 {
@@ -628,7 +629,7 @@ char *GetFileDialogDefaultDirectory(void)
 ** Return current default match pattern used by GetExistingFilename.
 ** Can return NULL if no default pattern has been set (meaning use
 ** a pattern matching all files in the directory) String must be
-** freed by the caller using XtFree.
+** freed by the caller using NEditFree.
 */
 char *GetFileDialogDefaultPattern(void)
 {
@@ -797,7 +798,7 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
     length = strlen(filename);
     if (length == 0 || filename[length-1] == '/') {
     	doErrorDialog("Please supply a name for the file", NULL);
-	XtFree(filename);
+	NEditFree(filename);
     	return;
     }
 
@@ -810,7 +811,7 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
         close(fd);
 	if (buf.st_mode & S_IFDIR) {
             doErrorDialog("Error: %s is a directory", filename);
-	    XtFree(filename);
+	    NEditFree(filename);
 	    return;
 	}
         response = doYesNoDialog(filename);
@@ -818,7 +819,7 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
 	if (response) {
             if (access(filename, 2) != 0) { /* have write/delete access? */
 		doErrorDialog("Error: can't overwrite %s ", filename);
-		XtFree(filename);
+		NEditFree(filename);
 		return;
 	    }
 	} else {
@@ -830,14 +831,14 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
     } else {
 	if ((fd = creat(filename, PERMS)) == -1) {
             doErrorDialog("Error: can't create %s ", filename);
-	    XtFree(filename);
+	    NEditFree(filename);
 	    return;
 	} else {
 	    close(fd);
             remove(filename);
 	}
     }
-    XtFree(filename);
+    NEditFree(filename);
     *client_data = True;			    /* done with dialog */
 }
 
@@ -865,15 +866,15 @@ static void existOkCB(Widget w, Boolean * client_data,
     length = strlen(filename);
     if (length == 0 || filename[length-1] == '/') {
     	doErrorDialog("Please select a file to open", NULL);
-    	XtFree(filename);
+    	NEditFree(filename);
     	return;
     } else    if ((fd = open(filename, O_RDONLY,0))  == -1) {
     	doErrorDialog("Error: can't open %s ", filename);
-    	XtFree(filename);
+    	NEditFree(filename);
         return;
     } else
     	close(fd);
-    XtFree(filename);
+    NEditFree(filename);
     	
     *client_data = True;		/* done with dialog		*/
 }
@@ -1025,10 +1026,10 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     for (i=0; i<nItems; i++) {
     	XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &itemString);
     	if (ParseFilename(itemString, name, path) != 0) {
-	   XtFree(itemString);
+	   NEditFree(itemString);
 	   return;
 	}
-	XtFree(itemString);
+	NEditFree(itemString);
     	cmp = strncmp(name, keystrokes, nKeystrokes);
     	if (cmp == 0) {
     	    selectPos = i+1;
@@ -1113,14 +1114,14 @@ static void sortWidgetList(Widget listWidget)
        contents anyway. */
     XmListDeselectAllItems(listWidget);
     XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, NULL);
-    sortedItems = (XmString *)XtMalloc(sizeof(XmString) * nItems);
+    sortedItems = (XmString *)NEditMalloc(sizeof(XmString) * nItems);
     for (i=0; i<nItems; i++)
     	sortedItems[i] = XmStringCopy(items[i]);
     qsort(sortedItems, nItems, sizeof(XmString), compareXmStrings);
     XmListReplaceItemsPos(listWidget, sortedItems, nItems, 1);
     for (i=0; i<nItems; i++)
     	XmStringFree(sortedItems[i]);
-    XtFree((char *)sortedItems);
+    NEditFree((char *)sortedItems);
 }
 
 /*
@@ -1134,7 +1135,7 @@ static int compareXmStrings(const void *string1, const void *string2)
     XmStringGetLtoR(*(XmString *)string1, XmSTRING_DEFAULT_CHARSET, &s1);
     XmStringGetLtoR(*(XmString *)string2, XmSTRING_DEFAULT_CHARSET, &s2);
     result = strcmp(s1, s2);
-    XtFree(s1);
-    XtFree(s2);
+    NEditFree(s1);
+    NEditFree(s2);
     return result;
 }

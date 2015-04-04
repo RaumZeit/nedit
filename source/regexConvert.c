@@ -48,6 +48,7 @@ static const char CVSID[] = "$Id: regexConvert.c,v 1.10 2004/07/21 11:32:05 yood
 #endif
 
 #include "regexConvert.h"
+#include "../util/nedit_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,7 +164,7 @@ char * ConvertRE (const char *exp, char **errorText) {
          /* Allocate memory. */
 
          Convert_Str =
-            (unsigned char *) XtMalloc (sizeof (unsigned char) * Convert_Size);
+            (unsigned char *) NEditMalloc(sizeof (unsigned char) * Convert_Size);
 
          if (Convert_Str == NULL) {
             CONVERT_FAIL ("out of memory in `ConvertRE\'");

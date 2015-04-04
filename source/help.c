@@ -49,6 +49,7 @@ static const char CVSID[] = "$Id: help.c,v 1.107 2008/08/19 22:24:41 ajbj Exp $"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
+#include "../util/nedit_malloc.h"
 
 #include <locale.h>
 #include <stdlib.h>
@@ -213,7 +214,7 @@ static char *bldInfoString = NULL;
 static void freeBuildInfo(void)
 {
     /* This keeps memory leak detectors happy */
-    XtFree(bldInfoString);
+    NEditFree(bldInfoString);
 }
 
 static const char *const warning =
@@ -264,7 +265,7 @@ static const char *getBuildInfo(void)
                     usingDefaultVisual ? ", Default" : "");
         }
 
-        bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
+        bldInfoString = (char*)NEditMalloc(strlen(bldFormat) + strlen(warning) + 1024);
         locale = setlocale(LC_MESSAGES, "");
 
         sprintf(bldInfoString, bldFormat,
@@ -330,7 +331,7 @@ static void initHelpStyles (Widget parent)
             if (strstr (*line, "%s")  != NULL) 
             {
                 const char * bldInfo  = getBuildInfo();
-                char * text     = XtMalloc (strlen (*line)  + strlen (bldInfo));
+                char * text     = (char*)NEditMalloc(strlen (*line)  + strlen (bldInfo));
                 sprintf (text, *line, bldInfo);
                 *line = text;
                 break;
@@ -492,8 +493,8 @@ static char * stitch (
     * Get the needed space, one area for the help text being
     * stitched together, another for the styles to be applied.
     *--------------------------------------------------------*/
-    sp  = section   = XtMalloc (total_size +1);
-    sdp = styleData = (styleMap) ? XtMalloc (total_size +1)  : NULL;
+    sp  = section   = (char*)NEditMalloc(total_size +1);
+    sdp = styleData = (styleMap) ? (char*)NEditMalloc(total_size +1)  : NULL;
     *sp = EOS;
     
     /*--------------------------------------------
@@ -553,7 +554,7 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
 {
     char * buf, *topStr=HelpTitles[topic];
     
-    buf=malloc(strlen(topStr) + 24);
+    buf=(char*)NEditMalloc(strlen(topStr) + 24);
     topic++; 
     
     sprintf(buf, "NEdit Help (%d)", (int)topic);
@@ -749,13 +750,13 @@ static Widget createHelpPanel(enum HelpTopic topic)
     
     /* Stuff the text into the widget's text buffer */
     BufSetAll (TextGetBuffer (HelpTextPanes[topic]) , helpText);
-    XtFree (helpText);
+    NEditFree(helpText);
     
     /* Create a style buffer for the text widget and fill it with the style
        data which was generated along with the text content */
     HelpStyleBuffers[topic] = BufCreate(); 
     BufSetAll(HelpStyleBuffers[topic], styleData);
-    XtFree (styleData);
+    NEditFree(styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
             HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', NULL, NULL);
     
@@ -920,7 +921,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData)
             TextGetBuffer(HelpTextPanes[topic])->length, &helpStringLen);
     PrintString(helpString, helpStringLen, HelpWindows[topic],
             HelpTitles[topic]);
-    XtFree(helpString);
+    NEditFree(helpString);
 }
 
 
@@ -1004,7 +1005,7 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
         adaptNavigationButtons(link_topic);
         adaptNavigationButtons(topic);
     }
-    XtFree (link_text);
+    NEditFree(link_text);
 }
 
 static void helpFocusButtonsAP(Widget w, XEvent *event, String *args,
@@ -1180,10 +1181,10 @@ static void searchHelpText(Widget parent, int parentTopic,
                 &endMatch, NULL, NULL, GetPrefDelimiters()))
         {
             found = True;
-            XtFree(helpText);
+            NEditFree(helpText);
             break;
         }
-        XtFree(helpText);
+        NEditFree(helpText);
     }
 
     if (!found)
@@ -1248,9 +1249,9 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic)
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
             NULL, NULL, 0, '\0', NULL, NULL);
     BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
-    XtFree(helpText);
+    NEditFree(helpText);
     BufSetAll(HelpStyleBuffers[newTopic], styleData);
-    XtFree(styleData);
+    NEditFree(styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
             HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', NULL,
             NULL);

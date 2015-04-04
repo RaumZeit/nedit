@@ -33,6 +33,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $
 
 #include "misc.h"
 #include "DialogF.h"
+#include "nedit_malloc.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -645,7 +646,7 @@ Widget CreateWidget(Widget parent, const char *name, WidgetClass class,
     Widget result;
     ArgList al = addParentVisArgs(parent, arglist, &argcount);
     result = XtCreateWidget(name, class, parent, al, argcount);
-    XtFree((char *)al);
+    NEditFree((char *)al);
     return result;
 }
 
@@ -660,14 +661,14 @@ Widget CreateShellWithBestVis(String appName, String appClass,
     Widget result;
 
     FindBestVisual(display, appName, appClass, &visual, &depth, &colormap);
-    al = (ArgList)XtMalloc(sizeof(Arg) * (nArgs + 3));
+    al = (ArgList)NEditMalloc(sizeof(Arg) * (nArgs + 3));
     if (nArgs != 0)
     	memcpy(al, args, sizeof(Arg) * nArgs);
     XtSetArg(al[ac], XtNvisual, visual); ac++;
     XtSetArg(al[ac], XtNdepth, depth); ac++;
     XtSetArg(al[ac], XtNcolormap, colormap); ac++;
     result = XtAppCreateShell(appName, appClass, class, display, al, ac);
-    XtFree((char *)al);
+    NEditFree((char *)al);
     return result;
 }
 
@@ -678,7 +679,7 @@ Widget CreatePopupShellWithBestVis(String shellName, WidgetClass class,
    Widget result;
    ArgList al = addParentVisArgs(parent, arglist, &argcount);
    result = XtCreatePopupShell(shellName, class, parent, al, argcount);
-   XtFree((char *)al);
+   NEditFree((char *)al);
    return result;
 }
 
@@ -711,7 +712,7 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist,
     /* Add the visual, depth, and colormap resources to the argument list */
     XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth,
 	    XtNcolormap, &colormap, NULL);
-    al = (ArgList)XtMalloc(sizeof(Arg) * ((*argcount) + 3));
+    al = (ArgList)NEditMalloc(sizeof(Arg) * ((*argcount) + 3));
     if ((*argcount) != 0)
     	memcpy(al, arglist, sizeof(Arg) * (*argcount));
 
@@ -739,7 +740,7 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
     Widget result;
     ArgList al = addParentVisArgs(parent, arglist, &argcount);
     result = (*createRoutine)(parent, name, al, argcount);
-    XtFree((char *)al);
+    NEditFree((char *)al);
     return result;
 }
 
@@ -991,7 +992,7 @@ char *GetXmStringText(XmString fromString)
     /* Malloc a buffer large enough to hold the string.  XmStringLength
        should always be slightly longer than necessary, but won't be
        shorter than the equivalent null-terminated string */ 
-    toString = XtMalloc(XmStringLength(fromString));
+    toString = (char*)NEditMalloc(XmStringLength(fromString));
     
     /* loop over all of the segments in the string, copying each segment
        into the output string and converting separators into newlines */
@@ -1003,8 +1004,8 @@ char *GetXmStringText(XmString fromString)
     	    *toPtr++ = *fromPtr;
     	if (separator)
     	    *toPtr++ = '\n';
-	XtFree(text);
-	XtFree(charset);
+	NEditFree(text);
+	NEditFree(charset);
     }
     
     /* terminate the string, free the context, and return the string */
@@ -1027,7 +1028,7 @@ XFontStruct *GetDefaultFontStruct(XmFontList font)
     XmFontListInitFontContext(&context, font);
     XmFontListGetNextFont(context, &charset, &fs);
     XmFontListFreeFontContext(context);
-    XtFree(charset);
+    NEditFree(charset);
     return fs;
 }
    
@@ -1042,7 +1043,7 @@ XmString* StringTable(int count, ... )
     char *str;
 
     va_start(ap, count);
-    array = (XmString*)XtMalloc((count+1) * sizeof(XmString));
+    array = (XmString*)NEditMalloc((count+1) * sizeof(XmString));
     for(i = 0;  i < count; i++ ) {
     	str = va_arg(ap, char *);
 	array[i] = XmStringCreateSimple(str);
@@ -1058,7 +1059,7 @@ void FreeStringTable(XmString *table)
 
     for(i = 0; table[i] != 0; i++)
 	XmStringFree(table[i]);
-    XtFree((char *)table);
+    NEditFree((char *)table);
 }
 
 /*
@@ -1199,7 +1200,7 @@ int GetFloatText(Widget text, double *value)
     	retVal = TEXT_NOT_NUMBER;
     else
 	retVal = TEXT_READ_OK;
-    XtFree(strValue);
+    NEditFree(strValue);
     return retVal;
 }
 
@@ -1217,7 +1218,7 @@ int GetIntText(Widget text, int *value)
     	retVal = TEXT_NOT_NUMBER;
     else
 	retVal = TEXT_READ_OK;
-    XtFree(strValue);
+    NEditFree(strValue);
     return retVal;
 }
 
@@ -1242,7 +1243,7 @@ int GetFloatTextWarn(Widget text, double *value, const char *fieldName,
                 "OK", fieldName, valueStr);
     }
 
-    XtFree(valueStr);
+    NEditFree(valueStr);
     return result;
 }
 
@@ -1267,7 +1268,7 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
                 fieldName);
     }
 
-    XtFree(valueStr);
+    NEditFree(valueStr);
     return result;
 }
 
@@ -1279,7 +1280,7 @@ int TextWidgetIsBlank(Widget textW)
     str = XmTextGetString(textW);
     removeWhiteSpace(str);
     retVal = *str == '\0';
-    XtFree(str);
+    NEditFree(str);
     return retVal;
 }
 
@@ -1315,7 +1316,7 @@ void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems)
     histInfo *histData;
     
     /* create a data structure for passing history info to the callbacks */
-    histData = (histInfo *)XtMalloc(sizeof(histInfo));
+    histData = (histInfo *)NEditMalloc(sizeof(histInfo));
     histData->list = historyList;
     histData->nItems = nItems;
     histData->index = -1;
@@ -1330,7 +1331,7 @@ void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems)
 
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    XtFree((char *)clientData);
+    NEditFree((char *)clientData);
 }
 
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
@@ -1379,16 +1380,16 @@ void AddToHistoryList(char *newItem, char ***historyList, int *nItems)
 	return;
     if (*nItems == HISTORY_LIST_MAX) {
 	for (i=HISTORY_LIST_TRIM_TO; i<HISTORY_LIST_MAX; i++)
-	    XtFree((*historyList)[i]);
+	    NEditFree((*historyList)[i]);
 	*nItems = HISTORY_LIST_TRIM_TO;
     }
-    newList = (char **)XtMalloc(sizeof(char *) * (*nItems + 1));
+    newList = (char **)NEditMalloc(sizeof(char *) * (*nItems + 1));
     for (i=0; i < *nItems; i++)
 	newList[i+1] = (*historyList)[i];
     if (*nItems != 0 && *historyList != NULL)
-	XtFree((char *)*historyList);
+	NEditFree(*historyList);
     (*nItems)++;
-    newList[0] = XtNewString(newItem);
+    newList[0] = NEditStrdup(newItem);
     *historyList = newList;
 }
 
@@ -1753,15 +1754,15 @@ static void addAccelGrab(Widget topWidget, Widget w)
     
     XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
     if (accelString == NULL || *accelString == '\0') {
-        XtFree(accelString);
+        NEditFree(accelString);
         return;
     }
 
     if (!parseAccelString(XtDisplay(topWidget), accelString, &keysym, &modifiers)) {
-        XtFree(accelString);
+        NEditFree(accelString);
 	return;
     }
-    XtFree(accelString);
+    NEditFree(accelString);
 
     /* Check to see if this server has this key mapped.  Some cruddy PC X
        servers (Xoftware) have terrible default keymaps. If not,
