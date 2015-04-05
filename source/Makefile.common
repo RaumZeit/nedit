@@ -7,7 +7,7 @@ OBJS =	nedit.o file.o menu.o window.o selection.o search.o undo.o shift.o \
 	help.o preferences.o tags.o userCmds.o shell.o regularExp.o macro.o \
 	text.o textSel.o textDisp.o textBuf.o textDrag.o server.o highlight.o \
 	highlightData.o interpret.o parse.o smartIndent.o regexConvert.o \
-	rbTree.o windowTitle.o calltips.o server_common.o rangeset.o
+	windowTitle.o calltips.o server_common.o rangeset.o
 
 XLTLIB = ../Xlt/libXlt.a
 XMLLIB = ../Microline/XmL/libXmL.a

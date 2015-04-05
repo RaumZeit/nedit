@@ -7,7 +7,7 @@
 #include "parse.h"
 #include "textBuf.h"
 #include "nedit.h"
-#include "rbTree.h"
+#include "../util/rbTree.h"
 #include "interpret.h"
 
 #include <stdlib.h>

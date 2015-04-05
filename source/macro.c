@@ -46,7 +46,7 @@ static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp
 #include "smartIndent.h"
 #include "userCmds.h"
 #include "selection.h"
-#include "rbTree.h"
+#include "../util/rbTree.h"
 #include "tags.h"
 #include "calltips.h"
 #include "../util/DialogF.h"
