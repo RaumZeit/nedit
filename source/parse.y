@@ -37,7 +37,6 @@
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);

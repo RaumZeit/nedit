@@ -1,4 +1,3 @@
-! $Id: nedit_options_file.opt,v 1.2 2001/02/26 23:38:03 edg Exp $
 SYS$SHARE:DECC$SHR.EXE/SHARE
 sys$share:decw$xlibshr/share
 SYS$SHARE:DECW$XTLIBSHRR5/SHARE

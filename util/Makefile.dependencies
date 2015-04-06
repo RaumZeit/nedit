@@ -1,4 +1,3 @@
-# $Id: Makefile.dependencies,v 1.7 2003/05/02 18:18:49 edg Exp $
 DialogF.o: DialogF.c DialogF.h misc.h
 clearcase.o: clearcase.c clearcase.h
 fileUtils.o: fileUtils.c fileUtils.h utils.h

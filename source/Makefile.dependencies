@@ -1,4 +1,3 @@
-# $Id: Makefile.dependencies,v 1.21 2003/05/02 18:18:41 edg Exp $
 calltips.o: calltips.c text.h textBuf.h textP.h textDisp.h calltips.h \
   nedit.h ../util/misc.h
 file.o: file.c file.h nedit.h textBuf.h text.h window.h preferences.h \

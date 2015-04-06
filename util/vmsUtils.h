@@ -1,4 +1,3 @@
-/* $Id: vmsUtils.h,v 1.7 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * vmsUtils.h -- Nirvana Editor VMS Utilities Header File                       *

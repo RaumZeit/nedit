@@ -1,4 +1,3 @@
-# $Id: Makefile.common,v 1.17 2004/03/21 14:25:56 tksoh Exp $
 # Platform independent part of make procedure for NEdit directory, 
 # included by machine specific makefiles.
 #

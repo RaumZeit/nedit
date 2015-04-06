@@ -1,4 +1,3 @@
-/* $Id: n.bm,v 1.2 2001/02/26 23:38:03 edg Exp $ */
 #define n_width 24
 #define n_height 24
 static unsigned char n_bits[] = {

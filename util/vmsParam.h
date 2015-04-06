@@ -1,4 +1,3 @@
-/* $Id: vmsParam.h,v 1.6 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * vmsParam.h -- Nirvana Editor VMS Parameter Header File                               *
