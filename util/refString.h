@@ -1,13 +1,13 @@
 /*******************************************************************************
 *                                                                              *
-* linkdate.c -- Compile time configuration                                     *
+* refString.c -- Nirvana editor string handling                                *
 *                                                                              *
-* Copyright (C) 2001 Scott Tringali                                            *
+* Copyright (C) 200 Scott Tringali                                             *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
-* version. In addition, you may distribute version of this program linked to   *
+* version. In addition, you may distribute versions of this program linked to  *
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
@@ -20,19 +20,12 @@
 * Place, Suite 330, Boston, MA  02111-1307 USA                                 *
 *                                                                              *
 * Nirvana Text Editor                                                          *
-* Noveber 30, 2001                                                             *
+* July, 1993                                                                   *
 *                                                                              *
-* Written by Scott Tringali, http://www.tringali.org                           *
+* Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
-const char linkdate[] = __DATE__;
-const char linktime[] = __TIME__;
+const char *RefStringDup(const char *str);
+void RefStringFree(const char *str);
+unsigned int StringHashAddr(const char *key);

@@ -29,7 +29,7 @@
 #define NEDIT_INTERPRET_H_INCLUDED
 
 #include "nedit.h"
-#include "rbTree.h"
+#include "../util/rbTree.h"
 
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */

@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
@@ -36,7 +35,7 @@ static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert 
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"
-#include "rbTree.h"
+#include "../util/rbTree.h"
 #include "../util/nedit_malloc.h"
 
 #include <stdio.h>

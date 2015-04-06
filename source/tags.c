@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $";
 /*******************************************************************************
 *                                                                              *
 * tags.c -- Nirvana editor tag file handling                                   *
@@ -45,6 +44,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
+#include "../util/refString.h"
 #include "../util/nedit_malloc.h"
 
 #include <stdio.h>
@@ -110,7 +110,6 @@ static void setTag(tag *t, const char *name, const char *file,
                    const char * tag);
 static int fakeRegExSearch(WindowInfo *window, char *buffer, 
                         const char *searchString, int *startPos, int *endPos);
-static unsigned hashAddr(const char *key);
 static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, 
                     const char *search, int posInf,  const  char *path, 
@@ -126,8 +125,6 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
 static void editTaggedLocation( Widget parent, int i );
 static void showMatchingCalltip( Widget parent, int i );
 
-static const char *rcs_strdup(const char *str);
-static void rcs_free(const char *str);
 static int searchLine(char *line, const char *regex);
 static void rstrip( char *dst, const char *src );
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, 
@@ -178,23 +175,6 @@ static tagFile *setFileListHead(tagFile *t, int file_type )
     return t;
 }
 
-/*      Compute hash address from a string key */
-static unsigned hashAddr(const char *key)
-{
-    unsigned s=strlen(key);
-    unsigned a=0,x=0,i;
-    
-    for (i=0; (i+3)<s; i += 4) {
-        strncpy((char*)&a,&key[i],4);
-        x += a;
-    }
-    
-    for (a=1; i<(s+1); i++, a *= 256)
-        x += key[i] * a;
-        
-    return x;
-}
-
 /*      Retrieve a tag structure from the hash table */
 static tag *getTag(const char *name, int search_type)
 {
@@ -211,7 +191,7 @@ static tag *getTag(const char *name, int search_type)
     if (table == NULL) return NULL;
     
     if (name) {
-        addr = hashAddr(name) % DefTagHashSize;
+        addr = StringHashAddr(name) % DefTagHashSize;
         t = table[addr];
         strcpy(lastName,name);
     }
@@ -235,7 +215,7 @@ static tag *getTag(const char *name, int search_type)
 static int addTag(const char *name, const char *file, int lang, 
                     const char *search, int posInf, const char *path, int index)
 {
-    int addr = hashAddr(name) % DefTagHashSize;
+    int addr = StringHashAddr(name) % DefTagHashSize;
     tag *t;
     char newfile[MAXPATHLEN];
     tag **table;
@@ -301,7 +281,7 @@ static int delTag(const char *name, const char *file, int lang,
         
     if (table == NULL) return FALSE;
     if (name)
-        start = finish = hashAddr(name) % DefTagHashSize;
+        start = finish = StringHashAddr(name) % DefTagHashSize;
     else {
         start = 0;
         finish = DefTagHashSize;
@@ -318,10 +298,10 @@ static int delTag(const char *name, const char *file, int lang,
                 last->next = t->next;
             else
                 table[i] = t->next;
-            rcs_free(t->name);
-            rcs_free(t->file);
-            rcs_free(t->searchString);
-            rcs_free(t->path);
+            RefStringFree(t->name);
+            RefStringFree(t->file);
+            RefStringFree(t->searchString);
+            RefStringFree(t->path);
             NEditFree(t);
             t = NULL;
             del++;
@@ -997,12 +977,12 @@ static void setTag(tag *t, const char *name, const char *file,
         int language, const char *searchString, int posInf, 
         const char *path)
 {
-    t->name         = rcs_strdup(name);
-    t->file         = rcs_strdup(file);
+    t->name         = RefStringDup(name);
+    t->file         = RefStringDup(file);
     t->language     = language;
-    t->searchString = rcs_strdup(searchString);
+    t->searchString = RefStringDup(searchString);
     t->posInf       = posInf;
-    t->path         = rcs_strdup(path);
+    t->path         = RefStringDup(path);
 }
 
 /*
@@ -1526,172 +1506,6 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
 }
 
 
-
-/*--------------------------------------------------------------------------
-
-   Reference-counted string hack; SJT 4/2000
-
-   This stuff isn't specific to tags, so it should be in it's own file.
-   However, I'm leaving it in here for now to reduce the diffs.
-   
-   This could really benefit from using a real hash table.
-*/
-
-#define RCS_SIZE 10000
-
-struct rcs;
-
-struct rcs_stats
-{
-    int talloc, tshar, tgiveup, tbytes, tbyteshared;
-};
-
-struct rcs
-{
-    struct rcs *next;
-    char       *string;
-    int         usage;
-};
-
-static struct rcs       *Rcs[RCS_SIZE];
-static struct rcs_stats  RcsStats;
-
-/*
-** Take a normal string, create a shared string from it if need be,
-** and return pointer to that shared string.
-**
-** Returned strings are const because they are shared.  Do not modify them!
-*/
-
-static const char *rcs_strdup(const char *str)
-{
-    int bucket;
-    size_t len;
-    struct rcs *rp;
-    struct rcs *prev = NULL;
-  
-    char *newstr = NULL;
-    
-    if (str == NULL)
-        return NULL;
-        
-    bucket = hashAddr(str) % RCS_SIZE;
-    len = strlen(str);
-    
-    RcsStats.talloc++;
-
-#if 0  
-    /* Don't share if it won't save space.
-    
-       Doesn't save anything - if we have lots of small-size objects,
-       it's beneifical to share them.  We don't know until we make a full
-       count.  My tests show that it's better to leave this out.  */
-    if (len <= sizeof(struct rcs))
-    {
-        new_str = strdup(str); /* GET RID OF strdup() IF EVER ENABLED (not ANSI) */ 
-        RcsStats.tgiveup++;
-        return;
-    }
-#endif
-
-    /* Find it in hash */
-    for (rp = Rcs[bucket]; rp; rp = rp->next)
-    {
-        if (!strcmp(str, rp->string))
-            break;
-        prev = rp;
-    }
-
-    if (rp)  /* It exists, return it and bump ref ct */
-    {
-        rp->usage++;
-        newstr = rp->string;
-
-        RcsStats.tshar++;
-        RcsStats.tbyteshared += len;
-    }
-    else     /* Doesn't exist, conjure up a new one. */
-    {
-        struct rcs* newrcs;
-        if (NULL == (newrcs = (struct rcs*) NEditMalloc(sizeof(struct rcs)))) {
-            /*  Not much to fall back to here.  */
-            fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
-            XBell(TheDisplay, 0);
-            exit(1);
-        }
-
-        if (NULL == (newrcs->string = (char*) NEditMalloc(len + 1))) {
-            /*  Not much to fall back to here.  */
-            fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
-            XBell(TheDisplay, 0);
-            exit(1);
-        }
-        strcpy(newrcs->string, str);
-        newrcs->usage = 1;
-        newrcs->next = NULL;
-
-        if (Rcs[bucket])
-            prev->next = newrcs;
-        else
-            Rcs[bucket] = newrcs;
-            
-        newstr = newrcs->string;
-    }
-
-    RcsStats.tbytes += len;
-    return newstr;
-}
-
-/*
-** Decrease the reference count on a shared string.  When the reference
-** count reaches zero, free the master string.
-*/
-
-static void rcs_free(const char *rcs_str)
-{
-    int bucket;
-    struct rcs *rp;
-    struct rcs *prev = NULL;
-
-    if (rcs_str == NULL)
-        return;
-        
-    bucket = hashAddr(rcs_str) % RCS_SIZE;
-
-    /* find it in hash */
-    for (rp = Rcs[bucket]; rp; rp = rp->next)
-    {
-        if (rcs_str == rp->string)
-            break;
-        prev = rp;
-    }
-
-    if (rp)  /* It's a shared string, decrease ref count */
-    {
-        rp->usage--;
-        
-        if (rp->usage < 0) /* D'OH! */
-        {
-            fprintf(stderr, "NEdit: internal error deallocating shared string.");
-            return;
-        }
-
-        if (rp->usage == 0)  /* Last one- free the storage */
-        {
-            NEditFree(rp->string);
-            if (prev)
-                prev->next = rp->next;
-            else
-                Rcs[bucket] = rp->next;
-            NEditFree(rp);
-        }
-    }
-    else    /* Doesn't appear to be a shared string */
-    {
-        fprintf(stderr, "NEdit: attempt to free a non-shared string.");
-        return;
-    }
-}
 
 /********************************************************************
  *           Functions for loading Calltips files                   *
