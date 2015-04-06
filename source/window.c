@@ -1706,7 +1706,7 @@ int NWindows(void)
 /*
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
-void SetAutoIndent(WindowInfo *window, int state)
+void SetAutoIndent(WindowInfo *window, IndentStyle state)
 {
     int autoIndent = state == AUTO_INDENT, smartIndent = state == SMART_INDENT;
     int i;
@@ -1733,7 +1733,7 @@ void SetAutoIndent(WindowInfo *window, int state)
 ** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
 ** Update the menu to reflect the change of state.
 */
-void SetShowMatching(WindowInfo *window, int state)
+void SetShowMatching(WindowInfo *window, ShowMatchingStyle state)
 {
     window->showMatchingStyle = state;
     if (IsTopDocument(window)) {
@@ -1937,7 +1937,7 @@ void SetOverstrike(WindowInfo *window, int overstrike)
 /*
 ** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
 */
-void SetAutoWrap(WindowInfo *window, int state)
+void SetAutoWrap(WindowInfo *window, WrapStyle state)
 {
     int i;
     int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;

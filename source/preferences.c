@@ -1537,16 +1537,16 @@ int GetPrefOpenInTab(void)
     return PrefData.openInTab;
 }
 
-void SetPrefWrap(int state)
+void SetPrefWrap(WrapStyle state)
 {
-    setIntPref(&PrefData.wrapStyle, state);
+    setIntPref(&PrefData.wrapStyle, (int)state);
 }
 
-int GetPrefWrap(int langMode)
+WrapStyle GetPrefWrap(int langMode)
 {
     if (langMode == PLAIN_LANGUAGE_MODE ||
 	    LanguageModes[langMode]->wrapStyle == DEFAULT_WRAP)
-    	return PrefData.wrapStyle;
+    	return (WrapStyle)(PrefData.wrapStyle);
     return LanguageModes[langMode]->wrapStyle;
 }
 
@@ -1582,16 +1582,16 @@ int GetPrefReplaceDefScope(void)
 }
 #endif
 
-void SetPrefAutoIndent(int state)
+void SetPrefAutoIndent(IndentStyle state)
 {
-    setIntPref(&PrefData.autoIndent, state);
+    setIntPref(&PrefData.autoIndent, (int)state);
 }
 
-int GetPrefAutoIndent(int langMode)
+IndentStyle GetPrefAutoIndent(int langMode)
 {
     if (langMode == PLAIN_LANGUAGE_MODE ||
 	    LanguageModes[langMode]->indentStyle == DEFAULT_INDENT)
-    	return PrefData.autoIndent;
+    	return (IndentStyle)(PrefData.autoIndent);
     return LanguageModes[langMode]->indentStyle;
 }
 
@@ -1865,12 +1865,12 @@ int GetPrefInsertTabs(void)
     return PrefData.insertTabs;
 }
 
-void SetPrefShowMatching(int state)
+void SetPrefShowMatching(ShowMatchingStyle state)
 {
-    setIntPref(&PrefData.showMatchingStyle, state);
+    setIntPref(&PrefData.showMatchingStyle, (int)state);
 }
 
-int GetPrefShowMatching(void)
+ShowMatchingStyle GetPrefShowMatching(void)
 {
     /*
      * For backwards compatibility with pre-5.2 versions, the boolean 
@@ -1878,7 +1878,7 @@ int GetPrefShowMatching(void)
      */
     if (PrefData.showMatchingStyle >= N_SHOW_MATCHING_STYLES) 
 	PrefData.showMatchingStyle -= N_SHOW_MATCHING_STYLES;
-    return PrefData.showMatchingStyle;
+    return (ShowMatchingStyle)(PrefData.showMatchingStyle);
 }
 
 void SetPrefMatchSyntaxBased(int state)

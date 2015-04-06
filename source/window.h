@@ -47,15 +47,15 @@ void SetWindowModified(WindowInfo *window, int modified);
 void MakeSelectionVisible(WindowInfo *window, Widget textPane);
 int GetSimpleSelection(textBuffer *buf, int *left, int *right);
 WindowInfo *FindWindowWithFile(const char *name, const char *path);
-void SetAutoIndent(WindowInfo *window, int state);
-void SetShowMatching(WindowInfo *window, int state);
+void SetAutoIndent(WindowInfo *window, IndentStyle state);
+void SetShowMatching(WindowInfo *window, ShowMatchingStyle state);
 void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 	const char *boldName, const char *boldItalicName);
 void SetColors(WindowInfo *window, const char *textFg, const char *textBg,  
         const char *selectFg, const char *selectBg, const char *hiliteFg, 
         const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 void SetOverstrike(WindowInfo *window, int overstrike);
-void SetAutoWrap(WindowInfo *window, int state);
+void SetAutoWrap(WindowInfo *window, WrapStyle state);
 void SetAutoScroll(WindowInfo *window, int margin);
 void SplitPane(WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);

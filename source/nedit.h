@@ -100,9 +100,9 @@
 #define MAX_SHORTENED_ITEMS 100   /* max. number of items excluded in short- */
 #endif	    	    	    	  /*     menus mode */
 
-enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
-enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
-enum showMatchingStyle {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE};
+typedef enum {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT} IndentStyle;
+typedef enum {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP} WrapStyle;
+typedef enum {NO_FLASH, FLASH_DELIMIT, FLASH_RANGE} ShowMatchingStyle;
 enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO,
                        VIRT_KEY_OVERRIDE_ALWAYS };
 
@@ -494,11 +494,11 @@ typedef struct _WindowInfo {
     int         lockReasons;            /* all ways a file can be locked */
     Boolean	autoSave;		/* is autosave turned on? */
     Boolean	saveOldVersion;		/* keep old version in filename.bck */
-    char	indentStyle;		/* whether/how to auto indent */
-    char	wrapMode;		/* line wrap style: NO_WRAP,
+    IndentStyle	indentStyle;		/* whether/how to auto indent */
+    WrapStyle	wrapMode;		/* line wrap style: NO_WRAP,
     	    	    	    	    	   NEWLINE_WRAP or CONTINUOUS_WRAP */
     Boolean	overstrike;		/* is overstrike mode turned on ? */
-    char 	showMatchingStyle; 	/* How to show matching parens:
+    ShowMatchingStyle showMatchingStyle;/* How to show matching parens:
 					   NO_FLASH, FLASH_DELIMIT, or
 					   FLASH_RANGE */
     char	matchSyntaxBased;	/* Use syntax info to show matching */
