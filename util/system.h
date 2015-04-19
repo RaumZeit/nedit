@@ -180,10 +180,7 @@
 
 
 
-#if (defined(__GNUC__) && !defined (__INTEL_COMPILER)) /* Avoid Intel pretending to be gcc */
-#   define COMPILE_COMPILER "GNU C"
-
-#elif defined (__DECC)
+#if defined (__DECC)
 #   define COMPILE_COMPILER "DEC C"
 
 #elif defined (__DECCXX)
@@ -233,6 +230,18 @@
 
 #elif defined (__INTEL_COMPILER)
 #   define COMPILE_COMPILER "Intel C++"
+
+#elif defined (__clang__)
+#   define COMPILE_COMPILER "Clang"
+
+#elif defined (__llvm__)
+#   define COMPILE_COMPILER "LLVM"
+
+/* GCC needs to be near the bottom of this list, because Intel and Clang have GCC 
+   command-line emulation modes. */
+   
+#elif defined(__GNUC__)
+#   define COMPILE_COMPILER "GNU C"
 
 /* The next few entries are last-ditch efforts to guess the compiler, if
    no compiler macro exists.  These need to be at the end of the list,

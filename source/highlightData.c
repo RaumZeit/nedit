@@ -3310,7 +3310,7 @@ static void setStyleMenu(const char *styleName)
     	    break;
     	}
     }
-    XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem, (char *)0);
+    XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem, NULL);
 }
 
 /*
