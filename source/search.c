@@ -534,7 +534,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
 {
     XEvent nextEvent;
     char *primary_selection = 0;
-    SelectionInfo *selectionInfo = XtNew(SelectionInfo);
+    SelectionInfo *selectionInfo = NEditNew(SelectionInfo);
 
     if (GetPrefFindReplaceUsesSelection()) {
         selectionInfo->done = 0;
