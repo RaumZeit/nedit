@@ -45,6 +45,7 @@ void *NEditMalloc(size_t size)
         fprintf(stderr,"NEditMalloc(%lu) failed\n", (unsigned long)size);
         exit(1);
     }
+    return ptr;
 }
 
 
@@ -63,6 +64,7 @@ void *NEditRealloc(void *ptr, size_t new_size)
         fprintf(stderr,"NEditRealloc(%lu) failed\n", (unsigned long)new_size);
         exit(1);
     }
+    return new_ptr;
 }
 
 

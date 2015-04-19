@@ -40,6 +40,7 @@
 #include "DialogF.h"
 #include "misc.h"
 #include "prefFile.h"
+#include "nedit_malloc.h"
 
 #include <string.h>
 #include <errno.h>

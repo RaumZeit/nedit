@@ -13,7 +13,7 @@ libNUtil.a: $(OBJS)
 	$(AR) $(ARFLAGS) libNUtil.a $(OBJS)
 
 printUtils.o: printUtils.c
-	$(CC) -c $(CFLAGS) $(PRINTFLAGS) printUtils.c
+	$(CC) -c $(CFLAGS) $(PRINTFLAGS) -o $@ printUtils.c
 
 # This is for any platform where bogus OpenMotif or LessTif versions might
 # be found in the wild.  The rule needs a different name from the executable
