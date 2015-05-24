@@ -1212,7 +1212,8 @@ static void searchHelpText(Widget parent, int parentTopic,
     TextSetCursorPos(HelpTextPanes[topic], endMatch);
     
     /* Save the search information for search-again */
-    strcpy(LastSearchString, searchFor);
+    if (searchFor != LastSearchString) /* if srch-again avoid OSX overlap err */
+        strncpy(LastSearchString, searchFor, sizeof(LastSearchString)-1);
     LastSearchTopic = topic;
     LastSearchPos = endMatch;
     LastSearchWasAllTopics = allSections;
