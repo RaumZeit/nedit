@@ -64,7 +64,7 @@ void RemoveDialogMnemonicHandler(Widget dialog);
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
 void UpdateAccelLockPatch(Widget topWidget, Widget newButton);
 char *GetXmStringText(XmString fromString);
-XFontStruct *GetDefaultFontStruct(XmFontList font);
+XFontStruct *GetDefaultFontStruct(Display *d, XmFontList font);
 XmString* StringTable(int count, ...);
 void FreeStringTable(XmString *table);
 void SimulateButtonPress(Widget widget);

@@ -1839,7 +1839,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 
     /* Change the primary font in all the widgets */
     if (primaryChanged) {
-        font = GetDefaultFontStruct(window->fontList);
+        font = GetDefaultFontStruct(TheDisplay, window->fontList);
         XtVaSetValues(window->textArea, textNfont, font, NULL);
         for (i=0; i<window->nPanes; i++)
             XtVaSetValues(window->textPanes[i], textNfont, font, NULL);
@@ -1861,7 +1861,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
        size appropriate for the new font, but only do so if there's only
        _one_ document in the window, in order to avoid growing-window bug */
     if (NDocuments(window) == 1) {
-	fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
+	fontWidth = GetDefaultFontStruct(TheDisplay, window->fontList)->max_bounds.width;
 	fontHeight = textD->ascent + textD->descent;
 	newWindowWidth = (oldTextWidth*fontWidth) / oldFontWidth + borderWidth;
 	newWindowHeight = (oldTextHeight*fontHeight) / oldFontHeight + 
@@ -2244,7 +2244,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNrows, rows, textNcolumns, cols,
             textNlineNumCols, lineNumCols,
             textNemulateTabs, emTabDist,
-            textNfont, GetDefaultFontStruct(window->fontList),
+            textNfont, GetDefaultFontStruct(TheDisplay, window->fontList),
             textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar,
             textNreadOnly, IS_ANY_LOCKED(window->lockReasons),
             textNwordDelimiters, delimiters,

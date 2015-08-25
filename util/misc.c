@@ -1018,7 +1018,7 @@ char *GetXmStringText(XmString fromString)
 ** a Motif font list.  Since Motif stores this, it saves us from storing
 ** it or querying it from the X server.
 */
-XFontStruct *GetDefaultFontStruct(XmFontList font)
+XFontStruct *GetDefaultFontStruct(Display *d, XmFontList font)
 {
     XFontStruct *fs;
     XmFontContext context;
@@ -1028,6 +1028,17 @@ XFontStruct *GetDefaultFontStruct(XmFontList font)
     XmFontListGetNextFont(context, &charset, &fs);
     XmFontListFreeFontContext(context);
     NEditFree(charset);
+
+    /* FontList might be a render table with no only XFT fonts */    
+    if (fs == NULL) {
+        fs = XLoadQueryFont(d, "fixed");
+    }
+
+    if (fs == NULL) {
+        fprintf(stderr, "Unabled to load any fallback fonts.\n");
+        exit(EXIT_FAILURE);
+    }
+        
     return fs;
 }
    

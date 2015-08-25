@@ -1280,7 +1280,7 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
     XFontStruct *font;
     
     if (styleNo<0)
-        return GetDefaultFontStruct(window->fontList);
+        return GetDefaultFontStruct(TheDisplay, window->fontList);
     fontNum = HighlightStyles[styleNo]->font;
     if (fontNum == BOLD_FONT)
     	font = window->boldFontStruct;
@@ -1289,10 +1289,10 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
     else if (fontNum == BOLD_ITALIC_FONT)
     	font = window->boldItalicFontStruct;
     else /* fontNum == PLAIN_FONT */
-    	font = GetDefaultFontStruct(window->fontList);
+    	font = GetDefaultFontStruct(TheDisplay, window->fontList);
     
     /* If font isn't loaded, silently substitute primary font */
-    return font == NULL ? GetDefaultFontStruct(window->fontList) : font;
+    return font == NULL ? GetDefaultFontStruct(TheDisplay, window->fontList) : font;
 }
 
 int FontOfNamedStyleIsBold(char *styleName)

@@ -778,9 +778,13 @@ static void initialize(TextWidget request, TextWidget new)
     textBuffer *buf;
     Pixel white, black;
     int textLeft;
-    int charWidth = fs->max_bounds.width;
-    int marginWidth = new->text.marginWidth;
-    int lineNumCols = new->text.lineNumCols;
+    int charWidth;
+    int marginWidth;
+    int lineNumCols;
+
+    charWidth = fs->max_bounds.width;
+    marginWidth = new->text.marginWidth;
+    lineNumCols = new->text.lineNumCols;
     
     /* Set the initial window size based on the rows and columns resources */
     if (request->core.width == 0)
