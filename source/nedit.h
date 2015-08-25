@@ -42,7 +42,7 @@
 #endif /*VMS*/
 
 #define NEDIT_VERSION           5
-#define NEDIT_REVISION          6
+#define NEDIT_REVISION          7
 
 /* Some default colors */
 #define NEDIT_DEFAULT_FG        "black"
