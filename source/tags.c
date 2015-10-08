@@ -87,9 +87,9 @@ typedef struct _tag {
     const char *path;
     const char *name;
     const char *file;
-    int language;
     const char *searchString; /* see comment below */
     int posInf;               /* see comment below */
+    short language;
     short index;
 } tag;
 
@@ -134,7 +134,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel);
 /* Hash table of tags, implemented as an array.  Each bin contains a 
     NULL-terminated linked list of parsed tags */
 static tag **Tags = NULL;
-static int DefTagHashSize = 10000;
+static int DefTagHashSize = 100000;
 /* list of loaded tags files */
 tagFile *TagsFileList = NULL;
 
@@ -219,7 +219,7 @@ static int addTag(const char *name, const char *file, int lang,
     tag *t;
     char newfile[MAXPATHLEN];
     tag **table;
-
+    
     if (searchMode == TIP) {
         if (Tips == NULL) 
             Tips = (tag **)NEditCalloc(DefTagHashSize, sizeof(tag*));
@@ -238,22 +238,16 @@ static int addTag(const char *name, const char *file, int lang,
     NormalizePathname(newfile);
         
     for (t = table[addr]; t; t = t->next) {
-        if (strcmp(name,t->name)) continue;
         if (lang != t->language) continue;
-        if (strcmp(search,t->searchString)) continue;
         if (posInf != t->posInf) continue;
-        if (*t->file == '/' && strcmp(newfile,t->file)) continue;
-        if (*t->file != '/') {
-            char tmpfile[MAXPATHLEN];
-            sprintf(tmpfile, "%s%s", t->path, t->file);
-            NormalizePathname(tmpfile);
-            if (strcmp(newfile, tmpfile)) continue;
-        }
+        if (strcmp(name, t->name)) continue;
+        if (strcmp(search, t->searchString)) continue;
+        if (strcmp(newfile, t->file)) continue;
         return 0;
     }
         
     t = (tag *) NEditMalloc(sizeof(tag));
-    setTag(t, name, file, lang, search, posInf, path);
+    setTag(t, name, newfile, lang, search, posInf, path);
     t->index = index;
     t->next = table[addr];
     table[addr] = t;
@@ -300,7 +294,7 @@ static int delTag(const char *name, const char *file, int lang,
                 table[i] = t->next;
             RefStringFree(t->name);
             RefStringFree(t->file);
-            RefStringFree(t->searchString);
+            NEditFree(t->searchString);
             RefStringFree(t->path);
             NEditFree(t);
             t = NULL;
@@ -979,10 +973,10 @@ static void setTag(tag *t, const char *name, const char *file,
 {
     t->name         = RefStringDup(name);
     t->file         = RefStringDup(file);
-    t->language     = language;
     t->searchString = RefStringDup(searchString);
-    t->posInf       = posInf;
     t->path         = RefStringDup(path);
+    t->language     = language;
+    t->posInf       = posInf;
 }
 
 /*
