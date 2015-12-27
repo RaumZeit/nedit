@@ -321,7 +321,7 @@ char* BufGetRange(const textBuffer* buf, int start, int end)
 /*
 ** Return the character at buffer position "pos".  Positions start at 0.
 */
-char BufGetCharacter(const textBuffer* buf, const int pos)
+char BufGetCharacter(const textBuffer* buf, int pos)
 {
     if (pos < 0 || pos >= buf->length)
         return '\0';
@@ -1026,7 +1026,7 @@ int BufEndOfLine(textBuffer *buf, int pos)
 ** for figuring tabs.  Output string is guranteed to be shorter or
 ** equal in length to MAX_EXP_CHAR_LEN
 */
-int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent,
+int BufGetExpandedChar(const textBuffer* buf, int pos, int indent,
         char* outStr)
 {
     return BufExpandCharacter(BufGetCharacter(buf, pos), indent, outStr,
@@ -1041,8 +1041,8 @@ int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent,
 ** for figuring tabs.  Output string is guranteed to be shorter or
 ** equal in length to MAX_EXP_CHAR_LEN
 */
-int BufExpandCharacter(const char c, const int indent, char *outStr,
-        const int tabDist, const char nullSubsChar)
+int BufExpandCharacter(char c, int indent, char *outStr,
+        int tabDist, char nullSubsChar)
 {
     int i, nSpaces;
     
@@ -1107,8 +1107,8 @@ int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar)
 ** shown on the screen to represent characters in the buffer, where tabs and
 ** control characters are expanded)
 */
-int BufCountDispChars(const textBuffer* buf, const int lineStartPos,
-        const int targetPos)
+int BufCountDispChars(const textBuffer* buf, int lineStartPos,
+        int targetPos)
 {
     int pos, charCount = 0;
     char expandedChar[MAX_EXP_CHAR_LEN];
@@ -1169,8 +1169,8 @@ int BufCountLines(textBuffer *buf, int startPos, int endPos)
 ** Find the first character of the line "nLines" forward from "startPos"
 ** in "buf" and return its position
 */
-int BufCountForwardNLines(const textBuffer* buf, const int startPos,
-        const unsigned nLines)
+int BufCountForwardNLines(const textBuffer* buf, int startPos,
+        unsigned nLines)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
     int lineCount = 0;

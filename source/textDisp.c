@@ -123,7 +123,7 @@ static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos,
         int lineLen, int lineIndex, int dispIndex, int thisChar);
 static int stringWidth(const textDisp* textD, const char* string,
-        const int length, const int style);
+        int length, int style);
 static int inSelection(selection *sel, int pos, int lineStartPos,
         int dispIndex);
 static int xyToPos(textDisp *textD, int x, int y, int posType);
@@ -161,8 +161,8 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
         int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd,
         int *linesInserted, int *linesDeleted);
 static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
-        const int startPos, const int maxPos, const int maxLines,
-        const Boolean startPosIsLineStart, const int styleBufOffset,
+        int startPos, int maxPos, int maxLines,
+        Boolean startPosIsLineStart, int styleBufOffset,
         int* retPos, int* retLines, int* retLineStart, int* retLineEnd);
 static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart,
         int *lineEnd, int *nextLineStart);
@@ -174,8 +174,8 @@ static int getAbsTopLineNum(textDisp *textD);
 static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
 static int maintainingAbsTopLineNum(textDisp *textD);
 static void resetAbsLineNum(textDisp *textD);
-static int measurePropChar(const textDisp* textD, const char c,
-        const int colNum, const int pos);
+static int measurePropChar(const textDisp* textD, char c,
+        int colNum, int pos);
 static Pixel allocBGColor(Widget w, char *colorName, int *ok);
 static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground);
 static void textDRedisplayRange(textDisp *textD, int start, int end);
@@ -1388,8 +1388,8 @@ int TextDCountLines(textDisp *textD, int startPos, int endPos,
 ** it can pass "startPosIsLineStart" as True to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-int TextDCountForwardNLines(const textDisp* textD, const int startPos,
-        const unsigned nLines, const Boolean startPosIsLineStart)
+int TextDCountForwardNLines(const textDisp* textD, int startPos,
+        unsigned nLines, Boolean startPosIsLineStart)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
@@ -1424,8 +1424,8 @@ int TextDCountForwardNLines(const textDisp* textD, const int startPos,
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-int TextDEndOfLine(const textDisp* textD, const int pos,
-        const Boolean startPosIsLineStart)
+int TextDEndOfLine(const textDisp* textD, int pos,
+        Boolean startPosIsLineStart)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
@@ -1445,7 +1445,7 @@ int TextDEndOfLine(const textDisp* textD, const int pos,
 ** Same as BufStartOfLine, but returns the character after last wrap point
 ** rather than the last newline.
 */
-int TextDStartOfLine(const textDisp* textD, const int pos)
+int TextDStartOfLine(const textDisp* textD, int pos)
 {
     int retLines, retPos, retLineStart, retLineEnd;
     
@@ -2202,7 +2202,7 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
 ** Find the width of a string in the font of a particular style
 */
 static int stringWidth(const textDisp* textD, const char *string,
-        const int length, const int style)
+        int length, int style)
 {
     XFontStruct *fs;
     
@@ -3368,8 +3368,8 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted)
 **   retLineEnd:    End position of the last line traversed
 */
 static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
-        const int startPos, const int maxPos, const int maxLines,
-        const Boolean startPosIsLineStart, const int styleBufOffset,
+        int startPos, int maxPos, int maxLines,
+        Boolean startPosIsLineStart, int styleBufOffset,
         int* retPos, int* retLines, int* retLineStart, int* retLineEnd)
 {
     int lineStart, newLineStart = 0, b, p, colNum, wrapMargin;
@@ -3507,8 +3507,8 @@ static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
 ** insertion/deletion, though static display and wrapping and resizing
 ** should now be solid because they are now used for online help display.
 */
-static int measurePropChar(const textDisp* textD, const char c,
-    const int colNum, const int pos)
+static int measurePropChar(const textDisp* textD, char c,
+    int colNum, int pos)
 {
     int charLen, style;
     char expChar[MAX_EXP_CHAR_LEN];

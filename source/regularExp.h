@@ -88,7 +88,7 @@ int ExecRE (
 
 /* Perform substitutions after a `regexp' match. */
 Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
-        const int max);
+        int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of

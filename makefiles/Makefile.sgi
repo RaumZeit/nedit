@@ -17,7 +17,7 @@ AR=ar
 # To test if the Motif library exports the runtime version
 # add -DHAVE__XMVERSIONSTRING to CFLAGS
 #
-CFLAGS=-O -DSGI -DNO_XMIM
+CFLAGS=-O -DSGI -DNO_XMIM -D__unix__
 ARFLAGS=-urs
 # For systems older than IRIX 6.0, add: BIGGER_STRINGS= -Wf,-XNl10000
 LIBS= -lm -lXm -lXt -lX11 -lPW

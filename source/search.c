@@ -3786,7 +3786,7 @@ static Boolean prefOrUserCancelsSubst(const Widget parent,
 ** replace strings to the global search history.
 */
 void ReplaceInSelection(const WindowInfo* window, const char* searchString,
-        const char* replaceString, const int searchType)
+        const char* replaceString, int searchType)
 {
     int selStart, selEnd, beginPos, startPos, endPos, realOffset, replaceLen;
     int found, isRect, rectStart, rectEnd, lineStart, cursorPos;
@@ -4733,10 +4733,11 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 ** code to continue using strings to represent the search and replace
 ** items.
 */  
+
 static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
-        const char* sourceStr, const int beginPos, char* destStr,
-        const int maxDestLen, const int prevChar, const char* delimiters,
-        const int defaultFlags)
+        const char* sourceStr, int beginPos, char* destStr,
+        int maxDestLen, int prevChar, const char* delimiters,
+        int defaultFlags)
 {
     regexp *compiledRE;
     char *compileMsg;

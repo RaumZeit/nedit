@@ -90,7 +90,7 @@ char *BufGetAll(textBuffer *buf);
 const char *BufAsString(textBuffer *buf);
 void BufSetAll(textBuffer *buf, const char *text);
 char* BufGetRange(const textBuffer* buf, int start, int end);
-char BufGetCharacter(const textBuffer* buf, const int pos);
+char BufGetCharacter(const textBuffer* buf, int pos);
 char *BufGetTextInRect(textBuffer *buf, int start, int end,
 	int rectStart, int rectEnd);
 void BufInsert(textBuffer *buf, int pos, const char *text);
@@ -149,17 +149,17 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc
 	bufPreDeleteCB,	void *cbArg);
 int BufStartOfLine(textBuffer *buf, int pos);
 int BufEndOfLine(textBuffer *buf, int pos);
-int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent,
+int BufGetExpandedChar(const textBuffer* buf, int pos, int indent,
         char* outStr);
 int BufExpandCharacter(char c, int indent, char *outStr, int tabDist,
 	char nullSubsChar);
 int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
-int BufCountDispChars(const textBuffer* buf, const int lineStartPos,
-        const int targetPos);
+int BufCountDispChars(const textBuffer* buf, int lineStartPos,
+        int targetPos);
 int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
 int BufCountLines(textBuffer *buf, int startPos, int endPos);
-int BufCountForwardNLines(const textBuffer* buf, const int startPos,
-        const unsigned nLines);
+int BufCountForwardNLines(const textBuffer* buf, int startPos,
+        unsigned nLines);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
 int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);

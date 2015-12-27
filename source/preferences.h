@@ -188,7 +188,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
 	void *cbArg);
 void SetLangModeMenu(Widget optMenu, const char *modeName);
 void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
-        const char* name, const char* label, const char mnemonic);
+        const char* name, const char* label, char mnemonic);
 void SetPrefFindReplaceUsesSelection(int state);
 int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);

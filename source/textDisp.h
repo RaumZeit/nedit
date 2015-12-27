@@ -209,11 +209,11 @@ void TextDBlankCursor(textDisp *textD);
 void TextDUnblankCursor(textDisp *textD);
 void TextDSetCursorStyle(textDisp *textD, int style);
 void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
-int TextDEndOfLine(const textDisp* textD, const int pos,
-    const Boolean startPosIsLineStart);
-int TextDStartOfLine(const textDisp* textD, const int pos);
-int TextDCountForwardNLines(const textDisp* textD, const int startPos,
-        const unsigned nLines, const Boolean startPosIsLineStart);
+int TextDEndOfLine(const textDisp* textD, int pos,
+    Boolean startPosIsLineStart);
+int TextDStartOfLine(const textDisp* textD, int pos);
+int TextDCountForwardNLines(const textDisp* textD, int startPos,
+        unsigned nLines, Boolean startPosIsLineStart);
 int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
 int TextDCountLines(textDisp *textD, int startPos, int endPos,
     	int startPosIsLineStart);

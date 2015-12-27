@@ -3979,7 +3979,7 @@ static unsigned char * next_ptr (unsigned char *ptr) {
 **  on any error. The substitution will still be executed.
 */
 Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
-        const int max)
+        int max)
 {
 
    register unsigned char *src;

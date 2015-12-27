@@ -143,8 +143,8 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	highlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
 static void handleUnparsedRegion(const WindowInfo* win, textBuffer* styleBuf,
-        const int pos);
-static void handleUnparsedRegionCB(const textDisp* textD, const int pos,
+        int pos);
+static void handleUnparsedRegionCB(const textDisp* textD, int pos,
         const void* cbArg);
 static void incrementalReparse(windowHighlightData *highlightData,
     	textBuffer *buf, int pos, int nInserted, const char *delimiters);
@@ -1280,7 +1280,7 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
 static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
-        const int pos)
+        int pos)
 {
     textBuffer *buf = window->buffer;
     int beginParse, endParse, beginSafety, endSafety, p;
@@ -1358,7 +1358,7 @@ static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
 /*
 ** Callback wrapper around the above function.
 */
-static void handleUnparsedRegionCB(const textDisp* textD, const int pos,
+static void handleUnparsedRegionCB(const textDisp* textD, int pos,
         const void* cbArg)
 {
     handleUnparsedRegion((WindowInfo*) cbArg, textD->styleBuffer, pos);

@@ -5096,7 +5096,7 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
 ** Create a submenu for chosing language mode for the current window.
 */
 void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
-        const char* name, const char* label, const char mnemonic)
+        const char* name, const char* label, char mnemonic)
 {
     XmString string = XmStringCreateSimple((char*) label);
 
