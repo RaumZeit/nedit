@@ -294,7 +294,7 @@ static int delTag(const char *name, const char *file, int lang,
                 table[i] = t->next;
             RefStringFree(t->name);
             RefStringFree(t->file);
-            NEditFree((void*)t->searchString);	/* cast to avoid warning */
+            RefStringFree(t->searchString);
             RefStringFree(t->path);
             NEditFree(t);
             t = NULL;
