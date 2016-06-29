@@ -134,7 +134,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel);
 /* Hash table of tags, implemented as an array.  Each bin contains a 
     NULL-terminated linked list of parsed tags */
 static tag **Tags = NULL;
-static int DefTagHashSize = 100000;
+static unsigned DefTagHashSize = 100000u;
 /* list of loaded tags files */
 tagFile *TagsFileList = NULL;
 
@@ -179,8 +179,7 @@ static tagFile *setFileListHead(tagFile *t, int file_type )
 static tag *getTag(const char *name, int search_type)
 {
     static char lastName[MAXLINE];
-    static tag *t;
-    static int addr;
+    static tag *t = NULL;
     tag **table;
     
     if (search_type == TIP)
@@ -191,7 +190,7 @@ static tag *getTag(const char *name, int search_type)
     if (table == NULL) return NULL;
     
     if (name) {
-        addr = StringHashAddr(name) % DefTagHashSize;
+        unsigned const addr = StringHashAddr(name) % DefTagHashSize;
         t = table[addr];
         strcpy(lastName,name);
     }
@@ -206,6 +205,22 @@ static tag *getTag(const char *name, int search_type)
     return NULL;
 }
 
+/*
+** Searches for `tpl` tag in the list `bkt`
+*/
+static tag* matchTagRec(tag const* tpl, tag* bkt)
+{
+    /* pointers comparison can be used instead of strcmp because strings
+       are made shared by setTag() */
+    tag *t = bkt;
+    for (; t; t = t->next)
+        if ((tpl->language == t->language) && (tpl->posInf == t->posInf) &&
+            (tpl->name == t->name) && (tpl->searchString == t->searchString) &&
+            (tpl->file == t->file)) return t;
+
+    return NULL;
+}
+
 /* Add a tag specification to the hash table 
 **   Return Value:  0 ... tag already existing, spec not added
 **                  1 ... tag spec is new, added.
@@ -215,11 +230,9 @@ static tag *getTag(const char *name, int search_type)
 static int addTag(const char *name, const char *file, int lang, 
                     const char *search, int posInf, const char *path, int index)
 {
-    int addr = StringHashAddr(name) % DefTagHashSize;
-    tag *t;
     char newfile[MAXPATHLEN];
     tag **table;
-    
+
     if (searchMode == TIP) {
         if (Tips == NULL) 
             Tips = (tag **)NEditCalloc(DefTagHashSize, sizeof(tag*));
@@ -229,28 +242,34 @@ static int addTag(const char *name, const char *file, int lang,
             Tags = (tag **)NEditCalloc(DefTagHashSize, sizeof(tag*));
         table = Tags;
     }
-    
+
     if (*file == '/')
-        strcpy(newfile,file);
+        strncpy(newfile, file, MAXPATHLEN);
     else
-        sprintf(newfile,"%s%s", path, file);
-    
+        snprintf(newfile, MAXPATHLEN, "%s%s", path, file);
+    newfile[MAXPATHLEN - 1] = '\0';
+
     NormalizePathname(newfile);
-        
-    for (t = table[addr]; t; t = t->next) {
-        if (lang != t->language) continue;
-        if (posInf != t->posInf) continue;
-        if (strcmp(name, t->name)) continue;
-        if (strcmp(search, t->searchString)) continue;
-        if (strcmp(newfile, t->file)) continue;
-        return 0;
+
+    {
+        tag tpl;
+        setTag(&tpl, name, newfile, lang, search, posInf, path);
+
+        {
+            unsigned const addr = StringHashAddr(tpl.name) % DefTagHashSize;
+
+            tag *t = matchTagRec(&tpl, table[addr]);
+            if (t)
+                return 0;
+
+            t = NEditNew(tag);
+            *t = tpl;
+            t->index = index;
+            t->next = table[addr];
+            table[addr] = t;
+        }
     }
-        
-    t = (tag *) NEditMalloc(sizeof(tag));
-    setTag(t, name, newfile, lang, search, posInf, path);
-    t->index = index;
-    t->next = table[addr];
-    table[addr] = t;
+
     return 1;
 }
 
@@ -280,18 +299,21 @@ static int delTag(const char *name, const char *file, int lang,
         start = 0;
         finish = DefTagHashSize;
     }
+
     for (i = start; i<finish; i++) {
         for (last = NULL, t = table[i]; t; last = t, t = t?t->next:table[i]) {
-            if (name && strcmp(name,t->name)) continue;
             if (index && index != t->index) continue;
-            if (file && strcmp(file,t->file)) continue;
+            if (posInf != t->posInf) continue;
             if (lang >= PLAIN_LANGUAGE_MODE && lang != t->language) continue;
+            if (name && strcmp(name,t->name)) continue;
+            if (file && strcmp(file,t->file)) continue;
             if (search && strcmp(search,t->searchString)) continue;
-            if (posInf == t->posInf) continue;
+
             if (last)
                 last->next = t->next;
             else
                 table[i] = t->next;
+
             RefStringFree(t->name);
             RefStringFree(t->file);
             RefStringFree(t->searchString);
@@ -530,18 +552,22 @@ static void updateMenuItems(void)
 ** Scans one <line> from a ctags tags file (<index>) in tagPath.
 ** Return value: Number of tag specs added.
 */
-static int scanCTagsLine(const char *line, const char *tagPath, int index) 
+static int scanCTagsLine(char *line, const char *tagPath, int index)
 {
-    char name[MAXLINE], searchString[MAXLINE];
-    char file[MAXPATHLEN];
-    char *posTagREEnd, *posTagRENull;
-    int  nRead, pos;
+    char *name = line, *searchString = NULL;
+    char *file = NULL;
+    char *posTagREEnd = NULL, *posTagRENull = NULL;
+    int pos;
 
-    nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
-    if (nRead != 3) 
-        return 0;
-    if ( *name == '!' )
-        return 0;
+    /* [name]\t[file]\t[searchString]\n */
+    if ((*name != '!') && (file = strchr(name, '\t')) != NULL)
+    {
+        *file++ = '\0';
+        if ((searchString = strchr(file, '\t')) != NULL)
+            *searchString++ = '\0';
+        else return 0;
+    }
+    else return 0;
 
     /* 
     ** Guess the end of searchString:
@@ -1792,6 +1818,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
 #ifndef VMS
     /* Allow ~ in Unix filenames */
     strncpy(tipPath, tipsFile, MAXPATHLEN);    /* ExpandTilde is destructive */
+    tipPath[MAXPATHLEN - 1] = '\0';
     ExpandTilde(tipPath);
     if(!ResolvePath(tipPath, resolvedTipsFile))
         return 0;

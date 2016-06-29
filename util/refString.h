@@ -28,4 +28,9 @@
 
 const char *RefStringDup(const char *str);
 void RefStringFree(const char *str);
+
+/* Compute hash address from a string key */
 unsigned int StringHashAddr(const char *key);
+
+/* Compute hash address from a null-termintated list of strings */
+unsigned int StringsHashAddr(const char** keys);
