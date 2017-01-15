@@ -1001,7 +1001,7 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
 /* Print version of 'nc' */
 static void printNcVersion(void ) {
    static const char *const ncHelpText = \
-   "nc (NEdit) Version 5.6 (November 2009)\n\n\
+   "nc (NEdit) Version 5.7 (January 2017)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
      

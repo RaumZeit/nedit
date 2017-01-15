@@ -2,10 +2,10 @@
 *                                                                              *
 * help_data.h --  Nirvana Editor help module data                              *
 *                                                                              *
-                 Generated on Jul 5, 2010 (Do NOT edit!)
+                 Generated on Jan 14, 2017 (Do NOT edit!)
                  Source of content from file help.etx
 *                                                                              *
-* Copyright (c) 1999-2010 Mark Edel                                            *
+* Copyright (c) 1999-2017 Mark Edel                                            *
 *                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
@@ -5748,4 +5748,4 @@ Href H_R [] =
     {NULL,     14799, HELP_PREFERENCES,   "Autoload Files"}
 };
 
-static const char * NEditVersion = "NEdit 5.6\nJul 5, 2010\n";
+static const char * NEditVersion = "NEdit 5.7\nJan 14, 2017\n";
