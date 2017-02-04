@@ -1243,12 +1243,14 @@ static int writeBckVersion(WindowInfo *window)
        We preserve the normal permissions but not ownership, extended
        attributes, et cetera. */
     if (fstat(in_fd, &statbuf) != 0) {
+        close(in_fd);
 	return FALSE;
     }
 
     /* open the destination file exclusive and with restrictive permissions. */
     out_fd = open(bckname, O_CREAT|O_EXCL|O_TRUNC|O_WRONLY, S_IRUSR | S_IWUSR);
     if (out_fd < 0) {
+        close(in_fd);
         return bckError(window, "Error open backup file", bckname);
     }
 
