@@ -16,4 +16,3 @@ LIBS= -L/usr/X11R6/lib -lm -lXm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
 
-verify_config: check_tif_rule

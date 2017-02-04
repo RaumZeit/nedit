@@ -15,17 +15,8 @@ libNUtil.a: $(OBJS)
 printUtils.o: printUtils.c
 	$(CC) -c $(CFLAGS) $(PRINTFLAGS) -o $@ printUtils.c
 
-# This is for any platform where bogus OpenMotif or LessTif versions might
-# be found in the wild.  The rule needs a different name from the executable
-# so that the rule continues to fire if the executable exists.  Note that we
-# do not cache the .o file - this is so if the build fails, you can jump
-# and retry on another system without worrying that it will be different.
-check_tif_rule: motif.o
-	$(CC) $(CFLAGS) -o check_lin_tif check_lin_tif.c motif.c
-	./check_lin_tif
-
 clean:
-	rm -f $(OBJS) libNUtil.a check_lin_tif
+	rm -f $(OBJS) libNUtil.a
 
 # Get the dependencies for all objects
 include Makefile.dependencies

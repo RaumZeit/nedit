@@ -15,4 +15,3 @@ LIBS= ${MOTIFLIB} -L${PREFIX}/lib -lm -lXpm -lXext -lXt -lSM -lICE -lX11
 
 include Makefile.common
 
-verify_config: check_tif_rule
