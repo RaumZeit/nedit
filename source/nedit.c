@@ -416,10 +416,15 @@ int main(int argc, char **argv)
 
     /* Warn user if this has been compiled wrong. */
     enum MotifStability stability = GetMotifStability();
+
     if (stability == MotifKnownBad) {
-        fputs("nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n"
-              "nedit: Please get a stable version of NEdit from http://www.nedit.org.\n",
+        fputs("nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n",
               stderr);
+#ifndef BUILD_BROKEN_NEDIT
+    /* Dear maintainers who are patching this; please have mercy on your users and link against 
+       a stable version of OpenMotif. */
+        exit(EXIT_FAILURE);
+#endif
     }
 
     /* Save the command which was used to invoke nedit for restart command */

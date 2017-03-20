@@ -28,11 +28,11 @@ all:
 	   then ln -s ../makefiles/Makefile.$@ .; fi)
 
 	(cd util; \
-	    $(MAKE) -f Makefile.$@ verify_config && \
 	    $(MAKE) -f Makefile.$@ libNUtil.a)
 	(cd Xlt;    $(MAKE) -f Makefile.$@ libXlt.a)
 	(cd Microline/XmL;    $(MAKE) -f Makefile.$@ libXmL.a)
 	(cd source; $(MAKE) -f Makefile.$@ nedit nc)
+	@source/nedit -V
 
 # This should not be in the default build, as users may not have Perl
 # installed.  This is only interesting to developers.

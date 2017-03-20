@@ -1894,6 +1894,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                             resolvedTipsFile);
                     /* Deallocate any allocated aliases */
                     free_alias_list(tmp_alias);
+                    fclose(fp);
                     return 0;
                 }
                 /* Add it to the list */
@@ -1922,5 +1923,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
         tmp_alias = tmp_alias->next;
     }
     free_alias_list(aliases);
+    fclose(fp);
+    
     return nTipsAdded;
 }

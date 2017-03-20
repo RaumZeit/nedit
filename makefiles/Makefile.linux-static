@@ -26,4 +26,3 @@ LIBS=-L/usr/X11R6/lib -Wl,-Bstatic -lXm -Wl,-Bdynamic -lXp -lXpm -lXext -lXt -lS
 
 include Makefile.common
 
-verify_config: check_tif_rule
